@@ -37,11 +37,14 @@ class ClickPipelineContext(BaseModel, Singleton):
         click_params = ctx.params
         command_name = ctx.command.name
 
-        # Error if click_obj and click_params have the same key
-        all_click_params_keys = [p.name for p in ctx.command.params]
-        intersection = set(click_obj.keys()) & set(all_click_params_keys)
+        # Error if click_obj and click_params have the same key, and not the same value
+        intersection = set(click_obj.keys()) & set(click_params.keys())
         if intersection:
-            raise ValueError(f"Your command '{command_name}' has defined options/arguments with the same key as its parent: {intersection}")
+            for key in intersection:
+                if click_obj[key] != click_params[key]:
+                    raise ValueError(
+                        f"Your command '{command_name}' has defined options/arguments with the same key as its parent, but with different values: {intersection}"
+                    )
 
         return {**click_obj, **click_params}
 

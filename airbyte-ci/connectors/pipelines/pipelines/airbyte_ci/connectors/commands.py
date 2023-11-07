@@ -228,6 +228,7 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
 )
 @click_merge_args_into_context_obj
 @click_append_to_context_object("use_remote_secrets", lambda ctx: should_use_remote_secrets(ctx.obj["use_remote_secrets"]))
+@click.pass_context
 @click_ignore_unused_kwargs
 async def connectors(
     ctx: click.Context,

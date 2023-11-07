@@ -264,6 +264,7 @@ async def get_modified_files_str(ctx: click.Context):
 @click_append_to_context_object("gha_workflow_run_url", _get_gha_workflow_run_url)
 @click_append_to_context_object("pull_request", _get_pull_request)
 @click_append_to_context_object("modified_files", get_modified_files_str)
+@click.pass_context
 @click_ignore_unused_kwargs
 async def airbyte_ci(
     ctx: click.Context,

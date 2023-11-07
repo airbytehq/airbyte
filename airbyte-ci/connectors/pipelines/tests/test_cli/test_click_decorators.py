@@ -22,7 +22,8 @@ async def test_click_append_to_context_object():
     @click_append_to_context_object("foo", "bar")
     @click_append_to_context_object("baz", lambda _ctx: "qux")
     @click_append_to_context_object("foo2", lambda ctx: ctx.obj.get("foo") + "2")
-    def test_command(ctx):
+    async def test_command():
+        ctx = click.get_current_context()
         assert ctx.obj["foo"] == "bar"
         assert ctx.obj["baz"] == "qux"
         assert ctx.obj["foo2"] == "bar2"
@@ -35,7 +36,8 @@ async def test_click_append_to_context_object():
     @click_append_to_context_object("foo", "bar")
     @click_append_to_context_object("baz", lambda _ctx: "qux")
     @click_append_to_context_object("foo2", lambda ctx: ctx.obj.get("foo") + "2")
-    async def test_command_async(ctx):
+    async def test_command_async():
+        ctx = click.get_current_context()
         assert ctx.obj["foo"] == "bar"
         assert ctx.obj["baz"] == "qux"
         assert ctx.obj["foo2"] == "bar2"
@@ -71,7 +73,7 @@ async def test_click_merge_args_into_context_obj():
     @click.option("--bar", help="bar option")
     @click_merge_args_into_context_obj
     @click_ignore_unused_kwargs
-    def test_command(ctx, foo, bar):
+    async def test_command(foo, bar):
         ctx = click.get_current_context()
         assert ctx.obj["foo"] == foo
         assert ctx.obj["bar"] == bar
