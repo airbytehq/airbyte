@@ -38,17 +38,24 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 ### Step 2: Set up the GitHub connector in Airbyte
 
 <!-- env:cloud -->
-[Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-<!-- /env:cloud -->
-1. In the left navigation bar, click **Sources**.
-2. On the source selection page, select **GitHub** from the list of Sources.
-3. Add a name for your GitHub connector.
-4. To authenticate:
-<!-- env:cloud -->
--  **For Airbyte Cloud**: Click **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
+**For Airbyte Cloud:**
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**.
+3. On the source selection page, select **GitHub** from the list of Sources.
+4. Add a name for your GitHub connector.
+5. To authenticate:
+  -  Click **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
 <!-- /env:cloud -->
 <!-- env:oss -->
--  **For Airbyte Open Source**: Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+**For Airbyte Open Source:**
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. In the left navigation bar, click **Sources**.
+3. On the source selection page, select **GitHub** from the list of Sources.
+4. Add a name for your GitHub connector.
+5. To authenticate:
+  -  Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
 <!-- /env:oss -->
 5. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
 
