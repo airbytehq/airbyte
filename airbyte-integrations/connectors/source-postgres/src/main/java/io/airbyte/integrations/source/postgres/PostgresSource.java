@@ -123,7 +123,6 @@ import org.slf4j.LoggerFactory;
 
 public class PostgresSource extends AbstractJdbcSource<PostgresType> implements Source {
 
-  private static final String DEPLOYMENT_MODE = System.getenv(AdaptiveSourceRunner.DEPLOYMENT_MODE_KEY);
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
   public static final String PARAM_SSLMODE = "sslmode";
@@ -161,9 +160,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
+  private static final String getDeploymentMode() {
+    return System.getenv(AdaptiveSourceRunner.DEPLOYMENT_MODE_KEY);
+  }
+
+
   @Override
   public ConnectorSpecification spec() throws Exception {
-    if (DEPLOYMENT_MODE != null && DEPLOYMENT_MODE.equalsIgnoreCase(AdaptiveSourceRunner.CLOUD_MODE)) {
+    String deploymentMode = getDeploymentMode();
+    if (deploymentMode != null && deploymentMode.equalsIgnoreCase(AdaptiveSourceRunner.CLOUD_MODE)) {
       final ConnectorSpecification spec = Jsons.clone(super.spec());
       final ObjectNode properties = (ObjectNode) spec.getConnectionSpecification().get("properties");
       ((ObjectNode) properties.get(SSL_MODE)).put("default", SSL_MODE_REQUIRE);
@@ -721,7 +726,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
     // and not over SSH tunnel
-    if (AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(DEPLOYMENT_MODE)) {
+    String deploymentMode = getDeploymentMode();
+    if (AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(deploymentMode)) {
       LOGGER.info("Source configured as in Cloud Deployment mode");
       if (config.has(TUNNEL_METHOD)
           && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
