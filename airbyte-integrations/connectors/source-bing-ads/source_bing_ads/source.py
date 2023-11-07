@@ -87,7 +87,7 @@ class SourceBingAds(AbstractSource):
                 return True, None
             else:
                 raise AirbyteTracedException(
-                    message="Config validation error: You don't have accounts assigned to this user.",
+                    message="Config validation error: You don't have accounts assigned to this user. Please verify your developer token.",
                     internal_message="You don't have accounts assigned to this user.",
                     failure_type=FailureType.config_error,
                 )

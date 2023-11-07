@@ -47,7 +47,7 @@ def test_source_check_connection_failed_user_do_not_have_accounts(mocked_client,
     with patch.object(Accounts, "read_records", return_value=[]):
         connected, reason = SourceBingAds().check_connection(logger_mock, config=config)
         assert connected is False
-        assert reason.message == "Config validation error: You don't have accounts assigned to this user."
+        assert reason.message == "Config validation error: You don't have accounts assigned to this user. Please verify your developer token."
 
 
 def test_source_check_connection_failed_invalid_creds(config, logger_mock):
