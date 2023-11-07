@@ -1,14 +1,18 @@
 # Instagram
 
-This page contains the setup guide and reference information for the Instagram source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Instagram](https://www.instagram.com/) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
 - [Meta for Developers account](https://developers.facebook.com)
-- [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your Facebook page
-- [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
+- [Instagram business account](https://www.facebook.com/business/help/898752960195806) connected to your Facebook page
+- [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) connected to your Facebook app
 - [Facebook OAuth Reference](https://developers.facebook.com/docs/instagram-basic-display-api/reference)
-- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte)
+- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (necessary to configure Instagram as a source in Airbyte)
 
 ## Setup Guide
 
@@ -42,6 +46,8 @@ This page contains the setup guide and reference information for the Instagram s
 8. Click **Set up source**.
 <!-- /env:oss -->
 
+<HideInUI>
+
 ## Supported sync modes
 
 The Instagram source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -68,9 +74,9 @@ The Instagram source connector supports the following streams. For more informat
 - [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
   - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 
-### Rate Limiting and Performance Considerations
-
-Instagram limits the number of requests that can be made at a time, but the Instagram connector gracefully handles rate limiting. See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) for more information.
+:::info
+The Instagram connector syncs data related to Users, Media, and Stories and their insights from the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/). For performance data related to Instagram Ads, use the Facebook Marketing source.
+:::
 
 ## Data type map
 
@@ -82,6 +88,25 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 | `number`         | `number`     |
 | `array`          | `array`      |
 | `object`         | `object`     |
+
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Instagram connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+
+Instagram limits the number of requests that can be made at a time, but the Instagram connector handles rate limiting. See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) for more information.
+
+### Troubleshooting
+
+* Check out common troubleshooting issues for the Instagram source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
 
 ## Changelog
 
@@ -105,3 +130,5 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 | 0.1.8   | 2021-08-11 | [5354](https://github.com/airbytehq/airbyte/pull/5354)   | Added check for empty state and fixed tests                                                                               |
 | 0.1.7   | 2021-07-19 | [4805](https://github.com/airbytehq/airbyte/pull/4805)   | Add support for previous `STATE` format                                                                                   |
 | 0.1.6   | 2021-07-07 | [4210](https://github.com/airbytehq/airbyte/pull/4210)   | Refactor connector to use CDK: - improve error handling - fix sync fail with HTTP status 400 - integrate SAT              |
+
+</HideInUI>
