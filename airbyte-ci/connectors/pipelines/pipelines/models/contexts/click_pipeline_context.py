@@ -68,7 +68,10 @@ class ClickPipelineContext(BaseModel, Singleton):
 
     _dagger_client_lock: anyio.Lock = PrivateAttr(default_factory=anyio.Lock)
 
-    async def get_dagger_client(self, client: Optional[Client] = None, pipeline_name: Optional[str] = None) -> Client:
+    async def get_dagger_client(self, pipeline_name: Optional[str] = None) -> Client:
+        """
+        Get (or initialize) the Dagger Client instance.
+        """
         if not self._dagger_client:
             async with self._dagger_client_lock:
                 if not self._dagger_client:
@@ -82,9 +85,9 @@ class ClickPipelineContext(BaseModel, Singleton):
                         Cross-thread pool calls are generally considered an anti-pattern.
                     """
                     self._dagger_client = await self._click_context().with_async_resource(connection)  # type: ignore
-        client = self._dagger_client
-        assert client, "Error initializing Dagger client"
-        return client.pipeline(pipeline_name) if pipeline_name else client
+
+        assert self._dagger_client, "Error initializing Dagger client"
+        return self._dagger_client.pipeline(pipeline_name) if pipeline_name else self._dagger_client
 
 
 # Create @pass_pipeline_context decorator for use in click commands
