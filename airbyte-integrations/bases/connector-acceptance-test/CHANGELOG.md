@@ -1,5 +1,10 @@
 # Changelog
 
+
+## 2.1.3
+
+Remove dockerfile and migrations tools. We are now running CAT with `airbyte-ci` and new migration operation will be done by the `airbyte-ci` tool.
+
 ## 2.1.2
 
 Add check for duplicate stream names
