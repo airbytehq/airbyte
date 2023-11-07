@@ -170,10 +170,6 @@ IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = {
     ".hypothesis",
 }
 
-IGNORED_FILES_FOR_HTTPS_CHECKS = {
-    "airbyte-integrations/connectors/source-s3/source_s3/v4/config.py",  # This file has regex pattern using http:// .
-}
-
 IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {"*Test.java", "*.jar", "*.pyc", "*.gz", "*.svg"}
 IGNORED_URLS_PREFIX = {
     "http://json-schema.org",
@@ -211,8 +207,6 @@ def check_connector_https_url_only(connector: Connector) -> bool:
     for filename, line in read_all_files_in_directory(
         connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS, IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS
     ):
-        if str(filename) in IGNORED_FILES_FOR_HTTPS_CHECKS:
-            continue
         line = line.lower()
         if is_comment(line, filename):
             continue
