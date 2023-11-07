@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.53.0
+Add call rate functionality
+
 ## 0.52.10
 Fix class SessionTokenAuthenticator for CLASS_TYPES_REGISTRY mapper
 
