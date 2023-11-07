@@ -19,6 +19,7 @@ import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.Streams;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.math.BigInteger;
@@ -102,6 +103,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
      * doesn't do a good job of inferring the query location. Pass it in explicitly.
      */
     Job job = bq.create(JobInfo.of(JobId.newBuilder().setLocation(datasetLocation).build(), QueryJobConfiguration.newBuilder(sql).build()));
+    AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
     // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
     while (!JobStatus.State.DONE.equals(job.getStatus().getState())) {
       Thread.sleep(1000L);
