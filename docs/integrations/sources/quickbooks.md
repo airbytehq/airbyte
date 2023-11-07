@@ -105,6 +105,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
+| `3.0.1` | 2023-11-06 | [32236](https://github.com/airbytehq/airbyte/pull/32236) | Upgrade to `airbyte-cdk>=0.52.10` to resolve refresh token issues    |
 | `3.0.0` | 2023-09-26 | [30770](https://github.com/airbytehq/airbyte/pull/30770) | Update schema to use `number` instead of `integer`                   |
 | `2.0.5` | 2023-09-26 | [30766](https://github.com/airbytehq/airbyte/pull/30766) | Fix improperly named keyword argument                                |
 | `2.0.4` | 2023-06-28 | [27803](https://github.com/airbytehq/airbyte/pull/27803) | Update following state breaking changes                              |
