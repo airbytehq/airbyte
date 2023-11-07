@@ -6,10 +6,8 @@ package io.airbyte.cdk.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -27,8 +25,8 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   // Basic deinterpolation helpers to avoid doing _really_ dumb deinterpolation.
   // E.g. if "id" is in the list of strings to remove, we don't want to modify the message "Invalid
   // identifier".
-  private static final String REGEX_PREFIX = "(^|\\W)";
-  private static final String REGEX_SUFFIX = "($|\\W)";
+  private static final String REGEX_PREFIX = "(^|[^A-Za-z0-9])";
+  private static final String REGEX_SUFFIX = "($|[^A-Za-z0-9])";
 
   /**
    * If this list is populated, then the exception handler will attempt to deinterpolate the error
@@ -44,7 +42,11 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
    * </ol>
    */
   @VisibleForTesting
-  static final List<String> STRINGS_TO_DEINTERPOLATE = new ArrayList<>();
+  static final Set<String> STRINGS_TO_DEINTERPOLATE = new HashSet<>();
+  static {
+    addCommonStringsToDeinterpolate();
+  }
+
   @VisibleForTesting
   static final Set<Class<? extends Throwable>> THROWABLES_TO_DEINTERPOLATE = new HashSet<>();
 
@@ -113,7 +115,9 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   }
 
   public static void addStringForDeinterpolation(final String string) {
-    STRINGS_TO_DEINTERPOLATE.add(string);
+    if (string != null) {
+      STRINGS_TO_DEINTERPOLATE.add(string);
+    }
   }
 
   public static void addAllStringsInConfigForDeinterpolation(final JsonNode node) {
@@ -130,6 +134,17 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   // properly
   protected void terminate() {
     System.exit(1);
+  }
+
+  @VisibleForTesting
+  static void addCommonStringsToDeinterpolate() {
+    // Add some common strings to deinterpolate, regardless of what the connector is doing
+    STRINGS_TO_DEINTERPOLATE.add("description");
+    STRINGS_TO_DEINTERPOLATE.add("id");
+    STRINGS_TO_DEINTERPOLATE.add("location");
+    STRINGS_TO_DEINTERPOLATE.add("name");
+    STRINGS_TO_DEINTERPOLATE.add("status");
+    STRINGS_TO_DEINTERPOLATE.add("type");
   }
 
 }
