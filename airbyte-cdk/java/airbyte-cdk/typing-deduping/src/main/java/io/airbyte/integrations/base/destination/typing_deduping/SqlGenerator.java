@@ -9,8 +9,6 @@ import java.util.Optional;
 
 public interface SqlGenerator<DialectTableDefinition> {
 
-  String SOFT_RESET_SUFFIX = "_ab_soft_reset";
-
   StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride);
 
   default ColumnId buildColumnId(final String name) {
@@ -25,7 +23,7 @@ public interface SqlGenerator<DialectTableDefinition> {
    * The generated SQL should throw an exception if the table already exists and {@code force} is
    * false. Callers should use
    * {@link #existingSchemaMatchesStreamConfig(StreamConfig, java.lang.Object)} if the table is known
-   * to exist, and potentially {@link #softReset(StreamConfig)}.
+   * to exist, and potentially softReset
    *
    * @param suffix A suffix to add to the stream name. Useful for full refresh overwrite syncs, where
    *        we write the entire sync to a temp table.
@@ -45,15 +43,6 @@ public interface SqlGenerator<DialectTableDefinition> {
   boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable);
 
   /**
-   * SQL Statement which will rebuild the final table using the raw table data. Should not cause data
-   * downtime. Typically this will resemble "create tmp_table; update raw_table set loaded_at=null;
-   * (t+d into tmp table); (overwrite final table from tmp table);"
-   *
-   * @param stream the stream to rebuild
-   */
-  String softReset(final StreamConfig stream);
-
-  /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
    * <p>
    * Responsible for:
@@ -71,12 +60,17 @@ public interface SqlGenerator<DialectTableDefinition> {
    * @param finalSuffix the suffix of the final table to write to. If empty string, writes to the
    *        final table directly. Useful for full refresh overwrite syncs, where we write the entire
    *        sync to a temp table and then swap it into the final table at the end.
+   *
    * @param minRawTimestamp The latest _airbyte_extracted_at for which all raw records with that
    *        timestamp have already been typed+deduped. Implementations MAY use this value in a
    *        {@code _airbyte_extracted_at > minRawTimestamp} filter on the raw table to improve query
    *        performance.
+   * @param useExpensiveSaferCasting often the data coming from the source can be faithfully
+   *        represented in the destination without issue, and using a "CAST" expression works fine,
+   *        however sometimes we get badly typed data. In these cases we can use a more expensive
+   *        query which handles casting exceptions.
    */
-  String updateTable(final StreamConfig stream, String finalSuffix, Optional<Instant> minRawTimestamp);
+  String updateTable(final StreamConfig stream, String finalSuffix, Optional<Instant> minRawTimestamp, final boolean useExpensiveSaferCasting);
 
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.
@@ -96,5 +90,12 @@ public interface SqlGenerator<DialectTableDefinition> {
    * @return a string containing the necessary sql to migrate
    */
   String migrateFromV1toV2(StreamId streamId, String namespace, String tableName);
+
+  /**
+   * Typically we need to create a soft reset temporary table and clear loaded at values
+   *
+   * @return
+   */
+  String prepareTablesForSoftReset(final StreamConfig stream);
 
 }
