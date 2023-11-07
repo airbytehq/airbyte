@@ -124,7 +124,7 @@ class DefaultErrorHandler(ErrorHandler):
     def max_retries(self, value: int) -> None:
         # Covers the case where max_retries is not provided in the constructor, which causes the property object
         # to be set which we need to avoid doing
-        if not isinstance(value, property) and value is not None:
+        if not isinstance(value, property):
             self._max_retries = value
 
     def interpret_response(self, response: requests.Response) -> ResponseStatus:
