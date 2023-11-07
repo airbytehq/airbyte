@@ -11,6 +11,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeTransaction;
 import io.airbyte.integrations.base.destination.typing_deduping.V2TableMigrator;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.SQLException;
@@ -61,7 +62,7 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator {
           "Executing upcasing migration for {}.{}",
           streamConfig.id().originalNamespace(),
           streamConfig.id().originalName());
-      handler.execute(generator.softReset(streamConfig));
+      TypeAndDedupeTransaction.executeSoftReset(generator, handler, streamConfig);
     }
   }
 
