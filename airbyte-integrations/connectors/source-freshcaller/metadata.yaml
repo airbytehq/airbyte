@@ -1,7 +1,7 @@
 data:
   connectorSubtype: api
   connectorType: source
-  definitionId: c9e9b603-4ced-463a-9b69-1b30fa8e0dd0
+  definitionId: 8a5d48f6-03bb-4038-a942-a8d3f175cca3
   dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-freshcaller
   githubIssueLabel: source-freshcaller
