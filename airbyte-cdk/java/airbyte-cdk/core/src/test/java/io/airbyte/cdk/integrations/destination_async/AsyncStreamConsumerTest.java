@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.destination_async;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
@@ -185,7 +186,7 @@ class AsyncStreamConsumerTest {
     consumer = new AsyncStreamConsumer(
         m -> {},
         () -> {},
-        () -> {},
+        (hasFailed) -> {},
         flushFunction,
         CATALOG,
         new BufferManager(1024 * 10),
@@ -364,7 +365,7 @@ class AsyncStreamConsumerTest {
 
   private void verifyStartAndClose() throws Exception {
     verify(onStart).call();
-    verify(onClose).call();
+    verify(onClose).accept(any());
   }
 
   @SuppressWarnings({"unchecked", "SameParameterValue"})

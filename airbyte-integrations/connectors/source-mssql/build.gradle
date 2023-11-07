@@ -4,9 +4,15 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.4.1'
     features = ['db-sources']
     useLocalCdk = false
+}
+
+configurations.all {
+    resolutionStrategy {
+        force libs.jooq
+    }
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -19,7 +25,6 @@ application {
 dependencies {
     implementation libs.postgresql
 
-    implementation libs.airbyte.protocol
 
     implementation libs.debezium.sqlserver
     implementation 'com.microsoft.sqlserver:mssql-jdbc:10.2.1.jre8'
@@ -27,4 +32,5 @@ dependencies {
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation libs.testcontainers.mssqlserver
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
 }

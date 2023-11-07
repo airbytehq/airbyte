@@ -32,6 +32,9 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         refresh_request_body: Mapping[str, Any] = None,
         grant_type: str = "refresh_token",
         token_expiry_is_time_of_expiration: bool = False,
+        refresh_token_error_status_codes: Tuple[int, ...] = (),
+        refresh_token_error_key: str = "",
+        refresh_token_error_values: Tuple[str, ...] = (),
     ):
         self._token_refresh_endpoint = token_refresh_endpoint
         self._client_secret = client_secret
@@ -47,6 +50,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         self._token_expiry_date_format = token_expiry_date_format
         self._token_expiry_is_time_of_expiration = token_expiry_is_time_of_expiration
         self._access_token = None
+        super().__init__(refresh_token_error_status_codes, refresh_token_error_key, refresh_token_error_values)
 
     def get_token_refresh_endpoint(self) -> str:
         return self._token_refresh_endpoint
@@ -103,8 +107,9 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
     Authenticator that should be used for API implementing single use refresh tokens:
     when refreshing access token some API returns a new refresh token that needs to used in the next refresh flow.
     This authenticator updates the configuration with new refresh token by emitting Airbyte control message from an observed mutation.
-    By default this authenticator expects a connector config with a"credentials" field with the following nested fields: client_id, client_secret, refresh_token.
-    This behavior can be changed by defining custom config path (using dpath paths) in client_id_config_path, client_secret_config_path, refresh_token_config_path constructor arguments.
+    By default, this authenticator expects a connector config with a "credentials" field with the following nested fields: client_id,
+    client_secret, refresh_token. This behavior can be changed by defining custom config path (using dpath paths) in client_id_config_path,
+    client_secret_config_path, refresh_token_config_path constructor arguments.
     """
 
     def __init__(
@@ -125,9 +130,11 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         token_expiry_date_format: Optional[str] = None,
         message_repository: MessageRepository = NoopMessageRepository(),
         token_expiry_is_time_of_expiration: bool = False,
+        refresh_token_error_status_codes: Tuple[int, ...] = (),
+        refresh_token_error_key: str = "",
+        refresh_token_error_values: Tuple[str, ...] = (),
     ):
         """
-
         Args:
             connector_config (Mapping[str, Any]): The full connector configuration
             token_refresh_endpoint (str): Full URL to the token refresh endpoint
@@ -170,6 +177,9 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             grant_type=grant_type,
             token_expiry_date_format=token_expiry_date_format,
             token_expiry_is_time_of_expiration=token_expiry_is_time_of_expiration,
+            refresh_token_error_status_codes=refresh_token_error_status_codes,
+            refresh_token_error_key=refresh_token_error_key,
+            refresh_token_error_values=refresh_token_error_values,
         )
 
     def get_refresh_token_name(self) -> str:

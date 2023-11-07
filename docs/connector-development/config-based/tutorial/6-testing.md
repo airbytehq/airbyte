@@ -27,11 +27,10 @@ and `integration_tests/abnormal_state.json` with
 }
 ```
 
-You can run the acceptance tests with the following commands:
+You can run the [acceptance tests](https://github.com/airbytehq/airbyte/blob/master/docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md#L1) with the following commands using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1):
 
 ```bash
-docker build . -t airbyte/source-exchange-rates-tutorial:dev
-python -m pytest integration_tests -p integration_tests.acceptance
+airbyte-ci connectors --use-remote-secrets=false --name source-exchange-rates-tutorial test
 ```
 
 ## Next steps:

@@ -4,22 +4,29 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.4.1'
     features = ['db-sources']
     useLocalCdk = false
 }
 
 airbyteJavaConnector.addCdkDependencies()
 
+configurations.all {
+    resolutionStrategy {
+        force libs.jooq
+    }
+}
+
 application {
-    mainClass = 'io.airbyte.integrations.source.mssql.MssqlSourceStrictEncrypt'
+    mainClass = 'io.airbyte.integrations.source.mssql_strict_encrypt.MssqlSourceStrictEncrypt'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:source-mssql')
+    implementation libs.jooq
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation libs.testcontainers.mssqlserver
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
 }

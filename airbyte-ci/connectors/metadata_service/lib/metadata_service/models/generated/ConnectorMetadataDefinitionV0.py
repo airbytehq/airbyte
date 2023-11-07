@@ -217,7 +217,16 @@ class Data(BaseModel):
         description="The date when this connector was first released, in yyyy-mm-dd format.",
     )
     protocolVersion: Optional[str] = Field(None, description="the Airbyte Protocol version supported by the connector")
-    connectorSubtype: Literal["api", "database", "file", "custom", "message_queue", "unknown"]
+    connectorSubtype: Literal[
+        "api",
+        "database",
+        "datalake",
+        "file",
+        "custom",
+        "message_queue",
+        "unknown",
+        "vectorstore",
+    ]
     releaseStage: ReleaseStage
     supportLevel: Optional[SupportLevel] = None
     tags: Optional[List[str]] = Field(

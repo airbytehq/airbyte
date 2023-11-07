@@ -110,6 +110,7 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 3.4.1 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 3.4.0   | 2023-06-09 | [25913](https://github.com/airbytehq/airbyte/pull/26203) | Add Stream `DisplayCreatives`                                                                                   |
 | 3.3.0   | 2023-09-22 | [30679](https://github.com/airbytehq/airbyte/pull/30679) | Fix unexpected column for `SponsoredProductCampaigns` and `SponsoredBrandsKeywords`                             |
 | 3.2.0   | 2023-09-18 | [30517](https://github.com/airbytehq/airbyte/pull/30517) | Add suggested streams; fix unexpected column issue                                                              |

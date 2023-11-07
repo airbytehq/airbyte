@@ -161,6 +161,3 @@ class TestAirtableStream:
         requests_mock.get(url, status_code=200, json=streams_json_response)
         response = requests.get(url)
         assert list(stream.parse_response(response)) == streams_processed_response
-
-
-#

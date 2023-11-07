@@ -2,9 +2,16 @@
 
 This page contains the setup guide and reference information for the Bing Ads source connector.
 
+## Prerequisites
+- Microsoft Advertising account
+- Microsoft Developer Token
+- Reports start date
+
 ## Setup guide
 
-### Step 1: Set up Bing Ads
+<!-- env:oss -->
+
+For Airbyte Open Source set up your application to get **Client ID**, **Client Secret**, **Refresh Token** 
 
 1. [Register your application](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-register?view=bingads-13) in the Azure portal.
 2. [Request user consent](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13l) to get the authorization code.
@@ -16,8 +23,16 @@ The refresh token expires in 90 days. Repeat the authorization process to get a 
 Please be sure to authenticate with the email (personal or work) that you used to sign in to the Bing ads/Microsoft ads platform.
 :::
 
-4. Get your [Microsoft developer token](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token).
-5. If your OAuth app has a custom tenant and you cannot use Microsoft’s recommended common tenant, use the custom tenant in the **Tenant ID** field when you set up the connector.
+<!-- /env:oss -->
+
+### Step 1: Set up Bing Ads
+
+1. Get your [Microsoft developer token](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token). To use Bing Ads APIs, you must have a developer token and valid user credentials. See [Microsoft Advertising docs](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token) for more info.
+   1. Sign in with [Super Admin](https://learn.microsoft.com/en-us/advertising/guides/account-hierarchy-permissions?view=bingads-13#user-roles-permissions) credentials at the [Microsoft Advertising Developer Portal](https://developers.ads.microsoft.com/Account) account tab. 
+   2. Choose the user that you want associated with the developer token. Typically an application only needs one universal token regardless how many users will be supported. 
+   3. Click on the Request Token button.
+
+2. If your OAuth app has a custom tenant, and you cannot use Microsoft’s recommended common tenant, use the custom tenant in the **Tenant ID** field when you set up the connector.
 
 :::info
 
@@ -74,38 +89,69 @@ The Bing Ads source connector supports the following streams. For more informati
 
 ### Basic streams
 
-- [accounts](https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13)
-- [ad_groups](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13)
-- [ads](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13)
-- [campaigns](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13)
+- [Accounts](https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13)
+- [Ad Groups](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13)
+- [Ad Group Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13)
+- [Ads](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13)
+- [App Install Ads](https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13)
+- [App Install Ad Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13)
+- [Campaigns](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13)
+- [Campaign Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/campaign-label?view=bingads-13)
+- [Keywords](https://learn.microsoft.com/en-us/advertising/bulk-service/keyword?view=bingads-13)
+- [Keyword Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13)
+- [Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13)
 
 ### Report Streams
 
-- [account_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [account_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [account_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [account_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [ad_group_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [ad_group_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [ad_group_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [ad_group_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [ad_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
-- [ad_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
-- [ad_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
-- [ad_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
-- [geographic_performance_report_hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
-- [geographic_performance_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
-- [geographic_performance_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
-- [geographic_performance_report_monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
-- [budget_summary_report](https://docs.microsoft.com/en-us/advertising/reporting-service/budgetsummaryreportrequest?view=bingads-13)
-- [campaign_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [campaign_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [campaign_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [campaign_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [keyword_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
-- [keyword_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
-- [keyword_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
-- [keyword_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [Account Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Impression Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Impression Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Impression Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Impression Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Ad Group Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Impression Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Impression Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Impression Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Impression Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [Ad Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [Ad Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [Ad Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [Age Gender Audience Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
+- [Age Gender Audience Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
+- [Age Gender Audience Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
+- [Age Gender Audience Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
+- [Geographic Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [Geographic Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [Geographic Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [Geographic Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [Budget Summary Report](https://docs.microsoft.com/en-us/advertising/reporting-service/budgetsummaryreportrequest?view=bingads-13)
+- [Campaign Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Impression Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Impression Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Impression Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Impression Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Keyword Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [Keyword Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [Keyword Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [Keyword Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [User Location Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
+- [User Location Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
+- [User Location Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
+- [User Location Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
+- [Search Query Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
+- [Search Query Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
+- [Search Query Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
+- [Search Query Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
 
 ### Report aggregation
 
@@ -123,6 +169,21 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.11.0  | 2023-11-06 | [32201](https://github.com/airbytehq/airbyte/pull/32201)                                                                         | Skip broken CSV report files                                                                                                                 |
+| 1.10.0  | 2023-11-06 | [32148](https://github.com/airbytehq/airbyte/pull/32148)                                                                         | Add new fields to stream Ads: "BusinessName", "CallToAction", "Headline", "Images", "Videos", "Text"                                         |
+| 1.9.0   | 2023-11-03 | [32131](https://github.com/airbytehq/airbyte/pull/32131)                                                                         | Add  "CampaignId", "AccountId", "CustomerId" fields to Ad Groups, Ads and Campaigns streams.                                                 |
+| 1.8.0   | 2023-11-02 | [32059](https://github.com/airbytehq/airbyte/pull/32059)                                                                         | Add new streams `CampaignImpressionPerformanceReport` (daily, hourly, weekly, monthly)                                                       |
+| 1.7.1   | 2023-11-02 | [32088](https://github.com/airbytehq/airbyte/pull/32088)                                                                         | Raise config error when user does not have accounts                                                                                          |
+| 1.7.0   | 2023-11-01 | [32027](https://github.com/airbytehq/airbyte/pull/32027)                                                                         | Add new streams `AdGroupImpressionPerformanceReport`                                                                                         |
+| 1.6.0   | 2023-10-31 | [32008](https://github.com/airbytehq/airbyte/pull/32008)                                                                         | Add new streams `Keywords`                                                                                                                   |
+| 1.5.0   | 2023-10-30 | [31952](https://github.com/airbytehq/airbyte/pull/31952)                                                                         | Add new streams `Labels`,  `App install ads`, `Keyword Labels`, `Campaign Labels`, `App Install Ad Labels`, `Ad Group Labels`                |
+| 1.4.0   | 2023-10-27 | [31885](https://github.com/airbytehq/airbyte/pull/31885)                                                                         | Add new stream: `AccountImpressionPerformanceReport` (daily, hourly, weekly, monthly)                                                        |
+| 1.3.0   | 2023-10-26 | [31837](https://github.com/airbytehq/airbyte/pull/31837)                                                                         | Add new stream: `UserLocationPerformanceReport` (daily, hourly, weekly, monthly)                                                             |
+| 1.2.0   | 2023-10-24 | [31783](https://github.com/airbytehq/airbyte/pull/31783)                                                                         | Add new stream: `SearchQueryPerformanceReport` (daily, hourly, weekly, monthly)                                                              |
+| 1.1.0   | 2023-10-24 | [31712](https://github.com/airbytehq/airbyte/pull/31712)                                                                         | Add new stream: `AgeGenderAudienceReport` (daily, hourly, weekly, monthly)                                                                   |
+| 1.0.2   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599)                                                                         | Base image migration: remove Dockerfile and use the python-connector-base image                                                              |
+| 1.0.1   | 2023-10-16 | [31432](https://github.com/airbytehq/airbyte/pull/31432)                                                                         | Remove primary keys from the geographic performance reports - complete what was missed in version 1.0.0                                      |
+| 1.0.0   | 2023-10-11 | [31277](https://github.com/airbytehq/airbyte/pull/31277)                                                                         | Remove primary keys from the geographic performance reports.                                                                                 |
 | 0.2.3   | 2023-09-28 | [30834](https://github.com/airbytehq/airbyte/pull/30834)                                                                         | Wrap auth error with the config error.                                                                                                       |
 | 0.2.2   | 2023-09-27 | [30791](https://github.com/airbytehq/airbyte/pull/30791)                                                                         | Fix missing fields for geographic performance reports.                                                                                       |
 | 0.2.1   | 2023-09-04 | [30128](https://github.com/airbytehq/airbyte/pull/30128)                                                                         | Add increasing download timeout if ReportingDownloadException occurs                                                                         |

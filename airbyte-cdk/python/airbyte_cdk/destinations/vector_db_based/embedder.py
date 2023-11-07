@@ -159,7 +159,8 @@ class OpenAICompatibleEmbedder(Embedder):
         super().__init__()
         self.config = config
         # Client is set internally
-        self.embeddings = LocalAIEmbeddings(model=config.model_name, openai_api_key=config.api_key, openai_api_base=config.base_url, max_retries=15)  # type: ignore
+        # Always set an API key even if there is none defined in the config because the validator will fail otherwise. Embedding APIs that don't require an API key don't fail if one is provided, so this is not breaking usage.
+        self.embeddings = LocalAIEmbeddings(model=config.model_name, openai_api_key=config.api_key or "dummy-api-key", openai_api_base=config.base_url, max_retries=15)  # type: ignore
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")

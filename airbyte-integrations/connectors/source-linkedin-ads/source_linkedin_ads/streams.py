@@ -400,6 +400,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     # For Analytics streams the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc] + `end_date`
     primary_key = ["pivotValue", "end_date"]
     cursor_field = "end_date"
+    records_limit = 15000
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ad_analytics")
@@ -439,6 +440,20 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         params.update(**update_analytics_params(stream_slice))
         params[self.search_param] = f"List(urn%3Ali%3A{self.search_param_value}%3A{self.get_primary_key_from_slice(stream_slice)})"
         return urlencode(params, safe="():,%")
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Pagination is not supported
+        (See Restrictions: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?view=li-lms-2023-09&tabs=http#restrictions)
+        """
+        parsed_response = response.json()
+        if len(parsed_response.get("elements")) < self.records_limit:
+            return None
+        raise Exception(
+            f"Limit {self.records_limit} elements exceeded. "
+            f"Try to request your data in more granular pieces. "
+            f"(For example switch `Time Granularity` from MONTHLY to DAILY)"
+        )
 
     def get_primary_key_from_slice(self, stream_slice) -> str:
         return stream_slice.get(self.primary_slice_key)

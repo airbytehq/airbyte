@@ -17,3 +17,6 @@ class Record:
         if not isinstance(other, Record):
             return False
         return self.data == other.data
+
+    def __repr__(self) -> str:
+        return f"Record(data={self.data})"

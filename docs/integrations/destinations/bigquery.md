@@ -70,13 +70,27 @@ The BigQuery destination connector supports the following [sync modes](https://d
 
 ## Output schema
 
-Airbyte outputs each stream into its own table in BigQuery. Each table contains three columns:
+Airbyte outputs each stream into its own raw table in `airbyte_internal` dataset by default (can be overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_ deduplicated.
 
-- `_airbyte_ab_id`: A UUID assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
-- `_airbyte_emitted_at`: A timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
-- `_airbyte_data`: A JSON blob representing the event data. The column type in BigQuery is `String`.
+### Raw Table schema
 
-The output tables in BigQuery are partitioned and clustered by the Time-unit column `_airbyte_emitted_at` at a daily granularity. Partitions boundaries are based on UTC time.
+| Airbyte field          | Description                                                        | Column type              |
+|------------------------|--------------------------------------------------------------------|--------------------------|
+| \_airbyte_raw_id       | A UUID assigned to each processed event                            | STRING                   |
+| \_airbyte_extracted_at | A timestamp for when the event was pulled from the data source     | TIMESTAMP                |
+| \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP                |
+| \_airbyte_data         | A JSON blob with the event data.                                   | STRING                   |
+
+**Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table could be subject to change in future versions.
+
+### Final Table schema
+
+- `airbyte_raw_id`: A UUID assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
+- `airbyte_extracted_at`: A timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
+- `_airbyte_meta`: A JSON blob representing typing errors. You can query these results to audit misformatted or unexpected data. The column type in BigQuery is `JSON`.
+... and a column of the proper data type for each of the top-level properties from your source's schema.  Arrays and Objects will remain as JSON columns in BigQuery. Learn more about Typing and Deduping [here](/understanding-airbyte/typing-deduping)
+
+The output tables in BigQuery are partitioned by the Time-unit column `airbyte_extracted_at` at a daily granularity and clustered by `airbyte_extracted_at` and the table Primary Keys. Partitions boundaries are based on UTC time.
 This is useful to limit the number of partitions scanned when querying these partitioned tables, by using a predicate filter (a `WHERE` clause). Filters on the partitioning column are used to prune the partitions and reduce the query cost. (The parameter **Require partition filter** is not enabled by Airbyte, but you may toggle it by updating the produced tables.)
 
 ## BigQuery Naming Conventions
@@ -126,6 +140,20 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.8   | 2023-11-06 | [\#32026](https://github.com/airbytehq/airbyte/pull/32026) | Move SAFE_CAST transaction to separate transactions                                                                                                             |
+| 2.3.7   | 2023-11-06 | [\#32190](https://github.com/airbytehq/airbyte/pull/32190) | Further improve error reporting                                                                                                                                 |
+| 2.3.6   | 2023-11-06 | [\#32193](https://github.com/airbytehq/airbyte/pull/32193) | Adopt java CDK version 0.4.1.                                                                                                                                   |
+| 2.3.5   | 2023-11-02 | [\#31983](https://github.com/airbytehq/airbyte/pull/31983) | Improve error reporting                                                                                                                                         |
+| 2.3.4   | 2023-10-31 | [\#32010](https://github.com/airbytehq/airbyte/pull/32010) | Add additional data centers.                                                                                                                                    |
+| 2.3.3   | 2023-10-30 | [\#31985](https://github.com/airbytehq/airbyte/pull/31985) | Delay upgrade deadline to Nov 7                                                                                                                                 |
+| 2.3.2   | 2023-10-30 | [\#31960](https://github.com/airbytehq/airbyte/pull/31960) | Adopt java CDK version 0.2.0.                                                                                                                                   |
+| 2.3.1   | 2023-10-27 | [\#31529](https://github.com/airbytehq/airbyte/pull/31529) | Performance enhancement (switch to a `merge` statement for incremental-dedup syncs)                                                                             |
+| 2.3.0   | 2023-10-25 | [\#31686](https://github.com/airbytehq/airbyte/pull/31686) | Opt out flag for typed and deduped tables                                                                                                                       |
+| 2.2.0   | 2023-10-25 | [\#31520](https://github.com/airbytehq/airbyte/pull/31520) | Stop deduping raw table                                                                                                                                         |
+| 2.1.6   | 2023-10-23 | [\#31717](https://github.com/airbytehq/airbyte/pull/31717) | Remove inadvertent Destination v2 check                                                                                                                         |
+| 2.1.5   | 2023-10-17 | [\#30069](https://github.com/airbytehq/airbyte/pull/30069) | Staging destination async                                                                                                                                       |
+| 2.1.4   | 2023-10-17 | [\#31191](https://github.com/airbytehq/airbyte/pull/31191) | Improve typing+deduping performance by filtering new raw records on extracted_at                                                                                |
+| 2.1.3   | 2023-10-10 | [\#31358](https://github.com/airbytehq/airbyte/pull/31358) | Stringify array and object types for type:string column in final table                                                                                          |
 | 2.1.2   | 2023-10-10 | [\#31194](https://github.com/airbytehq/airbyte/pull/31194) | Deallocate unused per stream buffer memory when empty                                                                                                           |
 | 2.1.1   | 2023-10-10 | [\#31083](https://github.com/airbytehq/airbyte/pull/31083) | Fix precision of numeric values in async destinations                                                                                                           |
 | 2.1.0   | 2023-10-09 | [\#31149](https://github.com/airbytehq/airbyte/pull/31149) | No longer fail syncs when PKs are null - try do dedupe anyway                                                                                                   |

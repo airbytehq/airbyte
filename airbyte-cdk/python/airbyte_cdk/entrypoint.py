@@ -177,6 +177,13 @@ class AirbyteEntrypoint(object):
         return airbyte_message.json(exclude_unset=True)
 
     @classmethod
+    def extract_state(cls, args: List[str]) -> Optional[Any]:
+        parsed_args = cls.parse_args(args)
+        if hasattr(parsed_args, "state"):
+            return parsed_args.state
+        return None
+
+    @classmethod
     def extract_catalog(cls, args: List[str]) -> Optional[Any]:
         parsed_args = cls.parse_args(args)
         if hasattr(parsed_args, "catalog"):
