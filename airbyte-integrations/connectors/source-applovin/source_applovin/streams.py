@@ -139,7 +139,6 @@ class Targets(HttpSubStream, ApplovinStream):
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         record = response.json()
         record["campaign_id"] = stream_slice["campaign_id"]
-        print(record)
         yield record
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
