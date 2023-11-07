@@ -62,6 +62,7 @@ function getSourceConnectors() {
   return getFilenamesInDir("integrations/sources/", sourcesDocs, [
     "readme",
     "postgres",
+    "mysql"
   ]);
 }
 
@@ -88,6 +89,22 @@ const sourcePostgres = {
       type: "doc",
       label: "Troubleshooting",
       id: "integrations/sources/postgres/postgres-troubleshooting",
+    },
+  ],
+};
+
+const sourceMysql = {
+  type: "category",
+  label: "MySQL",
+  link: {
+    type: "doc",
+    id: "integrations/sources/mysql",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Troubleshooting",
+      id: "integrations/sources/mysql/mysql-troubleshooting",
     },
   ],
 };
@@ -258,7 +275,7 @@ const connectorCatalog = {
       link: {
         type: "generated-index",
       },
-      items: [sourcePostgres, getSourceConnectors()],
+      items: [sourcePostgres, sourceMysql, getSourceConnectors()],
     },
     {
       type: "category",
