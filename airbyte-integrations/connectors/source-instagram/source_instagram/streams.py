@@ -393,8 +393,10 @@ class MediaInsights(Media):
                 # then no reason to make inquiries for each Media further, since they were published even earlier.
                 return None
             elif (
-                error_code == 100 and error_subcode == 33
-                or error_code == 10 and error_message == "(#10) Application does not have permission for this action"
+                error_code == 100
+                and error_subcode == 33
+                or error_code == 10
+                and error_message == "(#10) Application does not have permission for this action"
             ):
                 self.logger.error(f"Check provided permissions for {account_id}: {error_message}")
                 return None
