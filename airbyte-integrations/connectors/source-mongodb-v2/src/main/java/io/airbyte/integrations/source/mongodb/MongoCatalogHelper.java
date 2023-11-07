@@ -14,8 +14,8 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Collection of utility methods for generating the {@link AirbyteCatalog}.
@@ -67,8 +67,10 @@ public class MongoCatalogHelper {
    * @param fields The fields associated with the stream.
    * @return The configured {@link AirbyteStream} for this source.
    */
-  public static AirbyteStream buildPackedAirbyteStream(final String streamName, final String streamNamespace) {
-    return addDataMetadataColumn(buildAirbyteStream(streamName, streamNamespace, Collections.EMPTY_LIST));
+  public static AirbyteStream buildPackedAirbyteStream(final String streamName, final String streamNamespace, final List<Field> fields) {
+    // The packed airbyte catalog should only contain the _id field. 
+    final List<Field> idFieldList = fields.stream().filter(field -> field.getName() == "_id").collect(Collectors.toList());
+    return addDataMetadataColumn(buildAirbyteStream(streamName, streamNamespace, idFieldList));
   }
 
   /**

@@ -17,7 +17,6 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -195,7 +194,7 @@ public class MongoUtil {
    */
   private static AirbyteStream createAirbyteStream(final String collectionName, final String databaseName, final List<Field> fields, final boolean isPacked) {
     if (isPacked) {
-      return MongoCatalogHelper.buildPackedAirbyteStream(collectionName, databaseName);
+      return MongoCatalogHelper.buildPackedAirbyteStream(collectionName, databaseName, fields);
     } else {
       return MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, fields);
     }
@@ -222,13 +221,9 @@ public class MongoUtil {
      * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
      */
     final MongoCollection<Document> mongoCollection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
-    if (!isPacked) {
-      final Set<Field> discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize));
-      return Optional
-          .ofNullable(!discoveredFields.isEmpty() ? createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields), isPacked) : null);
-    } else {
-      return Optional.of(createAirbyteStream(collectionName, databaseName, Collections.EMPTY_LIST, isPacked));
-    }
+    final Set<Field> discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize));
+    return Optional
+        .ofNullable(!discoveredFields.isEmpty() ? createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields), isPacked) : null);
   }
 
   private static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection, final Integer sampleSize) {
