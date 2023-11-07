@@ -81,8 +81,7 @@ class HttpRequester(Requester):
         self.decoder = JsonDecoder(parameters={})
         self._session = requests.Session()
         self._session.mount(
-            'https://',
-            requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
+            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
         )
 
         if isinstance(self._authenticator, AuthBase):

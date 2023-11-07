@@ -46,8 +46,7 @@ class HttpStream(Stream, ABC):
             self._session = requests.Session()
 
         self._session.mount(
-            'https://',
-            requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
+            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
         )
 
         self._authenticator: HttpAuthenticator = NoAuth()
