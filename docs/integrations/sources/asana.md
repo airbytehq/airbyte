@@ -22,7 +22,7 @@ This connector supports **OAuth** and **Personal Access Tokens**. Please follow 
 4. Authenticate using OAuth (recommended) or enter your `personal_access_token`.
 5. Click **Set up source**.
 
-### Syncing Multiple Projects
+#### Syncing Multiple Projects
 If you have access to multiple projects, Airbyte will sync data related to all projects you have access to. The ability to filter to specific projects is not available at this time.
 
 <!-- /env:cloud -->
