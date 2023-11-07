@@ -4,7 +4,7 @@
 
 import logging
 import typing
-from typing import Dict, Optional, Tuple, Mapping, Any
+from typing import Any, Dict, Mapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.sources.streams import Stream
