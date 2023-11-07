@@ -9,6 +9,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
     IncrementalStripeStream,
+    ParentIncrementalStipeLazySubStream,
     StripeLazySubStream,
     StripeStream,
     UpdatedCursorIncrementalStripeLazySubStream,
@@ -75,11 +76,10 @@ def invoice_line_items_fixture(invoices, stream_args):
     def mocker(args=stream_args, parent_stream=parent_stream):
         return StripeLazySubStream(
             name="invoice_line_items",
-            path=lambda self, *args, stream_slice, **kwargs: f"invoices/{stream_slice[self.parent_id]}/lines",
+            path=lambda self, stream_slice, *args, **kwargs: f"invoices/{stream_slice['parent']['id']}/lines",
             parent=parent_stream,
-            parent_id="invoice_id",
             sub_items_attr="lines",
-            add_parent_id=True,
+            slice_data_retriever=lambda record, stream_slice: {"invoice_id": stream_slice["parent"]["id"], **record},
             **args,
         )
 
@@ -137,11 +137,10 @@ def bank_accounts(customers, stream_args):
     def mocker(args=stream_args, parent_stream=parent_stream):
         return UpdatedCursorIncrementalStripeLazySubStream(
             name="bank_accounts",
-            path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice[self.parent_id]}/sources",
+            path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/sources",
             parent=parent_stream,
             event_types=["customer.source.created", "customer.source.expiring", "customer.source.updated", "customer.source.deleted"],
             legacy_cursor_field=None,
-            parent_id="customer_id",
             sub_items_attr="sources",
             extra_request_params={"object": "bank_account"},
             response_filter=lambda record: record["object"] == "bank_account",
@@ -199,10 +198,9 @@ def subscription_items_fixture(subscriptions, stream_args):
         return StripeLazySubStream(
             name="subscription_items",
             path="subscription_items",
-            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice[self.parent_id]},
+            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice['parent']['id']},
             parent=parent_stream,
             use_cache=False,
-            parent_id="subscription_id",
             sub_items_attr="items",
             **args,
         )
@@ -231,12 +229,54 @@ def application_fees_refunds_fixture(application_fees, stream_args):
     def mocker(args=stream_args, parent_stream=parent_stream):
         return UpdatedCursorIncrementalStripeLazySubStream(
             name="application_fees_refunds",
-            path=lambda self, stream_slice, *args, **kwargs: f"application_fees/{stream_slice[self.parent_id]}/refunds",
+            path=lambda self, stream_slice, *args, **kwargs: f"application_fees/{stream_slice['parent']['id']}/refunds",
             parent=parent_stream,
             event_types=["application_fee.refund.updated"],
-            parent_id="refund_id",
             sub_items_attr="refunds",
-            add_parent_id=True,
+            **args,
+        )
+
+    return mocker
+
+
+@pytest.fixture(name="checkout_sessions")
+def checkout_sessions_fixture(stream_args):
+    def mocker(args=stream_args):
+        return UpdatedCursorIncrementalStripeStream(
+            name="checkout_sessions",
+            path="checkout/sessions",
+            use_cache=False,
+            legacy_cursor_field="created",
+            event_types=[
+                "checkout.session.async_payment_failed",
+                "checkout.session.async_payment_succeeded",
+                "checkout.session.completed",
+                "checkout.session.expired",
+            ],
+            **args,
+        )
+
+    return mocker
+
+
+@pytest.fixture(name="checkout_sessions_line_items")
+def checkout_sessions_line_items_fixture(checkout_sessions, stream_args):
+    parent_stream = checkout_sessions()
+
+    def mocker(args=stream_args, parent_stream=parent_stream):
+        return ParentIncrementalStipeLazySubStream(
+            name="checkout_sessions_line_items",
+            path=lambda self, stream_slice, *args, **kwargs: f"checkout/sessions/{stream_slice['parent']['id']}/line_items",
+            parent=parent_stream,
+            expand_items=["data.discounts", "data.taxes"],
+            cursor_field="checkout_session_updated",
+            slice_data_retriever=lambda record, stream_slice: {
+                "checkout_session_id": stream_slice["parent"]["id"],
+                "checkout_session_expires_at": stream_slice["parent"]["expires_at"],
+                "checkout_session_created": stream_slice["parent"]["created"],
+                "checkout_session_updated": stream_slice["parent"]["updated"],
+                **record
+            },
             **args,
         )
 

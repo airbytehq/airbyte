@@ -117,24 +117,24 @@ Please be aware: this also means that any change older than 30 days will not be 
 
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
 However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
-- `BalanceTransactions`
-- `CheckoutSessionLineItems` (cursor field is `checkout_session_expires_at`)
+- `Balance Transactions`
 - `Events`
-- `FileLinks`
+- `File Links`
 - `Files`
 - `Refunds`
-- `SetupAttempts`
-- `ShippingRates`
+- `Setup Attempts`
+- `Shipping Rates`
 
 On the other hand, the following streams use the `updated` field value as a cursor:
 - `Application Fees`
 - `Application Fee Refunds`
 - `Authorizations`
-- `Bank accounts`
+- `Bank Accounts`
 - `Cardholders`
 - `Cards`
 - `Charges`
 - `Checkout Sessions`
+- `Checkout Session Line Items` (cursor field is `checkout_session_updated`)
 - `Coupons`
 - `Credit Notes`
 - `Customer Balance Transactions`
@@ -190,7 +190,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                              |
 |:--------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.5.2   | 2023-11-03 | [00000](https://github.com/airbytehq/airbyte/pull/00000/) | Fix multiple BankAccount issues                                                                                                                      |
+| 5.0.0   | 2023-11-07 | [32146](https://github.com/airbytehq/airbyte/pull/32146/) | Fix multiple issues regarding the `BankAccounts`, `Refunds`, `CheckoutSessions`, `CheckoutSessionsLineItems` streams.                                |
 | 4.5.1   | 2023-11-01 | [32056](https://github.com/airbytehq/airbyte/pull/32056/) | Use CDK version 0.52.8                                                                                                                               |
 | 4.5.0   | 2023-10-25 | [31327](https://github.com/airbytehq/airbyte/pull/31327/) | Use concurrent CDK when running in full-refresh                                                                                                      |
 | 4.4.2   | 2023-10-24 | [31764](https://github.com/airbytehq/airbyte/pull/31764)  | Base image migration: remove Dockerfile and use the python-connector-base image                                                                      |

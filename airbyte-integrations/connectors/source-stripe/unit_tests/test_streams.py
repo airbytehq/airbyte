@@ -5,7 +5,7 @@
 import freezegun
 import pendulum
 import pytest
-from source_stripe.streams import CheckoutSessionsLineItems, CustomerBalanceTransactions, Persons, SetupAttempts
+from source_stripe.streams import CustomerBalanceTransactions, Persons, SetupAttempts
 
 
 def test_request_headers(accounts):
@@ -17,7 +17,7 @@ def test_request_headers(accounts):
 lazy_substream_test_suite = (
     (
         {
-            "https://api.stripe.com/v1/invoices": {
+            "/v1/invoices": {
                 "has_more": False,
                 "object": "list",
                 "url": "/v1/invoices",
@@ -47,7 +47,7 @@ lazy_substream_test_suite = (
                     }
                 ],
             },
-            "https://api.stripe.com/v1/invoices/in_1KD6OVIEn5WyEQxn9xuASHsD/lines?starting_after=il_2": {
+            "/v1/invoices/in_1KD6OVIEn5WyEQxn9xuASHsD/lines?starting_after=il_2": {
                 "data": [
                     {
                         "id": "il_3",
@@ -72,7 +72,7 @@ lazy_substream_test_suite = (
     ),
     (
         {
-            "https://api.stripe.com/v1/subscriptions": {
+            "/v1/subscriptions": {
                 "has_more": False,
                 "object": "list",
                 "url": "/v1/subscriptions",
@@ -102,7 +102,7 @@ lazy_substream_test_suite = (
                     }
                 ],
             },
-            "https://api.stripe.com/v1/subscription_items?subscription=si_OptSP2o3XZUBpx&starting_after=si_2": {
+            "/v1/subscription_items?subscription=si_OptSP2o3XZUBpx&starting_after=si_2": {
                 "data": [
                     {
                         "id": "si_3",
@@ -127,7 +127,7 @@ lazy_substream_test_suite = (
     ),
     (
         {
-            "https://api.stripe.com/v1/customers?expand%5B%5D=data.sources": {
+            "/v1/customers?expand%5B%5D=data.sources": {
                 "has_more": False,
                 "object": "list",
                 "url": "/v1/customers",
@@ -156,7 +156,7 @@ lazy_substream_test_suite = (
                     }
                 ],
             },
-            "https://api.stripe.com/v1/customers/cus_HezytZRkaQJC8W/sources": {
+            "/v1/customers/cus_HezytZRkaQJC8W/sources": {
                 "data": [
                     {
                         "id": "cs_3",
@@ -184,7 +184,7 @@ lazy_substream_test_suite = (
     ),
     (
         {
-            "https://api.stripe.com/v1/application_fees": {
+            "/v1/application_fees": {
                 "has_more": False,
                 "object": "list",
                 "url": "/v1/application_fees",
@@ -214,7 +214,7 @@ lazy_substream_test_suite = (
                     }
                 ],
             },
-            "https://api.stripe.com/v1/application_fees/af_OptSP2o3XZUBpx/refunds": {
+            "/v1/application_fees/af_OptSP2o3XZUBpx/refunds": {
                 "data": [
                     {
                         "id": "fr_3",
@@ -230,16 +230,16 @@ lazy_substream_test_suite = (
         "application_fees",
         "application_fees_refunds",
         [
-            {"id": "fr_1", "object": "application_fee_refund", "refund_id": "af_OptSP2o3XZUBpx", "updated": 1692802815},
-            {"id": "fr_2", "object": "application_fee_refund", "refund_id": "af_OptSP2o3XZUBpx", "updated": 1692802815},
-            {"id": "fr_3", "object": "application_fee_refund", "refund_id": "af_OptSP2o3XZUBpx", "updated": 1692802815},
+            {"id": "fr_1", "object": "application_fee_refund", "updated": 1692802815},
+            {"id": "fr_2", "object": "application_fee_refund", "updated": 1692802815},
+            {"id": "fr_3", "object": "application_fee_refund", "updated": 1692802815},
         ],
         "full_refresh",
         {},
     ),
     (
         {
-            "https://api.stripe.com/v1/events?types%5B%5D=customer.source.created&types%5B%5D=customer.source.expiring&types"
+            "/v1/events?types%5B%5D=customer.source.created&types%5B%5D=customer.source.expiring&types"
             "%5B%5D=customer.source.updated&types%5B%5D=customer.source.deleted": {
                 "data": [
                     {
@@ -272,7 +272,7 @@ lazy_substream_test_suite = (
     ),
     (
         {
-            "https://api.stripe.com/v1/events?types%5B%5D=application_fee.refund.updated": {
+            "/v1/events?types%5B%5D=application_fee.refund.updated": {
                 "data": [
                     {
                         "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
@@ -325,12 +325,129 @@ lazy_substream_test_suite = (
         "incremental",
         {"updated": 1692802015},
     ),
+    (
+        {
+            "/v1/checkout/sessions": {
+                "has_more": False,
+                "object": "list",
+                "url": "/v1/checkout/sessions",
+                "data": [
+                    {
+                        "created": 1653341816,
+                        "expires_at": 1699444831,
+                        "id": "cs_vvhSo2LvGqT1K9GK0EcXtfsciJt",
+                        "object": "checkout_session",
+                        "total": 1,
+                    }
+                ],
+            },
+            "/v1/checkout/sessions/cs_vvhSo2LvGqT1K9GK0EcXtfsciJt/line_items?expand%5B%5D=data.discounts&expand%5B%5D=data.taxes": {
+                "has_more": False,
+                "object": "list",
+                "url": "/v1/checkout/sessions/cs_vvhSo2LvGqT1K9GK0EcXtfsciJt/line_items",
+                "data": [
+                    {
+                        "id": "li_1",
+                        "object": "line_item",
+                    },
+                    {
+                        "id": "li_2",
+                        "object": "line_item",
+                    }
+                ],
+            }
+        },
+        "checkout_sessions",
+        "checkout_sessions_line_items",
+        [
+            {
+                "object": "line_item",
+                "checkout_session_id": "cs_vvhSo2LvGqT1K9GK0EcXtfsciJt",
+                "id": "li_1",
+                "checkout_session_expires_at": 1699444831,
+                "checkout_session_created": 1653341816,
+                "checkout_session_updated": 1653341816,
+            },
+            {
+                "object": "line_item",
+                "checkout_session_id": "cs_vvhSo2LvGqT1K9GK0EcXtfsciJt",
+                "id": "li_2",
+                "checkout_session_expires_at": 1699444831,
+                "checkout_session_created": 1653341816,
+                "checkout_session_updated": 1653341816,
+            },
+        ],
+        "full_refresh",
+        {},
+    ),
+    (
+        {
+            "/v1/events?types%5B%5D=checkout.session.async_payment_failed&types%5B%5D=checkout.session.async_payment_succeeded&"
+            "types%5B%5D=checkout.session.completed&types%5B%5D=checkout.session.expired": {
+                "data": [
+                    {
+                        "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
+                        "object": "event",
+                        "api_version": "2020-08-27",
+                        "created": 1653341816,
+                        "data": {
+                            "object": {
+                                "object": "checkout_session",
+                                "id": "cs_vvhSo2LvGqT1K9GK0EcXtiJt",
+                                "created": 1653341716,
+                                "expires_at": 1699444831,
+                            }
+                        },
+                        "type": "checkout.session.completed",
+                    },
+                ],
+                "has_more": False,
+            },
+            "/v1/checkout/sessions/cs_vvhSo2LvGqT1K9GK0EcXtiJt/line_items?expand%5B%5D=data.discounts&expand%5B%5D=data.taxes": {
+                "has_more": False,
+                "object": "list",
+                "url": "/v1/checkout/sessions/cs_vvhSo2LvGqT1K9GK0EcXtiJt/line_items",
+                "data": [
+                    {
+                        "id": "li_1",
+                        "object": "line_item",
+                    },
+                    {
+                        "id": "li_2",
+                        "object": "line_item",
+                    }
+                ],
+            }
+        },
+        "checkout_sessions",
+        "checkout_sessions_line_items",
+        [
+            {
+                "object": "line_item",
+                "checkout_session_id": "cs_vvhSo2LvGqT1K9GK0EcXtiJt",
+                "id": "li_1",
+                "checkout_session_expires_at": 1699444831,
+                "checkout_session_created": 1653341716,
+                "checkout_session_updated": 1653341816,
+            },
+            {
+                "object": "line_item",
+                "checkout_session_id": "cs_vvhSo2LvGqT1K9GK0EcXtiJt",
+                "id": "li_2",
+                "checkout_session_expires_at": 1699444831,
+                "checkout_session_created": 1653341716,
+                "checkout_session_updated": 1653341816,
+            },
+        ],
+        "incremental",
+        {"checkout_session_updated": 1653300816}
+    )
 )
 
 
 @pytest.mark.parametrize("requests_mock_map, parent_stream_cls, stream_cls, expected_records, sync_mode, state", lazy_substream_test_suite)
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
-def test_lazy_sub_streams(
+def test_sub_streams(
     request, requests_mock, requests_mock_map, parent_stream_cls, stream_cls, expected_records, stream_args, sync_mode, state
 ):
     parent_stream_cls = request.getfixturevalue(parent_stream_cls)
@@ -504,50 +621,6 @@ def test_updated_cursor_incremental_stream_read_w_state(requests_mock, credit_no
         for record in stream.read_records("incremental", stream_state={"updated": pendulum.parse("2023-01-01T15:00:15Z").int_timestamp})
     ]
     assert records == [{"object": "credit_note", "invoice": "in_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1691629292}]
-
-
-def test_checkout_session_line_items(requests_mock):
-
-    session_id_missed = "cs_test_a165K4wNihuJlp2u3tknuohrvjAxyXFUB7nxZH3lwXRKJsadNEvIEWMUJ9"
-    session_id_exists = "cs_test_a1RjRHNyGUQOFVF3OkL8V8J0lZUASyVoCtsnZYG74VrBv3qz4245BLA1BP"
-
-    response_sessions = {
-        "data": [{"id": session_id_missed, "expires_at": 100_000}, {"id": session_id_exists, "expires_at": 100_000}],
-        "has_more": False,
-        "object": "list",
-        "url": "/v1/checkout/sessions",
-    }
-
-    response_sessions_line_items = {
-        "data": [{"id": "li_1JpAUUIEn5WyEQxnfGJT5MbL"}],
-        "has_more": False,
-        "object": "list",
-        "url": "/v1/checkout/sessions/{}/line_items".format(session_id_exists),
-    }
-
-    response_error = {
-        "error": {
-            "code": "resource_missing",
-            "doc_url": "https://stripe.com/docs/error-codes/resource-missing",
-            "message": "No such checkout session: '{}'".format(session_id_missed),
-            "param": "session",
-            "type": "invalid_request_error",
-        }
-    }
-
-    requests_mock.get("https://api.stripe.com/v1/checkout/sessions", json=response_sessions)
-    requests_mock.get(
-        "https://api.stripe.com/v1/checkout/sessions/{}/line_items".format(session_id_exists), json=response_sessions_line_items
-    )
-    requests_mock.get(
-        "https://api.stripe.com/v1/checkout/sessions/{}/line_items".format(session_id_missed), json=response_error, status_code=404
-    )
-
-    stream = CheckoutSessionsLineItems(start_date=100_100, account_id=None)
-    records = []
-    for slice_ in stream.stream_slices(sync_mode="full_refresh"):
-        records.extend(stream.read_records(sync_mode="full_refresh", stream_slice=slice_))
-    assert len(records) == 1
 
 
 def test_customer_balance_transactions_stream_slices(requests_mock, stream_args):

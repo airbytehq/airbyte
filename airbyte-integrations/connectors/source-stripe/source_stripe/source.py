@@ -17,11 +17,11 @@ from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_stripe.streams import (
-    CheckoutSessionsLineItems,
     CreatedCursorIncrementalStripeStream,
     CustomerBalanceTransactions,
     Events,
     IncrementalStripeStream,
+    ParentIncrementalStipeLazySubStream,
     Persons,
     SetupAttempts,
     StripeLazySubStream,
@@ -138,10 +138,9 @@ class SourceStripe(AbstractSource):
         subscription_items = StripeLazySubStream(
             name="subscription_items",
             path="subscription_items",
-            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice[self.parent_id]},
+            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice["parent"]["id"]},
             parent=subscriptions,
             use_cache=True,
-            parent_id="subscription_id",
             sub_items_attr="items",
             **args,
         )
@@ -179,8 +178,22 @@ class SourceStripe(AbstractSource):
             ],
             **args,
         )
+        checkout_sessions = UpdatedCursorIncrementalStripeStream(
+            name="checkout_sessions",
+            path="checkout/sessions",
+            use_cache=True,
+            legacy_cursor_field="created",
+            event_types=[
+                "checkout.session.async_payment_failed",
+                "checkout.session.async_payment_succeeded",
+                "checkout.session.completed",
+                "checkout.session.expired",
+            ],
+            **args,
+        )
+
         streams = [
-            CheckoutSessionsLineItems(**incremental_args),
+            checkout_sessions,
             CustomerBalanceTransactions(**args),
             Events(**incremental_args),
             UpdatedCursorIncrementalStripeStream(
@@ -209,19 +222,6 @@ class SourceStripe(AbstractSource):
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="file_links", path="file_links", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="refunds", path="refunds", **incremental_args),
-            UpdatedCursorIncrementalStripeStream(
-                name="checkout_sessions",
-                path="checkout/sessions",
-                use_cache=True,
-                legacy_cursor_field="created",
-                event_types=[
-                    "checkout.session.async_payment_failed",
-                    "checkout.session.async_payment_succeeded",
-                    "checkout.session.completed",
-                    "checkout.session.expired",
-                ],
-                **args,
-            ),
             UpdatedCursorIncrementalStripeStream(
                 name="payment_methods",
                 path="payment_methods",
@@ -388,45 +388,56 @@ class SourceStripe(AbstractSource):
             ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="application_fees_refunds",
-                path=lambda self, stream_slice, *args, **kwargs: f"application_fees/{stream_slice[self.parent_id]}/refunds",
+                path=lambda self, stream_slice, *args, **kwargs: f"application_fees/{stream_slice['parent']['id']}/refunds",
                 parent=application_fees,
                 event_types=["application_fee.refund.updated"],
-                parent_id="refund_id",
                 sub_items_attr="refunds",
-                add_parent_id=True,
                 **args,
             ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="bank_accounts",
-                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice[self.parent_id]}/sources",
+                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/sources",
                 parent=self.customers(expand_items=["data.sources"], **args),
                 event_types=["customer.source.created", "customer.source.expiring", "customer.source.updated", "customer.source.deleted"],
                 legacy_cursor_field=None,
-                parent_id="customer_id",
                 sub_items_attr="sources",
                 extra_request_params={"object": "bank_account"},
                 response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
+            ParentIncrementalStipeLazySubStream(
+                name="checkout_sessions_line_items",
+                path=lambda self, stream_slice, *args, **kwargs: f"checkout/sessions/{stream_slice['parent']['id']}/line_items",
+                parent=checkout_sessions,
+                expand_items=["data.discounts", "data.taxes"],
+                cursor_field="checkout_session_updated",
+                slice_data_retriever=lambda record, stream_slice: {
+                    "checkout_session_id": stream_slice["parent"]["id"],
+                    "checkout_session_expires_at": stream_slice["parent"]["expires_at"],
+                    "checkout_session_created": stream_slice["parent"]["created"],
+                    "checkout_session_updated": stream_slice["parent"]["updated"],
+                    **record,
+                },
+                **args,
+            ),
             StripeLazySubStream(
                 name="invoice_line_items",
-                path=lambda self, stream_slice, *args, **kwargs: f"invoices/{stream_slice[self.parent_id]}/lines",
+                path=lambda self, stream_slice, *args, **kwargs: f"invoices/{stream_slice['parent']['id']}/lines",
                 parent=invoices,
-                parent_id="invoice_id",
                 sub_items_attr="lines",
-                add_parent_id=True,
+                slice_data_retriever=lambda record, stream_slice: {"invoice_id": stream_slice["parent"]["id"], **record},
                 **args,
             ),
             subscription_items,
             StripeSubStream(
                 name="transfer_reversals",
-                path=lambda self, stream_slice, *args, **kwargs: f"transfers/{stream_slice.get('parent', {}).get('id')}/reversals",
+                path=lambda self, stream_slice, *args, **kwargs: f"transfers/{stream_slice['parent']['id']}/reversals",
                 parent=transfers,
                 **args,
             ),
             StripeSubStream(
                 name="usage_records",
-                path=lambda self, stream_slice, *args, **kwargs: f"subscription_items/{stream_slice.get('parent', {}).get('id')}/usage_record_summaries",
+                path=lambda self, stream_slice, *args, **kwargs: f"subscription_items/{stream_slice['parent']['id']}/usage_record_summaries",
                 parent=subscription_items,
                 primary_key=None,
                 **args,
