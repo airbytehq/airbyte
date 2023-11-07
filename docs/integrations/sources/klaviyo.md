@@ -21,7 +21,7 @@ This page contains the setup guide and reference information for the Klaviyo sou
 3. On the Set up the source page, select **Klaviyo** from the **Source type** dropdown.
 4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, all data will be replicated.
 7. Click **Set up source**.
 
 ## Supported sync modes
@@ -62,6 +62,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                   |
 |:---------|:-----------| :--------------------------------------------------------- |:------------------------------------------------------------------------------------------|
+| `2.0.0`  | 2023-11-03 | [32128](https://github.com/airbytehq/airbyte/pull/32128)   | Use the latest API for streams `campaigns`, `email_templates`, `events`, `flows`, `global_exclusions`, `lists`, and `metrics`|
 | `1.1.0`  | 2023-10-23 | [31710](https://github.com/airbytehq/airbyte/pull/31710)   | Make `start_date` config field optional                                                   |
 | `1.0.0`  | 2023-10-18 | [31565](https://github.com/airbytehq/airbyte/pull/31565)   | added new known fields for 'events' stream                                                |
 | `0.5.0`  | 2023-10-19 | [31611](https://github.com/airbytehq/airbyte/pull/31611)   | Add `date-time` format for `datetime` field in `Events` stream                            |
