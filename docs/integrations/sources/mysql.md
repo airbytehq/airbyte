@@ -5,7 +5,7 @@ Airbyte's certified MySQL connector offers the following features:
 * All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
 * Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
-The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs).
+The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping and changelogs).
 
 ![Airbyte MySQL Connection](https://raw.githubusercontent.com/airbytehq/airbyte/3a9264666b7b9b9d10ef8d174b8454a6c7e57560/docs/integrations/sources/mysql/assets/airbyte_mysql_source.png)
 
@@ -107,11 +107,15 @@ Airbyte uses logical replication of the [MySQL binlog](https://dev.mysql.com/doc
 - Scalable replication to large tables (1 TB and more).
 - A reliable cursor not reliant on the nature of your data. For example, if your table has a primary key but doesn't have a reasonable cursor field for incremental syncing \(i.e. `updated_at`\), CDC allows you to sync your table incrementally.
 
+<FieldAnchor field="replication_method[STANDARD]">
+
 ### Standard
 
 Airbyte offers incremental replication using a custom cursor available in your source tables (e.g. `updated_at`). We generally recommend against this replication method, but it is well suited for the following cases:
 - Your MySQL server does not expose the binlog.
 - Your data set is small, and you just want snapshot of your table in the destination.
+
+</FieldAnchor>
 
 ## Connecting with SSL or SSH Tunneling
 
