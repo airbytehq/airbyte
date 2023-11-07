@@ -74,6 +74,7 @@ setup(
         "pendulum",
         "genson==1.2.2",
         "pydantic>=1.10.8,<2.0.0",
+        "pyrate-limiter~=3.1.0",
         "python-dateutil",
         "PyYAML>=6.0.1",
         "requests",
