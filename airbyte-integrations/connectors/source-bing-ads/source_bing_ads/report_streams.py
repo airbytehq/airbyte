@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
+import _csv
 import pendulum
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
@@ -79,8 +80,11 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
 
     def parse_response(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Iterable[Mapping]:
         if response is not None:
-            for row in response.report_records:
-                yield {column: self.get_column_value(row, column) for column in self.report_columns}
+            try:
+                for row in response.report_records:
+                    yield {column: self.get_column_value(row, column) for column in self.report_columns}
+            except _csv.Error as e:
+                self.logger.warning(f"CSV report file for stream `{self.name}` is broken or cannot be read correctly: {e}, skipping ...")
 
     @staticmethod
     def get_column_value(row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
