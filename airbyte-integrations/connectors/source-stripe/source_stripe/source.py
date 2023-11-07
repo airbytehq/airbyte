@@ -62,7 +62,7 @@ class StripePaginationStrategy(CursorPaginationStrategy):
     ) -> Optional[str]:
         if "has_more" in response and response["has_more"] and response.get("data", []):
             last_object_id = response["data"][-1]["id"]
-            return last_object_id
+            return str(last_object_id)
         return None
 
 
@@ -134,7 +134,6 @@ class SourceStripe(AbstractSource):
             request_headers=base_stream.authenticator.get_auth_header(),
             path=base_stream.path(),
             name=base_stream.name,
-            parameters={},
             message_repository=self.message_repository,
         )
 
