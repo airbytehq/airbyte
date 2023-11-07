@@ -8,7 +8,7 @@ This page contains the setup guide and reference information for the [Sendgrid](
 
 ## Prerequisites
 
-* [Sendgrid API Key]((https://docs.sendgrid.com/ui/account-and-settings/api-keys#creating-an-api-key))
+* [Sendgrid API Key](https://docs.sendgrid.com/ui/account-and-settings/api-keys#creating-an-api-key)
 
 ## Setup guide
 ### Step 1: Set up Sendgrid
