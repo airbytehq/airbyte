@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any
+from typing import Any, Dict
 
 
 class OneOfOptionConfig:
@@ -26,7 +26,7 @@ class OneOfOptionConfig:
     """
 
     @staticmethod
-    def schema_extra(schema: dict, model: Any) -> None:
+    def schema_extra(schema: Dict[str, Any], model: Any) -> None:
         if hasattr(model.Config, "description"):
             schema["description"] = model.Config.description
         if hasattr(model.Config, "discriminator"):
