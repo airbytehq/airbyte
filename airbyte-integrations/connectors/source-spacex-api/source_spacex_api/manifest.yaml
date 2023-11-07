@@ -31,7 +31,7 @@ streams:
           capsules:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           cores:
@@ -39,7 +39,7 @@ streams:
               properties:
                 core:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 flight:
                   type: number
@@ -51,11 +51,11 @@ streams:
                   type: boolean
                 landing_type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 landpad:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 legs:
                   type: boolean
@@ -66,34 +66,34 @@ streams:
           crew:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           date_local:
             type:
-              - 'null'
+              - "null"
               - string
           date_precision:
             type:
-              - 'null'
+              - "null"
               - string
           date_unix:
             type: number
           date_utc:
             type:
-              - 'null'
+              - "null"
               - string
           static_fire_date_unix:
             type:
-              - 'null'
+              - "null"
               - number
           static_fire_date_utc:
             type:
-              - 'null'
+              - "null"
               - string
           window:
             type:
-              - 'null'
+              - "null"
               - number
           details:
             type: string
@@ -108,7 +108,7 @@ streams:
               ships:
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 type: array
             type: object
@@ -118,15 +118,15 @@ streams:
             type: number
           id:
             type:
-              - 'null'
+              - "null"
               - string
           launch_library_id:
             type:
-              - 'null'
+              - "null"
               - string
           launchpad:
             type:
-              - 'null'
+              - "null"
               - string
           links:
             properties:
@@ -135,7 +135,7 @@ streams:
                   original:
                     items:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                     type: array
                   small:
@@ -145,52 +145,52 @@ streams:
                 properties:
                   large:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   small:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                 type: object
               reddit:
                 properties:
                   launch:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                 type: object
               article:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               webcast:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               wikipedia:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               youtube_id:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type: object
           name:
             type:
-              - 'null'
+              - "null"
               - string
           net:
             type: boolean
           payloads:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           rocket:
             type:
-              - 'null'
+              - "null"
               - string
           ships:
             type: array
@@ -231,33 +231,33 @@ streams:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
           land_landings:
             type: number
           last_update:
             type:
-              - 'null'
+              - "null"
               - string
           launches:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           reuse_count:
             type: number
           serial:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           water_landings:
             type: number
@@ -292,19 +292,19 @@ streams:
         properties:
           ceo:
             type:
-              - 'null'
+              - "null"
               - string
           coo:
             type:
-              - 'null'
+              - "null"
               - string
           cto:
             type:
-              - 'null'
+              - "null"
               - string
           cto_propulsion:
             type:
-              - 'null'
+              - "null"
               - string
           employees:
             type: number
@@ -312,26 +312,26 @@ streams:
             type: number
           founder:
             type:
-              - 'null'
+              - "null"
               - string
           headquarters:
             properties:
               address:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               city:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               state:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type: object
           id:
             type:
-              - 'null'
+              - "null"
               - string
           launch_sites:
             type: number
@@ -339,28 +339,28 @@ streams:
             properties:
               elon_twitter:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               flickr:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               twitter:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               website:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type: object
           name:
             type:
-              - 'null'
+              - "null"
               - string
           summary:
             type:
-              - 'null'
+              - "null"
               - string
           test_sites:
             type: number
@@ -399,33 +399,33 @@ streams:
         properties:
           agency:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           image:
             type:
-              - 'null'
+              - "null"
               - string
           launches:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           name:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           wikipedia:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
     retriever:
@@ -462,20 +462,20 @@ streams:
             type: number
           block:
             type:
-              - 'null'
+              - "null"
               - number
           id:
             type:
-              - 'null'
+              - "null"
               - string
           last_update:
             type:
-              - 'null'
+              - "null"
               - string
           launches:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           reuse_count:
@@ -486,11 +486,11 @@ streams:
             type: number
           serial:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
     retriever:
@@ -527,7 +527,7 @@ streams:
             type: number
           description:
             type:
-              - 'null'
+              - "null"
               - string
           diameter:
             properties:
@@ -542,23 +542,23 @@ streams:
             type: number
           first_flight:
             type:
-              - 'null'
+              - "null"
               - string
           flickr_images:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           heat_shield:
             properties:
               dev_partner:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               material:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               size_meters:
                 type: number
@@ -574,7 +574,7 @@ streams:
             type: object
           id:
             type:
-              - 'null'
+              - "null"
               - string
           launch_payload_mass:
             properties:
@@ -592,7 +592,7 @@ streams:
             type: object
           name:
             type:
-              - 'null'
+              - "null"
               - string
           orbit_duration_yr:
             type: number
@@ -629,11 +629,11 @@ streams:
                   type: number
                 fuel_1:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 fuel_2:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 isp:
                   type: number
@@ -648,7 +648,7 @@ streams:
                   type: object
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
               type: object
             type: array
@@ -671,11 +671,11 @@ streams:
             type: object
           type:
             type:
-              - 'null'
+              - "null"
               - string
           wikipedia:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
     retriever:
@@ -708,22 +708,22 @@ streams:
         properties:
           details:
             type:
-              - 'null'
+              - "null"
               - string
           full_name:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           images:
             properties:
               large:
                 items:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 type: array
             type: object
@@ -736,34 +736,34 @@ streams:
           launches:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           locality:
             type:
-              - 'null'
+              - "null"
               - string
           longitude:
             type: number
           name:
             type:
-              - 'null'
+              - "null"
               - string
           region:
             type:
-              - 'null'
+              - "null"
               - string
           status:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           wikipedia:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
     retriever:
@@ -796,107 +796,107 @@ streams:
         properties:
           apoapsis_km:
             type:
-              - 'null'
+              - "null"
               - number
           arg_of_pericenter:
             type:
-              - 'null'
+              - "null"
               - number
           customers:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           dragon:
             properties:
               capsule:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               flight_time_sec:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               land_landing:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
               manifest:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               mass_returned_kg:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               mass_returned_lbs:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               water_landing:
                 type:
                   - boolean
-                  - 'null'
+                  - "null"
             type: object
           eccentricity:
             type:
-              - 'null'
+              - "null"
               - number
           epoch:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           inclination_deg:
             type:
-              - 'null'
+              - "null"
               - number
           launch:
             type:
-              - 'null'
+              - "null"
               - string
           lifespan_years:
             type:
-              - 'null'
+              - "null"
               - number
           longitude:
             type:
-              - 'null'
+              - "null"
               - number
           manufacturers:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           mass_kg:
             type:
-              - 'null'
+              - "null"
               - number
           mass_lbs:
             type:
-              - 'null'
+              - "null"
               - number
           mean_anomaly:
             type:
-              - 'null'
+              - "null"
               - number
           mean_motion:
             type:
-              - 'null'
+              - "null"
               - number
           name:
             type:
-              - 'null'
+              - "null"
               - string
           nationalities:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           norad_ids:
@@ -905,37 +905,37 @@ streams:
             type: array
           orbit:
             type:
-              - 'null'
+              - "null"
               - string
           periapsis_km:
             type:
-              - 'null'
+              - "null"
               - number
           period_min:
             type:
-              - 'null'
+              - "null"
               - number
           raan:
             type:
-              - 'null'
+              - "null"
               - number
           reference_system:
             type:
-              - 'null'
+              - "null"
               - string
           regime:
             type:
-              - 'null'
+              - "null"
               - string
           reused:
             type: boolean
           semi_major_axis_km:
             type:
-              - 'null'
+              - "null"
               - number
           type:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
     retriever:
@@ -968,28 +968,28 @@ streams:
         properties:
           details:
             type:
-              - 'null'
+              - "null"
               - string
           event_date_unix:
             type: number
           event_date_utc:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           links:
             properties:
               article:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type: object
           title:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
     retriever:
@@ -1026,17 +1026,17 @@ streams:
             type: number
           company:
             type:
-              - 'null'
+              - "null"
               - string
           cost_per_launch:
             type: number
           country:
             type:
-              - 'null'
+              - "null"
               - string
           description:
             type:
-              - 'null'
+              - "null"
               - string
           diameter:
             properties:
@@ -1049,7 +1049,7 @@ streams:
             properties:
               engine_loss_max:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               isp:
                 properties:
@@ -1060,17 +1060,17 @@ streams:
                 type: object
               layout:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               number:
                 type: number
               propellant_1:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               propellant_2:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               thrust_sea_level:
                 properties:
@@ -1090,22 +1090,22 @@ streams:
                 type: object
               type:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               version:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type: object
           first_flight:
             type:
-              - 'null'
+              - "null"
               - string
           first_stage:
             properties:
               burn_time_sec:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               engines:
                 type: number
@@ -1131,7 +1131,7 @@ streams:
           flickr_images:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           height:
@@ -1143,13 +1143,13 @@ streams:
             type: object
           id:
             type:
-              - 'null'
+              - "null"
               - string
           landing_legs:
             properties:
               material:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               number:
                 type: number
@@ -1163,14 +1163,14 @@ streams:
             type: object
           name:
             type:
-              - 'null'
+              - "null"
               - string
           payload_weights:
             items:
               properties:
                 id:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 kg:
                   type: number
@@ -1178,7 +1178,7 @@ streams:
                   type: number
                 name:
                   type:
-                    - 'null'
+                    - "null"
                     - string
               type: object
             type: array
@@ -1186,7 +1186,7 @@ streams:
             properties:
               burn_time_sec:
                 type:
-                  - 'null'
+                  - "null"
                   - number
               engines:
                 type: number
@@ -1200,28 +1200,28 @@ streams:
                         properties:
                           feet:
                             type:
-                              - 'null'
+                              - "null"
                               - number
                           meters:
                             type:
-                              - 'null'
+                              - "null"
                               - number
                         type: object
                       height:
                         properties:
                           feet:
                             type:
-                              - 'null'
+                              - "null"
                               - number
                           meters:
                             type:
-                              - 'null'
+                              - "null"
                               - number
                         type: object
                     type: object
                   option_1:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                 type: object
               reusable:
@@ -1240,11 +1240,11 @@ streams:
             type: number
           type:
             type:
-              - 'null'
+              - "null"
               - string
           wikipedia:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
     retriever:
@@ -1279,7 +1279,7 @@ streams:
             type: number
           details:
             type:
-              - 'null'
+              - "null"
               - string
           earth_distance_km:
             type: number
@@ -1292,12 +1292,12 @@ streams:
           flickr_images:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           id:
             type:
-              - 'null'
+              - "null"
               - string
           inclination:
             type: number
@@ -1305,7 +1305,7 @@ streams:
             type: number
           launch_date_utc:
             type:
-              - 'null'
+              - "null"
               - string
           launch_mass_kg:
             type: number
@@ -1319,13 +1319,13 @@ streams:
             type: number
           name:
             type:
-              - 'null'
+              - "null"
               - string
           norad_id:
             type: number
           orbit_type:
             type:
-              - 'null'
+              - "null"
               - string
           periapsis_arg:
             type: number
@@ -1341,11 +1341,11 @@ streams:
             type: number
           video:
             type:
-              - 'null'
+              - "null"
               - string
           wikipedia:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
     retriever:
@@ -1378,101 +1378,101 @@ streams:
         properties:
           abs:
             type:
-              - 'null'
+              - "null"
               - number
           active:
             type: boolean
           class:
             type:
-              - 'null'
+              - "null"
               - number
           home_port:
             type:
-              - 'null'
+              - "null"
               - string
           id:
             type:
-              - 'null'
+              - "null"
               - string
           image:
             type:
-              - 'null'
+              - "null"
               - string
           imo:
             type:
-              - 'null'
+              - "null"
               - number
           latitude:
             type:
-              - 'null'
+              - "null"
               - number
           course_deg:
             type:
-              - 'null'
+              - "null"
               - number
           last_ais_update:
             type:
-              - 'null'
+              - "null"
               - string
           speed_kn:
             type:
-              - 'null'
+              - "null"
               - number
           launches:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           legacy_id:
             type:
-              - 'null'
+              - "null"
               - string
           link:
             type:
-              - 'null'
+              - "null"
               - string
           longitude:
             type:
-              - 'null'
+              - "null"
               - number
           mass_kg:
             type:
-              - 'null'
+              - "null"
               - number
           mass_lbs:
             type:
-              - 'null'
+              - "null"
               - number
           mmsi:
             type:
-              - 'null'
+              - "null"
               - number
           model:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
           roles:
             items:
               type:
-                - 'null'
+                - "null"
                 - string
             type: array
           status:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           year_built:
             type:
-              - 'null'
+              - "null"
               - number
         type: object
     retriever:
@@ -1505,23 +1505,23 @@ streams:
         properties:
           height_km:
             type:
-              - 'null'
+              - "null"
               - number
           id:
             type:
-              - 'null'
+              - "null"
               - string
           latitude:
             type:
-              - 'null'
+              - "null"
               - number
           launch:
             type:
-              - 'null'
+              - "null"
               - string
           longitude:
             type:
-              - 'null'
+              - "null"
               - number
           spaceTrack:
             properties:
@@ -1533,33 +1533,33 @@ streams:
                 type: number
               CCSDS_OMM_VERS:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               CENTER_NAME:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               CLASSIFICATION_TYPE:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               COMMENT:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               COUNTRY_CODE:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               CREATION_DATE:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               DECAYED:
                 type: number
               DECAY_DATE:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               ECCENTRICITY:
                 type: number
@@ -1569,7 +1569,7 @@ streams:
                 type: number
               EPOCH:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               FILE:
                 type: number
@@ -1579,13 +1579,13 @@ streams:
                 type: number
               LAUNCH_DATE:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               MEAN_ANOMALY:
                 type: number
               MEAN_ELEMENT_THEORY:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               MEAN_MOTION:
                 type: number
@@ -1597,19 +1597,19 @@ streams:
                 type: number
               OBJECT_ID:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               OBJECT_NAME:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               OBJECT_TYPE:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               ORIGINATOR:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               PERIAPSIS:
                 type: number
@@ -1619,11 +1619,11 @@ streams:
                 type: number
               RCS_SIZE:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               REF_FRAME:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               REV_AT_EPOCH:
                 type: number
@@ -1631,32 +1631,32 @@ streams:
                 type: number
               SITE:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               TIME_SYSTEM:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               TLE_LINE0:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               TLE_LINE1:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               TLE_LINE2:
                 type:
-                  - 'null'
+                  - "null"
                   - string
             type: object
           velocity_kms:
             type:
-              - 'null'
+              - "null"
               - number
           version:
             type:
-              - 'null'
+              - "null"
               - string
         type: object
     retriever:
