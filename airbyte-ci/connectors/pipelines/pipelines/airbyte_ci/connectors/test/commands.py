@@ -51,7 +51,7 @@ async def test(
     code_tests_only: bool,
     fail_fast: bool,
     concurrent_cat: bool,
-    skip_step: str,
+    skip_step: List[str],
 ) -> bool:
     """Runs a test pipeline for the selected connectors.
 

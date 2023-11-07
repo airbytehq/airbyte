@@ -133,7 +133,7 @@ def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
 
     steps = [
         [StepToRun(id="build_tar", step=BuildConnectorDistributionTar(context))],
-        [StepToRun(id="unit", step=UnitTests(context))],
+        [StepToRun(id="unit", step=UnitTests(context), depends_on=["build_tar"])],
         [
             StepToRun(
                 id="build",
