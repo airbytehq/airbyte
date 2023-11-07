@@ -61,13 +61,16 @@ public class AirbyteExceptionHandlerTest {
     AirbyteExceptionHandler.addStringForDeinterpolation("foo");
     AirbyteExceptionHandler.addStringForDeinterpolation("bar");
 
-    runTestWithMessage("Error happened in foo.bar");
+    // foo and bar are added to the list explicitly
+    // name and description are added implicitly by the exception handler.
+    // all of them should be replaced by '?'
+    runTestWithMessage("Error happened in arst_foo_bar_zxcv (name: description)");
 
     final AirbyteMessage traceMessage = findFirstTraceMessage();
     assertAll(
         () -> assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
-        () -> assertEquals("Error happened in foo.bar", traceMessage.getTrace().getError().getMessage()),
-        () -> assertEquals("Error happened in ?.?", traceMessage.getTrace().getError().getInternalMessage()),
+        () -> assertEquals("Error happened in arst_foo_bar_zxcv (name: description)", traceMessage.getTrace().getError().getMessage()),
+        () -> assertEquals("Error happened in arst_?_?_zxcv (?: ?)", traceMessage.getTrace().getError().getInternalMessage()),
         () -> assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType()),
         () -> Assertions.assertNull(traceMessage.getTrace().getError().getStackTrace(),
             "Stacktrace should be null if deinterpolating the error message"));
@@ -169,14 +172,25 @@ public class AirbyteExceptionHandlerTest {
   @AfterEach
   public void teardown() {
     System.setOut(originalOut);
+
     AirbyteExceptionHandler.STRINGS_TO_DEINTERPOLATE.clear();
+    AirbyteExceptionHandler.addCommonStringsToDeinterpolate();
+
     AirbyteExceptionHandler.THROWABLES_TO_DEINTERPOLATE.clear();
   }
 
   private AirbyteMessage findFirstTraceMessage() {
     final Optional<AirbyteMessage> maybeTraceMessage = Arrays.stream(outContent.toString(StandardCharsets.UTF_8).split("\n"))
-        .map(line -> Jsons.deserialize(line, AirbyteMessage.class))
-        .filter(message -> message.getType() == AirbyteMessage.Type.TRACE)
+        .map(line -> {
+          // these tests sometimes emit non-json stdout (e.g. log4j warnings)
+          // so we try-catch to handle those malformed lines.
+          try {
+            return Jsons.deserialize(line, AirbyteMessage.class);
+          } catch (final Exception e) {
+            return null;
+          }
+        })
+        .filter(message -> message != null && message.getType() == AirbyteMessage.Type.TRACE)
         .findFirst();
     assertTrue(maybeTraceMessage.isPresent(), "Expected to find a trace message in stdout");
     return maybeTraceMessage.get();

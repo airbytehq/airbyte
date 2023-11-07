@@ -33,16 +33,15 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public String softReset(final StreamConfig stream) {
-    return "SOFT RESET " + stream.id().finalTableId("");
-  }
-
-  @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp) {
+  public String updateTable(final StreamConfig stream,
+                            final String finalSuffix,
+                            final Optional<Instant> minRawTimestamp,
+                            final boolean useExpensiveSaferCasting) {
     final String timestampFilter = minRawTimestamp
         .map(timestamp -> " WHERE extracted_at > " + timestamp)
         .orElse("");
-    return "UPDATE TABLE " + stream.id().finalTableId("", finalSuffix) + timestampFilter;
+    final String casting = useExpensiveSaferCasting ? " WITH" : " WITHOUT" + " SAFER CASTING";
+    return "UPDATE TABLE " + stream.id().finalTableId("", finalSuffix) + casting + timestampFilter;
   }
 
   @Override
@@ -53,6 +52,11 @@ class MockSqlGenerator implements SqlGenerator<String> {
   @Override
   public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
     return "MIGRATE TABLE " + String.join(".", namespace, tableName) + " TO " + streamId.rawTableId("");
+  }
+
+  @Override
+  public String prepareTablesForSoftReset(final StreamConfig stream) {
+    return "PREPARE " + String.join(".", stream.id().originalNamespace(), stream.id().originalName()) + " FOR SOFT RESET";
   }
 
 }

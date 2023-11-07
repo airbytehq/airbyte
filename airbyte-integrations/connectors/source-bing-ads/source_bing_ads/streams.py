@@ -9,6 +9,7 @@ from datetime import timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.error import URLError
 
+import _csv
 import pandas as pd
 import pendulum
 from airbyte_cdk.models import SyncMode
@@ -59,6 +60,17 @@ class BingAdsStream(BingAdsBaseStream, ABC):
         Specifies bing ads service name for a current stream
         """
         pass
+
+    @property
+    def parent_key_to_foreign_key_map(self) -> MutableMapping[str, str]:
+        """
+        Specifies dict with field in record as kay and slice key as value to be inserted in record in transform method.
+        """
+        return {}
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        foreign_keys = {key: stream_slice.get(value) for key, value in self.parent_key_to_foreign_key_map.items()}
+        return record | foreign_keys
 
     @property
     def _service(self) -> Union[ServiceClient, ReportingServiceManager]:
@@ -120,7 +132,7 @@ class BingAdsStream(BingAdsBaseStream, ABC):
             )
             response = self.send_request(params, customer_id=customer_id, account_id=account_id)
             for record in self.parse_response(response):
-                yield record
+                yield self.transform(record, stream_slice)
 
             next_page_token = self.next_page_token(response, current_page_token=next_page_token)
             if not next_page_token:
@@ -170,8 +182,11 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
 
     def parse_response(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Iterable[Mapping]:
         if response is not None:
-            for row in response.report_records:
-                yield {column: self.get_column_value(row, column) for column in self.report_columns}
+            try:
+                for row in response.report_records:
+                    yield {column: self.get_column_value(row, column) for column in self.report_columns}
+            except _csv.Error as e:
+                self.logger.warning(f"CSV report file for stream `{self.name}` is broken or cannot be read correctly: {e}, skipping ...")
 
         yield from []
 
@@ -448,6 +463,11 @@ class Campaigns(BingAdsCampaignManagementStream):
     ]
     campaign_types: Iterable[str] = ["Audience", "DynamicSearchAds", "Search", "Shopping"]
 
+    parent_key_to_foreign_key_map = {
+        "AccountId": "account_id",
+        "CustomerId": "customer_id",
+    }
+
     def request_params(
         self,
         stream_slice: Mapping[str, Any] = None,
@@ -483,6 +503,8 @@ class AdGroups(BingAdsCampaignManagementStream):
     data_field: str = "AdGroup"
     operation_name: str = "GetAdGroupsByCampaignId"
     additional_fields: str = "AdGroupType AdScheduleUseSearcherTimeZone CpmBid CpvBid MultimediaAdsBidAdjustment"
+
+    parent_key_to_foreign_key_map = {"CampaignId": "campaign_id", "AccountId": "account_id", "CustomerId": "customer_id"}
 
     def request_params(
         self,
@@ -526,6 +548,8 @@ class Ads(BingAdsCampaignManagementStream):
         "ResponsiveAd",
         "ResponsiveSearch",
     ]
+
+    parent_key_to_foreign_key_map = {"AdGroupId": "ad_group_id", "AccountId": "account_id", "CustomerId": "customer_id"}
 
     def request_params(
         self,
