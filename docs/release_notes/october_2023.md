@@ -5,11 +5,13 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 
 ## ✨ Highlights
 
-This month, we held our annual Hacktoberfest, in which we received 48 PRs and welcomed 10 new contributors to our community!
+With lightning-fast replication speeds of over 10 MB per second, incremental CDC syncs and more resumable snapshots, we've redefined what you can expect in terms of speed and reliability when replicating data from both [MySQL](https://airbyte.com/blog/behind-the-performance-improvements-of-our-mysql-source) and [MongoDB](https://airbyte.com/blog/10-mb-per-second-incremental-mongodb-syncs) databases.
 
 We also released [versioned Connector Documentation](https://github.com/airbytehq/airbyte/pull/30410), which allows everyone to see the correct version of the documentation for their connector version without needing to upgrade their Airbyte platform version.
 
 We're also always learning and listening to user feedback. We no longer [deduplicate raw tables](https://github.com/airbytehq/airbyte/pull/31520) to further speed up syncs with Destinations V2. We also released a new voting feature on our [docs](https://docs.airbyte.com) that asks how helpful our docs are for you.
+
+This month, we also held our annual Hacktoberfest, from which we have already merged 51 PRs and welcomed 3 new contributors to our community!
 
 ## Platform Releases
 - **Enhanced payment options:** Cloud customers can now sign up for [auto-recharging of their balance](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-credits#automatic-reload-of-credits-beta) and can purchase up to 6,000 credits within our application.
