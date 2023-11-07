@@ -17,6 +17,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 Note that refresh token are entirely optional for Slack and are not required to use Airbyte. You can learn more about refresh tokens [here](https://api.slack.com/authentication/rotation).
 
 ## Setup guide
+
 ### Step 1: Set up Slack
 
 :::info
