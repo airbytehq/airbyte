@@ -22,21 +22,21 @@ class PendoPythonStream(HttpStream, ABC):
 
     # Method to get an Airbyte field schema for a given Pendo field type
     def get_valid_field_info(self, field_type) -> dict:
-        output = {}
-        if field_type == 'time':
-            output["type"] = ["null", "integer"]
-        elif field_type == 'list':
-            output["type"] = ["null", "array"]
-        elif field_type == '':
-            output['type'] = ["null", "array", "string", "integer", "boolean"]
+        output_types = []
+        if field_type == "time":
+            output_types = ["null", "integer"]
+        elif field_type == "list":
+            output_types = ["null", "array"]
+        elif field_type == "":
+            output_types = ["null", "array", "string", "integer", "boolean"]
         else:
-            output["type"] = ["null", field_type]
-        return output
+            output_types = ["null", field_type]
+        return {"type": output_types}
 
     # Build the Airbyte stream schema from Pendo metadata
     def build_schema(self, full_schema, metadata):
         for key in metadata:
-            if not key.startswith("auto"):  # Skipping for now while we understand Pendo schema and what auto_323232 is
+            if key != "auto" and key != "auto__323232":  # Skipping for now while we understand Pendo schema and what auto_323232 is
                 fields = {}
                 for field in metadata[key]:
                     field_type = metadata[key][field]['Type']
@@ -160,42 +160,46 @@ class Visitor(PendoAggregationStream):
     name = "visitor"
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        if self.json_schema is None:
-            base_schema = super().get_json_schema()
-            url = f"{PendoPythonStream.url_base}metadata/schema/visitor"
-            auth_headers = self.authenticator.get_auth_header()
-            try:
-                session = requests.get(url, headers=auth_headers)
-                body = session.json()
+        if self.json_schema is not None:
+            return self.json_schema
 
-                full_schema = base_schema
-                full_schema['properties']['metadata']['properties']['auto__323232'] = {
-                    "type": ["null", "object"]
+        base_schema = super().get_json_schema()
+        url = f"{PendoPythonStream.url_base}metadata/schema/visitor"
+        auth_headers = self.authenticator.get_auth_header()
+        try:
+            session = requests.get(url, headers=auth_headers)
+            body = session.json()
+
+            full_schema = base_schema
+
+            # Not all fields are getting returned by Pendo's metadata apis so we need to do some manual construction
+            full_schema['properties']['metadata']['properties']['auto__323232'] = {
+                "type": ["null", "object"]
+            }
+
+            auto_fields = {
+                "lastupdated": {
+                    "type": ["null", "integer"]
+                },
+                "idhash": {
+                    "type": ["null", "integer"]
+                },
+                "lastuseragent": {
+                    "type": ["null", "string"]
+                },
+                "lastmetadataupdate_agent": {
+                    "type": ["null", "integer"]
                 }
+            }
+            for key in body['auto']:
+                auto_fields[key] = self.get_valid_field_info(body['auto'][key]['Type'])
+            full_schema['properties']['metadata']['properties']['auto']['properties'] = auto_fields
+            full_schema['properties']['metadata']['properties']['auto__323232']['properties'] = auto_fields
 
-                auto_fields = {
-                    "lastupdated": {
-                        "type": ["null", "integer"]
-                    },
-                    "idhash": {
-                        "type": ["null", "integer"]
-                    },
-                    "lastuseragent": {
-                        "type": ["null", "string"]
-                    },
-                    "lastmetadataupdate_agent": {
-                        "type": ["null", "integer"]
-                    }
-                }
-                for key in body['auto']:
-                    auto_fields[key] = self.get_valid_field_info(body['auto'][key]['Type'])
-                full_schema['properties']['metadata']['properties']['auto']['properties'] = auto_fields
-                full_schema['properties']['metadata']['properties']['auto__323232']['properties'] = auto_fields
-
-                full_schema = self.build_schema(full_schema, body)
-                self.json_schema = full_schema
-            except requests.exceptions.RequestException:
-                self.json_schema = base_schema
+            full_schema = self.build_schema(full_schema, body)
+            self.json_schema = full_schema
+        except requests.exceptions.RequestException:
+            self.json_schema = base_schema
         return self.json_schema
 
     def request_body_json(
@@ -218,36 +222,40 @@ class Account(PendoAggregationStream):
     name = "account"
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        if self.json_schema is None:
-            base_schema = super().get_json_schema()
-            url = f"{PendoPythonStream.url_base}metadata/schema/account"
-            auth_headers = self.authenticator.get_auth_header()
-            try:
-                session = requests.get(url, headers=auth_headers)
-                body = session.json()
+        if self.json_schema is not None:
+            return self.json_schema
 
-                full_schema = base_schema
-                full_schema['properties']['metadata']['properties']['auto__323232'] = {
-                    "type": ["null", "object"]
+        base_schema = super().get_json_schema()
+        url = f"{PendoPythonStream.url_base}metadata/schema/account"
+        auth_headers = self.authenticator.get_auth_header()
+        try:
+            session = requests.get(url, headers=auth_headers)
+            body = session.json()
+
+            full_schema = base_schema
+
+            # Not all fields are getting returned by Pendo's metadata apis so we need to do some manual construction
+            full_schema['properties']['metadata']['properties']['auto__323232'] = {
+                "type": ["null", "object"]
+            }
+
+            auto_fields = {
+                "lastupdated": {
+                    "type": ["null", "integer"]
+                },
+                "idhash": {
+                    "type": ["null", "integer"]
                 }
+            }
+            for key in body['auto']:
+                auto_fields[key] = self.get_valid_field_info(body['auto'][key]['Type'])
+            full_schema['properties']['metadata']['properties']['auto']['properties'] = auto_fields
+            full_schema['properties']['metadata']['properties']['auto__323232']['properties'] = auto_fields
 
-                auto_fields = {
-                    "lastupdated": {
-                        "type": ["null", "integer"]
-                    },
-                    "idhash": {
-                        "type": ["null", "integer"]
-                    }
-                }
-                for key in body['auto']:
-                    auto_fields[key] = self.get_valid_field_info(body['auto'][key]['Type'])
-                full_schema['properties']['metadata']['properties']['auto']['properties'] = auto_fields
-                full_schema['properties']['metadata']['properties']['auto__323232']['properties'] = auto_fields
-
-                full_schema = self.build_schema(full_schema, body)
-                self.json_schema = full_schema
-            except requests.exceptions.RequestException:
-                self.json_schema = base_schema
+            full_schema = self.build_schema(full_schema, body)
+            self.json_schema = full_schema
+        except requests.exceptions.RequestException:
+            self.json_schema = base_schema
         return self.json_schema
 
     def request_body_json(
