@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -108,10 +109,10 @@ public class MongoUtil {
    * @return The list of {@link AirbyteStream}s that map to the available collections in the provided
    *         database.
    */
-  public static List<AirbyteStream> getAirbyteStreams(final MongoClient mongoClient, final String databaseName, final Integer sampleSize) {
+  public static List<AirbyteStream> getAirbyteStreams(final MongoClient mongoClient, final String databaseName, final Integer sampleSize, final boolean isPacked) {
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
     return authorizedCollections.parallelStream()
-        .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize))
+        .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isPacked))
         .filter(stream -> stream.isPresent())
         .map(stream -> stream.get())
         .collect(Collectors.toList());
@@ -130,7 +131,7 @@ public class MongoUtil {
     final OptionalInt sizeFromConfig = config.getQueueSize();
 
     if (sizeFromConfig.isPresent()) {
-      int size = sizeFromConfig.getAsInt();
+      final int size = sizeFromConfig.getAsInt();
       if (size < MIN_QUEUE_SIZE) {
         LOGGER.warn("Queue size is overridden to {} , which is the min allowed for safety.",
             MIN_QUEUE_SIZE);
@@ -192,8 +193,12 @@ public class MongoUtil {
    * @param fields The fields available to the stream.
    * @return A {@link AirbyteStream} object representing the stream.
    */
-  private static AirbyteStream createAirbyteStream(final String collectionName, final String databaseName, final List<Field> fields) {
-    return MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, fields);
+  private static AirbyteStream createAirbyteStream(final String collectionName, final String databaseName, final List<Field> fields, final boolean isPacked) {
+    if (isPacked) {
+      return MongoCatalogHelper.buildPackedAirbyteStream(collectionName, databaseName);
+    } else {
+      return MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, fields);
+    }
   }
 
   /**
@@ -210,15 +215,20 @@ public class MongoUtil {
   private static Optional<AirbyteStream> discoverFields(final String collectionName,
                                                         final MongoClient mongoClient,
                                                         final String databaseName,
-                                                        final Integer sampleSize) {
+                                                        final Integer sampleSize,
+                                                        final boolean isPacked) {
     /*
      * Fetch the keys/types from the first N documents and the last N documents from the collection.
      * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
      */
     final MongoCollection<Document> mongoCollection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
-    final Set<Field> discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize));
-    return Optional
-        .ofNullable(!discoveredFields.isEmpty() ? createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields)) : null);
+    if (!isPacked) {
+      final Set<Field> discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize));
+      return Optional
+          .ofNullable(!discoveredFields.isEmpty() ? createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields), isPacked) : null);
+    } else {
+      return Optional.of(createAirbyteStream(collectionName, databaseName, Collections.EMPTY_LIST, isPacked));
+    }
   }
 
   private static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection, final Integer sampleSize) {

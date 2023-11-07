@@ -4,13 +4,17 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -56,6 +60,18 @@ public class MongoCatalogHelper {
   }
 
   /**
+   * Builds an {@link AirbyteStream} with the correct configuration for this source.
+   *
+   * @param streamName The name of the stream.
+   * @param streamNamespace The namespace of the stream.
+   * @param fields The fields associated with the stream.
+   * @return The configured {@link AirbyteStream} for this source.
+   */
+  public static AirbyteStream buildPackedAirbyteStream(final String streamName, final String streamNamespace) {
+    return addDataMetadataColumn(buildAirbyteStream(streamName, streamNamespace, Collections.EMPTY_LIST));
+  }
+
+  /**
    * Adds CDC metadata columns to the stream.
    *
    * @param stream An {@link AirbyteStream}.
@@ -68,4 +84,22 @@ public class MongoCatalogHelper {
     return stream;
   }
 
+  /**
+   * Adds the data metadata columns to the stream, for packed mode.
+   *
+   * @param stream An {@link AirbyteStream}.
+   * @return The modified {@link AirbyteStream}.
+   */
+  private static AirbyteStream addDataMetadataColumn(final AirbyteStream stream) {
+    final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
+    final ObjectNode properties = (ObjectNode) jsonSchema.get(AIRBYTE_STREAM_PROPERTIES);
+    addPackedModeColumn(properties);
+    return stream;
+  }
+
+  public static ObjectNode addPackedModeColumn(final ObjectNode properties) {
+    final JsonNode objectType = Jsons.jsonNode(ImmutableMap.of("type", "object"));
+    properties.set("_data", objectType);
+    return properties;
+  }
 }
