@@ -407,7 +407,11 @@
         }
       },
       "type": "object"
+    },
+    "custom": {
+      "type": "object"
     }
   },
+  "additionalProperties": true,
   "type": "object"
 }

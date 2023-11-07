@@ -280,6 +280,9 @@
           }
         }
       }
+    },
+    "isSuggested": {
+      "type": "boolean"
     }
   }
 }

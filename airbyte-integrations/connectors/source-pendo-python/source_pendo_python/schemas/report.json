@@ -980,6 +980,10 @@
           "type": "boolean"
         }
       }
+    },
+    "dependentMetadata": {
+      "type": "array"
     }
-  }
+  },
+  "additionalProperties": true
 }

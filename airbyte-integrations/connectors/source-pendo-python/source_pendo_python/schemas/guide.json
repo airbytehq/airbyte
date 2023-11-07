@@ -1282,6 +1282,27 @@
     },
     "currentFirstEligibleToBeSeenAt": {
       "type": "integer"
+    },
+    "redisplay": {
+      "type": "object",
+      "properties": {
+        "interval": {
+          "type": "integer"
+        },
+        "elementId": {
+          "type": "string"
+        },
+        "timeUnit": {
+          "type": "string"
+        },
+        "maxDismissals": {
+          "type": "integer"
+        }
+      }
+    },
+    "dependentMetadata": {
+      "type": "array"
     }
-  }
+  },
+  "additionalProperties": true
 }

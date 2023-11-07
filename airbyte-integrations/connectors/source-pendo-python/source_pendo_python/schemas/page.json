@@ -253,6 +253,12 @@
           "type": "boolean"
         }
       }
+    },
+    "isSuggested": {
+      "type": "boolean"
+    },
+    "suggestedTagRules": {
+      "type": "array"
     }
   }
 }
