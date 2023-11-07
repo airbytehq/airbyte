@@ -137,6 +137,37 @@ class BoardSectionPins(PinterestSubStream, PinterestStream):
         return f"boards/{stream_slice['sub_parent']['parent']['id']}/sections/{stream_slice['parent']['id']}/pins"
 
 
+class Audiences(PinterestSubStream, PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/audiences/list"""
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"ad_accounts/{stream_slice['parent']['id']}/audiences"
+
+
+class Keywords(PinterestSubStream, PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/keywords/get"""
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        # return f"ad_accounts/{stream_slice['parent']['id']}/keywords?ad_group_id=2680068678993"
+        return f"ad_accounts/{stream_slice['parent']['ad_account_id']}/keywords?ad_group_id={stream_slice['parent']['id']}"
+        # return f"ad_accounts/{stream_slice['parent']['id']}/keywords?campaign_id=626744128982"
+        # return f"ads/{stream_slice['parent']['id']}/keywords"
+
+
+class ConversionTags(PinterestSubStream, PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/conversion_tags/list"""
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"ad_accounts/{stream_slice['parent']['id']}/conversion_tags"
+
+
+class CustomerLists(PinterestSubStream, PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#tag/customer_lists"""
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"ad_accounts/{stream_slice['parent']['id']}/customer_lists"
+
+
 class IncrementalPinterestStream(PinterestStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         default_value = self.start_date.format("YYYY-MM-DD")
@@ -292,7 +323,7 @@ class AdAccountAnalytics(PinterestAnalyticsStream):
 
 
 class Campaigns(ServerSideFilterStream):
-    def __init__(self, parent: HttpStream, with_data_slices: bool = True, status_filter: str = "", **kwargs):
+    def __init__(self, parent: HttpStream, with_data_slices: bool = False, status_filter: str = "", **kwargs):
         super().__init__(parent, with_data_slices, **kwargs)
         self.status_filter = status_filter
 
@@ -309,11 +340,12 @@ class CampaignAnalytics(PinterestAnalyticsStream):
 
 
 class AdGroups(ServerSideFilterStream):
-    def __init__(self, parent: HttpStream, with_data_slices: bool = True, status_filter: str = "", **kwargs):
+    def __init__(self, parent: HttpStream, with_data_slices: bool = False, status_filter: str = "", **kwargs):
         super().__init__(parent, with_data_slices, **kwargs)
         self.status_filter = status_filter
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        print(f"=========== stream_slice: {stream_slice} =====================")
         params = f"?entity_statuses={self.status_filter}" if self.status_filter else ""
         return f"ad_accounts/{stream_slice['parent']['id']}/ad_groups{params}"
 
@@ -326,7 +358,7 @@ class AdGroupAnalytics(PinterestAnalyticsStream):
 
 
 class Ads(ServerSideFilterStream):
-    def __init__(self, parent: HttpStream, with_data_slices: bool = True, status_filter: str = "", **kwargs):
+    def __init__(self, parent: HttpStream, with_data_slices: bool = False, status_filter: str = "", **kwargs):
         super().__init__(parent, with_data_slices, **kwargs)
         self.status_filter = status_filter
 

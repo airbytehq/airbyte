@@ -30,19 +30,17 @@ acceptance_tests:
           - bypass_reason: The stream could return 0 records, because of low rate-limits
             name: ad_group_analytics
           - bypass_reason: The stream could return 0 records, because of low rate-limits
-            name: ad_groups
-          - bypass_reason: The stream could return 0 records, because of low rate-limits
-            name: ads
-          - bypass_reason: The stream could return 0 records, because of low rate-limits
             name: board_section_pins
           - bypass_reason: The stream could return 0 records, because of low rate-limits
             name: board_sections
           - bypass_reason: The stream could return 0 records, because of low rate-limits
             name: campaign_analytics
           - bypass_reason: The stream could return 0 records, because of low rate-limits
-            name: campaigns
-          - bypass_reason: The stream could return 0 records, because of low rate-limits
             name: user_account_analytics
+          - bypass_reason: Not possible to add data
+            name: conversion_tags
+          - bypass_reason: Not possible to add data
+            name: customer_lists
         timeout_seconds: 1200
         expect_records:
           path: "integration_tests/expected_records.jsonl"

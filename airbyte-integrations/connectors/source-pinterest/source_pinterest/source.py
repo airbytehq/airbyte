@@ -22,12 +22,16 @@ from .streams import (
     AdGroupAnalytics,
     AdGroups,
     Ads,
+    Audiences,
     BoardPins,
     Boards,
     BoardSectionPins,
     BoardSections,
     CampaignAnalytics,
     Campaigns,
+    ConversionTags,
+    CustomerLists,
+    Keywords,
     PinterestStream,
     UserAccountAnalytics,
 )
@@ -89,19 +93,30 @@ class SourcePinterest(AbstractSource):
         report_config = self._validate_and_transform(config, amount_of_days_allowed_for_lookup=913)
         config = self._validate_and_transform(config)
         status = ",".join(config.get("status")) if config.get("status") else None
+
+        ad_accounts = AdAccounts(config)
+        ads = Ads(ad_accounts, config=config, status_filter=status)
+        ad_groups = AdGroups(ad_accounts, config=config, status_filter=status)
+        campaigns = Campaigns(ad_accounts, config=config, status_filter=status)
+        boards = Boards(config)
+        board_sections = BoardSections(boards, config=config)
         return [
-            AdAccountAnalytics(AdAccounts(config), config=config),
-            AdAccounts(config),
-            AdAnalytics(Ads(AdAccounts(config), with_data_slices=False, config=config), config=config),
-            AdGroupAnalytics(AdGroups(AdAccounts(config), with_data_slices=False, config=config), config=config),
-            AdGroups(AdAccounts(config), status_filter=status, config=config),
-            Ads(AdAccounts(config), status_filter=status, config=config),
-            BoardPins(Boards(config), config=config),
-            BoardSectionPins(BoardSections(Boards(config), config=config), config=config),
-            BoardSections(Boards(config), config=config),
-            Boards(config),
-            CampaignAnalytics(Campaigns(AdAccounts(config), with_data_slices=False, config=config), config=config),
-            CampaignAnalyticsReport(AdAccounts(report_config), config=report_config),
-            Campaigns(AdAccounts(config), status_filter=status, config=config),
+            ad_accounts,
+            AdAccountAnalytics(ad_accounts, config=config),
+            ads,
+            AdAnalytics(ads, config=config),
+            ad_groups,
+            AdGroupAnalytics(ad_groups, config=config),
+            boards,
+            BoardPins(boards, config=config),
+            board_sections,
+            BoardSectionPins(board_sections, config=config),
+            campaigns,
+            CampaignAnalytics(campaigns, config=config),
+            CampaignAnalyticsReport(ad_accounts, config=report_config),
             UserAccountAnalytics(None, config=config),
+            Keywords(ad_groups, config=config),
+            Audiences(ad_accounts, config=config),
+            ConversionTags(ad_accounts, config=config),
+            CustomerLists(ad_accounts, config=config),
         ]
