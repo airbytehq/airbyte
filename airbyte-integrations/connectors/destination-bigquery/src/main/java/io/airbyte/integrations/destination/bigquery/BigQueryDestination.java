@@ -251,15 +251,15 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       throws Exception {
     final BigQueryExecutionConfig executionConfig = BigQueryUtils.createExecutionConfig(config);
     final UploadingMethod uploadingMethod = executionConfig.getUploadingMethod();
-    final DestinationBigqueryConnectionSpecification spec = executionConfig.getConnectionSpecification();
-    final String defaultNamespace = spec.getDatasetId();
+    final DestinationBigqueryConnectionConfig connectionConfig = executionConfig.getConnectionConfig();
+    final String defaultNamespace = connectionConfig.getDatasetId();
     setDefaultStreamNamespace(catalog, defaultNamespace);
-    final boolean disableTypeDedupe = spec.getDisableTypeDedupe();
-    final String datasetLocation = spec.getDatasetLocation() != null ? spec.getDatasetLocation().value() : "US";
-    final String projectId = spec.getProjectId();
+    final boolean disableTypeDedupe = connectionConfig.getDisableTypeDedupe();
+    final String datasetLocation = connectionConfig.getDatasetLocation() != null ? connectionConfig.getDatasetLocation().value() : "US";
+    final String projectId = connectionConfig.getProjectId();
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(projectId, datasetLocation);
     final ParsedCatalog parsedCatalog = parseCatalog(sqlGenerator, catalog);
-    final BigQuery bigquery = getBigQuery(projectId, spec.getCredentialsJson());
+    final BigQuery bigquery = getBigQuery(projectId, connectionConfig.getCredentialsJson());
     final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
 
     AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config);
@@ -278,7 +278,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     if (uploadingMethod == UploadingMethod.STANDARD) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
           "Please use the GCS upload mode if you are syncing a large amount of data.");
-      return getStandardRecordConsumer(bigquery, spec, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
+      return getStandardRecordConsumer(bigquery, connectionConfig, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
     }
 
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
@@ -306,7 +306,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         namingResolver::getTmpTableName,
         typerDeduper,
         parsedCatalog,
-        executionConfig.getConnectionSpecification().getDatasetId());
+        executionConfig.getConnectionConfig().getDatasetId());
   }
 
   protected Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> getUploaderMap(
@@ -383,7 +383,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   private SerializedAirbyteMessageConsumer getStandardRecordConsumer(final BigQuery bigquery,
-                                                                     final DestinationBigqueryConnectionSpecification spec,
+                                                                     final DestinationBigqueryConnectionConfig connectionConfig,
                                                                      final ConfiguredAirbyteCatalog catalog,
                                                                      final ParsedCatalog parsedCatalog,
                                                                      final Consumer<AirbyteMessage> outputRecordCollector,
@@ -392,12 +392,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     typerDeduper.prepareTables();
     final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> writeConfigs = getUploaderMap(
         bigquery,
-        spec.getDatasetLocation() != null ? spec.getDatasetLocation().value() : "US",
-        spec.getBigQueryClientBufferSizeMb(),
+        connectionConfig.getDatasetLocation() != null ? connectionConfig.getDatasetLocation().value() : "US",
+        connectionConfig.getBigQueryClientBufferSizeMb(),
         catalog,
         parsedCatalog);
 
-    final String bqNamespace = spec.getDatasetId();
+    final String bqNamespace = connectionConfig.getDatasetId();
 
     return new BigQueryRecordStandardConsumer(
         outputRecordCollector,

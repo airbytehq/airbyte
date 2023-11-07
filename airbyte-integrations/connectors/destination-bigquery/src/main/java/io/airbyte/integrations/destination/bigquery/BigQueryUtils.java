@@ -245,8 +245,8 @@ public class BigQueryUtils {
         ((ObjectNode) config).put(BigQueryConsts.CONFIG_CREDS, Jsons.serialize(json));
       }
     }
-    DestinationBigqueryConnectionSpecification spec = Jsons.convertValue(config, DestinationBigqueryConnectionSpecification.class);
-    return BigQueryExecutionConfig.builder().connectionSpecification(spec).build();
+    DestinationBigqueryConnectionConfig spec = Jsons.convertValue(config, DestinationBigqueryConnectionConfig.class);
+    return BigQueryExecutionConfig.builder().connectionConfig(spec).build();
   }
 
   public static JsonNode getGcsJsonNodeConfig(final JsonNode config) {

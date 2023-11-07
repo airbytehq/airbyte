@@ -60,7 +60,7 @@ dependencies {
 }
 
 def connectionSpecificationSchemaFile = file(
-        "${buildDir}/generated/sources/connectionSpecification/${project.name}-connection-specification.json")
+        "${buildDir}/generated/sources/connectionSpecification/${project.name}-connection-config.json")
 
 tasks.register('extractConnectionSpecificationSchema') {
 

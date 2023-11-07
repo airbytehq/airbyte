@@ -13,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.destination.bigquery.DestinationBigqueryConnectionSpecification.DatasetLocation;
-import io.airbyte.integrations.destination.bigquery.DestinationBigqueryConnectionSpecification.TransformationPriority;
+import io.airbyte.integrations.destination.bigquery.DestinationBigqueryConnectionConfig.DatasetLocation;
+import io.airbyte.integrations.destination.bigquery.DestinationBigqueryConnectionConfig.TransformationPriority;
 import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -54,15 +54,15 @@ public class BigQueryExecutionConfigTest {
     };
     final Consumer<BigQueryExecutionConfig> requiredMissingVerified = config -> {
       assertEquals(UploadingMethod.STANDARD, config.getUploadingMethod());
-      assertNull(config.getConnectionSpecification().getDatasetLocation());
-      assertNull(config.getConnectionSpecification().getProjectId());
+      assertNull(config.getConnectionConfig().getDatasetLocation());
+      assertNull(config.getConnectionConfig().getProjectId());
     };
     // At somepoint credentials_json was an object. Preserve backward compatibility for config
     // migrations
     final Consumer<BigQueryExecutionConfig> credsOldStyleConfig = config -> {
-      assertNotNull(config.getConnectionSpecification().getCredentialsJson());
-      assertFalse(config.getConnectionSpecification().getCredentialsJson().isEmpty());
-      assertFalse(config.getConnectionSpecification().getCredentialsJson().isBlank());
+      assertNotNull(config.getConnectionConfig().getCredentialsJson());
+      assertFalse(config.getConnectionConfig().getCredentialsJson().isEmpty());
+      assertFalse(config.getConnectionConfig().getCredentialsJson().isBlank());
     };
     return Stream.of(Arguments.arguments("connection-spec/gcs.json", gcsConfigVerifier),
         Arguments.arguments("connection-spec/standard.json", standardConfigVerifier),
@@ -72,17 +72,17 @@ public class BigQueryExecutionConfigTest {
 
   public static void verifyAllFields(BigQueryExecutionConfig config) {
     assertNotNull(config.getUploadingMethod());
-    assertNotNull(config.getConnectionSpecification().getDatasetLocation());
-    assertNotNull(config.getConnectionSpecification().getCredentialsJson());
-    assertEquals("dummy_dataset", config.getConnectionSpecification().getDatasetId());
-    assertEquals("dataline-integration-testing", config.getConnectionSpecification().getProjectId());
-    assertEquals(TransformationPriority.INTERACTIVE, config.getConnectionSpecification().getTransformationPriority());
-    assertEquals(DatasetLocation.US, config.getConnectionSpecification().getDatasetLocation());
-    assertFalse(config.getConnectionSpecification().getCredentialsJson().isEmpty());
-    assertEquals(15, config.getConnectionSpecification().getBigQueryClientBufferSizeMb());
+    assertNotNull(config.getConnectionConfig().getDatasetLocation());
+    assertNotNull(config.getConnectionConfig().getCredentialsJson());
+    assertEquals("dummy_dataset", config.getConnectionConfig().getDatasetId());
+    assertEquals("dataline-integration-testing", config.getConnectionConfig().getProjectId());
+    assertEquals(TransformationPriority.INTERACTIVE, config.getConnectionConfig().getTransformationPriority());
+    assertEquals(DatasetLocation.US, config.getConnectionConfig().getDatasetLocation());
+    assertFalse(config.getConnectionConfig().getCredentialsJson().isEmpty());
+    assertEquals(15, config.getConnectionConfig().getBigQueryClientBufferSizeMb());
 
     // Test unknown properties to be preserved during config migration phases.
-    assertEquals("data", config.getConnectionSpecification().getAdditionalProperties().get("unknown_property_from_spec").asText());
+    assertEquals("data", config.getConnectionConfig().getAdditionalProperties().get("unknown_property_from_spec").asText());
   }
 
 }

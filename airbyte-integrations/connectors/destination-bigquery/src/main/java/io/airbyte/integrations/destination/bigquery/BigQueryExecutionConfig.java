@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BigQueryExecutionConfig {
 
-  private final DestinationBigqueryConnectionSpecification connectionSpecification;
+  private final DestinationBigqueryConnectionConfig connectionConfig;
 
   private final UploadingMethod uploadingMethod;
 
@@ -32,11 +32,11 @@ public class BigQueryExecutionConfig {
 
   private final boolean keepFilesInGcs;
 
-  BigQueryExecutionConfig(final DestinationBigqueryConnectionSpecification connectionSpecification,
+  BigQueryExecutionConfig(final DestinationBigqueryConnectionConfig connectionConfig,
                           final Optional<GcsDestinationConfig> destinationConfig,
                           final UploadingMethod uploadingMethod,
                           final boolean keepFilesInGcs) {
-    this.connectionSpecification = connectionSpecification;
+    this.connectionConfig = connectionConfig;
     this.destinationConfig = destinationConfig;
     this.uploadingMethod = uploadingMethod;
     this.keepFilesInGcs = keepFilesInGcs;
@@ -54,20 +54,20 @@ public class BigQueryExecutionConfig {
     private static final String S3_FLATTENING_KEY = "flattening";
     private static final String S3_FLATTENING_VALUE = "No flattening";
 
-    private DestinationBigqueryConnectionSpecification connectionSpecification;
+    private DestinationBigqueryConnectionConfig connectionConfig;
 
-    public BigQueryExecutionConfigBuilder connectionSpecification(final DestinationBigqueryConnectionSpecification connectionSpecification) {
-      this.connectionSpecification = connectionSpecification;
+    public BigQueryExecutionConfigBuilder connectionConfig(final DestinationBigqueryConnectionConfig connectionConfig) {
+      this.connectionConfig = connectionConfig;
       return this;
     }
 
     public BigQueryExecutionConfig build() {
       final UploadingMethod uploadingMethod =
-          connectionSpecification.getLoadingMethod().getMethod().equals(GCS_STAGING) ? UploadingMethod.GCS : UploadingMethod.STANDARD;
+          connectionConfig.getLoadingMethod().getMethod().equals(GCS_STAGING) ? UploadingMethod.GCS : UploadingMethod.STANDARD;
       final Optional<GcsDestinationConfig> destinationConfig;
       final boolean keepFilesInGcs;
       if (uploadingMethod == UploadingMethod.GCS) {
-        final Map<String, JsonNode> gcsProperties = connectionSpecification.getLoadingMethod().getAdditionalProperties();
+        final Map<String, JsonNode> gcsProperties = connectionConfig.getLoadingMethod().getAdditionalProperties();
         final String gcsBucketName = gcsProperties.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
         final String gcsBucketPath = gcsProperties.get(BigQueryConsts.GCS_BUCKET_PATH).asText();
         final String gcsBucketRegion = gcsProperties.get(BigQueryConsts.GCS_BUCKET_REGION).asText();
@@ -107,7 +107,7 @@ public class BigQueryExecutionConfig {
         destinationConfig = Optional.empty();
         keepFilesInGcs = false;
       }
-      return new BigQueryExecutionConfig(this.connectionSpecification, destinationConfig, uploadingMethod, keepFilesInGcs);
+      return new BigQueryExecutionConfig(this.connectionConfig, destinationConfig, uploadingMethod, keepFilesInGcs);
     }
 
   }
