@@ -1,22 +1,266 @@
-{
-  "campaigns_analytics": {
-    "time": "2050-12-13",
-    "campaign_id": "a9b2442f-ff68-49dd-96e0-b9318957cd9a"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "campaigns_analytics"
+      },
+      "stream_state": {
+        "states": [
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "campaign_id": "0c38a773-8e62-4dcb-a492-c973c8c6ab9b",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "campaign_id": "a9b2442f-ff68-49dd-96e0-b9318957cd9a",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "campaign_id": "8c846e45-a8ab-4afe-b315-04627504b526",
+              "parent_slice": {}
+            }
+          }
+        ]
+      }
+    }
   },
-  "canvases_analytics": {
-    "time": "2050-12-13",
-    "canvas_id": "c73f8e7f-c6a5-441d-b227-46cb70f9f7d2"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "canvases_analytics"
+      },
+      "stream_state": {
+        "states": [
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "canvas_id": "c73f8e7f-c6a5-441d-b227-46cb70f9f7d2",
+              "parent_slice": {}
+            }
+          }
+        ]
+      }
+    }
   },
-  "events_analytics": {},
-  "kpi_daily_new_users": {},
-  "kpi_daily_active_users": {},
-  "kpi_daily_app_uninstalls": {},
-  "cards_analytics": {
-    "time": "2050-12-13",
-    "card_id": "609e4d4c-367b-4c87-a8ad-b1f903d058fd"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "cards_analytics"
+      },
+      "stream_state": {
+        "states": [
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "card_id": "609e4d4c-367b-4c87-a8ad-b1f903d058fd",
+              "parent_slice": {}
+            }
+          }
+        ]
+      }
+    }
   },
-  "segments_analytics": {
-    "time": "2050-12-13",
-    "segment_id": "8b922b25-dcc6-4e4d-b345-f7b06106046c"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "segments_analytics"
+      },
+      "stream_state": {
+        "states": [
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "cd7a9141-3457-4c37-9336-52845dd5fe87",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "2eaf781b-c4fb-4739-8ff1-080144e1aa1a",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "ce4e667c-3180-45dd-a200-7f3a9489f306",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "9d877c05-a4f6-4409-ae5a-eb7676d1e0b4",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "bf9673e5-41ee-4df4-b528-e46829efd646",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "6a51c1cf-8997-4919-a973-38557dde18de",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "18ae06cf-9f79-4b47-ab41-872caa0a2aac",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "d75a8f86-dd0d-4c60-b97e-855ca9f468e2",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "c693d38e-2fb6-4ef6-8e24-67b0977655ac",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "fb7e1079-f353-4887-a183-f197b30cf27e",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "7edf3784-c465-4ca8-89be-8a07c154fbf9",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "2ea0eeb1-26cf-4e63-a5ac-bec5622cdf71",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "5646a5f6-fc59-4e70-83e1-3e89a1c79493",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "b508cdb9-75cb-4122-8c6d-a7a6bfd24bf4",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "a94939de-135b-4e1a-9cdf-a5940747415e",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "8043672e-73fb-4731-854b-f9d315aa2b6e",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "a7a3a752-046e-4df4-bf3b-4e50d88d9a10",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "4926071e-2f5a-44f8-98b8-0d9db823283e",
+              "parent_slice": {}
+            }
+          },
+          {
+            "cursor": {
+              "time": "2050-11-03"
+            },
+            "partition": {
+              "segment_id": "8b922b25-dcc6-4e4d-b345-f7b06106046c",
+              "parent_slice": {}
+            }
+          }
+        ]
+      }
+    }
   }
-}
+]

@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import source_bing_ads.source
@@ -14,7 +14,6 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from bingads.service_client import ServiceClient
 from bingads.v13.internal.reporting.row_report import _RowReport
-from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
 from bingads.v13.reporting import ReportingDownloadParameters
 from suds import sudsobject
 
@@ -291,28 +290,6 @@ class ReportsMixin(ABC):
         getattr(columns, f"{self.report_name}Column").append(self.report_columns)
         report_request.Columns = columns
         return report_request
-
-    def parse_response(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Iterable[Mapping]:
-        if response is not None:
-            for row in response.report_records:
-                yield {column: self.get_column_value(row, column) for column in self.report_columns}
-
-        yield from []
-
-    @staticmethod
-    def get_column_value(row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
-        """
-        Reads field value from row and transforms:
-        1. empty values to logical None
-        2. Percent values to numeric string e.g. "12.25%" -> "12.25"
-        """
-        value = row.value(column)
-        if not value or value == "--":
-            return None
-        if "%" in value:
-            value = value.replace("%", "")
-
-        return value
 
     def get_report_record_timestamp(self, datestring: str) -> int:
         """

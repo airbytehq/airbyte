@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.52.10
+Fix class SessionTokenAuthenticator for CLASS_TYPES_REGISTRY mapper
+
+## 0.52.9
+File CDK: Improve file type detection in document file type parser
+
+## 0.52.8
+Concurrent CDK: incremental (missing state conversion). Outside of concurrent specific work, this includes the following changes:
+* Checkpointing state was acting on the number of records per slice. This has been changed to consider the number of records per syncs
+* `Source.read_state` and `Source._emit_legacy_state_format` are now classmethods to allow for developers to have access to the state before instantiating the source
+
 ## 0.52.7
 File CDK: Add pptx support
 

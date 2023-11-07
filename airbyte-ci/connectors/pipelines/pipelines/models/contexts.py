@@ -14,7 +14,6 @@ from typing import List, Optional
 from asyncer import asyncify
 from dagger import Client, Directory, File, Secret
 from github import PullRequest
-from pipelines import hacks
 from pipelines.consts import CIContext, ContextState
 from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.github import update_commit_status_check
@@ -231,7 +230,6 @@ class PipelineContext:
         self.state = ContextState.RUNNING
         self.started_at = datetime.utcnow()
         self.logger.info("Caching the latest CDK version...")
-        await hacks.cache_latest_cdk(self.dagger_client)
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         if self.should_send_slack_message:
             await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)
