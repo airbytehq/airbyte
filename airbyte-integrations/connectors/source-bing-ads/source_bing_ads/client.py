@@ -37,7 +37,7 @@ class Client:
     # https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling
     # https://docs.microsoft.com/en-us/advertising/guides/operation-error-codes?view=bingads-13
     retry_on_codes: Iterator[str] = ["117", "207", "4204", "109", "0"]
-    max_retries: int = 10
+    max_retries: int = 5
     # A backoff factor to apply between attempts after the second try
     # {retry_factor} * (2 ** ({number of total retries} - 1))
     retry_factor: int = 15
