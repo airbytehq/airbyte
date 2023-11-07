@@ -139,17 +139,14 @@ Place custom tests inside `integration_tests/` folder, then, from the connector 
 ```
 python -m pytest integration_tests
 ```
-#### Acceptance Tests
+
+### Acceptance Tests
 Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
-To run your integration tests with acceptance tests, from the connector root, run
+Please run acceptance tests via [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#connectors-test-command):
+```bash
+airbyte-ci connectors --name source-scaffold-source-python test
 ```
-python -m pytest integration_tests -p integration_tests.acceptance
-```
-To run your integration tests with docker
-
-### Using `airbyte-ci` to run tests
-See [airbyte-ci documentation](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#connectors-test-command)
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
@@ -159,8 +156,11 @@ We split dependencies between two groups, dependencies that are:
 
 ### Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing unit and integration tests.
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
-1. Create a Pull Request.
-1. Pat yourself on the back for being an awesome contributor.
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-scaffold-source-python test`
+2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
+3. Make sure the `metadata.yaml` content is up to date.
+4. Make the connector documentation and its changelog is up to date (`docs/integrations/sources/scaffold-source-python.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+
