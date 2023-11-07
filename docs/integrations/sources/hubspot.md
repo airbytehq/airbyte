@@ -17,11 +17,15 @@ This page contains the setup guide and reference information for the [HubSpot](h
 ## Setup guide
 
 <!-- env:cloud -->
-**For Airbyte Cloud** users, we highly recommend you use OAuth rather than Private App authentication, as it significantly simplifies the setup process.
+**For Airbyte Cloud:**
+
+We highly recommend you use OAuth rather than Private App authentication, as it significantly simplifies the setup process.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-**For Airbyte Open Source** users we recommend Private App authentication.
+**For Airbyte Open Source:**
+
+We recommend Private App authentication.
 <!-- /env:oss -->
 
 More information on HubSpot authentication methods can be found
@@ -30,19 +34,20 @@ More information on HubSpot authentication methods can be found
 ### Step 1: Set up the authentication method
 
 <!-- env:cloud -->
-### Airbyte Cloud
+**For Airbyte Cloud:**
 
-**OAuth** (Recommended for Airbyte Cloud)
+#### OAuth (Recommended)
 
+#### Private App
 
-**Private App** - If you are using a Private App, you will need to use your Access Token to set up the connector. Please refer to the
+If you are using a Private App, you will need to use your Access Token to set up the connector. Please refer to the
   [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-### Airbyte Open Source
+**For Airbyte Open Source:**
 
-#### Private App setup (Recommended for Airbyte Open Source)
+#### Private App setup (Recommended)
 
 If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the
 [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
@@ -96,25 +101,26 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 
 ### Step 3: Set up the HubSpot source connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+<!-- env:cloud -->
+**For Airbyte Cloud:**
+
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **HubSpot** from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. From the **Authentication** dropdown, select your chosen authentication method:
-
-<!-- env:cloud -->
-#### For Airbyte Cloud users:
-
-- **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
-- **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+  - **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
+  - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
 <!-- /env:cloud -->
-
 <!-- env:oss -->
-#### For Airbyte Open Source users:
+#### For Airbyte Open Source:
 
-- **Recommended:** To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
-- **Not Recommended:**To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
+1. Navigate to the Airbyte Open Source dashboard.
+2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **HubSpot** from the list of available sources.
+3. Enter a **Source name** of your choosing.
+4. From the **Authentication** dropdown, select your chosen authentication method:
+  - **Recommended:** To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+  - **Not Recommended:**To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
 <!-- /env:oss -->
-
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
 6. Click **Set up source** and wait for the tests to complete.
@@ -216,31 +222,28 @@ Expand to see details about Hubspot connector limitations and troubleshooting.
 
 The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
 
-#### Performance considerations
-
-Some streams, such as `workflows`, need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation only sync the other streams available.
-
-Example of the output message when trying to read `workflows` stream with missing permissions for the `API Key`:
-
-```text
-{
-    "type": "LOG",
-    "log": {
-        "level": "WARN",
-        "message": 'Stream `workflows` cannot be proceed. This API Key (EXAMPLE_API_KEY) does not have proper permissions! (requires any of [automation-access])'
-    }
-}
-```
-
 ### Troubleshooting
 
-<!-- Review common issues here: https://www.notion.so/512cf64f0ca54a1e9ea0034aaded84e8?v=77f3aa662f3641acaab5607c85966bb8 -->
 * Consider checking out the following Hubspot tutorial: [Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view).
+* **Enabling streams:** Some streams, such as `workflows`, need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation only sync the other streams available.
+
+    Example of the output message when trying to read `workflows` stream with missing permissions for the `API Key`:
+
+    ```json
+    {
+        "type": "LOG",
+        "log": {
+            "level": "WARN",
+            "message": "Stream `workflows` cannot be proceed. This API Key (EXAMPLE_API_KEY) does not have proper permissions! (requires any of [automation-access])"
+        }
+    }
+    ```
+
 * **Unnesting top level properties**: Since version 1.5.0, in order to not make the users query their destinations for complicated json fields, we duplicate most of nested data as top level fields.
 
     For instance:
 
-    ```text
+    ```json
     {
       "id": 1,
       "updatedAt": "2020-01-01",
@@ -253,7 +256,7 @@ Example of the output message when trying to read `workflows` stream with missin
 
     becomes
 
-    ```text
+    ```json
     {
         "id": 1,
         "updatedAt": "2020-01-01",
