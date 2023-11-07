@@ -13,7 +13,6 @@ This page contains the setup guide and reference information for the [BambooHR](
 
 ## Setup Guide
 
-
 ## Step 1: Set up the BambooHR connector in Airbyte
 
 <!-- env:cloud -->
