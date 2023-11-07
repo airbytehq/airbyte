@@ -1,14 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import logging
-import sys
 from typing import List
 
-import anyio
 import asyncclick as click
-import dagger
 from pipelines.airbyte_ci.format.actions import run_check
-from pipelines.airbyte_ci.format.check.utils import log_output
 from pipelines.airbyte_ci.format.containers import (
     format_java_container,
     format_js_container,
@@ -16,6 +11,7 @@ from pipelines.airbyte_ci.format.containers import (
     format_python_container,
 )
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.helpers.cli import LogOptions, run_all_subcommands
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 
 
@@ -26,32 +22,16 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 )
 @click.option("--list-errors", is_flag=True, default=False, help="Show detailed error messages for failed checks.")
 @click_merge_args_into_context_obj
-@pass_pipeline_context
 @click_ignore_unused_kwargs
-async def check(ctx: click.Context, pipeline_ctx: ClickPipelineContext, list_errors: bool):
+async def check(ctx: click.Context, list_errors: bool):
     """Run code format checks and fail if any checks fail."""
-    logger = logging.getLogger("check")
-
-    ctx.obj["check_results"] = {}
 
     if ctx.invoked_subcommand is None:
-        logger.info("Running all checks...")
-        async with anyio.create_task_group() as check_group:
-            for command in ctx.command.commands.values():
-                check_group.start_soon(run_check_command, ctx, command)
-
-    log_output(ctx.obj["check_results"], list_errors, logger)
-
-    if any(not succeeded for (succeeded, _) in ctx.obj["check_results"].values()):
-        sys.exit(1)
-
-
-async def run_check_command(ctx, command):
-    try:
-        await ctx.invoke(command)
-        ctx.obj["check_results"][command.name] = (True, None)
-    except dagger.ExecError as e:
-        ctx.obj["check_results"][command.name] = (False, str(e))
+        log_options = LogOptions(
+            list_errors=list_errors,
+            help_message="Run `airbyte-ci format check --list-errors` to see detailed error messages for failed checks.",
+        )
+        await run_all_subcommands(ctx, log_options)
 
 
 @check.command()

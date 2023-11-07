@@ -11,6 +11,7 @@ from pipelines.airbyte_ci.format.containers import (
     format_python_container,
 )
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.helpers.cli import run_all_subcommands
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 
 
@@ -20,16 +21,14 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
     chain=True,
 )
 @click_merge_args_into_context_obj
-@pass_pipeline_context
 @click_ignore_unused_kwargs
-async def fix(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
+async def fix(ctx: click.Context):
     """Run code format checks and fix any failures."""
     logger = logging.getLogger("format")
 
     if ctx.invoked_subcommand is None:
         logger.info("Running all formatters...")
-        for command in fix.commands.values():
-            await ctx.invoke(command)
+        await run_all_subcommands(ctx)
 
 
 @fix.command()
