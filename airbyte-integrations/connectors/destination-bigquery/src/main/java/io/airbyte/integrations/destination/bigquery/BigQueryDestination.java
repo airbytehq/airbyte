@@ -241,7 +241,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config);
     final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
     if (serviceAccountKey.isTextual()) {
-      AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(Jsons.deserialize(serviceAccountKey.asText()));
+      // There are cases where we fail to deserialize the service account key. In these cases, we
+      // shouldn't do anything.
+      // Google's creds library is more lenient with JSON-parsing than Jackson, and I'd rather just let it
+      // go.
+      Jsons.tryDeserialize(serviceAccountKey.asText())
+          .ifPresent(AirbyteExceptionHandler::addAllStringsInConfigForDeinterpolation);
     } else {
       AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(serviceAccountKey);
     }
