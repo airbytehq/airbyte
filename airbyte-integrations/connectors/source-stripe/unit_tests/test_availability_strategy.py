@@ -6,7 +6,7 @@ import logging
 
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from source_stripe.availability_strategy import STRIPE_ERROR_CODES, StripeSubStreamAvailabilityStrategy
-from source_stripe.streams import IncrementalStripeStream, StripeLazySubStream
+from source_stripe.streams import IncrementalStripeStream, Persons, StripeLazySubStream
 
 
 def test_traverse_over_substreams(mocker):
@@ -125,3 +125,25 @@ def test_403_error_handling(invoices, requests_mock):
         available, message = stream.check_availability(logger)
         assert not available
         assert STRIPE_ERROR_CODES[error_code] in message
+
+
+def test_availability_strategy_no_state(stream_args, requests_mock):
+    logger = logging.getLogger("airbyte")
+    requests_mock.get("/v1/accounts", json={"data": [{"id": 1, "object": "account", "created": 111}]})
+    full_refresh_endpoint = requests_mock.get("/v1/accounts/1/persons", json={"data": [{"id": 11, "object": "person", "created": 222}]})
+    stream = Persons(**stream_args)
+    status, _ = stream.check_availability(logger)
+    assert full_refresh_endpoint.call_count == 1
+    assert status
+
+
+def test_availability_strategy_with_state(stream_args, requests_mock):
+    logger = logging.getLogger("airbyte")
+    requests_mock.get("/v1/accounts", json={"data": [{"id": 1, "object": "account", "created": 111}]})
+    full_refresh_endpoint = requests_mock.get("/v1/accounts/1/persons", json={"data": [{"id": 11, "object": "person", "created": 222}]})
+    incremental_endpoint = requests_mock.get("/v1/events", json={})
+    stream = Persons(**stream_args)
+    status, _ = stream.check_availability(logger, stream_state={"updated": 1000000000})
+    assert status
+    assert not full_refresh_endpoint.call_count
+    assert incremental_endpoint.call_count
