@@ -22,4 +22,5 @@ public record CustomSqlType(String name, String vendor, Integer vendorTypeNumber
   public Integer getVendorTypeNumber() {
     return null;
   }
+
 }

@@ -14,7 +14,9 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 public class JdbcTyperDeduper extends DefaultTyperDeduper<JdbcDatabase> implements TyperDeduper {
 
   public JdbcTyperDeduper(
-      final SqlGenerator<JdbcDatabase> sqlGenerator, final DestinationHandler<JdbcDatabase> destinationHandler, final ParsedCatalog parsedCatalog) {
+                          final SqlGenerator<JdbcDatabase> sqlGenerator,
+                          final DestinationHandler<JdbcDatabase> destinationHandler,
+                          final ParsedCatalog parsedCatalog) {
     super(sqlGenerator, destinationHandler, parsedCatalog);
   }
 
@@ -32,4 +34,5 @@ public class JdbcTyperDeduper extends DefaultTyperDeduper<JdbcDatabase> implemen
   public void commitFinalTables() throws Exception {
     super.commitFinalTables();
   }
+
 }
