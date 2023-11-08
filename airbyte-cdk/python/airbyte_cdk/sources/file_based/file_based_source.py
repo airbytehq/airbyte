@@ -8,6 +8,7 @@ from abc import ABC
 from collections import Counter
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
+from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
@@ -21,10 +22,14 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
-from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.cursor.default_concurrent_file_based_cursor import DefaultConcurrentFileBasedCursor
+from airbyte_cdk.sources.message.repository import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.utils.analytics_message import create_analytics_message
 from pydantic.error_wrappers import ValidationError
+
+_MAX_CONCURRENCY = 100
 
 
 class FileBasedSource(AbstractSource, ABC):
@@ -37,7 +42,7 @@ class FileBasedSource(AbstractSource, ABC):
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
         validation_policies: Mapping[ValidationPolicy, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
-        cursor_cls: Type[AbstractFileBasedCursor] = DefaultFileBasedCursor,
+        cursor_cls: Type[AbstractFileBasedCursor] = DefaultConcurrentFileBasedCursor,
     ):
         self.stream_reader = stream_reader
         self.spec_class = spec_class
@@ -49,6 +54,14 @@ class FileBasedSource(AbstractSource, ABC):
         self.stream_schemas = {s.stream.name: s.stream.json_schema for s in catalog.streams} if catalog else {}
         self.cursor_cls = cursor_cls
         self.logger = logging.getLogger(f"airbyte.{self.name}")
+        self._message_repository = None
+        self._state = None
+
+    @property
+    def message_repository(self) -> Union[None, MessageRepository]:
+        if self._message_repository is None:
+            self._message_repository = InMemoryMessageRepository(entrypoint_logger.level)
+        return self._message_repository
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
@@ -94,6 +107,7 @@ class FileBasedSource(AbstractSource, ABC):
             parsed_config = self._get_parsed_config(config)
             self.stream_reader.config = parsed_config
             streams: List[Stream] = []
+            concurrency_level = _MAX_CONCURRENCY
             for stream_config in parsed_config.streams:
                 self._validate_input_schema(stream_config)
                 streams.append(
@@ -105,10 +119,25 @@ class FileBasedSource(AbstractSource, ABC):
                         discovery_policy=self.discovery_policy,
                         parsers=self.parsers,
                         validation_policy=self._validate_and_get_validation_policy(stream_config),
-                        cursor=self.cursor_cls(stream_config),
                     )
                 )
-            return streams
+            concurrent_cursors = [
+                self.cursor_cls(
+                    stream=s,
+                    stream_config=stream_config,
+                    message_repository=self.message_repository,
+                )
+                for s, stream_config in zip(streams, parsed_config.streams)
+            ]
+            streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+            concurrent_streams = [
+                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, None, cursor)
+                for stream, cursor in zip(streams, concurrent_cursors)
+            ]
+            for stream, cursor in zip(streams, concurrent_cursors):
+                stream.cursor = cursor
+
+            return concurrent_streams
 
         except ValidationError as exc:
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR) from exc

@@ -9,6 +9,7 @@ from typing import Any, List, MutableMapping, Optional
 
 class ConcurrencyCompatibleStateType(Enum):
     date_range = "date-range"
+    file_based = "file-based"
 
 
 class ConcurrentStreamStateConverter(ABC):

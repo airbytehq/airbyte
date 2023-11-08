@@ -305,12 +305,15 @@ class StreamPartition(Partition):
                 raise e
 
     def to_slice(self) -> Optional[Mapping[str, Any]]:
-        return self._slice
+        return {"_ab_source_file_last_modified": f"{self._slice['files'][0].last_modified}_{self._slice['files'][0].uri}"}
 
     def __hash__(self) -> int:
         if self._slice:
             # Convert the slice to a string so that it can be hashed
-            s = json.dumps(self._slice, sort_keys=True)
+            if len(self._slice["files"]) != 1:
+                raise ValueError(f"THIS SHOULDN'T BE != 1!! {self._slice['files']}")
+            else:
+                s = json.dumps(f"{self._slice['files'][0].last_modified}_{self._slice['files'][0].uri}")
             return hash((self._stream.name, s))
         else:
             return hash(self._stream.name)

@@ -43,8 +43,15 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
 
-    def __init__(self, cursor: AbstractFileBasedCursor, **kwargs: Any):
+    def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
+
+    @property
+    def cursor(self) -> AbstractFileBasedCursor:
+        return self._cursor
+
+    @cursor.setter
+    def cursor(self, cursor: AbstractFileBasedCursor) -> None:
         self._cursor = cursor
 
     @property
@@ -81,6 +88,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             raise MissingSchemaError(FileBasedSourceError.MISSING_SCHEMA, stream=self.name)
         # The stream only supports a single file type, so we can use the same parser for all files
         parser = self.get_parser()
+        if len(stream_slice["files"]) > 1:
+            raise NotImplementedError("This shouldn't be > 1")
         for file in stream_slice["files"]:
             # only serialize the datetime once
             file_datetime_string = file.last_modified.strftime(self.DATE_TIME_FORMAT)
