@@ -41,9 +41,21 @@ public interface DestinationFlushFunction {
   /**
    * When invoking {@link #flush(StreamDescriptor, Stream)}, best effort attempt to invoke flush with
    * a batch of this size. Useful for Destinations that have optimal flush batch sizes.
+   * <p>
+   * If you increase this, make sure that {@link #getQueueFlushThresholdBytes()} is larger than this
+   * value. Otherwise we may trigger flushes before reaching the optimal batch size.
    *
    * @return the optimal batch size in bytes
    */
   long getOptimalBatchSizeBytes();
+
+  /**
+   * This value should be at least as high as {@link #getOptimalBatchSizeBytes()}. It's used by
+   * {@link DetectStreamToFlush} as part of deciding when a stream needs to be flushed. I'm being
+   * vague because I don't understand the specifics.
+   */
+  default long getQueueFlushThresholdBytes() {
+    return 10 * 1024 * 1024; // 10MB
+  }
 
 }
