@@ -39,13 +39,15 @@ class MilvusIntegrationTest(BaseIntegrationTest):
     def test_check_valid_config(self):
         outcome = DestinationMilvus().check(logging.getLogger("airbyte"), self.config)
         assert outcome.status == Status.SUCCEEDED
-    
-    def _create_collection(self, vector_dimensions = 1536):
-        pk = FieldSchema(name="pk",dtype=DataType.INT64, is_primary=True, auto_id=True)
-        vector = FieldSchema(name="vector",dtype=DataType.FLOAT_VECTOR,dim=vector_dimensions)
+
+    def _create_collection(self, vector_dimensions=1536):
+        pk = FieldSchema(name="pk", dtype=DataType.INT64, is_primary=True, auto_id=True)
+        vector = FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=vector_dimensions)
         schema = CollectionSchema(fields=[pk, vector], enable_dynamic_field=True)
         collection = Collection(name=self.config["indexing"]["collection"], schema=schema, using="test_driver")
-        collection.create_index(field_name="vector", index_params={ "metric_type":"L2", "index_type":"IVF_FLAT", "params":{"nlist":1024} })
+        collection.create_index(
+            field_name="vector", index_params={"metric_type": "L2", "index_type": "IVF_FLAT", "params": {"nlist": 1024}}
+        )
 
     def test_check_valid_config_pre_created_collection(self):
         self._create_collection()
@@ -53,7 +55,7 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         assert outcome.status == Status.SUCCEEDED
 
     def test_check_invalid_config_vector_dimension(self):
-        self._create_collection(vector_dimensions = 666)
+        self._create_collection(vector_dimensions=666)
         outcome = DestinationMilvus().check(logging.getLogger("airbyte"), self.config)
         assert outcome.status == Status.FAILED
 
