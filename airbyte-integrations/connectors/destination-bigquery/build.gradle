@@ -1,10 +1,6 @@
-import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
-
 plugins {
     id 'application'
     id 'airbyte-java-connector'
-    id 'org.jsonschema2dataclass' version "6.0.0"
 }
 
 airbyteJavaConnector {
@@ -57,77 +53,6 @@ dependencies {
     // TODO: remove these dependencies (what's S3 doing here???)
     implementation libs.aws.java.sdk.s3
     implementation libs.s3
-}
-
-def connectionSpecificationSchemaFile = file(
-        "${buildDir}/generated/sources/connectionSpecification/${project.name}-connection-config.json")
-
-tasks.register('extractConnectionSpecificationSchema') {
-
-    def inputFile = file("${projectDir}/src/main/resources/spec.json")
-    inputs.file inputFile
-
-    def outputFile = connectionSpecificationSchemaFile
-    outputs.file outputFile
-
-    doFirst {
-        // Read the input JSON file
-        def inputJson = new JsonSlurper().parseText(inputFile.text)
-        logger.info "Parsed JSON from input: ${inputFile}"
-        def properties = inputJson["connectionSpecification"]["properties"]
-        // underlying jsonschema2pojo library cannot generate ambigious oneOf classes.
-        // alter the oneOf property to pull the common required fields to top level (should always be one in spec case)
-        // and add it as a property, let others be additionalProperties to use JsonNode functions
-        def additionalPropertiesType = [type: 'object', existingJavaType: 'com.fasterxml.jackson.databind.JsonNode']
-        properties.each { property ->
-            if (property.value.type == "object" && property.value.oneOf != null) {
-                def requiredFieldsList = property.value.oneOf.collect {it.required}
-                def commonRequiredFields = requiredFieldsList.inject {acc, list -> acc.intersect(list)}
-                commonRequiredFields.each {fieldname ->
-                    def requiredObjectFromOneOf = property.value.oneOf.first()['properties'][fieldname as String]
-                    property.value.properties = [(fieldname):requiredObjectFromOneOf]
-                    property.value.additionalProperties = additionalPropertiesType
-
-                }
-                property.value.remove('oneOf')
-            }
-        }
-        inputJson["connectionSpecification"].additionalProperties = additionalPropertiesType
-        // Get schema part
-        // def transformedJson = inputJson["connectionSpecification"]
-        def connectionSpec = inputJson["connectionSpecification"]
-
-        // Convert the transformed JSON back to a string
-        def transformedJsonString = JsonOutput.toJson(connectionSpec)
-
-        // Write the transformed JSON string to the output file in the build directory
-        outputFile.write(transformedJsonString)
-
-        // Print a message indicating the transformation is done
-        logger.info "Transformed JSON written to: ${outputFile}"
-    }
-}
-
-//tasks.generateJsonSchema2DataClass.dependsOn("extractConnectionSpecificationSchema")
-
-// https://github.com/jsonschema2dataclass/js2d-gradle/blob/main/docs/usage/parameters_6.adoc
-jsonSchema2Pojo {
-    executions{
-        main {
-            io.delimitersPropertyWord = '_'
-            io.source.setFrom connectionSpecificationSchemaFile
-            klass.annotateGenerated = false
-            klass.targetPackage = 'io.airbyte.integrations.destination.bigquery'
-            //methods.builders = true
-            //methods.buildersInnerClass= true
-        }
-    }
-}
-tasks.named('generateJsonSchema2DataClassConfigMain').configure {
-    dependsOn tasks.named('extractConnectionSpecificationSchema')
-}
-tasks.register('generate').configure {
-    dependsOn tasks.named('generateJsonSchema2DataClass')
 }
 
 configurations.all {
