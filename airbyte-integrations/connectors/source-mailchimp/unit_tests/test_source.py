@@ -67,4 +67,4 @@ def test_wrong_config(wrong_config):
 
 def test_streams_count(config):
     streams = SourceMailchimp().streams(config)
-    assert len(streams) == 10
+    assert len(streams) == 11

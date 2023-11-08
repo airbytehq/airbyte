@@ -20,6 +20,7 @@ from source_mailchimp.streams import (
     Lists,
     Reports,
     Segments,
+    Tags,
     Unsubscribes,
 )
 from utils import read_full_refresh, read_incremental
@@ -460,6 +461,7 @@ def test_403_error_handling(
         (ListMembers, {"list_id": "123"}, "lists/123/members"),
         (Reports, {}, "reports"),
         (Segments, {"list_id": "123"}, "lists/123/segments"),
+        (Tags, {"parent": {"id": "123"}}, "lists/123/tag-search"),
         (Unsubscribes, {"campaign_id": "123"}, "reports/123/unsubscribed"),
     ],
     ids=[
@@ -472,6 +474,7 @@ def test_403_error_handling(
         "ListMembers",
         "Reports",
         "Segments",
+        "Tags",
         "Unsubscribes",
     ],
 )
@@ -481,9 +484,9 @@ def test_path(auth, stream, stream_slice, expected_endpoint):
     """
 
     # Add parent stream where necessary
-    if stream == InterestCategories:
+    if stream is InterestCategories or stream is Tags:
         stream = stream(authenticator=auth, parent=Lists(authenticator=auth))
-    elif stream == Interests:
+    elif stream is Interests:
         stream = stream(authenticator=auth, parent=InterestCategories(authenticator=auth, parent=Lists(authenticator=auth)))
     else:
         stream = stream(authenticator=auth)
