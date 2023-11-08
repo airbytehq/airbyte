@@ -86,7 +86,7 @@ public class MongoDbCdcInitializer {
     final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(config.rawConfig());
     final OptionalInt queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final String databaseName = config.getDatabaseName();
-    final boolean isValidateSchema = config.getEnforceSchema();
+    final boolean isEnforceSchema = config.getEnforceSchema();
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
     final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
     final JsonNode initialDebeziumState =
@@ -128,7 +128,7 @@ public class MongoDbCdcInitializer {
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
         initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName), cdcMetadataInjector,
-            emittedAt, config.getCheckpointInterval(), isValidateSchema);
+            emittedAt, config.getCheckpointInterval(), isEnforceSchema);
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.rawConfig(),
         new MongoDbCdcTargetPosition(resumeToken), false, firstRecordWaitTime, queueSize);
