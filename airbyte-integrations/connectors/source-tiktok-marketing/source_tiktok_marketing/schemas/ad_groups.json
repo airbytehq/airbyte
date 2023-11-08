@@ -212,6 +212,9 @@
     "deep_cpa_bid": {
       "type": "number"
     },
+    "primary_status": {
+      "type": "string"
+    },
     "secondary_status": {
       "type": "string"
     },

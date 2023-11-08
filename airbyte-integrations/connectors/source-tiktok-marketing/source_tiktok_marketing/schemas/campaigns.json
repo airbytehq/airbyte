@@ -22,6 +22,9 @@
     "budget_mode": {
       "type": "string"
     },
+    "primary_status": {
+      "type": "string"
+    },
     "secondary_status": {
       "type": "string"
     },
