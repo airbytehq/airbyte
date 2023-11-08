@@ -31,18 +31,20 @@ To create a Google account, visit [Google](https://support.google.com/accounts/a
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
-3. On the source setup page, select **Google Sheets** from the Source type dropdown and enter a name for this connector.
-4. Select `Sign in with Google`.
-5. Log in and Authorize to the Google account and click `Set up source`.
-6. Copy the Google Sheet link to **Spreadsheet Link**
+1. Select **Google Sheets** from the Source type dropdown and enter a name for this connector.
+2. Select `Sign in with Google`.
+3. Log in and Authorize to the Google account and click `Set up source`.
+4. Copy the Google Sheet link to **Spreadsheet Link**
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
-
-The `Google Sheets Destination` works only with Airbyte Cloud.
+ Authentication to Google Sheets is only available using OAuth for authentication. 
+ 
+ 1. Select **Google Sheets** from the Source type dropdown and enter a name for this connector.
+2. Follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. You will need to grant the scopes described in the [Google Sheets API](https://developers.google.com/identity/protocols/oauth2/scopes#sheets). 
+3. Copy your Client ID, Client secret, and Refresh Token from the previous step. 
+4. Copy the Google Sheet link to **Spreadsheet Link**
 <!-- /env:oss -->
 
 ### Output schema
