@@ -123,7 +123,8 @@ import org.slf4j.LoggerFactory;
 
 public class PostgresSource extends AbstractJdbcSource<PostgresType> implements Source {
 
-  private static final String DEPLOYMENT_MODE = System.getenv(AdaptiveSourceRunner.DEPLOYMENT_MODE_KEY);
+  // This is not a static because we want it to be initialized at instance creation time
+  private final String DEPLOYMENT_MODE = System.getenv(AdaptiveSourceRunner.DEPLOYMENT_MODE_KEY);
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
   public static final String PARAM_SSLMODE = "sslmode";
