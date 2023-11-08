@@ -37,7 +37,7 @@ async def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
             ci_context=ctx.obj.get("ci_context"),
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
             use_local_cdk=ctx.obj.get("use_local_cdk"),
-            open_report_in_browser=ctx.obj.get("open_report_in_browser"),
+            enable_report_auto_open=ctx.obj.get("enable_report_auto_open"),
             use_host_gradle_dist_tar=use_host_gradle_dist_tar,
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
             s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
