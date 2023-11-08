@@ -23,5 +23,5 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 @click_merge_args_into_context_obj
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def format(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
+async def format(pipeline_context: ClickPipelineContext):
     pass
