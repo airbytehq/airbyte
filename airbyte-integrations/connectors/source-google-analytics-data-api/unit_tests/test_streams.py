@@ -38,13 +38,12 @@ def test_json_schema(requests_mock, patch_base_class):
         },
     )
     schema = GoogleAnalyticsDataApiBaseStream(
-        authenticator=MagicMock(),
-        config={"authenticator": MagicMock(),  **patch_base_class["config_without_date_range"]}
+        authenticator=MagicMock(), config={"authenticator": MagicMock(), **patch_base_class["config_without_date_range"]}
     ).get_json_schema()
 
     for d in patch_base_class["config_without_date_range"]["dimensions"]:
         assert d in schema["properties"]
-    
+
     for p in patch_base_class["config_without_date_range"]["metrics"]:
         assert p in schema["properties"]
 
