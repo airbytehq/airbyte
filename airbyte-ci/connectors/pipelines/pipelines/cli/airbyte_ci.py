@@ -9,15 +9,16 @@ import logging
 import multiprocessing
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import asyncclick as click
 import docker
 import git
 from github import PullRequest
 from pipelines import main_logger
+from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
-from pipelines.cli.telemetry import track_command
+from pipelines.cli.telemetry import click_track_command
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH, CIContext
 from pipelines.helpers import github
 from pipelines.helpers.git import (
@@ -32,6 +33,27 @@ from pipelines.helpers.utils import get_current_epoch_time, transform_strs_to_pa
 # HELPERS
 
 __installed_version__ = importlib.metadata.version("pipelines")
+
+
+def display_welcome_message() -> None:
+    print(
+        """
+        ╔─────────────────────────────────────────────────────────────────────────────────────────────────╗
+        │                                                                                                 │
+        │                                                                                                 │
+        │    /$$$$$$  /$$$$$$ /$$$$$$$  /$$$$$$$  /$$     /$$ /$$$$$$$$ /$$$$$$$$       /$$$$$$  /$$$$$$  │
+        │   /$$__  $$|_  $$_/| $$__  $$| $$__  $$|  $$   /$$/|__  $$__/| $$_____/      /$$__  $$|_  $$_/  │
+        │  | $$  \ $$  | $$  | $$  \ $$| $$  \ $$ \  $$ /$$/    | $$   | $$           | $$  \__/  | $$    │
+        │  | $$$$$$$$  | $$  | $$$$$$$/| $$$$$$$   \  $$$$/     | $$   | $$$$$ /$$$$$$| $$        | $$    │
+        │  | $$__  $$  | $$  | $$__  $$| $$__  $$   \  $$/      | $$   | $$__/|______/| $$        | $$    │
+        │  | $$  | $$  | $$  | $$  \ $$| $$  \ $$    | $$       | $$   | $$           | $$    $$  | $$    │
+        │  | $$  | $$ /$$$$$$| $$  | $$| $$$$$$$/    | $$       | $$   | $$$$$$$$     |  $$$$$$/ /$$$$$$  │
+        │  |__/  |__/|______/|__/  |__/|_______/     |__/       |__/   |________/      \______/ |______/  │
+        │                                                                                                 │
+        │                                                                                                 │
+        ╚─────────────────────────────────────────────────────────────────────────────────────────────────╝
+        """
+    )
 
 
 def check_up_to_date() -> bool:
@@ -138,6 +160,38 @@ async def get_modified_files(
     return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
 
 
+def log_git_info(ctx: click.Context):
+    main_logger.info("Running airbyte-ci in CI mode.")
+    main_logger.info(f"CI Context: {ctx.obj['ci_context']}")
+    main_logger.info(f"CI Report Bucket Name: {ctx.obj['ci_report_bucket_name']}")
+    main_logger.info(f"Git Branch: {ctx.obj['git_branch']}")
+    main_logger.info(f"Git Revision: {ctx.obj['git_revision']}")
+    main_logger.info(f"GitHub Workflow Run ID: {ctx.obj['gha_workflow_run_id']}")
+    main_logger.info(f"GitHub Workflow Run URL: {ctx.obj['gha_workflow_run_url']}")
+    main_logger.info(f"Pull Request Number: {ctx.obj['pull_request_number']}")
+    main_logger.info(f"Pipeline Start Timestamp: {ctx.obj['pipeline_start_timestamp']}")
+    main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
+
+
+def _get_gha_workflow_run_url(ctx: click.Context) -> Optional[str]:
+    gha_workflow_run_id = ctx.obj["gha_workflow_run_id"]
+    if not gha_workflow_run_id:
+        return None
+
+    return f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}"
+
+
+def _get_pull_request(ctx: click.Context) -> PullRequest or None:
+    pull_request_number = ctx.obj["pull_request_number"]
+    ci_github_access_token = ctx.obj["ci_github_access_token"]
+
+    can_get_pull_request = pull_request_number and ci_github_access_token
+    if not can_get_pull_request:
+        return None
+
+    return github.get_pull_request(pull_request_number, ci_github_access_token)
+
+
 def check_local_docker_configuration():
     try:
         docker_client = docker.from_env()
@@ -150,6 +204,18 @@ def check_local_docker_configuration():
         logging.warning(
             f"Your docker daemon is configured with less CPUs than your local machine ({docker_cpus_count} vs. {local_cpus_count}). This may slow down the airbyte-ci execution. Please consider increasing the number of CPUs allocated to your docker daemon in the Resource Allocation settings of Docker."
         )
+
+
+async def get_modified_files_str(ctx: click.Context):
+    modified_files = await get_modified_files(
+        ctx.obj["git_branch"],
+        ctx.obj["git_revision"],
+        ctx.obj["diffed_branch"],
+        ctx.obj["is_local"],
+        ctx.obj["ci_context"],
+        ctx.obj["pull_request"],
+    )
+    return transform_strs_to_paths(modified_files)
 
 
 # COMMANDS
@@ -192,72 +258,25 @@ def check_local_docker_configuration():
 @click.option("--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str)
 @click.option("--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
+@click_track_command
+@click_merge_args_into_context_obj
+@click_append_to_context_object("is_ci", lambda ctx: not ctx.obj["is_local"])
+@click_append_to_context_object("gha_workflow_run_url", _get_gha_workflow_run_url)
+@click_append_to_context_object("pull_request", _get_pull_request)
+@click_append_to_context_object("modified_files", get_modified_files_str)
 @click.pass_context
-@track_command
-async def airbyte_ci(
-    ctx: click.Context,
-    is_local: bool,
-    git_branch: str,
-    git_revision: str,
-    diffed_branch: str,
-    gha_workflow_run_id: str,
-    ci_context: str,
-    pipeline_start_timestamp: int,
-    pull_request_number: int,
-    ci_git_user: str,
-    ci_github_access_token: str,
-    ci_report_bucket_name: str,
-    ci_gcs_credentials: str,
-    ci_job_key: str,
-    s3_build_cache_access_key_id: str,
-    s3_build_cache_secret_key: str,
-    show_dagger_logs: bool,
-):  # noqa D103
-    ctx.ensure_object(dict)
-    if is_local:
+@click_ignore_unused_kwargs
+async def airbyte_ci(ctx: click.Context):  # noqa D103
+    display_welcome_message()
+    if ctx.obj["is_local"]:
         # This check is meaningful only when running locally
         # In our CI the docker host used by the Dagger Engine is different from the one used by the runner.
         check_local_docker_configuration()
+
     check_up_to_date()
-    ctx.obj["is_local"] = is_local
-    ctx.obj["is_ci"] = not is_local
-    ctx.obj["git_branch"] = git_branch
-    ctx.obj["git_revision"] = git_revision
-    ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
-    ctx.obj["gha_workflow_run_url"] = (
-        f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}" if gha_workflow_run_id else None
-    )
-    ctx.obj["ci_context"] = ci_context
-    ctx.obj["ci_report_bucket_name"] = ci_report_bucket_name
-    ctx.obj["ci_gcs_credentials"] = ci_gcs_credentials
-    ctx.obj["ci_git_user"] = ci_git_user
-    ctx.obj["ci_github_access_token"] = ci_github_access_token
-    ctx.obj["ci_job_key"] = ci_job_key
-    ctx.obj["s3_build_cache_access_key_id"] = s3_build_cache_access_key_id
-    ctx.obj["s3_build_cache_secret_key"] = s3_build_cache_secret_key
-    ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
-    ctx.obj["show_dagger_logs"] = show_dagger_logs
 
-    if pull_request_number and ci_github_access_token:
-        ctx.obj["pull_request"] = github.get_pull_request(pull_request_number, ci_github_access_token)
-    else:
-        ctx.obj["pull_request"] = None
-
-    ctx.obj["modified_files"] = transform_strs_to_paths(
-        await get_modified_files(git_branch, git_revision, diffed_branch, is_local, ci_context, ctx.obj["pull_request"])
-    )
-
-    if not is_local:
-        main_logger.info("Running airbyte-ci in CI mode.")
-        main_logger.info(f"CI Context: {ci_context}")
-        main_logger.info(f"CI Report Bucket Name: {ci_report_bucket_name}")
-        main_logger.info(f"Git Branch: {git_branch}")
-        main_logger.info(f"Git Revision: {git_revision}")
-        main_logger.info(f"GitHub Workflow Run ID: {gha_workflow_run_id}")
-        main_logger.info(f"GitHub Workflow Run URL: {ctx.obj['gha_workflow_run_url']}")
-        main_logger.info(f"Pull Request Number: {pull_request_number}")
-        main_logger.info(f"Pipeline Start Timestamp: {pipeline_start_timestamp}")
-        main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
+    if not ctx.obj["is_local"]:
+        log_git_info(ctx)
 
 
 set_working_directory_to_root()
