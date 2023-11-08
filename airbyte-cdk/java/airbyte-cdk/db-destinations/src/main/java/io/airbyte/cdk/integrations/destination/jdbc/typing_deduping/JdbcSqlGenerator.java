@@ -86,7 +86,7 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
   }
 
   protected SQLType preferredStructType(final LinkedHashMap<String, TypeInfoRecordSet> supportedTypes) {
-    //TODO: Make this abstract, let vendor specific handle this logic.
+    // TODO: Make this abstract, let vendor specific handle this logic.
     return preferredType(supportedTypes, List.of("VARIANT", "SUPER", "JSONB", "JSON"), widestType());
   }
 

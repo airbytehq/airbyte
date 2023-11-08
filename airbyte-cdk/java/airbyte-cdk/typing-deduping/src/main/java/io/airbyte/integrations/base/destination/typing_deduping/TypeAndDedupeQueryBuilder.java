@@ -12,7 +12,7 @@ public interface TypeAndDedupeQueryBuilder {
 
   String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns);
 
-  //TODO: kill this
+  // TODO: kill this
   String dedupRawTable(final StreamId id, final String finalSuffix);
 
   String dedupFinalTable(final StreamId id,

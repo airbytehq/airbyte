@@ -115,7 +115,7 @@ public class JdbcBufferedConsumerFactory {
       final String streamName = abStream.getName();
       final String tableName;
       final String tmpTableName;
-      //TODO: Should this be injected from outside ?
+      // TODO: Should this be injected from outside ?
       if (TypingAndDedupingFlag.isDestinationV2()) {
         final var finalSchema = Optional.ofNullable(abStream.getNamespace()).orElse(defaultSchemaName);
         final var rawName = StreamId.concatenateRawTableName(finalSchema, streamName);
