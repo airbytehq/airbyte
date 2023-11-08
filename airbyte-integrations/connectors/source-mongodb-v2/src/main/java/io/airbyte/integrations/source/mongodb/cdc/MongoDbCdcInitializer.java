@@ -8,9 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import io.airbyte.commons.json.Jsons;
@@ -29,9 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Properties;
-import java.util.function.Supplier;
 import org.bson.BsonDocument;
-import org.bson.BsonTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +78,7 @@ public class MongoDbCdcInitializer {
                                                                         final MongoDbStateManager stateManager,
                                                                         final Instant emittedAt,
                                                                         final MongoDbSourceConfig config) {
-
+    LOGGER.info("RUNNING IN FULL REFRESH ONLY MODE");
     final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(config.rawConfig());
     final OptionalInt queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final String databaseName = config.getDatabaseName();
@@ -105,8 +101,8 @@ public class MongoDbCdcInitializer {
           "Unable extract the offset out of state, State mutation might not be working. " + cdcState);
     }
 
-    final boolean savedOffsetIsValid =
-        optSavedOffset.filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient)).isPresent();
+    final boolean savedOffsetIsValid = false;
+        //optSavedOffset.filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient)).isPresent();
 
     if (!savedOffsetIsValid) {
       LOGGER.debug("Saved offset is not valid. Airbyte will trigger a full refresh.");
@@ -129,7 +125,7 @@ public class MongoDbCdcInitializer {
         initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName), cdcMetadataInjector,
             emittedAt, config.getCheckpointInterval());
 
-    final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.rawConfig(),
+    /*final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.rawConfig(),
         new MongoDbCdcTargetPosition(resumeToken), false, firstRecordWaitTime, queueSize);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
@@ -141,14 +137,14 @@ public class MongoDbCdcInitializer {
         defaultDebeziumProperties,
         DebeziumPropertiesManager.DebeziumConnectorType.MONGODB,
         emittedAt,
-        false);
+        false);*/
 
     // We can close the client after the initial snapshot is complete, incremental
     // iterator does not make use of the client.
     final AutoCloseableIterator<AirbyteMessage> initialSnapshotIterator = AutoCloseableIterators.appendOnClose(
         AutoCloseableIterators.concatWithEagerClose(initialSnapshotIterators), mongoClient::close);
 
-    return List.of(initialSnapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null));
+    return List.of(initialSnapshotIterator);
   }
 
 }
