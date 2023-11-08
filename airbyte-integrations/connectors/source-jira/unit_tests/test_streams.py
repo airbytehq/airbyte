@@ -698,12 +698,7 @@ def test_avatars_stream(config, avatars_response):
 @responses.activate
 def test_avatars_stream_should_retry(config, caplog):
     url = f"https://{config['domain']}/rest/api/3/avatar/issuetype/system?maxResults=50"
-    responses.add(
-        method=responses.GET,
-        url=url,
-        json={"errorMessages": ["The error message"], "errors": {}},
-        status=400
-    )
+    responses.add(method=responses.GET, url=url, json={"errorMessages": ["The error message"], "errors": {}}, status=400)
 
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
