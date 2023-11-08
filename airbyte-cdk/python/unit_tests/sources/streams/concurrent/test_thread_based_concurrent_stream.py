@@ -8,6 +8,7 @@ from unittest.mock import Mock, call
 import pytest
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
@@ -25,6 +26,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         self._slice_logger = Mock()
         self._logger = Mock()
         self._message_repository = Mock()
+        self._cursor = Mock(spec=Cursor)
         self._stream = ThreadBasedConcurrentStream(
             self._partition_generator,
             self._max_workers,
@@ -39,6 +41,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             1,
             2,
             0,
+            cursor=self._cursor,
         )
 
     def test_get_json_schema(self):
@@ -76,17 +79,20 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         with self.assertRaises(Exception):
             self._stream._check_for_errors(futures)
 
-    def test_read_raises_an_exception_if_a_partition_raises_an_exception(self):
+    def test_read_observe_records_and_close_partition(self):
         partition = Mock(spec=Partition)
-        partition.read.side_effect = RuntimeError("error")
-        self._partition_generator.generate.return_value = [partition]
-        with pytest.raises(RuntimeError):
-            list(self._stream.read())
+        expected_records = [Record({"id": 1}), Record({"id": "2"})]
+        partition.read.return_value = expected_records
+        partition.to_slice.return_value = {"slice": "slice"}
+        self._slice_logger.should_log_slice_message.return_value = False
 
-    def test_read_raises_an_exception_if_partition_generator_raises_an_exception(self):
-        self._partition_generator.generate.side_effect = RuntimeError("error")
-        with pytest.raises(RuntimeError):
-            list(self._stream.read())
+        self._partition_generator.generate.return_value = [partition]
+        actual_records = list(self._stream.read())
+
+        assert expected_records == actual_records
+
+        self._cursor.observe.has_calls([call(record) for record in expected_records])
+        self._cursor.close_partition.assert_called_once_with(partition)
 
     def test_read_no_slice_message(self):
         partition = Mock(spec=Partition)
@@ -122,12 +128,28 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
 
         # Verify that the done() method will be called until only one future is still running
         f1.done.side_effect = [False, False]
+        f1.exception.return_value = None
         f2.done.side_effect = [False, True]
+        f2.exception.return_value = None
         futures = [f1, f2]
         self._stream._wait_while_too_many_pending_futures(futures)
 
         f1.done.assert_has_calls([call(), call()])
         f2.done.assert_has_calls([call(), call()])
+
+    def test_given_exception_then_fail_immediately(self):
+        f1 = Mock()
+        f2 = Mock()
+
+        # Verify that the done() method will be called until only one future is still running
+        f1.done.return_value = False
+        f1.exception.return_value = None
+        f2.done.return_value = False
+        f2.exception.return_value = ValueError("An exception")
+        futures = [f1, f2]
+
+        with pytest.raises(RuntimeError):
+            self._stream._wait_while_too_many_pending_futures(futures)
 
     def test_as_airbyte_stream(self):
         expected_airbyte_stream = AirbyteStream(
@@ -218,7 +240,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         assert expected_airbyte_stream == airbyte_stream
 
     def test_as_airbyte_stream_with_a_cursor(self):
-
         json_schema = {
             "type": "object",
             "properties": {

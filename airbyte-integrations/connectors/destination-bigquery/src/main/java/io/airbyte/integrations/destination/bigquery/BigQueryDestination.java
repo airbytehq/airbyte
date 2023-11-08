@@ -8,6 +8,7 @@ import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
@@ -18,6 +19,7 @@ import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
@@ -174,6 +176,27 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
+  public static BigQuery getBigQuery(final String projectId, final String credentialsJson) {
+
+    try {
+      final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
+      final GoogleCredentials credentials;
+      if (credentialsJson == null || credentialsJson.isEmpty()) {
+        credentials = GoogleCredentials.getApplicationDefault();
+      } else {
+        credentials = GoogleCredentials.fromStream(new ByteArrayInputStream(credentialsJson.getBytes(Charsets.UTF_8)));
+      }
+      return bigQueryBuilder
+          .setProjectId(projectId)
+          .setCredentials(credentials)
+          .setHeaderProvider(BigQueryUtils.getHeaderProvider())
+          .build()
+          .getService();
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static BigQuery getBigQuery(final JsonNode config) {
     final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
@@ -226,27 +249,44 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
-    final String defaultNamespace = BigQueryUtils.getDatasetId(config);
+    final BigQueryExecutionConfig executionConfig = BigQueryUtils.createExecutionConfig(config);
+    final UploadingMethod uploadingMethod = executionConfig.getUploadingMethod();
+    final DestinationBigqueryConnectionConfig connectionConfig = executionConfig.getConnectionConfig();
+    final String defaultNamespace = connectionConfig.getDatasetId();
     setDefaultStreamNamespace(catalog, defaultNamespace);
-    final boolean disableTypeDedupe = BigQueryUtils.getDisableTypeDedupFlag(config);
-    final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
-    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
-    final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation);
-    final BigQuery bigquery = getBigQuery(config);
+    final boolean disableTypeDedupe = connectionConfig.getDisableTypeDedupe();
+    final String datasetLocation = connectionConfig.getDatasetLocation() != null ? connectionConfig.getDatasetLocation().value() : "US";
+    final String projectId = connectionConfig.getProjectId();
+    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(projectId, datasetLocation);
+    final ParsedCatalog parsedCatalog = parseCatalog(sqlGenerator, catalog);
+    final BigQuery bigquery = getBigQuery(projectId, connectionConfig.getCredentialsJson());
     final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
+
+    AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config);
+    final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
+    if (serviceAccountKey.isTextual()) {
+      // There are cases where we fail to deserialize the service account key. In these cases, we
+      // shouldn't do anything.
+      // Google's creds library is more lenient with JSON-parsing than Jackson, and I'd rather just let it
+      // go.
+      Jsons.tryDeserialize(serviceAccountKey.asText())
+          .ifPresent(AirbyteExceptionHandler::addAllStringsInConfigForDeinterpolation);
+    } else {
+      AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(serviceAccountKey);
+    }
 
     if (uploadingMethod == UploadingMethod.STANDARD) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
           "Please use the GCS upload mode if you are syncing a large amount of data.");
-      return getStandardRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
+      return getStandardRecordConsumer(bigquery, connectionConfig, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
     }
 
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
-    final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsCsvDestinationConfig(config);
+    // noinspection UploadingMethod.STANDARD shortcircuits this.
+    final GcsDestinationConfig gcsConfig = executionConfig.getDestinationConfig().get();
     final UUID stagingId = UUID.randomUUID();
     final DateTime syncDatetime = DateTime.now(DateTimeZone.UTC);
-    final boolean keepStagingFiles = BigQueryUtils.isKeepFilesInGcs(config);
+    final boolean keepStagingFiles = executionConfig.isKeepFilesInGcs();
     final GcsStorageOperations gcsOperations = new GcsStorageOperations(gcsNameTransformer, gcsConfig.getS3Client(), gcsConfig);
     final BigQueryStagingOperations bigQueryGcsOperations = new BigQueryGcsOperations(
         bigquery,
@@ -258,7 +298,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         keepStagingFiles);
 
     return new BigQueryStagingConsumerFactory().createAsync(
-        config,
+        datasetLocation,
         catalog,
         outputRecordCollector,
         bigQueryGcsOperations,
@@ -266,12 +306,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         namingResolver::getTmpTableName,
         typerDeduper,
         parsedCatalog,
-        BigQueryUtils.getDatasetId(config));
+        executionConfig.getConnectionConfig().getDatasetId());
   }
 
   protected Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> getUploaderMap(
                                                                                                                 final BigQuery bigquery,
-                                                                                                                final JsonNode config,
+                                                                                                                final String datasetLocation,
+                                                                                                                final Integer bigQueryClientChunkSize,
                                                                                                                 final ConfiguredAirbyteCatalog catalog,
                                                                                                                 final ParsedCatalog parsedCatalog)
       throws IOException {
@@ -283,7 +324,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
         randomSuffixMap.putIfAbsent(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream), RandomStringUtils.randomAlphabetic(3).toLowerCase());
 
-        String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
+        final String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
         final String streamName = stream.getName();
         final String targetTableName;
 
@@ -295,7 +336,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             .bigQuery(bigquery)
             .configStream(configStream)
             .parsedStream(parsedStream)
-            .config(config)
+            .datasetLocation(datasetLocation)
+            .bigQueryClientChunkSize(bigQueryClientChunkSize)
+            .gcsUploadingMode(false)
             .formatterMap(getFormatterMap(stream.getJsonSchema()))
             .tmpTableName(namingResolver.getTmpTableName(streamName, randomSuffix))
             .targetTableName(targetTableName)
@@ -305,7 +348,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
         try {
           putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
-        } catch (IOException e) {
+        } catch (final IOException e) {
           throw new RuntimeException(e);
         }
       }
@@ -339,12 +382,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         UploaderType.CSV, new GcsCsvBigQueryRecordFormatter(jsonSchema, namingResolver));
   }
 
-  protected String getTargetTableName(final String streamName) {
-    return namingResolver.getRawTableName(streamName);
-  }
-
   private SerializedAirbyteMessageConsumer getStandardRecordConsumer(final BigQuery bigquery,
-                                                                     final JsonNode config,
+                                                                     final DestinationBigqueryConnectionConfig connectionConfig,
                                                                      final ConfiguredAirbyteCatalog catalog,
                                                                      final ParsedCatalog parsedCatalog,
                                                                      final Consumer<AirbyteMessage> outputRecordCollector,
@@ -353,11 +392,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     typerDeduper.prepareTables();
     final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> writeConfigs = getUploaderMap(
         bigquery,
-        config,
+        connectionConfig.getDatasetLocation() != null ? connectionConfig.getDatasetLocation().value() : "US",
+        connectionConfig.getBigQueryClientBufferSizeMb(),
         catalog,
         parsedCatalog);
 
-    final String bqNamespace = BigQueryUtils.getDatasetId(config);
+    final String bqNamespace = connectionConfig.getDatasetId();
 
     return new BigQueryRecordStandardConsumer(
         outputRecordCollector,
@@ -387,7 +427,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             typerDeduper.typeAndDedupe();
             typerDeduper.commitFinalTables();
             typerDeduper.cleanup();
-          } catch (Exception e) {
+          } catch (final Exception e) {
             throw new RuntimeException(e);
           }
         },
@@ -414,8 +454,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private ParsedCatalog parseCatalog(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final String datasetLocation) {
-    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
+  private ParsedCatalog parseCatalog(final BigQuerySqlGenerator sqlGenerator, final ConfiguredAirbyteCatalog catalog) {
     final CatalogParser catalogParser = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).isPresent()
         ? new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get())
         : new CatalogParser(sqlGenerator);
@@ -477,6 +516,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   public static void main(final String[] args) throws Exception {
+    AirbyteExceptionHandler.addThrowableForDeinterpolation(BigQueryException.class);
     final Destination destination = new BigQueryDestination();
     new IntegrationRunner(destination).run(args);
   }

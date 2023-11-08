@@ -35,6 +35,7 @@ import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
@@ -93,7 +94,9 @@ public class BigQueryUtils {
 
   static Job waitForQuery(final Job queryJob) {
     try {
-      return queryJob.waitFor();
+      final Job job = queryJob.waitFor();
+      AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
+      return job;
     } catch (final Exception e) {
       LOGGER.error("Failed to wait for a query job:" + queryJob);
       throw new RuntimeException(e);
@@ -233,6 +236,19 @@ public class BigQueryUtils {
     }
   }
 
+  public static BigQueryExecutionConfig createExecutionConfig(final JsonNode config) {
+    // Adapt any older formats to newer formats for backward compatibility.
+    // This existed before in isUsingJsonCredentials method
+    if (config.has(BigQueryConsts.CONFIG_CREDS)) {
+      final JsonNode json = config.get(BigQueryConsts.CONFIG_CREDS);
+      if (json.isObject()) {
+        ((ObjectNode) config).put(BigQueryConsts.CONFIG_CREDS, Jsons.serialize(json));
+      }
+    }
+    DestinationBigqueryConnectionConfig spec = Jsons.convertValue(config, DestinationBigqueryConnectionConfig.class);
+    return BigQueryExecutionConfig.builder().connectionConfig(spec).build();
+  }
+
   public static JsonNode getGcsJsonNodeConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
@@ -303,14 +319,6 @@ public class BigQueryUtils {
     } else {
       return "US";
     }
-  }
-
-  public static boolean getDisableTypeDedupFlag(final JsonNode config) {
-    if (config.has(BigQueryConsts.DISABLE_TYPE_DEDUPE)) {
-      return config.get(BigQueryConsts.DISABLE_TYPE_DEDUPE).asBoolean(false);
-    }
-
-    return false;
   }
 
   static TableDefinition getTableDefinition(final BigQuery bigquery, final String datasetName, final String tableName) {
@@ -428,21 +436,9 @@ public class BigQueryUtils {
     }
   }
 
-  public static boolean isKeepFilesInGcs(final JsonNode config) {
-    final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
-    if (loadingMethod != null && loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES) != null
-        && BigQueryConsts.KEEP_GCS_FILES_VAL
-            .equals(loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES).asText())) {
-      LOGGER.info("All tmp files GCS will be kept in bucket when replication is finished");
-      return true;
-    } else {
-      LOGGER.info("All tmp files will be removed from GCS when replication is finished");
-      return false;
-    }
-  }
-
   public static void waitForJobFinish(final Job job) throws InterruptedException {
     if (job != null) {
+      AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
       try {
         LOGGER.info("Waiting for job finish {}. Status: {}", job, job.getStatus());
         job.waitFor();
