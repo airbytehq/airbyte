@@ -4,9 +4,7 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import List, Optional
-
-from pydantic import ConfigDict
+from typing import Dict, List, Optional
 
 from .cards import (
     Address,
@@ -63,7 +61,7 @@ class Transaction(BaseModel):
     created_at: datetime
     credit_card_details: CreditCard
     currency_iso_code: str
-    custom_fields: dict
+    custom_fields: Dict[str, str]
     customer_details: Customer
     cvv_response_code: str
     disbursement_details: DisbursementDetails
@@ -122,5 +120,3 @@ class Transaction(BaseModel):
     venmo_account_details: VenmoAccount
     visa_checkout_card_details: VisaCheckoutCard
     voice_referral_number: str
-
-    model_config = ConfigDict(extra='allow')
