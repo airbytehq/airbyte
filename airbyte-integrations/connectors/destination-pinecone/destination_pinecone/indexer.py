@@ -6,13 +6,13 @@ import uuid
 from typing import Optional
 
 import pinecone
+import requests
+import urllib3
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, create_stream_identifier, format_exception
 from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog, DestinationSyncMode
 from destination_pinecone.config import PineconeIndexingModel
-import requests
-import urllib3
 
 # large enough to speed up processing, small enough to not hit pinecone request limits
 PINECONE_BATCH_SIZE = 40
@@ -120,7 +120,7 @@ class PineconeIndexer(Indexer):
             if isinstance(e, urllib3.exceptions.MaxRetryError):
                 if f"Failed to resolve 'controller.{self.config.pinecone_environment}.pinecone.io'" in str(e.reason):
                     return f"Failed to resolve environment, please check whether {self.config.pinecone_environment} is correct."
-            
+
             if isinstance(e, pinecone.exceptions.UnauthorizedException):
                 if e.body:
                     return e.body
