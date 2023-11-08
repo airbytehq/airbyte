@@ -137,7 +137,10 @@ class SourceStripe(AbstractSource):
                     next_reset_ts=datetime.now(),
                     period=timedelta(seconds=1),
                     call_limit=20,
-                    matchers=[HttpRequestMatcher(url="https://api.stripe.com/v1/files")],
+                    matchers=[
+                        HttpRequestMatcher(url="https://api.stripe.com/v1/files"),
+                        HttpRequestMatcher(url="https://api.stripe.com/v1/file_links")
+                    ],
                 ),
                 FixedWindowCallRatePolicy(
                     next_reset_ts=datetime.now(),
