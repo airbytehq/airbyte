@@ -334,6 +334,32 @@ class Segments(MailChimpListSubStream):
     data_field = "segments"
 
 
+class Tags(MailChimpStream, HttpSubStream):
+    """
+    Get information about tags for a specific list.
+    Docs link: https://mailchimp.com/developer/marketing/api/list-tags/list-tags-for-list/
+    """
+
+    data_field = "tags"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        """
+        Get the list_id from the parent stream slice and use it to construct the path.
+        """
+        list_id = stream_slice.get("parent").get("id")
+        return f"lists/{list_id}/tag-search"
+    
+    def parse_response(self, response: requests.Response, stream_slice, **kwargs) -> Iterable[Mapping]:
+        """
+        Tags do not reference parent_ids, so we need to add the list_id to each record.
+        """
+        response = super().parse_response(response, **kwargs)
+
+        for record in response:
+            record["list_id"] = stream_slice.get("parent").get("id")
+            yield record
+
+
 class Unsubscribes(IncrementalMailChimpStream):
     """
     List of members who have unsubscribed from a specific campaign.

@@ -13,7 +13,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from requests.auth import AuthBase
 
-from .streams import Automations, Campaigns, EmailActivity, InterestCategories, Interests, ListMembers, Lists, Reports, Segments, Unsubscribes
+from .streams import Automations, Campaigns, EmailActivity, InterestCategories, Interests, ListMembers, Lists, Reports, Segments, Tags, Unsubscribes
 
 
 class MailChimpAuthenticator:
@@ -83,5 +83,6 @@ class SourceMailchimp(AbstractSource):
             ListMembers(authenticator=authenticator),
             Reports(authenticator=authenticator),
             Segments(authenticator=authenticator),
+            Tags(authenticator=authenticator, parent=Lists(authenticator=authenticator)),
             Unsubscribes(authenticator=authenticator, campaign_id=campaign_id),
         ]
