@@ -34,3 +34,4 @@ url-normalize==1.4.3
 urllib3==2.0.3
 wcmatch==8.4
 wrapt==1.15.0
+re

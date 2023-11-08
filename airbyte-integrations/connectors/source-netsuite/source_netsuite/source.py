@@ -8,6 +8,8 @@ from collections import Counter
 from json import JSONDecodeError
 from typing import Any, List, Mapping, Tuple, Union
 
+
+import re
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -17,7 +19,6 @@ from source_netsuite.streams import CustomIncrementalNetsuiteStream, Incremental
 
 
 class SourceNetsuite(AbstractSource):
-
     logger: logging.Logger = logging.getLogger("airbyte")
 
     def auth(self, config: Mapping[str, Any]) -> OAuth1:
@@ -54,15 +55,25 @@ class SourceNetsuite(AbstractSource):
             if duplicates:
                 return False, f'Duplicate record type: {", ".join(duplicates)}'
             # check connectivity to all provided `object_types`
+            for rec_type in object_types:
+                if bool(re.match("^[A-Za-z0-9_]*$", rec_type.lower())) is False:
+                    return False, f'<{rec_type}> can contain only digits, alphabetic characters, or "_" with no spaces'
+
+            logger.info(f"object_types ===>> {object_types}")
             for object in object_types:
                 try:
                     response = session.get(url=base_url + RECORD_PATH + object.lower(), params={"limit": 1})
                     response.raise_for_status()
-                    return True, None
+                    # return True, None
                 except requests.exceptions.HTTPError as e:
+                    if 404 == e.response.status_code:
+                        return False, f"<{object}> : Request for a Non-existent Record"
                     return False, e
+
+            return True, None
+
         else:
-            return False
+            return False, "Object Types cannot be empty, please enter at least one value"
             # if `object_types` are not provided, use `Contact` object
             # there should be at least 1 contact available in every NetSuite account by default.
             # url = base_url + RECORD_PATH + "contact"
@@ -110,16 +121,14 @@ class SourceNetsuite(AbstractSource):
         window_in_days: int,
         language: str,
         max_retry: int = 3,
-
     ) -> Union[NetsuiteStream, IncrementalNetsuiteStream, CustomIncrementalNetsuiteStream]:
-
         input_args = {
             "auth": auth,
             "object_name": object_name,
             "base_url": base_url,
             "start_datetime": start_datetime,
             "window_in_days": window_in_days,
-            "language": language
+            "language": language,
         }
 
         schema = schemas[object_name]
@@ -170,7 +179,7 @@ class SourceNetsuite(AbstractSource):
                     "start_datetime": config["start_datetime"],
                     "window_in_days": config["window_in_days"],
                     "schemas": schemas,
-                    "language": config["language"]
+                    "language": config["language"],
                 }
             )
             # build streams
@@ -182,4 +191,3 @@ class SourceNetsuite(AbstractSource):
             return streams
         except KeyError:
             self.logger.error(f"Object_types you provided is not a valid field.")
-        
