@@ -11,6 +11,8 @@ from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, create_stream_identifier, format_exception
 from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog, DestinationSyncMode
 from destination_pinecone.config import PineconeIndexingModel
+import requests
+import urllib3
 
 # large enough to speed up processing, small enough to not hit pinecone request limits
 PINECONE_BATCH_SIZE = 40
@@ -106,10 +108,23 @@ class PineconeIndexer(Indexer):
 
     def check(self) -> Optional[str]:
         try:
+            indexes = pinecone.list_indexes()
+            if self.config.index not in indexes:
+                return f"Index {self.config.index} does not exist in environment {self.config.pinecone_environment}."
+
             description = pinecone.describe_index(self.config.index)
             actual_dimension = int(description.dimension)
             if actual_dimension != self.embedding_dimensions:
                 return f"Your embedding configuration will produce vectors with dimension {self.embedding_dimensions:d}, but your index is configured with dimension {actual_dimension:d}. Make sure embedding and indexing configurations match."
         except Exception as e:
-            return format_exception(e)
+            if isinstance(e, urllib3.exceptions.MaxRetryError):
+                if f"Failed to resolve 'controller.{self.config.pinecone_environment}.pinecone.io'" in str(e.reason):
+                    return f"Failed to resolve environment, please check whether {self.config.pinecone_environment} is correct."
+            
+            if isinstance(e, pinecone.exceptions.UnauthorizedException):
+                if e.body:
+                    return e.body
+
+            formatted_exception = format_exception(e)
+            return formatted_exception
         return None
