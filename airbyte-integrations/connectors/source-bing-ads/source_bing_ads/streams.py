@@ -1260,3 +1260,29 @@ class UserLocationPerformanceReportWeekly(UserLocationPerformanceReport):
 
 class UserLocationPerformanceReportMonthly(UserLocationPerformanceReport):
     report_aggregation = "Monthly"
+
+
+class CustomReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    custom_report_columns = []
+    cursor_field = "TimePeriod"
+    report_schema_name = None
+    primary_key = None
+
+    @property
+    def report_columns(self):
+        # adding common and default columns
+        if "AccountId" not in self.custom_report_columns:
+            self.custom_report_columns.append("AccountId")
+        return list(frozenset(self.custom_report_columns))
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        columns_schema = {col: {"type": ["null", "string"]} for col in self.report_columns}
+        schema: Mapping[str, Any] = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": columns_schema,
+        }
+        return schema
+

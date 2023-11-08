@@ -54,7 +54,12 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 6. Add the developer token from [Step 1](#step-1-set-up-bing-ads).
 7. For **Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 8. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode, let it with 0 default value.
-9. Click **Authenticate your Bing Ads account**.
+9. For *Custom Reports* - see [custom reports](#custom-reports) section, list of custom reports object:
+   1. For *Report Name* enter the name that you want for your custom report.
+   2. For *Reporting Data Object* enter the Bing Ads Reporting Object that you want to sync in the custom report.
+   3. For *Columns* add list columns of Reporting Data Object that you want to see in the custom report.
+   4. For *Aggregation* add time aggregation. See [report aggregation](#report-aggregation) section.
+10. Click **Authenticate your Bing Ads account**.
 10. Log in and authorize the Bing Ads account.
 11. Click **Set up source**.
 <!-- /env:cloud -->
@@ -71,7 +76,12 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 6. Enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Developer Token** from [Step 1](#step-1-set-up-bing-ads).
 7. For **Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 8. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode, let it with 0 default value.
-9. Click **Set up source**.
+9. For *Custom Reports* - see [custom reports](#custom-reports) section:
+   1. For *Report Name* enter the name that you want for your custom report.
+   2. For *Reporting Data Object* enter the Bing Ads Reporting Object that you want to sync in the custom report.
+   3. For *Columns* add columns of Reporting Data Object that you want to see in the custom report.
+   4. For *Aggregation* select time aggregation. See [report aggregation](#report-aggregation) section.
+10. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -153,6 +163,14 @@ The Bing Ads source connector supports the following streams. For more informati
 - [Search Query Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
 - [Search Query Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
 
+### Custom Reports
+You can build your own report by providing:
+- *Report Name* - name of the stream
+- *Reporting Data Object* - Bing Ads reporting data object that you can find [here](https://learn.microsoft.com/en-us/advertising/reporting-service/reporting-data-objects?view=bingads-13). All data object with ending ReportRequest can be used as data object in custom reports.
+- *Columns* - Reporting object columns that you want to sync. You can find it on ReportRequest data object page by clicking the ...ReportColumn link in [Bing Ads docs](https://learn.microsoft.com/en-us/advertising/reporting-service/reporting-value-sets?view=bingads-13). 
+The report must include the Required Columns (you can find it under list of all columns of reporting object) at a minimum. As a general rule, each report must include at least one attribute column and at least one non-impression share performance statistics column. Be careful you can't add extra columns that not specified in Bing Ads docs and not all fields can be skipped.
+- *Aggregation* - Hourly, Daily, Weekly, Monthly. See [report aggregation](#report-aggregation).
+
 ### Report aggregation
 
 All reports synced by this connector can be [aggregated](https://docs.microsoft.com/en-us/advertising/reporting-service/reportaggregation?view=bingads-13) using hourly, daily, weekly, or monthly time windows.
@@ -169,6 +187,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.12.0  | 2023-11-08 |                                                                                                                                  | Add Custom reports and decrease backoff max tries number                                                                                     |
 | 1.11.0  | 2023-11-06 | [32201](https://github.com/airbytehq/airbyte/pull/32201)                                                                         | Skip broken CSV report files                                                                                                                 |
 | 1.10.0  | 2023-11-06 | [32148](https://github.com/airbytehq/airbyte/pull/32148)                                                                         | Add new fields to stream Ads: "BusinessName", "CallToAction", "Headline", "Images", "Videos", "Text"                                         |
 | 1.9.0   | 2023-11-03 | [32131](https://github.com/airbytehq/airbyte/pull/32131)                                                                         | Add  "CampaignId", "AccountId", "CustomerId" fields to Ad Groups, Ads and Campaigns streams.                                                 |
