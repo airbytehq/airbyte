@@ -47,18 +47,25 @@
                 "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
                 "order": 3
               },
+              "schemaless": {
+                "title": "Schemaless",
+                "description": "When enabled, syncs will not validate or structure records against the stream's schema.",
+                "default": true,
+                "type": "boolean",
+                "order": 4
+              },
               "username": {
                 "title": "Username",
                 "type": "string",
                 "description": "The username which is used to access the database.",
-                "order": 4
+                "order": 5
               },
               "password": {
                 "title": "Password",
                 "type": "string",
                 "description": "The password associated with this username.",
                 "airbyte_secret": true,
-                "order": 5
+                "order": 6
               },
               "auth_source": {
                 "title": "Authentication Source",
@@ -66,7 +73,7 @@
                 "description": "The authentication source where the user information is stored.  See https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource for more details.",
                 "default": "admin",
                 "examples": ["admin"],
-                "order": 6
+                "order": 7
               }
             }
           },
@@ -97,18 +104,25 @@
                 "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
                 "order": 3
               },
+              "schemaless": {
+                "title": "Schemaless",
+                "description": "When enabled, syncs will not validate or structure records against the stream's schema.",
+                "default": false,
+                "type": "boolean",
+                "order": 4
+              },
               "username": {
                 "title": "Username",
                 "type": "string",
                 "description": "The username which is used to access the database.",
-                "order": 4
+                "order": 5
               },
               "password": {
                 "title": "Password",
                 "type": "string",
                 "description": "The password associated with this username.",
                 "airbyte_secret": true,
-                "order": 5
+                "order": 6
               },
               "auth_source": {
                 "title": "Authentication Source",
@@ -116,7 +130,7 @@
                 "description": "The authentication source where the user information is stored.",
                 "default": "admin",
                 "examples": ["admin"],
-                "order": 6
+                "order": 7
               }
             }
           }
