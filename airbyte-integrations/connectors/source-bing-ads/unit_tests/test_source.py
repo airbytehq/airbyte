@@ -8,11 +8,12 @@ from unittest.mock import patch
 import pytest
 import source_bing_ads
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
+from source_bing_ads.reports import ReportsMixin
 from source_bing_ads.source import SourceBingAds
 from source_bing_ads.streams import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, AppInstallAds, BingAdsStream, Campaigns
 from suds import TypeNotFound, WebFault
-from airbyte_cdk.utils import AirbyteTracedException
-from source_bing_ads.reports import ReportsMixin
+
 
 @pytest.fixture(name="config")
 def config_fixture():
@@ -26,6 +27,7 @@ def config_fixture():
         "lookback_window": 0,
     }
 
+
 @pytest.fixture(name="config_with_custom_reports")
 def config_with_custom_reports_fixture():
     """Generates streams settings with custom reports from a config file"""
@@ -36,14 +38,31 @@ def config_with_custom_reports_fixture():
         "client_id": "fake_client_id",
         "reports_start_date": "2020-01-01",
         "lookback_window": 0,
-        "custom_reports": [{
-            "name": "my test custom report",
-            "reporting_object": "DSAAutoTargetPerformanceReport",
-            "report_columns": ["AbsoluteTopImpressionRatePercent", "AccountId", "AccountName", "AccountNumber", "AccountStatus",
-                               "AdDistribution", "AdGroupId", "AdGroupName", "AdGroupStatus", "AdId", "AllConversionRate", "AllConversions",
-                               "AllConversionsQualified", "AllCostPerConversion", "AllReturnOnAdSpend", "AllRevenue"],
-            "report_aggregation": "Weekly"
-        }]
+        "custom_reports": [
+            {
+                "name": "my test custom report",
+                "reporting_object": "DSAAutoTargetPerformanceReport",
+                "report_columns": [
+                    "AbsoluteTopImpressionRatePercent",
+                    "AccountId",
+                    "AccountName",
+                    "AccountNumber",
+                    "AccountStatus",
+                    "AdDistribution",
+                    "AdGroupId",
+                    "AdGroupName",
+                    "AdGroupStatus",
+                    "AdId",
+                    "AllConversionRate",
+                    "AllConversions",
+                    "AllConversionsQualified",
+                    "AllCostPerConversion",
+                    "AllReturnOnAdSpend",
+                    "AllRevenue",
+                ],
+                "report_aggregation": "Weekly",
+            }
+        ],
     }
 
 
@@ -69,7 +88,9 @@ def test_source_check_connection_failed_user_do_not_have_accounts(mocked_client,
     with patch.object(Accounts, "read_records", return_value=[]):
         connected, reason = SourceBingAds().check_connection(logger_mock, config=config)
         assert connected is False
-        assert reason.message == "Config validation error: You don't have accounts assigned to this user. Please verify your developer token."
+        assert (
+            reason.message == "Config validation error: You don't have accounts assigned to this user. Please verify your developer token."
+        )
 
 
 def test_source_check_connection_failed_invalid_creds(config, logger_mock):
@@ -81,47 +102,69 @@ def test_source_check_connection_failed_invalid_creds(config, logger_mock):
             == "Failed to get OAuth access token by refresh token. The user could not be authenticated as the grant is expired. The user must sign in again."
         )
 
+
 @patch.object(source_bing_ads.source, "Client")
 def test_validate_custom_reposts(mocked_client, config_with_custom_reports, logger_mock):
-    with (patch.object(Accounts, "read_records", return_value=iter([{"Id": 180519267, "ParentCustomerId": 78798732}, {"Id": 180278106, "ParentCustomerId": 82372972}]))):
-        assert SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client) ==  None
+    with (
+        patch.object(
+            Accounts,
+            "read_records",
+            return_value=iter([{"Id": 180519267, "ParentCustomerId": 78798732}, {"Id": 180278106, "ParentCustomerId": 82372972}]),
+        )
+    ):
+        assert SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client) == None
 
 
 @patch.object(source_bing_ads.source, "Client")
 def test_validate_custom_reposts_failed_invalid_report_object(mocked_client, config_with_custom_reports, logger_mock):
-    with patch.object(Accounts, "read_records", return_value=iter([{"Id": 180519267, "ParentCustomerId": 78798732}, {"Id": 180278106, "ParentCustomerId": 82372972}])):
+    with patch.object(
+        Accounts,
+        "read_records",
+        return_value=iter([{"Id": 180519267, "ParentCustomerId": 78798732}, {"Id": 180278106, "ParentCustomerId": 82372972}]),
+    ):
         with patch.object(ReportsMixin, "get_report_request", side_effect=TypeNotFound(name="NonExistingReportingObject")):
             with pytest.raises(AirbyteTracedException) as e:
                 SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
 
     assert e.value.internal_message == "invalid reporting object was provided."
-    assert ("Config validation error: You have provided invalid Reporting Object: DSAAutoTargetPerformanceReport. "
-            "Please verify it in Bing Ads Docs") in e.value.message
+    assert (
+        "Config validation error: You have provided invalid Reporting Object: DSAAutoTargetPerformanceReport. "
+        "Please verify it in Bing Ads Docs"
+    ) in e.value.message
 
 
 @patch.object(source_bing_ads.source, "Client")
 def test_validate_custom_reposts_failed_invalid_report_columns(mocked_client, config_with_custom_reports, logger_mock):
-    with patch.object(Accounts, "read_records", return_value=iter([{"Id": 180519267, "ParentCustomerId": 78798732}, {"Id": 180278106, "ParentCustomerId": 82372972}])):
-        with patch.object(BingAdsStream, "read_records", side_effect=WebFault(fault="Invalid client data.", document="Invalid cleint data.")):
+    with patch.object(
+        Accounts,
+        "read_records",
+        return_value=iter([{"Id": 180519267, "ParentCustomerId": 78798732}, {"Id": 180278106, "ParentCustomerId": 82372972}]),
+    ):
+        with patch.object(
+            BingAdsStream, "read_records", side_effect=WebFault(fault="Invalid client data.", document="Invalid cleint data.")
+        ):
             with pytest.raises(AirbyteTracedException) as e:
                 SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
 
     assert e.value.internal_message == "invalid reporting columns were provided. "
     assert ("Config validation error: You have provided invalid Reporting Columns: ['AbsoluteTopImpressionRatePercent'") in e.value.message
 
+
 @patch.object(source_bing_ads.source, "Client")
 def test_get_custom_reports(mocked_client, config_with_custom_reports):
     custom_reports = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)
     assert isinstance(custom_reports, list)
-    assert custom_reports[0].report_name== "DSAAutoTargetPerformanceReport"
-    assert custom_reports[0].report_aggregation== "Weekly"
+    assert custom_reports[0].report_name == "DSAAutoTargetPerformanceReport"
+    assert custom_reports[0].report_aggregation == "Weekly"
     assert "AccountId" in custom_reports[0].custom_report_columns
+
 
 def test_validate_reporting_object_name():
     reporting_object = SourceBingAds()._validate_reporting_object_name("DSAAutoTargetPerformanceReportRequest")
     assert reporting_object == "DSAAutoTargetPerformanceReport"
     reporting_object = SourceBingAds()._validate_reporting_object_name("DSAAutoTargetPerformanceReport")
     assert reporting_object == "DSAAutoTargetPerformanceReport"
+
 
 @patch.object(source_bing_ads.source, "Client")
 def test_campaigns_request_params(mocked_client, config):

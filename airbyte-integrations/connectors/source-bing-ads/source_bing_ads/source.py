@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from itertools import product
-from typing import Any, List, Mapping, Tuple, Optional
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType, SyncMode
@@ -11,8 +11,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 from source_bing_ads.client import Client
 from source_bing_ads.streams import (  # noqa: F401
-    BingAdsReportingServiceStream,
-    CustomReport,
     AccountImpressionPerformanceReportDaily,
     AccountImpressionPerformanceReportHourly,
     AccountImpressionPerformanceReportMonthly,
@@ -43,6 +41,7 @@ from source_bing_ads.streams import (  # noqa: F401
     AgeGenderAudienceReportWeekly,
     AppInstallAdLabels,
     AppInstallAds,
+    BingAdsReportingServiceStream,
     BudgetSummaryReport,
     CampaignImpressionPerformanceReportDaily,
     CampaignImpressionPerformanceReportHourly,
@@ -54,6 +53,7 @@ from source_bing_ads.streams import (  # noqa: F401
     CampaignPerformanceReportMonthly,
     CampaignPerformanceReportWeekly,
     Campaigns,
+    CustomReport,
     GeographicPerformanceReportDaily,
     GeographicPerformanceReportHourly,
     GeographicPerformanceReportMonthly,
@@ -103,21 +103,25 @@ class SourceBingAds(AbstractSource):
         for custom_report in custom_reports:
             try:
                 for account in Accounts(client, config).read_records(SyncMode.full_refresh):
-                    list(custom_report.read_records(sync_mode=SyncMode.full_refresh,
-                                                    stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}))
+                    list(
+                        custom_report.read_records(
+                            sync_mode=SyncMode.full_refresh,
+                            stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]},
+                        )
+                    )
             except TypeNotFound:
                 raise AirbyteTracedException(
                     message=f"Config validation error: You have provided invalid Reporting Object: {custom_report.report_name}. "
-                            f"Please verify it in Bing Ads Docs"
-                            f" https://learn.microsoft.com/en-us/advertising/reporting-service/reporting-service-reference?view=bingads-13",
+                    f"Please verify it in Bing Ads Docs"
+                    f" https://learn.microsoft.com/en-us/advertising/reporting-service/reporting-service-reference?view=bingads-13",
                     internal_message="invalid reporting object was provided.",
                     failure_type=FailureType.config_error,
                 )
             except WebFault as e:
                 raise AirbyteTracedException(
                     message=f"Config validation error: You have provided invalid Reporting Columns: {custom_report.custom_report_columns}. "
-                            f"Make sure that you provided right columns for this report, not all columns can be added/removed."
-                            f"Please, verify it",
+                    f"Make sure that you provided right columns for this report, not all columns can be added/removed."
+                    f"Please, verify it",
                     internal_message=f"invalid reporting columns were provided. {e}",
                     failure_type=FailureType.config_error,
                 )
@@ -130,10 +134,15 @@ class SourceBingAds(AbstractSource):
 
     def get_custom_reports(self, config: Mapping[str, Any], client: Client) -> List[Optional[Stream]]:
         return [
-            type(report["name"], (CustomReport,),
-                 {"report_name": self._validate_reporting_object_name(report["reporting_object"]),
-                  "custom_report_columns": report["report_columns"],
-                  "report_aggregation": report["report_aggregation"]})(client, config)
+            type(
+                report["name"],
+                (CustomReport,),
+                {
+                    "report_name": self._validate_reporting_object_name(report["reporting_object"]),
+                    "custom_report_columns": report["report_columns"],
+                    "report_aggregation": report["report_aggregation"],
+                },
+            )(client, config)
             for report in config.get("custom_reports", [])
         ]
 

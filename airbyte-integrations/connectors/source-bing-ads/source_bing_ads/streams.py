@@ -1285,4 +1285,3 @@ class CustomReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
             "properties": columns_schema,
         }
         return schema
-
