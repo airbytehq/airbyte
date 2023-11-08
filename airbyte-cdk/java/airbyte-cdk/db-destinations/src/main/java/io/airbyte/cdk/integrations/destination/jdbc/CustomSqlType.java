@@ -6,7 +6,7 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 
 import java.sql.SQLType;
 
-//TODO: Change it to something 
+// TODO: Change it to something
 public record CustomSqlType(String name, String vendor, Integer vendorTypeNumber) implements SQLType {
 
   @Override
