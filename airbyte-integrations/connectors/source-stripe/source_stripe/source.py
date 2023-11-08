@@ -18,6 +18,7 @@ from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Curs
 from airbyte_cdk.sources.streams.concurrent.state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
 from source_stripe.streams import (
     CheckoutSessionsLineItems,
     CreatedCursorIncrementalStripeStream,
@@ -108,7 +109,7 @@ class SourceStripe(AbstractSource):
         subscriptions = IncrementalStripeStream(
             name="subscriptions",
             path="subscriptions",
-            use_cache=True,
+            use_cache=False,
             extra_request_params={"status": "all"},
             event_types=[
                 "customer.subscription.created",
@@ -127,7 +128,7 @@ class SourceStripe(AbstractSource):
             path="subscription_items",
             extra_request_params=lambda self, *args, stream_slice, **kwargs: {"subscription": stream_slice[self.parent_id]},
             parent=subscriptions,
-            use_cache=True,
+            use_cache=False,
             parent_id="subscription_id",
             sub_items_attr="items",
             **args,
@@ -135,28 +136,28 @@ class SourceStripe(AbstractSource):
         transfers = IncrementalStripeStream(
             name="transfers",
             path="transfers",
-            use_cache=True,
+            use_cache=False,
             event_types=["transfer.created", "transfer.reversed", "transfer.updated"],
             **args,
         )
         application_fees = IncrementalStripeStream(
             name="application_fees",
             path="application_fees",
-            use_cache=True,
+            use_cache=False,
             event_types=["application_fee.created", "application_fee.refunded"],
             **args,
         )
         customers = IncrementalStripeStream(
             name="customers",
             path="customers",
-            use_cache=True,
+            use_cache=False,
             event_types=["customer.created", "customer.updated", "customer.deleted"],
             **args,
         )
         invoices = IncrementalStripeStream(
             name="invoices",
             path="invoices",
-            use_cache=True,
+            use_cache=False,
             event_types=[
                 "invoice.created",
                 "invoice.finalization_failed",
@@ -197,7 +198,7 @@ class SourceStripe(AbstractSource):
             ),
             Persons(**args),
             SetupAttempts(**incremental_args),
-            StripeStream(name="accounts", path="accounts", use_cache=True, **args),
+            StripeStream(name="accounts", path="accounts", use_cache=False, **args),
             CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
@@ -205,7 +206,7 @@ class SourceStripe(AbstractSource):
             UpdatedCursorIncrementalStripeStream(
                 name="checkout_sessions",
                 path="checkout/sessions",
-                use_cache=True,
+                use_cache=False,
                 legacy_cursor_field="expires_at",
                 event_types=[
                     "checkout.session.async_payment_failed",
@@ -332,7 +333,7 @@ class SourceStripe(AbstractSource):
             ),
             transfers,
             IncrementalStripeStream(
-                name="refunds", path="refunds", use_cache=True, event_types=["refund.created", "refund.updated"], **args
+                name="refunds", path="refunds", use_cache=False, event_types=["refund.created", "refund.updated"], **args
             ),
             IncrementalStripeStream(
                 name="payment_intents",
@@ -429,6 +430,9 @@ class SourceStripe(AbstractSource):
                 **args,
             ),
         ]
+
+        stream_names_from_catalog = set(map(lambda configured_stream: configured_stream.stream.name, self._catalog.streams))
+        streams = list(filter(lambda stream: stream.name in stream_names_from_catalog, streams))
         if self._use_concurrent_cdk:
             # We cap the number of workers to avoid hitting the Stripe rate limit
             # The limit can be removed or increased once we have proper rate limiting

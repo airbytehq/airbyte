@@ -1,0 +1,6 @@
+{
+  "object": "list",
+  "url": "/v1/accounts",
+  "has_more": false,
+  "data": %RECORDS%
+}
