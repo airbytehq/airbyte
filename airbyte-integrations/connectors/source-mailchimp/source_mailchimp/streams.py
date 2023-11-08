@@ -282,7 +282,7 @@ class Reports(IncrementalMailChimpStream):
         response = super().parse_response(response, **kwargs)
 
         # In some cases, the 'last_click' field is returned as an empty string,
-        # which causes validation errors on the `date-time` format. 
+        # which causes validation errors on the `date-time` format.
         # To avoid this, we remove the field if it is empty.
         for record in response:
             if record.get("clicks", {}).get("last_click") == "":
