@@ -2,10 +2,20 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from urllib.parse import urlencode
+
 import freezegun
 import pendulum
 import pytest
 from source_stripe.streams import CheckoutSessionsLineItems, CustomerBalanceTransactions, Persons, SetupAttempts
+
+
+def read_from_stream(stream, sync_mode, state):
+    records = []
+    for slice_ in stream.stream_slices(sync_mode=sync_mode, stream_state=state):
+        for record in stream.read_records(sync_mode=sync_mode, stream_slice=slice_, stream_state=state):
+            records.append(record)
+    return records
 
 
 def test_request_headers(stream_by_name):
@@ -14,147 +24,39 @@ def test_request_headers(stream_by_name):
     assert headers["Stripe-Version"] == "2022-11-15"
 
 
-lazy_substream_test_suite = (
-    (
-        {
-            "https://api.stripe.com/v1/invoices": {
-                "has_more": False,
-                "object": "list",
-                "url": "/v1/invoices",
-                "data": [
-                    {
-                        "created": 1641038947,
-                        "customer": "cus_HezytZRkaQJC8W",
-                        "id": "in_1KD6OVIEn5WyEQxn9xuASHsD",
-                        "object": "invoice",
-                        "total": 1,
-                        "lines": {
-                            "data": [
-                                {
-                                    "id": "il_1",
-                                    "object": "line_item",
-                                },
-                                {
-                                    "id": "il_2",
-                                    "object": "line_item",
-                                },
-                            ],
-                            "has_more": True,
-                            "object": "list",
-                            "total_count": 3,
-                            "url": "/v1/invoices/in_1KD6OVIEn5WyEQxn9xuASHsD/lines",
-                        },
-                    }
-                ],
-            },
-            "https://api.stripe.com/v1/invoices/in_1KD6OVIEn5WyEQxn9xuASHsD/lines?starting_after=il_2": {
-                "data": [
-                    {
-                        "id": "il_3",
-                        "object": "line_item",
+bank_accounts_full_refresh_test_case = (
+    {
+        "https://api.stripe.com/v1/customers?expand%5B%5D=data.sources": {
+            "has_more": False,
+            "object": "list",
+            "url": "/v1/customers",
+            "data": [
+                {
+                    "created": 1641038947,
+                    "id": "cus_HezytZRkaQJC8W",
+                    "object": "customer",
+                    "total": 1,
+                    "sources": {
+                        "data": [
+                            {
+                                "id": "cs_1",
+                                "object": "card",
+                            },
+                            {
+                                "id": "cs_2",
+                                "object": "bank_account",
+                            },
+                        ],
+                        "has_more": True,
+                        "object": "list",
+                        "total_count": 4,
+                        "url": "/v1/customers/cus_HezytZRkaQJC8W/sources",
                     },
-                ],
-                "has_more": False,
-                "object": "list",
-                "total_count": 3,
-                "url": "/v1/invoices/in_1KD6OVIEn5WyEQxn9xuASHsD/lines",
-            },
+                }
+            ],
         },
-        "invoice_line_items",
-        [
-            {"id": "il_1", "invoice_id": "in_1KD6OVIEn5WyEQxn9xuASHsD", "object": "line_item"},
-            {"id": "il_2", "invoice_id": "in_1KD6OVIEn5WyEQxn9xuASHsD", "object": "line_item"},
-            {"id": "il_3", "invoice_id": "in_1KD6OVIEn5WyEQxn9xuASHsD", "object": "line_item"},
-        ],
-        "full_refresh",
-        {},
-    ),
-    (
-        {
-            "https://api.stripe.com/v1/subscriptions": {
-                "has_more": False,
-                "object": "list",
-                "url": "/v1/subscriptions",
-                "data": [
-                    {
-                        "created": 1641038947,
-                        "customer": "cus_HezytZRkaQJC8W",
-                        "id": "si_OptSP2o3XZUBpx",
-                        "object": "subscription",
-                        "total": 1,
-                        "items": {
-                            "data": [
-                                {
-                                    "id": "si_1",
-                                    "object": "subscription_item",
-                                },
-                                {
-                                    "id": "si_2",
-                                    "object": "subscription_item",
-                                },
-                            ],
-                            "has_more": True,
-                            "object": "list",
-                            "total_count": 3,
-                            "url": "/v1/subscription_items",
-                        },
-                    }
-                ],
-            },
-            "https://api.stripe.com/v1/subscription_items?subscription=si_OptSP2o3XZUBpx&starting_after=si_2": {
-                "data": [
-                    {
-                        "id": "si_3",
-                        "object": "subscription_item",
-                    },
-                ],
-                "has_more": False,
-                "object": "list",
-                "total_count": 3,
-                "url": "/v1/subscription_items",
-            },
-        },
-        "subscription_items",
-        [
-            {"id": "si_1", "object": "subscription_item"},
-            {"id": "si_2", "object": "subscription_item"},
-            {"id": "si_3", "object": "subscription_item"},
-        ],
-        "full_refresh",
-        {},
-    ),
-    (
-        {
-            "https://api.stripe.com/v1/customers?expand%5B%5D=data.sources": {
-                "has_more": False,
-                "object": "list",
-                "url": "/v1/customers",
-                "data": [
-                    {
-                        "created": 1641038947,
-                        "id": "cus_HezytZRkaQJC8W",
-                        "object": "customer",
-                        "total": 1,
-                        "sources": {
-                            "data": [
-                                {
-                                    "id": "cs_1",
-                                    "object": "card",
-                                },
-                                {
-                                    "id": "cs_2",
-                                    "object": "bank_account",
-                                },
-                            ],
-                            "has_more": True,
-                            "object": "list",
-                            "total_count": 4,
-                            "url": "/v1/customers/cus_HezytZRkaQJC8W/sources",
-                        },
-                    }
-                ],
-            },
-            "https://api.stripe.com/v1/customers/cus_HezytZRkaQJC8W/sources": {
+        "https://api.stripe.com/v1/customers/cus_HezytZRkaQJC8W/sources?object=bank_account&starting_after=cs_2":
+            {
                 "data": [
                     {
                         "id": "cs_3",
@@ -169,175 +71,112 @@ lazy_substream_test_suite = (
                 "object": "list",
                 "total_count": 4,
                 "url": "/v1/customers/cus_HezytZRkaQJC8W/sources",
-            },
-        },
-        "bank_accounts",
-        [
-            {"id": "cs_2", "object": "bank_account", "updated": 1692802815},
-            {"id": "cs_4", "object": "bank_account", "updated": 1692802815},
-        ],
-        "full_refresh",
-        {},
-    ),
-    (
-        {
-            "https://api.stripe.com/v1/application_fees": {
-                "has_more": False,
-                "object": "list",
-                "url": "/v1/application_fees",
-                "data": [
-                    {
-                        "created": 1641038947,
-                        "customer": "cus_HezytZRkaQJC8W",
-                        "id": "af_OptSP2o3XZUBpx",
-                        "object": "application_fee",
-                        "total": 1,
-                        "refunds": {
-                            "data": [
-                                {
-                                    "id": "fr_1",
-                                    "object": "application_fee_refund",
-                                },
-                                {
-                                    "id": "fr_2",
-                                    "object": "application_fee_refund",
-                                },
-                            ],
-                            "has_more": True,
-                            "object": "list",
-                            "total_count": 3,
-                            "url": "/v1/application_fees/af_OptSP2o3XZUBpx/refunds",
-                        },
-                    }
-                ],
-            },
-            "https://api.stripe.com/v1/application_fees/af_OptSP2o3XZUBpx/refunds": {
-                "data": [
-                    {
-                        "id": "fr_3",
-                        "object": "application_fee_refund",
-                    }
-                ],
-                "has_more": False,
-                "object": "list",
-                "total_count": 3,
-                "url": "/v1/application_fees/af_OptSP2o3XZUBpx/refunds",
-            },
-        },
-        "application_fees_refunds",
-        [
-            {"id": "fr_1", "object": "application_fee_refund", "refund_id": "af_OptSP2o3XZUBpx", "updated": 1692802815},
-            {"id": "fr_2", "object": "application_fee_refund", "refund_id": "af_OptSP2o3XZUBpx", "updated": 1692802815},
-            {"id": "fr_3", "object": "application_fee_refund", "refund_id": "af_OptSP2o3XZUBpx", "updated": 1692802815},
-        ],
-        "full_refresh",
-        {},
-    ),
-    (
-        {
-            "https://api.stripe.com/v1/events?types%5B%5D=customer.source.created&types%5B%5D=customer.source.expiring&types"
-            "%5B%5D=customer.source.updated&types%5B%5D=customer.source.deleted": {
-                "data": [
-                    {
-                        "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
-                        "object": "event",
-                        "api_version": "2020-08-27",
-                        "created": 1692802016,
-                        "data": {
-                            "object": {"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}
-                        },
-                        "type": "customer.source.created",
-                    },
-                    {
-                        "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
-                        "object": "event",
-                        "api_version": "2020-08-27",
-                        "created": 1692802017,
-                        "data": {"object": {"object": "card", "card": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}},
-                        "type": "customer.source.updated",
-                    },
-                ],
-                "has_more": False,
             }
-        },
-        "bank_accounts",
-        [{"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1692802016}],
-        "incremental",
-        {"updated": 1692802015},
-    ),
-    (
-        {
-            "https://api.stripe.com/v1/events?types%5B%5D=application_fee.refund.updated": {
-                "data": [
-                    {
-                        "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
-                        "object": "event",
-                        "api_version": "2020-08-27",
-                        "created": 1692802016,
-                        "data": {
-                            "object": {
-                                "object": "application_fee_refund",
-                                "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT",
-                                "created": 1653341716,
-                            }
-                        },
-                        "type": "application_fee.refund.updated",
-                    },
-                    {
-                        "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
-                        "object": "event",
-                        "api_version": "2020-08-27",
-                        "created": 1692802017,
-                        "data": {
-                            "object": {
-                                "object": "application_fee_refund",
-                                "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT",
-                                "created": 1653341716,
-                            }
-                        },
-                        "type": "application_fee.refund.updated",
-                    },
-                ],
-                "has_more": False,
-            }
-        },
-        "application_fees_refunds",
-        [
-            {
-                "object": "application_fee_refund",
-                "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT",
-                "created": 1653341716,
-                "updated": 1692802016,
-            },
-            {
-                "object": "application_fee_refund",
-                "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT",
-                "created": 1653341716,
-                "updated": 1692802017,
-            },
-        ],
-        "incremental",
-        {"updated": 1692802015},
-    ),
+    },
+    "bank_accounts",
+    [
+        {"id": "cs_2", "object": "bank_account", "updated": 1692802815},
+        {"id": "cs_4", "object": "bank_account", "updated": 1692802815},
+    ],
+    "full_refresh",
+    {}
 )
 
 
-@pytest.mark.parametrize("requests_mock_map, stream_cls, expected_records, sync_mode, state", lazy_substream_test_suite)
-@freezegun.freeze_time("2023-08-23T15:00:15Z")
-def test_lazy_sub_streams(
-    stream_by_name, requests_mock, requests_mock_map, stream_cls, expected_records, config, sync_mode, state
-):
-    # make start date a recent date so there's just one slice in a parent stream
-    config["start_date"] = str(pendulum.today().subtract(days=3))
+bank_accounts_incremental_test_case = (
+    {
+        "https://api.stripe.com/v1/events?types%5B%5D=customer.source.created&types%5B%5D=customer.source.expiring&types"
+        "%5B%5D=customer.source.updated&types%5B%5D=customer.source.deleted": {
+            "data": [
+                {
+                    "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
+                    "object": "event",
+                    "api_version": "2020-08-27",
+                    "created": 1692802016,
+                    "data": {
+                        "object": {"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}
+                    },
+                    "type": "customer.source.created",
+                },
+                {
+                    "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
+                    "object": "event",
+                    "api_version": "2020-08-27",
+                    "created": 1692802017,
+                    "data": {"object": {"object": "card", "card": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}},
+                    "type": "customer.source.updated",
+                },
+            ],
+            "has_more": False,
+        }
+    },
+    "bank_accounts",
+    [{"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1692802016}],
+    "incremental",
+    {"updated": 1692802015},
+)
 
+
+@pytest.mark.parametrize(
+    "requests_mock_map, stream_cls, expected_records, sync_mode, state",
+    (bank_accounts_incremental_test_case, bank_accounts_full_refresh_test_case)
+)
+@freezegun.freeze_time("2023-08-23T15:00:15Z")
+def test_lazy_substream_data_cursor_value_is_populated(
+    requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state
+):
+    config["start_date"] = str(pendulum.today().subtract(days=3))
     stream = stream_by_name(stream_cls, config)
     for url, body in requests_mock_map.items():
         requests_mock.get(url, json=body)
 
-    records = []
-    for slice_ in stream.stream_slices(sync_mode=sync_mode, stream_state=state):
-        records.extend(stream.read_records(sync_mode=sync_mode, stream_slice=slice_, stream_state=state))
+    records = read_from_stream(stream, sync_mode, state)
+    assert records == expected_records
+    for record in records:
+        assert bool(record[stream.cursor_field])
+
+
+@pytest.mark.parametrize(
+    "requests_mock_map, stream_cls, expected_records, sync_mode, state",
+    (bank_accounts_full_refresh_test_case,)
+)
+@freezegun.freeze_time("2023-08-23T15:00:15Z")
+def test_lazy_substream_data_is_expanded(
+    requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state
+):
+
+    config["start_date"] = str(pendulum.today().subtract(days=3))
+    stream = stream_by_name("bank_accounts", config)
+    for url, body in requests_mock_map.items():
+        requests_mock.get(url, json=body)
+
+    records = read_from_stream(stream, sync_mode, state)
+
     assert list(records) == expected_records
+    assert len(requests_mock.request_history) == 2
+    assert urlencode({"expand[]": "data.sources"}) in requests_mock.request_history[0].url
+
+
+@pytest.mark.parametrize(
+    "requests_mock_map, stream_cls, expected_records, sync_mode, state, expected_object",
+    (
+        (*bank_accounts_full_refresh_test_case, "bank_account"),
+        (*bank_accounts_incremental_test_case, "bank_account")
+     )
+)
+@freezegun.freeze_time("2023-08-23T15:00:15Z")
+def test_lazy_substream_data_is_filtered(
+    requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state, expected_object
+):
+    config["start_date"] = str(pendulum.today().subtract(days=3))
+    stream = stream_by_name(stream_cls, config)
+    for url, body in requests_mock_map.items():
+        requests_mock.get(url, json=body)
+
+    records = read_from_stream(stream, sync_mode, state)
+    assert records == expected_records
+    for record in records:
+        assert record["object"] == expected_object
 
 
 @freezegun.freeze_time("2023-08-23T15:00:15Z")

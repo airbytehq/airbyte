@@ -4,6 +4,7 @@
 
 import copy
 import math
+import os
 from abc import ABC, abstractmethod
 from itertools import chain
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -18,6 +19,8 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_stripe.availability_strategy import StripeAvailabilityStrategy, StripeSubStreamAvailabilityStrategy
 
 STRIPE_API_VERSION = "2022-11-15"
+CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
+USE_CACHE = not CACHE_DISABLED
 
 
 class IRecordExtractor(ABC):
@@ -484,7 +487,7 @@ class CheckoutSessionsLineItems(CreatedCursorIncrementalStripeStream):
         return UpdatedCursorIncrementalStripeStream(
             name="checkout_sessions",
             path="checkout/sessions",
-            use_cache=True,
+            use_cache=USE_CACHE,
             legacy_cursor_field="expires_at",
             event_types=[
                 "checkout.session.async_payment_failed",
@@ -575,7 +578,7 @@ class CustomerBalanceTransactions(StripeStream):
         return IncrementalStripeStream(
             name="customers",
             path="customers",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=["customer.created", "customer.updated", "customer.deleted"],
             authenticator=self.authenticator,
             account_id=self.account_id,
@@ -659,7 +662,7 @@ class Persons(UpdatedCursorIncrementalStripeStream, HttpSubStream):
     event_types = ["person.created", "person.updated", "person.deleted"]
 
     def __init__(self, *args, **kwargs):
-        parent = StripeStream(*args, name="accounts", path="accounts", use_cache=True, **kwargs)
+        parent = StripeStream(*args, name="accounts", path="accounts", use_cache=USE_CACHE, **kwargs)
         super().__init__(*args, parent=parent, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):

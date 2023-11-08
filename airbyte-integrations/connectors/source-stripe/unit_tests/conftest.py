@@ -2,9 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
+
 import pytest
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe.source import SourceStripe
+
+os.environ["CACHE_DISABLED"] = "true"
 
 
 @pytest.fixture(name="config")
