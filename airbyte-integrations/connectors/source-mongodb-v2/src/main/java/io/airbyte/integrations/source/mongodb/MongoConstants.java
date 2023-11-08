@@ -31,6 +31,7 @@ public class MongoConstants {
   public static final String QUEUE_SIZE_CONFIGURATION_KEY = "queue_size";
   public static final String STORAGE_STATS_KEY = "storageStats";
   public static final String USERNAME_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
+  public static final String SCHEMA_ENFORCED_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.SCHEMA_ENFORCED_CONFIGURATION_KEY;
 
   private MongoConstants() {}
 
