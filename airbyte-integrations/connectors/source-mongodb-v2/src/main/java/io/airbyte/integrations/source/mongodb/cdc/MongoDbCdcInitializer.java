@@ -105,9 +105,8 @@ public class MongoDbCdcInitializer {
           "Unable extract the offset out of state, State mutation might not be working. " + cdcState);
     }
 
-    final boolean savedOffsetIsValid = false;
-    // optSavedOffset.filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset,
-    // mongoClient)).isPresent();
+    final boolean savedOffsetIsValid =
+        optSavedOffset.filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient)).isPresent();
 
     if (!savedOffsetIsValid) {
       LOGGER.debug("Saved offset is not valid. Airbyte will trigger a full refresh.");
@@ -130,18 +129,6 @@ public class MongoDbCdcInitializer {
         initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName), cdcMetadataInjector,
             emittedAt, config.getCheckpointInterval());
 
-    /*
-     * final AirbyteDebeziumHandler<BsonTimestamp> handler = new
-     * AirbyteDebeziumHandler<>(config.rawConfig(), new MongoDbCdcTargetPosition(resumeToken), false,
-     * firstRecordWaitTime, queueSize); final MongoDbCdcStateHandler mongoDbCdcStateHandler = new
-     * MongoDbCdcStateHandler(stateManager); final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new
-     * MongoDbCdcSavedInfoFetcher(stateToBeUsed);
-     *
-     * final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () ->
-     * handler.getIncrementalIterators(catalog, cdcSavedInfoFetcher, mongoDbCdcStateHandler,
-     * cdcMetadataInjector, defaultDebeziumProperties,
-     * DebeziumPropertiesManager.DebeziumConnectorType.MONGODB, emittedAt, false);
-     */
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.rawConfig(),
         new MongoDbCdcTargetPosition(resumeToken), false, firstRecordWaitTime, queueSize);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
