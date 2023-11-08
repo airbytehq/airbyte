@@ -63,7 +63,7 @@ class Transaction(BaseModel):
     created_at: datetime
     credit_card_details: CreditCard
     currency_iso_code: str
-    # custom_fields: str
+    custom_fields: dict
     customer_details: Customer
     cvv_response_code: str
     disbursement_details: DisbursementDetails
