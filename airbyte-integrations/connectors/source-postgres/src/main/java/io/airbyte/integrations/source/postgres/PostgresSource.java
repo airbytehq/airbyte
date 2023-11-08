@@ -63,8 +63,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -123,8 +121,6 @@ import org.slf4j.LoggerFactory;
 
 public class PostgresSource extends AbstractJdbcSource<PostgresType> implements Source {
 
-  // This is not a static because we want it to be initialized at instance creation time
-  private final String DEPLOYMENT_MODE = System.getenv(AdaptiveSourceRunner.DEPLOYMENT_MODE_KEY);
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
   public static final String PARAM_SSLMODE = "sslmode";
@@ -147,24 +143,22 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   private List<String> schemas;
 
   private Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc;
-  private final FeatureFlags featureFlags;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
   private int stateEmissionFrequency;
   private XminStatus xminStatus;
 
-  public static Source sshWrappedSource() {
-    return new SshWrappedSource(new PostgresSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
+  public static Source sshWrappedSource(PostgresSource source) {
+    return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
   }
 
   PostgresSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
-    this.featureFlags = new EnvVariableFeatureFlags();
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   @Override
   public ConnectorSpecification spec() throws Exception {
-    if (DEPLOYMENT_MODE != null && DEPLOYMENT_MODE.equalsIgnoreCase(AdaptiveSourceRunner.CLOUD_MODE)) {
+    if (cloudDeploymentMode()) {
       final ConnectorSpecification spec = Jsons.clone(super.spec());
       final ObjectNode properties = (ObjectNode) spec.getConnectionSpecification().get("properties");
       ((ObjectNode) properties.get(SSL_MODE)).put("default", SSL_MODE_REQUIRE);
@@ -711,7 +705,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   public static void main(final String[] args) throws Exception {
-    final Source source = PostgresSource.sshWrappedSource();
+    final Source source = PostgresSource.sshWrappedSource(new PostgresSource());
     LOGGER.info("starting source: {}", PostgresSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", PostgresSource.class);
@@ -722,7 +716,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
     // and not over SSH tunnel
-    if (AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(DEPLOYMENT_MODE)) {
+    if (cloudDeploymentMode()) {
       LOGGER.info("Source configured as in Cloud Deployment mode");
       if (config.has(TUNNEL_METHOD)
           && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
@@ -843,6 +837,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
     return jsonNodes;
+  }
+
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
   }
 
 }
