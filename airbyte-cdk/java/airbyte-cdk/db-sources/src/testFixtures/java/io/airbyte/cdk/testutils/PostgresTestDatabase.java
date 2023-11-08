@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.io.FileUtils;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -67,7 +68,8 @@ public class PostgresTestDatabase implements AutoCloseable {
     } catch (final IOException e) {
       throw new UncheckedIOException(e);
     }
-    this.tmpDir.toFile().deleteOnExit();
+    final var dir = this.tmpDir.toFile();
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> FileUtils.deleteQuietly(dir)));
 
     this.dbName = "db" + suffix;
     this.userName = "test_user" + suffix;
