@@ -69,7 +69,6 @@ public class JdbcBufferedConsumerFactory {
     return create(outputRecordCollector, database, sqlOperations, namingResolver, config, catalog, null);
   }
 
-
   public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                               final JdbcDatabase database,
                                               final SqlOperations sqlOperations,
@@ -86,8 +85,7 @@ public class JdbcBufferedConsumerFactory {
         onCloseFunction(typerDeduper),
         catalog,
         sqlOperations::isValidData,
-        DestinationConfig.getInstance().getTextValue("schema")
-    );
+        DestinationConfig.getInstance().getTextValue("schema"));
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
@@ -111,7 +109,7 @@ public class JdbcBufferedConsumerFactory {
       final AirbyteStream abStream = stream.getStream();
 
       final String defaultSchemaName = schemaRequired ? namingResolver.getIdentifier(config.get("schema").asText())
-                                                      : namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
+          : namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
       // Method checks for v2
       final String outputSchema = getOutputSchema(abStream, defaultSchemaName, namingResolver);
       final String streamName = abStream.getName();
@@ -162,9 +160,9 @@ public class JdbcBufferedConsumerFactory {
    * <p>
    * 3. <Optional>Truncates table if sync mode is in OVERWRITE
    *
-   * @param database      JDBC database to connect to
+   * @param database JDBC database to connect to
    * @param sqlOperations interface for execution SQL queries
-   * @param writeConfigs  settings for each stream
+   * @param writeConfigs settings for each stream
    * @param typerDeduper
    * @return
    */
@@ -181,7 +179,7 @@ public class JdbcBufferedConsumerFactory {
         final String schemaName = writeConfig.getOutputSchemaName();
         final String dstTableName = writeConfig.getOutputTableName();
         LOGGER.info("Preparing raw table in destination started for stream {}. schema: {}, table name: {}",
-                    writeConfig.getStreamName(),
+            writeConfig.getStreamName(),
             schemaName,
             dstTableName);
         sqlOperations.createSchemaIfNotExists(database, schemaName);
@@ -200,10 +198,10 @@ public class JdbcBufferedConsumerFactory {
   /**
    * Writes {@link AirbyteRecordMessage} to JDBC database's airbyte_raw table
    *
-   * @param database      JDBC database to connect to
+   * @param database JDBC database to connect to
    * @param sqlOperations interface of SQL queries to execute
-   * @param writeConfigs  settings for each stream
-   * @param catalog       catalog of all streams to sync
+   * @param writeConfigs settings for each stream
+   * @param catalog catalog of all streams to sync
    * @return
    */
   private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final JdbcDatabase database,

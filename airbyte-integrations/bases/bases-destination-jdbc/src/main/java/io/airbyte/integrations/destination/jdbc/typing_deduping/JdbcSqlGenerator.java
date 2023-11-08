@@ -47,4 +47,5 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase> {
   public String overwriteFinalTable(final StreamId stream, final String finalSuffix) {
     return null;
   }
+
 }

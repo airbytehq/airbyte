@@ -38,4 +38,5 @@ public class JdbcTyperDeduper extends DefaultTyperDeduper<JdbcDatabase> implemen
   public void commitFinalTables() throws Exception {
     super.commitFinalTables();
   }
+
 }

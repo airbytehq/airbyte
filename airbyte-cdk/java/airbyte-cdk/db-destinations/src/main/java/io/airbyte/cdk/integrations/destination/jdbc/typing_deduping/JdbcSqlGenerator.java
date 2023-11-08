@@ -45,7 +45,8 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
 
   private final DataSource dataSourceSupplier;
 
-  public JdbcSqlGenerator(final NamingConventionTransformer namingTransformer, final SqlOperations sqlOperations,
+  public JdbcSqlGenerator(final NamingConventionTransformer namingTransformer,
+                          final SqlOperations sqlOperations,
                           final DataSource dataSourceSupplier) {
     this.namingTransformer = namingTransformer;
     this.sqlOperations = sqlOperations;
@@ -60,8 +61,7 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
         namingTransformer.getNamespace(rawNamespaceOverride),
         namingTransformer.convertStreamName(StreamId.concatenateRawTableName(namespace, name)),
         namespace,
-        name
-    );
+        name);
   }
 
   public ColumnId buildColumnId(final String name, final String suffix) {
@@ -72,8 +72,7 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
     final List<String> typeColumns = new ArrayList<>();
     for (final Entry<ColumnId, AirbyteType> entry : stream.columns().entrySet()) {
       typeColumns.add(
-          String.join(" ", statement.enquoteIdentifier(entry.getKey().name(), false), toDialectType(entry.getValue(), structType).getName())
-      );
+          String.join(" ", statement.enquoteIdentifier(entry.getKey().name(), false), toDialectType(entry.getValue(), structType).getName()));
     }
     return String.join(",\n", typeColumns);
   }
@@ -90,14 +89,14 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
     return preferredType(supportedTypes, List.of("VARIANT", "SUPER", "JSONB", "JSON"), widestType());
   }
 
-  protected SQLType preferredType(final LinkedHashMap<String, TypeInfoRecordSet> supportedTypes, final List<String> orderedPreference,
+  protected SQLType preferredType(final LinkedHashMap<String, TypeInfoRecordSet> supportedTypes,
+                                  final List<String> orderedPreference,
                                   final SQLType fallback) {
     final var bestType = orderedPreference.stream()
-                                          .filter(supportedTypes::containsKey)
-                                          .map(preferredType -> new CustomSqlType(preferredType, vendorId(),
-                                                                                  supportedTypes.get(preferredType).dataType()
-                                          ))
-                                          .findFirst();
+        .filter(supportedTypes::containsKey)
+        .map(preferredType -> new CustomSqlType(preferredType, vendorId(),
+            supportedTypes.get(preferredType).dataType()))
+        .findFirst();
     return bestType.isPresent() ? bestType.get() : fallback;
   }
 
@@ -132,7 +131,6 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
     };
   }
 
-
   @SneakyThrows
   @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
@@ -145,11 +143,10 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
         "final_namespace", statement.enquoteIdentifier(stream.id().finalNamespace(), false),
         "final_table_id", statement.enquoteIdentifier(stream.id().finalTableId("", suffix), false),
         "column_declarations", columnDeclarations,
-        "json_type", structType.getName()
-    )).replace(
-        """
+        "json_type", structType.getName())).replace(
+            """
             CREATE SCHEMA IF NOT EXISTS ${final_namespace};
-              
+
             CREATE OR REPLACE TABLE ${final_table_id} (
               _airbyte_raw_id VARCHAR PRIMARY KEY NOT NULL,
               _airbyte_extracted_at TIMESTAMP NOT NULL,
@@ -173,12 +170,15 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
     final Statement statement = connection.createStatement();
     return new StringSubstitutor(Map.of("raw_table_id", statement.enquoteIdentifier(streamId.rawTableId(""), false)))
         .replace("""
-                     UPDATE ${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
-                     """);
+                 UPDATE ${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
+                 """);
   }
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp, final boolean useExpensiveSaferCasting) {
+  public String updateTable(final StreamConfig stream,
+                            final String finalSuffix,
+                            final Optional<Instant> minRawTimestamp,
+                            final boolean useExpensiveSaferCasting) {
     return updateTableQuery(stream, finalSuffix);
   }
 
@@ -216,4 +216,5 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
   public String cdcDeletes(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
     return null;
   }
+
 }

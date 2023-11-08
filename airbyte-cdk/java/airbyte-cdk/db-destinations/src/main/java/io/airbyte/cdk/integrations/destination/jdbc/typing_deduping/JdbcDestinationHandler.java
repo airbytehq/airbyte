@@ -12,7 +12,6 @@ import java.util.Optional;
 
 public class JdbcDestinationHandler implements DestinationHandler<JdbcDatabase> {
 
-
   public JdbcDestinationHandler() {
 
   }
@@ -36,4 +35,5 @@ public class JdbcDestinationHandler implements DestinationHandler<JdbcDatabase> 
   public void execute(String sql) throws Exception {
 
   }
+
 }
