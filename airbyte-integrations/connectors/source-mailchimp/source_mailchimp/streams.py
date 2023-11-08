@@ -346,7 +346,7 @@ class Tags(MailChimpStream, HttpSubStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         list_id = stream_slice.get("parent").get("id")
         return f"lists/{list_id}/tag-search"
-    
+
     def parse_response(self, response: requests.Response, stream_slice, **kwargs) -> Iterable[Mapping]:
         """
         Tags do not reference parent_ids, so we need to add the list_id to each record.

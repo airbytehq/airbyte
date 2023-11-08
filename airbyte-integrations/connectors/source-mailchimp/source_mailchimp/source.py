@@ -23,7 +23,7 @@ from .streams import (
     Lists,
     Reports,
     Segments,
-    Tags, 
+    Tags,
     Unsubscribes,
 )
 
