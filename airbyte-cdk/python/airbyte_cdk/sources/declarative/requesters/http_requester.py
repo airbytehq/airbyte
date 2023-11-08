@@ -6,7 +6,7 @@ import logging
 import os
 import urllib
 from abc import ABC, abstractmethod
-from dataclasses import InitVar, dataclass
+from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
