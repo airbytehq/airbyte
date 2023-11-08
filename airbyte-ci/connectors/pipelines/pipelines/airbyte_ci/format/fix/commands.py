@@ -1,7 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import logging
-
 import asyncclick as click
 from pipelines.airbyte_ci.format.actions import run_format
 from pipelines.airbyte_ci.format.containers import (
@@ -10,25 +8,24 @@ from pipelines.airbyte_ci.format.containers import (
     format_license_container,
     format_python_container,
 )
-from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.click_decorators import click_ignore_unused_kwargs
 from pipelines.helpers.cli import run_all_subcommands
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 
 
 @click.group(
     help="Run code format checks and fix any failures.",
-    invoke_without_command=True,
     chain=True,
 )
-@click_merge_args_into_context_obj
-@click_ignore_unused_kwargs
-async def fix(ctx: click.Context):
-    """Run code format checks and fix any failures."""
-    logger = logging.getLogger("format")
+async def fix():
+    pass
 
-    if ctx.invoked_subcommand is None:
-        logger.info("Running all formatters...")
-        await run_all_subcommands(ctx)
+
+@fix.command()
+@click.pass_context
+async def all(ctx: click.Context):
+    """Run code format checks and fix any failures."""
+    await run_all_subcommands(ctx)
 
 
 @fix.command()

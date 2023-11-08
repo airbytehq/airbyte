@@ -17,21 +17,24 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 
 @click.group(
     help="Run code format checks and fail if any checks fail.",
-    invoke_without_command=True,
     chain=True,
 )
-@click.option("--list-errors", is_flag=True, default=False, help="Show detailed error messages for failed checks.")
-@click_merge_args_into_context_obj
-@click_ignore_unused_kwargs
-async def check(ctx: click.Context, list_errors: bool):
-    """Run code format checks and fail if any checks fail."""
+async def check():
+    pass
 
-    if ctx.invoked_subcommand is None:
-        log_options = LogOptions(
-            list_errors=list_errors,
-            help_message="Run `airbyte-ci format check --list-errors` to see detailed error messages for failed checks.",
-        )
-        await run_all_subcommands(ctx, log_options)
+
+@check.command()
+@click.option("--list-errors", is_flag=True, default=False, help="Show detailed error messages for failed checks.")
+@click.pass_context
+async def all(ctx: click.Context, list_errors: bool):
+    """
+    Run all format checks and fail if any checks fail.
+    """
+    log_options = LogOptions(
+        list_errors=list_errors,
+        help_message="Run `airbyte-ci format check all --list-errors` to see detailed error messages for failed checks.",
+    )
+    await run_all_subcommands(ctx, log_options)
 
 
 @check.command()

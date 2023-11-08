@@ -84,13 +84,20 @@ async def run_all_subcommands(ctx: click.Context, log_options: LogOptions = LogO
     Run all subcommands of a given command and log the results.
     """
     ctx.obj[ALL_RESULTS_KEY] = {}
-    command_path = ctx.command_path
-    command_name = ctx.command.name
-    logger = logging.getLogger(command_name)
 
-    logger.info(f"Running all sub commands of {command_path}...")
+    parent_command_path = ctx.parent.command_path
+    parent_command_name = ctx.parent.command.name
+    current_command_name = ctx.command.name
+
+    logger = logging.getLogger(parent_command_name)
+
+    # omit current command from list of subcommands
+    all_subcommands_dict = ctx.parent.command.commands
+    filtered_subcommands_dict = {name: command for name, command in all_subcommands_dict.items() if name != current_command_name}
+
+    logger.info(f"Running all sub commands of {parent_command_path}...")
     async with anyio.create_task_group() as check_group:
-        for command in ctx.command.commands.values():
+        for command in filtered_subcommands_dict.values():
             check_group.start_soon(_run_sub_command, ctx, command)
 
     _log_output(ctx, logger, log_options)
