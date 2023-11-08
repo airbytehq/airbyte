@@ -57,6 +57,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -72,12 +73,15 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public static String COL_LAST_VISITED_AT = "last_visited_at";
   public static String COL_LAST_COMMENT_AT = "last_comment_at";
 
+  @BeforeAll
+  static void init() {
+    PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
+    PSQL_DB.start();
+  }
+
   @Override
   @BeforeEach
   public void setup() throws Exception {
-    PSQL_DB = new PostgreSQLContainer<>("postgres:16-bullseye");
-    PSQL_DB.start();
-
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     COLUMN_CLAUSE_WITH_PK =
         "id INTEGER, name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL, wakeup_at TIMETZ NOT NULL, last_visited_at TIMESTAMPTZ NOT NULL, last_comment_at TIMESTAMP NOT NULL";
