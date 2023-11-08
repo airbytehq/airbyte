@@ -89,6 +89,7 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         destination = DestinationMilvus()
         list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
         collection = Collection(self.config["indexing"]["collection"], using="test_driver")
+        collection.flush()
         assert len(collection.query(expr="pk != 0")) == 5
 
         # incrementalally update a doc
