@@ -52,7 +52,8 @@ public class WriteConfig {
   }
 
   /**
-   * This is used in {@link JdbcBufferedConsumerFactory} to verify that record is from expected streams
+   * This is used in {@link JdbcBufferedConsumerFactory} to verify that record is from expected
+   * streams
    *
    * @return
    */

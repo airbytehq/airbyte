@@ -38,36 +38,36 @@ public interface TypeAndDedupeQueryBuilder {
     }
     final String commitRawTable = commitRawTable(stream.id());
 
-//    return new StringSubstitutor(Map.of(
-//        "insert_new_records", insertNewRecords,
-//        "dedup_final_table", dedupFinalTable,
-//        "cdc_deletes", cdcDeletes,
-//        "dedupe_raw_table", dedupRawTable,
-//        "commit_raw_table", commitRawTable)).replace(
-//        """
-//        BEGIN TRANSACTION;
-//
-//        ${insert_new_records}
-//
-//        ${dedup_final_table}
-//
-//        ${dedupe_raw_table}
-//
-//        ${cdc_deletes}
-//
-//        ${commit_raw_table}
-//
-//        COMMIT;
-//        """);
+    // return new StringSubstitutor(Map.of(
+    // "insert_new_records", insertNewRecords,
+    // "dedup_final_table", dedupFinalTable,
+    // "cdc_deletes", cdcDeletes,
+    // "dedupe_raw_table", dedupRawTable,
+    // "commit_raw_table", commitRawTable)).replace(
+    // """
+    // BEGIN TRANSACTION;
+    //
+    // ${insert_new_records}
+    //
+    // ${dedup_final_table}
+    //
+    // ${dedupe_raw_table}
+    //
+    // ${cdc_deletes}
+    //
+    // ${commit_raw_table}
+    //
+    // COMMIT;
+    // """);
 
     return String.join("\n\n",
-                       "BEGIN TRANSACTION;",
-                       insertNewRecords,
-                       dedupFinalTable,
-                       cdcDeletes,
-                       dedupRawTable,
-                       commitRawTable,
-                       "COMMIT;"
-    );
+        "BEGIN TRANSACTION;",
+        insertNewRecords,
+        dedupFinalTable,
+        cdcDeletes,
+        dedupRawTable,
+        commitRawTable,
+        "COMMIT;");
   }
+
 }
