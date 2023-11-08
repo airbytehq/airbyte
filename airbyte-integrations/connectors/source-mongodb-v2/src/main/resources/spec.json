@@ -47,25 +47,18 @@
                 "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
                 "order": 3
               },
-              "schemaless": {
-                "title": "Schemaless",
-                "description": "When enabled, syncs will not validate or structure records against the stream's schema.",
-                "default": true,
-                "type": "boolean",
-                "order": 4
-              },
               "username": {
                 "title": "Username",
                 "type": "string",
                 "description": "The username which is used to access the database.",
-                "order": 5
+                "order": 4
               },
               "password": {
                 "title": "Password",
                 "type": "string",
                 "description": "The password associated with this username.",
                 "airbyte_secret": true,
-                "order": 6
+                "order": 5
               },
               "auth_source": {
                 "title": "Authentication Source",
@@ -73,7 +66,7 @@
                 "description": "The authentication source where the user information is stored.  See https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource for more details.",
                 "default": "admin",
                 "examples": ["admin"],
-                "order": 7
+                "order": 6
               }
             }
           },
@@ -104,25 +97,18 @@
                 "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
                 "order": 3
               },
-              "schemaless": {
-                "title": "Schemaless",
-                "description": "When enabled, syncs will not validate or structure records against the stream's schema.",
-                "default": false,
-                "type": "boolean",
-                "order": 4
-              },
               "username": {
                 "title": "Username",
                 "type": "string",
                 "description": "The username which is used to access the database.",
-                "order": 5
+                "order": 4
               },
               "password": {
                 "title": "Password",
                 "type": "string",
                 "description": "The password associated with this username.",
                 "airbyte_secret": true,
-                "order": 6
+                "order": 5
               },
               "auth_source": {
                 "title": "Authentication Source",
@@ -130,18 +116,26 @@
                 "description": "The authentication source where the user information is stored.",
                 "default": "admin",
                 "examples": ["admin"],
-                "order": 7
+                "order": 6
               }
             }
           }
         ]
+      },
+      "schema_enforced": {
+        "title": "Schema Enforced",
+        "description": "When enabled, syncs will validate and structure records against the stream's schema.",
+        "default": false,
+        "type": "boolean",
+        "order": 7,
+        "group": "advanced"
       },
       "initial_waiting_seconds": {
         "type": "integer",
         "title": "Initial Waiting Time in Seconds (Advanced)",
         "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds.",
         "default": 300,
-        "order": 7,
+        "order": 8,
         "min": 120,
         "max": 1200,
         "group": "advanced"
@@ -151,7 +145,7 @@
         "title": "Size of the queue (Advanced)",
         "description": "The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.",
         "default": 10000,
-        "order": 8,
+        "order": 9,
         "min": 1000,
         "max": 10000,
         "group": "advanced"
@@ -161,7 +155,7 @@
         "title": "Document discovery sample size (Advanced)",
         "description": "The maximum number of documents to sample when attempting to discover the unique fields for a collection.",
         "default": 10000,
-        "order": 9,
+        "order": 10,
         "minimum": 1000,
         "maximum": 100000,
         "group": "advanced"
