@@ -48,7 +48,7 @@ public class PostgresReplicationConnection {
       validateReplicationConnection(connection);
       return connection;
     } catch (final PSQLException exception) {
-      if (exception.getMessage().equals("FATAL: must be superuser or replication role to start walsender")) {
+      if ("42501".equals(exception.getSQLState())) { // insufficient_privilege
         throw new ConfigErrorException(String.format(REPLICATION_PRIVILEGE_ERROR_MESSAGE, jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText()));
       }
       throw exception;
