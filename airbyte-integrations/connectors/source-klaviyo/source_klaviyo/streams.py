@@ -237,11 +237,12 @@ class ArchivedRecordsMixin(IncrementalKlaviyoStream, ABC):
 
 
 class Profiles(IncrementalKlaviyoStream):
-    """Docs: https://developers.klaviyo.com/en/reference/get_profiles"""
+    """Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles"""
 
     cursor_field = "updated"
     api_revision = "2023-02-22"
     page_size = 100
+    state_checkpoint_interval = 100  # API can return maximum 100 records per page
 
     def path(self, *args, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return "profiles"
@@ -262,6 +263,7 @@ class Lists(SemiIncrementalKlaviyoStream):
 
     max_retries = 10
     cursor_field = "updated"
+    state_checkpoint_interval = 10  # API can return maximum 10 records per page
 
     def path(self, **kwargs) -> str:
         return "lists"
@@ -269,7 +271,7 @@ class Lists(SemiIncrementalKlaviyoStream):
 
 class GlobalExclusions(Profiles):
     """
-    Docs: https://developers.klaviyo.com/en/reference/get_profiles
+    Docs: https://developers.klaviyo.com/en/v2023-02-22/reference/get_profiles
     This stream takes data from 'profiles' endpoint, but suppressed records only
     """
 
@@ -284,6 +286,7 @@ class Metrics(SemiIncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get_metrics"""
 
     cursor_field = "updated"
+    state_checkpoint_interval = 200  # API can return maximum 200 records per page
 
     def path(self, **kwargs) -> str:
         return "metrics"
@@ -293,6 +296,7 @@ class Events(IncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get_events"""
 
     cursor_field = "datetime"
+    state_checkpoint_interval = 200  # API can return maximum 200 records per page
 
     def path(self, **kwargs) -> str:
         return "events"
@@ -302,6 +306,7 @@ class Flows(ArchivedRecordsMixin, IncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get_flows"""
 
     cursor_field = "updated"
+    state_checkpoint_interval = 50  # API can return maximum 50 records per page
 
     def path(self, **kwargs) -> str:
         return "flows"
@@ -311,6 +316,7 @@ class EmailTemplates(IncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get_templates"""
 
     cursor_field = "updated"
+    state_checkpoint_interval = 10  # API can return maximum 10 records per page
 
     def path(self, **kwargs) -> str:
         return "templates"
