@@ -178,8 +178,8 @@ public class DebeziumEventUtils {
   }
 
   public static Set<String> getConfiguredMongoDbCollectionFields(final JsonNode source,
-                                                                  final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
-                                                                  final CdcMetadataInjector cdcMetadataInjector) {
+                                                                 final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
+                                                                 final CdcMetadataInjector cdcMetadataInjector) {
     final String streamNamespace = cdcMetadataInjector.namespace(source);
     final String streamName = cdcMetadataInjector.name(source);
     LOGGER.info("Processing change for stream : " + streamName);
