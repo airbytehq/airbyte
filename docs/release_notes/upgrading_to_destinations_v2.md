@@ -37,7 +37,7 @@ The following table details the delivered data modified by Destinations V2:
 | Normalized tabular data       | API Source                            | Unnested tables, `_airbyte` metadata columns, SCD tables |
 | Normalized tabular data       | Tabular Source (database, file, etc.) | `_airbyte` metadata columns, SCD tables                  |
 
-![Airbyte Destinations V2 Column Changes](./assets/destinations-v2-column-changes.png)
+![Airbyte Destinations V2 Column Changes](./assets/updated_table_columns.png)
 
 Whenever possible, we've taken this opportunity to use the best data type for storing JSON for your querying convenience. For example, `destination-bigquery` now loads `JSON` blobs as type `JSON` in BigQuery (introduced last [year](https://cloud.google.com/blog/products/data-analytics/bigquery-now-natively-supports-semi-structured-data)), instead of type `string`.
 
