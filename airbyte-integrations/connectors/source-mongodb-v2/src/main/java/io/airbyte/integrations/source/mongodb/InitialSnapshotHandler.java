@@ -96,11 +96,12 @@ public class InitialSnapshotHandler {
               .projection(fields)
               .sort(Sorts.ascending(MongoConstants.ID_FIELD))
               .allowDiskUse(true)
-              .cursor() : collection.find()
-              .filter(filter)
-              .sort(Sorts.ascending(MongoConstants.ID_FIELD))
-              .allowDiskUse(true)
-              .cursor();
+              .cursor()
+              : collection.find()
+                  .filter(filter)
+                  .sort(Sorts.ascending(MongoConstants.ID_FIELD))
+                  .allowDiskUse(true)
+                  .cursor();
 
           final var stateIterator =
               new MongoDbStateIterator(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
