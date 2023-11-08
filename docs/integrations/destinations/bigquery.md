@@ -140,6 +140,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.12  | 2023-11-08 | [\#32309](https://github.com/airbytehq/airbyte/pull/32309) | Revert: Use Typed object for connection config                                                                                                                  |
 | 2.3.11  | 2023-11-07 | [\#32147](https://github.com/airbytehq/airbyte/pull/32147) | Use Typed object for connection config                                                                                                                          |
 | 2.3.10  | 2023-11-07 | [\#32261](https://github.com/airbytehq/airbyte/pull/32261) | Further improve error reporting                                                                                                                                 |
 | 2.3.9   | 2023-11-07 | [\#32112](https://github.com/airbytehq/airbyte/pull/32112) | GCS staging mode: reduce flush frequency to use rate limit more efficiently                                                                                     |
