@@ -256,10 +256,10 @@ def test_list_child_get_updated_state(auth, stream_class, current_stream_state, 
     ]
 )
 def test_segment_members_parse_response(auth, stream_state, records, expected):
-    segment_members_stream = SegmentMembers(authenticator=auth)  # Replace with actual initialization if needed
+    segment_members_stream = SegmentMembers(authenticator=auth)
     response = MagicMock()
     response.json.return_value = records
-    parsed_records = list(segment_members_stream.parse_response(response, stream_state))
+    parsed_records = list(segment_members_stream.parse_response(response, stream_state, stream_slice={"segment_id": "segment_1"}))
     assert parsed_records == expected, f"Expected: {expected}, Actual: {parsed_records}"
 
 
