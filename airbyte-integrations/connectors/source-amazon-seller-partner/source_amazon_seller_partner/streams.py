@@ -1037,16 +1037,6 @@ class VendorSalesReports(IncrementalAnalyticsStream):
     availability_sla_days = 4  # Data is only available after 4 days
 
 
-class VendorNetPureProductMarginReports(IncrementalAnalyticsStream):
-    name = "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT"
-    # TODO: for all reports add scope to check SCOPE
-    #  https://developer-docs.amazon.com/sp-api/docs/brand-analytics-role#feeds-reports-and-notifications
-    scope = "Brand Analytics role"
-    result_key = "netPureProductMarginByAsin"
-    cursor_field = "endDate"
-    availability_sla_days = 4  # Data is only available after 4 days
-
-
 class VendorDirectFulfillmentShipping(AmazonSPStream):
     """
     API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/vendor-direct-fulfillment-shipping-api/vendorDirectFulfillmentShippingV1.md

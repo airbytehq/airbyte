@@ -64,7 +64,6 @@ from source_amazon_seller_partner.streams import (
     StrandedInventoryUiReport,
     VendorDirectFulfillmentShipping,
     VendorInventoryReports,
-    VendorNetPureProductMarginReports,
     VendorSalesReports,
     XmlAllOrdersDataByOrderDataGeneral,
 )
@@ -184,7 +183,6 @@ class SourceAmazonSellerPartner(AbstractSource):
             VendorDirectFulfillmentShipping(**stream_kwargs),
             VendorInventoryReports(**stream_kwargs),
             VendorSalesReports(**stream_kwargs),
-            VendorNetPureProductMarginReports(**stream_kwargs),
             Orders(**stream_kwargs),
             OrderItems(**stream_kwargs),
             OrderReportDataShipping(**stream_kwargs),
