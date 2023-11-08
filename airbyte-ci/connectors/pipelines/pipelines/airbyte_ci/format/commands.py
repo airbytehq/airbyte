@@ -14,6 +14,7 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 
 @click.group(
     cls=LazyGroup,
+    name="format",
     help="Commands related to formatting.",
     lazy_subcommands={
         "check": "pipelines.airbyte_ci.format.check.commands.check",
@@ -23,5 +24,5 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 @click_merge_args_into_context_obj
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def format(pipeline_context: ClickPipelineContext):
+async def format_code(pipeline_context: ClickPipelineContext):
     pass

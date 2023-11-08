@@ -1,6 +1,7 @@
+#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
-from typing import List
 
 import asyncclick as click
 from pipelines.airbyte_ci.format.actions import run_check
@@ -10,7 +11,7 @@ from pipelines.airbyte_ci.format.containers import (
     format_license_container,
     format_python_container,
 )
-from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.click_decorators import click_ignore_unused_kwargs
 from pipelines.helpers.cli import LogOptions, run_all_subcommands
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 
@@ -23,10 +24,10 @@ async def check():
     pass
 
 
-@check.command()
+@check.command(name="all")
 @click.option("--list-errors", is_flag=True, default=False, help="Show detailed error messages for failed checks.")
 @click.pass_context
-async def all(ctx: click.Context, list_errors: bool):
+async def all_languages(ctx: click.Context, list_errors: bool):
     """
     Run all format checks and fail if any checks fail.
     """
