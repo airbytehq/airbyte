@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.53.1
+Concurrent CDK: Improve handling of future to avoid memory leak and improve performances
+
 ## 0.53.0
 Add call rate functionality
 
