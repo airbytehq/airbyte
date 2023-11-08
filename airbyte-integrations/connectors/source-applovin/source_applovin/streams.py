@@ -108,7 +108,9 @@ class Creatives(HttpSubStream, ApplovinStream):
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         campaigns = Campaigns(authenticator=self._session.auth)
-        for campaign in campaigns.read_records(sync_mode=SyncMode.full_refresh):
+        campaigns_records = list(campaigns.read_records(sync_mode=SyncMode.full_refresh))
+        print(f"Length creatives {len(campaigns_records)}")
+        for campaign in campaigns_records:
             if campaign["tracking_method"] == "adjust":
                 yield {"campaign_id": campaign["campaign_id"]}
                 continue
@@ -143,7 +145,9 @@ class Targets(HttpSubStream, ApplovinStream):
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         campaigns = Campaigns(authenticator=self._session.auth)
-        for campaign in campaigns.read_records(sync_mode=SyncMode.full_refresh):
+        campaigns_records = list(campaigns.read_records(sync_mode=SyncMode.full_refresh))
+        print(f"Length targets {len(campaigns_records)}")
+        for campaign in campaigns_records:
             if campaign["tracking_method"] == "adjust":
                 yield {"campaign_id": campaign["campaign_id"]}
                 continue
