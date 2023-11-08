@@ -3,8 +3,8 @@
 #
 
 import pytest
-from pipelines.actions import environments
-from pipelines.contexts import ConnectorContext
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.dagger.actions.python import common
 
 pytestmark = [
     pytest.mark.anyio,
@@ -33,7 +33,7 @@ async def test_apply_python_development_overrides(connector_context, use_local_c
     before_override_pip_freeze = await fake_connector_container.with_exec(["pip", "freeze"]).stdout()
 
     assert "airbyte-cdk" not in before_override_pip_freeze.splitlines(), "The base image should not have the airbyte-cdk installed."
-    connector_with_overrides = await environments.apply_python_development_overrides(connector_context, fake_connector_container)
+    connector_with_overrides = await common.apply_python_development_overrides(connector_context, fake_connector_container)
 
     after_override_pip_freeze = await connector_with_overrides.with_exec(["pip", "freeze"]).stdout()
     if use_local_cdk:

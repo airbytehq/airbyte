@@ -23,23 +23,23 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .map((fileName) => fileName.replace(".md", ""))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
+      // Get the first header of the markdown document
+      const { contentTitle } = parseMarkdownContentTitle(
+        parseFrontMatter(fs.readFileSync(path.join(dir, `${filename}.md`)))
+          .content
+      );
+      if (!contentTitle) {
+        throw new Error(
+          `Could not parse title from ${path.join(
+            prefix,
+            filename
+          )}. Make sure there's no content above the first heading!`
+        );
+      }
+
       // If there is a migration doc for this connector nest this under the original doc as "Migration Guide"
       const migrationDocPath = path.join(dir, `${filename}-migrations.md`);
       if (fs.existsSync(migrationDocPath)) {
-        // Get the first header of the markdown document
-        const { contentTitle } = parseMarkdownContentTitle(
-          parseFrontMatter(fs.readFileSync(path.join(dir, `${filename}.md`)))
-            .content
-        );
-        if (!contentTitle) {
-          throw new Error(
-            `Could not parse title from ${path.join(
-              prefix,
-              filename
-            )}. Make sure there's no content above the first heading!`
-          );
-        }
-
         return {
           type: "category",
           label: contentTitle,
@@ -54,7 +54,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
         };
       }
 
-      return { type: "doc", id: path.join(prefix, filename) };
+      return { type: "doc", id: path.join(prefix, filename), label: contentTitle };
     });
 }
 
@@ -62,6 +62,7 @@ function getSourceConnectors() {
   return getFilenamesInDir("integrations/sources/", sourcesDocs, [
     "readme",
     "postgres",
+    "mysql"
   ]);
 }
 
@@ -88,6 +89,22 @@ const sourcePostgres = {
       type: "doc",
       label: "Troubleshooting",
       id: "integrations/sources/postgres/postgres-troubleshooting",
+    },
+  ],
+};
+
+const sourceMysql = {
+  type: "category",
+  label: "MySQL",
+  link: {
+    type: "doc",
+    id: "integrations/sources/mysql",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Troubleshooting",
+      id: "integrations/sources/mysql/mysql-troubleshooting",
     },
   ],
 };
@@ -258,7 +275,7 @@ const connectorCatalog = {
       link: {
         type: "generated-index",
       },
-      items: [sourcePostgres, getSourceConnectors()],
+      items: [sourcePostgres, sourceMysql, ...getSourceConnectors()].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
     {
       type: "category",
@@ -563,7 +580,9 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/october_2023",
         "release_notes/upgrading_to_destinations_v2",
+        "release_notes/september_2023",
         "release_notes/july_2023",
         "release_notes/june_2023",
         "release_notes/may_2023",

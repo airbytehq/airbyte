@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "connector-acceptance-test"
-version = "2.0.1"
+version = "2.1.3"
 description = "Contains acceptance tests for connectors."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -39,6 +39,6 @@ docker = ">=6,<7"
 # Related issue: https://github.com/docker/docker-py/issues/3113
 urllib3 = "<2.0"
 requests = "<2.29.0"
+pytest-xdist = "^3.3.1"
 
 [tool.poetry.dev-dependencies]
-

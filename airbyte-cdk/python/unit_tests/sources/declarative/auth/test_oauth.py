@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import base64
 import logging
 from unittest.mock import Mock
 
@@ -63,6 +63,48 @@ class TestOauth2Authenticator:
             "scopes": scopes,
             "custom_field": "in_outbound_request",
             "another_field": "exists_in_body",
+        }
+        assert body == expected
+
+    def test_refresh_with_encode_config_params(self):
+        oauth = DeclarativeOauth2Authenticator(
+            token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+            client_id="{{ config['client_id'] | base64encode }}",
+            client_secret="{{ config['client_secret'] | base64encode }}",
+            config=config,
+            parameters={},
+            grant_type="client_credentials",
+        )
+        body = oauth.build_refresh_request_body()
+        expected = {
+            "grant_type": "client_credentials",
+            "client_id": base64.b64encode(config["client_id"].encode("utf-8")).decode(),
+            "client_secret": base64.b64encode(config["client_secret"].encode("utf-8")).decode(),
+            "refresh_token": None,
+            "scopes": None,
+        }
+        assert body == expected
+
+    def test_refresh_with_decode_config_params(self):
+        updated_config_fields = {
+            "client_id": base64.b64encode(config["client_id"].encode("utf-8")).decode(),
+            "client_secret": base64.b64encode(config["client_secret"].encode("utf-8")).decode(),
+        }
+        oauth = DeclarativeOauth2Authenticator(
+            token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+            client_id="{{ config['client_id'] | base64decode }}",
+            client_secret="{{ config['client_secret'] | base64decode }}",
+            config=config | updated_config_fields,
+            parameters={},
+            grant_type="client_credentials",
+        )
+        body = oauth.build_refresh_request_body()
+        expected = {
+            "grant_type": "client_credentials",
+            "client_id": "some_client_id",
+            "client_secret": "some_client_secret",
+            "refresh_token": None,
+            "scopes": None,
         }
         assert body == expected
 

@@ -2013,7 +2013,7 @@ files = [
 
 [[package]]
 name = "metadata-service"
-version = "0.2.0"
+version = "0.2.1"
 description = ""
 optional = false
 python-versions = "^3.9"

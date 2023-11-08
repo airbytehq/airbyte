@@ -265,39 +265,39 @@ This produces the private key in pem format, and the public key remains in the s
 
 MSSQL data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceComprehensiveTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
-| MSSQL Type                                              | Resulting Type | Notes |
-| :------------------------------------------------------ | :------------- | :---- |
-| `bigint`                                                | number         |       |
-| `binary`                                                | string         |       |
-| `bit`                                                   | boolean        |       |
-| `char`                                                  | string         |       |
-| `date`                                                  | number         |       |
-| `datetime`                                              | string         |       |
-| `datetime2`                                             | string         |       |
-| `datetimeoffset`                                        | string         |       |
-| `decimal`                                               | number         |       |
-| `int`                                                   | number         |       |
-| `float`                                                 | number         |       |
-| `geography`                                             | string         |       |
-| `geometry`                                              | string         |       |
-| `money`                                                 | number         |       |
-| `numeric`                                               | number         |       |
-| `ntext`                                                 | string         |       |
-| `nvarchar`                                              | string         |       |
-| `nvarchar(max)`                                         | string         |       |
-| `real`                                                  | number         |       |
-| `smalldatetime`                                         | string         |       |
-| `smallint`                                              | number         |       |
-| `smallmoney`                                            | number         |       |
-| `sql_variant`                                           | string         |       |
-| `uniqueidentifier`                                      | string         |       |
-| `text`                                                  | string         |       |
-| `time`                                                  | string         |       |
-| `tinyint`                                               | number         |       |
-| `varbinary`                                             | string         |       |
-| `varchar`                                               | string         |       |
-| `varchar(max) COLLATE Latin1_General_100_CI_AI_SC_UTF8` | string         |       |
-| `xml`                                                   | string         |       |
+| MSSQL Type                                              | Resulting Type          | Notes |
+| :------------------------------------------------------ |:------------------------| :---- |
+| `bigint`                                                | number                  |       |
+| `binary`                                                | string                  |       |
+| `bit`                                                   | boolean                 |       |
+| `char`                                                  | string                  |       |
+| `date`                                                  | date                    |       |
+| `datetime`                                              | timestamp               |       |
+| `datetime2`                                             | timestamp               |       |
+| `datetimeoffset`                                        | timestamp with timezone |       |
+| `decimal`                                               | number                  |       |
+| `int`                                                   | number                  |       |
+| `float`                                                 | number                  |       |
+| `geography`                                             | string                  |       |
+| `geometry`                                              | string                  |       |
+| `money`                                                 | number                  |       |
+| `numeric`                                               | number                  |       |
+| `ntext`                                                 | string                  |       |
+| `nvarchar`                                              | string                  |       |
+| `nvarchar(max)`                                         | string                  |       |
+| `real`                                                  | number                  |       |
+| `smalldatetime`                                         | timestamp               |       |
+| `smallint`                                              | number                  |       |
+| `smallmoney`                                            | number                  |       |
+| `sql_variant`                                           | string                  |       |
+| `uniqueidentifier`                                      | string                  |       |
+| `text`                                                  | string                  |       |
+| `time`                                                  | time                    |       |
+| `tinyint`                                               | number                  |       |
+| `varbinary`                                             | string                  |       |
+| `varchar`                                               | string                  |       |
+| `varchar(max) COLLATE Latin1_General_100_CI_AI_SC_UTF8` | string                  |       |
+| `xml`                                                   | string                  |       |
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
@@ -341,7 +341,11 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 ## Changelog
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
-|:--------|:-----------|:------------------------------------------------------------------------------------------------------------------| :---------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.0   | 2023-11-07 | [31531](https://github.com/airbytehq/airbyte/pull/31531)                                                          | Remapped date, smalldatetime, datetime2, time, and datetimeoffset datatype to their correct Airbyte types                                       |
+| 2.0.4   | 2023-11-06 | [#32193](https://github.com/airbytehq/airbyte/pull/32193)                                                         | Adopt java CDK version 0.4.1.                                                                                                                   |
+| 2.0.3   | 2023-10-31 | [32024](https://github.com/airbytehq/airbyte/pull/32024)                                                          | Upgrade to Debezium version 2.4.0.                                                                                                              |
+| 2.0.2   | 2023-10-30 | [31960](https://github.com/airbytehq/airbyte/pull/31960)                                                          | Adopt java CDK version 0.2.0.                                                                                                                   |
 | 2.0.1   | 2023-08-24 | [29821](https://github.com/airbytehq/airbyte/pull/29821)                                                          | Set replication_method display_type to radio, update titles and descriptions, and make CDC the default choice                                   |
 | 2.0.0   | 2023-08-22 | [29493](https://github.com/airbytehq/airbyte/pull/29493)                                                          | Set a default cursor for Cdc mode                                                                                                               |
 | 1.1.1   | 2023-07-24 | [28545](https://github.com/airbytehq/airbyte/pull/28545)                                                          | Support Read Committed snapshot isolation level                                                                                                 |

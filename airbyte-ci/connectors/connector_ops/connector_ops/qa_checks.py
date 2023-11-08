@@ -19,9 +19,10 @@ def check_migration_guide(connector: Connector) -> bool:
         return True
 
     migration_guide_file_path = connector.migration_guide_file_path
-    if not migration_guide_file_path.exists():
+    migration_guide_exists = migration_guide_file_path is not None and migration_guide_file_path.exists()
+    if not migration_guide_exists:
         print(
-            f"Migration guide file is missing for {connector.name}. Please create a {connector.migration_guide_file_name} file in the docs folder."
+            f"Migration guide file is missing for {connector.name}. Please create a migration guide at {connector.migration_guide_file_path}"
         )
         return False
 
@@ -72,8 +73,9 @@ def check_documentation_file_exists(connector: Connector) -> bool:
     Returns:
         bool: Wether a documentation file was found.
     """
+    file_path = connector.documentation_file_path
 
-    return connector.documentation_file_path.exists()
+    return file_path is not None and file_path.exists()
 
 
 def check_documentation_follows_guidelines(connector: Connector) -> bool:
@@ -202,11 +204,15 @@ def check_connector_https_url_only(connector: Connector) -> bool:
         bool: Wether the connector code contains only https url.
     """
     files_with_http_url = set()
+    ignore_comment = "# ignore-https-check"  # Define the ignore comment pattern
+
     for filename, line in read_all_files_in_directory(
         connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS, IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS
     ):
         line = line.lower()
         if is_comment(line, filename):
+            continue
+        if ignore_comment in line:
             continue
         for prefix in IGNORED_URLS_PREFIX:
             line = line.replace(prefix, "")

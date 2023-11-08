@@ -7,24 +7,7 @@ import com.hierynomus.gradle.license.tasks.LicenseFormat
 // This is separate from application dependencies.
 // See https://stackoverflow.com/questions/17773817/purpose-of-buildscript-block-in-gradle.
 buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
     dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:8.0.0'
-        // 6.x version of OpenApi generator is only compatible with jackson-core 2.13.x onwards.
-        // This conflicts with the jackson depencneis the bmuschko plugin is pulling in.
-        // Since api generation is only used in the airbyte-api module and the base gradle files
-        // are loaded in first, Gradle is not able to intelligently resolve this before loading in
-        // the bmuschko plugin and thus placing an older jackson version on the class path.
-        // The alternative is to import the openapi plugin for all modules.
-        // This might need to be updated when we change openapi plugin versions.
-        classpath 'com.fasterxml.jackson.core:jackson-core:2.13.0'
-
-        classpath 'org.codehaus.groovy:groovy-yaml:3.0.3'
-
         classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.20.0'
         classpath 'gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.16.1'
     }
@@ -54,7 +37,6 @@ ext {
     version = System.getenv("VERSION") ?: env.VERSION
     image_tag = System.getenv("VERSION") ?: 'dev'
     skipSlowTests = (System.getProperty('skipSlowTests', 'false') != 'false')
-
 }
 // Pyenv support.
 try {
@@ -83,28 +65,6 @@ allprojects {
     project.base.archivesName = "${project.group}-${project.name}"
 
     version = rootProject.ext.version
-
-    repositories {
-        // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
-
-        // Start with the local filesystem.
-        mavenLocal()
-
-        // ## Look into repos controlled by Airbyte.
-
-        // This repo hosts our public artifacts and can be referenced by anyone.
-        maven { url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/' }
-
-        // TODO: We might want to add a private proxy repo for maven central at some point.
-
-        // ## Look into other, public repos.
-
-        // Maven Central has most of everything.
-        mavenCentral()
-
-        // Jitpack is used to pull dependencies whose package names start with 'com.github.'
-        maven { url 'https://jitpack.io' }
-    }
 }
 
 // License generation logic.
@@ -149,9 +109,12 @@ node {
     download = true
     version = '18.18.0'
     npmVersion = '10.1.0'
-    // when setting both these directories, npm and node will be in separate directories
+    // When setting both these directories, npm and node will be in separate directories.
     workDir = file("${buildDir}/nodejs")
     npmWorkDir = file("${buildDir}/npm")
+    // Do not declare the repository.
+    distBaseUrl = null
+
 }
 
 // python is required by the root project to apply python formatters like isort or black.
@@ -542,25 +505,52 @@ subprojects { subproj ->
     }
 
     test {
-        maxHeapSize = '3g'
-        maxParallelForks = Runtime.runtime.availableProcessors()
-        // This allows to set up a `gradle.properties` file inside the connector folder to reduce parallelization.
-        // This is especially useful for connectors that share resources, like Redshift or Snowflake.
-        if (subproj.hasProperty('numberThreads')) {
-            int numberThreads = 0
-            String numberThreadsString = subproj.property('numberThreads').toString()
-            if (numberThreadsString.isInteger()) {
-                numberThreads = numberThreadsString as int
-            }
-            if (numberThreads > 0 && numberThreads < maxParallelForks) {
-                maxParallelForks = numberThreads
+        useJUnitPlatform()
+        testLogging() {
+            events 'skipped', 'started', 'passed', 'failed'
+            exceptionFormat 'full'
+            // Swallow the logs when running in airbyte-ci, rely on test reports instead.
+            showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+        }
+
+        // Set the timezone to UTC instead of picking up the host machine's timezone,
+        // which on a developer's laptop is more likely to be PST.
+        systemProperty 'user.timezone', 'UTC'
+
+        // Enable parallel test execution in JUnit by default.
+        // This is to support @Execution(ExecutionMode.CONCURRENT) annotations
+        // See https://junit.org/junit5/docs/current/user-guide/#writing-tests-parallel-execution for details.
+        systemProperty 'junit.jupiter.execution.parallel.enabled', 'true'
+        // Concurrency takes place at the class level.
+        systemProperty 'junit.jupiter.execution.parallel.mode.classes.default', 'concurrent'
+        // Within a class, the test methods are still run serially on the same thread.
+        systemProperty 'junit.jupiter.execution.parallel.mode.default', 'same_thread'
+        // Effectively disable JUnit concurrency by running tests in only one thread by default.
+        systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'fixed'
+        systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', 1
+
+        if (!subproj.hasProperty('testExecutionConcurrency')) {
+            // By default, let gradle spawn as many independent workers as it wants.
+            maxParallelForks = Runtime.runtime.availableProcessors()
+            maxHeapSize = '3G'
+        } else {
+            // Otherwise, run tests within the same JVM.
+            // Let gradle spawn only one worker.
+            maxParallelForks = 1
+            maxHeapSize = '8G'
+            // Manage test execution concurrency in JUnit.
+            String concurrency = subproj.property('testExecutionConcurrency').toString()
+            if (concurrency.isInteger() && (concurrency as int) > 0) {
+                // Define a fixed number of threads when the property is set to a positive integer.
+                systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', concurrency
+            } else {
+                // Otherwise let JUnit manage the concurrency dynamically.
+                systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'dynamic'
             }
         }
 
-        systemProperty 'user.timezone', 'UTC'
-
+        // Exclude all connector unit tests upon request.
         if (rootProject.ext.skipSlowTests) {
-            // Exclude all connector unit tests
             exclude '**/io/airbyte/integrations/source/**'
             exclude '**/io/airbyte/integrations/destination/**'
         }
@@ -569,19 +559,11 @@ subprojects { subproj ->
             enabled = !rootProject.ext.skipSlowTests
             excludes = ['**/*Test*', '**/generated*']
         }
-        useJUnitPlatform {
-            excludeTags('cloud-storage')
-        }
-        testLogging() {
-            events "passed", "skipped", "failed"
-            exceptionFormat 'full'
-            // uncomment to get the full log output
-            // showStandardStreams = true
-        }
         finalizedBy jacocoTestReportTask
     }
 
     // TODO: These should be added to the CDK or to the individual projects that need them:
+
     dependencies {
         implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
@@ -595,16 +577,10 @@ subprojects { subproj ->
 
         // SLF4J as a facade over Log4j2 required dependencies
         implementation libs.bundles.log4j
+        implementation libs.appender.log4j2
 
         // Bridges from other logging implementations to SLF4J
         implementation libs.bundles.slf4j
-
-        // Dependencies for logging to cloud storage, as well as the various clients used to do so.
-        implementation libs.appender.log4j2
-        implementation libs.aws.java.sdk.s3
-        implementation libs.google.cloud.storage
-
-        implementation libs.s3
 
         // Lombok dependencies
         compileOnly libs.lombok
@@ -622,6 +598,9 @@ subprojects { subproj ->
         // adds owasp plugin
         spotbugsPlugins libs.findsecbugs.plugin
         implementation libs.spotbugs.annotations
+
+        // Airbyte dependencies.
+        implementation libs.airbyte.protocol
     }
 
     tasks.withType(SpotBugsTask).configureEach {
@@ -633,9 +612,6 @@ subprojects { subproj ->
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
-    tasks.named('check').configure {
-        dependsOn tasks.named('jacocoTestCoverageVerification')
-    }
 }
 
 // integration and performance test tasks per project
@@ -645,7 +621,6 @@ allprojects {
             [
                     'integrationTestJava',
                     'integrationTestPython',
-                    'standardSourceTestFile',
             ].contains(it.name)
         }
     }

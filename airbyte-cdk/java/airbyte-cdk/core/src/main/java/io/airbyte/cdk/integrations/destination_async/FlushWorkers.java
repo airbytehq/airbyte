@@ -72,14 +72,23 @@ public class FlushWorkers implements AutoCloseable {
                       final Consumer<AirbyteMessage> outputRecordCollector,
                       final FlushFailure flushFailure,
                       final GlobalAsyncStateManager stateManager) {
+    this(bufferDequeue, flushFunction, outputRecordCollector, flushFailure, stateManager, Executors.newFixedThreadPool(5));
+  }
+
+  public FlushWorkers(final BufferDequeue bufferDequeue,
+                      final DestinationFlushFunction flushFunction,
+                      final Consumer<AirbyteMessage> outputRecordCollector,
+                      final FlushFailure flushFailure,
+                      final GlobalAsyncStateManager stateManager,
+                      final ExecutorService workerPool) {
     this.bufferDequeue = bufferDequeue;
     this.outputRecordCollector = outputRecordCollector;
     this.flushFailure = flushFailure;
     this.stateManager = stateManager;
+    this.workerPool = workerPool;
     flusher = flushFunction;
     debugLoop = Executors.newSingleThreadScheduledExecutor();
     supervisorThread = Executors.newScheduledThreadPool(1);
-    workerPool = Executors.newFixedThreadPool(5);
     isClosing = new AtomicBoolean(false);
     runningFlushWorkers = new RunningFlushWorkers();
     detectStreamToFlush = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, isClosing, flusher);

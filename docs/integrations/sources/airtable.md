@@ -17,13 +17,15 @@ This page contains the setup guide and reference information for the [Airtable](
 #### For Airbyte Open Source:
 1. Go to https://airtable.com/create/tokens to create new token.
     ![Generate new Token](../../.gitbook/assets/source/airtable/generate_new_token.png)
-2. Add following scopes and press the `Create Token` button:
+2. Add following scopes:
    - `data.records:read`
    - `data.recordComments:read`
    - `schema.bases:read`
 
     ![Add Scopes](../../.gitbook/assets/source/airtable/add_scopes.png)
-3. Save token from the popup window.
+3. Select required bases or allow access to all available and press the `Create Token` button.
+    ![Add Bases](../../.gitbook/assets/source/airtable/add_bases.png)
+4. Save token from the popup window.
 <!-- /env:oss -->
 
 ### Step 2: Set up Airtable connector in Airbyte
@@ -118,6 +120,8 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------|
+| 4.1.5 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 4.1.4   | 2023-10-19 | [31360](https://github.com/airbytehq/airbyte/pull/31360) | Update docstings                                                                       |
 | 4.1.3   | 2023-10-13 | [31360](https://github.com/airbytehq/airbyte/pull/31360) | Update error message for invalid permissions                                           |
 | 4.1.2   | 2023-10-10 | [31215](https://github.com/airbytehq/airbyte/pull/31215) | Exclude bases without permission                                                       |
 | 4.1.1   | 2023-10-10 | [31119](https://github.com/airbytehq/airbyte/pull/31119) | Add user-friendly error message when refresh token has expired                         |

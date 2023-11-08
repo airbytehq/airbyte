@@ -25,10 +25,7 @@ data:
         message: "Update spec to use token and ingest all 3 streams correctly"
       2.0.0:
         upgradeDeadline: 2023-09-18
-        message: "Fix broken stream, manifest refactor"
-      2.1.0:
-        upgradeDeadline: 2023-10-27
-        message: "Rename dataset streams"
+        message: "This version introduces a new Item Collection (WCC) stream as a substitute of the now-removed Item Collection stream in order to retain data for Web-Content-Crawler datasets."
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/apify-dataset
   tags:

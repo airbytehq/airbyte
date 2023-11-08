@@ -34,3 +34,14 @@ def oauth_config():
         },
         "start_date": "2021-01-01T00:00:00Z",
     }
+
+
+@pytest.fixture
+def config_with_project_groups():
+    return {
+        "start_date": "2021-01-01T00:00:00Z",
+        "api_url": "https://gitlab.com",
+        "credentials": {"auth_type": "access_token", "access_token": "token"},
+        "groups_list": ["g1"],
+        "projects_list": ["p1"],
+    }

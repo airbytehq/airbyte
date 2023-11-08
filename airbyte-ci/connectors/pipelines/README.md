@@ -47,7 +47,15 @@ _Note: `--force` is required to ensure updates are applied on subsequent install
 _Note: `--python=python3.10` is required to ensure the correct python version is used._
 _Note: `--editable` is required to ensure the correct python version is used._
 
-If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
+If you face any installation problems feel free to reach out the Airbyte Connectors Operations team.
+
+### Setting up connector secrets access
+
+If you plan to use Airbyte CI to run CAT (Connector Acceptance Tests), we recommend setting up GSM
+access so that Airbyte CI can pull remote secrets from GSM. For setup instructions, see the
+CI Credentials package (which Airbyte CI uses under the hood) README's
+[Get GSM Access](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md#get-gsm-access)
+instructions.
 
 ### Updating the airbyte-ci tool
 To reinstall airbyte-ci:
@@ -73,7 +81,7 @@ poetry shell
 cd ../../
 ```
 
-At this point you can run `airbyte-ci` commands from the root of the repository.
+At this point you can run `airbyte-ci` commands.
 
 ## Commands reference
 - [`airbyte-ci` command group](#airbyte-ci)
@@ -81,7 +89,6 @@ At this point you can run `airbyte-ci` commands from the root of the repository.
 - [`connectors` command subgroup](#connectors-command-subgroup)
   * [Options](#options-1)
 - [`connectors list` command](#connectors-list-command)
-- [`connectors format` command](#connectors-format-command)
 - [`connectors test` command](#connectors-test-command)
   * [Examples](#examples-)
   * [What it runs](#what-it-runs-)
@@ -90,9 +97,9 @@ At this point you can run `airbyte-ci` commands from the root of the repository.
 - [`connectors publish` command](#connectors-publish-command)
 - [Examples](#examples)
 - [Options](#options-2)
-- [`connectors bump-version` command](#connectors-bump-version)
-- [`connectors upgrade-base-image` command](#connectors-upgrade-base-image)
-- [`connectors migrate-to-base-image` command](#connectors-migrate-to-base-image)
+- [`connectors bump_version` command](#connectors-bump_version)
+- [`connectors upgrade_base_image` command](#connectors-upgrade_base_image)
+- [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image)
 - [`metadata` command subgroup](#metadata-command-subgroup)
 - [`metadata validate` command](#metadata-validate-command)
   * [Example](#example)
@@ -134,18 +141,21 @@ Available commands:
 * `airbyte-ci connectors publish`: Publish a connector to Airbyte's DockerHub.
 
 #### Options
-| Option                                                         | Multiple | Default value                    | Description                                                                                                                                                                                                                                                                                           |
-| -------------------------------------------------------------- | -------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--use-remote-secrets`                                         | False    | True                             | If True, connectors configuration will be pulled from Google Secret Manager. Requires the GCP_GSM_CREDENTIALS environment variable to be set with a service account with permission to read GSM secrets. If False the connector configuration will be read from the local connector `secrets` folder. |
-| `--name`                                                       | True     |                                  | Select a specific connector for which the pipeline will run. Can be used multiple time to select multiple connectors. The expected name is the connector technical name. e.g. `source-pokeapi`                                                                                                        |
-| `--support-level`                                              | True     |                                  | Select connectors with a specific support level: `community`, `certified`.  Can be used multiple times to select multiple support levels.                                                                                                                                                             |
-| `--metadata-query`                                             | False    |                                  | Filter connectors by the `data` field in the metadata file using a [simpleeval](https://github.com/danthedeckie/simpleeval) query. e.g. 'data.ab_internal.ql == 200'                                                                                                                                  |
-| `--use-local-cdk`                                              | False    | False                            | Build with the airbyte-cdk from the local repository. " "This is useful for testing changes to the CDK.                                                                                                                                                                                               |
-| `--language`                                                   | True     |                                  | Select connectors with a specific language: `python`, `low-code`, `java`. Can be used multiple times to select multiple languages.                                                                                                                                                                    |
-| `--modified`                                                   | False    | False                            | Run the pipeline on only the modified connectors on the branch or previous commit (depends on the pipeline implementation).                                                                                                                                                                           |
-| `--concurrency`                                                | False    | 5                                | Control the number of connector pipelines that can run in parallel. Useful to speed up pipelines or control their resource usage.                                                                                                                                                                     |
-| `--metadata-change-only/--not-metadata-change-only`            | False    | `--not-metadata-change-only`     | Only run the pipeline on connectors with changes on their metadata.yaml file.                                                                                                                                                                                                                         |
-| `--enable-dependency-scanning / --disable-dependency-scanning` | False    | ` --disable-dependency-scanning` | When enabled the dependency scanning will be performed to detect the connectors to select according to a dependency change.                                                                                                                                                                           |
+| Option                                                         | Multiple | Default value                    | Mapped Environment Variable | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| -------------------------------------------------------------- | -------- | -------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--use-remote-secrets/--use-local-secrets`                     | False    |                                  |                             | If --use-remote-secrets, connectors configuration will be pulled from Google Secret Manager. Requires the `GCP_GSM_CREDENTIALS` environment variable to be set with a service account with permission to read GSM secrets. If --use-local-secrets the connector configuration will be read from the local connector `secrets` folder. If this flag is not used and a `GCP_GSM_CREDENTIALS` environment variable is set remote secrets will be used, local secrets will be used otherwise. |
+| `--name`                                                       | True     |                                  |                             | Select a specific connector for which the pipeline will run. Can be used multiple times to select multiple connectors. The expected name is the connector technical name. e.g. `source-pokeapi`                                                                                                                                                                                                                                                                                           |
+| `--support-level`                                              | True     |                                  |                             | Select connectors with a specific support level: `community`, `certified`. Can be used multiple times to select multiple support levels.                                                                                                                                                                                                                                                                                                                                                  |
+| `--metadata-query`                                             | False    |                                  |                             | Filter connectors by the `data` field in the metadata file using a [simpleeval](https://github.com/danthedeckie/simpleeval) query. e.g. 'data.ab_internal.ql == 200'                                                                                                                                                                                                                                                                                                                      |
+| `--use-local-cdk`                                              | False    | False                            |                             | Build with the airbyte-cdk from the local repository. " "This is useful for testing changes to the CDK.                                                                                                                                                                                                                                                                                                                                                                                   |
+| `--language`                                                   | True     |                                  |                             | Select connectors with a specific language: `python`, `low-code`, `java`. Can be used multiple times to select multiple languages.                                                                                                                                                                                                                                                                                                                                                        |
+| `--modified`                                                   | False    | False                            |                             | Run the pipeline on only the modified connectors on the branch or previous commit (depends on the pipeline implementation).                                                                                                                                                                                                                                                                                                                                                               |
+| `--concurrency`                                                | False    | 5                                |                             | Control the number of connector pipelines that can run in parallel. Useful to speed up pipelines or control their resource usage.                                                                                                                                                                                                                                                                                                                                                         |
+| `--metadata-change-only/--not-metadata-change-only`            | False    | `--not-metadata-change-only`     |                             | Only run the pipeline on connectors with changes on their metadata.yaml file.                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `--enable-dependency-scanning / --disable-dependency-scanning` | False    | ` --disable-dependency-scanning` |                             | When enabled the dependency scanning will be performed to detect the connectors to select according to a dependency change.                                                                                                                                                                                                                                                                                                                                                               |
+| `--docker-hub-username`                                        |          |                                  | DOCKER_HUB_USERNAME         | Your username to connect to DockerHub. Required for the publish subcommand.                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `--docker-hub-password`                                        |          |                                  | DOCKER_HUB_PASSWORD         | Your password to connect to DockerHub. Required for the publish subcommand.                                                                                                                                                                                                                                                                                                                                                                                                               |
+
 
 ### <a id="connectors-list-command"></a>`connectors list` command
 Retrieve the list of connectors satisfying the provided filters.
@@ -170,32 +180,6 @@ List connectors with a specific language:
 List connectors with multiple filters:
 
 `airbyte-ci connectors --language=low-code --support-level=certified list`
-
-### <a id="connectors-list-command"></a>`connectors format` command
-Run a code formatter on one or multiple connectors.
-
-For Python connectors we run the following tools, using the configuration defined in `pyproject.toml`:
-* `black` for code formatting
-* `isort` for import sorting
-* `licenseheaders` for adding license headers
-
-For Java connectors we run `./gradlew format`.
-
-In local CLI execution the formatted code is exported back the local repository. No commit or push is performed.
-In CI execution the formatted code is pushed to the remote branch. One format commit per connector.
-
-#### Examples
-Format a specific connector:
-
-`airbyte-ci connectors --name=source-pokeapi format`
-
-Format all Python connectors:
-
-`airbyte-ci connectors --language=python format`
-
-Format all connectors modified on the current branch:
-
-`airbyte-ci connectors --modified format`
 
 
 ### <a id="connectors-test-command"></a>`connectors test` command
@@ -255,6 +239,7 @@ flowchart TD
 | `--fail-fast`       | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
 | `--fast-tests-only` | True     | False         | Run unit tests only, skipping integration tests or any tests explicitly tagged as slow. Use this for more frequent checks, when it is not feasible to run the entire test suite.                         |
 | `--code-tests-only` | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
+| `--concurrent-cat`  | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
 
 Note:
 
@@ -320,8 +305,6 @@ Publish all connectors modified in the head commit: `airbyte-ci connectors --mod
 | Option                               | Required | Default         | Mapped environment variable        | Description                                                                                                                                                                               |
 | ------------------------------------ | -------- | --------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--pre-release/--main-release`       | False    | `--pre-release` |                                    | Whether to publish the pre-release or the main release version of a connector. Defaults to pre-release. For main release you have to set the credentials to interact with the GCS bucket. |
-| `--docker-hub-username`              | True     |                 | `DOCKER_HUB_USERNAME`              | Your username to connect to DockerHub.                                                                                                                                                    |
-| `--docker-hub-password`              | True     |                 | `DOCKER_HUB_PASSWORD`              | Your password to connect to DockerHub.                                                                                                                                                    |
 | `--spec-cache-gcs-credentials`       | False    |                 | `SPEC_CACHE_GCS_CREDENTIALS`       | The service account key to upload files to the GCS bucket hosting spec cache.                                                                                                             |
 | `--spec-cache-bucket-name`           | False    |                 | `SPEC_CACHE_BUCKET_NAME`           | The name of the GCS bucket where specs will be cached.                                                                                                                                    |
 | `--metadata-service-gcs-credentials` | False    |                 | `METADATA_SERVICE_GCS_CREDENTIALS` | The service account key to upload files to the GCS bucket hosting the metadata files.                                                                                                     |
@@ -345,11 +328,11 @@ flowchart TD
 ```
 
 
-### <a id="connectors-bump-version"></a>`connectors bump-version` command
+### <a id="connectors-bump_version"></a>`connectors bump_version` command
 Bump the version of the selected connectors.
 
 ### Examples
-Bump source-openweather: `airbyte-ci connectors --name=source-openweather bump-version patch <pr-number> "<changelog-entry>"`
+Bump source-openweather: `airbyte-ci connectors --name=source-openweather bump_version patch <pr-number> "<changelog-entry>"`
 
 #### Arguments
 | Argument              | Description                                                            |
@@ -358,11 +341,11 @@ Bump source-openweather: `airbyte-ci connectors --name=source-openweather bump-v
 | `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry            |
 | `CHANGELOG_ENTRY`     | The changelog entry that will get added to the connector documentation |
 
-### <a id="connectors-upgrade-base-image"></a>`connectors upgrade-base-image` command
+### <a id="connectors-upgrade_base_image"></a>`connectors upgrade_base_image` command
 Modify the selected connector metadata to use the latest base image version.
 
 ### Examples
-Upgrade the base image for source-openweather: `airbyte-ci connectors --name=source-openweather upgrade-base-image`
+Upgrade the base image for source-openweather: `airbyte-ci connectors --name=source-openweather upgrade_base_image`
 
 ### Options
 | Option                  | Required | Default | Mapped environment variable | Description                                                                                                     |
@@ -371,7 +354,7 @@ Upgrade the base image for source-openweather: `airbyte-ci connectors --name=sou
 | `--docker-hub-password` | True     |         | `DOCKER_HUB_PASSWORD`       | Your password to connect to DockerHub. It's used to read the base image registry.                               |
 | `--set-if-not-exists`   | False    | True    |                             | Whether to set or not the baseImage metadata if no connectorBuildOptions is declared in the connector metadata. |
 
-### <a id="connectors-migrate-to-base-image"></a>`connectors migrate-to-base-image` command
+### <a id="connectors-migrate_to_base_image"></a>`connectors migrate_to_base_image` command
 Make a connector using a Dockerfile migrate to the base image by:
 * Removing its Dockerfile
 * Updating its metadata to use the latest base image version
@@ -379,12 +362,12 @@ Make a connector using a Dockerfile migrate to the base image by:
 * Bumping by a patch version
 
 ### Examples
-Migrate source-openweather to use the base image: `airbyte-ci connectors --name=source-openweather migrate-to-base-image`
+Migrate source-openweather to use the base image: `airbyte-ci connectors --name=source-openweather migrate_to_base_image`
 
 ### Arguments
-| Argument              | Description                                                            |
-| --------------------- | ---------------------------------------------------------------------- |
-| `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry            |
+| Argument              | Description                                                 |
+| --------------------- | ----------------------------------------------------------- |
+| `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry |
 
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
 
@@ -425,11 +408,37 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 1.9.3   | [#31457](https://github.com/airbytehq/airbyte/pull/31457)  | Improve the connector documentation for connectors migrated to our base image.                              |
+| 2.5.7   | [#31628](https://github.com/airbytehq/airbyte/pull/31628)  | Add ClickPipelineContext class                                                                            |
+| 2.5.6   | [#32139](https://github.com/airbytehq/airbyte/pull/32139)  | Test coverage report on Python connector UnitTest.                                                        |
+| 2.5.5   | [#32114](https://github.com/airbytehq/airbyte/pull/32114)  | Create cache mount for `/var/lib/docker` to store images in `dind` context.                               |
+| 2.5.4   | [#32090](https://github.com/airbytehq/airbyte/pull/32090)  | Do not cache `docker login`.                                                                              |
+| 2.5.3   | [#31974](https://github.com/airbytehq/airbyte/pull/31974)  | Fix latest CDK install and pip cache mount on connector install.                                          |
+| 2.5.2   | [#31871](https://github.com/airbytehq/airbyte/pull/31871)  | Deactivate PR comments, add HTML report links to the PR status when its ready.                            |
+| 2.5.1   | [#31774](https://github.com/airbytehq/airbyte/pull/31774)  | Add a docker configuration check on `airbyte-ci` startup.                                                 |
+| 2.5.0   | [#31766](https://github.com/airbytehq/airbyte/pull/31766)  | Support local connectors secrets.                                                                         |
+| 2.4.0   | [#31716](https://github.com/airbytehq/airbyte/pull/31716)  | Enable pre-release publish with local CDK.                                                                |
+| 2.3.1   | [#31748](https://github.com/airbytehq/airbyte/pull/31748)  | Use AsyncClick library instead of base Click.                                                             |
+| 2.3.0   | [#31699](https://github.com/airbytehq/airbyte/pull/31699)  | Support optional concurrent CAT execution.                                                                |
+| 2.2.6   | [#31752](https://github.com/airbytehq/airbyte/pull/31752)  | Only authenticate when secrets are available.                                                             |
+| 2.2.5   | [#31718](https://github.com/airbytehq/airbyte/pull/31718)  | Authenticate the sidecar docker daemon to DockerHub.                                                      |
+| 2.2.4   | [#31535](https://github.com/airbytehq/airbyte/pull/31535)  | Improve gradle caching when building java connectors.                                                     |
+| 2.2.3   | [#31688](https://github.com/airbytehq/airbyte/pull/31688)  | Fix failing `CheckBaseImageUse` step when not running on PR.                                              |
+| 2.2.2   | [#31659](https://github.com/airbytehq/airbyte/pull/31659)  | Support builds on x86_64 platform                                                                         |
+| 2.2.1   | [#31653](https://github.com/airbytehq/airbyte/pull/31653)  | Fix CheckBaseImageIsUsed failing on non certified connectors.                                             |
+| 2.2.0   | [#30527](https://github.com/airbytehq/airbyte/pull/30527)  | Add a new check for python connectors to make sure certified connectors use our base image.               |
+| 2.1.1   | [#31488](https://github.com/airbytehq/airbyte/pull/31488)  | Improve `airbyte-ci` start time with Click Lazy load                                                      |
+| 2.1.0   | [#31412](https://github.com/airbytehq/airbyte/pull/31412)  | Run airbyte-ci from any where in airbyte project                                                          |
+| 2.0.4   | [#31487](https://github.com/airbytehq/airbyte/pull/31487)  | Allow for third party connector selections                                                                |
+| 2.0.3   | [#31525](https://github.com/airbytehq/airbyte/pull/31525)  | Refactor folder structure                                                                                 |
+| 2.0.2   | [#31533](https://github.com/airbytehq/airbyte/pull/31533)  | Pip cache volume by python version.                                                                       |
+| 2.0.1   | [#31545](https://github.com/airbytehq/airbyte/pull/31545)  | Reword the changelog entry when using `migrate_to_base_image`.                                            |
+| 2.0.0   | [#31424](https://github.com/airbytehq/airbyte/pull/31424)  | Remove `airbyte-ci connectors format` command.                                                            |
+| 1.9.4   | [#31478](https://github.com/airbytehq/airbyte/pull/31478)  | Fix running tests for connector-ops package.                                                              |
+| 1.9.3   | [#31457](https://github.com/airbytehq/airbyte/pull/31457)  | Improve the connector documentation for connectors migrated to our base image.                            |
 | 1.9.2   | [#31426](https://github.com/airbytehq/airbyte/pull/31426)  | Concurrent execution of java connectors tests.                                                            |
-| 1.9.1   | [#31455](https://github.com/airbytehq/airbyte/pull/31455)  | Fix `None` docker credentials on publish.                              |
-| 1.9.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump-version`, `upgrade-base-image`, `migrate-to-base-image`.                              |
-| 1.8.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump-version`, `upgrade-base-image`, `migrate-to-base-image`.                              |
+| 1.9.1   | [#31455](https://github.com/airbytehq/airbyte/pull/31455)  | Fix `None` docker credentials on publish.                                                                 |
+| 1.9.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump_version`, `upgrade_base_image`, `migrate_to_base_image`.                              |
+| 1.8.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump_version`, `upgrade_base_image`, `migrate_to_base_image`.                              |
 | 1.7.2   | [#31343](https://github.com/airbytehq/airbyte/pull/31343)  | Bind Pytest integration tests to a dockerhost.                                                            |
 | 1.7.1   | [#31332](https://github.com/airbytehq/airbyte/pull/31332)  | Disable Gradle step caching on source-postgres.                                                           |
 | 1.7.0   | [#30526](https://github.com/airbytehq/airbyte/pull/30526)  | Implement pre/post install hooks support.                                                                 |

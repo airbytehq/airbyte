@@ -2,9 +2,11 @@
 
 This python package contains the base images used by Airbyte connectors.
 It is intended to be used as a python library.
-Our connector build pipeline ([`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1)) **will** use this library to build the connector images.
+Our connector build pipeline ([`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1)) uses this library to build the connector images.
 Our base images are declared in code, using the [Dagger Python SDK](https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/).
 
+- [Python base image code declaration](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/base_images/python/bases.py)
+- ~Java base image code declaration~ *TODO* 
 
 
 ## Where are the Dockerfiles?
@@ -24,6 +26,9 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 ENV POETRY_VIRTUALENVS_IN_PROJECT=false
 ENV POETRY_NO_INTERACTION=1
 RUN pip install poetry==1.6.1
+RUN sh -c apt update && apt-get install -y socat=1.7.4.4-2
+RUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1
+RUN mkdir /usr/share/nltk_data
 ```
 
 
@@ -35,6 +40,8 @@ RUN pip install poetry==1.6.1
 
 | Version | Published | Docker Image Address | Changelog | 
 |---------|-----------|--------------|-----------|
+|  1.2.0 | ✅| docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9 | Add CDK system dependencies: nltk data, tesseract, poppler. |
+|  1.1.0 | ✅| docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c | Install socat |
 |  1.0.0 | ✅| docker.io/airbyte/python-connector-base:1.0.0@sha256:dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27 | Initial release: based on Python 3.9.18, on slim-bookworm system, with pip==23.2.1 and poetry==1.6.1 |
 
 
