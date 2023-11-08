@@ -16,8 +16,12 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DebeziumEventUtils {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumEventUtils.class);
 
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
@@ -173,11 +177,12 @@ public class DebeziumEventUtils {
     return baseNode;
   }
 
-  private static Set<String> getConfiguredMongoDbCollectionFields(final JsonNode source,
+  public static Set<String> getConfiguredMongoDbCollectionFields(final JsonNode source,
                                                                   final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
                                                                   final CdcMetadataInjector cdcMetadataInjector) {
     final String streamNamespace = cdcMetadataInjector.namespace(source);
     final String streamName = cdcMetadataInjector.name(source);
+    LOGGER.info("Processing change for stream : " + streamName);
     return configuredAirbyteCatalog.getStreams().stream()
         .filter(s -> streamName.equals(s.getStream().getName()) && streamNamespace.equals(s.getStream().getNamespace()))
         .map(CatalogHelpers::getTopLevelFieldNames)
