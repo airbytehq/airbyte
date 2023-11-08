@@ -198,7 +198,7 @@ def subscription_items_fixture(subscriptions, stream_args):
         return StripeLazySubStream(
             name="subscription_items",
             path="subscription_items",
-            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice['parent']['id']},
+            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice["parent"]["id"]},
             parent=parent_stream,
             use_cache=False,
             sub_items_attr="items",
@@ -275,7 +275,7 @@ def checkout_sessions_line_items_fixture(checkout_sessions, stream_args):
                 "checkout_session_expires_at": stream_slice["parent"]["expires_at"],
                 "checkout_session_created": stream_slice["parent"]["created"],
                 "checkout_session_updated": stream_slice["parent"]["updated"],
-                **record
+                **record,
             },
             **args,
         )

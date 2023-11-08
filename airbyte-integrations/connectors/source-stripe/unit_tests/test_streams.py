@@ -353,9 +353,9 @@ lazy_substream_test_suite = (
                     {
                         "id": "li_2",
                         "object": "line_item",
-                    }
+                    },
                 ],
-            }
+            },
         },
         "checkout_sessions",
         "checkout_sessions_line_items",
@@ -415,9 +415,9 @@ lazy_substream_test_suite = (
                     {
                         "id": "li_2",
                         "object": "line_item",
-                    }
+                    },
                 ],
-            }
+            },
         },
         "checkout_sessions",
         "checkout_sessions_line_items",
@@ -440,8 +440,8 @@ lazy_substream_test_suite = (
             },
         ],
         "incremental",
-        {"checkout_session_updated": 1653300816}
-    )
+        {"checkout_session_updated": 1653300816},
+    ),
 )
 
 
