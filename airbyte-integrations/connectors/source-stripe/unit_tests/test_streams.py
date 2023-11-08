@@ -324,9 +324,7 @@ lazy_substream_test_suite = (
 
 @pytest.mark.parametrize("requests_mock_map, stream_cls, expected_records, sync_mode, state", lazy_substream_test_suite)
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
-def test_lazy_sub_streams(
-    stream_by_name, requests_mock, requests_mock_map, stream_cls, expected_records, config, sync_mode, state
-):
+def test_lazy_sub_streams(stream_by_name, requests_mock, requests_mock_map, stream_cls, expected_records, config, sync_mode, state):
     # make start date a recent date so there's just one slice in a parent stream
     config["start_date"] = str(pendulum.today().subtract(days=3))
 
