@@ -175,6 +175,10 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 |      array       |    array     |
 |      object      |    object    |
 
+## Troubleshooting
+
+- Ad Insights action_values column: We've observed that the action_values column is null in both the raw and normalized tables. This discrepancy has been traced back to the method of data retrieval from the Facebook API through Ad Report Run. Since this issue is rooted in the Facebook API, we're closely monitoring any updates or changes from Facebook's end regarding this matter. Please see open issue [here](https://github.com/airbytehq/airbyte/issues/31860).   
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
