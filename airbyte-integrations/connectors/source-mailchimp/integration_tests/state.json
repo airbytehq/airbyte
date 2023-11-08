@@ -24,7 +24,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "a79651273b": { "timestamp": "2230-11-23T05:42:10+00:00" }
+        "7847cdaeff": { "timestamp": "2230-11-23T05:42:10+00:00" }
       },
       "stream_descriptor": { "name": "email_activity" }
     }
@@ -58,7 +58,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "a79651273b": { "timestamp": "2231-09-26T05:42:10+00:00" }
+        "7847cdaeff": { "timestamp": "2231-09-26T05:42:10+00:00" }
       },
       "stream_descriptor": { "name": "unsubscribes" }
     }

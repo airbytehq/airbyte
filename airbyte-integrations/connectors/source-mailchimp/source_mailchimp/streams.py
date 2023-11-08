@@ -277,6 +277,18 @@ class Reports(IncrementalMailChimpStream):
     def path(self, **kwargs) -> str:
         return "reports"
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+
+        response = super().parse_response(response, **kwargs)
+
+        # In some cases, the 'last_click' field is returned as an empty string,
+        # which causes validation errors on the `date-time` format. 
+        # To avoid this, we remove the field if it is empty.
+        for record in response:
+            if record.get("clicks", {}).get("last_click") == "":
+                record["clicks"].pop("last_click", None)
+            yield record
+
 
 class Segments(MailChimpListSubStream):
     """
