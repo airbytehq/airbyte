@@ -11,7 +11,6 @@ from pipelines.airbyte_ci.format.containers import (
     format_license_container,
     format_python_container,
 )
-from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.helpers.cli import LogOptions, run_all_subcommands
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 
@@ -26,18 +25,16 @@ async def check():
 
 @check.command(name="all")
 @click.option("--list-errors", is_flag=True, default=False, help="Show detailed error messages for failed checks.")
-@pass_pipeline_context
-@click_merge_args_into_context_obj
-@click_ignore_unused_kwargs
-async def all_languages(pipeline_context: ClickPipelineContext):
+@click.pass_context
+async def all_languages(ctx: click.Context, list_errors: bool):
     """
     Run all format checks and fail if any checks fail.
     """
     log_options = LogOptions(
-        list_errors=pipeline_context.params["list_errors"],
+        list_errors=list_errors,
         help_message="Run `airbyte-ci format check all --list-errors` to see detailed error messages for failed checks.",
     )
-    await run_all_subcommands(pipeline_context, log_options)
+    await run_all_subcommands(ctx, log_options)
 
 
 @check.command()
