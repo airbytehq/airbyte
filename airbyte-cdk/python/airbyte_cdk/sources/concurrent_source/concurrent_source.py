@@ -34,9 +34,16 @@ class Status(Enum):
 
 
 @dataclass
+class PartitionReadStatus:
+    partition: Partition
+    partition_read_status: Status
+
+
+@dataclass
 class StreamReadStatus:
     stream: AbstractStream
     partition_generation_status: Status
+    partition_read_statuses: List[PartitionReadStatus]
 
 
 class ConcurrentSource(AbstractSource, ABC):
@@ -153,11 +160,7 @@ class ConcurrentSource(AbstractSource, ABC):
             else:
                 # record
                 yield from self._handle_record(airbyte_message_or_record_or_exception, record_counter, logger)
-            if (
-                not partition_generator_running
-                and not partition_generators
-                and all([all(partition_to_done.values()) for partition_to_done in streams_to_partitions_to_done.values()])
-            ):
+            if self._is_done(streams_to_partitions_to_done, partition_generators, partition_generator_running):
                 # All partitions were generated and process. We're done here
                 if all([f.done() for f in futures]) and queue.empty():
                     break
@@ -165,6 +168,13 @@ class ConcurrentSource(AbstractSource, ABC):
         self._threadpool.shutdown(wait=False, cancel_futures=True)
         logger.info(timer.report())
         logger.info(f"Finished syncing {self.name}")
+
+    def _is_done(self, streams_to_partitions_to_done, partition_generators, partition_generator_running):
+        return (
+            not partition_generator_running
+            and not partition_generators
+            and all([all(partition_to_done.values()) for partition_to_done in streams_to_partitions_to_done.values()])
+        )
 
     def _start_next_partition_generator(self, partition_generators, futures, partition_generator_running, partition_generator, logger):
         stream_partition_generator = partition_generators.pop(0)
