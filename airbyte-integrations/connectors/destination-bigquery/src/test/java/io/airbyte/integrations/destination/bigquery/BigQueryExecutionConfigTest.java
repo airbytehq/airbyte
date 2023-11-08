@@ -49,7 +49,8 @@ public class BigQueryExecutionConfigTest {
       verifyAllFields(config, DatasetLocation.US_WEST_2);
       assertEquals(UploadingMethod.STANDARD, config.getUploadingMethod());
     };
-    // Test to verify if Generated Json annotations are lenient with missing fields in json for backward compat
+    // Test to verify if Generated Json annotations are lenient with missing fields in json for backward
+    // compat
     final Consumer<BigQueryExecutionConfig> requiredMissingVerifier = config -> {
       assertEquals(UploadingMethod.STANDARD, config.getUploadingMethod());
       // This preserves the old behavior of defaulting it to US

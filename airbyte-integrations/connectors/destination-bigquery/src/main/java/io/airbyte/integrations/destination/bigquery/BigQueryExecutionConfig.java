@@ -60,7 +60,7 @@ public class BigQueryExecutionConfig {
     public BigQueryExecutionConfigBuilder connectionConfig(final DestinationBigqueryConnectionConfig connectionConfig) {
       this.connectionConfig = connectionConfig;
       // Default the dataset location to US
-      if(this.connectionConfig.getDatasetLocation() == null) {
+      if (this.connectionConfig.getDatasetLocation() == null) {
         this.connectionConfig.setDatasetLocation(DatasetLocation.US);
       }
       return this;
