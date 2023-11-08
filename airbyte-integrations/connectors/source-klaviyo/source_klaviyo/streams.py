@@ -169,7 +169,7 @@ class SemiIncrementalKlaviyoStream(KlaviyoStream, ABC):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         stream_state = stream_state or {}
-        starting_point = stream_state.get(self.cursor_field) or self._start_ts
+        starting_point = stream_state.get(self.cursor_field, self._start_ts)
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
@@ -263,7 +263,6 @@ class Lists(SemiIncrementalKlaviyoStream):
 
     max_retries = 10
     cursor_field = "updated"
-    state_checkpoint_interval = 10  # API can return maximum 10 records per page
 
     def path(self, **kwargs) -> str:
         return "lists"
@@ -286,7 +285,6 @@ class Metrics(SemiIncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get_metrics"""
 
     cursor_field = "updated"
-    state_checkpoint_interval = 200  # API can return maximum 200 records per page
 
     def path(self, **kwargs) -> str:
         return "metrics"
