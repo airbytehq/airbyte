@@ -30,4 +30,5 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     // Vendor specific stuff I don't think matters for us since we're just pulling out the name
     return new CustomSqlType("SUPER", vendorId(), 123);
   }
+
 }
