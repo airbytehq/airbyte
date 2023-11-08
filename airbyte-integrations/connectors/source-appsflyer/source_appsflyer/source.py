@@ -681,7 +681,7 @@ class SourceAppsflyer(AbstractSource):
                 return False, "The supplied timezone is invalid."
             app_id = config["app_id"]
             dates = pendulum.now("UTC").to_date_string()
-            test_url = f"https://hq.appsflyer.com/export/{app_id}/partners_report/v5?from={dates}&to={dates}&timezone=UTC"
+            test_url = f"https://hq1.appsflyer.com/export/{app_id}/partners_report/v5?from={dates}&to={dates}&timezone=UTC"
             response = requests.get(test_url, headers=self.get_auth(config).get_auth_header())
 
             if response.status_code != 200:
