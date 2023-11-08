@@ -86,6 +86,7 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
   }
 
   protected SQLType preferredStructType(final LinkedHashMap<String, TypeInfoRecordSet> supportedTypes) {
+    //TODO: Make this abstract, let vendor specific handle this logic.
     return preferredType(supportedTypes, List.of("VARIANT", "SUPER", "JSONB", "JSON"), widestType());
   }
 
@@ -127,7 +128,7 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
       case TIME_WITH_TIMEZONE -> JDBCType.TIME_WITH_TIMEZONE;
       case TIME_WITHOUT_TIMEZONE -> JDBCType.TIME;
       case DATE -> JDBCType.DATE;
-      case UNKNOWN -> structType;
+      case UNKNOWN -> widestType();
     };
   }
 

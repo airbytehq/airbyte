@@ -13,6 +13,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.V2TableMigrator;
 
+//TODO: Edward to verify and delete this. What is this which default cannot do ?
 public class JdbcTyperDeduper extends DefaultTyperDeduper<JdbcDatabase> implements TyperDeduper {
 
   public JdbcTyperDeduper(final SqlGenerator<JdbcDatabase> sqlGenerator,
