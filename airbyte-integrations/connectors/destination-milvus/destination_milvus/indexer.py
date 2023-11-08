@@ -13,8 +13,7 @@ from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identif
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_milvus.config import MilvusIndexingConfigModel
-from pymilvus import Collection, DataType, connections, utility, CollectionSchema, FieldSchema, DataType
-from pymilvus.exceptions import DescribeCollectionException
+from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
 
 CLOUD_DEPLOYMENT_MODE = "cloud"
 
@@ -35,7 +34,7 @@ class MilvusIndexer(Indexer):
             token=self.config.auth.token if self.config.auth.mode == "token" else "",
         )
 
-    def _create_client(self):
+    def _connect_with_timeout(self):
         # Run connect in a separate process as it will hang if the token is invalid.
         proc = Process(target=self._connect)
         proc.start()
@@ -46,19 +45,23 @@ class MilvusIndexer(Indexer):
             proc.join()
             raise Exception("Connection timed out, check your host and credentials")
 
+    def _create_client(self):
+        self._connect_with_timeout()
         # If the process exited within 5 seconds, it's safe to connect on the main process to execute the command
         self._connect()
 
         if not utility.has_collection(self.config.collection):
-            pk = FieldSchema(name="pk",dtype=DataType.INT64, is_primary=True, auto_id=True)
-            vector = FieldSchema(name=self.config.vector_field,dtype=DataType.FLOAT_VECTOR,dim=self.embedder_dimensions)
+            pk = FieldSchema(name="pk", dtype=DataType.INT64, is_primary=True, auto_id=True)
+            vector = FieldSchema(name=self.config.vector_field, dtype=DataType.FLOAT_VECTOR, dim=self.embedder_dimensions)
             schema = CollectionSchema(fields=[pk, vector], enable_dynamic_field=True)
             collection = Collection(name=self.config.collection, schema=schema)
-            collection.create_index(field_name=self.config.vector_field, index_params={ "metric_type":"L2", "index_type":"IVF_FLAT", "params":{"nlist":1024} })
+            collection.create_index(
+                field_name=self.config.vector_field, index_params={"metric_type": "L2", "index_type": "IVF_FLAT", "params": {"nlist": 1024}}
+            )
 
         self._collection = Collection(self.config.collection)
         self._collection.load()
-        self._primary_key = next((field["name"] for field in self._collection.describe()["fields"] if "is_primary" in field and field["is_primary"]), None)
+        self._primary_key = self._collection.primary_field.name
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
@@ -77,8 +80,6 @@ class MilvusIndexer(Indexer):
                 return f"Vector field {self.config.vector_field} is not a vector"
             if vector_field["params"]["dim"] != self.embedder_dimensions:
                 return f"Vector field {self.config.vector_field} is not a {self.embedder_dimensions}-dimensional vector"
-        except DescribeCollectionException:
-            return f"Collection {self.config.collection} does not exist"
         except Exception as e:
             return format_exception(e)
         return None
