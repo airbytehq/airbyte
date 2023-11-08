@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.OptionalLong;
 import java.util.Properties;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -149,11 +148,11 @@ public class PostgresDebeziumStateUtilTest {
 
   @ParameterizedTest
   @CsvSource({
-      "16-alpine,pgoutput",
-      "13-alpine,pgoutput",
-      "13-alpine,wal2json",
-      "10-alpine,pgoutput",
-      "10-alpine,wal2json",
+    "16-alpine,pgoutput",
+    "13-alpine,pgoutput",
+    "13-alpine,wal2json",
+    "10-alpine,pgoutput",
+    "10-alpine,wal2json",
   })
   public void LsnCommitTest(final String imageTag, final String plugin) throws SQLException {
     final String imageName = "debezium/postgres:" + imageTag;
@@ -217,8 +216,7 @@ public class PostgresDebeziumStateUtilTest {
           publication,
           plugin,
           lsnBeforeMeaningfulStatement,
-          lsnBeforeMeaningfulStatement
-      ));
+          lsnBeforeMeaningfulStatement));
 
       database.execute("INSERT INTO public.test_table VALUES (3, 'baz');");
       final long lsnAfterMeaningfulStatement = PostgresUtils.getInsertLsn(database).asLong();
