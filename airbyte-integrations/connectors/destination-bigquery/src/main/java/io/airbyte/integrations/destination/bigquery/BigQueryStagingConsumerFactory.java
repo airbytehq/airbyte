@@ -40,7 +40,8 @@ public class BigQueryStagingConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStagingConsumerFactory.class);
 
-  public SerializedAirbyteMessageConsumer createAsync(final String datasetLocation,
+  public SerializedAirbyteMessageConsumer createAsync(
+                                                      final JsonNode config,
                                                       final ConfiguredAirbyteCatalog catalog,
                                                       final Consumer<AirbyteMessage> outputRecordCollector,
                                                       final BigQueryStagingOperations bigQueryGcsOperations,
@@ -50,7 +51,7 @@ public class BigQueryStagingConsumerFactory {
                                                       final ParsedCatalog parsedCatalog,
                                                       final String defaultNamespace) {
     final Map<StreamDescriptor, BigQueryWriteConfig> writeConfigsByDescriptor = createWriteConfigs(
-        datasetLocation,
+        config,
         catalog,
         parsedCatalog,
         recordFormatterCreator,
@@ -83,7 +84,7 @@ public class BigQueryStagingConsumerFactory {
     return (long) (Runtime.getRuntime().maxMemory() * 0.4);
   }
 
-  private Map<StreamDescriptor, BigQueryWriteConfig> createWriteConfigs(final String datasetLocation,
+  private Map<StreamDescriptor, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
                                                                         final ConfiguredAirbyteCatalog catalog,
                                                                         final ParsedCatalog parsedCatalog,
                                                                         final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
@@ -104,7 +105,7 @@ public class BigQueryStagingConsumerFactory {
               streamName,
               stream.getNamespace(),
               internalTableNamespace,
-              datasetLocation,
+              BigQueryUtils.getDatasetLocation(config),
               tmpTableNameTransformer.apply(streamName),
               targetTableName,
               recordFormatter.getBigQuerySchema(),
