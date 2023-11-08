@@ -1,7 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import datetime
+
+
 import logging
 import os
 import urllib
@@ -14,14 +15,7 @@ import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.call_rate import (
-    APIBudget,
-    CachedLimiterSession,
-    HttpRequestMatcher,
-    LimiterSession,
-    MovingWindowCallRatePolicy,
-    Rate,
-)
+from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.types import JsonType
@@ -35,11 +29,6 @@ from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
-_rps = 100
-_rate_limiter = APIBudget(
-    policies=[MovingWindowCallRatePolicy(rates=[Rate(_rps, datetime.timedelta(seconds=1))], matchers=[HttpRequestMatcher()])]
-)
-
 
 class HttpStream(Stream, ABC):
     """
@@ -51,11 +40,8 @@ class HttpStream(Stream, ABC):
 
     # TODO: remove legacy HttpAuthenticator authenticator references
     def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
-        self._api_budget: APIBudget = api_budget or _rate_limiter
+        self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
         self._session = self.request_session()
-        max_workers = 20
-        adapter = requests.adapters.HTTPAdapter(pool_connections=max_workers, pool_maxsize=max_workers)
-        self._session.mount("https://", adapter)
         self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
