@@ -84,13 +84,11 @@ class UnstructuredParser(FileTypeParser):
         format = _extract_format(config)
         with stream_reader.open_file(file, self.file_read_mode, None, logger) as file_handle:
             markdown = self._read_file(file_handle, file, format, logger)
-            if markdown is None:
-                yield from []
-                return
-            yield {
-                "content": markdown,
-                "document_key": file.uri,
-            }
+            if markdown is not None:
+                yield {
+                    "content": markdown,
+                    "document_key": file.uri,
+                }
 
     def _read_file(self, file_handle: IOBase, remote_file: RemoteFile, format: UnstructuredFormat, logger: logging.Logger) -> Optional[str]:
         _import_unstructured()
