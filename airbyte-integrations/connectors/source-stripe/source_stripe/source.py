@@ -13,7 +13,7 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.call_rate import APIBudget, FixedWindowCallRatePolicy
+from airbyte_cdk.sources.streams.call_rate import APIBudget, FixedWindowCallRatePolicy, HttpRequestMatcher
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -133,7 +133,18 @@ class SourceStripe(AbstractSource):
 
         call_budget = APIBudget(
             policies=[
-                FixedWindowCallRatePolicy(next_reset_ts=datetime.now(), period=timedelta(seconds=1), call_limit=call_limit, matchers=[]),
+                FixedWindowCallRatePolicy(
+                    next_reset_ts=datetime.now(),
+                    period=timedelta(seconds=1),
+                    call_limit=20,
+                    matchers=[HttpRequestMatcher(url="https://api.stripe.com/v1/files")],
+                ),
+                FixedWindowCallRatePolicy(
+                    next_reset_ts=datetime.now(),
+                    period=timedelta(seconds=1),
+                    call_limit=call_limit,
+                    matchers=[],
+                ),
             ]
         )
         return call_budget
