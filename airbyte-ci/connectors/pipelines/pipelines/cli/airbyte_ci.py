@@ -52,7 +52,7 @@ def display_welcome_message() -> None:
         │                                                                                                 │
         │                                                                                                 │
         ╚─────────────────────────────────────────────────────────────────────────────────────────────────╝
-        """
+        """  # noqa: W605
     )
 
 
@@ -265,10 +265,9 @@ async def get_modified_files_str(ctx: click.Context):
 @click_append_to_context_object("gha_workflow_run_url", _get_gha_workflow_run_url)
 @click_append_to_context_object("pull_request", _get_pull_request)
 @click_append_to_context_object("modified_files", get_modified_files_str)
+@click.pass_context
 @click_ignore_unused_kwargs
-async def airbyte_ci(
-    ctx: click.Context,
-):  # noqa D103
+async def airbyte_ci(ctx: click.Context):  # noqa D103
     display_welcome_message()
     if ctx.obj["is_local"]:
         # This check is meaningful only when running locally
@@ -276,8 +275,6 @@ async def airbyte_ci(
         check_local_docker_configuration()
 
     check_up_to_date()
-
-    # ctx.obj["modified_files"] = await get_modified_files_str(ctx)
 
     if not ctx.obj["is_local"]:
         log_git_info(ctx)

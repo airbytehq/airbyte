@@ -5,7 +5,7 @@
 import logging
 
 import asyncclick as click
-from pipelines.cli.click_decorators import click_ignore_unused_kwargs
+from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.consts import DOCKER_VERSION
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
@@ -14,20 +14,17 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 @click.command()
 @click.argument("poetry_package_path")
 @click.option("--test-directory", default="tests", help="The directory containing the tests to run.")
+@click_merge_args_into_context_obj
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def test(
-    pipeline_context: ClickPipelineContext,
-    poetry_package_path: str,
-    test_directory: str,
-):
+async def test(pipeline_context: ClickPipelineContext):
     """Runs the tests for the given airbyte-ci package.
 
     Args:
         pipeline_context (ClickPipelineContext): The context object.
-        poetry_package_path (str): Path to the poetry package to test, relative to airbyte-ci directory.
-        test_directory (str): The directory containing the tests to run.
     """
+    poetry_package_path = pipeline_context.params["poetry_package_path"]
+    test_directory = pipeline_context.params["test_directory"]
 
     logger = logging.getLogger(f"{poetry_package_path}.tests")
     logger.info(f"Running tests for {poetry_package_path}")

@@ -434,7 +434,9 @@ This command runs the Python tests for a airbyte-ci poetry package.
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | 2.6.0   | [#31831](https://github.com/airbytehq/airbyte/pull/31831)  | Add `airbyte-ci format` commands, remove connector-specific formatting check                              |
-| 2.5.5   | [#31628](https://github.com/airbytehq/airbyte/pull/31628)  | Add ClickPipelineContext class                                                                            |
+| 2.5.7   | [#31628](https://github.com/airbytehq/airbyte/pull/31628)  | Add ClickPipelineContext class                                                                            |
+| 2.5.6   | [#32139](https://github.com/airbytehq/airbyte/pull/32139)  | Test coverage report on Python connector UnitTest.                                                        |
+| 2.5.5   | [#32114](https://github.com/airbytehq/airbyte/pull/32114)  | Create cache mount for `/var/lib/docker` to store images in `dind` context.                               |
 | 2.5.4   | [#32090](https://github.com/airbytehq/airbyte/pull/32090)  | Do not cache `docker login`.                                                                              |
 | 2.5.3   | [#31974](https://github.com/airbytehq/airbyte/pull/31974)  | Fix latest CDK install and pip cache mount on connector install.                                          |
 | 2.5.2   | [#31871](https://github.com/airbytehq/airbyte/pull/31871)  | Deactivate PR comments, add HTML report links to the PR status when its ready.                            |

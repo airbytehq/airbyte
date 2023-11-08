@@ -1,4 +1,6 @@
+#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 import sys
 from typing import Any, Callable, Optional
@@ -37,11 +39,14 @@ class ClickPipelineContext(BaseModel, Singleton):
         click_params = ctx.params
         command_name = ctx.command.name
 
-        # Error if click_obj and click_params have the same key
-        all_click_params_keys = [p.name for p in ctx.command.params]
-        intersection = set(click_obj.keys()) & set(all_click_params_keys)
+        # Error if click_obj and click_params have the same key, and not the same value
+        intersection = set(click_obj.keys()) & set(click_params.keys())
         if intersection:
-            raise ValueError(f"Your command '{command_name}' has defined options/arguments with the same key as its parent: {intersection}")
+            for key in intersection:
+                if click_obj[key] != click_params[key]:
+                    raise ValueError(
+                        f"Your command '{command_name}' has defined options/arguments with the same key as its parent, but with different values: {intersection}"
+                    )
 
         return {**click_obj, **click_params}
 
@@ -65,7 +70,10 @@ class ClickPipelineContext(BaseModel, Singleton):
 
     _dagger_client_lock: anyio.Lock = PrivateAttr(default_factory=anyio.Lock)
 
-    async def get_dagger_client(self, client: Optional[Client] = None, pipeline_name: Optional[str] = None) -> Client:
+    async def get_dagger_client(self, pipeline_name: Optional[str] = None) -> Client:
+        """
+        Get (or initialize) the Dagger Client instance.
+        """
         if not self._dagger_client:
             async with self._dagger_client_lock:
                 if not self._dagger_client:
@@ -79,9 +87,9 @@ class ClickPipelineContext(BaseModel, Singleton):
                         Cross-thread pool calls are generally considered an anti-pattern.
                     """
                     self._dagger_client = await self._click_context().with_async_resource(connection)  # type: ignore
-        client = self._dagger_client
-        assert client, "Error initializing Dagger client"
-        return client.pipeline(pipeline_name) if pipeline_name else client
+
+        assert self._dagger_client, "Error initializing Dagger client"
+        return self._dagger_client.pipeline(pipeline_name) if pipeline_name else self._dagger_client
 
 
 # Create @pass_pipeline_context decorator for use in click commands

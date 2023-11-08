@@ -45,6 +45,7 @@ GCS_PUBLIC_DOMAIN = "https://storage.cloud.google.com"
 DOCKER_HOST_NAME = "global-docker-host"
 DOCKER_HOST_PORT = 2375
 DOCKER_TMP_VOLUME_NAME = "shared-tmp"
+DOCKER_VAR_LIB_VOLUME_NAME = "docker-cache"
 REPO = git.Repo(search_parent_directories=True)
 REPO_PATH = REPO.working_tree_dir
 STATIC_REPORT_PREFIX = "airbyte-ci"

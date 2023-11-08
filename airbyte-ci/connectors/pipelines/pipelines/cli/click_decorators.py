@@ -1,4 +1,6 @@
+#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 import functools
 import inspect
@@ -41,9 +43,8 @@ def click_merge_args_into_context_obj(f: Callable) -> Callable:
     Decorator to pass click context and args to children commands.
     """
 
-    @click.pass_context
     def wrapper(*args, **kwargs):
-        ctx = args[0]
+        ctx = click.get_current_context()
         ctx.ensure_object(dict)
         click_obj = ctx.obj
         click_params = ctx.params
@@ -55,7 +56,6 @@ def click_merge_args_into_context_obj(f: Callable) -> Callable:
             raise ValueError(f"Your command '{command_name}' has defined options/arguments with the same key as its parent: {intersection}")
 
         ctx.obj = {**click_obj, **click_params}
-
         return f(*args, **kwargs)
 
     return wrapper
