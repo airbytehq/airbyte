@@ -52,6 +52,20 @@ acceptance_tests:
           board_pins:
             - name: "links"
               bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
+            - name: "link"
+              bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
+            - name: "media"
+              bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
+          ads:
+            - name: "updated_time"
+              bypass_reason: "can be updated"
+          ad_groups:
+            - name: "updated_time"
+              bypass_reason: "can be updated"
+          campaigns:
+            - name: "updated_time"
+              bypass_reason: "can be updated"
+
   incremental:
     tests:
       - config_path: secrets/config.json
