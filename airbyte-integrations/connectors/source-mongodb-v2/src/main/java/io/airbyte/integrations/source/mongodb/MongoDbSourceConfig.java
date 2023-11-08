@@ -81,4 +81,8 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
     }
   }
 
+  public boolean getValidateSchema() {
+    return false; // TEMP
+  }
+
 }
