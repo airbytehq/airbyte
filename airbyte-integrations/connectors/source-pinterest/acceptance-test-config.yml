@@ -65,7 +65,6 @@ acceptance_tests:
           campaigns:
             - name: "updated_time"
               bypass_reason: "can be updated"
-
   incremental:
     tests:
       - config_path: secrets/config.json
