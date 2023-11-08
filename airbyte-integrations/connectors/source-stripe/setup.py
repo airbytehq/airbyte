@@ -5,6 +5,7 @@
 
 from setuptools import find_packages, setup
 
+# TODO: change airbyte-cdk version after merge 32054 PR
 MAIN_REQUIREMENTS = ["airbyte-cdk==0.52.8", "stripe==2.56.0", "pendulum==2.1.2"]
 
 TEST_REQUIREMENTS = ["pytest-mock~=3.6.1", "pytest~=6.1", "requests-mock", "requests_mock~=1.8", "freezegun==1.2.2"]

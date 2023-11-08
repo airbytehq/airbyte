@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 import stripe
@@ -10,12 +10,21 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
+from airbyte_cdk.sources.declarative.requesters import RequestOption, SourceHttpRequester
+from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamAvailabilityStrategy, StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
+from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
+from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from source_stripe.partition import PaginatedRequester, SourcePartitionGenerator
 from source_stripe.streams import (
     CheckoutSessionsLineItems,
     CreatedCursorIncrementalStripeStream,
@@ -33,6 +42,28 @@ from source_stripe.streams import (
 )
 
 _MAX_CONCURRENCY = 3
+_PAGE_SIZE = 100
+
+
+class StripePaginator(DefaultPaginator):
+    def path(self) -> Optional[str]:
+        if self._token and self.page_token_option and isinstance(self.page_token_option, RequestPath):
+            return str(self._token)
+        else:
+            return None
+
+
+class StripePaginationStrategy(CursorPaginationStrategy):
+    def stop(self, response: Union[Mapping[str, Any], List], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]) -> bool:
+        return "has_more" not in response
+
+    def get_cursor_value(
+        self, response: Union[Mapping[str, Any], List], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]
+    ) -> Optional[str]:
+        if "has_more" in response and response["has_more"] and response.get("data", []):
+            last_object_id = response["data"][-1]["id"]
+            return str(last_object_id)
+        return None
 
 
 class SourceStripe(AbstractSource):
@@ -96,6 +127,55 @@ class SourceStripe(AbstractSource):
         except (stripe.error.AuthenticationError, stripe.error.PermissionError) as e:
             return False, str(e)
         return True, None
+
+    def _create_concurrent_stream(self, base_stream: HttpStream, concurrency_level: int = _MAX_CONCURRENCY) -> Stream:
+        http_requester = SourceHttpRequester(
+            url_base=base_stream.url_base,
+            request_headers=base_stream.authenticator.get_auth_header(),
+            path=base_stream.path(),
+            name=base_stream.name,
+            message_repository=self.message_repository,
+        )
+
+        paginator = StripePaginator(
+            StripePaginationStrategy(page_size=_PAGE_SIZE),
+            page_size_option=RequestOption(field_name="limit", inject_into=RequestOptionType.request_parameter, parameters={}),
+            page_token_option=RequestOption(field_name="starting_after", inject_into=RequestOptionType.request_parameter, parameters={}),
+        )
+
+        record_selector = RecordSelector(DpathExtractor(field_path=["data"], config={}, parameters={}), {}, {})
+        paginated_requester = PaginatedRequester(http_requester, record_selector, paginator)
+
+        partition_generator = SourcePartitionGenerator(
+            base_stream,
+            paginated_requester,
+            request_params={
+                "created[gte]": lambda _slice: _slice.get("created[gte]") if _slice else None,
+                "created[lte]": lambda _slice: _slice.get("created[lte]") if _slice else None,
+            },
+        )
+
+        primary_key = base_stream.primary_key
+        if isinstance(primary_key, str):
+            primary_key = [primary_key]
+
+        concurrent_stream = StreamFacade(
+            ThreadBasedConcurrentStream(
+                partition_generator=partition_generator,
+                max_workers=concurrency_level,
+                name=base_stream.name,
+                json_schema=base_stream.get_json_schema(),
+                availability_strategy=StreamAvailabilityStrategy(base_stream, self),
+                primary_key=primary_key,
+                cursor_field=base_stream.cursor_field,
+                slice_logger=self._slice_logger,
+                logger=base_stream.logger,
+                message_repository=self.message_repository,
+            ),
+            base_stream,
+            NoopCursor(),
+        )
+        return concurrent_stream
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self.validate_and_fill_with_defaults(config)
@@ -175,31 +255,11 @@ class SourceStripe(AbstractSource):
             ],
             **args,
         )
-        streams = [
-            CheckoutSessionsLineItems(**incremental_args),
-            CustomerBalanceTransactions(**args),
-            Events(**incremental_args),
-            UpdatedCursorIncrementalStripeStream(
-                name="external_account_cards",
-                path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
-                event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
-                legacy_cursor_field=None,
-                extra_request_params={"object": "card"},
-                record_extractor=FilteringRecordExtractor("updated", None, "card"),
-                **args,
-            ),
-            UpdatedCursorIncrementalStripeStream(
-                name="external_account_bank_accounts",
-                path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
-                event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
-                legacy_cursor_field=None,
-                extra_request_params={"object": "bank_account"},
-                record_extractor=FilteringRecordExtractor("updated", None, "bank_account"),
-                **args,
-            ),
-            Persons(**args),
-            SetupAttempts(**incremental_args),
+
+        main_streams = [
             StripeStream(name="accounts", path="accounts", use_cache=True, **args),
+            application_fees,
+            Events(**incremental_args),
             CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
@@ -283,7 +343,6 @@ class SourceStripe(AbstractSource):
                 ],
                 **args,
             ),
-            application_fees,
             invoices,
             IncrementalStripeStream(
                 name="invoice_items",
@@ -384,6 +443,31 @@ class SourceStripe(AbstractSource):
                 event_types=["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"],
                 **args,
             ),
+        ]
+
+        substreams = [
+            CheckoutSessionsLineItems(**incremental_args),
+            CustomerBalanceTransactions(**args),
+            UpdatedCursorIncrementalStripeStream(
+                name="external_account_cards",
+                path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
+                event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
+                legacy_cursor_field=None,
+                extra_request_params={"object": "card"},
+                record_extractor=FilteringRecordExtractor("updated", None, "card"),
+                **args,
+            ),
+            UpdatedCursorIncrementalStripeStream(
+                name="external_account_bank_accounts",
+                path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
+                event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
+                legacy_cursor_field=None,
+                extra_request_params={"object": "bank_account"},
+                record_extractor=FilteringRecordExtractor("updated", None, "bank_account"),
+                **args,
+            ),
+            Persons(**args),
+            SetupAttempts(**incremental_args),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="application_fees_refunds",
                 path=lambda self, stream_slice, *args, **kwargs: f"application_fees/{stream_slice[self.parent_id]}/refunds",
@@ -435,13 +519,15 @@ class SourceStripe(AbstractSource):
             # We cap the number of workers to avoid hitting the Stripe rate limit
             # The limit can be removed or increased once we have proper rate limiting
             concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
-            streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+            main_streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
 
             # The state is known to be empty because concurrent CDK is currently only used for full refresh
             state = {}
             cursor = NoopCursor()
-            return [
-                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, state, cursor) for stream in streams
+
+            main_streams = [self._create_concurrent_stream(base_stream, concurrency_level) for base_stream in main_streams]
+            substreams = [
+                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, state, cursor) for stream in substreams
             ]
-        else:
-            return streams
+
+        return main_streams + substreams
