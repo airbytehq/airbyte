@@ -145,7 +145,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "alert_recipients"
-      primary_key: "id"
+      primary_key: "user_id"
       path: "v2/alerts/{{ record }}/recipients"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
