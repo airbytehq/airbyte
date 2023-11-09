@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk>=0.51.17",
     "google-cloud-storage==2.12.0",
     "pandas==1.5.3",
-    "pyarrow==12.0.1",
+    "pyarrow==14.0.1",
     "fastavro==1.4.11",
     "smart-open[s3]==5.1.0",
 ]
