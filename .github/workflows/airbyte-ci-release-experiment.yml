@@ -34,10 +34,28 @@ jobs:
       working-directory: airbyte-ci/connectors/pipelines/
       run: poetry install --with dev
 
+    - name: Get version from poetry version --short
+      id: get_version
+      run: |
+        echo "::set-output name=version::$(poetry version --short)"
+
+    - name: Set binary name
+      id: get_artifact_name
+      run: |
+        echo "::set-output name=artifact_name::airbyte-ci-${{steps.get_version.outputs.version}}-${{ matrix.os }}"
+
     - name: Build Release
       working-directory: airbyte-ci/connectors/pipelines/
-      run: poetry run pyinstaller --collect-all pipelines --collect-all beartype --collect-all dagger --hidden-import strawberry --name airbyte-ci-${{ matrix.os }} --onefile pipelines/cli/airbyte_ci.py
+      run: poetry poe build-release-binary ${{ steps.get_artifact_name.outputs.artifact_name}}
 
     - uses: actions/upload-artifact@v2
       with:
-        path: airbyte-ci/connectors/pipelines/dist/*
+        name: ${{ steps.get_artifact_name.outputs.artifact_name}}
+        path: airbyte-ci/connectors/pipelines/dist/${{ steps.get_artifact_name.outputs.artifact_name}}
+
+    # - name: Upload Release to GCS
+    #   uses: google-github-actions/upload-cloud-storage@master
+    #   with:
+    #     args: cp airbyte-ci/connectors/pipelines/dist/${{ steps.get_artifact_name.outputs.artifact_name}} gs://airbyte-releases/airbyte-ci/${{ matrix.os }}/${{ steps.get_artifact_name.outputs.artifact_name}}
+    #   env:
+    #     GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
