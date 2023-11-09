@@ -85,17 +85,25 @@ def test_check(requests_mock, config_gen, config_values, is_successful, message)
             "rows": [],
         },
     )
-    requests_mock.register_uri(
-        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata", json={}, status_code=403
-    )
 
     source = SourceGoogleAnalyticsDataApi()
     logger = MagicMock()
     assert source.check(logger, config_gen(**config_values)) == AirbyteConnectionStatus(status=is_successful, message=message)
-    if not is_successful:
-        with pytest.raises(AirbyteTracedException) as e:
-            source.check(logger, config_gen(property_ids=["UA-11111111"]))
-        assert e.value.failure_type == FailureType.config_error
+
+
+def test_check_failure(requests_mock, config_gen):
+    requests_mock.register_uri(
+        "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
+    )
+    requests_mock.register_uri(
+        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata", json={}, status_code=403
+    )
+    source = SourceGoogleAnalyticsDataApi()
+    logger = MagicMock()
+    with pytest.raises(AirbyteTracedException) as e:
+        source.check(logger, config_gen(property_ids=["UA-11111111"]))
+    assert e.value.failure_type == FailureType.config_error
+    assert "Access was denied to the property ID entered." in e.value.message
 
 
 @pytest.mark.parametrize(
