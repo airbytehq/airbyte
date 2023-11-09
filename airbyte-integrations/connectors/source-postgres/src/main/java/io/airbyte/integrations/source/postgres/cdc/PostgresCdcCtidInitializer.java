@@ -161,18 +161,32 @@ public class PostgresCdcCtidInitializer {
         LOGGER.info("No streams will be synced via ctid");
       }
 
+      final var targetPosition = PostgresCdcTargetPosition.targetPosition(database);
       final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
-          PostgresCdcTargetPosition.targetPosition(database), false, firstRecordWaitTime, queueSize);
+          targetPosition, false, firstRecordWaitTime, queueSize);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
 
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
+      final boolean canShortCircuitDebeziumEngine = savedOffset.isPresent() &&
+      // Until the need presents itself in production, short-circuiting should only be done in tests.
+          sourceConfig.has("is_test") && sourceConfig.get("is_test").asBoolean() &&
+          !postgresDebeziumStateUtil.maybeReplicationStreamIntervalHasRecords(
+              database.getDatabaseConfig(),
+              sourceConfig.get("replication_method").get("replication_slot").asText(),
+              sourceConfig.get("replication_method").get("publication").asText(),
+              PostgresUtils.getPluginValue(sourceConfig.get("replication_method")),
+              savedOffset.getAsLong(),
+              targetPosition.targetLsn.asLong());
+
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
+          catalog,
           new PostgresCdcSavedInfoFetcher(stateToBeUsed),
           postgresCdcStateHandler,
           new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getDebeziumDefaultProperties(database),
           DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt,
-          false);
+          false,
+          canShortCircuitDebeziumEngine);
 
       if (initialSyncCtidIterators.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());

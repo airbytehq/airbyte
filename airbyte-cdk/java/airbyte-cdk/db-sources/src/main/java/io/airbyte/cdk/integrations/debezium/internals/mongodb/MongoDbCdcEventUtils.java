@@ -27,12 +27,14 @@ import org.bson.BsonReader;
 import org.bson.BsonRegularExpression;
 import org.bson.BsonType;
 import org.bson.Document;
+import org.bson.UuidRepresentation;
 import org.bson.codecs.BsonCodecProvider;
 import org.bson.codecs.BsonValueCodecProvider;
 import org.bson.codecs.DocumentCodecProvider;
 import org.bson.codecs.IterableCodecProvider;
 import org.bson.codecs.JsonObjectCodecProvider;
 import org.bson.codecs.MapCodecProvider;
+import org.bson.codecs.UuidCodecProvider;
 import org.bson.codecs.ValueCodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.jsr310.Jsr310CodecProvider;
@@ -67,7 +69,12 @@ public class MongoDbCdcEventUtils {
    *         key.
    */
   public static String generateObjectIdDocument(final JsonNode debeziumEventKey) {
-    return debeziumEventKey.get(ID_FIELD).asText().replaceAll(OBJECT_ID_FIELD_PATTERN, DOCUMENT_OBJECT_ID_FIELD);
+    final String idField = debeziumEventKey.get(ID_FIELD).asText();
+    if (StringUtils.contains(idField, OBJECT_ID_FIELD)) {
+      return idField.replaceAll(OBJECT_ID_FIELD_PATTERN, DOCUMENT_OBJECT_ID_FIELD);
+    } else {
+      return Jsons.serialize(debeziumEventKey).replaceAll(ID_FIELD, DOCUMENT_OBJECT_ID_FIELD);
+    }
   }
 
   /**
@@ -221,7 +228,8 @@ public class MongoDbCdcEventUtils {
               new Jsr310CodecProvider(),
               new JsonObjectCodecProvider(),
               new BsonCodecProvider(),
-              new DBRefCodecProvider()));
+              new DBRefCodecProvider(),
+              new UuidCodecProvider(UuidRepresentation.STANDARD)));
 
       // Override the default codec registry
       return document.toBsonDocument(BsonDocument.class, customCodecRegistry);

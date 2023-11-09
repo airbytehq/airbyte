@@ -11,7 +11,7 @@ from pipelines import hacks
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.utils import sh_dash_c
-from pipelines.models.contexts import PipelineContext
+from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult
 
 
@@ -84,7 +84,7 @@ class GradleTask(Step, ABC):
         yum_packages_to_install = [
             "docker",  # required by :integrationTestJava.
             "findutils",  # gradle requires xargs, which is shipped in findutils.
-            "jq",  # required by :airbyte-connector-test-harnesses:acceptance-test-harness to inspect docker images.
+            "jq",  # required by :acceptance-test-harness to inspect docker images.
             "npm",  # required by :format.
             "python3.11-pip",  # required by :format.
             "rsync",  # required for gradle cache synchronization.
