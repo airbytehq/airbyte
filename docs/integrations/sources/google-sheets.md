@@ -72,27 +72,18 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 
 ### Set up the Google Sheets source connector in Airbyte
 
-<!-- env:cloud -->
 
-**For Airbyte Cloud:**
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Sheets** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
 5. Select your authentication method:
-  - **(Recommended)** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
+<!-- env:cloud -->
+  - **For Airbyte Cloud: (Recommended)** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
 <!-- /env:cloud -->
 <!-- env:oss -->
-
-**For Airbyte Open Source:**
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Google Sheets** from the list of available sources.
-4. For **Source name**, enter a name to help you identify this source.
-5. Select your authentication method:
-  - **(Recommended)** Select **Service Account Key Authentication** from the dropdown and enter your Google Cloud service account key in JSON format:
+  - **For Airbyte Open Source: (Recommended)** Select **Service Account Key Authentication** from the dropdown and enter your Google Cloud service account key in JSON format:
 
   ```json
     {
