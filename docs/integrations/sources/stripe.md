@@ -16,7 +16,7 @@ This page contains the setup guide and reference information for the [Stripe](ht
 To authenticate the Stripe connector, you need to use a Stripe API key. Although you may use an existing key, we recommend that you create a new restricted key specifically for Airbyte and grant it **Read** privileges only. We also recommend granting **Read** privileges to all available permissions, and configuring the specific data you would like to replicate within Airbyte.
 :::
 
-### Create a Stripe Secret Key
+### Step 1: Set up Stripe
 
 1. Log in to your [Stripe account](https://dashboard.stripe.com/login).
 2. In the top navigation bar, click **Developers**.
@@ -27,19 +27,9 @@ To authenticate the Stripe connector, you need to use a Stripe API key. Although
 
 For more information on Stripe API Keys, see the [Stripe documentation](https://stripe.com/docs/keys).
 
-### Set up the Stripe source connector in Airbyte
-
-<!-- env:cloud -->
-**For Airbyte Cloud:**
+### Step 2: Set up the Stripe source connector in Airbyte
 
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open Source account.
-<!-- /env:cloud -->
-
-<!-- env:oss -->
-**For Airbyte Open Source:**
-
-1. Navigate to the Airbyte Open Source dashboard.
-<!-- /env:oss -->
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Stripe** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
