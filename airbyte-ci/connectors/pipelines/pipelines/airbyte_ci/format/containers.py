@@ -1,16 +1,13 @@
+#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 from typing import Any, Dict, List, Optional
 
-import click
 import dagger
-from pipelines.airbyte_ci.format.actions import mount_repo_for_formatting
 from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
-from pipelines.consts import AMAZONCORRETTO_IMAGE, GO_IMAGE, NODE_IMAGE
-from pipelines.dagger.actions.python.pipx import with_installed_pipx_package, with_pipx
-from pipelines.dagger.containers.python import with_python_base
+from pipelines.consts import AMAZONCORRETTO_IMAGE, GO_IMAGE, NODE_IMAGE, PYTHON_3_10_IMAGE
 from pipelines.helpers.utils import sh_dash_c
-from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext
 
 
 def build_container(
@@ -106,17 +103,9 @@ def format_license_container(dagger_client: dagger.Client, license_file: str) ->
 def format_python_container(dagger_client: dagger.Client) -> dagger.Container:
     """Format python code via black and isort."""
 
-    # Here's approximately what it would look like if we built it the other way. Doesn't
-    # quite work. Not sure if its putting more work into.
-
-    # base_container = with_python_base(ctx._click_context, python_version="3.10.13")
-    # container = with_installed_pipx_package(ctx._click_context, base_container, "poetry")
-    # container = mount_repo_for_formatting(container, include=["**/*.py", "pyproject.toml", "poetry.lock"])
-    # return container
-
     return build_container(
         dagger_client,
-        base_image="python:3.10.13-slim",
+        base_image=PYTHON_3_10_IMAGE,
         env_vars={"PIPX_BIN_DIR": "/usr/local/bin"},
         include=["**/*.py", "pyproject.toml", "poetry.lock"],
         install_commands=["pip install pipx", "pipx ensurepath", "pipx install poetry"],
