@@ -19,11 +19,13 @@ The Zendesk Support source connector supports two authentication methods:
 
 <!-- env:cloud -->
 **For Airbyte Cloud:**
+
 We highly recommend using OAuth to authenticate your Zendesk Support account, as it simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-zendesk-support-source-connector).
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
+
 We recommend using an API token to authenticate your Zendesk Support account. Please follow the steps below to generate this key.
 
 :::note
@@ -47,31 +49,21 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 ### Set up the Zendesk Support source connector
 
-<!-- env:cloud -->
-
-**For Airbyte Cloud:**
-
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Zendesk Support** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
-   - To authenticate using OAuth, select **OAuth 2.0** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
+<!-- env:cloud -->
+- **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
 <!-- /env:cloud -->
 <!-- env:oss -->
-
-**For Airbyte Open Source:**
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Zendesk Support** from the list of available sources.
-4. For **Source name**, enter a name to help you identify this source.
-5. You can use OAuth or an API token to authenticate your Zendesk Support account.
-   - To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account.
+- **For Airbyte Open Source**: To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account.
 <!-- /env:oss -->
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
 7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
 8. Click **Set up source** and wait for the tests to complete.
+<!-- /env:oss -->
 
 <HideInUI>
 
