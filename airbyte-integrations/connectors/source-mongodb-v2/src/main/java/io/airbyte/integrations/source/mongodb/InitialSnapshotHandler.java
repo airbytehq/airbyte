@@ -52,7 +52,7 @@ public class InitialSnapshotHandler {
                                                                   final MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector,
                                                                   final Instant emittedAt,
                                                                   final int checkpointInterval,
-                                                                  final boolean isValidateSchema) {
+                                                                  final boolean isEnforceSchema) {
     return streams
         .stream()
         .peek(airbyteStream -> {
@@ -91,7 +91,7 @@ public class InitialSnapshotHandler {
               // if nothing was found, return a new BsonDocument
               .orElseGet(BsonDocument::new);
 
-          final var cursor = isValidateSchema ? collection.find()
+          final var cursor = isEnforceSchema ? collection.find()
               .filter(filter)
               .projection(fields)
               .sort(Sorts.ascending(MongoConstants.ID_FIELD))
