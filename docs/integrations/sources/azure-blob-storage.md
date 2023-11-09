@@ -192,6 +192,7 @@ To perform the text extraction from PDF and Docx files, the connector uses the [
 
 | Version | Date       | Pull Request                                    | Subject                                                                 |
 |:--------|:-----------|:------------------------------------------------|:------------------------------------------------------------------------|
+| 0.2.3 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
 | 0.2.2 | 2023-10-30 | [31904](https://github.com/airbytehq/airbyte/pull/31904) | Update CDK to support document file types |
 | 0.2.1 | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.0   | 2023-10-10 | https://github.com/airbytehq/airbyte/pull/31336 | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files   |
