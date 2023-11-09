@@ -27,7 +27,6 @@ from .utils import ShopifyWrongShopNameError
 
 
 class ShopifyStream(HttpStream, ABC):
-
     # define default logger
     logger = logging.getLogger("airbyte")
 
@@ -119,7 +118,6 @@ class ShopifyStream(HttpStream, ABC):
 
 
 class ShopifyDeletedEventsStream(ShopifyStream):
-
     data_field = "events"
     primary_key = "id"
     cursor_field = "deleted_at"
@@ -182,7 +180,6 @@ class ShopifyDeletedEventsStream(ShopifyStream):
 
 
 class IncrementalShopifyStream(ShopifyStream, ABC):
-
     # Setting the check point interval to the limit of the records output
     @property
     def state_checkpoint_interval(self) -> int:
@@ -418,6 +415,8 @@ class ShopifySubstream(IncrementalShopifyStream):
                 for sorted_slice in sorted_substream_slices:
                     yield {self.slice_key: sorted_slice[self.slice_key]}
 
+    # the stream_state caching is required to avoid the STATE collisions for Substreams
+    @stream_state_cache.cache_stream_state
     def read_records(
         self,
         stream_state: Mapping[str, Any] = None,
@@ -432,9 +431,17 @@ class ShopifySubstream(IncrementalShopifyStream):
         if isinstance(slice_data, list) and self.nested_record_field_name is not None and len(slice_data) > 0:
             slice_data = slice_data[0].get(self.nested_record_field_name)
 
+        # reading substream records
         self.logger.info(f"Reading {self.name} for {self.slice_key}: {slice_data}")
         records = super().read_records(stream_slice=stream_slice, **kwargs)
-        yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=records)
+        # get the cached substream state, to avoid state collisions for Incremental Syncs
+        cached_substream_state = stream_state_cache.cached_state.get(self.name, {})
+        # filtering the portion of already emmited substream records using cached state value,
+        # since the actual `metafields` endpoint doesn't support the server-side filtering using query params
+        # thus to avoid the duplicates - we filter the records following the cached state,
+        # which is freezed every time the sync starts using the actual STATE provided,
+        # while the active STATE is updated during the sync and saved as expected, in the end.
+        yield from self.filter_records_newer_than_state(stream_state=cached_substream_state, records_slice=records)
 
 
 class MetafieldShopifySubstream(ShopifySubstream):
@@ -502,6 +509,7 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
             params["status"] = "any"
+        print(f"\n====== The {self.name} stream PRAMS: {params} ========\n")
         return params
 
 

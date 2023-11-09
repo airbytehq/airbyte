@@ -310,7 +310,7 @@ class EagerlyCachedStreamState:
         # Map the input *args, the sequece should be always keeped up to the input function
         # change the mapping if needed
         stream: object = args[0]  # the self instance of the stream
-        current_stream_state: Dict = kwargs["stream_state"] or {}
+        current_stream_state: Dict = kwargs.get("stream_state") or {}
         # get the current tmp_state_value
         tmp_stream_state_value = state_object.get(stream.name, {}).get(stream.cursor_field, "")
         # Save the curent stream value for current sync, if present.
