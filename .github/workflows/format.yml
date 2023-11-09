@@ -2,6 +2,8 @@ name: Check for formatting errors
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
+  # Cancel any previous runs on the same branch if they are still in progress
+  cancel-in-progress: true
 
 on:
   workflow_dispatch:
