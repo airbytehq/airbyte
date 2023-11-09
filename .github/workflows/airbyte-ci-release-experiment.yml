@@ -54,9 +54,10 @@ jobs:
         name: ${{ steps.get_artifact_name.outputs.artifact_name}}
         path: airbyte-ci/connectors/pipelines/dist/${{ steps.get_artifact_name.outputs.artifact_name}}
 
-    # - name: Upload Release to GCS
-    #   uses: google-github-actions/upload-cloud-storage@master
-    #   with:
-    #     args: cp airbyte-ci/connectors/pipelines/dist/${{ steps.get_artifact_name.outputs.artifact_name}} gs://airbyte-releases/airbyte-ci/${{ matrix.os }}/${{ steps.get_artifact_name.outputs.artifact_name}}
-    #   env:
-    #     GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+    - name: Upload Release to GCS
+      uses: google-github-actions/upload-cloud-storage@v1
+      with:
+        path: airbyte-ci/connectors/pipelines/dist/${{ steps.get_artifact_name.outputs.artifact_name}}
+        destination: prod-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/${{ steps.get_artifact_name.outputs.artifact_name}}
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
