@@ -22,6 +22,7 @@ class MailChimpAuthenticator:
         """
         Every Mailchimp API request must be sent to a specific data center.
         The data center is already embedded in API keys, but not OAuth access tokens.
+        This method retrieves the data center for OAuth credentials.
         """
         try:
             response = requests.get(

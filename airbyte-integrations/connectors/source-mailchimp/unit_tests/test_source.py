@@ -30,22 +30,23 @@ def test_check_connection_error(requests_mock, config, data_center):
     assert error_msg
 
 
-def test_get_server_prefix_ok(requests_mock, access_token, data_center):
+def test_get_oauth_data_center_ok(requests_mock, access_token, data_center):
     responses = [
         {"json": {"dc": data_center}, "status_code": 200},
     ]
     requests_mock.register_uri("GET", "https://login.mailchimp.com/oauth2/metadata", responses)
-    assert MailChimpAuthenticator().get_server_prefix(access_token) == data_center
+    assert MailChimpAuthenticator().get_oauth_data_center(access_token) == data_center
 
 
-def test_get_server_prefix_exception(requests_mock, access_token, data_center):
+def test_get_oauth_data_center_exception(requests_mock, access_token, data_center):
     responses = [
         {"json": {}, "status_code": 200},
+        {"json": {"error": "invalid_token"}, "status_code": 200},
         {"status_code": 403},
     ]
     requests_mock.register_uri("GET", "https://login.mailchimp.com/oauth2/metadata", responses)
     with pytest.raises(Exception):
-        MailChimpAuthenticator().get_server_prefix(access_token)
+        MailChimpAuthenticator().get_oauth_data_center(access_token)
 
 
 def test_oauth_config(requests_mock, oauth_config, data_center):
