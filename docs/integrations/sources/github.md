@@ -45,19 +45,16 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 3. On the source selection page, select **GitHub** from the list of Sources.
 4. Add a name for your GitHub connector.
 5. To authenticate:
-  -  Click **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
+<!-- env:cloud -->
+
+  - **For Airbyte Cloud:** **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
 <!-- /env:cloud -->
 <!-- env:oss -->
-**For Airbyte Open Source:**
 
-1. Navigate to the Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**.
-3. On the source selection page, select **GitHub** from the list of Sources.
-4. Add a name for your GitHub connector.
-5. To authenticate:
-  -  Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+   - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
 <!-- /env:oss -->
-5. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
+
+6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
 
 :::caution
 Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
@@ -188,9 +185,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 ### Troubleshooting
 
-<!-- Review common issues here: https://www.notion.so/512cf64f0ca54a1e9ea0034aaded84e8?v=77f3aa662f3641acaab5607c85966bb8 -->
-
-* Check out common troubleshooting issues for the GitHub source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions)
+* Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
 
 </details>
 
