@@ -58,6 +58,6 @@ jobs:
       uses: google-github-actions/upload-cloud-storage@v1
       with:
         path: airbyte-ci/connectors/pipelines/dist/${{ steps.get_artifact_name.outputs.artifact_name}}
-        destination: prod-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/${{ steps.get_artifact_name.outputs.artifact_name}}
+        destination: dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/${{ steps.get_artifact_name.outputs.artifact_name}}
       env:
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
