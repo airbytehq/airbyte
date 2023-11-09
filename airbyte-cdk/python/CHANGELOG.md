@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.53.3
+Fix spec schema generation for File CDK and Vector DB CDK and allow skipping invalid files in document file parser
+
 ## 0.53.2
 Concurrent CDK: Increase connection pool size to allow for 20 max workers
 
