@@ -40,6 +40,13 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             maxParallelForks = project.test.maxParallelForks
             maxHeapSize = project.test.maxHeapSize
 
+            // Tone down the JIT when running the containerized connector to improve overall performance.
+            // The JVM default settings are optimized for long-lived processes in steady-state operation.
+            // Unlike in production, the connector containers in these tests are always short-lived.
+            // It's very much worth injecting a JAVA_OPTS environment variable into the container with
+            // flags which will reduce startup time at the detriment of long-term performance.
+            environment 'JOB_DEFAULT_ENV_JAVA_OPTS', '-XX:TieredStopAtLevel=1'
+
             // Always re-run integration tests no matter what.
             outputs.upToDateWhen { false }
         }

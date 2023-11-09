@@ -113,6 +113,56 @@
     },
     "IsISPU": {
       "type": ["null", "boolean"]
+    },
+    "DefaultShipFromLocationAddress": {
+      "type": ["null", "object"],
+      "properties": {
+        "AddressLine1": {
+          "type": ["null", "string"]
+        },
+        "City": {
+          "type": ["null", "string"]
+        },
+        "CountryCode": {
+          "type": ["null", "string"]
+        },
+        "Name": {
+          "type": ["null", "string"]
+        },
+        "PostalCode": {
+          "type": ["null", "string"]
+        },
+        "StateOrRegion": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "EarliestDeliveryDate": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "LatestDeliveryDate": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "ShippingAddress": {
+      "type": ["null", "object"],
+      "properties": {
+        "City": {
+          "type": ["null", "string"]
+        },
+        "CountryCode": {
+          "type": ["null", "string"]
+        },
+        "PostalCode": {
+          "type": ["null", "string"]
+        },
+        "StateOrRegion": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }
