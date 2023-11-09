@@ -23,8 +23,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message:
-          Brand Analytics Reports will be removed from Cloud verison.
+        message: Brand Analytics Reports will be removed from Cloud verison.
         upgradeDeadline: "2023-11-24"
   supportLevel: community
   tags:
