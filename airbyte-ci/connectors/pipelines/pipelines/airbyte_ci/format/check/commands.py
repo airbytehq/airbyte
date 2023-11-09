@@ -26,10 +26,12 @@ async def check():
 @check.command(name="all")
 @click.option("--list-errors", is_flag=True, default=False, help="Show detailed error messages for failed checks.")
 @click.pass_context
-async def all_languages(ctx: click.Context, list_errors: bool):
+@pass_pipeline_context
+async def all_languages(ctx: click.Context, pipeline_context: ClickPipelineContext, list_errors: bool):
     """
     Run all format checks and fail if any checks fail.
     """
+    await pipeline_context.get_dagger_client(pipeline_name="Check all languages")
     log_options = LogOptions(
         list_errors=list_errors,
         help_message="Run `airbyte-ci format check all --list-errors` to see detailed error messages for failed checks.",

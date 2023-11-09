@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 from typing import Any, Type
-
+import threading
 
 class Singleton:
     """
@@ -16,9 +16,12 @@ class Singleton:
 
     _instances: dict[Type["Singleton"], Any] = {}
     _initialized: dict[Type["Singleton"], bool] = {}
+    _lock = threading.Lock()
+
 
     def __new__(cls: Type["Singleton"], *args: Any, **kwargs: Any) -> Any:
         if cls not in cls._instances:
-            cls._instances[cls] = super().__new__(cls)
-            cls._initialized[cls] = False
+            with cls._lock:
+                cls._instances[cls] = super().__new__(cls)
+                cls._initialized[cls] = False
         return cls._instances[cls]
