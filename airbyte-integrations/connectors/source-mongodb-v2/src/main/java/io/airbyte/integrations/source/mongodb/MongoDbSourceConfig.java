@@ -13,6 +13,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_AUTH
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISCOVER_SAMPLE_SIZE;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.PASSWORD_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMA_ENFORCED_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -82,7 +83,11 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
   }
 
   public boolean getValidateSchema() {
-    return false; // TEMP
+    if (rawConfig.has(SCHEMA_ENFORCED_KEY)) {
+      return rawConfig.get(SCHEMA_ENFORCED_KEY).asBoolean();
+    } else {
+      return true;
+    }
   }
 
 }

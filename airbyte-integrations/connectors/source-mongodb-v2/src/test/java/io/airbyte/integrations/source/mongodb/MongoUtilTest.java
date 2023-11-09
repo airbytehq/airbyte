@@ -88,10 +88,39 @@ public class MongoUtilTest {
     when(aggregateIterable.allowDiskUse(anyBoolean())).thenReturn(aggregateIterable);
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
-    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, false);
+    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, true);
     assertNotNull(streams);
     assertEquals(1, streams.size());
     assertEquals(12, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
+  }
+
+  @Test
+  void testGetAirbyteStreamsSchemalessMode() throws IOException {
+    final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
+    final MongoCursor<Document> cursor = mock(MongoCursor.class);
+    final String databaseName = "database";
+    final Document authorizedCollectionsResponse = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoCollection mongoCollection = mock(MongoCollection.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final List<Map<String, Object>> schemaDiscoveryJsonResponses =
+        Jsons.deserialize(MoreResources.readResource("schema_discovery_response.json"), new TypeReference<>() {});
+    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(Document::new).toList();
+
+    when(cursor.hasNext()).thenReturn(true, true, false);
+    when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
+    when(aggregateIterable.cursor()).thenReturn(cursor);
+    when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
+    when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
+    when(mongoDatabase.runCommand(any())).thenReturn(authorizedCollectionsResponse);
+    when(aggregateIterable.allowDiskUse(anyBoolean())).thenReturn(aggregateIterable);
+    when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
+
+    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, false);
+    assertNotNull(streams);
+    assertEquals(1, streams.size());
+    // In schemaless mode, only the 3 CDC fields + id and data fields should exist.
+    assertEquals(5, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
   }
 
   @Test
@@ -112,7 +141,7 @@ public class MongoUtilTest {
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
     when(aggregateIterable.allowDiskUse(anyBoolean())).thenReturn(aggregateIterable);
 
-    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, false);
+    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, true);
     assertNotNull(streams);
     assertEquals(0, streams.size());
   }
@@ -139,7 +168,7 @@ public class MongoUtilTest {
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
     when(aggregateIterable.allowDiskUse(anyBoolean())).thenReturn(aggregateIterable);
 
-    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, false);
+    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE, true);
     assertNotNull(streams);
     assertEquals(1, streams.size());
     assertEquals(11, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());

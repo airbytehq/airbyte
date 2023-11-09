@@ -60,16 +60,17 @@ public class MongoCatalogHelper {
   }
 
   /**
-   * Builds an {@link AirbyteStream} with the correct configuration for this source.
+   * Builds an {@link AirbyteStream} with the correct configuration for this source, in schemaless mode. All fields are stripped out and the only
+   * fields kept are _id, _data, and the CDC fields.
    *
    * @param streamName The name of the stream.
    * @param streamNamespace The namespace of the stream.
    * @param fields The fields associated with the stream.
    * @return The configured {@link AirbyteStream} for this source.
    */
-  public static AirbyteStream buildPackedAirbyteStream(final String streamName, final String streamNamespace, final List<Field> fields) {
+  public static AirbyteStream buildSchemalessAirbyteStream(final String streamName, final String streamNamespace, final List<Field> fields) {
     // The packed airbyte catalog should only contain the _id field. 
-    final List<Field> idFieldList = fields.stream().filter(field -> field.getName() == "_id").collect(Collectors.toList());
+    final List<Field> idFieldList = fields.stream().filter(field -> field.getName().equals(MongoConstants.ID_FIELD)).collect(Collectors.toList());
     return addDataMetadataColumn(buildAirbyteStream(streamName, streamNamespace, idFieldList));
   }
 
@@ -87,7 +88,7 @@ public class MongoCatalogHelper {
   }
 
   /**
-   * Adds the data metadata columns to the stream, for packed mode.
+   * Adds the data metadata columns to the stream, for schemaless (packed) mode.
    *
    * @param stream An {@link AirbyteStream}.
    * @return The modified {@link AirbyteStream}.
@@ -95,13 +96,13 @@ public class MongoCatalogHelper {
   private static AirbyteStream addDataMetadataColumn(final AirbyteStream stream) {
     final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
     final ObjectNode properties = (ObjectNode) jsonSchema.get(AIRBYTE_STREAM_PROPERTIES);
-    addPackedModeColumn(properties);
+    addSchemalessModeDataColumn(properties);
     return stream;
   }
 
-  public static ObjectNode addPackedModeColumn(final ObjectNode properties) {
+  private static ObjectNode addSchemalessModeDataColumn(final ObjectNode properties) {
     final JsonNode objectType = Jsons.jsonNode(ImmutableMap.of("type", "object"));
-    properties.set("_data", objectType);
+    properties.set(MongoConstants.SCHEMALESS_MODE_DATA_FIELD, objectType);
     return properties;
   }
 }

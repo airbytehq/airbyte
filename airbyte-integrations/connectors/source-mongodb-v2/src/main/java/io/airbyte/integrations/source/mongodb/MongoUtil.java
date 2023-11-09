@@ -105,13 +105,15 @@ public class MongoUtil {
    * @param databaseName The name of the database to query for collections.
    * @param sampleSize The maximum number of documents to sample when attempting to discover the
    *        unique fields for a collection.
+   * @param isSchemaEnforced True if the connector is running in schema mode, false if running in schemaless (packed) mode
    * @return The list of {@link AirbyteStream}s that map to the available collections in the provided
    *         database.
    */
-  public static List<AirbyteStream> getAirbyteStreams(final MongoClient mongoClient, final String databaseName, final Integer sampleSize, final boolean isPacked) {
+  public static List<AirbyteStream> getAirbyteStreams(final MongoClient mongoClient, final String databaseName, final Integer sampleSize,
+      final boolean isSchemaEnforced) {
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
     return authorizedCollections.parallelStream()
-        .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isPacked))
+        .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced))
         .filter(stream -> stream.isPresent())
         .map(stream -> stream.get())
         .collect(Collectors.toList());
@@ -190,13 +192,15 @@ public class MongoUtil {
    * @param collectionName The name of the collection represented by the stream (stream name).
    * @param databaseName The name of the database represented by the stream (stream namespace).
    * @param fields The fields available to the stream.
+   * @param isSchemaEnforced True if the connector is running in schema mode, false if running in schemaless (packed) mode
    * @return A {@link AirbyteStream} object representing the stream.
    */
-  private static AirbyteStream createAirbyteStream(final String collectionName, final String databaseName, final List<Field> fields, final boolean isPacked) {
-    if (isPacked) {
-      return MongoCatalogHelper.buildPackedAirbyteStream(collectionName, databaseName, fields);
-    } else {
+  private static AirbyteStream createAirbyteStream(final String collectionName, final String databaseName, final List<Field> fields,
+      final boolean isSchemaEnforced) {
+    if (isSchemaEnforced) {
       return MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, fields);
+    } else {
+      return MongoCatalogHelper.buildSchemalessAirbyteStream(collectionName, databaseName, fields);
     }
   }
 
@@ -208,6 +212,7 @@ public class MongoUtil {
    * @param databaseName The name of the database associated with the stream (stream namespace).
    * @param sampleSize The maximum number of documents to sample when attempting to discover the
    *        unique fields for a collection
+   * @param isSchemaEnforced True if the connector is running in schema mode, false if running in schemaless (packed) mode
    * @return The {@link AirbyteStream} that contains the discovered fields or an empty
    *         {@link Optional} if the underlying collection is empty.
    */
@@ -215,7 +220,7 @@ public class MongoUtil {
                                                         final MongoClient mongoClient,
                                                         final String databaseName,
                                                         final Integer sampleSize,
-                                                        final boolean isPacked) {
+                                                        final boolean isSchemaEnforced) {
     /*
      * Fetch the keys/types from the first N documents and the last N documents from the collection.
      * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
@@ -223,7 +228,7 @@ public class MongoUtil {
     final MongoCollection<Document> mongoCollection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
     final Set<Field> discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize));
     return Optional
-        .ofNullable(!discoveredFields.isEmpty() ? createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields), isPacked) : null);
+        .ofNullable(!discoveredFields.isEmpty() ? createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields), isSchemaEnforced) : null);
   }
 
   private static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection, final Integer sampleSize) {
