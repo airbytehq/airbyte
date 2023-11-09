@@ -21,10 +21,12 @@ async def fix():
     pass
 
 
-@fix.command()
+@fix.command(name="all")
 @click.pass_context
-async def all(ctx: click.Context):
+@pass_pipeline_context
+async def all_languages(ctx: click.Context, pipeline_context: ClickPipelineContext):
     """Run code format checks and fix any failures."""
+    await pipeline_context.get_dagger_client(pipeline_name="Fix all languages")
     await run_all_subcommands(ctx)
 
 
