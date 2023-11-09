@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from os import getenv
 from typing import Any, List, Mapping, Tuple
 
 import boto3
@@ -164,7 +164,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         stream_kwargs = self._get_stream_kwargs(config)
-        return [
+        streams = [
             FbaCustomerReturnsReports(**stream_kwargs),
             FbaAfnInventoryReports(**stream_kwargs),
             FbaAfnInventoryByCountryReports(**stream_kwargs),
@@ -181,18 +181,10 @@ class SourceAmazonSellerPartner(AbstractSource):
             FulfilledShipmentsReports(**stream_kwargs),
             MerchantListingsReports(**stream_kwargs),
             VendorDirectFulfillmentShipping(**stream_kwargs),
-            VendorInventoryReports(**stream_kwargs),
-            VendorSalesReports(**stream_kwargs),
             Orders(**stream_kwargs),
             OrderItems(**stream_kwargs),
             OrderReportDataShipping(**stream_kwargs),
-            SellerAnalyticsSalesAndTrafficReports(**stream_kwargs),
             SellerFeedbackReports(**stream_kwargs),
-            BrandAnalyticsMarketBasketReports(**stream_kwargs),
-            BrandAnalyticsSearchTermsReports(**stream_kwargs),
-            BrandAnalyticsRepeatPurchaseReports(**stream_kwargs),
-            BrandAnalyticsAlternatePurchaseReports(**stream_kwargs),
-            BrandAnalyticsItemComparisonReports(**stream_kwargs),
             GetXmlBrowseTreeData(**stream_kwargs),
             ListFinancialEventGroups(**stream_kwargs),
             ListFinancialEvents(**stream_kwargs),
@@ -220,3 +212,18 @@ class SourceAmazonSellerPartner(AbstractSource):
             LedgerSummaryViewReport(**stream_kwargs),
             FbaReimbursementsReports(**stream_kwargs),
         ]
+        # TODO: Remove after Brand Analytics will be enabled in CLOUD:
+        #  https://github.com/airbytehq/airbyte/issues/32353
+        if getenv("DEPLOYMENT_MODE", "").upper() != "CLOUD":
+            brand_analytics_reports = [
+                BrandAnalyticsMarketBasketReports(**stream_kwargs),
+                BrandAnalyticsSearchTermsReports(**stream_kwargs),
+                BrandAnalyticsRepeatPurchaseReports(**stream_kwargs),
+                BrandAnalyticsAlternatePurchaseReports(**stream_kwargs),
+                BrandAnalyticsItemComparisonReports(**stream_kwargs),
+                SellerAnalyticsSalesAndTrafficReports(**stream_kwargs),
+                VendorSalesReports(**stream_kwargs),
+                VendorInventoryReports(**stream_kwargs),
+            ]
+            streams += brand_analytics_reports
+        return streams
