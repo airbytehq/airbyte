@@ -1,4 +1,6 @@
+#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 from typing import List
 
@@ -6,7 +8,7 @@ import dagger
 from pipelines.helpers.utils import sh_dash_c
 
 
-async def run_check(
+def run_check(
     container: dagger.Container,
     check_commands: List[str],
 ) -> dagger.Container:
@@ -15,7 +17,7 @@ async def run_check(
         container: (dagger.Container): The container to run the formatting check in
         check_commands (List[str]): The list of commands to run to check the formatting
     """
-    await container.with_exec(sh_dash_c(check_commands), skip_entrypoint=True)
+    return container.with_exec(sh_dash_c(check_commands), skip_entrypoint=True)
 
 
 async def run_format(
@@ -28,7 +30,7 @@ async def run_format(
         format_commands (List[str]): The list of commands to run to format the repository
     """
     format_container = container.with_exec(sh_dash_c(format_commands), skip_entrypoint=True)
-    await format_container.directory("/src").export(".")
+    return await format_container.directory("/src").export(".")
 
 
 def mount_repo_for_formatting(

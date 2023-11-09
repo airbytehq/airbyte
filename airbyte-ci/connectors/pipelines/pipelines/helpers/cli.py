@@ -1,29 +1,30 @@
+#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
-import logging
-import sys
+
 from dataclasses import dataclass
-from typing import Dict, Tuple
+from typing import Any, List
 
-import anyio
 import asyncclick as click
-import dagger
+import asyncer
 from jinja2 import Template
+from pipelines.models.steps import CommandResult, StepStatus
 
 ALL_RESULTS_KEY = "_run_all_results"
 
 SUMMARY_TEMPLATE_STR = """
 
-Summary of Sub Command Results
+Summary of commands results
 ========================
-{% for command_name, result in results.items() %}
-{{ '✅' if result[0] else '❌' }} {{ command_prefix }} {{ command_name }}
+{% for command_name, success in results %}
+{{ '✅' if  success else '❌' }} {{ command_prefix }} {{ command_name }}
 {% endfor %}
 """
 
 DETAILS_TEMPLATE_STR = """
 
-Detailed Errors for Failed Sub Commands
+Detailed Errors for failed commands
 =================================
 {% for command_name, error in failed_commands_details %}
 ❌ {{ command_prefix }} {{ command_name }}
@@ -41,22 +42,27 @@ class LogOptions:
     help_message: str = None
 
 
-def _log_output(ctx: click.Context, logger, options: LogOptions = LogOptions()):
+def log_command_results(ctx: click.Context, logger, options: LogOptions = LogOptions(), command_results=List[CommandResult]):
     """
     Log the output of the subcommands run by `run_all_subcommands`.
     """
-    subcommand_results = ctx.obj[ALL_RESULTS_KEY]
     command_path = ctx.command_path
 
     summary_template = Template(SUMMARY_TEMPLATE_STR)
-    summary_message = summary_template.render(results=subcommand_results, command_prefix=command_path)
+    summary_message = summary_template.render(
+        results=[(r.command.name, r.status is StepStatus.SUCCESS) for r in command_results], command_prefix=command_path
+    )
     logger.info(summary_message)
 
-    result_contains_failures = any(not succeeded for (succeeded, _) in subcommand_results.values())
+    result_contains_failures = any([r.status is StepStatus.FAILURE for r in command_results])
 
     if result_contains_failures:
         if options.list_errors:
-            failed_commands_details = [(name, error) for name, (success, error) in subcommand_results.items() if not success]
+            failed_commands_details = [
+                (command_result.command.name, command_result.stderr)
+                for command_result in command_results
+                if command_result.status is StepStatus.FAILURE
+            ]
             if failed_commands_details:
                 details_template = Template(DETAILS_TEMPLATE_STR)
                 details_message = details_template.render(failed_commands_details=failed_commands_details, command_prefix=command_path)
@@ -68,39 +74,24 @@ def _log_output(ctx: click.Context, logger, options: LogOptions = LogOptions()):
         logger.info(options.help_message)
 
 
-async def _run_sub_command(ctx: click.Context, command: click.Command):
+async def invoke_commands_concurrently(ctx: click.Context, commands: List[click.Command]) -> List[Any]:
     """
-    Run a subcommand and store the result in the context object.
+    Run click commands concurrently and return a list of their return values.
     """
-    try:
-        await ctx.invoke(command)
-        ctx.obj[ALL_RESULTS_KEY][command.name] = (True, None)
-    except dagger.ExecError as e:
-        ctx.obj[ALL_RESULTS_KEY][command.name] = (False, str(e))
+
+    soon_command_executions_results = []
+    async with asyncer.create_task_group() as command_group:
+        for command in commands:
+            soon_command_execution_result = command_group.soonify(ctx.invoke)(command)
+            soon_command_executions_results.append(soon_command_execution_result)
+    return [r.value for r in soon_command_executions_results]
 
 
-async def run_all_subcommands(ctx: click.Context, log_options: LogOptions = LogOptions()):
+async def invoke_commands_sequentially(ctx: click.Context, commands: List[click.Command]) -> List[Any]:
     """
-    Run all subcommands of a given command and log the results.
+    Run click commands sequentially and return a list of their return values.
     """
-    ctx.obj[ALL_RESULTS_KEY] = {}
-
-    parent_command_path = ctx.parent.command_path
-    parent_command_name = ctx.parent.command.name
-    current_command_name = ctx.command.name
-
-    logger = logging.getLogger(parent_command_name)
-
-    # omit current command from list of subcommands
-    all_subcommands_dict = ctx.parent.command.commands
-    filtered_subcommands_dict = {name: command for name, command in all_subcommands_dict.items() if name != current_command_name}
-
-    logger.info(f"Running all sub commands of {parent_command_path}...")
-    async with anyio.create_task_group() as check_group:
-        for command in filtered_subcommands_dict.values():
-            check_group.start_soon(_run_sub_command, ctx, command)
-
-    _log_output(ctx, logger, log_options)
-
-    if any(not succeeded for (succeeded, _) in ctx.obj[ALL_RESULTS_KEY].values()):
-        sys.exit(1)
+    command_executions_results = []
+    for command in commands:
+        command_executions_results.append(await ctx.invoke(command))
+    return command_executions_results
