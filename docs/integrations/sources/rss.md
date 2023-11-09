@@ -25,6 +25,7 @@ This source is capable of syncing the following streams:
 ### Requirements / Setup Guide
 
 Only the `url` of an RSS feed is required.
+Optionally a `User-Agent`can be added a element for a html request.
 
 ## Performance considerations
 
@@ -32,6 +33,7 @@ None
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-10-12 | [18838](https://github.com/airbytehq/airbyte/pull/18838) | Initial release supporting RSS |
+| Version | Date       | Pull Request | Subject                        |
+|:--------|:-----------| :--- |:-------------------------------|
+| 0.1.0   | 2022-10-12 | [18838](https://github.com/airbytehq/airbyte/pull/18838) | Initial release supporting RSS |
+| 0.2.0   | 2023-11-09 |  | Adding Header options          |

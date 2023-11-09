@@ -126,9 +126,10 @@ class IncrementalRssStream(RssStream, ABC):
 
 
 class Items(IncrementalRssStream):
-    def __init__(self, url: str):
+    def __init__(self, url: str, headers: dict):
         super().__init__()
         self.url = url
+        self.headers = headers
 
     primary_key = None
 
@@ -137,12 +138,20 @@ class Items(IncrementalRssStream):
     ) -> str:
         return self.url
 
+    def request_headers(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return self.headers
+
 
 # Source
 class SourceRss(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            resp = requests.get(config.get("url"))
+            resp = requests.get(config.get("url"), headers=config.get("headers", {}))
             status = resp.status_code
             if status == 200:
                 return True, None
@@ -152,4 +161,4 @@ class SourceRss(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [Items(config.get("url"))]
+        return [Items(config.get("url"), config.get("headers", {}))]

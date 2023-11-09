@@ -9,3 +9,10 @@ connectionSpecification:
     url:
       type: string
       description: RSS Feed URL
+    headers:
+      type: object
+      description: Request Header Information
+      properties:
+        User-Agent:
+          type: string
+          description: Header information about the user agent
