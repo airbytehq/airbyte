@@ -152,6 +152,7 @@ class ConcurrentSource(AbstractSource, ABC):
                     timer,
                     logger,
                 )
+                yield from self._message_repository.consume_queue()
                 if status_message:
                     yield status_message
                 # if all([all(partition_to_done.values()) for partition_to_done in streams_to_partitions_to_done.values()]):

@@ -74,29 +74,23 @@ def run_test_read_incremental(
 
 
 def _verify_read_output(output: Dict[str, Any], scenario: TestScenario[AbstractSource]) -> None:
-    print(f"output: \n{output}\n")
     records, logs = output["records"], output["logs"]
-    print(f"records: \n{records}\n")
     logs = [log for log in logs if log.get("level") in scenario.log_levels]
     expected_records = scenario.expected_records
     assert len(records) == len(expected_records)
-    if scenario.records_must_be_ordered:
-        for actual, expected in zip(records, expected_records):
-            if "record" in actual:
-                assert len(actual["record"]["data"]) == len(expected["data"])
-                for key, value in actual["record"]["data"].items():
-                    if isinstance(value, float):
-                        assert math.isclose(value, expected["data"][key], abs_tol=1e-04)
-                    else:
-                        assert value == expected["data"][key]
-                assert actual["record"]["stream"] == expected["stream"]
-            elif "state" in actual:
-                assert actual["state"]["data"] == expected
-    else:
-        for r in records:
-            if "record" in r:
-                r["record"].pop("emitted_at")
-                assert r["record"] in expected_records
+    for actual, expected in zip(records, expected_records):
+        if "record" in actual:
+            if "data" not in expected:
+                raise ValueError(f"actual: {actual}, expected: {expected}")
+            assert len(actual["record"]["data"]) == len(expected["data"])
+            for key, value in actual["record"]["data"].items():
+                if isinstance(value, float):
+                    assert math.isclose(value, expected["data"][key], abs_tol=1e-04)
+                else:
+                    assert value == expected["data"][key]
+            assert actual["record"]["stream"] == expected["stream"]
+        elif "state" in actual:
+            assert actual["state"]["data"] == expected
 
     if scenario.expected_logs:
         read_logs = scenario.expected_logs.get("read")
@@ -195,7 +189,6 @@ def read(
             ],
         )
         captured = capsys.readouterr().out.splitlines() + logger_stream.getvalue().split("\n")[:-1]
-        print(f"captured: \n{captured}\n")
 
         return {
             "records": [msg for msg in (json.loads(line) for line in captured) if msg["type"] == "RECORD"],
