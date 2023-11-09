@@ -112,7 +112,7 @@ def test_validate_custom_reposts(mocked_client, config_with_custom_reports, logg
             return_value=iter([{"Id": 180519267, "ParentCustomerId": 78798732}, {"Id": 180278106, "ParentCustomerId": 82372972}]),
         )
     ):
-        assert SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client) == None
+        assert SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client) is None
 
 
 @patch.object(source_bing_ads.source, "Client")
