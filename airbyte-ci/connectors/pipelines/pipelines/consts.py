@@ -26,6 +26,7 @@ BUILD_PLATFORMS = [Platform("linux/amd64"), Platform("linux/arm64")]
 
 PLATFORM_MACHINE_TO_DAGGER_PLATFORM = {
     "x86_64": Platform("linux/amd64"),
+    "aarch64": Platform("linux/amd64"),
     "arm64": Platform("linux/arm64"),
     "aarch64": Platform("linux/amd64"),
     "amd64": Platform("linux/amd64"),
@@ -45,6 +46,7 @@ GCS_PUBLIC_DOMAIN = "https://storage.cloud.google.com"
 DOCKER_HOST_NAME = "global-docker-host"
 DOCKER_HOST_PORT = 2375
 DOCKER_TMP_VOLUME_NAME = "shared-tmp"
+DOCKER_VAR_LIB_VOLUME_NAME = "docker-cache"
 STATIC_REPORT_PREFIX = "airbyte-ci"
 PIP_CACHE_VOLUME_NAME = "pip_cache"
 PIP_CACHE_PATH = "/root/.cache/pip"
