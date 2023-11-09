@@ -185,12 +185,14 @@ public class PostgresTestDatabase implements AutoCloseable {
     private synchronized PostgreSQLContainer<?> getOrCreateSharedContainer() {
       if (sharedContainer == null) {
         if (containerCreationError != null) {
-          throw new RuntimeException("Error during container creation for imageName=" + imageName + ", methods=" + methods, containerCreationError);
+          throw new RuntimeException(
+              "Error during container creation for imageName=" + imageName + ", methods=" + methods.stream().map(Method::getName).toList(),
+              containerCreationError);
         }
         LOGGER.info("Creating new shared container based on {} with {}.", imageName, methods.stream().map(Method::getName).toList());
         try {
           final var parsed = DockerImageName.parse(imageName).asCompatibleSubstituteFor("postgres");
-          PostgreSQLContainer<?> sharedContainer = new PostgreSQLContainer<>(parsed);
+          sharedContainer = new PostgreSQLContainer<>(parsed);
           for (Method method : methods) {
             LOGGER.info("Calling {} on new shared container based on {}.", method.getName(),
                 imageName);
@@ -199,12 +201,13 @@ public class PostgresTestDatabase implements AutoCloseable {
           sharedContainer.start();
         } catch (IllegalAccessException | InvocationTargetException e) {
           containerCreationError = new RuntimeException(e);
+          this.sharedContainer = null;
           throw containerCreationError;
         } catch (RuntimeException e) {
+          this.sharedContainer = null;
           containerCreationError = e;
           throw e;
         }
-        this.sharedContainer = sharedContainer;
       }
       return sharedContainer;
     }
