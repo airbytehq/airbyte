@@ -185,7 +185,9 @@ public class PostgresTestDatabase implements AutoCloseable {
     private synchronized PostgreSQLContainer<?> getOrCreateSharedContainer() {
       if (sharedContainer == null) {
         if (containerCreationError != null) {
-          throw new RuntimeException("Error during container creation for imageName=" + imageName + ", methods=" + methods.stream().map(Method::getName).toList(), containerCreationError);
+          throw new RuntimeException(
+              "Error during container creation for imageName=" + imageName + ", methods=" + methods.stream().map(Method::getName).toList(),
+              containerCreationError);
         }
         LOGGER.info("Creating new shared container based on {} with {}.", imageName, methods.stream().map(Method::getName).toList());
         try {
