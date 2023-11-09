@@ -18,14 +18,23 @@ from .streams import Automations, Campaigns, EmailActivity, ListMembers, Lists, 
 
 class MailChimpAuthenticator:
     @staticmethod
-    def get_server_prefix(access_token: str) -> str:
+    def get_oauth_data_center(access_token: str) -> str:
+        """
+        Every Mailchimp API request must be sent to a specific data center.
+        The data center is already embedded in API keys, but not OAuth access tokens.
+        """
         try:
             response = requests.get(
                 "https://login.mailchimp.com/oauth2/metadata", headers={"Authorization": "OAuth {}".format(access_token)}
             )
+
+            # Requests to this endpoint will return a 200 status code even if the access token is invalid.
+            error = response.json().get("error")
+            if error == "invalid_token":
+                raise ValueError("The access token you provided was invalid. Please check your credentials and try again.")
             return response.json()["dc"]
         except Exception as e:
-            raise Exception(f"Cannot retrieve server_prefix for you account. \n {repr(e)}")
+            raise Exception(f"An exception occured while retrieving the data center for your account. \n {repr(e)}")
 
     def get_auth(self, config: Mapping[str, Any]) -> AuthBase:
         authorization = config.get("credentials", {})
@@ -44,7 +53,7 @@ class MailChimpAuthenticator:
         elif auth_type == "oauth2.0":
             access_token = authorization["access_token"]
             auth = TokenAuthenticator(token=access_token, auth_method="Bearer")
-            auth.data_center = self.get_server_prefix(access_token)
+            auth.data_center = self.get_oauth_data_center(access_token)
 
         else:
             raise Exception(f"Invalid auth type: {auth_type}")
