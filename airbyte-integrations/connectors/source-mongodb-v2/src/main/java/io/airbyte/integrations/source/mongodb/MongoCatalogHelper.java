@@ -60,8 +60,8 @@ public class MongoCatalogHelper {
   }
 
   /**
-   * Builds an {@link AirbyteStream} with the correct configuration for this source, in schemaless mode. All fields are stripped out and the only
-   * fields kept are _id, _data, and the CDC fields.
+   * Builds an {@link AirbyteStream} with the correct configuration for this source, in schemaless
+   * mode. All fields are stripped out and the only fields kept are _id, _data, and the CDC fields.
    *
    * @param streamName The name of the stream.
    * @param streamNamespace The namespace of the stream.
@@ -69,7 +69,7 @@ public class MongoCatalogHelper {
    * @return The configured {@link AirbyteStream} for this source.
    */
   public static AirbyteStream buildSchemalessAirbyteStream(final String streamName, final String streamNamespace, final List<Field> fields) {
-    // The packed airbyte catalog should only contain the _id field. 
+    // The packed airbyte catalog should only contain the _id field.
     final List<Field> idFieldList = fields.stream().filter(field -> field.getName().equals(MongoConstants.ID_FIELD)).collect(Collectors.toList());
     return addDataMetadataColumn(buildAirbyteStream(streamName, streamNamespace, idFieldList));
   }
@@ -105,4 +105,5 @@ public class MongoCatalogHelper {
     properties.set(MongoConstants.SCHEMALESS_MODE_DATA_FIELD, objectType);
     return properties;
   }
+
 }
