@@ -180,7 +180,6 @@ test_concurrent_cdk_single_stream = (
                 {"level": "INFO", "message": "Read 2 records from stream1 stream"},
                 {"level": "INFO", "message": "Marking stream stream1 as STOPPED"},
                 {"level": "INFO", "message": "Finished syncing stream1"},
-                {"level": "INFO", "message": "ConcurrentCdkSource runtimes"},
                 {"level": "INFO", "message": "Finished syncing ConcurrentCdkSource"},
             ]
         }

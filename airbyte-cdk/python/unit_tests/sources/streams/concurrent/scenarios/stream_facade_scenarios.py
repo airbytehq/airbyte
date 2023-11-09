@@ -123,7 +123,6 @@ test_stream_facade_single_stream = (
                 {"level": "INFO", "message": "Read 2 records from stream1 stream"},
                 {"level": "INFO", "message": "Marking stream stream1 as STOPPED"},
                 {"level": "INFO", "message": "Finished syncing stream1"},
-                {"level": "INFO", "message": "StreamFacadeSource runtimes"},
                 {"level": "INFO", "message": "Finished syncing StreamFacadeSource"},
             ]
         }
