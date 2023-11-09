@@ -309,7 +309,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      final LocalDate date = getObject(arrayResultSet, 2, LocalDate.class);
+      final Date date = getObject(arrayResultSet, 2, Date.class);
       if (date == null) {
         arrayNode.add(NullNode.getInstance());
       } else if (POSITIVE_INFINITY_DATE.equals(date)) {
