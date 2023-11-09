@@ -11,8 +11,10 @@ data:
   registries:
     cloud:
       enabled: true
+      dockerImageTag: 0.5.1
     oss:
       enabled: true
+      dockerImageTag: 0.5.1
   releaseStage: generally_available
   resourceRequirements:
     jobSpecific:

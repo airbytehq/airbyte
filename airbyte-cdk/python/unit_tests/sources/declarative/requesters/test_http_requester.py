@@ -849,3 +849,18 @@ def test_log_requests(should_log, status_code, should_throw):
     if should_log:
         assert repository.log_message.call_args_list[0].args[1]() == "formatted_response"
         formatter.assert_called_once_with(response)
+
+
+def test_connection_pool():
+    requester = HttpRequester(
+        name="name",
+        url_base="https://test_base_url.com",
+        path="/",
+        http_method=HttpMethod.GET,
+        request_options_provider=None,
+        config={},
+        parameters={},
+        message_repository=MagicMock(),
+        disable_retries=True,
+    )
+    assert requester._session.adapters["https://"]._pool_connections == 20
