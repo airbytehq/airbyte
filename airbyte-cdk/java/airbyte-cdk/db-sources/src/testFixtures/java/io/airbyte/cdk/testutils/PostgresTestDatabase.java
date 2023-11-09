@@ -149,9 +149,8 @@ public class PostgresTestDatabase implements AutoCloseable {
   }
 
   /**
-   * Close resources held by this instance.
-   * This deliberately avoids dropping the database, which is really expensive in Postgres.
-   * This is because a DROP DATABASE in Postgres triggers a CHECKPOINT.
+   * Close resources held by this instance. This deliberately avoids dropping the database, which is
+   * really expensive in Postgres. This is because a DROP DATABASE in Postgres triggers a CHECKPOINT.
    * Call {@link #dropDatabase} to explicitly drop the database.
    */
   @Override
