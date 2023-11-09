@@ -45,6 +45,16 @@ class MilvusIndexer(Indexer):
             proc.join()
             raise Exception("Connection timed out, check your host and credentials")
 
+    def _create_index(self, collection: Collection):
+        """
+        Create an index on the vector field when auto-creating the collection.
+
+        This uses an IVF_FLAT index with 1024 clusters. This is a good default for most use cases. If more control is needed, the index can be created manually (this is also stated in the documentation)
+        """
+        collection.create_index(
+            field_name=self.config.vector_field, index_params={"metric_type": "L2", "index_type": "IVF_FLAT", "params": {"nlist": 1024}}
+        )
+
     def _create_client(self):
         self._connect_with_timeout()
         # If the process exited within 5 seconds, it's safe to connect on the main process to execute the command
@@ -55,9 +65,7 @@ class MilvusIndexer(Indexer):
             vector = FieldSchema(name=self.config.vector_field, dtype=DataType.FLOAT_VECTOR, dim=self.embedder_dimensions)
             schema = CollectionSchema(fields=[pk, vector], enable_dynamic_field=True)
             collection = Collection(name=self.config.collection, schema=schema)
-            collection.create_index(
-                field_name=self.config.vector_field, index_params={"metric_type": "L2", "index_type": "IVF_FLAT", "params": {"nlist": 1024}}
-            )
+            self._create_index(collection)
 
         self._collection = Collection(self.config.collection)
         self._collection.load()
