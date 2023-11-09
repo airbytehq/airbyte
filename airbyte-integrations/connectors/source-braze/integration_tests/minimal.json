@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "events",
+        "name": "campaigns_details",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -11,12 +11,21 @@
     },
     {
       "stream": {
-        "name": "events_analytics",
+        "name": "canvases_details",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "segments_details",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

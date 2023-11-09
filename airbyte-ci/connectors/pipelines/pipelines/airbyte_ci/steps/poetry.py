@@ -3,7 +3,7 @@
 #
 
 from pipelines.dagger.actions.python.poetry import with_poetry_module
-from pipelines.models.contexts import PipelineContext
+from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult
 
 
