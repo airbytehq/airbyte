@@ -64,6 +64,9 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._cursor = cursor
         self._namespace = namespace
 
+    def get_partition_generator(self) -> PartitionGenerator:
+        return self._stream_partition_generator
+
     def read(self) -> Iterable[Record]:
         """
         Read all data from the stream (only full-refresh is supported at the moment)

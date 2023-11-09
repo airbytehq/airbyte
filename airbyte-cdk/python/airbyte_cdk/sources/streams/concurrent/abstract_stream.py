@@ -3,11 +3,11 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability
-from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from deprecated.classic import deprecated
 
 
@@ -37,11 +37,8 @@ class AbstractStream(ABC):
     """
 
     @abstractmethod
-    def read(self) -> Iterable[Record]:
-        """
-        Read a stream in full refresh mode
-        :return: The stream's records
-        """
+    def get_partition_generator(self) -> PartitionGenerator:
+        """ """
 
     @property
     @abstractmethod
