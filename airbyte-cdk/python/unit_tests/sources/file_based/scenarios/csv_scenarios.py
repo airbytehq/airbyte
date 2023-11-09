@@ -299,7 +299,14 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                     "default": "unstructured",
                                                     "const": "unstructured",
                                                     "type": "string",
-                                                }
+                                                },
+                                                "skip_unprocessable_file_types": {
+                                                    "type": "boolean",
+                                                    "default": True,
+                                                    "title": "Skip Unprocessable File Types",
+                                                    "description": "If true, skip files that cannot be parsed because of their file type and log a warning. If false, fail the sync. Corrupted files with valid file types will still result in a failed sync.",
+                                                    "always_show": True,
+                                                },
                                             },
                                             "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
                                             "required": ["filetype"],

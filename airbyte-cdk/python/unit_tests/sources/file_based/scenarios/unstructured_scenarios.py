@@ -112,15 +112,16 @@ simple_markdown_scenario = (
     )
 ).build()
 
-unstructured_invalid_file_type_discover_scenario = (
+# If skip unprocessable file types is set to false, then discover will fail if it encounters a non-matching file type
+unstructured_invalid_file_type_discover_scenario_no_skip = (
     TestScenarioBuilder()
-    .set_name("unstructured_invalid_file_type_discover_scenario")
+    .set_name("unstructured_invalid_file_type_discover_scenario_no_skip")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "format": {"filetype": "unstructured"},
+                    "format": {"filetype": "unstructured", "skip_unprocessable_file_types": False},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -172,6 +173,69 @@ unstructured_invalid_file_type_discover_scenario = (
     .set_expected_discover_error(AirbyteTracedException, "Error inferring schema from files")
 ).build()
 
+# If skip unprocessable file types is set to true, then discover will succeed even if there are non-matching file types
+unstructured_invalid_file_type_discover_scenario_skip = (
+    TestScenarioBuilder()
+    .set_name("unstructured_invalid_file_type_discover_scenario_skip")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "format": {"filetype": "unstructured", "skip_unprocessable_file_types": True},
+                    "globs": ["*"],
+                    "validation_policy": "Emit Record",
+                }
+            ]
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.txt": {
+                    "contents": bytes("Just a humble text file", "UTF-8"),
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("unstructured")
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "document_key": {
+                                "type": ["null", "string"],
+                            },
+                            "content": {
+                                "type": ["null", "string"],
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string",
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string",
+                            },
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records([])
+).build()
+
+# TODO When working on https://github.com/airbytehq/airbyte/issues/31605, this test should be split into two tests:
+# 1. Test that the file is skipped if skip_unprocessable_file_types is set to true
+# 2. Test that the sync fails if skip_unprocessable_file_types is set to false
 unstructured_invalid_file_type_read_scenario = (
     TestScenarioBuilder()
     .set_name("unstructured_invalid_file_type_read_scenario")
