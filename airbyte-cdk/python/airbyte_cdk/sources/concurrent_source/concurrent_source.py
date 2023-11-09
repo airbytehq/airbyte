@@ -66,14 +66,12 @@ class ConcurrentSource(AbstractSource, ABC):
         state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         logger.info(f"Starting syncing {self.name}")
-        # yield from super().read(logger, config, catalog, state)
         futures: List[Future[Any]] = []
         queue: Queue = Queue()
         partition_generator = PartitionEnqueuer(queue)
         partition_reader = PartitionReader(queue)
         config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector
-        # get the streams once in case the connector needs to make any queries to generate them
         stream_instances: Mapping[str, AbstractStream] = {s.name: s for s in self._streams_as_abstract_streams(config)}
         max_number_of_partition_generator_in_progress = max(1, self._max_workers // 2)
         self._stream_to_instance_map = stream_instances
@@ -89,8 +87,6 @@ class ConcurrentSource(AbstractSource, ABC):
                     f"Refresh the schema in replication settings and remove this stream from future sync attempts."
                 )
             else:
-                # FIXME: need to enable debug logging somehow
-                # self._apply_log_level_to_stream_logger(logger, stream_instance)
                 stream_availability = stream_instance.check_availability()
                 if not stream_availability.is_available():
                     logger.warning(
@@ -150,9 +146,6 @@ class ConcurrentSource(AbstractSource, ABC):
                 yield from self._message_repository.consume_queue()
                 if status_message:
                     yield status_message
-                # if all([all(partition_to_done.values()) for partition_to_done in streams_to_partitions_to_done.values()]):
-                #     # If all streams are done -> break
-                #     break
             else:
                 # record
                 yield from self._handle_record(airbyte_message_or_record_or_exception, record_counter, logger)
@@ -249,7 +242,6 @@ class ConcurrentSource(AbstractSource, ABC):
         streams_to_partitions_to_done[stream_name][partition] = True
         partition.close()
         if self._is_stream_done(stream_name, streams_to_partitions_to_done, partition_generator_running):
-            # stream is done!
             return self._handle_stream_is_done(stream_name, stream_instances, record_counter, logger)
         else:
             return None
