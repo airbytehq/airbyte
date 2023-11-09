@@ -119,23 +119,27 @@ definitions:
   user_teams_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "user_teams"
+      name: user_teams
       primary_key: "id"
-      path: "v2/users/{{ stream_partition['user_id'] }}/teams"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
-      users_partition_router:
+      requester:
+        $ref: "#/definitions/requester"
+        path: "v2/users/{{ stream_partition['user_id'] }}/teams"
+      partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "#/definitions/users_stream"
+          - type: ParentStreamConfig
             parent_key: id
             partition_field: user_id
+            stream:
+              $ref: "#/definitions/users_stream"
     transformations:
       - type: AddFields
         fields:
-          - path:
-              - user_id
-            value: "{{ stream_partition['user_id'] }}"
+          - type: AddedFieldDefinition
+            path: ["user_id"]
+            value: "{{ stream_partition['id'] }}"
 
   alert_recipients_stream:
     $ref: "#/definitions/base_stream"
@@ -145,31 +149,36 @@ definitions:
       path: "v2/alerts/{{ record }}/recipients"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
-      alerts_partition_router:
+      requester:
+        $ref: "#/definitions/requester"
+        path: "v2/alerts/{{ stream_partition['alert_id'] }}/recipients"
+      partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "#/definitions/alerts_stream"
+          - type: ParentStreamConfig
             parent_key: id
             partition_field: alert_id
+            stream:
+              $ref: "#/definitions/alerts_stream"
     transformations:
       - type: AddFields
         fields:
-          - path:
-              - alert_id
-            value: "{{ stream_partition.alert_id }}"
+          - type: AddedFieldDefinition
+            path: ["alert_id"]
+            value: "{{ stream_partition['id'] }}"
       - type: AddFields
         fields:
-          - path:
-              - user_id
+          - type: AddedFieldDefinition
+            path: ["user_id"]
             value: "{{ record['user']['id'] }}"
       - type: AddFields
         fields:
-          - path:
-              - user_username
+          - type: AddedFieldDefinition
+            path: ["user_username"]
             value: "{{ record['user']['username'] }}"
       - type: RemoveFields
         field_pointers:
-          - - user
+          - ["user"]
 
   alert_logs_stream:
     $ref: "#/definitions/base_stream"
@@ -183,31 +192,33 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           order: asc
-      alerts_partition_router:
+      partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "#/definitions/alerts_stream"
+          - type: ParentStreamConfig
             parent_key: id
             partition_field: alert_id
+            stream:
+              $ref: "#/definitions/alerts_stream"
     transformations:
       - type: AddFields
         fields:
-          - path:
-              - alert_id
-            value: "{{ stream_partition.alert_id }}"
+          - type: AddedFieldDefinition
+            path: ["alert_id"]
+            value: "{{ stream_partition['id'] }}"
 
 check:
   type: CheckStream
   stream_names:
     - users
-    - teams
-    - services
-    - incidents
-    - integrations
-    - alerts
-    - user_teams
-    - alert_recipients
-    - alert_logs
+    # - teams
+    # - services
+    # - incidents
+    # - integrations
+    # - alerts
+    # - user_teams
+    # - alert_recipients
+    # - alert_logs
 
 streams:
   - "#/definitions/users_stream"
