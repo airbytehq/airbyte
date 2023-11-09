@@ -31,13 +31,13 @@ jobs:
       uses: snok/install-poetry@v1
 
     - name: Install Dependencies
-      working-directory: airbyte/airbyte-ci/pipelines/
+      working-directory: airbyte/airbyte-ci/connectors/pipelines/
       run: poetry install --with dev
 
     - name: Build Release
-      working-directory: airbyte/airbyte-ci/pipelines/
+      working-directory: airbyte/airbyte-ci/connectors/pipelines/
       run: poetry run pyinstaller --collect-all pipelines --collect-all beartype --collect-all dagger --hidden-import strawberry --name airbyte-ci-${{ matrix.os }} --onefile pipelines/cli/airbyte_ci.py
 
     - uses: actions/upload-artifact@v2
       with:
-        path: airbyte/airbyte-ci/pipelines/dist/*
+        path: airbyte/airbyte-ci/connectors/pipelines/dist/*
