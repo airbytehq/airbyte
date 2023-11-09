@@ -152,9 +152,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         self._stream._wait_while_too_many_pending_futures(futures)
 
     def test_given_exception_then_fail_immediately(self):
-        f1 = Mock()
-        f2 = Mock()
-
         # Verify that the done() method will be called until only one future is still running
         futures = []
         for _ in range(_MAX_CONCURRENT_TASKS + 1):
@@ -163,9 +160,14 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             future.exception.return_value = None
             futures.append(future)
 
+        pending_future = Mock()
+        pending_future.done.return_value = False
+        pending_future.exception.return_value = None
+        futures.append(pending_future)
+
         self._stream._wait_while_too_many_pending_futures(futures)
 
-        assert len(futures) == 0
+        assert futures == [pending_future]
 
     def test_as_airbyte_stream(self):
         expected_airbyte_stream = AirbyteStream(
