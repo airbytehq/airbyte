@@ -3,9 +3,10 @@
 #
 
 
+from unittest.mock import Mock, patch
+
 import pytest
 import requests
-from unittest.mock import Mock, patch
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from source_linkedin_ads.source import (
@@ -103,12 +104,7 @@ class TestAllStreams:
                 assert isinstance(stream, stream_cls)
 
     def test_custom_streams(self):
-        config = {
-            "ad_analytics_reports": [
-                {"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}
-            ],
-            **TEST_CONFIG
-        }
+        config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
         for stream in self._instance.get_custom_ad_analytics_reports(config=config):
             assert isinstance(stream, AdCampaignAnalytics)
 
@@ -166,7 +162,7 @@ class TestLinkedinAdsStream:
         (
             ({"elements": []}, None),
             ({"elements": [{"data": []}] * 500, "paging": {"start": 0}}, {"start": 500}),
-        )
+        ),
     )
     def test_next_page_token(self, requests_mock, response_json, expected):
         requests_mock.get(self.url, json=response_json)
