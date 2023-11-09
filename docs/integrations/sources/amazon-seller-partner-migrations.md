@@ -1,0 +1,14 @@
+# Amazon Seller Partner Migration Guide
+
+## Upgrading to 2.0.0
+
+This change removes Brand Analytics from Airbyte Cloud version of connector.
+Customers who have those streams must refresh their schema OR disable next streams:
+* GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT
+* GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT
+* GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT
+* GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT
+* GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT
+* GET_SALES_AND_TRAFFIC_REPORT
+* GET_VENDOR_SALES_REPORT
+* GET_VENDOR_INVENTORY_REPORT
