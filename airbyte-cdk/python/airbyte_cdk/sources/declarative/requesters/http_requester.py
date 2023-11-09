@@ -24,6 +24,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
@@ -79,6 +80,9 @@ class HttpRequester(Requester):
         self._parameters = parameters
         self.decoder = JsonDecoder(parameters={})
         self._session = requests.Session()
+        self._session.mount(
+            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
+        )
 
         if isinstance(self._authenticator, AuthBase):
             self._session.auth = self._authenticator

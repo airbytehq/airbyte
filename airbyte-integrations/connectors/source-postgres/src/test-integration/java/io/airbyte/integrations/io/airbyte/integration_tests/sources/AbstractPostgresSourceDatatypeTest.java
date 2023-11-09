@@ -13,17 +13,18 @@ import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIME_WITH_TIMEZON
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.sql.SQLException;
 import java.util.Set;
-import org.jooq.DSLContext;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
-  protected PostgreSQLContainer<?> container;
+  protected PostgresTestDatabase testdb;
   protected JsonNode config;
-  protected DSLContext dslContext;
+
   protected static final String SCHEMA_NAME = "test";
 
   @Override
@@ -39,6 +40,11 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
   @Override
   protected JsonNode getConfig() {
     return config;
+  }
+
+  @Override
+  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
+    testdb.close();
   }
 
   @Override

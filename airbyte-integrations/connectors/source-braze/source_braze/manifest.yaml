@@ -292,11 +292,93 @@ definitions:
       name: "events_analytics"
       path: "/events/data_series"
 
+  # -- Details streams
+  segments_details_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/segments_stream"
+            parent_key: "id"
+            partition_field: "segment_id"
+            request_option:
+              field_name: "segment_id"
+              inject_into: "request_parameter"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["segment_id"]
+            value: "{{ stream_slice.segment_id }}"
+    $parameters:
+      name: "segments_details"
+      path: "/segments/details"
+  campaigns_details_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/campaigns_stream"
+            parent_key: "id"
+            partition_field: "campaign_id"
+            request_option:
+              field_name: "campaign_id"
+              inject_into: "request_parameter"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["campaign_id"]
+            value: "{{ stream_slice.campaign_id }}"
+    $parameters:
+      name: "campaigns_details"
+      path: "/campaigns/details"
+  canvases_details_stream:
+    retriever:
+      record_selector:
+        extractor:
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/canvases_stream"
+            parent_key: "id"
+            partition_field: "canvas_id"
+            request_option:
+              field_name: "canvas_id"
+              inject_into: "request_parameter"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["canvas_id"]
+            value: "{{ stream_slice.canvas_id }}"
+    $parameters:
+      name: "canvases_details"
+      path: "/canvas/details"
+
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/campaigns_analytics_stream"
+  - "#/definitions/campaigns_details_stream"
   - "#/definitions/canvases_stream"
   - "#/definitions/canvases_analytics_stream"
+  - "#/definitions/canvases_details_stream"
   - "#/definitions/custom_events_stream"
   - "#/definitions/events_analytics_stream"
   - "#/definitions/kpi_daily_new_users_stream"
@@ -306,6 +388,7 @@ streams:
   - "#/definitions/cards_analytics_stream"
   - "#/definitions/segments_stream"
   - "#/definitions/segments_analytics_stream"
+  - "#/definitions/segments_details_stream"
 
 check:
   stream_names:
