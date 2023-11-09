@@ -10,7 +10,7 @@ PLATFORMS_TO_BUILD = {
     "arm64": "arm64v8/python:3.10-slim",
 }
 
-DIRECTORIES_TO_MOUNT = [".git", "airbyte-ci"]
+DIRECTORIES_TO_MOUNT = ["airbyte-ci"]
 
 CURRENT_VERSION = importlib.metadata.version("pipelines")
 
