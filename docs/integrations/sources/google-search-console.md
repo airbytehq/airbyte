@@ -15,7 +15,7 @@ This page contains the setup guide and reference information for the Google Sear
 
 ## Setup guide
 
-### Step 1: Set up Google Search Console authentication
+### Step 1: Set up Google Search Console
 
 To authenticate the Google Search Console connector, you will need to use one of the following methods:
 
@@ -84,21 +84,14 @@ For more information on this topic, please refer to [this Google article](https:
 5. For **Website URL Property**, enter the specific website property in Google Seach Console with data you want to replicate.
 6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
 7. To authenticate the connection:
-   - **For Airbyte Cloud**: Select **Oauth** from the Authentication dropdown, then click **Sign in with Google** to authorize your account.
+<!-- env:cloud -->
+- **For Airbyte Cloud:**
+  - Select **Oauth** from the Authentication dropdown, then click **Sign in with Google** to authorize your account.
 <!-- /env:cloud -->
-
 <!-- env:oss -->
-**For Airbyte Open Source:**
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Google Search Console** from the list of available sources.
-4. For **Source name**, enter a name to help you identify this source.
-5. For **Website URL Property**, enter the specific website property in Google Seach Console with data you want to replicate.
-6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
-7. To authenticate the connection:
-    - (Recommended) Select **Service Account Key Authorization** from the Authentication dropdown, then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`
-    - Select **Oauth** from the Authentication dropdown, then enter your **Client ID**, **Client Secret**, **Access Token** and **Refresh Token**.
+- **For Airbyte Open Source:**
+  - (Recommended) Select **Service Account Key Authorization** from the Authentication dropdown, then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`
+  - Select **Oauth** from the Authentication dropdown, then enter your **Client ID**, **Client Secret**, **Access Token** and **Refresh Token**.
 <!-- /env:oss -->
 8. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any data created between the defined Start Date and End Date will be replicated. Leaving this field blank will replicate all data created on or after the Start Date to the present.
 9. (Optional) For **Custom Reports**, you may optionally provide an array of JSON objects representing any custom reports you wish to query the API with. Refer to the [Custom reports](#custom-reports) section below for more information on formulating these reports.
