@@ -80,8 +80,6 @@ def _verify_read_output(output: Dict[str, Any], scenario: TestScenario[AbstractS
     assert len(records) == len(expected_records)
     for actual, expected in zip(records, expected_records):
         if "record" in actual:
-            if "data" not in expected:
-                raise ValueError(f"actual: {actual}, expected: {expected}")
             assert len(actual["record"]["data"]) == len(expected["data"])
             for key, value in actual["record"]["data"].items():
                 if isinstance(value, float):
