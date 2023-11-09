@@ -34,7 +34,7 @@ async def all_languages(ctx: click.Context, pipeline_context: ClickPipelineConte
     await pipeline_context.get_dagger_client(pipeline_name="Check all languages")
     log_options = LogOptions(
         list_errors=list_errors,
-        help_message="Run `airbyte-ci format check all --list-errors` to see detailed error messages for failed checks.",
+        help_message="Run `airbyte-ci format check all --list-errors` to see detailed error messages for failed checks. Run `airbyte-ci format fix all` for a best effort fix.",
     )
     await run_all_subcommands(ctx, log_options)
 
