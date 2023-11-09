@@ -17,10 +17,14 @@ jobs:
         os: ['ubuntu-latest', 'macos-latest']
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - name: Checkout Airbyte
+      uses: actions/checkout@v3
       with:
-        python-version: 3.10
+        fetch-depth: 0
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
 
     - run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
 
