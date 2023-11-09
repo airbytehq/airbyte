@@ -8,7 +8,7 @@ from concurrent.futures import Future
 from dataclasses import dataclass
 from enum import Enum
 from queue import Queue
-from typing import Any, Callable, Dict, Iterator, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Dict, Iterator, List, Mapping, MutableMapping, Optional, Set, Union
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, AirbyteStreamStatus, ConfiguredAirbyteCatalog
 from airbyte_cdk.models import Type as MessageType
@@ -95,10 +95,10 @@ class ConcurrentSource(AbstractSource, ABC):
                 stream_instances_to_read_from.append(stream_instance)
 
         partition_generator_running = []
-        streams_to_partitions_to_done: Dict[str, Dict[Partition, bool]] = {}
+        streams_to_partitions_to_done: Dict[str, Set[Partition]] = {}
         record_counter = {}
         for stream in stream_instances_to_read_from:
-            streams_to_partitions_to_done[stream.name] = {}
+            streams_to_partitions_to_done[stream.name] = set()
             record_counter[stream.name] = 0
         if not stream_instances_to_read_from:
             return
@@ -152,6 +152,7 @@ class ConcurrentSource(AbstractSource, ABC):
                 if all([f.done() for f in futures]) and queue.empty():
                     break
         # TODO Some sort of error handling
+        self._check_for_errors(futures)
         self._threadpool.shutdown(wait=False, cancel_futures=True)
         logger.info(f"Finished syncing {self.name}")
 
@@ -159,8 +160,23 @@ class ConcurrentSource(AbstractSource, ABC):
         return (
             not partition_generator_running
             and not partition_generators
-            and all([all(partition_to_done.values()) for partition_to_done in streams_to_partitions_to_done.values()])
+            and all([all(p.is_closed() for p in partitions) for partitions in streams_to_partitions_to_done.values()])
         )
+
+    def _check_for_errors(self, futures: List[Future[Any]]) -> None:
+        exceptions_from_futures = [f for f in [future.exception() for future in futures] if f is not None]
+        if exceptions_from_futures:
+            exception = RuntimeError(f"Failed reading from stream {self.name} with errors: {exceptions_from_futures}")
+            self._stop_and_raise_exception(exception)
+        else:
+            futures_not_done = [f for f in futures if not f.done()]
+            if futures_not_done:
+                exception = RuntimeError(f"Failed reading from stream {self.name} with futures not done: {futures_not_done}")
+                self._stop_and_raise_exception(exception)
+
+    def _stop_and_raise_exception(self, exception: BaseException) -> None:
+        self._threadpool.shutdown(wait=False, cancel_futures=True)
+        raise exception
 
     def _start_next_partition_generator(self, streams, futures, partition_generator_running, partition_generator, logger):
         stream = streams.pop(0)
@@ -197,7 +213,7 @@ class ConcurrentSource(AbstractSource, ABC):
 
     def _handle_partition(self, partition, streams_to_partitions_to_done, futures, partition_reader, logger):
         stream_name = partition.stream_name()
-        streams_to_partitions_to_done[stream_name][partition] = False
+        streams_to_partitions_to_done[stream_name].add(partition)
         if self._slice_logger.should_log_slice_message(logger):
             self._message_repository.emit_message(self._slice_logger.create_slice_log_message(partition.to_slice()))
         self._submit_task(futures, partition_reader.process_partition, partition)
@@ -235,7 +251,6 @@ class ConcurrentSource(AbstractSource, ABC):
         logger,
     ):
         stream_name = partition.stream_name()
-        streams_to_partitions_to_done[stream_name][partition] = True
         partition.close()
         if self._is_stream_done(stream_name, streams_to_partitions_to_done, partition_generator_running):
             return self._handle_stream_is_done(stream_name, record_counter, logger)
@@ -243,7 +258,7 @@ class ConcurrentSource(AbstractSource, ABC):
             return None
 
     def _is_stream_done(self, stream_name, streams_to_partitions_to_done, partition_generator_running):
-        return all(streams_to_partitions_to_done[stream_name].values()) and stream_name not in partition_generator_running
+        return all([p.is_closed() for p in streams_to_partitions_to_done[stream_name]]) and stream_name not in partition_generator_running
 
     def _handle_stream_is_done(self, stream_name, record_counter, logger):
         logger.info(f"Read {record_counter[stream_name]} records from {stream_name} stream")
@@ -254,9 +269,9 @@ class ConcurrentSource(AbstractSource, ABC):
 
     def _stop_streams(self, streams_to_partitions_to_done, logger):
         self._threadpool.shutdown(wait=False, cancel_futures=True)
-        for stream_name, partitions_to_done in streams_to_partitions_to_done.items():
+        for stream_name, partitions in streams_to_partitions_to_done.items():
             stream = self._stream_to_instance_map[stream_name]
-            if not all(partitions_to_done.values()):
+            if not all([p.is_closed() for p in partitions]):
                 logger.info(f"Marking stream {stream.name} as STOPPED")
                 logger.info(f"Finished syncing {stream.name}")
                 yield stream_status_as_airbyte_message(stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.INCOMPLETE)

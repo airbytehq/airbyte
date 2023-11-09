@@ -274,6 +274,7 @@ class StreamPartition(Partition):
         self._cursor_field = cursor_field
         self._state = state
         self._cursor = cursor
+        self._is_closed = False
 
     def read(self) -> Iterable[Record]:
         """
@@ -325,6 +326,10 @@ class StreamPartition(Partition):
 
     def close(self) -> None:
         self._cursor.close_partition(self)
+        self._is_closed = True
+
+    def is_closed(self) -> bool:
+        return self._is_closed
 
     def __repr__(self) -> str:
         return f"StreamPartition({self._stream.name}, {self._slice})"

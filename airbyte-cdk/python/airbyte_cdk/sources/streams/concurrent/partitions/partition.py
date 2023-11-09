@@ -40,6 +40,9 @@ class Partition(ABC):
     def close(self) -> None:
         pass
 
+    def is_closed(self) -> bool:
+        pass
+
     @abstractmethod
     def __hash__(self) -> int:
         """
