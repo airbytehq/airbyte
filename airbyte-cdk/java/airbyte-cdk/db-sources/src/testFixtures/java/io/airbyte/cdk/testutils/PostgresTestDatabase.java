@@ -168,6 +168,7 @@ public class PostgresTestDatabase implements AutoCloseable {
     final private String imageName;
     final private List<Method> methods;
     private PostgreSQLContainer<?> sharedContainer;
+    private RuntimeException containerCreationError;
 
     private ContainerFactory(String imageNamePlusMethods) {
       final String[] parts = imageNamePlusMethods.split("\\+");
@@ -183,18 +184,27 @@ public class PostgresTestDatabase implements AutoCloseable {
 
     private synchronized PostgreSQLContainer<?> getOrCreateSharedContainer() {
       if (sharedContainer == null) {
-        LOGGER.info("Creating new shared container based on {} with {}.", imageName, methods.stream().map(Method::getName).toList());
-        final var parsed = DockerImageName.parse(imageName).asCompatibleSubstituteFor("postgres");
-        sharedContainer = new PostgreSQLContainer<>(parsed);
-        for (Method method : methods) {
-          LOGGER.info("Calling {} on new shared container based on {}.", method.getName(), imageName);
-          try {
-            method.invoke(this);
-          } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-          }
+        if (containerCreationError != null) {
+          throw new RuntimeException("Error during container creation for imageName=" + imageName + ", methods=" + methods, containerCreationError);
         }
-        sharedContainer.start();
+        LOGGER.info("Creating new shared container based on {} with {}.", imageName, methods.stream().map(Method::getName).toList());
+        try {
+          final var parsed = DockerImageName.parse(imageName).asCompatibleSubstituteFor("postgres");
+          PostgreSQLContainer<?> sharedContainer = new PostgreSQLContainer<>(parsed);
+          for (Method method : methods) {
+            LOGGER.info("Calling {} on new shared container based on {}.", method.getName(),
+                imageName);
+            method.invoke(this);
+          }
+          sharedContainer.start();
+        } catch (IllegalAccessException | InvocationTargetException e) {
+          containerCreationError = new RuntimeException(e);
+          throw containerCreationError;
+        } catch (RuntimeException e) {
+          containerCreationError = e;
+          throw e;
+        }
+        this.sharedContainer = sharedContainer;
       }
       return sharedContainer;
     }
