@@ -145,7 +145,6 @@ class AbstractSource(Source, ABC):
                         configured_stream.stream.name, configured_stream.stream.namespace, AirbyteStreamStatus.INCOMPLETE
                     )
                     display_message = stream_instance.get_error_display_message(e)
-                    # FIXME need to implement this in concurrent source too?
                     if display_message:
                         raise AirbyteTracedException.from_exception(e, message=display_message) from e
                     raise e
