@@ -28,7 +28,7 @@ from source_klaviyo.source import SourceKlaviyo
 def test_check_connection(requests_mock, status_code, response, is_connection_successful, error_msg):
     requests_mock.register_uri(
         "GET",
-        "https://a.klaviyo.com/api/v1/metrics?api_key=api_key&count=100",
+        "https://a.klaviyo.com/api/metrics",
         status_code=status_code,
         json={"end": 1, "total": 1} if 200 >= status_code < 300 else {},
     )
@@ -41,7 +41,7 @@ def test_check_connection(requests_mock, status_code, response, is_connection_su
 def test_check_connection_unexpected_error(requests_mock):
     requests_mock.register_uri(
         "GET",
-        "https://a.klaviyo.com/api/v1/metrics?api_key=api_key&count=100",
+        "https://a.klaviyo.com/api/metrics",
         exc=Exception("Something went wrong, api_key=some_api_key"),
     )
     source = SourceKlaviyo()

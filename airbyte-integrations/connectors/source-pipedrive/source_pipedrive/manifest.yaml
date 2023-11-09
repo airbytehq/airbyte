@@ -10,8 +10,9 @@ definitions:
   selector_increment:
     type: RecordSelector
     extractor:
-      type: DpathExtractor
-      field_path: ["data", "*", "data"]
+      class_name: source_pipedrive.extractor.NullCheckedDpathExtractor
+      field_path: ["data", "*"]
+      nullable_nested_field: data
 
   selector_users:
     type: RecordSelector

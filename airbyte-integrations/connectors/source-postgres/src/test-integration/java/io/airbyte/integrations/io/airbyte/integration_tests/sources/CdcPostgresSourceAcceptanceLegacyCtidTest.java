@@ -8,7 +8,7 @@ public class CdcPostgresSourceAcceptanceLegacyCtidTest extends CdcPostgresSource
 
   @Override
   protected String getServerImageName() {
-    return "postgres:13-alpine";
+    return "postgres:12-bullseye";
   }
 
 }

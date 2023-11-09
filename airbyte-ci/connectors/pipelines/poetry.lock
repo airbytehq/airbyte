@@ -1550,6 +1550,39 @@ typing-extensions = ">=3.10,<4.6.0 || >4.6.0"
 dev = ["Sphinx", "black", "build", "coverage", "docformatter", "flake8", "flake8-black", "flake8-bugbear", "flake8-isort", "furo", "importlib-metadata (<5)", "invoke", "isort", "mypy", "pylint", "pytest", "pytest-cov", "pytest-mypy-testing", "sphinx-autodoc-typehints", "tox", "twine", "wheel"]
 
 [[package]]
+name = "pygit2"
+version = "1.13.1"
+description = "Python bindings for libgit2."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pygit2-1.13.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:30db67f73ef28b07864f2509978b7396d1ed3b72f6f252d301db12a4c9f90f5b"},
+    {file = "pygit2-1.13.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:825f22a1bbf73c7a11c69e53a29485d10b4df6a635ccd120cf2966e6535a5b52"},
+    {file = "pygit2-1.13.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b7356d4e41f122a066fa1cce3f5dbedf73c03781692f5eab3687bc355a083575"},
+    {file = "pygit2-1.13.1-cp310-cp310-win32.whl", hash = "sha256:cf47de2e21cdeb5d8c35f0d1a381b56fdb365dac3dcd8ea7fa057b390ce83d40"},
+    {file = "pygit2-1.13.1-cp310-cp310-win_amd64.whl", hash = "sha256:6ede9700fdbf78a5a1513549f37884233f29d3343412272c0800cda40c4c2c56"},
+    {file = "pygit2-1.13.1-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:9c84eff2223e5fd442b746785b9cd21f98c1f53a0f3fe8d4ed06aee60a09ea35"},
+    {file = "pygit2-1.13.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5bd649b9ef17564b642f59e1a2751e30fdd07d3707b0642d8012062615651039"},
+    {file = "pygit2-1.13.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:787ea717bb9fadb3ee2836ed32a9ed2110ef861862bfe6b693becda75a2eaa5c"},
+    {file = "pygit2-1.13.1-cp311-cp311-win32.whl", hash = "sha256:d2dbf3d6976b0626fafd7d1c7363ae92dcacaa63789e8c432bc8caea86132235"},
+    {file = "pygit2-1.13.1-cp311-cp311-win_amd64.whl", hash = "sha256:ce8618e5876b4c54942587d72a0d84f6e6a5b0e69db5f8d06dc5f567abd07ed1"},
+    {file = "pygit2-1.13.1-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:8d2d97cfe2bf2abbb0ef5984771578d1b05053942bfe1b46d4ac48d19c5eda56"},
+    {file = "pygit2-1.13.1-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d6a162db1afdc5bae608d739395a248a373165176f83c7fe57a1073e9168b459"},
+    {file = "pygit2-1.13.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:357c11b30d6c63ff58401a897df39b27903beffebb24842c8ce9ce77b90fe0b1"},
+    {file = "pygit2-1.13.1-cp38-cp38-win32.whl", hash = "sha256:ed7fc70bc8f6db227c9919958d064cb49eaa68cc97f51c1f9de920a4500c6766"},
+    {file = "pygit2-1.13.1-cp38-cp38-win_amd64.whl", hash = "sha256:949ad31e0fab408449721cc5b582350f6c5c56ab068bfa10cd6d10c2830deaa9"},
+    {file = "pygit2-1.13.1-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:ea2b870675ef1a2bef3300dda725aae9f8c68265e633ed683fce85588cfb4d37"},
+    {file = "pygit2-1.13.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:74af678b98f6a08ef4315f5b64889011e05ad702e340cc6cde59926906650039"},
+    {file = "pygit2-1.13.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:33bbe4d7501a600be320147c63a8d1a966fb7424595e6eb53fdc30259b8921dc"},
+    {file = "pygit2-1.13.1-cp39-cp39-win32.whl", hash = "sha256:697044df77c8b3849fec8d7dd454acd347b180212c6bc5526eeb9309eff63a65"},
+    {file = "pygit2-1.13.1-cp39-cp39-win_amd64.whl", hash = "sha256:8004244da8183fcefcf7c3d4d119806e9c705543bcf24045b97e3eddaa869aef"},
+    {file = "pygit2-1.13.1.tar.gz", hash = "sha256:d8e6d540aad9ded1cf2c6bda31ba48b1e20c18525807dbd837317bef4dccb994"},
+]
+
+[package.dependencies]
+cffi = ">=1.9.1"
+
+[[package]]
 name = "pygithub"
 version = "1.59.1"
 description = "Use the full Github API v3"

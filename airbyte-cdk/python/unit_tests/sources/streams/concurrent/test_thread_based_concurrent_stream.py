@@ -5,6 +5,7 @@
 import unittest
 from unittest.mock import Mock, call
 
+import pytest
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
@@ -127,12 +128,28 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
 
         # Verify that the done() method will be called until only one future is still running
         f1.done.side_effect = [False, False]
+        f1.exception.return_value = None
         f2.done.side_effect = [False, True]
+        f2.exception.return_value = None
         futures = [f1, f2]
         self._stream._wait_while_too_many_pending_futures(futures)
 
         f1.done.assert_has_calls([call(), call()])
         f2.done.assert_has_calls([call(), call()])
+
+    def test_given_exception_then_fail_immediately(self):
+        f1 = Mock()
+        f2 = Mock()
+
+        # Verify that the done() method will be called until only one future is still running
+        f1.done.return_value = False
+        f1.exception.return_value = None
+        f2.done.return_value = False
+        f2.exception.return_value = ValueError("An exception")
+        futures = [f1, f2]
+
+        with pytest.raises(RuntimeError):
+            self._stream._wait_while_too_many_pending_futures(futures)
 
     def test_as_airbyte_stream(self):
         expected_airbyte_stream = AirbyteStream(

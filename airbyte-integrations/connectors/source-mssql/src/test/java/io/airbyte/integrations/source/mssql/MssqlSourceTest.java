@@ -46,7 +46,7 @@ class MssqlSourceTest {
       DB_NAME,
       Field.of("id", JsonSchemaType.INTEGER),
       Field.of("name", JsonSchemaType.STRING),
-      Field.of("born", JsonSchemaType.STRING))
+      Field.of("born", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
       .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
 
