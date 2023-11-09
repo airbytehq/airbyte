@@ -95,17 +95,16 @@ class ConcurrentSource(AbstractSource, ABC):
                 stream_instances_to_read_from.append(stream_instance)
 
         partition_generator_running = []
-        partition_generators = [stream.get_partition_generator() for stream in stream_instances_to_read_from]
         streams_to_partitions_to_done: Dict[str, Dict[Partition, bool]] = {}
         record_counter = {}
         for stream in stream_instances_to_read_from:
             streams_to_partitions_to_done[stream.name] = {}
             record_counter[stream.name] = 0
-        if not partition_generators:
+        if not stream_instances_to_read_from:
             return
         while len(partition_generator_running) < max_number_of_partition_generator_in_progress:
             yield self._start_next_partition_generator(
-                partition_generators, futures, partition_generator_running, partition_generator, logger
+                stream_instances_to_read_from, futures, partition_generator_running, partition_generator, logger
             )
 
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
@@ -119,7 +118,7 @@ class ConcurrentSource(AbstractSource, ABC):
                 yield from self._handle_partition_generation_completed(
                     airbyte_message_or_record_or_exception,
                     partition_generator_running,
-                    partition_generators,
+                    stream_instances_to_read_from,
                     partition_generator,
                     futures,
                     logger,
@@ -148,7 +147,7 @@ class ConcurrentSource(AbstractSource, ABC):
             else:
                 # record
                 yield from self._handle_record(airbyte_message_or_record_or_exception, record_counter, logger)
-            if self._is_done(streams_to_partitions_to_done, partition_generators, partition_generator_running):
+            if self._is_done(streams_to_partitions_to_done, stream_instances_to_read_from, partition_generator_running):
                 # All partitions were generated and process. We're done here
                 if all([f.done() for f in futures]) and queue.empty():
                     break
@@ -163,15 +162,15 @@ class ConcurrentSource(AbstractSource, ABC):
             and all([all(partition_to_done.values()) for partition_to_done in streams_to_partitions_to_done.values()])
         )
 
-    def _start_next_partition_generator(self, partition_generators, futures, partition_generator_running, partition_generator, logger):
-        stream_partition_generator = partition_generators.pop(0)
-        self._submit_task(futures, partition_generator.generate_partitions, stream_partition_generator)
-        partition_generator_running.append(stream_partition_generator.stream_name())
-        logger.info(f"Marking stream {stream_partition_generator.stream_name()} as STARTED")
-        logger.info(f"Syncing stream: {stream_partition_generator.stream_name()} ")
+    def _start_next_partition_generator(self, streams, futures, partition_generator_running, partition_generator, logger):
+        stream = streams.pop(0)
+        self._submit_task(futures, partition_generator.generate_partitions, stream.get_partition_generator())
+        partition_generator_running.append(stream.name)
+        logger.info(f"Marking stream {stream.name} as STARTED")
+        logger.info(f"Syncing stream: {stream.name} ")
         return stream_status_as_airbyte_message(
             # FIXME pass namespace
-            stream_partition_generator.stream_name(),
+            stream.name,
             None,
             AirbyteStreamStatus.STARTED,
         )
