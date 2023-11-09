@@ -67,3 +67,20 @@ jobs:
         destination: dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/${{ steps.get_artifact_name.outputs.artifact_name}}
         headers: |-
           cache-control:public, max-age=10
+
+    # if master, upload as latest
+
+    - name: Set latest binary name
+      id: get_latest_artifact_name
+      if: github.ref == 'refs/heads/master'
+      run: |
+        echo "::set-output name=artifact_name::airbyte-ci-${{ matrix.os }}"
+
+    - name: Upload Release to GCS
+      if: github.ref == 'refs/heads/master'
+      uses: google-github-actions/upload-cloud-storage@v1
+      with:
+        path: airbyte-ci/connectors/pipelines/dist/${{ steps.get_artifact_name.outputs.artifact_name}}
+        destination: dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/${{ steps.get_latest_artifact_name.outputs.artifact_name}}
+        headers: |-
+          cache-control:public, max-age=10
