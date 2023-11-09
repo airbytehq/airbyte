@@ -74,12 +74,12 @@ Airbyte outputs each stream into its own raw table in `airbyte_internal` dataset
 
 ### Raw Table schema
 
-| Airbyte field          | Description                                                        | Column type              |
-|------------------------|--------------------------------------------------------------------|--------------------------|
-| \_airbyte_raw_id       | A UUID assigned to each processed event                            | STRING                   |
-| \_airbyte_extracted_at | A timestamp for when the event was pulled from the data source     | TIMESTAMP                |
-| \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP                |
-| \_airbyte_data         | A JSON blob with the event data.                                   | STRING                   |
+| Airbyte field          | Description                                                        | Column type |
+| ---------------------- | ------------------------------------------------------------------ | ----------- |
+| \_airbyte_raw_id       | A UUID assigned to each processed event                            | STRING      |
+| \_airbyte_extracted_at | A timestamp for when the event was pulled from the data source     | TIMESTAMP   |
+| \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP   |
+| \_airbyte_data         | A JSON blob with the event data.                                   | STRING      |
 
 **Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table could be subject to change in future versions.
 
@@ -88,7 +88,7 @@ Airbyte outputs each stream into its own raw table in `airbyte_internal` dataset
 - `airbyte_raw_id`: A UUID assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
 - `airbyte_extracted_at`: A timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
 - `_airbyte_meta`: A JSON blob representing typing errors. You can query these results to audit misformatted or unexpected data. The column type in BigQuery is `JSON`.
-... and a column of the proper data type for each of the top-level properties from your source's schema.  Arrays and Objects will remain as JSON columns in BigQuery. Learn more about Typing and Deduping [here](/understanding-airbyte/typing-deduping)
+  ... and a column of the proper data type for each of the top-level properties from your source's schema. Arrays and Objects will remain as JSON columns in BigQuery. Learn more about Typing and Deduping [here](/understanding-airbyte/typing-deduping)
 
 The output tables in BigQuery are partitioned by the Time-unit column `airbyte_extracted_at` at a daily granularity and clustered by `airbyte_extracted_at` and the table Primary Keys. Partitions boundaries are based on UTC time.
 This is useful to limit the number of partitions scanned when querying these partitioned tables, by using a predicate filter (a `WHERE` clause). Filters on the partitioning column are used to prune the partitions and reduce the query cost. (The parameter **Require partition filter** is not enabled by Airbyte, but you may toggle it by updating the produced tables.)
@@ -102,7 +102,7 @@ Airbyte converts any invalid characters into `_` characters when writing data. H
 ## Data type map
 
 | Airbyte type                        | BigQuery type |
-|:------------------------------------|:--------------|
+| :---------------------------------- | :------------ |
 | DATE                                | DATE          |
 | STRING (BASE64)                     | STRING        |
 | NUMBER                              | FLOAT         |
@@ -139,7 +139,8 @@ Now that you have set up the BigQuery destination connector, check out the follo
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.3.14  | 2023-11-06 | [\#32234](https://github.com/airbytehq/airbyte/pull/32234) | Remove unused config option.                                                                                                                                    |
 | 2.3.13  | 2023-11-08 | [\#32125](https://github.com/airbytehq/airbyte/pull/32125) | fix compiler warnings                                                                                                                          |
 | 2.3.12  | 2023-11-08 | [\#32309](https://github.com/airbytehq/airbyte/pull/32309) | Revert: Use Typed object for connection config                                                                                                                  |
 | 2.3.11  | 2023-11-07 | [\#32147](https://github.com/airbytehq/airbyte/pull/32147) | Use Typed object for connection config                                                                                                                          |
