@@ -26,6 +26,7 @@ class ClickPipelineContext(BaseModel, Singleton):
     dockerd_service: Optional[Container] = Field(default=None)
     _dagger_client: Optional[Client] = PrivateAttr(default=None)
     _click_context: Callable[[], Context] = PrivateAttr(default_factory=lambda: get_current_context)
+    _og_click_context: Callable[[], Context] = PrivateAttr(default=None)
 
     @property
     def params(self):
@@ -67,6 +68,7 @@ class ClickPipelineContext(BaseModel, Singleton):
         if not Singleton._initialized[ClickPipelineContext]:
             super().__init__(**data)
             Singleton._initialized[ClickPipelineContext] = True
+            self._og_click_context = self._click_context()
 
     _dagger_client_lock: anyio.Lock = PrivateAttr(default_factory=anyio.Lock)
 
@@ -86,7 +88,7 @@ class ClickPipelineContext(BaseModel, Singleton):
                         Avoid using this client across multiple thread pools, as it can lead to errors.
                         Cross-thread pool calls are generally considered an anti-pattern.
                     """
-                    self._dagger_client = await self._click_context().with_async_resource(connection)  # type: ignore
+                    self._dagger_client = await self._og_click_context.with_async_resource(connection)  # type: ignore
 
         assert self._dagger_client, "Error initializing Dagger client"
         return self._dagger_client.pipeline(pipeline_name) if pipeline_name else self._dagger_client
