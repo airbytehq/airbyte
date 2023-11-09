@@ -5,6 +5,7 @@
 import unittest
 from unittest.mock import Mock, call
 
+import pytest
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
@@ -138,7 +139,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         f1.done.assert_has_calls([call(), call()])
         f2.done.assert_has_calls([call(), call()])
 
-    def test_given_removing_multiple_elements_when_pruning_then_fail_immediately(self):
+    def test_given_exception_then_fail_immediately(self):
         f1 = Mock()
         f2 = Mock()
 
@@ -146,12 +147,13 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         f1.done.return_value = True
         f1.exception.return_value = None
         f2.done.return_value = True
-        f2.done.return_value = None
+        f2.exception.return_value = ValueError("ERROR")
         futures = [f1, f2]
 
-        self._stream._wait_while_too_many_pending_futures(futures)
+        with pytest.raises(RuntimeError):
+            self._stream._wait_while_too_many_pending_futures(futures)
 
-    def test_given_exception_then_fail_immediately(self):
+    def test_given_removing_multiple_elements_when_pruning_then_fail_immediately(self):
         # Verify that the done() method will be called until only one future is still running
         futures = []
         for _ in range(_MAX_CONCURRENT_TASKS + 1):
