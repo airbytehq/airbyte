@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.53.2
+Concurrent CDK: Increase connection pool size to allow for 20 max workers
+
+## 0.53.1
+Concurrent CDK: Improve handling of future to avoid memory leak and improve performances
+
+## 0.53.0
+Add call rate functionality
+
+## 0.52.10
+Fix class SessionTokenAuthenticator for CLASS_TYPES_REGISTRY mapper
+
 ## 0.52.9
 File CDK: Improve file type detection in document file type parser
 
