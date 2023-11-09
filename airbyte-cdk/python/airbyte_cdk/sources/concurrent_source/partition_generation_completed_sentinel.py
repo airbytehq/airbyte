@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 
 
 class PartitionGenerationCompletedSentinel:
@@ -10,8 +10,8 @@ class PartitionGenerationCompletedSentinel:
     Includes a pointer to the partition that was processed.
     """
 
-    def __init__(self, partition_generator: PartitionGenerator):
+    def __init__(self, stream: AbstractStream):
         """
-        :param partition_generator: The partition_generator that was processed
+        :param stream: The stream that was processed
         """
-        self.partition_generator = partition_generator
+        self.stream = stream

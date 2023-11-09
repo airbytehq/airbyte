@@ -64,8 +64,8 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._cursor = cursor
         self._namespace = namespace
 
-    def get_partition_generator(self) -> PartitionGenerator:
-        return self._stream_partition_generator
+    def generate_partitions(self) -> Iterable[Partition]:
+        yield from self._stream_partition_generator.generate()
 
     def read(self) -> Iterable[Record]:
         """
@@ -91,7 +91,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         partition_generator = PartitionEnqueuer(queue)
         partition_reader = PartitionReader(queue)
 
-        self._submit_task(futures, partition_generator.generate_partitions, self._stream_partition_generator)
+        self._submit_task(futures, partition_generator.generate_partitions, self)
 
         # True -> partition is done
         # False -> partition is not done
