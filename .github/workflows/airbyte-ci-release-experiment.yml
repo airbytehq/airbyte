@@ -26,7 +26,8 @@ jobs:
       with:
         python-version: "3.10"
 
-    - run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
 
     - run: cd airbyte-ci/pipelines/airbyte_ci
     - run: poetry install --with dev
