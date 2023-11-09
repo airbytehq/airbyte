@@ -1,4 +1,6 @@
+#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 import asyncclick as click
 from pipelines.airbyte_ci.format.actions import run_format
@@ -51,10 +53,10 @@ async def js(ctx: ClickPipelineContext):
     await run_format(container, format_commands)
 
 
-@fix.command()
+@fix.command("license")
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def license(ctx: ClickPipelineContext):
+async def license_fix(ctx: ClickPipelineContext):
     """Add license to python and java code via addlicense."""
     license_file = "LICENSE_SHORT"
     dagger_client = await ctx.get_dagger_client(pipeline_name="Add license")

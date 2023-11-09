@@ -59,9 +59,9 @@ async def js(pipeline_context: ClickPipelineContext):
     await run_check(container, check_commands)
 
 
-@check.command()
+@check.command("license")
 @pass_pipeline_context
-async def license(pipeline_context: ClickPipelineContext):
+async def license_check(pipeline_context: ClickPipelineContext):
     """Add license to python and java code via addlicense."""
     license_file = "LICENSE_SHORT"
     dagger_client = await pipeline_context.get_dagger_client(pipeline_name="Check license header")
