@@ -15,7 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.amazonaws.util.Base64;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.DataTypeUtils;
@@ -23,6 +22,7 @@ import io.airbyte.commons.json.Jsons;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
+import org.apache.commons.codec.binary.Base64;
 import org.bson.BsonBinary;
 import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
@@ -51,12 +51,17 @@ class MongoDbCdcEventUtilsTest {
   @Test
   void testGenerateObjectIdDocument() {
     final String key = "{\"" + OBJECT_ID_FIELD + "\": \"" + OBJECT_ID + "\"}";
-    final JsonNode debeziumEventKey = Jsons.jsonNode(Map.of(ID_FIELD, key));
+    JsonNode debeziumEventKey = Jsons.jsonNode(Map.of(ID_FIELD, key));
 
-    final String updated = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
+    String updated = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
 
     assertTrue(updated.contains(DOCUMENT_OBJECT_ID_FIELD));
     assertEquals(key.replaceAll(OBJECT_ID_FIELD_PATTERN, DOCUMENT_OBJECT_ID_FIELD), updated);
+
+    debeziumEventKey = Jsons.jsonNode(Map.of(ID_FIELD, "\"" + OBJECT_ID + "\""));
+    updated = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
+    assertTrue(updated.contains(DOCUMENT_OBJECT_ID_FIELD));
+    assertEquals(Jsons.serialize(debeziumEventKey).replaceAll(ID_FIELD, DOCUMENT_OBJECT_ID_FIELD), updated);
   }
 
   @Test
@@ -108,7 +113,7 @@ class MongoDbCdcEventUtilsTest {
     assertEquals(4.0, transformed.get("field5").asDouble());
     assertEquals(expectedTimestamp, transformed.get("field6").asText());
     assertEquals(expectedTimestamp, transformed.get("field7").asText());
-    assertEquals(Base64.encodeAsString("test".getBytes(Charset.defaultCharset())), transformed.get("field8").asText());
+    assertEquals(Base64.encodeBase64String("test".getBytes(Charset.defaultCharset())), transformed.get("field8").asText());
     assertEquals("test2", transformed.get("field9").asText());
     assertEquals("test3", transformed.get("field10").asText());
     assertEquals(OBJECT_ID, transformed.get("field11").asText());

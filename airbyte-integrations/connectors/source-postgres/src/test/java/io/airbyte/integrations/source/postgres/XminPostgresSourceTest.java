@@ -18,15 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.testutils.PostgreSQLContainerHelper;
+import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -41,6 +38,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,24 +46,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@ExtendWith(SystemStubsExtension.class)
 class XminPostgresSourceTest {
 
-  @SystemStub
-  private EnvironmentVariables environmentVariables;
   private static final String SCHEMA_NAME = "public";
   protected static final String STREAM_NAME = "id_and_name";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
@@ -106,73 +92,45 @@ class XminPostgresSourceTest {
   protected static final List<AirbyteMessage> NEXT_RECORD_MESSAGES = Arrays.asList(
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "gohan", "power", 222.1)));
 
-  protected static PostgreSQLContainer<?> PSQL_DB;
+  protected PostgresTestDatabase testdb;
 
-  protected String dbName;
-
-  @BeforeAll
-  static void init() {
-    PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
-    PSQL_DB.start();
+  protected String getDatabaseImageName() {
+    return "postgres:12-bullseye";
   }
 
   @BeforeEach
-  void setup() throws Exception {
-    dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
+  protected void setup() throws SQLException {
+    testdb = PostgresTestDatabase.make(getDatabaseImageName());
+    testdb.database.query(ctx -> {
+      ctx.fetch(
+          "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
+      ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'), (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
+      ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
+      ctx.fetch("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-    final JsonNode config = getXminConfig(PSQL_DB, dbName);
-
-    try (final DSLContext dslContext = getDslContext(config)) {
-      final Database database = getDatabase(dslContext);
-      database.query(ctx -> {
-        ctx.fetch(
-            "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
-        ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
-        ctx.fetch(
-            "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'), (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
-
-        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
-        ctx.fetch(
-            "INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
-
-        ctx.fetch(
-            "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));");
-        ctx.fetch(
-            "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
-        return null;
-      });
-    }
+      ctx.fetch(
+          "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));");
+      ctx.fetch(
+          "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
+      return null;
+    });
   }
 
-  protected static Database getDatabase(final DSLContext dslContext) {
-    return new Database(dslContext);
+  @AfterEach
+  protected void tearDown() throws SQLException {
+    testdb.close();
   }
 
-  protected static DSLContext getDslContext(final JsonNode config) {
-    return DSLContextFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()),
-        SQLDialect.POSTGRES);
-  }
-
-  protected JsonNode getXminConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
+  protected JsonNode getXminConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
-        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.HOST_KEY, testdb.container.getHost())
+        .put(JdbcUtils.PORT_KEY, testdb.container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, testdb.dbName)
         .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
-        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
+        .put(JdbcUtils.USERNAME_KEY, testdb.userName)
+        .put(JdbcUtils.PASSWORD_KEY, testdb.password)
         .put(JdbcUtils.SSL_KEY, false)
         .put("replication_method", getReplicationMethod())
         .put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
@@ -185,14 +143,15 @@ class XminPostgresSourceTest {
         .build());
   }
 
-  @AfterAll
-  static void cleanUp() {
-    PSQL_DB.close();
+  protected Source source() {
+    PostgresSource source = new PostgresSource();
+    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
+    return PostgresSource.sshWrappedSource(source);
   }
 
   @Test
   void testDiscover() throws Exception {
-    final AirbyteCatalog actual = new PostgresSource().discover(getXminConfig(PSQL_DB, dbName));
+    final AirbyteCatalog actual = source().discover(getXminConfig());
     actual.getStreams().forEach(actualStream -> {
       final Optional<AirbyteStream> expectedStream =
           CATALOG.getStreams().stream().filter(stream -> stream.getName().equals(actualStream.getName())).findAny();
@@ -210,7 +169,7 @@ class XminPostgresSourceTest {
             .withStreams(CONFIGURED_XMIN_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
                 Collectors.toList()));
     final List<AirbyteMessage> recordsFromFirstSync =
-        MoreIterators.toList(new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog, null));
+        MoreIterators.toList(source().read(getXminConfig(), configuredCatalog, null));
     setEmittedAtToNull(recordsFromFirstSync);
     assertThat(filterRecords(recordsFromFirstSync)).containsExactlyElementsOf(INITIAL_RECORD_MESSAGES);
 
@@ -257,7 +216,7 @@ class XminPostgresSourceTest {
 
     // Sync should work with a ctid state
     final List<AirbyteMessage> recordsFromSyncRunningWithACtidState =
-        MoreIterators.toList(new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog,
+        MoreIterators.toList(source().read(getXminConfig(), configuredCatalog,
             Jsons.jsonNode(Collections.singletonList(firstStateMessage))));
     setEmittedAtToNull(recordsFromSyncRunningWithACtidState);
     final List<AirbyteMessage> expectedDataFromSyncUsingFirstCtidState = new ArrayList<>(2);
@@ -281,7 +240,7 @@ class XminPostgresSourceTest {
 
     // Read with the final xmin state message should return no data
     final List<AirbyteMessage> syncWithXminStateType =
-        MoreIterators.toList(new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog,
+        MoreIterators.toList(source().read(getXminConfig(), configuredCatalog,
             Jsons.jsonNode(Collections.singletonList(thirdStateMessage))));
     setEmittedAtToNull(syncWithXminStateType);
     assertEquals(0, filterRecords(syncWithXminStateType).size());
@@ -295,17 +254,14 @@ class XminPostgresSourceTest {
     // We add some data and perform a third read. We should verify that (i) a delete is not captured and
     // (ii) the new record that is inserted into the
     // table is read.
-    try (final DSLContext dslContext = getDslContext(getXminConfig(PSQL_DB, dbName))) {
-      final Database database = getDatabase(dslContext);
-      database.query(ctx -> {
-        ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
-        ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
-        return null;
-      });
-    }
+    testdb.database.query(ctx -> {
+      ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
+      return null;
+    });
 
     final List<AirbyteMessage> recordsAfterLastSync =
-        MoreIterators.toList(new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog,
+        MoreIterators.toList(source().read(getXminConfig(), configuredCatalog,
             Jsons.jsonNode(Collections.singletonList(stateAfterXminSync.get(0)))));
     setEmittedAtToNull(recordsAfterLastSync);
     assertThat(filterRecords(recordsAfterLastSync)).containsExactlyElementsOf(NEXT_RECORD_MESSAGES);

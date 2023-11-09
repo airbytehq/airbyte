@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.2.0'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -18,7 +18,6 @@ application {
 
 dependencies {
     implementation project(':airbyte-integrations:connectors:source-clickhouse')
-    implementation libs.airbyte.protocol
 
     implementation group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.3.2-patch9'
 
