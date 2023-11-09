@@ -36,6 +36,7 @@ jobs:
 
     - name: Get version from poetry version --short
       id: get_version
+      working-directory: airbyte-ci/connectors/pipelines/
       run: |
         echo "::set-output name=version::$(poetry version --short)"
 
@@ -46,7 +47,7 @@ jobs:
 
     - name: Build Release
       working-directory: airbyte-ci/connectors/pipelines/
-      run: poetry poe build-release-binary ${{ steps.get_artifact_name.outputs.artifact_name}}
+      run: poetry run poe build-release-binary ${{ steps.get_artifact_name.outputs.artifact_name}}
 
     - uses: actions/upload-artifact@v2
       with:
