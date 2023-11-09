@@ -102,6 +102,8 @@ class ConcurrentSource(AbstractSource, ABC):
         for stream in stream_instances_to_read_from:
             streams_to_partitions_to_done[stream.name] = {}
             record_counter[stream.name] = 0
+        if not partition_generators:
+            return
         while len(partition_generator_running) < max_number_of_partition_generator_in_progress:
             yield self._start_next_partition_generator(
                 partition_generators, futures, partition_generator_running, partition_generator, logger
