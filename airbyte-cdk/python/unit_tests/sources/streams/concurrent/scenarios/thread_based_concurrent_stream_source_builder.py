@@ -110,6 +110,9 @@ class InMemoryPartition(Partition):
         else:
             return hash(self._name)
 
+    def close(self) -> None:
+        pass
+
 
 class ConcurrentSourceBuilder(SourceBuilder[ConcurrentCdkSource]):
     def __init__(self):

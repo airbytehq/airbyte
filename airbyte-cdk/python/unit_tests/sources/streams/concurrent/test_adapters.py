@@ -27,6 +27,7 @@ _ANY_SYNC_MODE = SyncMode.full_refresh
 _ANY_STATE = {"state_key": "state_value"}
 _ANY_CURSOR_FIELD = ["a", "cursor", "key"]
 _STREAM_NAME = "stream"
+_ANY_CURSOR = Mock()
 
 
 @pytest.mark.parametrize(
@@ -78,7 +79,7 @@ def test_stream_partition_generator(sync_mode):
     stream_slices = [{"slice": 1}, {"slice": 2}]
     stream.stream_slices.return_value = stream_slices
 
-    partition_generator = StreamPartitionGenerator(stream, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE)
+    partition_generator = StreamPartitionGenerator(stream, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
 
     partitions = list(partition_generator.generate())
     slices = [partition.to_slice() for partition in partitions]
@@ -111,7 +112,7 @@ def test_stream_partition(transformer, expected_records):
     sync_mode = SyncMode.full_refresh
     cursor_field = None
     state = None
-    partition = StreamPartition(stream, _slice, message_repository, sync_mode, cursor_field, state)
+    partition = StreamPartition(stream, _slice, message_repository, sync_mode, cursor_field, state, _ANY_CURSOR)
 
     a_log_message = AirbyteMessage(
         type=MessageType.LOG,
@@ -145,7 +146,7 @@ def test_stream_partition_raising_exception(exception_type, expected_display_mes
     message_repository = InMemoryMessageRepository()
     _slice = None
 
-    partition = StreamPartition(stream, _slice, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE)
+    partition = StreamPartition(stream, _slice, message_repository, _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
 
     stream.read_records.side_effect = Exception()
 
@@ -165,7 +166,7 @@ def test_stream_partition_raising_exception(exception_type, expected_display_mes
 def test_stream_partition_hash(_slice, expected_hash):
     stream = Mock()
     stream.name = "stream"
-    partition = StreamPartition(stream, _slice, Mock(), _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE)
+    partition = StreamPartition(stream, _slice, Mock(), _ANY_SYNC_MODE, _ANY_CURSOR_FIELD, _ANY_STATE, _ANY_CURSOR)
 
     _hash = partition.__hash__()
     assert _hash == expected_hash

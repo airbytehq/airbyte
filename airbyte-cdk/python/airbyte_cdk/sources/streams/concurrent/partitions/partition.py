@@ -37,6 +37,10 @@ class Partition(ABC):
         pass
 
     @abstractmethod
+    def close(self) -> None:
+        pass
+
+    @abstractmethod
     def __hash__(self) -> int:
         """
         Returns a hash of the partition.

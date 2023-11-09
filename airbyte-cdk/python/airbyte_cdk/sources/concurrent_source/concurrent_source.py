@@ -199,8 +199,6 @@ class ConcurrentSource(AbstractSource, ABC):
             )
         if message.type == MessageType.RECORD:
             record_counter[stream.name] += 1
-        # fixme hacky
-        self._stream_to_instance_map[record.stream_name]._cursor.observe(record)
         if status_message:
             return [status_message, message] + list(self._message_repository.consume_queue())
         else:
@@ -249,8 +247,7 @@ class ConcurrentSource(AbstractSource, ABC):
     ):
         stream_name = partition.stream_name()
         streams_to_partitions_to_done[stream_name][partition] = True
-        # Fixme hacky
-        self._stream_to_instance_map[stream_name]._cursor.close_partition(partition)
+        partition.close()
         if self._is_stream_done(stream_name, streams_to_partitions_to_done, partition_generator_running):
             # stream is done!
             return self._handle_stream_is_done(stream_name, stream_instances, record_counter, logger)

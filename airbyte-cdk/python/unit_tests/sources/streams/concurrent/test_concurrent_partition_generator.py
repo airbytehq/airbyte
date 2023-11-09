@@ -24,7 +24,8 @@ def test_partition_generator(slices):
     sync_mode = SyncMode.full_refresh
     cursor_field = None
     state = None
-    partitions = [StreamPartition(stream, s, message_repository, sync_mode, cursor_field, state) for s in slices]
+    cursor = Mock()
+    partitions = [StreamPartition(stream, s, message_repository, sync_mode, cursor_field, state, cursor) for s in slices]
     stream.generate.return_value = iter(partitions)
 
     partition_generator.generate_partitions(stream)
