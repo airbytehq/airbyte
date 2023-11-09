@@ -47,5 +47,7 @@ async function fetchCatalog(url, name, setter) {
   const connector = registry.find(
     (c) => c.dockerRepository_oss === `airbyte/${name}`
   );
-  setter(connector);
+  if (connector) {
+    setter(connector);
+  }
 }
