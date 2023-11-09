@@ -509,7 +509,6 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
             params["status"] = "any"
-        print(f"\n====== The {self.name} stream PRAMS: {params} ========\n")
         return params
 
 
