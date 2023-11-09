@@ -33,7 +33,7 @@ None
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                        |
-|:--------|:-----------| :--- |:-------------------------------|
+| Version | Date       | Pull Request                                             | Subject                        |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------|
 | 0.1.0   | 2022-10-12 | [18838](https://github.com/airbytehq/airbyte/pull/18838) | Initial release supporting RSS |
-| 0.2.0   | 2023-11-09 |  | Adding Header options          |
+| 0.2.0   | 2023-11-09 | [32344](https://github.com/airbytehq/airbyte/pull/32344) | Adding Header options          |
