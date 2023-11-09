@@ -31,47 +31,33 @@ We recommend Private App authentication.
 More information on HubSpot authentication methods can be found
 [here](https://developers.hubspot.com/docs/api/intro-to-auth).
 
-### Step 1: Set up the authentication method
+### Step 1: Set up Hubspot
 
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-#### OAuth (Recommended)
+**- OAuth** (Recommended)
 
-#### Private App
-
-If you are using a Private App, you will need to use your Access Token to set up the connector. Please refer to the
-  [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
+**- Private App:** If you are using a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
 
-#### Private App setup (Recommended)
+**- Private App setup** (Recommended): If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
 
-If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the
-[official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
-
-#### OAuth setup
-
-If you are using Oauth to authenticate on Airbyte Open Source, please refer to [Hubspot's detailed walkthrough](https://developers.hubspot.com/docs/api/working-with-oauth). To set up the connector, you will need to acquire your:
+**- OAuth setup:** If you are using Oauth to authenticate on Airbyte Open Source, please refer to [Hubspot's detailed walkthrough](https://developers.hubspot.com/docs/api/working-with-oauth). To set up the connector, you will need to acquire your:
 
 - Client ID
 - Client Secret
 - Refresh Token
-
 <!-- /env:oss -->
 
 ### Step 2: Configure the scopes for your streams
 
-<!-- env:cloud -->
 Unless you are authenticating via OAuth on **Airbyte Cloud**, you must manually configure scopes to ensure Airbyte can sync all available data. To see a breakdown of the specific scopes each stream uses, see our full [Hubspot documentation](https://docs.airbyte.com/integrations/sources/hubspot/).
-<!-- /env:cloud -->
 
-<!-- env:oss -->
-Next, you need to configure the appropriate scopes for the following streams. Please refer to
-[Hubspot's page on scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for instructions.
-<!-- /env:oss -->
+Next, you need to configure the appropriate scopes for the following streams. Please refer to [Hubspot's page on scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for instructions.
 
 | Stream                      | Required Scope                                                                                               |
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
@@ -108,9 +94,13 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **HubSpot** from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. From the **Authentication** dropdown, select your chosen authentication method:
-  - **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
-  - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+    - **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
+    - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
+   `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
+6. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
+
 <!-- env:oss -->
 #### For Airbyte Open Source:
 
@@ -118,9 +108,8 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **HubSpot** from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. From the **Authentication** dropdown, select your chosen authentication method:
-  - **Recommended:** To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
-  - **Not Recommended:**To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
-<!-- /env:oss -->
+    - **Recommended:** To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+    - **Not Recommended:**To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
 6. Click **Set up source** and wait for the tests to complete.
@@ -184,7 +173,7 @@ If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or bef
 First you need to give the connector some additional permissions:
 
 <!-- env:cloud -->
-- **If you are using OAuth on Airbyte Cloud** go to the Hubspot source settings page in the Airbyte UI and reauthenticate via Oauth to allow Airbyte the permissions to access custom objects.
+- **If you are using OAuth on Airbyte Cloud** go to the Hubspot source settings page in the Airbyte UI and re-authenticate via OAuth to allow Airbyte the permissions to access custom objects.
 <!-- /env:cloud -->
 - **If you are using OAuth on OSS or Private App auth** go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
 
