@@ -252,7 +252,6 @@ async def get_modified_files_str(ctx: click.Context):
         "connectors": "pipelines.airbyte_ci.connectors.commands.connectors",
         "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
         "test": "pipelines.airbyte_ci.test.commands.test",
-        "release": "pipelines.airbyte_ci.release.commands.release",
     },
 )
 @click.version_option(__installed_version__)
