@@ -20,7 +20,7 @@ from pipelines.consts import CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.containers import internal_tools
 from pipelines.helpers.utils import METADATA_FILE_NAME
-from pipelines.models.contexts import PipelineContext
+from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 
