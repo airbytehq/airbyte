@@ -222,7 +222,8 @@
                       "airbyte_hidden": true,
                       "enum": ["None", "Primitive Types Only"]
                     }
-                  }
+                  },
+                  "required": ["filetype"]
                 }
               ]
             },
