@@ -46,7 +46,6 @@ class TestScenario(Generic[SourceType]):
         incremental_scenario_config: Optional[IncrementalScenarioConfig],
         expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]] = None,
         log_levels: Optional[Set[str]] = None,
-        records_must_be_ordered: bool = True,
     ):
         if log_levels is None:
             log_levels = {"ERROR", "WARN", "WARNING"}
@@ -64,7 +63,6 @@ class TestScenario(Generic[SourceType]):
         self.incremental_scenario_config = incremental_scenario_config
         self.expected_analytics = expected_analytics
         self.log_levels = log_levels
-        self.records_must_be_ordered = records_must_be_ordered
         self.validate()
 
     def validate(self) -> None:
@@ -118,7 +116,6 @@ class TestScenarioBuilder(Generic[SourceType]):
         self._expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]] = None
         self.source_builder: Optional[SourceBuilder[SourceType]] = None
         self._log_levels = None
-        self._records_must_be_ordered = True
 
     def set_name(self, name: str) -> "TestScenarioBuilder[SourceType]":
         self._name = name
@@ -176,10 +173,6 @@ class TestScenarioBuilder(Generic[SourceType]):
         self._expected_analytics = expected_analytics
         return self
 
-    def accept_unordered_records(self):
-        self._records_must_be_ordered = False
-        return self
-
     def copy(self) -> "TestScenarioBuilder[SourceType]":
         return deepcopy(self)
 
@@ -204,7 +197,6 @@ class TestScenarioBuilder(Generic[SourceType]):
             self._incremental_scenario_config,
             self._expected_analytics,
             self._log_levels,
-            self._records_must_be_ordered,
         )
 
     def _configured_catalog(self, sync_mode: SyncMode) -> Optional[Mapping[str, Any]]:
