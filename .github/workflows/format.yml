@@ -12,9 +12,9 @@ on:
       - master
   pull_request:
 jobs:
-  format-check:
+  format-fix:
     runs-on: "conn-prod-xlarge-runner"
-    name: "Check All Formatting Rules"
+    name: "Apply All Formatting Rules"
     timeout-minutes: 40
     steps:
       - name: Checkout Airbyte
@@ -44,7 +44,7 @@ jobs:
               - '**/*'
               - '!**/*.md'
 
-      - name: Run airbyte-ci formatting checks
+      - name: Run airbyte-ci format fix
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "pull_request"
@@ -53,13 +53,27 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "format check all --list-errors"
+          subcommand: "format fix all"
+
+
+      # This is helpful in the case that we change a previously committed generated file to be ignored by git.
+      - name: Remove any files that have been gitignored
+        run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
+
+      - name: Commit Formatting Changes (PR)
+        uses: stefanzweifel/git-auto-commit-action@v4
+        # do not commit if master branch
+        if: github.ref != 'refs/heads/master'
+        with:
+          commit_message: Automated Commit - Formatting Changes
+          commit_user_name: Octavia Squidington III
+          commit_user_email: octavia-squidington-iii@users.noreply.github.com
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
     runs-on: ubuntu-latest
     needs:
-      - format-check
+      - format-fix
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
