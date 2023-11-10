@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - pool_ids
     - start_ids
+    - url_base
   properties:
     pool_ids:
       type: string
@@ -29,11 +30,11 @@ connectionSpecification:
       type: string
       title: KYVE-API URL Base
       description: URL to the KYVE Chain API.
-      default: https://api.korellia.kyve.network
+      default: https://api-eu-1.kyve.network
       order: 2
       examples:
+        - https://api-eu-1.kaon.kyve.network/
         - https://api.korellia.kyve.network/
-        - https://api.beta.kyve.network/
     max_pages:
       type: integer
       description:

@@ -1,8 +1,5 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
-
 import gzip
+import hashlib
 import json
 import logging
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
@@ -14,17 +11,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from source_kyve.util import CustomResourceSchemaLoader
 
 logger = logging.getLogger("airbyte")
-
-# this mapping handles the schema to runtime relation
-# this needs to be updated whenever a new schema is integrated
-runtime_to_root_file_mapping = {
-    "@kyvejs/bitcoin": "bitcoin/block",
-    "@kyvejs/celo": "celo/block",
-    "@kyvejs/cosmos": "cosmos/block",
-    "@kyvejs/evm": "evm/block",
-    "@kyvejs/uniswap": "uniswap/event",
-}
-
 
 class KYVEStream(HttpStream, IncrementalMixin):
     url_base = None
@@ -55,40 +41,42 @@ class KYVEStream(HttpStream, IncrementalMixin):
         self._cursor_value = None
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        # this is KYVE's default schema, if a root_schema is defined
-        # the ResourceSchemaLoader automatically resolves the dependency
+        # This is KYVE's default schema and won't be changed.
         schema = {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "type": "object",
-            "properties": {"key": {"type": "integer"}, "value": {"type": "object"}},
-            "required": ["key", "value"],
+            "properties": {
+                "key": {
+                    "type": "integer"
+                },
+                "value": {
+                    "type": "object"
+                }
+            },
+            "required": [
+                "key",
+                "value"
+            ]
         }
-        # in case we have defined a schema file, we can get it from the mapping
-        schema_root_file = runtime_to_root_file_mapping.get(self.runtime, None)
 
-        # we update the default schema in case there is a root_file
-        if schema_root_file:
-            inlay_schema = CustomResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(schema_root_file)
-            schema["properties"]["value"] = inlay_schema
         return schema
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"/kyve/query/v1beta1/finalized_bundles/{self.pool_id}"
+    def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+             next_page_token: Mapping[str, Any] = None) -> str:
+        return f"/kyve/v1/bundles/{self.pool_id}"
 
     def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # Set the pagesize in the request parameters
         params = {"pagination.limit": self.page_size}
 
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
-            params["next_page_token"] = next_page_token
+            params['next_page_token'] = next_page_token
 
         # In case we use incremental streaming, we start with the stored _offset
         offset = stream_state.get(self.cursor_field, self._offset) or 0
@@ -98,11 +86,11 @@ class KYVEStream(HttpStream, IncrementalMixin):
         return params
 
     def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         try:
             # set the state to store the latest bundle_id
@@ -115,25 +103,31 @@ class KYVEStream(HttpStream, IncrementalMixin):
 
         for bundle in bundles:
             storage_id = bundle.get("storage_id")
-            # retrieve file from Arweave
-            response_from_arweave = requests.get(f"https://arweave.net/{storage_id}")
+            storage_provider_id = bundle.get("storage_provider_id")
 
-            if not response.ok:
-                logger.error(f"Reading bundle {storage_id} with status code {response.status_code}")
+            # 1: Arweave, 2: Bundle -> both are using arweave.net
+            # 3: KYVE-Storage-Provider -> storage.kyve.network
+            if storage_provider_id != "3":
+                # retrieve file from Arweave
+                response_from_storage_provider = requests.get(f"https://arweave.net/{storage_id}")
+            else:
+                response_from_storage_provider = requests.get(f"https://storage.kyve.network/{storage_id}")
+
+            #if not response_from_storage_provider.ok:
+            #    logger.error(f"Reading bundle {storage_id} with status code {response.status_code}")
                 # todo future: this is a temporary fix until the bugs with Arweave are solved
-                continue
+            #    continue
             try:
-                decompressed = gzip.decompress(response_from_arweave.content)
+                decompressed = gzip.decompress(response_from_storage_provider.content)
             except gzip.BadGzipFile as e:
                 logger.error(f"Decompressing bundle {storage_id} failed with '{e}'")
-                # todo future: this is a temporary fix until the bugs with Arweave are solved
-                # todo future: usually this exception should fail
                 continue
 
-            # todo future: fail on incorrect hash, enabled after regenesis
-            # bundle_hash = bundle.get("bundle_hash")
-            # local_hash = hmac.new(b"", msg=decompressed, digestmod=hashlib.sha256).digest().hex()
-            # assert local_hash == bundle_hash, print("HASHES DO NOT MATCH")
+            # Compare hash of the downloaded data from Arweave with the hash from KYVE.
+            # This is required to make sure, that the Arweave Gateway provided the correct data.
+            bundle_hash = bundle.get("data_hash")
+            local_hash = hashlib.sha256(response_from_storage_provider.content).hexdigest()
+            assert local_hash == bundle_hash, print("HASHES DO NOT MATCH")
             decompressed_as_json = json.loads(decompressed)
 
             # extract the value from the key -> value mapping

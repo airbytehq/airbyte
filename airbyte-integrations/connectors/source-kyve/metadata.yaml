@@ -6,7 +6,7 @@ data:
   maxSecondsBetweenMessages: 7200
   dockerRepository: airbyte/source-kyve
   githubIssueLabel: source-kyve
-  icon: kyve.svg
+  icon: icon.svg
   license: MIT
   name: KYVE
   registries:

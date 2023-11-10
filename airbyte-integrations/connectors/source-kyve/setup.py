@@ -17,12 +17,12 @@ TEST_REQUIREMENTS = [
 
 setup(
     name="source_kyve",
-    description="Source implementation for Kyve.",
+    description="Source implementation for KYVE.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={"": ["*.json", "*.yaml"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
