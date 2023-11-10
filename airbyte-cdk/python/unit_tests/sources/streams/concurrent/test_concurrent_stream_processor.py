@@ -49,7 +49,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
         self._a_closed_partition.is_closed.return_value = True
         self._a_closed_partition.stream_name.return_value = _ANOTHER_STREAM_NAME
 
-        self._stream_to_instance_map = {}
         self._logger = Mock(spec=logging.Logger)
         self._slice_logger = Mock(spec=SliceLogger)
         self._slice_logger.create_slice_log_message.return_value = self._log_message
@@ -84,7 +83,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
@@ -93,7 +91,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
         handler._streams_currently_generating_partitions = {_STREAM_NAME}
         handler._streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}}
 
-        self._stream_to_instance_map[_STREAM_NAME] = self._stream
+        handler._stream_name_to_instance[_STREAM_NAME] = self._stream
         sentinel = PartitionGenerationCompletedSentinel(self._stream)
         messages = list(handler.on_partition_generation_completed(sentinel))
 
@@ -108,18 +106,17 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
             self._partition_reader,
         )
         handler._streams_currently_generating_partitions.append(_ANOTHER_STREAM_NAME)
+        handler._stream_name_to_instance[_ANOTHER_STREAM_NAME] = self._another_stream
 
         handler._streams_to_partitions = {_ANOTHER_STREAM_NAME: {self._a_closed_partition}}
         handler._record_counter[_ANOTHER_STREAM_NAME] = 1
 
-        self._stream_to_instance_map[_ANOTHER_STREAM_NAME] = self._another_stream
         sentinel = PartitionGenerationCompletedSentinel(self._another_stream)
         messages = handler.on_partition_generation_completed(sentinel)
 
@@ -145,7 +142,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
@@ -168,7 +164,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
@@ -194,7 +189,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
@@ -230,13 +224,12 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
             self._partition_reader,
         )
-        self._stream_to_instance_map[_ANOTHER_STREAM_NAME] = self._another_stream
+        handler._stream_name_to_instance[_ANOTHER_STREAM_NAME] = self._another_stream
 
         sentinel = PartitionCompleteSentinel(self._a_closed_partition)
 
@@ -276,7 +269,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
@@ -308,14 +300,13 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
             self._partition_reader,
         )
 
-        self._stream_to_instance_map[_STREAM_NAME] = self._stream
+        handler._stream_name_to_instance[_STREAM_NAME] = self._stream
 
         # Simulate a first record
         handler._record_counter[_STREAM_NAME] = 1
@@ -353,7 +344,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
@@ -367,7 +357,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             json_schema={},
             supported_sync_modes=[SyncMode.full_refresh],
         )
-        self._stream_to_instance_map[_STREAM_NAME] = stream
+        handler._stream_name_to_instance[_STREAM_NAME] = stream
 
         # Simulate a first record
         handler._record_counter[_STREAM_NAME] = 1
@@ -400,14 +390,13 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
             self._partition_reader,
         )
 
-        self._stream_to_instance_map[_STREAM_NAME] = self._stream
+        handler._stream_name_to_instance[_STREAM_NAME] = self._stream
 
         messages = list(handler.on_record(self._record))
 
@@ -450,7 +439,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
@@ -464,7 +452,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             json_schema={},
             supported_sync_modes=[SyncMode.full_refresh],
         )
-        self._stream_to_instance_map[_STREAM_NAME] = stream
+        handler._stream_name_to_instance[_STREAM_NAME] = stream
 
         messages = list(handler.on_record(self._record))
 
@@ -494,13 +482,12 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_on_exception_stops_streams_and_raises_an_exception(self):
-        stream_instances_to_read_from = []
+        stream_instances_to_read_from = [self._stream, self._another_stream]
 
         handler = ConcurrentStreamProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
@@ -515,8 +502,8 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             json_schema={},
             supported_sync_modes=[SyncMode.full_refresh],
         )
-        self._stream_to_instance_map[_STREAM_NAME] = self._stream
-        self._stream_to_instance_map[_ANOTHER_STREAM_NAME] = another_stream
+        handler._stream_name_to_instance[_STREAM_NAME] = self._stream
+        handler._stream_name_to_instance[_ANOTHER_STREAM_NAME] = another_stream
 
         exception = RuntimeError("Something went wrong")
 
@@ -549,7 +536,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
@@ -565,7 +551,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
@@ -582,7 +567,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
@@ -599,7 +583,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
@@ -615,7 +598,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
-            self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,

@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from typing import Iterable, List, Mapping, Optional
+from typing import Iterable, List, Optional
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
 from airbyte_cdk.models import Type as MessageType
@@ -26,7 +26,6 @@ class ConcurrentStreamProcessor:
         stream_instances_to_read_from: List[AbstractStream],
         partition_enqueuer: PartitionEnqueuer,
         thread_pool_manager: ThreadPoolManager,
-        stream_name_to_instance: Mapping[str, AbstractStream],
         logger: logging.Logger,
         slice_logger: SliceLogger,
         message_repository: MessageRepository,
@@ -37,13 +36,12 @@ class ConcurrentStreamProcessor:
         :param stream_instances_to_read_from: List of streams to read from
         :param partition_enqueuer: PartitionEnqueuer instance
         :param thread_pool_manager: ThreadPoolManager instance
-        :param stream_name_to_instance: Mapping of stream name to stream instance
         :param logger: Logger instance
         :param slice_logger: SliceLogger instance
         :param message_repository: MessageRepository instance
         :param partition_reader: PartitionReader instance
         """
-        self._stream_name_to_instance = stream_name_to_instance
+        self._stream_name_to_instance = {s.name: s for s in stream_instances_to_read_from}
         self._record_counter = {}
         self._streams_to_partitions = {}
         for stream in stream_instances_to_read_from:

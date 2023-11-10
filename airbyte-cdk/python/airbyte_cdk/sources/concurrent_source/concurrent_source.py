@@ -79,7 +79,6 @@ class ConcurrentSource(AbstractSource, ABC):
             stream_instances_to_read_from,
             PartitionEnqueuer(queue),
             self._threadpool,
-            stream_name_to_instance,
             logger,
             self._slice_logger,
             self._message_repository,
