@@ -3,36 +3,13 @@ const visit = require("unist-util-visit");
 
 const registry_url =
   "https://connectors.airbyte.com/files/generated_reports/connector_registry_report.json";
-let registry = {};
-let loading = false;
-
-/*
-This methods makes registry a singleton available to all callers of this plugin.
-Only one download will happen for the first callers and all others will use the cached version.
-*/
-const fetchCatalog = async () => {
-  if (loading) {
-    await sleep(500);
-    return fetchCatalog();
-  }
-
-  if (registry.length > 0) {
-    return registry;
-  }
-
-  loading = true;
-  console.log("Fetching connector registry...");
-  const response = await fetch(registry_url);
-  registry = await response.json();
-  console.log(`fetched ${registry.length} connectors form registry`);
-  loading = false;
-};
+let registry = [];
 
 const plugin = () => {
+  let registryFetcher = fetchCatalog();
+
   const transformer = async (ast, vfile) => {
     if (!isDocsPage(vfile)) return;
-
-    await fetchCatalog();
 
     const pathParts = vfile.path.split("/");
     const connectorName = pathParts.pop().split(".")[0];
@@ -41,6 +18,9 @@ const plugin = () => {
       /s$/,
       ""
     )}-${connectorName}`;
+
+    await Promise.resolve(registryFetcher);
+
     const registryEntry = registry.find(
       (r) => r.dockerRepository_oss === dockerRepository
     );
@@ -66,6 +46,13 @@ const plugin = () => {
     });
   };
   return transformer;
+};
+
+const fetchCatalog = async () => {
+  console.log("Fetching connector registry...");
+  const response = await fetch(registry_url);
+  registry = await response.json();
+  console.log(`fetched ${registry.length} connectors form registry`);
 };
 
 const buildConnectorHTMLContent = (
@@ -115,10 +102,6 @@ const isDocsPage = (vfile) => {
   }
 
   return true;
-};
-
-const sleep = (ms) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 const capitalizeFirstLetter = (string) => {
