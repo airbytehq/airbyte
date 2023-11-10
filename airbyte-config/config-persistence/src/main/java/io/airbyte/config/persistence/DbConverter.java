@@ -4,24 +4,26 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SERVICE_ACCOUNT;
-import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Notification;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.Schedule;
 import io.airbyte.config.ScheduleData;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -31,8 +33,6 @@ import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
-import io.airbyte.config.SourceConnection;
-import io.airbyte.config.DestinationConnection;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
@@ -65,6 +65,27 @@ public class DbConverter {
         .withScheduleData(
             record.get(CONNECTION.SCHEDULE_DATA) == null ? null : Jsons.deserialize(record.get(CONNECTION.SCHEDULE_DATA).data(), ScheduleData.class))
         .withOperationIds(connectionOperationId)
+        .withResourceRequirements(Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
+        .withSourceCatalogId(record.get(CONNECTION.SOURCE_CATALOG_ID));
+  }
+
+  public static StandardSync buildStandardSyncForConnectionPage(final Record record) throws IOException {
+    return new StandardSync()
+        .withConnectionId(record.get(CONNECTION.ID))
+        .withNamespaceDefinition(
+            Enums.toEnum(record.get(CONNECTION.NAMESPACE_DEFINITION, String.class), NamespaceDefinitionType.class)
+                .orElseThrow())
+        .withNamespaceFormat(record.get(CONNECTION.NAMESPACE_FORMAT))
+        .withPrefix(record.get(CONNECTION.PREFIX))
+        .withSourceId(record.get(CONNECTION.SOURCE_ID))
+        .withDestinationId(record.get(CONNECTION.DESTINATION_ID))
+        .withName(record.get(CONNECTION.NAME))
+        .withStatus(
+            record.get(CONNECTION.STATUS) == null ? null : Enums.toEnum(record.get(CONNECTION.STATUS, String.class), Status.class).orElseThrow())
+        .withSchedule(Jsons.deserialize(record.get(CONNECTION.SCHEDULE).data(), Schedule.class))
+        .withManual(record.get(CONNECTION.MANUAL))
+        .withScheduleType(record.get(CONNECTION.SCHEDULE_TYPE) == null ? null
+            : Enums.toEnum(record.get(CONNECTION.SCHEDULE_TYPE, String.class), ScheduleType.class).orElseThrow())
         .withResourceRequirements(Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
         .withSourceCatalogId(record.get(CONNECTION.SOURCE_CATALOG_ID));
   }
@@ -174,22 +195,22 @@ public class DbConverter {
 
   public static SourceConnection buildSourceConnection(final Record record) {
     return new SourceConnection()
-            .withSourceId(record.get(ACTOR.ID))
-            .withConfiguration(Jsons.deserialize(record.get(ACTOR.CONFIGURATION).data()))
-            .withWorkspaceId(record.get(ACTOR.WORKSPACE_ID))
-            .withSourceDefinitionId(record.get(ACTOR.ACTOR_DEFINITION_ID))
-            .withTombstone(record.get(ACTOR.TOMBSTONE))
-            .withName(record.get(ACTOR.NAME));
+        .withSourceId(record.get(ACTOR.ID))
+        .withConfiguration(Jsons.deserialize(record.get(ACTOR.CONFIGURATION).data()))
+        .withWorkspaceId(record.get(ACTOR.WORKSPACE_ID))
+        .withSourceDefinitionId(record.get(ACTOR.ACTOR_DEFINITION_ID))
+        .withTombstone(record.get(ACTOR.TOMBSTONE))
+        .withName(record.get(ACTOR.NAME));
   }
 
   public static DestinationConnection buildDestinationConnection(final Record record) {
     return new DestinationConnection()
-            .withDestinationId(record.get(ACTOR.ID))
-            .withConfiguration(Jsons.deserialize(record.get(ACTOR.CONFIGURATION).data()))
-            .withWorkspaceId(record.get(ACTOR.WORKSPACE_ID))
-            .withDestinationDefinitionId(record.get(ACTOR.ACTOR_DEFINITION_ID))
-            .withTombstone(record.get(ACTOR.TOMBSTONE))
-            .withName(record.get(ACTOR.NAME));
+        .withDestinationId(record.get(ACTOR.ID))
+        .withConfiguration(Jsons.deserialize(record.get(ACTOR.CONFIGURATION).data()))
+        .withWorkspaceId(record.get(ACTOR.WORKSPACE_ID))
+        .withDestinationDefinitionId(record.get(ACTOR.ACTOR_DEFINITION_ID))
+        .withTombstone(record.get(ACTOR.TOMBSTONE))
+        .withName(record.get(ACTOR.NAME));
   }
 
 }

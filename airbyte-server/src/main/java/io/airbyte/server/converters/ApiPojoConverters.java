@@ -143,6 +143,21 @@ public class ApiPojoConverters {
     return connectionRead;
   }
 
+  public static ConnectionRead internalToConnectionPageRead(final StandardSync standardSync) {
+    final ConnectionRead connectionRead = new ConnectionRead()
+        .connectionId(standardSync.getConnectionId())
+        .sourceId(standardSync.getSourceId())
+        .destinationId(standardSync.getDestinationId())
+        .status(toApiStatus(standardSync.getStatus()))
+        .name(standardSync.getName())
+        .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), io.airbyte.api.model.generated.NamespaceDefinitionType.class))
+        .namespaceFormat(standardSync.getNamespaceFormat())
+        .prefix(standardSync.getPrefix())
+        .syncCatalog(new io.airbyte.api.model.generated.AirbyteCatalog())
+        .sourceCatalogId(standardSync.getSourceCatalogId());
+    return connectionRead;
+  }
+
   public static JobType toApiJobType(final io.airbyte.config.JobTypeResourceLimit.JobType jobType) {
     return Enums.convertTo(jobType, JobType.class);
   }

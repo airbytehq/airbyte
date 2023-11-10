@@ -624,11 +624,11 @@ public class ConfigRepository {
                                                                      final UUID sourceId,
                                                                      final Integer pageSize,
                                                                      final Integer pageCurrent)
-          throws IOException {
+      throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
-            .from(CONNECTION)
-            .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
-            .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).and(ACTOR.ID.eq(sourceId)).limit(pageSize).offset(pageSize * (pageCurrent - 1)).fetch();
+        .from(CONNECTION)
+        .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).and(ACTOR.ID.eq(sourceId)).limit(pageSize).offset(pageSize * (pageCurrent - 1)).fetch();
     final List<StandardSync> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
       standardSyncs.add(DbConverter.buildStandardSync(record, Collections.emptyList()));
@@ -640,11 +640,11 @@ public class ConfigRepository {
                                                                           final UUID destination,
                                                                           final Integer pageSize,
                                                                           final Integer pageCurrent)
-          throws IOException {
+      throws IOException {
     final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
-            .from(CONNECTION)
-            .join(ACTOR).on(CONNECTION.DESTINATION_ID.eq(ACTOR.ID))
-            .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).and(ACTOR.ID.eq(destination)).limit(pageSize).offset(pageSize * (pageCurrent - 1)).fetch();
+        .from(CONNECTION)
+        .join(ACTOR).on(CONNECTION.DESTINATION_ID.eq(ACTOR.ID))
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).and(ACTOR.ID.eq(destination)).limit(pageSize).offset(pageSize * (pageCurrent - 1)).fetch();
 
     final List<StandardSync> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
@@ -656,7 +656,7 @@ public class ConfigRepository {
   public Long pageSourceStandardSyncsCount(final UUID workspaceId, final UUID sourceId) throws IOException {
     return database.query(ctx -> {
       SelectConditionStep<Record1<Integer>> where = ctx.selectCount().from(CONNECTION).join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
-              .where(ACTOR.WORKSPACE_ID.eq(workspaceId)).and(ACTOR.ID.eq(sourceId));
+          .where(ACTOR.WORKSPACE_ID.eq(workspaceId)).and(ACTOR.ID.eq(sourceId));
       return where;
     }).fetchOne().into(Long.class);
   }
@@ -664,7 +664,7 @@ public class ConfigRepository {
   public Long pageDestinationStandardSyncsCount(final UUID workspaceId, final UUID destinationId) throws IOException {
     return database.query(ctx -> {
       SelectConditionStep<Record1<Integer>> where = ctx.selectCount().from(CONNECTION).join(ACTOR).on(CONNECTION.DESTINATION_ID.eq(ACTOR.ID))
-              .where(ACTOR.WORKSPACE_ID.eq(workspaceId)).and(ACTOR.ID.eq(destinationId));
+          .where(ACTOR.WORKSPACE_ID.eq(workspaceId)).and(ACTOR.ID.eq(destinationId));
       return where;
     }).fetchOne().into(Long.class);
   }
@@ -701,7 +701,7 @@ public class ConfigRepository {
       return where.limit(pageSize)
           .offset(pageSize * (pageCurrent - 1));
     }).fetch();
-    return getStandardSyncsFromResult(result);
+    return getStandardSyncsWithoutOperationFromResult(result);
   }
 
   public List<SourceConnection> pageWorkspaceSourceConnection(final UUID workspaceId, final Integer pageSize, final Integer pageCurrent)
@@ -803,6 +803,14 @@ public class ConfigRepository {
       final List<UUID> connectionOperationIds =
           connectionOperationRecords.stream().map(r -> r.get(CONNECTION_OPERATION.OPERATION_ID)).collect(Collectors.toList());
       standardSyncs.add(DbConverter.buildStandardSync(record, connectionOperationIds));
+    }
+    return standardSyncs;
+  }
+
+  private List<StandardSync> getStandardSyncsWithoutOperationFromResult(final Result<Record> result) throws IOException {
+    final List<StandardSync> standardSyncs = new ArrayList<>();
+    for (final Record record : result) {
+      standardSyncs.add(DbConverter.buildStandardSyncForConnectionPage(record));
     }
     return standardSyncs;
   }
@@ -1204,6 +1212,24 @@ public class ConfigRepository {
 
   public List<Map<String, String>> listFilterParamDestination() throws IOException {
     return listFilterParam(ActorType.destination);
+  }
+
+  public StandardDestinationDefinition getStandardDestinationDefinationByDestinationId(final UUID destinationId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(ACTOR_DEFINITION.asterisk())
+        .from(ACTOR)
+        .join(ACTOR_DEFINITION)
+        .on(ACTOR_DEFINITION.ID.eq(ACTOR.ACTOR_DEFINITION_ID))
+        .where(ACTOR.ID.eq(destinationId).and(ACTOR.ACTOR_TYPE.eq(ActorType.destination))).fetch());
+    return DbConverter.buildStandardDestinationDefinition(result.get(0));
+  }
+
+  public StandardDestinationDefinition getStandardSourceDefinationBySourceId(final UUID sourceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(ACTOR_DEFINITION.asterisk())
+        .from(ACTOR)
+        .join(ACTOR_DEFINITION)
+        .on(ACTOR_DEFINITION.ID.eq(ACTOR.ACTOR_DEFINITION_ID))
+        .where(ACTOR.ID.eq(sourceId).and(ACTOR.ACTOR_TYPE.eq(ActorType.source))).fetch());
+    return DbConverter.buildStandardDestinationDefinition(result.get(0));
   }
 
 }

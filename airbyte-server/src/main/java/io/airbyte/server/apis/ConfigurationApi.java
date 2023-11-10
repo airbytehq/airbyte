@@ -384,11 +384,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> {
       SourceRead sourceRead = sourceHandler.getSourceRead(new SourceIdRequestBody().sourceId(sourceIdPageRequestBody.getSourceId()));
       WebBackendConnectionReadList webBackendConnectionReadList = webBackendConnectionsHandler.listConnectionsPageWithoutOperation(
-              sourceRead.getWorkspaceId(), sourceIdPageRequestBody.getSourceId(), null, false, sourceIdPageRequestBody.getPageSize(),
-              sourceIdPageRequestBody.getPageCurrent());
+          sourceRead.getWorkspaceId(), sourceIdPageRequestBody.getSourceId(), null, false, sourceIdPageRequestBody.getPageSize(),
+          sourceIdPageRequestBody.getPageCurrent());
       return new SourceReadWithConnectionPage().sourceRead(sourceRead).connectionReadList(webBackendConnectionReadList)
-              .total(sourceHandler.getSourceConnectionCount(sourceRead.getWorkspaceId(), sourceIdPageRequestBody.getSourceId()))
-              .pageCurrent(sourceIdPageRequestBody.getPageCurrent()).pageSize(sourceIdPageRequestBody.getPageSize());
+          .total(sourceHandler.getSourceConnectionCount(sourceRead.getWorkspaceId(), sourceIdPageRequestBody.getSourceId()))
+          .pageCurrent(sourceIdPageRequestBody.getPageCurrent()).pageSize(sourceIdPageRequestBody.getPageSize());
     });
   }
 
@@ -580,11 +580,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> {
       DestinationRead destinationRead = destinationHandler.getDestinationRead(destinationIdPageRequestBody);
       WebBackendConnectionReadList webBackendConnectionReadList = webBackendConnectionsHandler.listConnectionsPageWithoutOperation(
-              destinationRead.getWorkspaceId(), null, destinationIdPageRequestBody.getDestinationId(), false,
-              destinationIdPageRequestBody.getPageSize(), destinationIdPageRequestBody.getPageCurrent());
+          destinationRead.getWorkspaceId(), null, destinationIdPageRequestBody.getDestinationId(), false,
+          destinationIdPageRequestBody.getPageSize(), destinationIdPageRequestBody.getPageCurrent());
       return new DestinationReadWithConnectionPage().destinationRead(destinationRead).webBackendConnectionReadList(webBackendConnectionReadList)
-              .total(destinationHandler.getDestinationConnectionCount(destinationRead.getWorkspaceId(), destinationIdPageRequestBody.getDestinationId()))
-              .pageCurrent(destinationIdPageRequestBody.getPageCurrent()).pageSize(destinationIdPageRequestBody.getPageSize());
+          .total(destinationHandler.getDestinationConnectionCount(destinationRead.getWorkspaceId(), destinationIdPageRequestBody.getDestinationId()))
+          .pageCurrent(destinationIdPageRequestBody.getPageCurrent()).pageSize(destinationIdPageRequestBody.getPageSize());
     });
   }
 
@@ -771,8 +771,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public WebBackendConnectionPageReadList webBackendPageConnectionsForWorkspace(WorkspaceIdPageRequestBody workspaceIdPageRequestBody) {
-    return execute(() -> webBackendConnectionsHandler.webBackendPageConnectionsForWorkspace(workspaceIdPageRequestBody));
+  public WebBackendConnectionsPageReadList webBackendPageConnectionsForWorkspace(WorkspaceIdPageRequestBody workspaceIdPageRequestBody) {
+    return execute(() -> webBackendConnectionsHandler.webBackendConnectionsPageForWorkspace(workspaceIdPageRequestBody));
   }
 
   @Override
