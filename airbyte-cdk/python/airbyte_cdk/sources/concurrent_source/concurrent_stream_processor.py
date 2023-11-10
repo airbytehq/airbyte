@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from typing import Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional, Set
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
 from airbyte_cdk.models import Type as MessageType
@@ -43,14 +43,14 @@ class ConcurrentStreamProcessor:
         """
         self._stream_name_to_instance = {s.name: s for s in stream_instances_to_read_from}
         self._record_counter = {}
-        self._streams_to_partitions = {}
+        self._streams_to_partitions: Dict[str, Set[Partition]] = {}
         for stream in stream_instances_to_read_from:
             self._streams_to_partitions[stream.name] = set()
             self._record_counter[stream.name] = 0
         self._thread_pool_manager = thread_pool_manager
         self._partition_enqueuer = partition_enqueuer
         self._stream_instances_to_read_from = stream_instances_to_read_from
-        self._streams_currently_generating_partitions = []
+        self._streams_currently_generating_partitions: List[str] = []
         self._logger = logger
         self._slice_logger = slice_logger
         self._message_repository = message_repository
