@@ -4,8 +4,8 @@
 import logging
 
 from airbyte_cdk.sources.message import InMemoryMessageRepository
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import (
     AlwaysAvailableAvailabilityStrategy,
@@ -14,7 +14,7 @@ from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_str
     InMemoryPartitionGenerator,
 )
 
-_id_only_stream = ThreadBasedConcurrentStream(
+_id_only_stream = DefaultStream(
     partition_generator=InMemoryPartitionGenerator(
         [InMemoryPartition("partition1", "stream1", None, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")])]
     ),
@@ -31,7 +31,7 @@ _id_only_stream = ThreadBasedConcurrentStream(
     logger=logging.getLogger("test_logger"),
 )
 
-_id_only_stream_with_slice_logger = ThreadBasedConcurrentStream(
+_id_only_stream_with_slice_logger = DefaultStream(
     partition_generator=InMemoryPartitionGenerator(
         [InMemoryPartition("partition1", "stream1", None, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")])]
     ),
@@ -48,7 +48,7 @@ _id_only_stream_with_slice_logger = ThreadBasedConcurrentStream(
     logger=logging.getLogger("test_logger"),
 )
 
-_id_only_stream_with_primary_key = ThreadBasedConcurrentStream(
+_id_only_stream_with_primary_key = DefaultStream(
     partition_generator=InMemoryPartitionGenerator(
         [InMemoryPartition("partition1", "stream1", None, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")])]
     ),
@@ -65,7 +65,7 @@ _id_only_stream_with_primary_key = ThreadBasedConcurrentStream(
     logger=logging.getLogger("test_logger"),
 )
 
-_id_only_stream_multiple_partitions = ThreadBasedConcurrentStream(
+_id_only_stream_multiple_partitions = DefaultStream(
     partition_generator=InMemoryPartitionGenerator(
         [
             InMemoryPartition("partition1", "stream1", {"p": "1"}, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")]),
@@ -85,7 +85,7 @@ _id_only_stream_multiple_partitions = ThreadBasedConcurrentStream(
     logger=logging.getLogger("test_logger"),
 )
 
-_id_only_stream_multiple_partitions_concurrency_level_two = ThreadBasedConcurrentStream(
+_id_only_stream_multiple_partitions_concurrency_level_two = DefaultStream(
     partition_generator=InMemoryPartitionGenerator(
         [
             InMemoryPartition("partition1", "stream1", {"p": "1"}, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")]),
@@ -105,7 +105,7 @@ _id_only_stream_multiple_partitions_concurrency_level_two = ThreadBasedConcurren
     logger=logging.getLogger("test_logger"),
 )
 
-_stream_raising_exception = ThreadBasedConcurrentStream(
+_stream_raising_exception = DefaultStream(
     partition_generator=InMemoryPartitionGenerator(
         [InMemoryPartition("partition1", "stream1", None, [Record({"id": "1"}, "stream1"), ValueError("test exception")])]
     ),
@@ -223,7 +223,7 @@ test_concurrent_cdk_multiple_streams = (
         .set_streams(
             [
                 _id_only_stream,
-                ThreadBasedConcurrentStream(
+                DefaultStream(
                     partition_generator=InMemoryPartitionGenerator(
                         [
                             InMemoryPartition(

@@ -22,11 +22,11 @@ from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
     StreamUnavailable,
 )
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
@@ -72,7 +72,7 @@ class StreamFacade(Stream):
 
         message_repository = source.message_repository
         return StreamFacade(
-            ThreadBasedConcurrentStream(
+            DefaultStream(
                 partition_generator=StreamPartitionGenerator(
                     stream,
                     message_repository,

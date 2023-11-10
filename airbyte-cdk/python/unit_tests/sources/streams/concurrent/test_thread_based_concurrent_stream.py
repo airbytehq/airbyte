@@ -7,7 +7,7 @@ from unittest.mock import Mock
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
-from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 
 
 class ThreadBasedConcurrentStreamTest(unittest.TestCase):
@@ -20,7 +20,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         self._cursor_field = None
         self._logger = Mock()
         self._cursor = Mock(spec=Cursor)
-        self._stream = ThreadBasedConcurrentStream(
+        self._stream = DefaultStream(
             self._partition_generator,
             self._name,
             self._json_schema,
@@ -80,7 +80,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
                 "id_b": {"type": ["null", "string"]},
             },
         }
-        stream = ThreadBasedConcurrentStream(
+        stream = DefaultStream(
             self._partition_generator,
             self._name,
             json_schema,
@@ -111,7 +111,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
                 "id_b": {"type": ["null", "string"]},
             },
         }
-        stream = ThreadBasedConcurrentStream(
+        stream = DefaultStream(
             self._partition_generator,
             self._name,
             json_schema,
@@ -142,7 +142,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
                 "date": {"type": ["null", "string"]},
             },
         }
-        stream = ThreadBasedConcurrentStream(
+        stream = DefaultStream(
             self._partition_generator,
             self._name,
             json_schema,
@@ -166,7 +166,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         assert expected_airbyte_stream == airbyte_stream
 
     def test_as_airbyte_stream_with_namespace(self):
-        stream = ThreadBasedConcurrentStream(
+        stream = DefaultStream(
             self._partition_generator,
             self._name,
             self._json_schema,

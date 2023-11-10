@@ -13,10 +13,10 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability, StreamAvailable
 from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_protocol.models import ConfiguredAirbyteStream
@@ -38,9 +38,7 @@ class LegacyStream(Stream):
 
 
 class ConcurrentCdkSource(ConcurrentSource):
-    def __init__(
-        self, streams: List[ThreadBasedConcurrentStream], message_repository: Optional[MessageRepository], max_workers, timeout_in_seconds
-    ):
+    def __init__(self, streams: List[DefaultStream], message_repository: Optional[MessageRepository], max_workers, timeout_in_seconds):
         super().__init__(max_workers, timeout_in_seconds, message_repository)
         self._streams = streams
 
@@ -120,13 +118,13 @@ class InMemoryPartition(Partition):
 
 class ConcurrentSourceBuilder(SourceBuilder[ConcurrentCdkSource]):
     def __init__(self):
-        self._streams: List[ThreadBasedConcurrentStream] = []
+        self._streams: List[DefaultStream] = []
         self._message_repository = None
 
     def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> ConcurrentCdkSource:
         return ConcurrentCdkSource(self._streams, self._message_repository, 1, 1)
 
-    def set_streams(self, streams: List[ThreadBasedConcurrentStream]) -> "ConcurrentSourceBuilder":
+    def set_streams(self, streams: List[DefaultStream]) -> "ConcurrentSourceBuilder":
         self._streams = streams
         return self
 

@@ -13,7 +13,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 
 
-class ThreadBasedConcurrentStream(AbstractStream):
+class DefaultStream(AbstractStream):
     def __init__(
         self,
         partition_generator: PartitionGenerator,
