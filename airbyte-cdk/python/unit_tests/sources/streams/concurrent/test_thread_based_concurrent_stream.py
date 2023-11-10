@@ -10,8 +10,6 @@ from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 
-_MAX_CONCURRENT_TASKS = 2
-
 
 class ThreadBasedConcurrentStreamTest(unittest.TestCase):
     def setUp(self):
@@ -36,11 +34,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._cursor_field,
             self._slice_logger,
             self._logger,
-            self._message_repository,
-            1,
-            _MAX_CONCURRENT_TASKS,
-            0,
-            cursor=self._cursor,
         )
 
     def test_get_json_schema(self):
@@ -103,10 +96,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._cursor_field,
             self._slice_logger,
             self._logger,
-            self._message_repository,
-            1,
-            2,
-            0,
         )
 
         expected_airbyte_stream = AirbyteStream(
@@ -140,10 +129,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._cursor_field,
             self._slice_logger,
             self._logger,
-            self._message_repository,
-            1,
-            2,
-            0,
         )
 
         expected_airbyte_stream = AirbyteStream(
@@ -177,10 +162,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             "date",
             self._slice_logger,
             self._logger,
-            self._message_repository,
-            1,
-            2,
-            0,
         )
 
         expected_airbyte_stream = AirbyteStream(
@@ -207,10 +188,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._cursor_field,
             self._slice_logger,
             self._logger,
-            self._message_repository,
-            1,
-            2,
-            0,
             namespace="test",
         )
         expected_airbyte_stream = AirbyteStream(

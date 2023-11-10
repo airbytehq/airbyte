@@ -36,8 +36,6 @@ _id_only_stream = ThreadBasedConcurrentStream(
     cursor_field=None,
     slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
-    message_repository=None,
-    timeout_seconds=300,
 )
 
 _id_only_stream_with_slice_logger = ThreadBasedConcurrentStream(
@@ -57,8 +55,6 @@ _id_only_stream_with_slice_logger = ThreadBasedConcurrentStream(
     cursor_field=None,
     slice_logger=AlwaysLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
-    message_repository=None,
-    timeout_seconds=300,
 )
 
 _id_only_stream_with_primary_key = ThreadBasedConcurrentStream(
@@ -78,8 +74,6 @@ _id_only_stream_with_primary_key = ThreadBasedConcurrentStream(
     cursor_field=None,
     slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
-    message_repository=None,
-    timeout_seconds=300,
 )
 
 _id_only_stream_multiple_partitions = ThreadBasedConcurrentStream(
@@ -102,8 +96,6 @@ _id_only_stream_multiple_partitions = ThreadBasedConcurrentStream(
     cursor_field=None,
     slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
-    message_repository=None,
-    timeout_seconds=300,
 )
 
 _id_only_stream_multiple_partitions_concurrency_level_two = ThreadBasedConcurrentStream(
@@ -126,8 +118,6 @@ _id_only_stream_multiple_partitions_concurrency_level_two = ThreadBasedConcurren
     cursor_field=None,
     slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
-    message_repository=None,
-    timeout_seconds=300,
 )
 
 _stream_raising_exception = ThreadBasedConcurrentStream(
@@ -147,8 +137,6 @@ _stream_raising_exception = ThreadBasedConcurrentStream(
     cursor_field=None,
     slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
-    message_repository=None,
-    timeout_seconds=300,
 )
 
 test_concurrent_cdk_single_stream = (
@@ -277,8 +265,6 @@ test_concurrent_cdk_multiple_streams = (
                     cursor_field=None,
                     slice_logger=NeverLogSliceLogger(),
                     logger=logging.getLogger("test_logger"),
-                    message_repository=None,
-                    timeout_seconds=300,
                 ),
             ]
         )

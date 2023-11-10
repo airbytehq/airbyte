@@ -124,9 +124,6 @@ class ConcurrentSourceBuilder(SourceBuilder[ConcurrentCdkSource]):
         self._message_repository = None
 
     def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> ConcurrentCdkSource:
-        for stream in self._streams:
-            if not stream._message_repository:
-                stream._message_repository = self._message_repository
         return ConcurrentCdkSource(self._streams, self._message_repository, 1, 1)
 
     def set_streams(self, streams: List[ThreadBasedConcurrentStream]) -> "ConcurrentSourceBuilder":

@@ -8,21 +8,14 @@ from logging import Logger
 from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
-from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 
 class ThreadBasedConcurrentStream(AbstractStream):
-
-    DEFAULT_TIMEOUT_SECONDS = 900
-    DEFAULT_MAX_QUEUE_SIZE = 10_000
-    DEFAULT_SLEEP_TIME = 0.1
-
     def __init__(
         self,
         partition_generator: PartitionGenerator,
@@ -34,11 +27,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
         cursor_field: Optional[str],
         slice_logger: SliceLogger,
         logger: Logger,
-        message_repository: MessageRepository,
-        timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
-        max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
-        sleep_time: float = DEFAULT_SLEEP_TIME,
-        cursor: Cursor = NoopCursor(),
         namespace: Optional[str] = None,
     ) -> None:
         self._stream_partition_generator = partition_generator
@@ -50,11 +38,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._cursor_field = cursor_field
         self._slice_logger = slice_logger
         self._logger = logger
-        self._message_repository = message_repository
-        self._timeout_seconds = timeout_seconds
-        self._max_concurrent_tasks = max_concurrent_tasks
-        self._sleep_time = sleep_time
-        self._cursor = cursor
         self._namespace = namespace
 
     def generate_partitions(self) -> Iterable[Partition]:
