@@ -211,6 +211,7 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
         LOGGER.warn("exception thrown during close", e);
       }
     }
+
   }
 
   private static class WriteConfig {

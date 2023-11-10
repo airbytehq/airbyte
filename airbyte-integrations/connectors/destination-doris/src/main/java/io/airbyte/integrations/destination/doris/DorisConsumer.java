@@ -128,4 +128,5 @@ public class DorisConsumer extends CommitOnStateAirbyteMessageConsumer {
       LOGGER.warn("exception thrown during close", e);
     }
   }
+
 }

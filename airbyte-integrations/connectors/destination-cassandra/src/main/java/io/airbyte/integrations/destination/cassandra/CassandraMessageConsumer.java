@@ -111,4 +111,5 @@ class CassandraMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
       LOGGER.warn("exception thrown during close", e);
     }
   }
+
 }

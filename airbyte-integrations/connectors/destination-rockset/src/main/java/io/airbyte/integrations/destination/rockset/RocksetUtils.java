@@ -202,8 +202,6 @@ public class RocksetUtils {
         .anyMatch(coll -> coll.getName().equals(cname));
   }
 
-
-
   public static void clearCollectionIfCollectionExists(ApiClient client, String workspace, String cname) {
     Exceptions.toRuntime(() -> {
 
@@ -216,8 +214,7 @@ public class RocksetUtils {
         final QueryResponse resp = new QueriesApi(client).query(qr);
         @SuppressWarnings("unchecked")
         final List<String> ids =
-            resp.getResults().stream().map(f ->
-                (LinkedTreeMap<String, Object>) f).map(f -> (String) f.get("_id")).collect(Collectors.toList());
+            resp.getResults().stream().map(f -> (LinkedTreeMap<String, Object>) f).map(f -> (String) f.get("_id")).collect(Collectors.toList());
         final DeleteDocumentsRequest ddr = new DeleteDocumentsRequest();
         for (String id : ids) {
           ddr.addDataItem(new DeleteDocumentsRequestData().id(id));

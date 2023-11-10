@@ -51,7 +51,6 @@ public class JsonToAvroSchemaConverter {
 
   private final Map<String, String> standardizedNames = new HashMap<>();
 
-
   @SuppressWarnings("deprecation")
   static List<JsonSchemaType> getNonNullTypes(final String fieldName, final JsonNode fieldDefinition) {
     return getTypes(fieldName, fieldDefinition).stream()

@@ -94,7 +94,7 @@ public class SftpClient {
   @SuppressWarnings("unchecked")
   public Vector<LsEntry> lsFile(SupportedFileExtension fileExtension) {
     try {
-      return (Vector<LsEntry>)channelSftp.ls("*." + fileExtension.typeName);
+      return (Vector<LsEntry>) channelSftp.ls("*." + fileExtension.typeName);
     } catch (SftpException e) {
       LOGGER.error("Exception occurred while trying to find files with type {} : ", fileExtension, e);
       throw new RuntimeException(e);
