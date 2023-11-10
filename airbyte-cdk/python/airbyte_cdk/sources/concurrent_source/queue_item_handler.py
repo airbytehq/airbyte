@@ -28,7 +28,6 @@ class QueueItemHandler:
         partition_enqueuer: PartitionEnqueuer,
         thread_pool_manager: ThreadPoolManager,
         streams_to_partitions: Dict[str, Set[Partition]],
-        record_counter: Dict[str, int],
         stream_to_instance_map: Mapping[str, AbstractStream],
         logger: logging.Logger,
         slice_logger: SliceLogger,
@@ -36,7 +35,10 @@ class QueueItemHandler:
         partition_reader: PartitionReader,
     ):
         self._stream_to_instance_map = stream_to_instance_map
-        self._record_counter = record_counter
+        self._record_counter = {}
+        for stream in stream_instances_to_read_from:
+            streams_to_partitions[stream.name] = set()
+            self._record_counter[stream.name] = 0
         self._streams_to_partitions = streams_to_partitions
         self._thread_pool_manager = thread_pool_manager
         self._partition_enqueuer = partition_enqueuer

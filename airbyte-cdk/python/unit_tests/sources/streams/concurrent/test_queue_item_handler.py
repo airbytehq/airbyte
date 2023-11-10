@@ -50,7 +50,6 @@ class TestQueueItemHandler(unittest.TestCase):
         self._a_closed_partition.is_closed.return_value = True
         self._a_closed_partition.stream_name.return_value = _ANOTHER_STREAM_NAME
 
-        self._record_counter = {_STREAM_NAME: 0, _ANOTHER_STREAM_NAME: 0}
         self._stream_to_instance_map = {}
         self._logger = Mock(spec=logging.Logger)
         self._slice_logger = Mock(spec=SliceLogger)
@@ -63,6 +62,13 @@ class TestQueueItemHandler(unittest.TestCase):
         self._stream.name = _STREAM_NAME
         self._stream.as_airbyte_stream.return_value = AirbyteStream(
             name=_STREAM_NAME,
+            json_schema={},
+            supported_sync_modes=[SyncMode.full_refresh],
+        )
+        self._another_stream = Mock(spec=AbstractStream)
+        self._another_stream.name = _ANOTHER_STREAM_NAME
+        self._another_stream.as_airbyte_stream.return_value = AirbyteStream(
+            name=_ANOTHER_STREAM_NAME,
             json_schema={},
             supported_sync_modes=[SyncMode.full_refresh],
         )
@@ -82,7 +88,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -100,7 +105,8 @@ class TestQueueItemHandler(unittest.TestCase):
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_handle_last_stream_partition_done(self):
         stream_instances_to_read_from = []
-        streams_to_partitions = {_STREAM_NAME: {self._a_closed_partition}}
+        streams_to_partitions = {_ANOTHER_STREAM_NAME: {self._a_closed_partition}}
+        self._streams_currently_generating_partitions.append(_ANOTHER_STREAM_NAME)
 
         handler = QueueItemHandler(
             self._streams_currently_generating_partitions,
@@ -108,16 +114,16 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
             self._partition_reader,
         )
+        handler._record_counter[_ANOTHER_STREAM_NAME] = 1
 
-        self._stream_to_instance_map[_STREAM_NAME] = self._stream
-        sentinel = PartitionGenerationCompletedSentinel(self._stream)
+        self._stream_to_instance_map[_ANOTHER_STREAM_NAME] = self._another_stream
+        sentinel = PartitionGenerationCompletedSentinel(self._another_stream)
         messages = handler.on_partition_generation_completed(sentinel)
 
         expected_messages = [
@@ -127,7 +133,8 @@ class TestQueueItemHandler(unittest.TestCase):
                     type=TraceType.STREAM_STATUS,
                     emitted_at=1577836800000.0,
                     stream_status=AirbyteStreamStatusTraceMessage(
-                        stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
+                        stream_descriptor=StreamDescriptor(name=_ANOTHER_STREAM_NAME),
+                        status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE),
                     ),
                 ),
             )
@@ -144,7 +151,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -170,7 +176,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -199,7 +204,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -224,14 +228,11 @@ class TestQueueItemHandler(unittest.TestCase):
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_handle_on_partition_complete_sentinel_yields_status_message_if_the_stream_is_done(self):
-        self._streams_currently_generating_partitions = [_STREAM_NAME]
-        stream_instances_to_read_from = []
-        partition = Mock(spec=Partition)
+        self._streams_currently_generating_partitions = []
+        stream_instances_to_read_from = [self._another_stream]
         log_message = Mock(spec=LogMessage)
-        partition.to_slice.return_value = log_message
-        partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = True
-        streams_to_partitions = {_STREAM_NAME: {partition}}
+        self._a_closed_partition.to_slice.return_value = log_message
+        streams_to_partitions = {_ANOTHER_STREAM_NAME: {self._a_closed_partition}}
         self._message_repository.consume_queue.return_value = []
 
         handler = QueueItemHandler(
@@ -240,24 +241,15 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
             self._message_repository,
             self._partition_reader,
         )
+        self._stream_to_instance_map[_ANOTHER_STREAM_NAME] = self._another_stream
 
-        stream = Mock(spec=AbstractStream)
-        stream.name = _STREAM_NAME
-        stream.as_airbyte_stream.return_value = AirbyteStream(
-            name=_STREAM_NAME,
-            json_schema={},
-            supported_sync_modes=[SyncMode.full_refresh],
-        )
-        self._stream_to_instance_map[_STREAM_NAME] = stream
-
-        sentinel = PartitionCompleteSentinel(partition)
+        sentinel = PartitionCompleteSentinel(self._a_closed_partition)
 
         # Remove the stream from the list of currently generating to mark it as done
         handler._streams_currently_generating_partitions = []
@@ -271,7 +263,7 @@ class TestQueueItemHandler(unittest.TestCase):
                     type=TraceType.STREAM_STATUS,
                     stream_status=AirbyteStreamStatusTraceMessage(
                         stream_descriptor=StreamDescriptor(
-                            name=_STREAM_NAME,
+                            name=_ANOTHER_STREAM_NAME,
                         ),
                         status=AirbyteStreamStatus.COMPLETE,
                     ),
@@ -280,7 +272,7 @@ class TestQueueItemHandler(unittest.TestCase):
             )
         ]
         assert expected_messages == messages
-        partition.close.assert_called_once()
+        self._a_closed_partition.close.assert_called_once()
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_handle_on_partition_complete_sentinel_yields_no_status_message_if_the_stream_is_not_done(self):
@@ -299,7 +291,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -320,7 +311,7 @@ class TestQueueItemHandler(unittest.TestCase):
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_on_record_no_status_message_no_repository_messge(self):
         self._streams_currently_generating_partitions = [_STREAM_NAME]
-        stream_instances_to_read_from = []
+        stream_instances_to_read_from = [self._stream]
         partition = Mock(spec=Partition)
         log_message = Mock(spec=LogMessage)
         partition.to_slice.return_value = log_message
@@ -335,7 +326,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -346,7 +336,7 @@ class TestQueueItemHandler(unittest.TestCase):
         self._stream_to_instance_map[_STREAM_NAME] = self._stream
 
         # Simulate a first record
-        self._record_counter[_STREAM_NAME] = 1
+        handler._record_counter[_STREAM_NAME] = 1
 
         messages = list(handler.on_record(self._record))
 
@@ -365,7 +355,7 @@ class TestQueueItemHandler(unittest.TestCase):
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_on_record_with_repository_messge(self):
         self._streams_currently_generating_partitions = [_STREAM_NAME]
-        stream_instances_to_read_from = []
+        stream_instances_to_read_from = [self._stream]
         partition = Mock(spec=Partition)
         log_message = Mock(spec=LogMessage)
         partition.to_slice.return_value = log_message
@@ -385,7 +375,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -403,7 +392,7 @@ class TestQueueItemHandler(unittest.TestCase):
         self._stream_to_instance_map[_STREAM_NAME] = stream
 
         # Simulate a first record
-        self._record_counter[_STREAM_NAME] = 1
+        handler._record_counter[_STREAM_NAME] = 1
 
         messages = list(handler.on_record(self._record))
 
@@ -419,12 +408,12 @@ class TestQueueItemHandler(unittest.TestCase):
             AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository")),
         ]
         assert expected_messages == messages
-        assert self._record_counter[_STREAM_NAME] == 2
+        assert handler._record_counter[_STREAM_NAME] == 2
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_on_record_emits_status_message_on_first_record_no_repository_message(self):
         self._streams_currently_generating_partitions = [_STREAM_NAME]
-        stream_instances_to_read_from = []
+        stream_instances_to_read_from = [self._stream]
         partition = Mock(spec=Partition)
         partition.stream_name.return_value = _STREAM_NAME
         partition.is_closed.return_value = True
@@ -436,7 +425,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -469,12 +457,12 @@ class TestQueueItemHandler(unittest.TestCase):
             ),
         ]
         assert expected_messages == messages
-        assert self._record_counter[_STREAM_NAME] == 1
+        assert handler._record_counter[_STREAM_NAME] == 1
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_on_record_emits_status_message_on_first_record_with_repository_message(self):
         self._streams_currently_generating_partitions = [_STREAM_NAME]
-        stream_instances_to_read_from = []
+        stream_instances_to_read_from = [self._stream]
         partition = Mock(spec=Partition)
         log_message = Mock(spec=LogMessage)
         partition.to_slice.return_value = log_message
@@ -491,7 +479,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -532,7 +519,7 @@ class TestQueueItemHandler(unittest.TestCase):
             AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository")),
         ]
         assert expected_messages == messages
-        assert self._record_counter[_STREAM_NAME] == 1
+        assert handler._record_counter[_STREAM_NAME] == 1
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_on_exception_stops_streams_and_raises_an_exception(self):
@@ -545,7 +532,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -597,7 +583,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -618,7 +603,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -639,7 +623,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -660,7 +643,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,
@@ -680,7 +662,6 @@ class TestQueueItemHandler(unittest.TestCase):
             self._partition_enqueuer,
             self._thread_pool_manager,
             streams_to_partitions,
-            self._record_counter,
             self._stream_to_instance_map,
             self._logger,
             self._slice_logger,

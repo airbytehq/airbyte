@@ -57,10 +57,6 @@ class ConcurrentSource(AbstractSource, ABC):
         stream_instances_to_read_from = self._get_streams_to_read_from(catalog, logger, stream_to_instance_map)
         streams_currently_generating_partitions: List[str] = []
         streams_to_partitions: Dict[str, Set[Partition]] = {}
-        record_counter = {}
-        for stream in stream_instances_to_read_from:
-            streams_to_partitions[stream.name] = set()
-            record_counter[stream.name] = 0
         if not stream_instances_to_read_from:
             return
 
@@ -71,14 +67,13 @@ class ConcurrentSource(AbstractSource, ABC):
             partition_enqueuer,
             self._threadpool,
             streams_to_partitions,
-            record_counter,
             stream_to_instance_map,
             logger,
             self._slice_logger,
             self._message_repository,
             partition_reader,
         )
-        while len(streams_currently_generating_partitions) < max_number_of_partition_generator_in_progress:
+        for _ in range(max_number_of_partition_generator_in_progress):
             status_message = queue_item_handler.start_next_partition_generator()
             if status_message:
                 yield status_message
