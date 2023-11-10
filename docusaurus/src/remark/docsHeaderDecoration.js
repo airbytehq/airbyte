@@ -47,15 +47,13 @@ const plugin = () => {
 
     if (!registryEntry) return;
 
-    // ast.children.unshift({
-    //   type: "html",
-    //   value: buildConnectorHTMLContent(registryEntry),
-    // });
+    let originalTitle = "";
+    let originalId = "";
 
     visit(ast, "heading", (node) => {
       if (node.depth === 1 && node.children.length === 1) {
-        const originalTitle = node.children[0].value;
-        const originalId = node.data.hProperties.id;
+        originalTitle = node.children[0].value;
+        originalId = node.data.hProperties.id;
 
         node.type = "html";
         node.children = undefined;
@@ -81,36 +79,23 @@ const buildConnectorHTMLContent = (
       <img src="${
         registryEntry.iconUrl_oss
       }" alt="connector logo" style="max-height: 40px; max-width: 40px; float: left; margin-right: 10px" />
-      <h1 style="position: relative;">${originalTitle}</h1>
+      <h1 id="${originalId}" style="position: relative;">${originalTitle}</h1>
     </div>
 
     <small>
-      <table>
-        <tbody>
-          <tr>
-            <td>Availability:</td>
-            <td>Airbyte Cloud: ${registryEntry.is_cloud ? "✅" : "❌"}
-            <br />
-            Airbyte OSS: ${registryEntry.is_oss ? "✅" : "❌"}</td>
-          </tr>
-          <tr>
-            <td>Support Level:</td>
-            <td>
-              <strong><a href="/project-overview/product-support-levels/">${capitalizeFirstLetter(
-                registryEntry.supportLevel_oss
-              )}</a></strong>
-            </td>
-          </tr>
-          <tr>
-            <td>Latest Version:</td>
-            <td>${registryEntry.dockerImageTag_oss}</td>
-          </tr>
-          <tr>
-            <td>Definition Id:</td>
-            <td>${registryEntry.definitionId}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div style="width: 100%; border-style: solid; background-color: rgb(220 220 220 / 25%); margin-bottom: 5px">
+        <strong>Availability</strong>: Airbyte Cloud: ${
+          registryEntry.is_cloud ? "✅" : "❌"
+        }, Airbyte OSS: ${registryEntry.is_oss ? "✅" : "❌"}
+        <br />
+        <strong>Support Level</strong>: <a href="/project-overview/product-support-levels/">${capitalizeFirstLetter(
+          registryEntry.supportLevel_oss
+        )}</a>
+        <br />
+        <strong>Latest Version</strong>: ${registryEntry.dockerImageTag_oss}
+        <br />
+        <strong>Definition Id</strong>: ${registryEntry.definitionId}
+      </div>
     </small>
   </div>
 `;
