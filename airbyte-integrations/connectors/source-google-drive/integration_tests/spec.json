@@ -339,7 +339,12 @@
                 "type": "string"
               }
             },
-            "required": ["client_id", "client_secret", "refresh_token", "auth_type"]
+            "required": [
+              "client_id",
+              "client_secret",
+              "refresh_token",
+              "auth_type"
+            ]
           },
           {
             "title": "Service Account Key Authentication",
