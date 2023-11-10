@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import concurrent
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 from unittest.mock import Mock
@@ -23,6 +24,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
@@ -81,8 +83,11 @@ class _MockSource(AbstractSource):
 
 
 class _MockConcurrentSource(ConcurrentSource):
-    def __init__(self):
-        super().__init__(1, 10)
+    def __init__(self, logger):
+        threadpool_manager = ThreadPoolManager(
+            concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="workerpool"), logger
+        )
+        super().__init__(threadpool_manager, InMemoryMessageRepository())
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         pass
@@ -404,7 +409,7 @@ def _init_logger():
 
 def _init_sources(stream_slice_to_partitions, state, logger):
     source = _init_source(stream_slice_to_partitions, state, logger, _MockSource())
-    concurrent_source = _init_source(stream_slice_to_partitions, state, logger, _MockConcurrentSource())
+    concurrent_source = _init_source(stream_slice_to_partitions, state, logger, _MockConcurrentSource(logger))
     return source, concurrent_source
 
 

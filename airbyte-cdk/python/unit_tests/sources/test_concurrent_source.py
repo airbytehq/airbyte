@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import concurrent
 import datetime
 import logging
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
@@ -28,6 +28,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
@@ -44,9 +45,12 @@ class _MockSource(ConcurrentSource):
         streams: List[Stream] = None,
         per_stream: bool = True,
         message_repository: MessageRepository = InMemoryMessageRepository(),
+        threadpool: ThreadPoolManager = ThreadPoolManager(
+            concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="workerpool"), logger
+        ),
         exception_on_missing_stream: bool = True,
     ):
-        super().__init__(1, 10, message_repository)
+        super().__init__(threadpool, message_repository)
         self._streams = streams
         self.check_lambda = check_lambda
         self.per_stream = per_stream
