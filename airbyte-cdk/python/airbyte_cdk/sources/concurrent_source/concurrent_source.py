@@ -65,8 +65,6 @@ class ConcurrentSource(AbstractSource, ABC):
         state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         logger.info(f"Starting syncing {self.name}")
-        queue: Queue[QueueItem] = Queue()
-        partition_enqueuer = PartitionEnqueuer(queue)
         config, internal_config = split_config(config)
         stream_to_instance_map: Mapping[str, AbstractStream] = {s.name: s for s in self._streams_as_abstract_streams(config)}
 
@@ -76,66 +74,69 @@ class ConcurrentSource(AbstractSource, ABC):
         if not stream_instances_to_read_from:
             return
 
-        partition_reader = PartitionReader(queue)
-        queue_item_handler = ConcurrentStreamProcessor(
+        queue: Queue[QueueItem] = Queue()
+        concurrent_stream_processor = ConcurrentStreamProcessor(
             stream_instances_to_read_from,
-            partition_enqueuer,
+            PartitionEnqueuer(queue),
             self._threadpool,
             stream_to_instance_map,
             logger,
             self._slice_logger,
             self._message_repository,
-            partition_reader,
+            PartitionReader(queue),
         )
 
         # Enqueue initial partition generation tasks
-        for _ in range(self._max_number_of_partition_generator_in_progress):
-            status_message = queue_item_handler.start_next_partition_generator()
-            if status_message:
-                yield status_message
+        yield from self._submit_initial_partition_generators(concurrent_stream_processor)
 
         # Read from the queue until all partitions were generated and read
         yield from self._consume_from_queue(
             queue,
-            queue_item_handler,
+            concurrent_stream_processor,
         )
         self._threadpool.check_for_errors_and_shutdown()
         self._threadpool.shutdown()
         logger.info(f"Finished syncing {self.name}")
 
+    def _submit_initial_partition_generators(self, concurrent_stream_processor: ConcurrentStreamProcessor) -> Iterable[AirbyteMessage]:
+        for _ in range(self._max_number_of_partition_generator_in_progress):
+            status_message = concurrent_stream_processor.start_next_partition_generator()
+            if status_message:
+                yield status_message
+
     def _consume_from_queue(
         self,
         queue: Queue[QueueItem],
-        queue_item_handler: ConcurrentStreamProcessor,
+        concurrent_stream_processor: ConcurrentStreamProcessor,
     ) -> Iterable[AirbyteMessage]:
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
             yield from self._handle_item(
                 airbyte_message_or_record_or_exception,
-                queue_item_handler,
+                concurrent_stream_processor,
             )
-            if queue_item_handler.is_done() and self._threadpool.is_done() and queue.empty():
+            if concurrent_stream_processor.is_done() and self._threadpool.is_done() and queue.empty():
                 # all partitions were generated and processed. we're done here
                 break
 
     def _handle_item(
         self,
         queue_item: QueueItem,
-        queue_item_handler: ConcurrentStreamProcessor,
+        concurrent_stream_processor: ConcurrentStreamProcessor,
     ) -> Iterable[AirbyteMessage]:
         # handle queue item and call the appropriate handler depending on the type of the queue item
         if isinstance(queue_item, Exception):
-            yield from queue_item_handler.on_exception(queue_item)
+            yield from concurrent_stream_processor.on_exception(queue_item)
 
         elif isinstance(queue_item, PartitionGenerationCompletedSentinel):
-            yield from queue_item_handler.on_partition_generation_completed(queue_item)
+            yield from concurrent_stream_processor.on_partition_generation_completed(queue_item)
 
         elif isinstance(queue_item, Partition):
-            queue_item_handler.on_partition(queue_item)
+            concurrent_stream_processor.on_partition(queue_item)
         elif isinstance(queue_item, PartitionCompleteSentinel):
-            yield from queue_item_handler.on_partition_complete_sentinel(queue_item)
+            yield from concurrent_stream_processor.on_partition_complete_sentinel(queue_item)
         elif isinstance(queue_item, Record):
             # record
-            yield from queue_item_handler.on_record(queue_item)
+            yield from concurrent_stream_processor.on_record(queue_item)
         else:
             raise ValueError(f"Unknown queue item type: {type(queue_item)}")
 
