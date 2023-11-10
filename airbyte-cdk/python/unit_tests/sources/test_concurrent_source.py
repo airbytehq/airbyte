@@ -4,7 +4,7 @@
 
 import datetime
 import logging
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 from unittest.mock import Mock
 
 import pytest
@@ -29,7 +29,7 @@ from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from pytest import fixture
@@ -37,7 +37,7 @@ from pytest import fixture
 logger = logging.getLogger("airbyte")
 
 
-class MockSource(ConcurrentSource):
+class _MockSource(ConcurrentSource):
     def __init__(
         self,
         check_lambda: Callable[[], Tuple[bool, Optional[Any]]] = None,
@@ -76,33 +76,6 @@ class MockSource(ConcurrentSource):
         return self._message_repository
 
 
-class StreamNoStateMethod(Stream):
-    name = "managers"
-    primary_key = None
-
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        return {}
-
-
-class MockStreamOverridesStateMethod(Stream, IncrementalMixin):
-    name = "teams"
-    primary_key = None
-    cursor_field = "updated_at"
-    _cursor_value = ""
-    start_date = "1984-12-12"
-
-    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        return {}
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return {self.cursor_field: self._cursor_value} if self._cursor_value else {}
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]):
-        self._cursor_value = value.get(self.cursor_field, self.start_date)
-
-
 MESSAGE_FROM_REPOSITORY = Mock()
 
 
@@ -113,7 +86,7 @@ def message_repository():
     return message_repository
 
 
-class MockStream(Stream):
+class _MockStream(Stream):
     def __init__(
         self,
         inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[Mapping[str, Any]]]] = None,
@@ -141,55 +114,14 @@ class MockStream(Stream):
         return "pk"
 
 
-class MockStreamWithState(MockStream):
-    cursor_field = "cursor"
-
-    def __init__(self, inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[Mapping[str, Any]]]], name: str, state=None):
-        super().__init__(inputs_and_mocked_outputs, name)
-        self._state = state
-
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, value):
-        pass
-
-
-class MockStreamEmittingAirbyteMessages(MockStreamWithState):
-    def __init__(
-        self, inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[AirbyteMessage]]] = None, name: str = None, state=None
-    ):
-        super().__init__(inputs_and_mocked_outputs, name, state)
-        self._inputs_and_mocked_outputs = inputs_and_mocked_outputs
-        self._name = name
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return "pk"
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return {self.cursor_field: self._cursor_value} if self._cursor_value else {}
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]):
-        self._cursor_value = value.get(self.cursor_field, self.start_date)
-
-
 def test_read_nonexistent_stream_raises_exception(mocker):
     """Tests that attempting to sync a stream which the source does not return from the `streams` method raises an exception"""
-    s1 = MockStream(name="s1")
-    s2 = MockStream(name="this_stream_doesnt_exist_in_the_source")
+    s1 = _MockStream(name="s1")
+    s2 = _MockStream(name="this_stream_doesnt_exist_in_the_source")
 
-    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(_MockStream, "get_json_schema", return_value={})
 
-    src = MockSource(streams=[s1])
+    src = _MockSource(streams=[s1])
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
     with pytest.raises(KeyError):
         list(src.read(logger, {}, catalog))
@@ -197,12 +129,12 @@ def test_read_nonexistent_stream_raises_exception(mocker):
 
 def test_read_nonexistent_stream_without_raises_exception(mocker):
     """Tests that attempting to sync a stream which the source does not return from the `streams` method raises an exception"""
-    s1 = MockStream(name="s1")
-    s2 = MockStream(name="this_stream_doesnt_exist_in_the_source")
+    s1 = _MockStream(name="s1")
+    s2 = _MockStream(name="this_stream_doesnt_exist_in_the_source")
 
-    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(_MockStream, "get_json_schema", return_value={})
 
-    src = MockSource(streams=[s1], exception_on_missing_stream=False)
+    src = _MockSource(streams=[s1], exception_on_missing_stream=False)
 
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
     messages = list(src.read(logger, {}, catalog))
@@ -211,11 +143,11 @@ def test_read_nonexistent_stream_without_raises_exception(mocker):
 
 
 def test_read_stream_emits_repository_message_on_error(mocker, message_repository):
-    stream = MockStream(name="my_stream")
-    mocker.patch.object(MockStream, "get_json_schema", return_value={})
-    mocker.patch.object(MockStream, "read_records", side_effect=RuntimeError("error"))
+    stream = _MockStream(name="my_stream")
+    mocker.patch.object(_MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(_MockStream, "read_records", side_effect=RuntimeError("error"))
 
-    source = MockSource(streams=[stream], message_repository=message_repository)
+    source = _MockSource(streams=[stream], message_repository=message_repository)
 
     with pytest.raises(RuntimeError):
         messages = list(source.read(logger, {}, ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])))
