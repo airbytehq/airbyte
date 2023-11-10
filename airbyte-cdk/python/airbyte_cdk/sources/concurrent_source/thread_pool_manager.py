@@ -8,6 +8,10 @@ from typing import Any, Callable, List
 
 
 class ThreadPoolManager:
+    """
+    Wrapper to abstract away the threadpool and the logic to wait for pending tasks to be completed.
+    """
+
     DEFAULT_SLEEP_TIME = 0.1
     DEFAULT_MAX_QUEUE_SIZE = 10_000
 
@@ -18,6 +22,12 @@ class ThreadPoolManager:
         max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
         sleep_time: float = DEFAULT_SLEEP_TIME,
     ):
+        """
+        :param threadpool: The threadpool to use
+        :param logger: The logger to use
+        :param max_concurrent_tasks: The maximum number of tasks that can be pending at the same time
+        :param sleep_time: How long to sleep if there are too many pending tasks
+        """
         self._threadpool = threadpool
         self._logger = logger
         self._max_concurrent_tasks = max_concurrent_tasks

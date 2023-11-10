@@ -34,14 +34,14 @@ class ConcurrentStreamProcessor:
     ):
         """
         This class is responsible for handling items from a concurrent stream read process.
-        :param stream_instances_to_read_from:
-        :param partition_enqueuer:
-        :param thread_pool_manager:
-        :param stream_to_instance_map:
-        :param logger:
-        :param slice_logger:
-        :param message_repository:
-        :param partition_reader:
+        :param stream_instances_to_read_from: List of streams to read from
+        :param partition_enqueuer: PartitionEnqueuer instance
+        :param thread_pool_manager: ThreadPoolManager instance
+        :param stream_to_instance_map: Mapping of stream name to stream instance
+        :param logger: Logger instance
+        :param slice_logger: SliceLogger instance
+        :param message_repository: MessageRepository instance
+        :param partition_reader: PartitionReader instance
         """
         self._stream_to_instance_map = stream_to_instance_map
         self._record_counter = {}
