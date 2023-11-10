@@ -23,19 +23,10 @@ from typing import (
     Tuple,
 )
 
-import requests
-
-http_client.HTTPConnection.debuglevel = 1
-logging.basicConfig()
-logging.getLogger().setLevel(logging.DEBUG)
-requests_log = logging.getLogger("requests.packages.urllib3")
-requests_log.setLevel(logging.DEBUG)
-requests_log.propagate = True
-
-
 import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -675,26 +666,30 @@ class SourceAppsflyer(AbstractSource):
     ]
 
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
-        try:
-            timezone = config.get("timezone", "UTC")
-            if timezone not in pendulum.timezones:
-                return False, "The supplied timezone is invalid."
-            app_id = config["app_id"]
-            dates = pendulum.now("UTC").to_date_string()
-            test_url = f"https://hq1.appsflyer.com/export/{app_id}/partners_report/v5?from={dates}&to={dates}&timezone=UTC"
-            response = requests.get(test_url, headers=self.get_auth(config).get_auth_header())
-
-            if response.status_code != 200:
-                error_message = (
-                    "The supplied APP ID is invalid"
-                    if response.status_code == 404
-                    else response.text.rstrip("\n")
+        is_any_stream_succeded = False
+        exceptions = []
+        for test_stream in self.streams(config):
+            try:
+                record = next(
+                    test_stream.read_records(
+                        sync_mode=SyncMode.full_refresh,
+                        stream_slice=next(
+                            test_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+                        ),
+                    )
                 )
-                if error_message:
-                    return False, error_message
-                response.raise_for_status()
-        except Exception as e:
-            return False, e
+                is_any_stream_succeded = True
+                break
+            except requests.HTTPError as e:
+                if e.response.status_code == 404:
+                    return False, "Invalid App ID"
+                if e.response.status_code == 401:
+                    return False, "Invalid Access Token"
+            except Exception as e:
+                exceptions.append(e)
+                continue
+        if not is_any_stream_succeded:
+            return False, f"All streams unsucceded: {exceptions}"
 
         return True, None
 
