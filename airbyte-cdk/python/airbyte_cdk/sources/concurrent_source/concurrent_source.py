@@ -175,14 +175,15 @@ class ConcurrentSource(AbstractSource, ABC):
             # a new partition was generated and must be processed
             queue_item_handler.on_partition(queue_item)
         elif isinstance(queue_item, PartitionCompleteSentinel):
+            yield from queue_item_handler.on_partition_complete_sentinel(queue_item)
             # all records for a partition were generated
-            partition = queue_item.partition
-            status_message = self._handle_partition_completed(
-                partition, streams_to_partitions, record_counter, streams_currently_generating_partitions, logger, stream_to_instance_map
-            )
-            yield from self._message_repository.consume_queue()
-            if status_message:
-                yield status_message
+            # partition = queue_item.partition
+            # status_message = self._handle_partition_completed(
+            #     partition, streams_to_partitions, record_counter, streams_currently_generating_partitions, logger, stream_to_instance_map
+            # )
+            # yield from self._message_repository.consume_queue()
+            # if status_message:
+            #     yield status_message
         else:
             # record
             yield from self._handle_record(queue_item, record_counter, logger, stream_to_instance_map)
