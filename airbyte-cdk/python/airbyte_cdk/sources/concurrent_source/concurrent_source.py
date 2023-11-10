@@ -74,25 +74,7 @@ class ConcurrentSource(AbstractSource, ABC):
         self._stream_to_instance_map: Mapping[str, AbstractStream] = {s.name: s for s in self._streams_as_abstract_streams(config)}
         max_number_of_partition_generator_in_progress = max(1, self._max_workers // 2)
 
-        stream_instances_to_read_from = []
-        for configured_stream in catalog.streams:
-            stream_instance = self._stream_to_instance_map.get(configured_stream.stream.name)
-            if not stream_instance:
-                if not self.raise_exception_on_missing_stream:
-                    continue
-                raise KeyError(
-                    f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
-                    f"Refresh the schema in replication settings and remove this stream from future sync attempts."
-                )
-            else:
-                stream_availability = stream_instance.check_availability()
-                if not stream_availability.is_available():
-                    logger.warning(
-                        f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {stream_availability.message()}"
-                    )
-                    continue
-                stream_instances_to_read_from.append(stream_instance)
-
+        stream_instances_to_read_from = self._get_streams_to_read_from(catalog, logger)
         partition_generator_running = []
         streams_to_partitions: Dict[str, Set[Partition]] = {}
         record_counter = {}
@@ -152,6 +134,27 @@ class ConcurrentSource(AbstractSource, ABC):
         self._check_for_errors(futures)
         self._threadpool.shutdown(wait=False, cancel_futures=True)
         logger.info(f"Finished syncing {self.name}")
+
+    def _get_streams_to_read_from(self, catalog, logger):
+        stream_instances_to_read_from = []
+        for configured_stream in catalog.streams:
+            stream_instance = self._stream_to_instance_map.get(configured_stream.stream.name)
+            if not stream_instance:
+                if not self.raise_exception_on_missing_stream:
+                    continue
+                raise KeyError(
+                    f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
+                    f"Refresh the schema in replication settings and remove this stream from future sync attempts."
+                )
+            else:
+                stream_availability = stream_instance.check_availability()
+                if not stream_availability.is_available():
+                    logger.warning(
+                        f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {stream_availability.message()}"
+                    )
+                    continue
+                stream_instances_to_read_from.append(stream_instance)
+        return stream_instances_to_read_from
 
     def _is_done(self, streams_to_partitions_to_done, partition_generators, partition_generator_running):
         return (
