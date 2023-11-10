@@ -107,15 +107,11 @@ class ConcurrentSource(AbstractSource, ABC):
         )
         yield from self._consume_from_queue(
             queue,
-            logger,
             streams_to_partitions,
             streams_currently_generating_partitions,
             stream_instances_to_read_from,
-            record_counter,
-            stream_to_instance_map,
             queue_item_handler,
         )
-        # TODO Some sort of error handling
         self._threadpool.check_for_errors_and_shutdown()
         self._threadpool.shutdown()
         logger.info(f"Finished syncing {self.name}")
@@ -123,22 +119,15 @@ class ConcurrentSource(AbstractSource, ABC):
     def _consume_from_queue(
         self,
         queue: Queue[QueueItem],
-        logger: logging.Logger,
         streams_to_partitions: Dict[str, Set[Partition]],
         streams_currently_generating_partitions: List[str],
         stream_instances_to_read_from: List[AbstractStream],
-        record_counter: Dict[str, int],
-        stream_to_instance_map: Mapping[str, AbstractStream],
         queue_item_handler: QueueItemHandler,
     ) -> Iterable[AirbyteMessage]:
         # FIXME
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=300):
             yield from self._handle_item(
                 airbyte_message_or_record_or_exception,
-                streams_to_partitions,
-                logger,
-                record_counter,
-                stream_to_instance_map,
                 queue_item_handler,
             )
             if self._is_done(streams_to_partitions, stream_instances_to_read_from, streams_currently_generating_partitions):
@@ -149,16 +138,10 @@ class ConcurrentSource(AbstractSource, ABC):
     def _handle_item(
         self,
         queue_item: QueueItem,
-        streams_to_partitions: Dict[str, Set[Partition]],
-        logger: logging.Logger,
-        record_counter: Dict[str, int],
-        stream_to_instance_map: Mapping[str, AbstractStream],
         queue_item_handler: QueueItemHandler,
     ) -> Iterable[AirbyteMessage]:
         if isinstance(queue_item, Exception):
             yield from queue_item_handler.on_exception(queue_item)
-            # yield from self._stop_streams(streams_to_partitions, logger, stream_to_instance_map)
-            # raise queue_item
 
         elif isinstance(queue_item, PartitionGenerationCompletedSentinel):
             yield from queue_item_handler.on_partition_generation_completed(queue_item)
@@ -223,33 +206,6 @@ class ConcurrentSource(AbstractSource, ABC):
             stream.as_airbyte_stream(),
             AirbyteStreamStatus.STARTED,
         )
-
-    def _is_stream_done(
-        self, stream_name: str, streams_to_partitions: Dict[str, Set[Partition]], streams_currently_generating_partitions: List[str]
-    ) -> bool:
-        return (
-            all([p.is_closed() for p in streams_to_partitions[stream_name]]) and stream_name not in streams_currently_generating_partitions
-        )
-
-    def _handle_stream_is_done(
-        self, stream_name: str, record_counter: Dict[str, int], logger: logging.Logger, stream_to_instance_map: Mapping[str, AbstractStream]
-    ) -> AirbyteMessage:
-        logger.info(f"Read {record_counter[stream_name]} records from {stream_name} stream")
-        logger.info(f"Marking stream {stream_name} as STOPPED")
-        stream = stream_to_instance_map[stream_name]
-        logger.info(f"Finished syncing {stream.name}")
-        return stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.COMPLETE)
-
-    def _stop_streams(
-        self, stream_to_partitions: Dict[str, Set[Partition]], logger: logging.Logger, stream_to_instance_map: Mapping[str, AbstractStream]
-    ) -> Iterable[AirbyteMessage]:
-        self._threadpool.shutdown()
-        for stream_name, partitions in stream_to_partitions.items():
-            stream = stream_to_instance_map[stream_name]
-            if not all([p.is_closed() for p in partitions]):
-                logger.info(f"Marking stream {stream.name} as STOPPED")
-                logger.info(f"Finished syncing {stream.name}")
-                yield stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.INCOMPLETE)
 
     def _streams_as_abstract_streams(self, config: Mapping[str, Any]) -> List[AbstractStream]:
         streams = self.streams(config)
