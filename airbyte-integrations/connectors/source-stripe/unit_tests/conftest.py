@@ -6,7 +6,6 @@ import os
 
 import pytest
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from source_stripe.source import SourceStripe
 
 os.environ["CACHE_DISABLED"] = "true"
 
@@ -36,6 +35,9 @@ def incremental_args_fixture(stream_args):
 
 @pytest.fixture()
 def stream_by_name(config):
+    # use local import in favour of global because we need to make imports after setting the env variables
+    from source_stripe.source import SourceStripe
+
     def mocker(stream_name, source_config=config):
         source = SourceStripe()
         streams = source.streams(source_config)

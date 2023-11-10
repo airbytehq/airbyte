@@ -604,3 +604,76 @@ def test_get_updated_state(stream_name, stream_by_name, requests_mock):
         for record in stream.read_records(sync_mode="incremental", stream_slice=slice_, stream_state=state):
             state = stream.get_updated_state(state, record)
             assert state
+
+
+@freezegun.freeze_time("2023-08-23T15:00:15Z")
+def test_subscription_items_extra_request_params(requests_mock, stream_by_name, config):
+    requests_mock.get(
+        "/v1/subscriptions",
+        json={
+            "object": "list",
+            "url": "/v1/subscriptions",
+            "has_more": False,
+            "data": [
+                {
+                    "id": "sub_1OApco2eZvKYlo2CEDCzwLrE",
+                    "object": "subscription",
+                    "created": 1699603174,
+                    "items": {
+                        "object": "list",
+                        "data": [
+                            {
+                                "id": "si_OynDmET1kQPTbI",
+                                "object": "subscription_item",
+                                "created": 1699603175,
+                                "quantity": 1,
+                                "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE"
+                            }
+                        ],
+                        "has_more": True,
+                    },
+                    "latest_invoice": None,
+                    "livemode": False
+                }
+            ],
+            "has_more": False
+        }
+    )
+    requests_mock.get(
+        "/v1/subscription_items?subscription=sub_1OApco2eZvKYlo2CEDCzwLrE",
+        json={
+            "object": "list",
+            "url": "/v1/subscription_items",
+            "has_more": False,
+            "data": [
+                {
+                    "id": "si_OynPdzMZykmCWm",
+                    "object": "subscription_item",
+                    "created": 1699603884,
+                    "quantity": 2,
+                    "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE"
+                }
+            ]
+        }
+    )
+    config["start_date"] = str(pendulum.now().subtract(days=3))
+    stream = stream_by_name("subscription_items", config)
+    records = read_from_stream(stream, "full_refresh", {})
+    assert records == [
+        {
+            "id": "si_OynDmET1kQPTbI",
+            "object": "subscription_item",
+            "created": 1699603175,
+            "quantity": 1,
+            "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE"
+        },
+        {
+            "id": "si_OynPdzMZykmCWm",
+            "object": "subscription_item",
+            "created": 1699603884,
+            "quantity": 2,
+            "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE"
+        }
+    ]
+    assert len(requests_mock.request_history) == 2
+    assert "subscription=sub_1OApco2eZvKYlo2CEDCzwLrE" in requests_mock.request_history[-1].url
