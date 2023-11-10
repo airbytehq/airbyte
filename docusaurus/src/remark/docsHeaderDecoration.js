@@ -73,8 +73,8 @@ const buildConnectorHTMLContent = (
   originalTitle,
   originalId
 ) => {
-  const htmlContent = `
-  <div>
+  // note - you can't have any leading whitespace here
+  const htmlContent = `<div>
     <div class="header">
       <img src="${
         registryEntry.iconUrl_oss
@@ -97,8 +97,7 @@ const buildConnectorHTMLContent = (
         <strong>Definition Id</strong>: ${registryEntry.definitionId}
       </div>
     </small>
-  </div>
-`;
+  </div>`;
 
   return htmlContent;
 };
