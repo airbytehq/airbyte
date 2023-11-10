@@ -3,6 +3,7 @@
 #
 import concurrent
 import logging
+import time
 from abc import ABC
 from concurrent.futures import Future
 from dataclasses import dataclass
@@ -47,14 +48,27 @@ class StreamReadStatus:
 
 
 class ConcurrentSource(AbstractSource, ABC):
+
+    DEFAULT_TIMEOUT_SECONDS = 900
+    DEFAULT_MAX_QUEUE_SIZE = 10_000
+    DEFAULT_SLEEP_TIME = 0.1
+
     def __init__(
-        self, max_workers: int, timeout_in_seconds: int, message_repository: MessageRepository = InMemoryMessageRepository(), **kwargs: Any
+        self,
+        max_workers: int,
+        timeout_in_seconds: int,
+        message_repository: MessageRepository = InMemoryMessageRepository(),
+        max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
+        sleep_time: float = DEFAULT_SLEEP_TIME,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._max_workers = max_workers
         self._timeout_seconds = timeout_in_seconds
         self._threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
         self._message_repository = message_repository
+        self._max_concurrent_tasks = max_concurrent_tasks
+        self._sleep_time = sleep_time
 
     @property
     def message_repository(self) -> MessageRepository:
@@ -247,7 +261,7 @@ class ConcurrentSource(AbstractSource, ABC):
         logger: logging.Logger,
     ) -> AirbyteMessage:
         stream = streams.pop(0)
-        self._submit_task(futures, partition_enqueuer.generate_partitions, stream)
+        self._submit_task(logger, futures, partition_enqueuer.generate_partitions, stream)
         streams_currently_generating_partitions.append(stream.name)
         logger.info(f"Marking stream {stream.name} as STARTED")
         logger.info(f"Syncing stream: {stream.name} ")
@@ -292,7 +306,7 @@ class ConcurrentSource(AbstractSource, ABC):
         streams_to_partitions[stream_name].add(partition)
         if self._slice_logger.should_log_slice_message(logger):
             self._message_repository.emit_message(self._slice_logger.create_slice_log_message(partition.to_slice()))
-        self._submit_task(futures, partition_reader.process_partition, partition)
+        self._submit_task(logger, futures, partition_reader.process_partition, partition)
 
     def _handle_partition_generation_completed(
         self,
@@ -362,10 +376,39 @@ class ConcurrentSource(AbstractSource, ABC):
                 logger.info(f"Finished syncing {stream.name}")
                 yield stream_status_as_airbyte_message(stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.INCOMPLETE)
 
-    def _submit_task(self, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
+    def _submit_task(self, logger: logging.Logger, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
-        # self._wait_while_too_many_pending_futures(futures)
+        self._wait_while_too_many_pending_futures(futures, logger)
         futures.append(self._threadpool.submit(function, *args))
+
+    def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]], logger: logging.Logger) -> None:
+        # Wait until the number of pending tasks is < self._max_concurrent_tasks
+        while True:
+            self._prune_futures(futures)
+            if len(futures) < self._max_concurrent_tasks:
+                break
+            logger.info("Main thread is sleeping because the task queue is full...")
+            time.sleep(self._sleep_time)
+
+    def _prune_futures(self, futures: List[Future[Any]]) -> None:
+        """
+        Take a list in input and remove the futures that are completed. If a future has an exception, it'll raise and kill the stream
+        operation.
+
+        Pruning this list safely relies on the assumptions that only the main thread can modify the list of futures.
+        """
+        if len(futures) < self._max_concurrent_tasks:
+            return
+
+        for index in reversed(range(len(futures))):
+            future = futures[index]
+            optional_exception = future.exception()
+            if optional_exception:
+                exception = RuntimeError(f"Failed reading from stream {self.name} with error: {optional_exception}")
+                self._stop_and_raise_exception(exception)
+
+            if future.done():
+                futures.pop(index)
 
     def _streams_as_abstract_streams(self, config: Mapping[str, Any]) -> List[AbstractStream]:
         streams = self.streams(config)
