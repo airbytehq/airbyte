@@ -138,19 +138,16 @@ allprojects {
                 target groovyGradleTarget
             }
         }
-        def sqlTarget = createFormatTarget('**/*.sql')
-        if (!sqlTarget.isEmpty()) {
-            sql {
-                target sqlTarget
-                dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
-            }
+    }
+
+    if (rootProject.ext.skipSlowTests) {
+        // Format checks should be run via airbyte-ci.
+        tasks.matching { it.name =~ /spotless.*Check/ }.configureEach {
+            enabled = false
         }
     }
 }
-// TODO: remove this once the CI routinely enforces formatting checks.
-tasks.matching { it.name =~ /spotless.*Check/ }.configureEach {
-    enabled = false
-}
+
 
 def getCDKTargetVersion() {
     def props = new Properties()

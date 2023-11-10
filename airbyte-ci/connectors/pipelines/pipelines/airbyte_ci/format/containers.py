@@ -62,7 +62,6 @@ def format_java_container(dagger_client: dagger.Client) -> dagger.Container:
         base_image=AMAZONCORRETTO_IMAGE,
         include=[
             "**/*.java",
-            "**/*.sql",
             "**/*.gradle",
             "gradlew",
             "gradlew.bat",
@@ -71,7 +70,6 @@ def format_java_container(dagger_client: dagger.Client) -> dagger.Container:
             "**/gradle.properties",
             "**/version.properties",
             "tools/gradle/codestyle/java-google-style.xml",
-            "tools/gradle/codestyle/sql-dbeaver.properties",
         ],
         install_commands=[
             "yum update -y",
@@ -87,7 +85,7 @@ def format_js_container(dagger_client: dagger.Client) -> dagger.Container:
         dagger_client,
         base_image=NODE_IMAGE,
         include=["**/*.yaml", "**/*.yml", "**.*/json", "package.json", "package-lock.json"],
-        install_commands=["npm install -g npm@10.1.0", "npm install -g prettier@2.8.1"],
+        install_commands=["npm install -g npm@10.1.0 prettier@3.0.3"],
     )
 
 
