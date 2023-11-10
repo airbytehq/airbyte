@@ -8,8 +8,6 @@ from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentin
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 
-PARTITIONS_GENERATED_SENTINEL = object
-
 
 class PartitionCompleteSentinel:
     """
