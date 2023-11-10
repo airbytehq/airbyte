@@ -78,8 +78,6 @@ class ConcurrentSource(AbstractSource, ABC):
         # FIXME
         max_number_of_partition_generator_in_progress = max(1, 1)
 
-        queue_item_handler = None
-
         stream_instances_to_read_from = self._get_streams_to_read_from(catalog, logger, stream_to_instance_map)
         streams_currently_generating_partitions: List[str] = []
         streams_to_partitions: Dict[str, Set[Partition]] = {}
@@ -96,6 +94,16 @@ class ConcurrentSource(AbstractSource, ABC):
                 partition_enqueuer,
                 logger,
             )
+        queue_item_handler = QueueItemHandler(
+            streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            partition_enqueuer,
+            self._threadpool,
+            streams_to_partitions,
+            record_counter,
+            stream_to_instance_map,
+            logger,
+        )
         yield from self._consume_from_queue(
             queue,
             logger,
@@ -132,8 +140,6 @@ class ConcurrentSource(AbstractSource, ABC):
                 streams_to_partitions,
                 logger,
                 streams_currently_generating_partitions,
-                stream_instances_to_read_from,
-                partition_enqueuer,
                 record_counter,
                 partition_reader,
                 stream_to_instance_map,
@@ -150,8 +156,6 @@ class ConcurrentSource(AbstractSource, ABC):
         streams_to_partitions: Dict[str, Set[Partition]],
         logger: logging.Logger,
         streams_currently_generating_partitions: List[str],
-        stream_instances_to_read_from: List[AbstractStream],
-        partition_enqueuer: PartitionEnqueuer,
         record_counter: Dict[str, int],
         partition_reader: PartitionReader,
         stream_to_instance_map: Mapping[str, AbstractStream],
@@ -162,18 +166,7 @@ class ConcurrentSource(AbstractSource, ABC):
             raise queue_item
 
         elif isinstance(queue_item, PartitionGenerationCompletedSentinel):
-            yield from self._handle_partition_generation_completed(
-                queue_item,
-                streams_currently_generating_partitions,
-                stream_instances_to_read_from,
-                partition_enqueuer,
-                logger,
-                streams_to_partitions,
-                record_counter,
-                stream_to_instance_map,
-                queue_item_handler,
-            )
-            # yield from queue_item_handler.on_partition_generation_completed(queue_item)
+            yield from queue_item_handler.on_partition_generation_completed(queue_item)
 
         elif isinstance(queue_item, Partition):
             # a new partition was generated and must be processed
