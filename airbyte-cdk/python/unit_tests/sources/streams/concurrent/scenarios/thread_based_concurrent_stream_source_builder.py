@@ -7,7 +7,7 @@ import logging
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
@@ -37,17 +37,19 @@ class LegacyStream(Stream):
         yield from []
 
 
-class ConcurrentCdkSource(AbstractSource):
-    def __init__(self, streams: List[ThreadBasedConcurrentStream], message_repository: Optional[MessageRepository]):
+class ConcurrentCdkSource(ConcurrentSource):
+    def __init__(
+        self, streams: List[ThreadBasedConcurrentStream], message_repository: Optional[MessageRepository], max_workers, timeout_in_seconds
+    ):
+        super().__init__(max_workers, timeout_in_seconds, message_repository)
         self._streams = streams
-        self._message_repository = message_repository
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         # Check is not verified because it is up to the source to implement this method
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [StreamFacade(s, LegacyStream(), NoopCursor()) for s in self._streams]
+        return [StreamFacade(s, LegacyStream(), NoopCursor(), NeverLogSliceLogger(), s._logger) for s in self._streams]
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(connectionSpecification={})
@@ -56,7 +58,7 @@ class ConcurrentCdkSource(AbstractSource):
         return ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=StreamFacade(s, LegacyStream(), NoopCursor()).as_airbyte_stream(),
+                    stream=StreamFacade(s, LegacyStream(), NoopCursor(), NeverLogSliceLogger(), s._logger).as_airbyte_stream(),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 )
@@ -76,12 +78,20 @@ class InMemoryPartitionGenerator(PartitionGenerator):
     def generate(self) -> Iterable[Partition]:
         yield from self._partitions
 
+    def stream_name(self) -> str:
+        return self._partitions[0].stream_name()
+
 
 class InMemoryPartition(Partition):
-    def __init__(self, name, _slice, records):
+    def stream_name(self) -> str:
+        return self._stream_name
+
+    def __init__(self, name, stream_name, _slice, records):
         self._name = name
+        self._stream_name = stream_name
         self._slice = _slice
         self._records = records
+        self._is_closed = False
 
     def read(self) -> Iterable[Record]:
         for record_or_exception in self._records:
@@ -101,6 +111,12 @@ class InMemoryPartition(Partition):
         else:
             return hash(self._name)
 
+    def close(self) -> None:
+        self._is_closed = True
+
+    def is_closed(self) -> bool:
+        return self._is_closed
+
 
 class ConcurrentSourceBuilder(SourceBuilder[ConcurrentCdkSource]):
     def __init__(self):
@@ -108,10 +124,7 @@ class ConcurrentSourceBuilder(SourceBuilder[ConcurrentCdkSource]):
         self._message_repository = None
 
     def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> ConcurrentCdkSource:
-        for stream in self._streams:
-            if not stream._message_repository:
-                stream._message_repository = self._message_repository
-        return ConcurrentCdkSource(self._streams, self._message_repository)
+        return ConcurrentCdkSource(self._streams, self._message_repository, 1, 1)
 
     def set_streams(self, streams: List[ThreadBasedConcurrentStream]) -> "ConcurrentSourceBuilder":
         self._streams = streams

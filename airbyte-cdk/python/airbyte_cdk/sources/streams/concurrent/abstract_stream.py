@@ -7,7 +7,7 @@ from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability
-from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from deprecated.classic import deprecated
 
 
@@ -37,11 +37,8 @@ class AbstractStream(ABC):
     """
 
     @abstractmethod
-    def read(self) -> Iterable[Record]:
-        """
-        Read a stream in full refresh mode
-        :return: The stream's records
-        """
+    def generate_partitions(self) -> Iterable[Partition]:
+        """ """
 
     @property
     @abstractmethod

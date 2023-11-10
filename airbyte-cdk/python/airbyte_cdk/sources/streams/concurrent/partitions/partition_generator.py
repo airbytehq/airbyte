@@ -16,3 +16,7 @@ class PartitionGenerator(ABC):
         :return: An iterable of partitions
         """
         pass
+
+    @abstractmethod
+    def stream_name(self) -> str:
+        pass

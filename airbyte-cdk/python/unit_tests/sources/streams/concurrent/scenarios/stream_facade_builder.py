@@ -1,11 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import concurrent
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
@@ -22,18 +23,19 @@ class StreamFacadeConcurrentConnectorStateConverter(EpochValueConcurrentStreamSt
     pass
 
 
-class StreamFacadeSource(AbstractSource):
+class StreamFacadeSource(ConcurrentSource):
     def __init__(
         self,
         streams: List[Stream],
-        max_workers: int,
+        threadpool,
         cursor_field: Optional[CursorField] = None,
         cursor_boundaries: Optional[Tuple[str, str]] = None,
         input_state: Optional[List[Mapping[str, Any]]] = _NO_STATE,
     ):
-        self._streams = streams
-        self._max_workers = max_workers
         self._message_repository = InMemoryMessageRepository()
+        super().__init__(1, 1, self._message_repository)
+        self._streams = streams
+        self._threadpool = threadpool
         self._cursor_field = cursor_field
         self._cursor_boundaries = cursor_boundaries
         self._state = [AirbyteStateMessage.parse_obj(s) for s in input_state] if input_state else None
@@ -49,7 +51,7 @@ class StreamFacadeSource(AbstractSource):
                 stream,
                 self,
                 stream.logger,
-                self._max_workers,
+                self._threadpool,
                 state_converter.get_concurrent_stream_state(state_manager.get_stream_state(stream.name, stream.namespace)),
                 ConcurrentCursor(
                     stream.name,
@@ -115,4 +117,5 @@ class StreamFacadeSourceBuilder(SourceBuilder[StreamFacadeSource]):
         return self
 
     def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> StreamFacadeSource:
-        return StreamFacadeSource(self._streams, self._max_workers, self._cursor_field, self._cursor_boundaries, self._input_state)
+        threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
+        return StreamFacadeSource(self._streams, threadpool, self._cursor_field, self._cursor_boundaries, self._input_state)

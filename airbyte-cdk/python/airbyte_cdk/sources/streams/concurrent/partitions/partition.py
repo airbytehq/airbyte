@@ -33,6 +33,18 @@ class Partition(ABC):
         pass
 
     @abstractmethod
+    def stream_name(self) -> str:
+        pass
+
+    @abstractmethod
+    def close(self) -> None:
+        pass
+
+    @abstractmethod
+    def is_closed(self) -> bool:
+        pass
+
+    @abstractmethod
     def __hash__(self) -> int:
         """
         Returns a hash of the partition.

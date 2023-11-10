@@ -4,6 +4,7 @@
 
 
 from datetime import datetime
+from typing import Optional
 
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -18,6 +19,10 @@ from airbyte_cdk.models import Type as MessageType
 
 
 def as_airbyte_message(stream: ConfiguredAirbyteStream, current_status: AirbyteStreamStatus) -> AirbyteMessage:
+    return status_to_airbyte_message(stream.stream.name, stream.stream.namespace, current_status)
+
+
+def status_to_airbyte_message(stream_name: str, stream_namespace: Optional[str], current_status: AirbyteStreamStatus) -> AirbyteMessage:
     """
     Builds an AirbyteStreamStatusTraceMessage for the provided stream
     """
@@ -28,7 +33,7 @@ def as_airbyte_message(stream: ConfiguredAirbyteStream, current_status: AirbyteS
         type=TraceType.STREAM_STATUS,
         emitted_at=now_millis,
         stream_status=AirbyteStreamStatusTraceMessage(
-            stream_descriptor=StreamDescriptor(name=stream.stream.name, namespace=stream.stream.namespace),
+            stream_descriptor=StreamDescriptor(name=stream_name, namespace=stream_namespace),
             status=current_status,
         ),
     )

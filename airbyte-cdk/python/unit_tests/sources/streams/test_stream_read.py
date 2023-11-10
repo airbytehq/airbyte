@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import concurrent
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Union
 from unittest.mock import Mock
@@ -59,7 +59,8 @@ def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger, message
     source = Mock()
     source._slice_logger = slice_logger
     source.message_repository = message_repository
-    stream = StreamFacade.create_from_stream(stream, source, logger, 1, _NO_STATE, NoopCursor())
+    threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="workerpool")
+    stream = StreamFacade.create_from_stream(stream, source, logger, threadpool, _NO_STATE, NoopCursor())
     stream.logger.setLevel(logger.level)
     return stream
 
