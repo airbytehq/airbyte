@@ -7,7 +7,7 @@ from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStrea
 class PartitionGenerationCompletedSentinel:
     """
     A sentinel object indicating all records for a partition were produced.
-    Includes a pointer to the partition that was processed.
+    Includes a pointer to the stream that was processed.
     """
 
     def __init__(self, stream: AbstractStream):
