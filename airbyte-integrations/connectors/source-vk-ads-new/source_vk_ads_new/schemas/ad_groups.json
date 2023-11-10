@@ -220,6 +220,9 @@
     },
     "utm": {
       "type": ["string", "null"]
+    },
+    "ad_plan_id": {
+      "type": ["string", "null"]
     }
   }
 }

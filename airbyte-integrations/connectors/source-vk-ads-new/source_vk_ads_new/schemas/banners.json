@@ -18,24 +18,10 @@
       "type": ["integer", "null"]
     },
     "issues": {
-      "type": ["array", "null"],
-      "items": {
-        "type": ["object", "null"],
-        "properties": {
-          "arguments": {
-            "type": ["object", "null"]
-          },
-          "code": {
-            "type": ["string", "null"]
-          },
-          "message": {
-            "type": ["string", "null"]
-          }
-        }
-      }
+      "type": ["string", "null"]
     },
     "moderation_reasons": {
-      "type": ["array", "null"]
+      "type": ["string", "null"]
     },
     "moderation_status": {
       "type": ["string", "null"]
@@ -74,10 +60,7 @@
               "type": ["string", "null"]
             },
             "url_types": {
-              "type": ["array", "null"],
-              "items": {
-                "type": ["string", "null"]
-              }
+              "type": ["string", "null"]
             }
           }
         }

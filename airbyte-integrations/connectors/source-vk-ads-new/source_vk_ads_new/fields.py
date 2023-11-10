@@ -16,7 +16,12 @@ AVAILABLE_FIELDS = {
             "textblocks",
             "urls",
         ],
-        "default": ["id", "ad_group_id", "campaign_id", "moderation_status"],
+        "default": [
+            "id",
+            "ad_group_id",
+            "campaign_id",
+            "moderation_status",
+        ],
     },
     "ad_groups": {
         "docs_url": "https://ads.vk.com/doc/api/object/AdGroup",
@@ -55,6 +60,7 @@ AVAILABLE_FIELDS = {
             "uniq_shows_limit",
             "uniq_shows_period",
             "utm",
+            "ad_plan_id",
         ],
         "default": [
             "id",
@@ -85,6 +91,113 @@ AVAILABLE_FIELDS = {
         "default": [
             "id",
             "name",
+        ],
+    },
+    "package_pads": {
+        "docs_url": "https://ads.vk.com/doc/api/object/PackagePad",
+        "required": ["id"],
+        "additional": [
+            "description",
+            "eye_url",
+            "name",
+            "patterns",
+        ],
+        "default": [
+            "id",
+            "description",
+            "eye_url",
+            "name",
+            "patterns",
+        ],
+    },
+    "packages": {
+        "docs_url": "https://ads.vk.com/doc/api/object/Package",
+        "required": ["id"],
+        "additional": [
+            "banner_format_id",
+            "banner_url_get_params",
+            "created",
+            "description",
+            "max_price_per_unit",
+            "max_uniq_shows_limit",
+            "name",
+            "objective",
+            "options",
+            "package_request",
+            "pads_tree_id",
+            "paid_event_type",
+            "price",
+            "priced_event_type",
+            "related_package_ids",
+            "status",
+            "updated",
+            "url_types",
+        ],
+        "default": [
+            "id",
+            "banner_format_id",
+            "banner_url_get_params",
+            "created",
+            "description",
+            "max_price_per_unit",
+            "max_uniq_shows_limit",
+            "name",
+            "objective",
+            "options",
+            "package_request",
+            "pads_tree_id",
+            "paid_event_type",
+            "price",
+            "priced_event_type",
+            "related_package_ids",
+            "status",
+            "updated",
+            "url_types",
+        ],
+    },
+    "pads_trees": {
+        "docs_url": "https://ads.vk.com/doc/api/object/PadsTree",
+        "required": ["id"],
+        "additional": [
+            "tree",
+        ],
+        "default": [
+            "id",
+            "tree",
+        ],
+    },
+    "packages_pads": {
+        "docs_url": "https://ads.vk.com/doc/api/object/PadsTree",
+        "required": ["id"],
+        "additional": ["eye_url", "description", "name"],
+        "default": [
+            "id",
+            "tree",
+        ],
+    },
+    "packages": {
+        "docs_url": "https://ads.vk.com/doc/api/object/PadsTree",
+        "required": ["id"],
+        "additional": [
+            "status",
+            "max_uniq_shows_limit",
+            "priced_event_type"
+            "paid_event_type"
+            "description"
+            "created"
+            "price"
+            "updated"
+            "banner_format_id"
+            "url_type"
+            "flags"
+            "related_package_ids"
+            "max_price_per_unit"
+            "name"
+            "objective",
+        ],
+        "default": [
+            "id",
+            "tree",
         ],
     },
 }

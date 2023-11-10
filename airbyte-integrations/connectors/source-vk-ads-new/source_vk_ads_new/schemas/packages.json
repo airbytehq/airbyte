@@ -1,0 +1,293 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["integer", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "price": {
+      "type": ["string", "null"]
+    },
+    "priced_event_type": {
+      "type": ["integer", "null"]
+    },
+    "paid_event_type": {
+      "type": ["integer", "null"]
+    },
+    "max_price_per_unit": {
+      "type": ["string", "null"]
+    },
+    "max_uniq_shows_limit": {
+      "type": ["integer", "null"]
+    },
+    "max_banners_in_one_campaign": {
+      "type": ["string", "null"]
+    },
+    "related_package_ids": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["integer", "null"]
+      }
+    },
+    "flags": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "url_type": {
+      "type": ["string", "null"]
+    },
+    "banner_format_id": {
+      "type": ["integer", "null"]
+    },
+    "pads_tree_id": {
+      "type": ["integer", "null"]
+    },
+    "url_types": {
+      "type": "object",
+      "properties": {
+        "primary": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "primary_dynamic": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "shopitem_url": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "slide_click": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "url_static_slide": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "deeplink_static_slide": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "deeplink_static_slide_rmkt": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "ios_store_url": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "ios_tracking_url": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "ios_url": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "android_store_url": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "android_tracking_url": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "android_url": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "deeplink_url": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "vk_post": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "header_click": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "slide_1_click": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "slide_2_click": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "slide_3_click": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "url_slide_1": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "url_slide_2": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "url_slide_3": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "ok": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "vk": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["string", "null"]
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "objective": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "utm": {
+      "type": ["string", "null"]
+    },
+    "created": {
+      "type": ["string", "null"]
+    },
+    "updated": {
+      "type": ["string", "null"]
+    }
+  }
+}

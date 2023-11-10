@@ -14,10 +14,8 @@ from requests.auth import AuthBase
 from source_vk_ads_new.auth import CredentialsCraftAuthenticator
 from source_vk_ads_new.utils import chunks
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 from source_vk_ads_new.fields import AVAILABLE_FIELDS
-from airbyte_cdk.sources.streams.core import package_name_from_class
 
 CONFIG_DATE_FORMAT = "%Y-%m-%d"
 
@@ -27,21 +25,25 @@ class VkAdsNewStream(HttpStream, ABC):
     limit = 250
     url_base = "https://ads.vk.com/api/"
     transformer: TypeTransformer = TypeTransformer(config=TransformConfig.DefaultSchemaNormalization)
+    pagination = True
 
     def __init__(self, authenticator: AuthBase = None):
         HttpStream.__init__(self)
         self._authenticator = authenticator
 
     def request_params(self, next_page_token: Mapping[str, Any] = {}, *args, **kwargs) -> MutableMapping[str, Any]:
-        return {
-            "limit": self.limit,
-            "offset": next_page_token.get("offset", 0) if next_page_token else 0,
-        }
+        if self.pagination:
+            return {
+                "limit": self.limit,
+                "offset": next_page_token.get("offset", 0) if next_page_token else 0,
+            }
+        else:
+            return {}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_data: dict[str, Any] = response.json()
         # ensure pagination objects are in response
-        if all(key in ("count", "offset", "items") for key in response_data.keys()):
+        if all(key in ("count", "offset", "items") for key in response_data.keys()) and self.pagination:
             if response_data.get("items") and len(response_data.get("items", [])) == self.limit:
                 return {"offset": response_data.get("offset") + self.limit}
         return None
@@ -53,6 +55,8 @@ class VkAdsNewStream(HttpStream, ABC):
 class ObjectStream(VkAdsNewStream, ABC):
     primary_key = "id"
     use_cache = True
+    appear_fields_choice_in_spec = True
+    can_choose_fields = True
 
     def __init__(self, authenticator: AuthBase = None):
         super().__init__(authenticator=authenticator)
@@ -71,14 +75,15 @@ class ObjectStream(VkAdsNewStream, ABC):
 
     def get_json_schema(self) -> Mapping[str, Any]:
         schema = super().get_json_schema()
-        all_fields_schema: dict[str, Any] = schema["properties"].copy()
-        schema["properties"] = {}
-        for spec_field_name in self.build_fields():
-            spec_field_schema = all_fields_schema.get(
-                spec_field_name,
-                {"type": ["string", "null"]},
-            )
-            schema["properties"][spec_field_name] = spec_field_schema
+        if self.can_choose_fields:
+            all_fields_schema: dict[str, Any] = schema["properties"].copy()
+            schema["properties"] = {}
+            for spec_field_name in self.build_fields():
+                spec_field_schema = all_fields_schema.get(
+                    spec_field_name,
+                    {"type": ["string", "null"]},
+                )
+                schema["properties"][spec_field_name] = spec_field_schema
         return schema
 
     def build_fields(self) -> list[str]:
@@ -102,10 +107,9 @@ class ObjectStream(VkAdsNewStream, ABC):
         *args,
         **kwargs,
     ) -> MutableMapping[str, Any]:
-        params = {
-            **super().request_params(next_page_token, *args, **kwargs),
-            "fields": ",".join(self.build_fields()),
-        }
+        params = super().request_params(next_page_token, *args, **kwargs)
+        if self.can_choose_fields:
+            params["fields"] = ",".join(self.build_fields())
         return params
 
     @abstractproperty
@@ -205,6 +209,30 @@ class AdGroups(ObjectStream):
     many_objects_field_name = "ad_groups"
 
 
+class Packages(ObjectStream):
+    single_object_field_name = "package"
+    many_objects_field_name = "packages"
+    appear_fields_choice_in_spec = False
+    can_choose_fields = False
+    pagination = False
+
+
+class PackagesPads(ObjectStream):
+    single_object_field_name = "package_pad"
+    many_objects_field_name = "packages_pads"
+    appear_fields_choice_in_spec = False
+    can_choose_fields = False
+    pagination = False
+
+
+class PadsTrees(ObjectStream):
+    single_object_field_name = "pads_tree"
+    many_objects_field_name = "pads_trees"
+    appear_fields_choice_in_spec = False
+    can_choose_fields = False
+    pagination = False
+
+
 class BannersStatistics(StatisticsStream):
     parent_class = Banners
     primary_key = ["banner_id", "date"]
@@ -227,7 +255,14 @@ class SourceVkAdsNew(AbstractSource):
         AdPlansStatistics,
         AdGroupsStatistics,
     ]
-    object_streams_classes: List[ObjectStream] = [Banners, AdGroups, AdPlans]
+    object_streams_classes: List[ObjectStream] = [
+        Banners,
+        AdGroups,
+        AdPlans,
+        Packages,
+        PackagesPads,
+        PadsTrees,
+    ]
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         auth: Union[TokenAuthenticator, CredentialsCraftAuthenticator] = self.get_auth(config)
@@ -296,6 +331,8 @@ class SourceVkAdsNew(AbstractSource):
         properties: dict[str, Any] = spec.connectionSpecification["properties"]
         for property_order, obj_stream_class in enumerate(self.object_streams_classes, len(properties)):
             obj_stream: ObjectStream = obj_stream_class()
+            if not obj_stream.appear_fields_choice_in_spec:
+                continue
             available_fields = AVAILABLE_FIELDS[obj_stream.many_objects_field_name]
             properties[obj_stream.spec_fields_field_name] = {
                 "type": "object",
@@ -307,7 +344,10 @@ class SourceVkAdsNew(AbstractSource):
                         "properties": {
                             "user_specified_fields": {
                                 "title": "User Specified Fields",
-                                "description": f"Field names that will be included in {obj_stream_class.__name__} stream schema. Required: {', '.join(available_fields['required'])}. See available schema fields: <a href=\"{available_fields['docs_url']}\">{obj_stream.single_object_field_name.title()} docs</a>",
+                                "description": f"Field names that will be included in {obj_stream_class.__name__} stream"
+                                f" schema. Required: {', '.join(available_fields['required'])}. See available schema "
+                                f"fields: <a href=\"{available_fields['docs_url']}\">{obj_stream.single_object_field_name.title()}"
+                                f" docs</a>",
                                 "type": "array",
                                 "items": {
                                     "type": "string",
@@ -360,5 +400,9 @@ class SourceVkAdsNew(AbstractSource):
                     parent=parent,
                 )
             )
+
+        for obj_stream_class in self.object_streams_classes:
+            if not list(filter(lambda stream: isinstance(stream, obj_stream_class), streams)):
+                streams.append(obj_stream_class(**shared_kwargs))
 
         return streams
