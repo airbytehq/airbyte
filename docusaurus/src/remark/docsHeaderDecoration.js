@@ -83,7 +83,7 @@ const buildConnectorHTMLContent = (
     </div>
 
     <small>
-      <div style="width: 100%; border-style: solid; background-color: rgb(220 220 220 / 25%); margin-bottom: 5px">
+      <div style="width: 100%; background-color: rgb(220 220 220 / 25%); margin-bottom: 5px">
         <strong>Availability</strong>: Airbyte Cloud: ${
           registryEntry.is_cloud ? "✅" : "❌"
         }, Airbyte OSS: ${registryEntry.is_oss ? "✅" : "❌"}
