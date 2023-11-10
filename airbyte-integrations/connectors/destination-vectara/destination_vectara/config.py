@@ -21,12 +21,11 @@ class VectaraConfig(BaseModel):
         ..., title="OAuth2.0 Credentials", description="OAuth2.0 credentials used to authenticate admin actions (creating/deleting corpora)", type="object", order=1
     )
     customer_id: str = Field(..., title="Customer ID", description="Your customer id as it is in the authenticaion url", order=2)
-    corpus_name: str = Field(..., title="Corpus Name", description="The Name of Corpus to load data into", order=2)
-    # corpus_id: Optional[int] = Field(default="", title="Corpus ID", description="The ID of Corpus to load data into", order=3)
+    corpus_name: str = Field(..., title="Corpus Name", description="The Name of Corpus to load data into", order=3)
+    # corpus_id: Optional[int] = Field(default="", title="Corpus ID", description="The ID of Corpus to load data into", order=4)
 
     class Config:
-        title = "Indexing"
+        title = "Vectara Config"
         schema_extra = {
-            "group": "indexing",
-            "description": "Indexing configuration",
+            "description": "Configuration to connect to the Vectara instance",
         }

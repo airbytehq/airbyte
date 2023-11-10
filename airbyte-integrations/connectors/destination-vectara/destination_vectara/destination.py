@@ -2,8 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import time
-
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
@@ -45,11 +43,9 @@ class DestinationVectara(Destination):
         """
 
         config_model = VectaraConfig.parse_obj(config)
-        writer = VectaraWriter(VectaraClient(**config_model))
-
-        for configured_stream in configured_catalog.streams:
-            if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                writer.delete_stream_entries(configured_stream.stream.name)
+        writer = VectaraWriter(VectaraClient(config_model))
+                
+        writer.delete_streams_to_overwrite(catalog=configured_catalog)
 
         for message in input_messages:
             if message.type == Type.STATE:
@@ -60,8 +56,8 @@ class DestinationVectara(Destination):
             elif message.type == Type.RECORD:
                 record = message.record
                 writer.queue_write_operation(
-                    record.stream, record.data, time.time_ns() / 1_000_000
-                )  # convert from nanoseconds to milliseconds
+                    record.stream, record.data
+                )
             else:
                 # ignore other message types for now
                 continue
@@ -82,7 +78,7 @@ class DestinationVectara(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
 
-        client = VectaraClient(**config)
+        client = VectaraClient(config=config)
         client_error = client.check()
         if client_error:
             return AirbyteConnectionStatus(status=Status.FAILED, message="\n".join([client_error]))
@@ -93,6 +89,6 @@ class DestinationVectara(Destination):
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.com/integrations/destinations/vectara",
             supportsIncremental=True,
-            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
+            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append],
             connectionSpecification=VectaraConfig.schema(),
         )

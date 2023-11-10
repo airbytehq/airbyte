@@ -7,13 +7,13 @@ import unittest
 from unittest.mock import Mock
 
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode
-from destination_vectara.config import VectaraIndexingConfigModel
-from destination_vectara.indexer import VectaraIndexer
+from destination_vectara.config import VectaraConfig
+from destination_vectara.writer import VectaraWriter
 
 
-class TestVectaraIndexer(unittest.TestCase):
+class TestVectaraWriter(unittest.TestCase):
     def setUp(self):
-        self.mock_config = VectaraIndexingConfigModel(
+        self.mock_config = VectaraConfig(
             **{
                 "oauth2": {"client_id": "client_id", "client_secret": "client_secret"},
                 "customer_id": "customer_id",
@@ -36,7 +36,7 @@ class TestVectaraIndexer(unittest.TestCase):
         
         self._request_side_effect = _request_side_effect
 
-        self.vectara_indexer = VectaraIndexer(self.mock_config)
+        self.vectara_indexer = VectaraWriter(self.mock_config)
         self.vectara_indexer._get_jwt_token = Mock()
         self.vectara_indexer.jwt_token = Mock()
         self.vectara_indexer.jwt_token_expires_ts = datetime.datetime.max.replace(tzinfo=datetime.timezone.utc).timestamp()

@@ -1,7 +1,8 @@
 data:
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - api.vectara.io
+      - "vectara-prod-${self.customer_id}.auth.us-west-2.amazoncognito.com"
   registries:
     oss:
       enabled: false
@@ -16,7 +17,7 @@ data:
   icon: vectara.svg
   license: MIT
   name: Vectara
-  releaseDate: TODO
+  releaseDate: 2023-11-10
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/destinations/vectara

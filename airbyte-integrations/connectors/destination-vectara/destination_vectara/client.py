@@ -4,16 +4,18 @@
 
 import datetime
 import json
-import uuid
 import requests
+import traceback
+import uuid
 
 from typing import Any, Mapping
 
-from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
-from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from destination_vectara.config import VectaraConfig
 
 
+
+METADATA_STREAM_FIELD = "_ab_stream"
+# METADATA_RECORD_ID_FIELD = "_ab_record_id"
 
 class VectaraClient:
 
@@ -57,12 +59,12 @@ class VectaraClient:
                                         "type": "FILTER_ATTRIBUTE_TYPE__TEXT",
                                         "level": "FILTER_ATTRIBUTE_LEVEL__DOCUMENT"
                                     },
-                                    {
-                                        "name": METADATA_RECORD_ID_FIELD,
-                                        "indexed": True,
-                                        "type": "FILTER_ATTRIBUTE_TYPE__TEXT",
-                                        "level": "FILTER_ATTRIBUTE_LEVEL__DOCUMENT"
-                                    }
+                                    # {
+                                    #     "name": METADATA_RECORD_ID_FIELD,
+                                    #     "indexed": True,
+                                    #     "type": "FILTER_ATTRIBUTE_TYPE__TEXT",
+                                    #     "level": "FILTER_ATTRIBUTE_LEVEL__DOCUMENT"
+                                    # }
                                 ]
                             }
                         }
@@ -70,7 +72,7 @@ class VectaraClient:
                 self.corpus_id = create_corpus_response.get("corpusId")
 
         except Exception as e:
-            return format_exception(e)
+            return str(e) + "\n" + "".join(traceback.TracebackException.from_exception(e).format())
         
     def _get_jwt_token(self):
         """Connect to the server and get a JWT token."""
@@ -150,27 +152,27 @@ class VectaraClient:
                 documents_not_deleted.append(document_id)
         return documents_not_deleted
 
-    def _index_document(self, chunk):
-        document_embedding = chunk.embedding  # TODO Where to put the document embeddings?
-        document_metadata = self._normalize(chunk.metadata)
-        index_document_response = self._request(
-            endpoint="index",
-            data={
-                    "customerId": self.customer_id, 
-                    "corpusId": self.corpus_id,
-                    "document": {
-                        "documentId": uuid.uuid4().int,
-                        "metadataJson": json.dumps(document_metadata),
-                        "section": [
-                            {
-                                "title": "Content",
-                                "text": chunk.page_content,
-                            }
-                        ]
+    def _index_documents(self, documents):
+        for stream_name, document_content in documents:            
+            document_metadata = self._normalize({METADATA_STREAM_FIELD: stream_name})
+            index_document_response = self._request(
+                endpoint="index",
+                data={
+                        "customerId": self.customer_id, 
+                        "corpusId": self.corpus_id,
+                        "document": {
+                            "documentId": uuid.uuid4().int,
+                            "metadataJson": json.dumps(document_metadata),
+                            "section": [
+                                {
+                                    "title": "Content",
+                                    "text": document_content,
+                                }
+                            ]
+                        }
                     }
-                }
-            )
-        assert index_document_response.get("status").get("code") == "OK", index_document_response.get("status").get("statusDetail")
+                )
+            assert index_document_response.get("status").get("code") == "OK", index_document_response.get("status").get("statusDetail")
     
     def _normalize(self, metadata: dict) -> dict:
         result = {}
