@@ -51,7 +51,6 @@ class StreamFacadeSource(ConcurrentSource):
                 stream,
                 self,
                 stream.logger,
-                self._threadpool,
                 state_converter.get_concurrent_stream_state(state_manager.get_stream_state(stream.name, stream.namespace)),
                 ConcurrentCursor(
                     stream.name,

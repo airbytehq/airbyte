@@ -5,7 +5,6 @@
 import copy
 import json
 import logging
-from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -53,7 +52,6 @@ class StreamFacade(Stream):
         stream: Stream,
         source: AbstractSource,
         logger: logging.Logger,
-        threadpool: ThreadPoolExecutor,
         state: Optional[MutableMapping[str, Any]],
         cursor: Cursor,
     ) -> Stream:
@@ -83,14 +81,12 @@ class StreamFacade(Stream):
                     state,
                     cursor,
                 ),
-                threadpool=threadpool,
                 name=stream.name,
                 namespace=stream.namespace,
                 json_schema=stream.get_json_schema(),
                 availability_strategy=StreamAvailabilityStrategy(stream, source),
                 primary_key=pk,
                 cursor_field=cursor_field,
-                slice_logger=source._slice_logger,
                 logger=logger,
             ),
             stream,

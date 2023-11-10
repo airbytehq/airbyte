@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import concurrent
 import unittest
 from unittest.mock import Mock
 
@@ -14,25 +13,20 @@ from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream impor
 class ThreadBasedConcurrentStreamTest(unittest.TestCase):
     def setUp(self):
         self._partition_generator = Mock()
-        self._threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="workerpool")
         self._name = "name"
         self._json_schema = {}
         self._availability_strategy = Mock()
         self._primary_key = []
         self._cursor_field = None
-        self._slice_logger = Mock()
         self._logger = Mock()
-        self._message_repository = Mock()
         self._cursor = Mock(spec=Cursor)
         self._stream = ThreadBasedConcurrentStream(
             self._partition_generator,
-            self._threadpool,
             self._name,
             self._json_schema,
             self._availability_strategy,
             self._primary_key,
             self._cursor_field,
-            self._slice_logger,
             self._logger,
         )
 
@@ -88,13 +82,11 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         }
         stream = ThreadBasedConcurrentStream(
             self._partition_generator,
-            self._threadpool,
             self._name,
             json_schema,
             self._availability_strategy,
             ["id"],
             self._cursor_field,
-            self._slice_logger,
             self._logger,
         )
 
@@ -121,13 +113,11 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         }
         stream = ThreadBasedConcurrentStream(
             self._partition_generator,
-            self._threadpool,
             self._name,
             json_schema,
             self._availability_strategy,
             ["id_a", "id_b"],
             self._cursor_field,
-            self._slice_logger,
             self._logger,
         )
 
@@ -154,13 +144,11 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         }
         stream = ThreadBasedConcurrentStream(
             self._partition_generator,
-            self._threadpool,
             self._name,
             json_schema,
             self._availability_strategy,
             self._primary_key,
             "date",
-            self._slice_logger,
             self._logger,
         )
 
@@ -180,13 +168,11 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
     def test_as_airbyte_stream_with_namespace(self):
         stream = ThreadBasedConcurrentStream(
             self._partition_generator,
-            self._threadpool,
             self._name,
             self._json_schema,
             self._availability_strategy,
             self._primary_key,
             self._cursor_field,
-            self._slice_logger,
             self._logger,
             namespace="test",
         )

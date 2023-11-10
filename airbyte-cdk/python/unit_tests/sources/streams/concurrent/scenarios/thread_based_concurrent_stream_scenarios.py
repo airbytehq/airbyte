@@ -1,29 +1,23 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import concurrent
 import logging
 
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
-from airbyte_cdk.sources.utils.slice_logger import AlwaysLogSliceLogger
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import (
     AlwaysAvailableAvailabilityStrategy,
     ConcurrentSourceBuilder,
     InMemoryPartition,
     InMemoryPartitionGenerator,
-    NeverLogSliceLogger,
 )
 
-_single_worker_threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="workerpool")
-_two_workers_threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=2, thread_name_prefix="workerpool")
 _id_only_stream = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator(
         [InMemoryPartition("partition1", "stream1", None, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")])]
     ),
-    threadpool=_single_worker_threadpool,
     name="stream1",
     json_schema={
         "type": "object",
@@ -34,7 +28,6 @@ _id_only_stream = ThreadBasedConcurrentStream(
     availability_strategy=AlwaysAvailableAvailabilityStrategy(),
     primary_key=[],
     cursor_field=None,
-    slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
 )
 
@@ -42,7 +35,6 @@ _id_only_stream_with_slice_logger = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator(
         [InMemoryPartition("partition1", "stream1", None, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")])]
     ),
-    threadpool=_single_worker_threadpool,
     name="stream1",
     json_schema={
         "type": "object",
@@ -53,7 +45,6 @@ _id_only_stream_with_slice_logger = ThreadBasedConcurrentStream(
     availability_strategy=AlwaysAvailableAvailabilityStrategy(),
     primary_key=[],
     cursor_field=None,
-    slice_logger=AlwaysLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
 )
 
@@ -61,7 +52,6 @@ _id_only_stream_with_primary_key = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator(
         [InMemoryPartition("partition1", "stream1", None, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")])]
     ),
-    threadpool=_single_worker_threadpool,
     name="stream1",
     json_schema={
         "type": "object",
@@ -72,7 +62,6 @@ _id_only_stream_with_primary_key = ThreadBasedConcurrentStream(
     availability_strategy=AlwaysAvailableAvailabilityStrategy(),
     primary_key=["id"],
     cursor_field=None,
-    slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
 )
 
@@ -83,7 +72,6 @@ _id_only_stream_multiple_partitions = ThreadBasedConcurrentStream(
             InMemoryPartition("partition2", "stream1", {"p": "2"}, [Record({"id": "3"}, "stream1"), Record({"id": "4"}, "stream1")]),
         ]
     ),
-    threadpool=_single_worker_threadpool,
     name="stream1",
     json_schema={
         "type": "object",
@@ -94,7 +82,6 @@ _id_only_stream_multiple_partitions = ThreadBasedConcurrentStream(
     availability_strategy=AlwaysAvailableAvailabilityStrategy(),
     primary_key=[],
     cursor_field=None,
-    slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
 )
 
@@ -105,7 +92,6 @@ _id_only_stream_multiple_partitions_concurrency_level_two = ThreadBasedConcurren
             InMemoryPartition("partition2", "stream1", {"p": "2"}, [Record({"id": "3"}, "stream1"), Record({"id": "4"}, "stream1")]),
         ]
     ),
-    threadpool=_two_workers_threadpool,
     name="stream1",
     json_schema={
         "type": "object",
@@ -116,7 +102,6 @@ _id_only_stream_multiple_partitions_concurrency_level_two = ThreadBasedConcurren
     availability_strategy=AlwaysAvailableAvailabilityStrategy(),
     primary_key=[],
     cursor_field=None,
-    slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
 )
 
@@ -124,7 +109,6 @@ _stream_raising_exception = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator(
         [InMemoryPartition("partition1", "stream1", None, [Record({"id": "1"}, "stream1"), ValueError("test exception")])]
     ),
-    threadpool=_two_workers_threadpool,
     name="stream1",
     json_schema={
         "type": "object",
@@ -135,7 +119,6 @@ _stream_raising_exception = ThreadBasedConcurrentStream(
     availability_strategy=AlwaysAvailableAvailabilityStrategy(),
     primary_key=[],
     cursor_field=None,
-    slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
 )
 
@@ -251,7 +234,6 @@ test_concurrent_cdk_multiple_streams = (
                             )
                         ]
                     ),
-                    threadpool=_single_worker_threadpool,
                     name="stream2",
                     json_schema={
                         "type": "object",
@@ -263,7 +245,6 @@ test_concurrent_cdk_multiple_streams = (
                     availability_strategy=AlwaysAvailableAvailabilityStrategy(),
                     primary_key=[],
                     cursor_field=None,
-                    slice_logger=NeverLogSliceLogger(),
                     logger=logging.getLogger("test_logger"),
                 ),
             ]

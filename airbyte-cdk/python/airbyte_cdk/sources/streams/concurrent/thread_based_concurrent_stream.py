@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from logging import Logger
 from typing import Any, Iterable, List, Mapping, Optional
@@ -12,31 +11,26 @@ from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStrea
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
-from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 
 class ThreadBasedConcurrentStream(AbstractStream):
     def __init__(
         self,
         partition_generator: PartitionGenerator,
-        threadpool: ThreadPoolExecutor,
         name: str,
         json_schema: Mapping[str, Any],
         availability_strategy: AbstractAvailabilityStrategy,
         primary_key: List[str],
         cursor_field: Optional[str],
-        slice_logger: SliceLogger,
         logger: Logger,
         namespace: Optional[str] = None,
     ) -> None:
         self._stream_partition_generator = partition_generator
-        self._threadpool = threadpool
         self._name = name
         self._json_schema = json_schema
         self._availability_strategy = availability_strategy
         self._primary_key = primary_key
         self._cursor_field = cursor_field
-        self._slice_logger = slice_logger
         self._logger = logger
         self._namespace = namespace
 

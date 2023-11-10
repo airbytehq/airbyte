@@ -61,7 +61,7 @@ class MockSource(ConcurrentSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         if not self._streams:
             raise Exception("Stream is not set")
-        return [StreamFacade.create_from_stream(stream, self, logger, self._threadpool, None, NoopCursor()) for stream in self._streams]
+        return [StreamFacade.create_from_stream(stream, self, logger, None, NoopCursor()) for stream in self._streams]
 
     @property
     def raise_exception_on_missing_stream(self) -> bool:

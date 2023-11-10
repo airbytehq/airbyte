@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import concurrent
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 from unittest.mock import Mock
@@ -30,8 +29,6 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.utils import AirbyteTracedException
-
-# FIXME: should there be a test for a failing sync?
 
 
 class _MockStream(Stream):
@@ -413,9 +410,8 @@ def _init_sources(stream_slice_to_partitions, state, logger):
 
 def _init_source(stream_slice_to_partitions, state, logger, source):
     cursor = NoopCursor()
-    threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
     streams = [
-        StreamFacade.create_from_stream(_MockStream(stream_slices, f"stream{i}"), source, logger, threadpool, state, cursor)
+        StreamFacade.create_from_stream(_MockStream(stream_slices, f"stream{i}"), source, logger, state, cursor)
         for i, stream_slices in enumerate(stream_slice_to_partitions)
     ]
     source.set_streams(streams)
@@ -448,13 +444,6 @@ def _read_from_source(source, logger, config, catalog, state, expected_exception
 
 
 def _verify_messages(expected_messages, messages_from_abstract_source, messages_from_concurrent_source):
-    # assert expected_messages == messages_from_abstract_source
-    # assert _compare(messages_from_abstract_source, messages_from_concurrent_source)
-    import pprint
-
-    pprint.pprint(expected_messages)
-    print()
-    pprint.pprint(messages_from_concurrent_source)
     assert _compare(expected_messages, messages_from_concurrent_source)
 
 
