@@ -618,17 +618,17 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
                                 "object": "subscription_item",
                                 "created": 1699603175,
                                 "quantity": 1,
-                                "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE"
+                                "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
                             }
                         ],
                         "has_more": True,
                     },
                     "latest_invoice": None,
-                    "livemode": False
+                    "livemode": False,
                 }
             ],
-            "has_more": False
-        }
+            "has_more": False,
+        },
     )
     requests_mock.get(
         "/v1/subscription_items?subscription=sub_1OApco2eZvKYlo2CEDCzwLrE",
@@ -642,10 +642,10 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
                     "object": "subscription_item",
                     "created": 1699603884,
                     "quantity": 2,
-                    "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE"
+                    "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
                 }
-            ]
-        }
+            ],
+        },
     )
     config["start_date"] = str(pendulum.now().subtract(days=3))
     stream = stream_by_name("subscription_items", config)
@@ -656,15 +656,15 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
             "object": "subscription_item",
             "created": 1699603175,
             "quantity": 1,
-            "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE"
+            "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
         },
         {
             "id": "si_OynPdzMZykmCWm",
             "object": "subscription_item",
             "created": 1699603884,
             "quantity": 2,
-            "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE"
-        }
+            "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
+        },
     ]
     assert len(requests_mock.request_history) == 2
     assert "subscription=sub_1OApco2eZvKYlo2CEDCzwLrE" in requests_mock.request_history[-1].url
