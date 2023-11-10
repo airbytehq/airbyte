@@ -2,13 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
+import unittest
 from unittest.mock import Mock
 
 import freezegun
 from airbyte_cdk.models import (
+    AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
-    AirbyteLogMessage,
     AirbyteStream,
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
@@ -16,11 +17,9 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
-    StreamDescriptor,
-    SyncMode,
-    TraceType,
 )
 from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import StreamDescriptor, SyncMode, TraceType
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.queue_item_handler import QueueItemHandler
@@ -35,6 +34,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCom
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 _STREAM_NAME = "stream"
+_ANOTHER_STREAM_NAME = "stream2"
 
 
 def test_handle_partition_done_no_other_streams_to_generate_partitions_for():
@@ -213,6 +213,7 @@ def test_handle_partition_emits_log_message_if_it_should_be_logged():
     message_repository.emit_message.assert_called_with(log_message)
     assert partition in streams_to_partitions[_STREAM_NAME]
 
+
 def test_handle_on_partition_complete_sentinel_with_messages_from_repository():
     streams_currently_generating_partitions = [_STREAM_NAME]
     stream_instances_to_read_from = []
@@ -250,29 +251,18 @@ def test_handle_on_partition_complete_sentinel_with_messages_from_repository():
     sentinel = PartitionCompleteSentinel(partition)
 
     message_repository.consume_queue.return_value = [
-        AirbyteMessage(
-            type=MessageType.LOG,
-            log=AirbyteLogMessage(
-                level=LogLevel.INFO,
-                message="message emitted from the repository"
-            )
-        )
+        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
     ]
 
     messages = list(handler.on_partition_complete_sentinel(sentinel))
 
     expected_messages = [
-        AirbyteMessage(
-            type=MessageType.LOG,
-            log=AirbyteLogMessage(
-                level=LogLevel.INFO,
-                message="message emitted from the repository"
-            )
-        )
+        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
     ]
     assert expected_messages == messages
 
     partition.close.assert_called_once()
+
 
 @freezegun.freeze_time("2020-01-01T00:00:00")
 def test_handle_on_partition_complete_sentinel_yields_status_message_if_the_stream_is_done():
@@ -335,14 +325,15 @@ def test_handle_on_partition_complete_sentinel_yields_status_message_if_the_stre
                     stream_descriptor=StreamDescriptor(
                         name=_STREAM_NAME,
                     ),
-                    status=AirbyteStreamStatus.COMPLETE
+                    status=AirbyteStreamStatus.COMPLETE,
                 ),
                 emitted_at=1577836800000.0,
-            )
+            ),
         )
     ]
     assert expected_messages == messages
     partition.close.assert_called_once()
+
 
 @freezegun.freeze_time("2020-01-01T00:00:00")
 def test_handle_on_partition_complete_sentinel_yields_no_status_message_if_the_stream_is_not_done():
@@ -396,6 +387,7 @@ def test_handle_on_partition_complete_sentinel_yields_no_status_message_if_the_s
     expected_messages = []
     assert expected_messages == messages
     partition.close.assert_called_once()
+
 
 @freezegun.freeze_time("2020-01-01T00:00:00")
 def test_on_record_no_status_message_no_repository_messge():
@@ -464,6 +456,7 @@ def test_on_record_no_status_message_no_repository_messge():
     ]
     assert expected_messages == messages
 
+
 @freezegun.freeze_time("2020-01-01T00:00:00")
 def test_on_record_with_repository_messge():
     streams_currently_generating_partitions = [_STREAM_NAME]
@@ -484,13 +477,7 @@ def test_on_record_with_repository_messge():
     slice_logger.create_slice_log_message.return_value = log_message
     message_repository = Mock(spec=MessageRepository)
     message_repository.consume_queue.return_value = [
-        AirbyteMessage(
-            type=MessageType.LOG,
-            log=AirbyteLogMessage(
-                level=LogLevel.INFO,
-                message="message emitted from the repository"
-            )
-        )
+        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
     ]
     partition_reader = Mock(spec=PartitionReader)
 
@@ -536,15 +523,11 @@ def test_on_record_with_repository_messge():
                 emitted_at=1577836800000,
             ),
         ),
-        AirbyteMessage(
-            type=MessageType.LOG,
-            log=AirbyteLogMessage(
-                level=LogLevel.INFO,
-                message="message emitted from the repository"
-            )
-        ),
+        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository")),
     ]
     assert expected_messages == messages
+    assert record_counter[_STREAM_NAME] == 2
+
 
 @freezegun.freeze_time("2020-01-01T00:00:00")
 def test_on_record_emits_status_message_on_first_record_no_repository_message():
@@ -616,9 +599,11 @@ def test_on_record_emits_status_message_on_first_record_no_repository_message():
                 data=data,
                 emitted_at=1577836800000,
             ),
-        )
+        ),
     ]
     assert expected_messages == messages
+    assert record_counter[_STREAM_NAME] == 1
+
 
 @freezegun.freeze_time("2020-01-01T00:00:00")
 def test_on_record_emits_status_message_on_first_record_with_repository_message():
@@ -640,13 +625,7 @@ def test_on_record_emits_status_message_on_first_record_with_repository_message(
     slice_logger.create_slice_log_message.return_value = log_message
     message_repository = Mock(spec=MessageRepository)
     message_repository.consume_queue.return_value = [
-        AirbyteMessage(
-            type=MessageType.LOG,
-            log=AirbyteLogMessage(
-                level=LogLevel.INFO,
-                message="message emitted from the repository"
-            )
-        )
+        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
     ]
     partition_reader = Mock(spec=PartitionReader)
 
@@ -699,12 +678,89 @@ def test_on_record_emits_status_message_on_first_record_with_repository_message(
                 emitted_at=1577836800000,
             ),
         ),
-        AirbyteMessage(
-            type=MessageType.LOG,
-            log=AirbyteLogMessage(
-                level=LogLevel.INFO,
-                message="message emitted from the repository"
-            )
-        )
+        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository")),
     ]
     assert expected_messages == messages
+    assert record_counter[_STREAM_NAME] == 1
+
+
+class TestQueueItemHandler(unittest.TestCase):
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_on_exception_stops_streams_and_raises_an_exception(self):
+        streams_currently_generating_partitions = [_STREAM_NAME]
+        stream_instances_to_read_from = []
+        partition_enqueuer = Mock(spec=PartitionEnqueuer)
+        thread_pool_manager = Mock(spec=ThreadPoolManager)
+        partition = Mock(spec=Partition)
+        a_closed_partition = Mock(spec=Partition)
+        a_closed_partition.is_closed.return_value = True
+        log_message = Mock(spec=LogMessage)
+        partition.to_slice.return_value = log_message
+        partition.stream_name.return_value = _STREAM_NAME
+        partition.is_closed.return_value = False
+        streams_to_partitions = {_STREAM_NAME: {partition}, _ANOTHER_STREAM_NAME: {a_closed_partition}}
+        record_counter = {_STREAM_NAME: 0, _ANOTHER_STREAM_NAME: 0}
+        stream_to_instance_map = {}
+        logger = Mock(spec=logging.Logger)
+        slice_logger = Mock(spec=SliceLogger)
+        slice_logger.create_slice_log_message.return_value = log_message
+        message_repository = Mock(spec=MessageRepository)
+        message_repository.consume_queue.return_value = []
+        partition_reader = Mock(spec=PartitionReader)
+
+        handler = QueueItemHandler(
+            streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            partition_enqueuer,
+            thread_pool_manager,
+            streams_to_partitions,
+            record_counter,
+            stream_to_instance_map,
+            logger,
+            slice_logger,
+            message_repository,
+            partition_reader,
+        )
+
+        stream = Mock(spec=AbstractStream)
+        stream.name = _STREAM_NAME
+        stream.as_airbyte_stream.return_value = AirbyteStream(
+            name=_STREAM_NAME,
+            json_schema={},
+            supported_sync_modes=[SyncMode.full_refresh],
+        )
+        stream_to_instance_map[_STREAM_NAME] = stream
+
+        another_stream = Mock(spec=AbstractStream)
+        another_stream.name = _STREAM_NAME
+        another_stream.as_airbyte_stream.return_value = AirbyteStream(
+            name=_ANOTHER_STREAM_NAME,
+            json_schema={},
+            supported_sync_modes=[SyncMode.full_refresh],
+        )
+        stream_to_instance_map[_STREAM_NAME] = stream
+        stream_to_instance_map[_ANOTHER_STREAM_NAME] = another_stream
+
+        exception = RuntimeError("Something went wrong")
+
+        messages = []
+
+        with self.assertRaises(RuntimeError):
+            for m in handler.on_exception(exception):
+                messages.append(m)
+
+        expected_message = [
+            AirbyteMessage(
+                type=MessageType.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.STREAM_STATUS,
+                    emitted_at=1577836800000.0,
+                    stream_status=AirbyteStreamStatusTraceMessage(
+                        stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
+                    ),
+                ),
+            )
+        ]
+
+        assert messages == expected_message
+        thread_pool_manager.shutdown.assert_called_once()

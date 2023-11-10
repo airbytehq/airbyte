@@ -156,8 +156,9 @@ class ConcurrentSource(AbstractSource, ABC):
         queue_item_handler: QueueItemHandler,
     ) -> Iterable[AirbyteMessage]:
         if isinstance(queue_item, Exception):
-            yield from self._stop_streams(streams_to_partitions, logger, stream_to_instance_map)
-            raise queue_item
+            yield from queue_item_handler.on_exception(queue_item)
+            # yield from self._stop_streams(streams_to_partitions, logger, stream_to_instance_map)
+            # raise queue_item
 
         elif isinstance(queue_item, PartitionGenerationCompletedSentinel):
             yield from queue_item_handler.on_partition_generation_completed(queue_item)
