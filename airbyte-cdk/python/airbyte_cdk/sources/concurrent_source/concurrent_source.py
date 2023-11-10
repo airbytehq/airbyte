@@ -114,7 +114,7 @@ class ConcurrentSource(AbstractSource, ABC):
                 queue_item_handler,
             )
             if queue_item_handler.is_done() and self._threadpool.is_done() and queue.empty():
-                # all partitions were generated and process. we're done here
+                # all partitions were generated and processed. we're done here
                 break
 
     def _handle_item(
@@ -142,6 +142,12 @@ class ConcurrentSource(AbstractSource, ABC):
     def _get_streams_to_read_from(
         self, catalog: ConfiguredAirbyteCatalog, logger: logging.Logger, stream_to_instance_map: Mapping[str, AbstractStream]
     ) -> List[AbstractStream]:
+        """
+        Iterate over the configured streams and return a list of streams to read from.
+        If a stream is not configured, it will be skipped.
+        If a stream is configured but does not exist in the source and self.raise_exception_on_missing_stream is True, an exception will be raised
+        If a stream is not available, it will be skipped
+        """
         stream_instances_to_read_from = []
         for configured_stream in catalog.streams:
             stream_instance = stream_to_instance_map.get(configured_stream.stream.name)
@@ -163,6 +169,12 @@ class ConcurrentSource(AbstractSource, ABC):
         return stream_instances_to_read_from
 
     def _streams_as_abstract_streams(self, config: Mapping[str, Any]) -> List[AbstractStream]:
+        """
+        Ensures the streams are StreamFacade and returns the underlying AbstractStream.
+        This is necessary because AbstractSource.streams() returns a List[Stream] and not a List[AbstractStream].
+        :param config:
+        :return:
+        """
         streams = self.streams(config)
         streams_as_abstract_streams = []
         for stream in streams:
