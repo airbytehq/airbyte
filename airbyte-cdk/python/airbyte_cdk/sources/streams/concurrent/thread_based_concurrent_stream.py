@@ -3,7 +3,7 @@
 #
 
 import time
-from concurrent.futures import Future
+from concurrent.futures import Future, ThreadPoolExecutor
 from functools import lru_cache
 from logging import Logger
 from queue import Queue
@@ -33,7 +33,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
     def __init__(
         self,
         partition_generator: PartitionGenerator,
-        threadpool,
+        threadpool: ThreadPoolExecutor,
         name: str,
         json_schema: Mapping[str, Any],
         availability_strategy: AbstractAvailabilityStrategy,
@@ -47,7 +47,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         sleep_time: float = DEFAULT_SLEEP_TIME,
         cursor: Cursor = NoopCursor(),
         namespace: Optional[str] = None,
-    ):
+    ) -> None:
         self._stream_partition_generator = partition_generator
         self._threadpool = threadpool
         self._name = name
