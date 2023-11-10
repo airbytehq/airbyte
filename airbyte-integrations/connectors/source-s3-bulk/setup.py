@@ -12,20 +12,7 @@ def local_dependency(name: str) -> str:
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk>=0.52.0",
-    "pyarrow==12.0.1",
-    "smart-open[s3]==5.1.0",
-    "wcmatch==8.4",
-    "dill==0.3.4",
-    "pytz",
-    "fastavro==1.4.11",
-    "python-snappy==0.6.1",
-    "unstructured==0.10.19",
-    "pdf2image==1.16.3",
-    "pdfminer.six==20221105",
-    "unstructured[docx]==0.10.19",
-    "unstructured.pytesseract>=0.3.12",
-    "pytesseract==0.3.10",
-    "markdown",
+    "pyarrow==12.0.1"
 ]
 
 MAIN_REQUIREMENTS.append(local_dependency("source-s3"))
