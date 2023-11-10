@@ -60,6 +60,8 @@ class PytestStep(Step, ABC):
 
     PYTEST_INI_FILE_NAME = "pytest.ini"
     PYPROJECT_FILE_NAME = "pyproject.toml"
+    common_test_dependencies: List[str] = []
+
     skipped_exit_code = 5
     bind_to_docker_host = False
 
@@ -73,6 +75,15 @@ class PytestStep(Step, ABC):
         if self.context.connector.is_using_poetry:
             return ("dev",)
         return ("dev", "tests")
+
+    @property
+    def additional_pytest_options(self) -> List[str]:
+        """Theses options are added to the pytest command.
+
+        Returns:
+            List[str]: The additional pytest options.
+        """
+        return []
 
     async def _run(self, connector_under_test: Container) -> StepResult:
         """Run all pytest tests declared in the test directory of the connector code.
@@ -105,7 +116,7 @@ class PytestStep(Step, ABC):
         Returns:
             List[str]: The pytest command to run.
         """
-        cmd = ["pytest", "-s", self.test_directory_name, "-c", test_config_file_name]
+        cmd = ["pytest", "-s", self.test_directory_name, "-c", test_config_file_name] + self.additional_pytest_options
         if self.context.connector.is_using_poetry:
             return ["poetry", "run"] + cmd
         return cmd
@@ -174,6 +185,10 @@ class PytestStep(Step, ABC):
                 additional_dependency_groups=extra_dependencies_names,
             )
         )
+        if self.common_test_dependencies:
+            container_with_test_deps = container_with_test_deps.with_exec(
+                ["pip", "install", f'{" ".join(self.common_test_dependencies)}'], skip_entrypoint=True
+            )
         return (
             container_with_test_deps
             # Mount the test config file
@@ -188,6 +203,22 @@ class UnitTests(PytestStep):
 
     title = "Unit tests"
     test_directory_name = "unit_tests"
+    common_test_dependencies = ["pytest-cov==4.1.0"]
+    MINIMUM_COVERAGE_FOR_CERTIFIED_CONNECTORS = 90
+
+    @property
+    def additional_pytest_options(self) -> List[str]:
+        """Make sure the coverage computation is run for the unit tests.
+        Fail if the coverage is under 90% for certified connectors.
+
+        Returns:
+            List[str]: The additional pytest options to run coverage reports.
+        """
+        coverage_options = ["--cov", self.context.connector.technical_name.replace("-", "_")]
+        if self.context.connector.support_level == "certified":
+            coverage_options += ["--cov-fail-under", str(self.MINIMUM_COVERAGE_FOR_CERTIFIED_CONNECTORS)]
+
+        return super().additional_pytest_options + coverage_options
 
 
 class IntegrationTests(PytestStep):

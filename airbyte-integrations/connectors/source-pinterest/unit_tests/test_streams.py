@@ -23,6 +23,7 @@ from source_pinterest.streams import (
     Campaigns,
     PinterestStream,
     PinterestSubStream,
+    UserAccountAnalytics,
 )
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
@@ -113,6 +114,18 @@ def test_should_retry_on_max_rate_limit_error(requests_mock, test_response, stat
     response = requests.get(url)
     result = stream.should_retry(response)
     assert result == expected
+
+
+def test_non_json_response(requests_mock):
+    stream = UserAccountAnalytics(parent=None, config=MagicMock())
+    url = "https://api.pinterest.com/v5/boards"
+    requests_mock.get("https://api.pinterest.com/v5/boards", text="some response", status_code=200)
+    response = requests.get(url)
+    try:
+        stream.should_retry(response)
+        assert False
+    except Exception as e:
+        assert "Received unexpected response in non json format" in str(e)
 
 
 @pytest.mark.parametrize(

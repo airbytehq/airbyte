@@ -87,6 +87,7 @@ async def run_connectors_pipelines(
     default_connectors_semaphore = anyio.Semaphore(concurrency)
     dagger_logs_output = sys.stderr if not dagger_logs_path else create_and_open_file(dagger_logs_path)
     async with dagger.Connection(Config(log_output=dagger_logs_output, execute_timeout=execute_timeout)) as dagger_client:
+
         # HACK: This is to get a long running dockerd service to be shared across all the connectors pipelines
         # Using the "normal" service binding leads to restart of dockerd during pipeline run that can cause corrupted docker state
         # See https://github.com/airbytehq/airbyte/issues/27233

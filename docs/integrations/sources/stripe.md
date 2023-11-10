@@ -192,6 +192,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                              |
 |:--------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.5.1   | 2023-11-01 | [32056](https://github.com/airbytehq/airbyte/pull/32056/) | Use CDK version 0.52.8                                                                                                                                     |
 | 4.5.0   | 2023-10-25 | [31327](https://github.com/airbytehq/airbyte/pull/31327/) | Use concurrent CDK when running in full-refresh                                                                                                      |
 | 4.4.2   | 2023-10-24 | [31764](https://github.com/airbytehq/airbyte/pull/31764)  | Base image migration: remove Dockerfile and use the python-connector-base image                                                                      |
 | 4.4.1   | 2023-10-18 | [31553](https://github.com/airbytehq/airbyte/pull/31553)  | Adjusted `Setup Attempts` and extended `Checkout Sessions` stream schemas                                                                            |
