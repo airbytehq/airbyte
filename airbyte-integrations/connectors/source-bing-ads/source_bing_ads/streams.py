@@ -201,7 +201,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
             return None
         if "%" in value:
             value = value.replace("%", "")
-        if value and self.get_json_schema()["properties"].get(column, {}).get("type") & ("integer", "number"):
+        if value and set(self.get_json_schema()["properties"].get(column, {}).get("type")) & {"integer", "number"}:
             value = value.replace(",", "")
         return value
 
