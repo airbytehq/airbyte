@@ -29,7 +29,7 @@ public class SnowflakeBulkDestination extends SnowflakeInternalStagingDestinatio
     return new ShimToSerializedAirbyteMessageConsumer(getConsumer(config, catalog, outputRecordCollector));
   }
 
-  @Override 
+  @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
       final ConfiguredAirbyteCatalog catalog,
       final Consumer<AirbyteMessage> outputRecordCollector) {
