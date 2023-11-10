@@ -79,7 +79,9 @@ class ConcurrentSource(AbstractSource, ABC):
             partition_reader,
         )
         while len(streams_currently_generating_partitions) < max_number_of_partition_generator_in_progress:
-            yield from queue_item_handler.start_next_partition_generator()
+            status_message = queue_item_handler.start_next_partition_generator()
+            if status_message:
+                yield status_message
         yield from self._consume_from_queue(
             queue,
             queue_item_handler,
