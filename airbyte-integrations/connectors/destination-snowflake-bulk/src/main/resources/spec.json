@@ -8,7 +8,16 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Snowflake Destination Spec",
     "type": "object",
-    "required": ["host", "role", "warehouse", "database", "schema", "username"],
+    "required": [
+      "host",
+      "role",
+      "warehouse",
+      "database",
+      "schema",
+      "username",
+      "snowflake_stage_name",
+      "snowflake_file_format"
+    ],
     "additionalProperties": true,
     "properties": {
       "host": {
@@ -161,11 +170,17 @@
         "type": "string",
         "order": 7
       },
-      "raw_data_schema": {
+      "snowflake_stage_name": {
+        "description": "The name of the created STAGE that has access to the bulk files, all of which are in a single directory.",
+        "title": "Snowflake Stage Name",
         "type": "string",
-        "description": "The schema to write raw tables into",
-        "title": "Destinations V2 Raw Table Schema",
-        "order": 10
+        "order": 8
+      },
+      "snowflake_file_format": {
+        "description": "The name of the created FILE FORMAT that knows how to read the files. It should have a delimiter that _does not_ exist in the data itself so Airbyte will write a single row.",
+        "title": "Snowflake File Format",
+        "type": "string",
+        "order": 9
       }
     }
   },

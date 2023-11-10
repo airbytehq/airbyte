@@ -24,10 +24,16 @@ public class BulkConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BulkConsumer.class);
 
+  private static final String CONFIG_STAGE_KEY = "snowflake_stage_name";
+  private static final String CONFIG_FORMAT_KEY = "snowflake_file_format";
+
   private final JsonNode config;
   private final ConfiguredAirbyteCatalog configuredCatalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final Map<AirbyteStreamNameNamespacePair, MyLogger> loggers;
+
+  private final String configStaging;
+  private final String configFormat;
 
   public BulkConsumer(final JsonNode config,
       final ConfiguredAirbyteCatalog configuredCatalog,
@@ -36,6 +42,9 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     this.configuredCatalog = configuredCatalog;
     this.outputRecordCollector = outputRecordCollector;
     this.loggers = new HashMap<>();
+
+    this.configStaging = config.get(CONFIG_STAGE_KEY).asText();
+    this.configFormat = config.get(CONFIG_FORMAT_KEY).asText();
   }
 
   @Override
@@ -46,6 +55,8 @@ public class BulkConsumer implements AirbyteMessageConsumer {
       final MyLogger logger = new MyLogger(streamNamePair, 1000);
       loggers.put(streamNamePair, logger);
     }
+
+    LOGGER.info("start staging:{} format:{}", this.configStaging, this.configFormat);
   }
 
   @Override
@@ -72,6 +83,7 @@ public class BulkConsumer implements AirbyteMessageConsumer {
   }
 
   @Override
-  public void close() {}
+  public void close() {
+  }
 
 }
