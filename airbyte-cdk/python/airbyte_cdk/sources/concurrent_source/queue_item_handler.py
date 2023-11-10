@@ -2,24 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-import time
-from concurrent.futures import Future
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Set
+from typing import Dict, Iterable, List, Mapping, Optional, Set
 
-from airbyte_cdk.models import (
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStream,
-    AirbyteStreamStatus,
-    AirbyteStreamStatusTraceMessage,
-    AirbyteTraceMessage,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    DestinationSyncMode,
-    StreamDescriptor,
-    SyncMode,
-    TraceType,
-)
+from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
@@ -31,7 +16,6 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
-from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 
@@ -70,14 +54,7 @@ class QueueItemHandler:
         if self._is_stream_done(stream_name):
             ret.append(self._on_stream_is_done(stream_name))
         if self._stream_instances_to_read_from:
-            ret.append(
-                self._start_next_partition_generator(
-                    self._stream_instances_to_read_from,
-                    self._streams_currently_generating_partitions,
-                    self._partition_enqueuer,
-                    self._logger,
-                )
-            )
+            ret.append(self.start_next_partition_generator())
         return ret
 
     def on_partition(self, partition: Partition):
@@ -137,22 +114,19 @@ class QueueItemHandler:
                 self._logger.info(f"Finished syncing {stream.name}")
                 yield stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.INCOMPLETE)
 
-    def _start_next_partition_generator(
-        self,
-        streams: List[AbstractStream],
-        streams_currently_generating_partitions: List[str],
-        partition_enqueuer: PartitionEnqueuer,
-        logger: logging.Logger,
-    ) -> AirbyteMessage:
-        stream = streams.pop(0)
-        self._thread_pool_manager.submit(partition_enqueuer.generate_partitions, stream)
-        streams_currently_generating_partitions.append(stream.name)
-        logger.info(f"Marking stream {stream.name} as STARTED")
-        logger.info(f"Syncing stream: {stream.name} ")
-        return stream_status_as_airbyte_message(
-            stream.as_airbyte_stream(),
-            AirbyteStreamStatus.STARTED,
-        )
+    def start_next_partition_generator(self) -> Optional[AirbyteMessage]:
+        if self._stream_instances_to_read_from:
+            stream = self._stream_instances_to_read_from.pop(0)
+            self._thread_pool_manager.submit(self._partition_enqueuer.generate_partitions, stream)
+            self._streams_currently_generating_partitions.append(stream.name)
+            self._logger.info(f"Marking stream {stream.name} as STARTED")
+            self._logger.info(f"Syncing stream: {stream.name} ")
+            return stream_status_as_airbyte_message(
+                stream.as_airbyte_stream(),
+                AirbyteStreamStatus.STARTED,
+            )
+        else:
+            return None
 
     def is_done(self) -> bool:
         # return (not self._stream_instances_to_read_from and not self._streams_currently_generating_partitions)

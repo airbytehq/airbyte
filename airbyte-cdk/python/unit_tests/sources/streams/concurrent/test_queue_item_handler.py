@@ -14,9 +14,6 @@ from airbyte_cdk.models import (
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    DestinationSyncMode,
 )
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import StreamDescriptor, SyncMode, TraceType
@@ -75,7 +72,7 @@ def test_handle_partition_done_no_other_streams_to_generate_partitions_for():
     )
     stream_to_instance_map[_STREAM_NAME] = stream
     sentinel = PartitionGenerationCompletedSentinel(stream)
-    messages = handler.on_partition_generation_completed(sentinel)
+    messages = list(handler.on_partition_generation_completed(sentinel))
 
     expected_messages = []
     assert expected_messages == messages
@@ -852,3 +849,37 @@ class TestQueueItemHandler(unittest.TestCase):
         )
 
         assert handler.is_done()
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_start_next_partition_generator(self):
+        stream_instances_to_read_from = [self._stream]
+        streams_to_partitions = {_STREAM_NAME: {}}
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        status_message = handler.start_next_partition_generator()
+
+        assert status_message == AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
+                ),
+            ),
+        )
+
+        assert _STREAM_NAME in handler._streams_currently_generating_partitions
+        self._thread_pool_manager.submit.assert_called_with(self._partition_enqueuer.generate_partitions, self._stream)

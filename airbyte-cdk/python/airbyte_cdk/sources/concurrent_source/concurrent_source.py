@@ -3,12 +3,10 @@
 #
 import logging
 from abc import ABC
-from dataclasses import dataclass
-from enum import Enum
 from queue import Queue
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Union
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, AirbyteStreamStatus, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.queue_item_handler import QueueItemHandler
@@ -19,28 +17,9 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
+from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
 from airbyte_cdk.sources.utils.schema_helpers import split_config
-from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
-
-
-class Status(Enum):
-    NOT_STARTED = "NOT_STARTED"
-    RUNNING = "RUNNING"
-    COMPLETED = "COMPLETED"
-
-
-@dataclass
-class PartitionReadStatus:
-    partition: Partition
-    partition_read_status: Status
-
-
-@dataclass
-class StreamReadStatus:
-    stream: AbstractStream
-    partition_generation_status: Status
-    partition_read_statuses: List[PartitionReadStatus]
 
 
 class ConcurrentSource(AbstractSource, ABC):
@@ -84,13 +63,7 @@ class ConcurrentSource(AbstractSource, ABC):
             record_counter[stream.name] = 0
         if not stream_instances_to_read_from:
             return
-        while len(streams_currently_generating_partitions) < max_number_of_partition_generator_in_progress:
-            yield self._start_next_partition_generator(
-                stream_instances_to_read_from,
-                streams_currently_generating_partitions,
-                partition_enqueuer,
-                logger,
-            )
+
         partition_reader = PartitionReader(queue)
         queue_item_handler = QueueItemHandler(
             streams_currently_generating_partitions,
@@ -105,6 +78,8 @@ class ConcurrentSource(AbstractSource, ABC):
             self._message_repository,
             partition_reader,
         )
+        while len(streams_currently_generating_partitions) < max_number_of_partition_generator_in_progress:
+            yield from queue_item_handler.start_next_partition_generator()
         yield from self._consume_from_queue(
             queue,
             queue_item_handler,
@@ -141,13 +116,14 @@ class ConcurrentSource(AbstractSource, ABC):
             yield from queue_item_handler.on_partition_generation_completed(queue_item)
 
         elif isinstance(queue_item, Partition):
-            # a new partition was generated and must be processed
             queue_item_handler.on_partition(queue_item)
         elif isinstance(queue_item, PartitionCompleteSentinel):
             yield from queue_item_handler.on_partition_complete_sentinel(queue_item)
-        else:
+        elif isinstance(queue_item, Record):
             # record
             yield from queue_item_handler.on_record(queue_item)
+        else:
+            raise ValueError(f"Unknown queue item type: {type(queue_item)}")
 
     def _get_streams_to_read_from(
         self, catalog: ConfiguredAirbyteCatalog, logger: logging.Logger, stream_to_instance_map: Mapping[str, AbstractStream]
@@ -171,23 +147,6 @@ class ConcurrentSource(AbstractSource, ABC):
                     continue
                 stream_instances_to_read_from.append(stream_instance)
         return stream_instances_to_read_from
-
-    def _start_next_partition_generator(
-        self,
-        streams: List[AbstractStream],
-        streams_currently_generating_partitions: List[str],
-        partition_enqueuer: PartitionEnqueuer,
-        logger: logging.Logger,
-    ) -> AirbyteMessage:
-        stream = streams.pop(0)
-        self._threadpool.submit(partition_enqueuer.generate_partitions, stream)
-        streams_currently_generating_partitions.append(stream.name)
-        logger.info(f"Marking stream {stream.name} as STARTED")
-        logger.info(f"Syncing stream: {stream.name} ")
-        return stream_status_as_airbyte_message(
-            stream.as_airbyte_stream(),
-            AirbyteStreamStatus.STARTED,
-        )
 
     def _streams_as_abstract_streams(self, config: Mapping[str, Any]) -> List[AbstractStream]:
         streams = self.streams(config)
