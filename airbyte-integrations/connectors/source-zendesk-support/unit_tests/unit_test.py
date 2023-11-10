@@ -22,9 +22,9 @@ from source_zendesk_support.streams import (
     END_OF_STREAM_KEY,
     LAST_END_TIME_KEY,
     AccountAttributes,
-    Articles,
     ArticleComments,
     ArticleCommentVotes,
+    Articles,
     ArticleVotes,
     AttributeDefinitions,
     AuditLogs,
@@ -76,13 +76,9 @@ TEST_CONFIG = {
 
 # raw old config
 TEST_OLD_CONFIG = {
-    "auth_method": {
-        "auth_method": "api_token",
-        "email": "integration-test@airbyte.io",
-        "api_token": "api_token"
-    },
+    "auth_method": {"auth_method": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
     "subdomain": "sandbox",
-    "start_date": "2021-06-01T00:00:00Z"
+    "start_date": "2021-06-01T00:00:00Z",
 }
 
 TEST_CONFIG_WITHOUT_START_DATE = {
@@ -149,7 +145,7 @@ def test_default_start_date():
     [
         (TEST_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="),
         (TEST_CONFIG_OAUTH, "test_access_token"),
-        (TEST_OLD_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg==")
+        (TEST_OLD_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="),
     ],
     ids=["api_token", "oauth", "old_config"],
 )
@@ -338,7 +334,7 @@ class TestAllStreams:
             for stream in streams:
                 if expected_stream_cls in streams:
                     assert isinstance(stream, expected_stream_cls)
-    
+
     def test_ticket_forms_exception_stream(self):
         with patch.object(TicketForms, "read_records", return_value=[{}]) as mocked_records:
             mocked_records.side_effect = Exception("The error")
@@ -781,7 +777,7 @@ class TestSourceZendeskIncrementalExportStream:
         [
             (Users, {"start_time": 1622505600}),
             (Tickets, {"start_time": 1622505600}),
-            (Articles, {'sort_by': 'updated_at', 'sort_order': 'asc', 'start_time': 1622505600}),
+            (Articles, {"sort_by": "updated_at", "sort_order": "asc", "start_time": 1622505600}),
         ],
         ids=[
             "Users",
@@ -813,7 +809,7 @@ class TestSourceZendeskIncrementalExportStream:
         test_response = requests.get(STREAM_URL)
         output = list(stream.parse_response(test_response))
         assert expected == output
-    
+
     @pytest.mark.parametrize(
         "stream_cls, stream_slice, expected_path",
         [

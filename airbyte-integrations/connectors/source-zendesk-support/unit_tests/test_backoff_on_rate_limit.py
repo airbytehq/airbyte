@@ -27,12 +27,7 @@ def prepare_config(config: Dict):
 
 @pytest.mark.parametrize(
     "x_rate_limit, retry_after, expected",
-    [
-        ("60", {}, 1),
-        ("0", {}, None),
-        ("0", {"Retry-After": "5"}, 5),
-        ("0", {"Retry-After": "5, 4"}, 5)
-    ]
+    [("60", {}, 1), ("0", {}, None), ("0", {"Retry-After": "5"}, 5), ("0", {"Retry-After": "5, 4"}, 5)],
 )
 def test_backoff(requests_mock, config, x_rate_limit, retry_after, expected):
     """ """

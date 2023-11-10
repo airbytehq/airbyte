@@ -844,11 +844,7 @@ class Articles(SourceZendeskIncrementalExportStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        return {
-            "sort_by": "updated_at",
-            "sort_order": "asc",
-            **super().request_params(stream_state, stream_slice, next_page_token)
-        }
+        return {"sort_by": "updated_at", "sort_order": "asc", **super().request_params(stream_state, stream_slice, next_page_token)}
 
 
 class ArticleVotes(AbstractVotes, HttpSubStream):
