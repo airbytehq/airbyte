@@ -14,7 +14,6 @@ from typing import Optional
 
 import pkg_resources
 import requests
-
 from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME
 
 LOGGER = logging.getLogger(__name__)
@@ -26,6 +25,7 @@ DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE = (
 )
 
 ARGS_DISABLING_TUI = ["--no-tui", "--version", "publish", "upgrade-base-image", "--help", "format", "bump-version", "migrate-to-base-image"]
+
 
 def get_dagger_path() -> Optional[str]:
     try:
@@ -92,11 +92,13 @@ def check_dagger_cli_install() -> str:
         return check_dagger_cli_install()
     return dagger_path
 
+
 def mark_dagger_wrap():
     """
     Mark that the dagger wrap has been applied.
     """
     os.environ[DAGGER_WRAP_ENV_VAR_NAME] = "true"
+
 
 def call_current_command_with_dagger_run():
     os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]
@@ -115,4 +117,3 @@ def call_current_command_with_dagger_run():
     except subprocess.CalledProcessError as e:
         exit_code = e.returncode
     sys.exit(exit_code)
-

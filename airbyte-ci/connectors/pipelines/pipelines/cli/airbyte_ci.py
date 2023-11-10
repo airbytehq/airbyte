@@ -9,7 +9,6 @@ import logging
 import multiprocessing
 import os
 import sys
-
 from pathlib import Path
 from typing import List, Optional
 
@@ -207,6 +206,7 @@ def check_local_docker_configuration():
             f"Your docker daemon is configured with less CPUs than your local machine ({docker_cpus_count} vs. {local_cpus_count}). This may slow down the airbyte-ci execution. Please consider increasing the number of CPUs allocated to your docker daemon in the Resource Allocation settings of Docker."
         )
 
+
 def is_dagger_run_enabled_by_default() -> bool:
     dagger_run_by_default = [
         ["connectors", "test"],
@@ -220,6 +220,7 @@ def is_dagger_run_enabled_by_default() -> bool:
             return True
 
     return False
+
 
 def check_dagger_wrap():
     """
@@ -236,6 +237,7 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
     called_with_dagger_run = check_dagger_wrap()
     main_logger.info(f"Called with dagger run: {called_with_dagger_run}")
     return called_with_dagger_run
+
 
 async def get_modified_files_str(ctx: click.Context):
     modified_files = await get_modified_files(
@@ -305,6 +307,7 @@ async def airbyte_ci(ctx: click.Context):  # noqa D103
     if ctx.obj["enable_dagger_run"] and not is_current_process_wrapped_by_dagger_run():
         main_logger.debug("Re-Running airbyte-ci with dagger run.")
         from pipelines.cli.dagger_run import call_current_command_with_dagger_run
+
         call_current_command_with_dagger_run()
         return
 
@@ -317,6 +320,7 @@ async def airbyte_ci(ctx: click.Context):  # noqa D103
 
     if not ctx.obj["is_local"]:
         log_git_info(ctx)
+
 
 set_working_directory_to_root()
 

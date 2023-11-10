@@ -10,10 +10,10 @@ from base_images import version_registry
 from connector_ops.utils import ConnectorLanguage
 from dagger import Directory
 from jinja2 import Template
-from pipelines.helpers import git
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.helpers import git
 from pipelines.helpers.connectors import metadata_change_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
 

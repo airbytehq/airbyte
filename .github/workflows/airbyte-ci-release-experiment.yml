@@ -17,70 +17,70 @@ jobs:
         os: ["ubuntu-latest", "macos-latest"]
 
     steps:
-    - name: Checkout Airbyte
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: Install Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
 
-    - name: Install Dependencies
-      working-directory: airbyte-ci/connectors/pipelines/
-      run: poetry install --with dev
+      - name: Install Dependencies
+        working-directory: airbyte-ci/connectors/pipelines/
+        run: poetry install --with dev
 
-    - name: Get version from poetry version --short
-      id: get_version
-      working-directory: airbyte-ci/connectors/pipelines/
-      run: |
-        echo "::set-output name=version::$(poetry version --short)"
+      - name: Get version from poetry version --short
+        id: get_version
+        working-directory: airbyte-ci/connectors/pipelines/
+        run: |
+          echo "::set-output name=version::$(poetry version --short)"
 
-    - name: Set binary name
-      id: get_artifact_name
-      run: |
-        echo "::set-output name=artifact_name::airbyte-ci-${{steps.get_version.outputs.version}}-${{ matrix.os }}"
+      - name: Set binary name
+        id: get_artifact_name
+        run: |
+          echo "::set-output name=artifact_name::airbyte-ci-${{steps.get_version.outputs.version}}-${{ matrix.os }}"
 
-    - name: Build Release
-      working-directory: airbyte-ci/connectors/pipelines/
-      run: poetry run poe build-release-binary ${{ steps.get_artifact_name.outputs.artifact_name}}
+      - name: Build Release
+        working-directory: airbyte-ci/connectors/pipelines/
+        run: poetry run poe build-release-binary ${{ steps.get_artifact_name.outputs.artifact_name}}
 
-    - uses: actions/upload-artifact@v2
-      with:
-        name: ${{ steps.get_artifact_name.outputs.artifact_name}}
-        path: airbyte-ci/connectors/pipelines/dist/${{ steps.get_artifact_name.outputs.artifact_name}}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.get_artifact_name.outputs.artifact_name}}
+          path: airbyte-ci/connectors/pipelines/dist/${{ steps.get_artifact_name.outputs.artifact_name}}
 
-    - id: 'auth'
-      name: 'Authenticate to Google Cloud'
-      uses: 'google-github-actions/auth@v1'
-      with:
-        credentials_json: '${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}'
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}"
 
-    - name: Upload Release to GCS
-      uses: google-github-actions/upload-cloud-storage@v1
-      with:
-        path: airbyte-ci/connectors/pipelines/dist/${{ steps.get_artifact_name.outputs.artifact_name}}
-        destination: dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/${{ steps.get_artifact_name.outputs.artifact_name}}
-        headers: |-
-          cache-control:public, max-age=10
+      - name: Upload Release to GCS
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: airbyte-ci/connectors/pipelines/dist/${{ steps.get_artifact_name.outputs.artifact_name}}
+          destination: dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/${{ steps.get_artifact_name.outputs.artifact_name}}
+          headers: |-
+            cache-control:public, max-age=10
 
-    # if master, upload as latest
+      # if master, upload as latest
 
-    - name: Set latest binary name
-      id: get_latest_artifact_name
-      if: github.ref == 'refs/heads/master'
-      run: |
-        echo "::set-output name=artifact_name::airbyte-ci-${{ matrix.os }}"
+      - name: Set latest binary name
+        id: get_latest_artifact_name
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo "::set-output name=artifact_name::airbyte-ci-${{ matrix.os }}"
 
-    - name: Upload Release to GCS
-      if: github.ref == 'refs/heads/master'
-      uses: google-github-actions/upload-cloud-storage@v1
-      with:
-        path: airbyte-ci/connectors/pipelines/dist/${{ steps.get_artifact_name.outputs.artifact_name}}
-        destination: dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/${{ steps.get_latest_artifact_name.outputs.artifact_name}}
-        headers: |-
-          cache-control:public, max-age=10
+      - name: Upload Release to GCS
+        if: github.ref == 'refs/heads/master'
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: airbyte-ci/connectors/pipelines/dist/${{ steps.get_artifact_name.outputs.artifact_name}}
+          destination: dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/${{ steps.get_latest_artifact_name.outputs.artifact_name}}
+          headers: |-
+            cache-control:public, max-age=10
