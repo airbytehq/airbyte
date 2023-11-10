@@ -75,6 +75,11 @@ class ThreadPoolManager:
         return all([f.done() for f in self._futures])
 
     def check_for_errors_and_shutdown(self) -> None:
+        """
+        Check if any of the futures have an exception, and raise it if so. If all futures are done, shutdown the threadpool.
+        If the futures are not done, raise an exception.
+        :return:
+        """
         exceptions_from_futures = [f for f in [future.exception() for future in self._futures] if f is not None]
         if exceptions_from_futures:
             exception = RuntimeError(f"Failed reading with errors: {exceptions_from_futures}")
