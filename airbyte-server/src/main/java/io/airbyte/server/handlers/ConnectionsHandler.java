@@ -268,6 +268,18 @@ public class ConnectionsHandler {
     return new ConnectionReadList().connections(connectionReads);
   }
 
+  public ConnectionReadList connectionPageReadList(final WorkspaceIdPageRequestBody workspaceIdRequestBody)
+      throws IOException {
+    final List<ConnectionRead> connectionReads = Lists.newArrayList();
+
+    for (final StandardSync standardSync : configRepository.pageWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(),
+        workspaceIdRequestBody.getSourceDefinitionId(), workspaceIdRequestBody.getDestinationDefinitionId(), workspaceIdRequestBody.getStatus(),
+        workspaceIdRequestBody.getPageSize(), workspaceIdRequestBody.getPageCurrent())) {
+      connectionReads.add(ApiPojoConverters.internalToConnectionPageRead(standardSync));
+    }
+    return new ConnectionReadList().connections(connectionReads);
+  }
+
   public Long pageConnectionsForWorkspaceCount(final WorkspaceIdPageRequestBody workspaceIdRequestBody)
       throws IOException {
     return configRepository.pageWorkspaceStandardSyncsCount(workspaceIdRequestBody.getWorkspaceId(),

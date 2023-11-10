@@ -2065,7 +2065,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WebBackendConnectionPageReadList"
+                $ref: "#/components/schemas/WebBackendConnectionsPageReadList"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2922,7 +2922,7 @@ components:
         pageSize:
           type: integer
         pageCurrent:
-          type: integer          
+          type: integer
     SourceCloneRequestBody:
       description: The values required to configure the source. The schema for this should have an id of the existing source along with the configuration you want to change in case.
       type: object
@@ -3254,7 +3254,7 @@ components:
         pageSize:
           type: integer
         pageCurrent:
-          type: integer          
+          type: integer
     DestinationConfiguration:
       description: The values required to configure the destination. The schema for this must match the schema return by destination_definition_specifications/get for the destinationDefinition.
       example: { user: "charles" }
@@ -4954,6 +4954,34 @@ components:
           format: uuid
         catalogDiff:
           $ref: "#/components/schemas/CatalogDiff"
+    WebBackendConnectionPageRead:
+      type: object
+      required:
+        - connectionId
+        - name
+        - entityName
+        - connectorName
+        - status
+        - isSyncing
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        name:
+          type: string
+        entityName:
+          type: string
+        connectorName:
+          type: string
+        isSyncing:
+          type: boolean
+        status:
+          $ref: "#/components/schemas/ConnectionStatus"
+        latestSyncJobCreatedAt:
+          description: epoch time of the latest sync job. null if no sync job has taken place.
+          type: integer
+          format: int64
+        latestSyncJobStatus:
+          $ref: "#/components/schemas/JobStatus"
     WebBackendConnectionReadList:
       type: object
       required:
@@ -4972,6 +5000,22 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WebBackendConnectionRead"
+        total:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+        pageCurrent:
+          type: integer
+    WebBackendConnectionsPageReadList:
+      type: object
+      required:
+        - connections
+      properties:
+        connections:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebBackendConnectionPageRead"
         total:
           type: integer
           format: int64
