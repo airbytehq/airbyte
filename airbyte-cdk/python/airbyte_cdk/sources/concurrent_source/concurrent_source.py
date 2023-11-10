@@ -142,9 +142,7 @@ class ConcurrentSource(AbstractSource, ABC):
                 airbyte_message_or_record_or_exception,
                 streams_to_partitions,
                 logger,
-                streams_currently_generating_partitions,
                 record_counter,
-                partition_reader,
                 stream_to_instance_map,
                 queue_item_handler,
             )
@@ -158,9 +156,7 @@ class ConcurrentSource(AbstractSource, ABC):
         queue_item: QueueItem,
         streams_to_partitions: Dict[str, Set[Partition]],
         logger: logging.Logger,
-        streams_currently_generating_partitions: List[str],
         record_counter: Dict[str, int],
-        partition_reader: PartitionReader,
         stream_to_instance_map: Mapping[str, AbstractStream],
         queue_item_handler: QueueItemHandler,
     ) -> Iterable[AirbyteMessage]:
@@ -251,47 +247,6 @@ class ConcurrentSource(AbstractSource, ABC):
             return [status_message, message] + list(self._message_repository.consume_queue())
         else:
             return [message] + list(self._message_repository.consume_queue())
-
-    def _handle_partition_generation_completed(
-        self,
-        sentinel: PartitionGenerationCompletedSentinel,
-        streams_currently_generating_partitions: List[str],
-        stream_instances_to_read_from: List[AbstractStream],
-        partition_enqueuer: PartitionEnqueuer,
-        logger: logging.Logger,
-        streams_to_partitions: Dict[str, Set[Partition]],
-        record_counter: Dict[str, int],
-        stream_to_instance_map: Mapping[str, AbstractStream],
-        queue_item_handler: QueueItemHandler,
-    ) -> List[AirbyteMessage]:
-        stream_name = sentinel.stream.name
-        streams_currently_generating_partitions.remove(sentinel.stream.name)
-        ret = []
-        if self._is_stream_done(stream_name, streams_to_partitions, streams_currently_generating_partitions):
-            ret.append(self._handle_stream_is_done(stream_name, record_counter, logger, stream_to_instance_map))
-        if stream_instances_to_read_from:
-            ret.append(
-                self._start_next_partition_generator(
-                    stream_instances_to_read_from, streams_currently_generating_partitions, partition_enqueuer, logger
-                )
-            )
-        return ret
-
-    def _handle_partition_completed(
-        self,
-        partition: Partition,
-        streams_to_partitions: Dict[str, Set[Partition]],
-        record_counter: Dict[str, int],
-        streams_currently_generating_partitions: List[str],
-        logger: logging.Logger,
-        stream_to_instance_map: Mapping[str, AbstractStream],
-    ) -> Optional[AirbyteMessage]:
-        stream_name = partition.stream_name()
-        partition.close()
-        if self._is_stream_done(stream_name, streams_to_partitions, streams_currently_generating_partitions):
-            return self._handle_stream_is_done(stream_name, record_counter, logger, stream_to_instance_map)
-        else:
-            return None
 
     def _is_stream_done(
         self, stream_name: str, streams_to_partitions: Dict[str, Set[Partition]], streams_currently_generating_partitions: List[str]
