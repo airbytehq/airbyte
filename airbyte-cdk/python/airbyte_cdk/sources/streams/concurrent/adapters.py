@@ -5,6 +5,7 @@
 import copy
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -52,7 +53,7 @@ class StreamFacade(Stream):
         stream: Stream,
         source: AbstractSource,
         logger: logging.Logger,
-        threadpool,
+        threadpool: ThreadPoolExecutor,
         state: Optional[MutableMapping[str, Any]],
         cursor: Cursor,
     ) -> Stream:
@@ -96,6 +97,8 @@ class StreamFacade(Stream):
             ),
             stream,
             cursor,
+            slice_logger=source._slice_logger,
+            logger=logger,
         )
 
     @property
@@ -133,13 +136,15 @@ class StreamFacade(Stream):
         else:
             return stream.cursor_field
 
-    def __init__(self, stream: AbstractStream, legacy_stream: Stream, cursor: Cursor):
+    def __init__(self, stream: AbstractStream, legacy_stream: Stream, cursor: Cursor, slice_logger: SliceLogger, logger: logging.Logger):
         """
         :param stream: The underlying AbstractStream
         """
         self._abstract_stream = stream
         self._legacy_stream = legacy_stream
         self._cursor = cursor
+        self._slice_logger = slice_logger
+        self._logger = logger
 
     def read_full_refresh(
         self,
@@ -178,8 +183,13 @@ class StreamFacade(Stream):
         yield from self._read_records()
 
     def _read_records(self) -> Iterable[StreamData]:
-        for record in self._abstract_stream.read():
-            yield record.data
+        for partition in self._abstract_stream.generate_partitions():
+            if self._slice_logger.should_log_slice_message(self._logger):
+                yield self._slice_logger.create_slice_log_message(partition.to_slice())
+            for record in partition.read():
+                yield record.data
+        # for record in self._abstract_stream.read():
+        #     yield record.data
 
     @property
     def name(self) -> str:

@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 import unittest
 from unittest.mock import Mock
 
@@ -21,6 +21,7 @@ from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 _ANY_SYNC_MODE = SyncMode.full_refresh
@@ -183,8 +184,10 @@ class StreamFacadeTest(unittest.TestCase):
         )
         self._legacy_stream = Mock(spec=Stream)
         self._cursor = Mock(spec=Cursor)
-        self._facade = StreamFacade(self._abstract_stream, self._legacy_stream, self._cursor)
         self._logger = Mock()
+        self._slice_logger = Mock()
+        self._slice_logger.should_log_slice_message.return_value = False
+        self._facade = StreamFacade(self._abstract_stream, self._legacy_stream, self._cursor, self._slice_logger, self._logger)
         self._source = Mock()
         self._max_workers = 10
 
@@ -213,12 +216,16 @@ class StreamFacadeTest(unittest.TestCase):
 
     def test_given_cursor_is_noop_when_supports_incremental_then_return_legacy_stream_response(self):
         assert (
-            StreamFacade(self._abstract_stream, self._legacy_stream, Mock(spec=NoopCursor)).supports_incremental
+            StreamFacade(
+                self._abstract_stream, self._legacy_stream, Mock(spec=NoopCursor), Mock(spec=SliceLogger), Mock(spec=logging.Logger)
+            ).supports_incremental
             == self._legacy_stream.supports_incremental
         )
 
     def test_given_cursor_is_not_noop_when_supports_incremental_then_return_true(self):
-        assert StreamFacade(self._abstract_stream, self._legacy_stream, Mock(spec=Cursor)).supports_incremental
+        assert StreamFacade(
+            self._abstract_stream, self._legacy_stream, Mock(spec=Cursor), Mock(spec=SliceLogger), Mock(spec=logging.Logger)
+        ).supports_incremental
 
     def test_check_availability_is_delegated_to_wrapped_stream(self):
         availability = StreamAvailable()
@@ -229,7 +236,10 @@ class StreamFacadeTest(unittest.TestCase):
     def test_full_refresh(self):
         expected_stream_data = [{"data": 1}, {"data": 2}]
         records = [Record(data, "stream") for data in expected_stream_data]
-        self._abstract_stream.read.return_value = records
+
+        partition = Mock()
+        partition.read.return_value = records
+        self._abstract_stream.generate_partitions.return_value = [partition]
 
         actual_stream_data = list(self._facade.read_records(SyncMode.full_refresh, None, None, None))
 
@@ -238,7 +248,9 @@ class StreamFacadeTest(unittest.TestCase):
     def test_read_records_full_refresh(self):
         expected_stream_data = [{"data": 1}, {"data": 2}]
         records = [Record(data, "stream") for data in expected_stream_data]
-        self._abstract_stream.read.return_value = records
+        partition = Mock()
+        partition.read.return_value = records
+        self._abstract_stream.generate_partitions.return_value = [partition]
 
         actual_stream_data = list(self._facade.read_full_refresh(None, None, None))
 
@@ -247,7 +259,9 @@ class StreamFacadeTest(unittest.TestCase):
     def test_read_records_incremental(self):
         expected_stream_data = [{"data": 1}, {"data": 2}]
         records = [Record(data, "stream") for data in expected_stream_data]
-        self._abstract_stream.read.return_value = records
+        partition = Mock()
+        partition.read.return_value = records
+        self._abstract_stream.generate_partitions.return_value = [partition]
 
         actual_stream_data = list(self._facade.read_incremental(None, None, None, None, None, None, None))
 
@@ -371,7 +385,7 @@ def test_get_error_display_message(exception, expected_display_message):
     stream = Mock()
     legacy_stream = Mock()
     cursor = Mock(spec=Cursor)
-    facade = StreamFacade(stream, legacy_stream, cursor)
+    facade = StreamFacade(stream, legacy_stream, cursor, Mock().Mock(), Mock())
 
     display_message = facade.get_error_display_message(exception)
 
