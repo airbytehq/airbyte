@@ -685,51 +685,56 @@ def test_on_record_emits_status_message_on_first_record_with_repository_message(
 
 
 class TestQueueItemHandler(unittest.TestCase):
-    @freezegun.freeze_time("2020-01-01T00:00:00")
-    def test_on_exception_stops_streams_and_raises_an_exception(self):
-        streams_currently_generating_partitions = [_STREAM_NAME]
-        stream_instances_to_read_from = []
-        partition_enqueuer = Mock(spec=PartitionEnqueuer)
-        thread_pool_manager = Mock(spec=ThreadPoolManager)
-        partition = Mock(spec=Partition)
-        a_closed_partition = Mock(spec=Partition)
-        a_closed_partition.is_closed.return_value = True
+    def setUp(self):
+        self._streams_currently_generating_partitions = [_STREAM_NAME]
+        self._partition_enqueuer = Mock(spec=PartitionEnqueuer)
+        self._thread_pool_manager = Mock(spec=ThreadPoolManager)
+
         log_message = Mock(spec=LogMessage)
-        partition.to_slice.return_value = log_message
-        partition.stream_name.return_value = _STREAM_NAME
-        partition.is_closed.return_value = False
-        streams_to_partitions = {_STREAM_NAME: {partition}, _ANOTHER_STREAM_NAME: {a_closed_partition}}
-        record_counter = {_STREAM_NAME: 0, _ANOTHER_STREAM_NAME: 0}
-        stream_to_instance_map = {}
-        logger = Mock(spec=logging.Logger)
-        slice_logger = Mock(spec=SliceLogger)
-        slice_logger.create_slice_log_message.return_value = log_message
-        message_repository = Mock(spec=MessageRepository)
-        message_repository.consume_queue.return_value = []
-        partition_reader = Mock(spec=PartitionReader)
 
-        handler = QueueItemHandler(
-            streams_currently_generating_partitions,
-            stream_instances_to_read_from,
-            partition_enqueuer,
-            thread_pool_manager,
-            streams_to_partitions,
-            record_counter,
-            stream_to_instance_map,
-            logger,
-            slice_logger,
-            message_repository,
-            partition_reader,
-        )
+        self._an_open_partition = Mock(spec=Partition)
+        self._an_open_partition.is_closed.return_value = False
+        self._an_open_partition.to_slice.return_value = log_message
+        self._an_open_partition.stream_name.return_value = _STREAM_NAME
 
-        stream = Mock(spec=AbstractStream)
-        stream.name = _STREAM_NAME
-        stream.as_airbyte_stream.return_value = AirbyteStream(
+        self._a_closed_partition = Mock(spec=Partition)
+        self._a_closed_partition.is_closed.return_value = True
+
+        self._record_counter = {_STREAM_NAME: 0, _ANOTHER_STREAM_NAME: 0}
+        self._stream_to_instance_map = {}
+        self._logger = Mock(spec=logging.Logger)
+        self._slice_logger = Mock(spec=SliceLogger)
+        self._slice_logger.create_slice_log_message.return_value = log_message
+        self._message_repository = Mock(spec=MessageRepository)
+        self._message_repository.consume_queue.return_value = []
+        self._partition_reader = Mock(spec=PartitionReader)
+
+        self._stream = Mock(spec=AbstractStream)
+        self._stream.name = _STREAM_NAME
+        self._stream.as_airbyte_stream.return_value = AirbyteStream(
             name=_STREAM_NAME,
             json_schema={},
             supported_sync_modes=[SyncMode.full_refresh],
         )
-        stream_to_instance_map[_STREAM_NAME] = stream
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_on_exception_stops_streams_and_raises_an_exception(self):
+        stream_instances_to_read_from = []
+        streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}, _ANOTHER_STREAM_NAME: {self._a_closed_partition}}
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
 
         another_stream = Mock(spec=AbstractStream)
         another_stream.name = _STREAM_NAME
@@ -738,8 +743,8 @@ class TestQueueItemHandler(unittest.TestCase):
             json_schema={},
             supported_sync_modes=[SyncMode.full_refresh],
         )
-        stream_to_instance_map[_STREAM_NAME] = stream
-        stream_to_instance_map[_ANOTHER_STREAM_NAME] = another_stream
+        self._stream_to_instance_map[_STREAM_NAME] = self._stream
+        self._stream_to_instance_map[_ANOTHER_STREAM_NAME] = another_stream
 
         exception = RuntimeError("Something went wrong")
 
@@ -763,4 +768,87 @@ class TestQueueItemHandler(unittest.TestCase):
         ]
 
         assert messages == expected_message
-        thread_pool_manager.shutdown.assert_called_once()
+        self._thread_pool_manager.shutdown.assert_called_once()
+
+    def test_is_done_is_false_if_there_are_any_instances_to_read_from(self):
+        stream_instances_to_read_from = [self._stream]
+        streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}, _ANOTHER_STREAM_NAME: {self._a_closed_partition}}
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        assert not handler.is_done()
+
+    def test_is_done_is_false_if_there_are_streams_still_generating_partitions(self):
+        stream_instances_to_read_from = []
+        streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}, _ANOTHER_STREAM_NAME: {self._a_closed_partition}}
+        self._streams_currently_generating_partitions = [_STREAM_NAME]
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        assert not handler.is_done()
+
+    def test_is_done_is_false_if_all_partitions_are_not_closed(self):
+        stream_instances_to_read_from = []
+        streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}, _ANOTHER_STREAM_NAME: {self._a_closed_partition}}
+        self._streams_currently_generating_partitions = []
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        assert not handler.is_done()
+
+    def test_is_done_is_true_if_all_partitions_are_closed_and_no_streams_are_generating_partitions_and_none_are_still_to_run(self):
+        stream_instances_to_read_from = []
+        streams_to_partitions = {_ANOTHER_STREAM_NAME: {self._a_closed_partition}}
+        self._streams_currently_generating_partitions = []
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        assert handler.is_done()

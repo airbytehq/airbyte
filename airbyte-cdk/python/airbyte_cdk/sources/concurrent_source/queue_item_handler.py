@@ -153,3 +153,11 @@ class QueueItemHandler:
             stream.as_airbyte_stream(),
             AirbyteStreamStatus.STARTED,
         )
+
+    def is_done(self) -> bool:
+        # return (not self._stream_instances_to_read_from and not self._streams_currently_generating_partitions)
+        return (
+            not self._streams_currently_generating_partitions
+            and not self._stream_instances_to_read_from
+            and all([all(p.is_closed() for p in partitions) for partitions in self._streams_to_partitions.values()])
+        )

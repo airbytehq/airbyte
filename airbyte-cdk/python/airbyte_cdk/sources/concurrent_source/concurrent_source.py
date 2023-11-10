@@ -130,7 +130,7 @@ class ConcurrentSource(AbstractSource, ABC):
                 airbyte_message_or_record_or_exception,
                 queue_item_handler,
             )
-            if self._is_done(streams_to_partitions, stream_instances_to_read_from, streams_currently_generating_partitions):
+            if queue_item_handler.is_done():
                 # all partitions were generated and process. we're done here
                 if self._threadpool.is_done() and queue.empty():
                     break
@@ -177,18 +177,6 @@ class ConcurrentSource(AbstractSource, ABC):
                     continue
                 stream_instances_to_read_from.append(stream_instance)
         return stream_instances_to_read_from
-
-    def _is_done(
-        self,
-        streams_to_partitions: Dict[str, Set[Partition]],
-        stream_instances_to_read_from: List[AbstractStream],
-        streams_currently_generating_partitions: List[str],
-    ) -> bool:
-        return (
-            not streams_currently_generating_partitions
-            and not stream_instances_to_read_from
-            and all([all(p.is_closed() for p in partitions) for partitions in streams_to_partitions.values()])
-        )
 
     def _start_next_partition_generator(
         self,
