@@ -15,10 +15,8 @@ from source_stripe import SourceStripe
 
 def _get_source(args: List[str]):
     catalog = AirbyteEntrypoint.extract_catalog(args)
-    config = AirbyteEntrypoint.extract_config(args)
     try:
-        # max_workers = config.get("max_workers", 1)
-        return SourceStripe(config, catalog)
+        return SourceStripe(catalog)
     except Exception as error:
         print(
             AirbyteMessage(

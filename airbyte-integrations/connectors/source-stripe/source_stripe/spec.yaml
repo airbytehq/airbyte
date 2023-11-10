@@ -61,6 +61,7 @@ connectionSpecification:
       type: integer
       title: Number of concurrent workers
       minimum: 1
+      maximum: 3
       default: 2
       examples: [1, 2, 3]
       description: >-
