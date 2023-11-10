@@ -285,8 +285,9 @@ class Reports(IncrementalMailChimpStream):
         # which causes validation errors on the `date-time` format.
         # To avoid this, we remove the field if it is empty.
         for record in response:
-            if record.get("clicks", {}).get("last_click") == "":
-                record["clicks"].pop("last_click", None)
+            clicks = record.get("clicks", {})
+            if not clicks.get("last_click"):
+                clicks.pop("last_click", None)
             yield record
 
 
