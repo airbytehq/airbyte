@@ -9,7 +9,6 @@ from queue import Queue
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Union
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, AirbyteStreamStatus, ConfiguredAirbyteCatalog
-from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.queue_item_handler import QueueItemHandler
@@ -20,9 +19,7 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
-from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
-from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 
@@ -112,7 +109,6 @@ class ConcurrentSource(AbstractSource, ABC):
             queue,
             logger,
             streams_to_partitions,
-            partition_reader,
             streams_currently_generating_partitions,
             stream_instances_to_read_from,
             record_counter,
@@ -129,7 +125,6 @@ class ConcurrentSource(AbstractSource, ABC):
         queue: Queue[QueueItem],
         logger: logging.Logger,
         streams_to_partitions: Dict[str, Set[Partition]],
-        partition_reader: PartitionReader,
         streams_currently_generating_partitions: List[str],
         stream_instances_to_read_from: List[AbstractStream],
         record_counter: Dict[str, int],
@@ -174,7 +169,7 @@ class ConcurrentSource(AbstractSource, ABC):
             yield from queue_item_handler.on_partition_complete_sentinel(queue_item)
         else:
             # record
-            yield from self._handle_record(queue_item, record_counter, logger, stream_to_instance_map)
+            yield from queue_item_handler.on_record(queue_item)
 
     def _get_streams_to_read_from(
         self, catalog: ConfiguredAirbyteCatalog, logger: logging.Logger, stream_to_instance_map: Mapping[str, AbstractStream]
@@ -227,26 +222,6 @@ class ConcurrentSource(AbstractSource, ABC):
             stream.as_airbyte_stream(),
             AirbyteStreamStatus.STARTED,
         )
-
-    def _handle_record(
-        self, record: Record, record_counter: Dict[str, int], logger: logging.Logger, stream_to_instance_map: Mapping[str, AbstractStream]
-    ) -> Iterable[AirbyteMessage]:
-        # Do not pass a transformer or a schema
-        # AbstractStreams are expected to return data as they are expected.
-        # Any transformation on the data should be done before reaching this point
-        message = stream_data_to_airbyte_message(record.stream_name, record.data)
-        stream = stream_to_instance_map[record.stream_name]
-        status_message = None
-        if record_counter[stream.name] == 0:
-            logger.info(f"Marking stream {stream.name} as RUNNING")
-
-            status_message = stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.RUNNING)
-        if message.type == MessageType.RECORD:
-            record_counter[stream.name] += 1
-        if status_message:
-            return [status_message, message] + list(self._message_repository.consume_queue())
-        else:
-            return [message] + list(self._message_repository.consume_queue())
 
     def _is_stream_done(
         self, stream_name: str, streams_to_partitions: Dict[str, Set[Partition]], streams_currently_generating_partitions: List[str]

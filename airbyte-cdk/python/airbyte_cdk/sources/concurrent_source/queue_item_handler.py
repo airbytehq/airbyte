@@ -20,6 +20,7 @@ from airbyte_cdk.models import (
     SyncMode,
     TraceType,
 )
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import MessageRepository
@@ -27,8 +28,12 @@ from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStrea
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
+from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
+from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
+from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 
 
@@ -105,6 +110,24 @@ class QueueItemHandler:
         if self._is_stream_done(partition.stream_name()):
             yield self._on_stream_is_done(partition.stream_name())
         yield from self._message_repository.consume_queue()
+
+    def on_record(self, record: Record) -> Iterable[AirbyteMessage]:
+        # Do not pass a transformer or a schema
+        # AbstractStreams are expected to return data as they are expected.
+        # Any transformation on the data should be done before reaching this point
+        message = stream_data_to_airbyte_message(record.stream_name, record.data)
+        stream = self._stream_to_instance_map[record.stream_name]
+        status_message = None
+        if self._record_counter[stream.name] == 0:
+            self._logger.info(f"Marking stream {stream.name} as RUNNING")
+
+            status_message = stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.RUNNING)
+        if message.type == MessageType.RECORD:
+            self._record_counter[stream.name] += 1
+        if status_message:
+            return [status_message, message] + list(self._message_repository.consume_queue())
+        else:
+            return [message] + list(self._message_repository.consume_queue())
 
     def _start_next_partition_generator(
         self,
