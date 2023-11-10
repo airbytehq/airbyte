@@ -26,13 +26,14 @@ from .utils import command_check
 @pytest.fixture(name="config")
 def config_fixture(requests_mock):
     config = {
-        "account_id": "123",
+        "account_ids": ["123", "234"],
         "access_token": "TOKEN",
         "start_date": "2019-10-10T00:00:00Z",
         "end_date": "2020-10-10T00:00:00Z",
     }
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/business_users", json={"data": []})
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/", json={"account": 123})
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_234/", json={"account": 234})
     return config
 
 

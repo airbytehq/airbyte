@@ -69,7 +69,7 @@ class AdCreatives(FBMarketingStream):
             yield record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_creatives(params=params, fields=self.fields)
+        return [account.get_ad_creatives(params=params, fields=self.fields) for account in self._api.accounts]
 
 
 class CustomConversions(FBMarketingStream):
@@ -79,7 +79,7 @@ class CustomConversions(FBMarketingStream):
     enable_deleted = False
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_custom_conversions(params=params, fields=self.fields)
+        return [account.get_custom_conversions(params=params, fields=self.fields) for account in self._api.accounts]
 
 
 class CustomAudiences(FBMarketingStream):
@@ -92,7 +92,7 @@ class CustomAudiences(FBMarketingStream):
     fields_exceptions = ["rule"]
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_custom_audiences(params=params, fields=self.fields)
+        return [account.get_custom_audiences(params=params, fields=self.fields) for account in self._api.accounts]
 
 
 class Ads(FBMarketingIncrementalStream):
@@ -101,7 +101,7 @@ class Ads(FBMarketingIncrementalStream):
     entity_prefix = "ad"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ads(params=params, fields=self.fields)
+        return [account.get_ads(params=params, fields=self.fields) for account in self._api.accounts]
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -110,7 +110,7 @@ class AdSets(FBMarketingIncrementalStream):
     entity_prefix = "adset"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_sets(params=params, fields=self.fields)
+        return [account.get_ad_sets(params=params, fields=self.fields) for account in self._api.accounts]
 
 
 class Campaigns(FBMarketingIncrementalStream):
@@ -119,7 +119,7 @@ class Campaigns(FBMarketingIncrementalStream):
     entity_prefix = "campaign"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_campaigns(params=params, fields=self.fields)
+        return [account.get_campaigns(params=params, fields=self.fields) for account in self._api.accounts]
 
 
 class Activities(FBMarketingIncrementalStream):
@@ -130,7 +130,7 @@ class Activities(FBMarketingIncrementalStream):
     primary_key = None
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_activities(fields=self.fields, params=params)
+        return [account.get_activities(fields=self.fields, params=params) for account in self._api.accounts]
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
@@ -162,10 +162,10 @@ class Videos(FBMarketingReversedIncrementalStream):
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         # Remove filtering as it is not working for this stream since 2023-01-13
-        return self._api.account.get_ad_videos(params=params, fields=self.fields)
+        return [account.get_ad_videos(params=params, fields=self.fields) for account in self._api.accounts]
 
 
-class AdAccount(FBMarketingStream):
+class AdAccounts(FBMarketingStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-account"""
 
     use_batch = False
@@ -199,19 +199,19 @@ class AdAccount(FBMarketingStream):
         """noop in case of AdAccount"""
         fields = self.fields
         try:
-            return [FBAdAccount(self._api.account.get_id()).api_get(fields=fields)]
+            return [FBAdAccount(account.get_id()).api_get(fields=fields) for account in self._api.accounts]
         except FacebookRequestError as e:
             # This is a workaround for cases when account seem to have all the required permissions
             # but despite of that is not allowed to get `owner` field. See (https://github.com/airbytehq/oncall/issues/3167)
             if e.api_error_code() == 200 and e.api_error_message() == "(#200) Requires business_management permission to manage the object":
                 fields.remove("owner")
-                return [FBAdAccount(self._api.account.get_id()).api_get(fields=fields)]
+                return [FBAdAccount(account.get_id()).api_get(fields=fields) for account in self._api.accounts]
             # FB api returns a non-obvious error when accessing the `funding_source_details` field
             # even though user is granted all the required permissions (`MANAGE`)
             # https://github.com/airbytehq/oncall/issues/3031
             if e.api_error_code() == 100 and e.api_error_message() == "Unsupported request - method type: get":
                 fields.remove("funding_source_details")
-                return [FBAdAccount(self._api.account.get_id()).api_get(fields=fields)]
+                return [FBAdAccount(account.get_id()).api_get(fields=fields) for account in self._api.accounts]
             raise e
 
 
@@ -219,7 +219,7 @@ class Images(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-image"""
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_images(params=params, fields=self.fields)
+        return [account.get_ad_images(params=params, fields=self.fields) for account in self._api.accounts]
 
     def get_record_deleted_status(self, record) -> bool:
         return record[AdImage.Field.status] == AdImage.Status.deleted
