@@ -23,7 +23,7 @@ class ThreadPoolManager:
         self._logger = logger
         self._max_concurrent_tasks = max_concurrent_tasks
         self._sleep_time = sleep_time
-        self._futures = []
+        self._futures: List[Future[Any]] = []
 
     def submit(self, function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
@@ -59,7 +59,7 @@ class ThreadPoolManager:
             if future.done():
                 futures.pop(index)
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         self._threadpool.shutdown(wait=False, cancel_futures=True)
 
     def is_done(self) -> bool:

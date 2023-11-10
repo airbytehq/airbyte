@@ -57,7 +57,7 @@ class QueueItemHandler:
             ret.append(self.start_next_partition_generator())
         return ret
 
-    def on_partition(self, partition: Partition):
+    def on_partition(self, partition: Partition) -> None:
         stream_name = partition.stream_name()
         self._streams_to_partitions[stream_name].add(partition)
         if self._slice_logger.should_log_slice_message(self._logger):
@@ -101,7 +101,7 @@ class QueueItemHandler:
         yield message
         yield from self._message_repository.consume_queue()
 
-    def on_exception(self, exception: Exception):
+    def on_exception(self, exception: Exception) -> Iterable[AirbyteMessage]:
         yield from self._stop_streams()
         raise exception
 
