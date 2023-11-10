@@ -8,11 +8,13 @@ from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 from source_facebook_marketing.streams.common import JobException
+from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 
 
 @pytest.fixture(name="api")
-def api_fixture(mocker):
+def api_fixture(mocker, account_id):
     api = mocker.Mock()
+    api.accounts = [mocker.Mock(account_id=account_id)]
     api.api.ads_insights_throttle = MyFacebookAdsApi.Throttle(0, 0)
     api.api.new_batch.return_value = mocker.MagicMock(spec=FacebookAdsApiBatch)
     return api

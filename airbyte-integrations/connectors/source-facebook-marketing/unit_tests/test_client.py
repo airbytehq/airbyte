@@ -10,7 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.streams import Activities, AdAccount, AdCreatives, Campaigns, Videos
+from source_facebook_marketing.streams import Activities, AdAccounts, AdCreatives, Campaigns, Videos
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -58,14 +58,13 @@ class TestBackoff:
         campaign_responses = [
             fb_call_rate_response,
             {
-                "json": {"data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}]},
+                "json": {"data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}]},
                 "status_code": 200,
             },
         ]
 
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns", campaign_responses)
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/1/", [{"status_code": 200}])
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/2/", [{"status_code": 200}])
 
         stream = Campaigns(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False)
         try:
@@ -136,14 +135,14 @@ class TestBackoff:
             {
                 "json": account_data,
                 "status_code": 200,
-            },
+            }
         ]
 
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/business_users", json={"data": []})
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/", responses)
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{account_data['id']}/", responses)
 
-        stream = AdAccount(api=api)
+        stream = AdAccounts(api=api)
         accounts = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
         assert accounts == [account_data]
@@ -187,10 +186,10 @@ class TestBackoff:
         }
 
         res = requests_mock.register_uri(
-            "GET",
-            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/activities",
-            [error, success, error, success],
-        )
+                "GET",
+                FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/activities",
+                [error, success, error, success],
+            )
 
         stream = Activities(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
         try:
@@ -223,22 +222,22 @@ class TestBackoff:
 
     def test_limit_error_retry_next_page(self, fb_call_amount_data_response, requests_mock, api, account_id):
         """Unlike the previous test, this one tests the API call fail on the second or more page of a request."""
-        base_url = FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/advideos"
+        base_url = FacebookSession.GRAPH + f"/{FB_API_VERSION}"
 
         res = requests_mock.register_uri(
-            "GET",
-            base_url,
-            [
-                {
-                    "json": {
-                        "data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}],
-                        "paging": {"next": f"{base_url}?after=after_page_1&limit=100"},
+                "GET",
+                f"{base_url}/act_{account_id}/advideos",
+                [
+                    {
+                        "json": {
+                            "data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}],
+                            "paging": {"next": f"{base_url}/act_{account_id}/advideos?after=after_page_1&limit=100"},
+                        },
+                        "status_code": 200,
                     },
-                    "status_code": 200,
-                },
-                fb_call_amount_data_response,
-            ],
-        )
+                    fb_call_amount_data_response,
+                ],
+            )
 
         stream = Videos(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
         try:

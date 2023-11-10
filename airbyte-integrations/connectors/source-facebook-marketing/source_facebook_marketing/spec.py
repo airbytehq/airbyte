@@ -105,16 +105,17 @@ class ConnectorConfig(BaseConfig):
     class Config:
         title = "Source Facebook Marketing"
 
-    account_id: str = Field(
-        title="Ad Account ID",
+    account_ids: Optional[str] = Field(
+        title="Ad Account IDs",
         order=0,
         description=(
-            "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. "
+            "The list of Facebook Ad account ID to use when pulling data from the Facebook Marketing API,"
+            "separated by commas (,)."
             "The Ad account ID number is in the account dropdown menu or in your browser's address "
             'bar of your <a href="https://adsmanager.facebook.com/adsmanager/">Meta Ads Manager</a>. '
             'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
         ),
-        pattern="^[0-9]+$",
+        pattern="^[0-9,]+$",
         pattern_descriptor="1234567890",
         examples=["111111111111111"],
     )

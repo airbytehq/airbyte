@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "ad_account",
+        "name": "ad_accounts",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
