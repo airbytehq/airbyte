@@ -108,6 +108,12 @@
         },
         "allowLinkToResetKnownValues": {
           "type": ["null", "boolean"]
+        },
+        "lifecycleStages": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
         }
       }
     },

@@ -21,7 +21,7 @@
         "order": 10,
         "type": "array",
         "items": {
-          "title": "S3FileBasedStreamConfig",
+          "title": "FileBasedStreamConfig",
           "type": "object",
           "properties": {
             "name": {
@@ -270,7 +270,7 @@
                   }
                 },
                 {
-                  "title": "Markdown/PDF/Docx Format (Experimental)",
+                  "title": "Document File Type Format (Experimental)",
                   "type": "object",
                   "properties": {
                     "filetype": {
@@ -280,7 +280,7 @@
                       "type": "string"
                     }
                   },
-                  "description": "Extract text from document formats and emit as one record per file."
+                  "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file."
                 }
               ]
             },
@@ -318,6 +318,7 @@
         "title": "Endpoint",
         "description": "Endpoint to an S3 compatible service. Leave empty to use AWS.",
         "default": "",
+        "examples": ["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
         "order": 4,
         "type": "string"
       },

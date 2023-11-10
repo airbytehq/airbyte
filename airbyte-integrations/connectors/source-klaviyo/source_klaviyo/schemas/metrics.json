@@ -1,19 +1,25 @@
 {
   "type": "object",
+  "additionalProperties": true,
   "properties": {
-    "object": { "type": "string" },
+    "type": { "type": "string" },
     "id": { "type": "string" },
-    "name": { "type": "string" },
-    "created": { "type": "string", "format": "date-time" },
     "updated": { "type": "string", "format": "date-time" },
-    "integration": {
-      "type": "object",
+    "attributes": {
+      "type": ["null", "object"],
       "properties": {
-        "object": { "type": "string" },
-        "id": { "type": "string" },
         "name": { "type": "string" },
-        "category": { "type": "string" }
+        "created": { "type": "string", "format": "date-time" },
+        "updated": { "type": "string", "format": "date-time" },
+        "integration": {
+          "type": ["null", "object"],
+          "additionalProperties": true
+        }
       }
+    },
+    "links": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     }
   }
 }

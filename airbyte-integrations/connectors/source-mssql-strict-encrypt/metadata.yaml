@@ -11,7 +11,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
-  dockerImageTag: 2.0.1
+  dockerImageTag: 3.0.0
   dockerRepository: airbyte/source-mssql-strict-encrypt
   githubIssueLabel: source-mssql
   icon: mssql.svg
@@ -23,6 +23,9 @@ data:
     - language:java
   releases:
     breakingChanges:
+      3.0.0:
+        message: "Remapped columns of types: date, datetime, datetime2, datetimeoffset, smalldatetime, and time from `String` to their appropriate Airbyte types. Customers whose streams have columns with the affected data types must take action with their connections."
+        upgradeDeadline: "2023-12-07"
       2.0.0:
         message: "Add default cursor for cdc"
         upgradeDeadline: "2023-08-23"
