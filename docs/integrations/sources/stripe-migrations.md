@@ -2,11 +2,8 @@
 
 ## Upgrading to 5.0.0
 
-This change fixes multiple issues for the `Bank Accounts` stream. Also, `Refunds`, `Checkout Sessions` and `Checkout Sessions Line Items` are affected:
+This change fixes multiple issues for the `Refunds`, `Checkout Sessions` and `Checkout Sessions Line Items` streams:
 
- - Data not expanded when using the `BankAccounts` stream in the full refresh mode
- - Data not filtered when using the event-based incremental sync mode for the `BankAccounts` stream
- - Cursor values not populated when using the full refresh mode for the `BankAccounts` stream
  - `CheckoutSessions` stream missing data for one day when using the incremental sync mode after a reset
  - `Refunds` stream not syncing data in the incremental sync mode
  - `CheckoutSessionsLineItems` potential data loss
