@@ -34,14 +34,25 @@ class Partition(ABC):
 
     @abstractmethod
     def stream_name(self) -> str:
+        """
+        Returns the name of the stream that this partition is reading from.
+        :return: The name of the stream.
+        """
         pass
 
     @abstractmethod
     def close(self) -> None:
+        """
+        Closes the partition.
+        """
         pass
 
     @abstractmethod
     def is_closed(self) -> bool:
+        """
+        Returns whether the partition is closed.
+        :return:
+        """
         pass
 
     @abstractmethod
