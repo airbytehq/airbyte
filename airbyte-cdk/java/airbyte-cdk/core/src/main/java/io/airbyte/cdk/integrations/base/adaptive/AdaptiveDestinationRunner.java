@@ -10,6 +10,7 @@ import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.base.IntegrationCliParser;
 import io.airbyte.cdk.integrations.base.IntegrationConfig;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ public class AdaptiveDestinationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdaptiveDestinationRunner.class);
 
-  private static final String DEPLOYMENT_MODE_KEY = "DEPLOYMENT_MODE";
+  private static final String DEPLOYMENT_MODE_KEY = EnvVariableFeatureFlags.DEPLOYMENT_MODE;
   private static final String CLOUD_MODE = "CLOUD";
 
   public static OssDestinationBuilder baseOnEnv() {
