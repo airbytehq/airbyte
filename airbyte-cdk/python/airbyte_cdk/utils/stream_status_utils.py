@@ -18,7 +18,11 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models import Type as MessageType
 
 
-def as_airbyte_message(stream_name: str, stream_namespace: Optional[str], current_status: AirbyteStreamStatus) -> AirbyteMessage:
+def as_airbyte_message(stream: ConfiguredAirbyteStream, current_status: AirbyteStreamStatus) -> AirbyteMessage:
+    return status_to_airbyte_message(stream.stream.name, stream.stream.namespace, current_status)
+
+
+def status_to_airbyte_message(stream_name: str, stream_namespace: Optional[str], current_status: AirbyteStreamStatus) -> AirbyteMessage:
     """
     Builds an AirbyteStreamStatusTraceMessage for the provided stream
     """
