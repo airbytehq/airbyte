@@ -130,7 +130,6 @@ class QueueItemHandler:
             return None
 
     def is_done(self) -> bool:
-        # return (not self._stream_instances_to_read_from and not self._streams_currently_generating_partitions)
         return (
             not self._streams_currently_generating_partitions
             and not self._stream_instances_to_read_from

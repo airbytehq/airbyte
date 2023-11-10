@@ -90,7 +90,6 @@ class ConcurrentSource(AbstractSource, ABC):
         queue: Queue[QueueItem],
         queue_item_handler: QueueItemHandler,
     ) -> Iterable[AirbyteMessage]:
-        # FIXME
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
             yield from self._handle_item(
                 airbyte_message_or_record_or_exception,
