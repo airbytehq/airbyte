@@ -15,8 +15,9 @@ from source_stripe import SourceStripe
 
 def _get_source(args: List[str]):
     catalog = AirbyteEntrypoint.extract_catalog(args)
+    config = AirbyteEntrypoint.extract_config(args)
     try:
-        return SourceStripe(catalog)
+        return SourceStripe(config, catalog)
     except Exception as error:
         print(
             AirbyteMessage(

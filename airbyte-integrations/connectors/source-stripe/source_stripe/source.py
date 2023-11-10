@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import concurrent
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
@@ -9,7 +9,8 @@ import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
@@ -35,9 +36,18 @@ from source_stripe.streams import (
 _MAX_CONCURRENCY = 3
 
 
-class SourceStripe(AbstractSource):
-    def __init__(self, catalog_path: Optional[str] = None, **kwargs):
-        super().__init__(**kwargs)
+class SourceStripe(ConcurrentSource):
+    def __init__(self, config_path: Optional[str] = None, catalog_path: Optional[str] = None, **kwargs):
+        if config_path:
+            config = self.read_config(config_path)
+            max_workers = config.get("num_workers", 1)
+        else:
+            max_workers = 1
+        entrypoint_logger.info(f"Initializing source with {max_workers} workers")
+        threadpool_manager = ThreadPoolManager(
+            concurrent.futures.ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="workerpool"), entrypoint_logger
+        )
+        super().__init__(threadpool_manager, InMemoryMessageRepository(), max(max_workers // 2, 1), **kwargs)
         if catalog_path:
             catalog = self.read_catalog(catalog_path)
             # Only use concurrent cdk if all streams are running in full_refresh
@@ -434,14 +444,10 @@ class SourceStripe(AbstractSource):
         if self._use_concurrent_cdk:
             # We cap the number of workers to avoid hitting the Stripe rate limit
             # The limit can be removed or increased once we have proper rate limiting
-            concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
-            streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
 
             # The state is known to be empty because concurrent CDK is currently only used for full refresh
             state = {}
             cursor = NoopCursor()
-            return [
-                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, state, cursor) for stream in streams
-            ]
+            return [StreamFacade.create_from_stream(stream, self, entrypoint_logger, state, cursor) for stream in streams]
         else:
             return streams
