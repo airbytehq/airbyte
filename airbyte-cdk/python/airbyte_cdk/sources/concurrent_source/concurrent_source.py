@@ -94,6 +94,7 @@ class ConcurrentSource(AbstractSource, ABC):
                 partition_enqueuer,
                 logger,
             )
+        partition_reader = PartitionReader(queue)
         queue_item_handler = QueueItemHandler(
             streams_currently_generating_partitions,
             stream_instances_to_read_from,
@@ -103,12 +104,15 @@ class ConcurrentSource(AbstractSource, ABC):
             record_counter,
             stream_to_instance_map,
             logger,
+            self._slice_logger,
+            self._message_repository,
+            partition_reader,
         )
         yield from self._consume_from_queue(
             queue,
             logger,
             streams_to_partitions,
-            partition_enqueuer,
+            partition_reader,
             streams_currently_generating_partitions,
             stream_instances_to_read_from,
             record_counter,
@@ -125,14 +129,13 @@ class ConcurrentSource(AbstractSource, ABC):
         queue: Queue[QueueItem],
         logger: logging.Logger,
         streams_to_partitions: Dict[str, Set[Partition]],
-        partition_enqueuer: PartitionEnqueuer,
+        partition_reader: PartitionReader,
         streams_currently_generating_partitions: List[str],
         stream_instances_to_read_from: List[AbstractStream],
         record_counter: Dict[str, int],
         stream_to_instance_map: Mapping[str, AbstractStream],
         queue_item_handler: QueueItemHandler,
     ) -> Iterable[AirbyteMessage]:
-        partition_reader = PartitionReader(queue)
         # FIXME
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=300):
             yield from self._handle_item(
@@ -170,7 +173,7 @@ class ConcurrentSource(AbstractSource, ABC):
 
         elif isinstance(queue_item, Partition):
             # a new partition was generated and must be processed
-            self._handle_partition(queue_item, streams_to_partitions, partition_reader, logger)
+            queue_item_handler.on_partition(queue_item)
         elif isinstance(queue_item, PartitionCompleteSentinel):
             # all records for a partition were generated
             partition = queue_item.partition
@@ -255,19 +258,6 @@ class ConcurrentSource(AbstractSource, ABC):
             return [status_message, message] + list(self._message_repository.consume_queue())
         else:
             return [message] + list(self._message_repository.consume_queue())
-
-    def _handle_partition(
-        self,
-        partition: Partition,
-        streams_to_partitions: Mapping[str, Set[Partition]],
-        partition_reader: PartitionReader,
-        logger: logging.Logger,
-    ) -> None:
-        stream_name = partition.stream_name()
-        streams_to_partitions[stream_name].add(partition)
-        if self._slice_logger.should_log_slice_message(logger):
-            self._message_repository.emit_message(self._slice_logger.create_slice_log_message(partition.to_slice()))
-        self._threadpool.submit(partition_reader.process_partition, partition)
 
     def _handle_partition_generation_completed(
         self,

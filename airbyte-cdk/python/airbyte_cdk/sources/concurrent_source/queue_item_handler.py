@@ -22,9 +22,12 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
+from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 
 
@@ -39,6 +42,9 @@ class QueueItemHandler:
         record_counter: Dict[str, int],
         stream_to_instance_map: Mapping[str, AbstractStream],
         logger: logging.Logger,
+        slice_logger: SliceLogger,
+        message_repository: MessageRepository,
+        partition_reader: PartitionReader,
     ):
         self._stream_to_instance_map = stream_to_instance_map
         self._record_counter = record_counter
@@ -49,6 +55,9 @@ class QueueItemHandler:
         self._stream_instances_to_read_from = stream_instances_to_read_from
         self._streams_currently_generating_partitions = streams_currently_generating_partitions
         self._logger = logger
+        self._slice_logger = slice_logger
+        self._message_repository = message_repository
+        self._partition_reader = partition_reader
 
     def on_partition_generation_completed(self, sentinel: PartitionGenerationCompletedSentinel) -> Iterable[AirbyteMessage]:
         stream_name = sentinel.stream.name
@@ -66,6 +75,13 @@ class QueueItemHandler:
                 )
             )
         return ret
+
+    def on_partition(self, partition: Partition):
+        stream_name = partition.stream_name()
+        self._streams_to_partitions[stream_name].add(partition)
+        if self._slice_logger.should_log_slice_message(self._logger):
+            self._message_repository.emit_message(self._slice_logger.create_slice_log_message(partition.to_slice()))
+        self._thread_pool_manager.submit(self._partition_reader.process_partition, partition)
 
     def _is_stream_done(
         self, stream_name: str, streams_to_partitions: Dict[str, Set[Partition]], streams_currently_generating_partitions: List[str]
