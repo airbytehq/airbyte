@@ -73,7 +73,7 @@
                 "type": "string"
               }
             },
-            "required": ["cohere_key"],
+            "required": ["cohere_key", "mode"],
             "description": "Use the Cohere API to embed text."
           },
           {
