@@ -6,6 +6,28 @@ const registry_url =
 let registry = {};
 let loading = false;
 
+/*
+This methods makes registry a singleton available to all callers of this plugin.
+Only one download will happen for the first callers and all others will use the cached version.
+*/
+const fetchCatalog = async () => {
+  if (loading) {
+    await sleep(500);
+    return fetchCatalog();
+  }
+
+  if (registry.length > 0) {
+    return registry;
+  }
+
+  loading = true;
+  console.log("Fetching connector registry...");
+  const response = await fetch(registry_url);
+  registry = await response.json();
+  console.log(`fetched ${registry.length} connectors form registry`);
+  loading = false;
+};
+
 const plugin = () => {
   const transformer = async (ast, vfile) => {
     if (!isDocsPage(vfile)) return;
@@ -25,10 +47,13 @@ const plugin = () => {
 
     if (!registryEntry) return;
 
+    // ast.children.unshift({
+    //   type: "html",
+    //   value: buildConnectorHTMLContent(registryEntry),
+    // });
+
     visit(ast, "heading", (node) => {
-      let headerFound = false;
-      if (node.depth === 1 && node.children.length === 1 && !headerFound) {
-        headerFound = true;
+      if (node.depth === 1 && node.children.length === 1) {
         const originalTitle = node.children[0].value;
         const originalId = node.data.hProperties.id;
 
@@ -51,37 +76,43 @@ const buildConnectorHTMLContent = (
   originalId
 ) => {
   const htmlContent = `
-  <h1 id="${originalId}">${originalTitle}</h1>
-  <small>
-    <table>
-      <tbody>
-        <tr>
-          <td rowSpan="4">
-            <img style="max-height: 75px" src="${registryEntry.iconUrl_oss}" />
-          </td>
-          <td>Support Level: </td>
-          <td><strong>${capitalizeFirstLetter(
-            registryEntry.supportLevel_oss
-          )}</strong></td>
-        </tr>
-        <tr>
-          <td>Definition Id: </td>
-          <td>${registryEntry.definitionId}</td>
-        </tr>
-        <tr>
-          <td>Latest Version: </td>
-          <td>${registryEntry.dockerImageTag_oss}</td>
-        </tr>
-        <tr>
-          <td>Availability:</td>
-          <td>Airbyte Cloud: ${
-            registryEntry.is_cloud ? "✅" : "❌"
-          }  |  Airbyte OSS: ${registryEntry.is_oss ? "✅" : "❌"}</td>
-        </tr>
-      </tbody>
-    </table>
-  </small>
-  <br />
+  <div>
+    <div class="header">
+      <img src="${
+        registryEntry.iconUrl_oss
+      }" alt="connector logo" style="max-height: 40px; max-width: 40px; float: left; margin-right: 10px" />
+      <h1 style="position: relative;">${originalTitle}</h1>
+    </div>
+
+    <small>
+      <table>
+        <tbody>
+          <tr>
+            <td>Availability:</td>
+            <td>Airbyte Cloud: ${registryEntry.is_cloud ? "✅" : "❌"}
+            <br />
+            Airbyte OSS: ${registryEntry.is_oss ? "✅" : "❌"}</td>
+          </tr>
+          <tr>
+            <td>Support Level:</td>
+            <td>
+              <strong><a href="/project-overview/product-support-levels/">${capitalizeFirstLetter(
+                registryEntry.supportLevel_oss
+              )}</a></strong>
+            </td>
+          </tr>
+          <tr>
+            <td>Latest Version:</td>
+            <td>${registryEntry.dockerImageTag_oss}</td>
+          </tr>
+          <tr>
+            <td>Definition Id:</td>
+            <td>${registryEntry.definitionId}</td>
+          </tr>
+        </tbody>
+      </table>
+    </small>
+  </div>
 `;
 
   return htmlContent;
@@ -100,28 +131,6 @@ const isDocsPage = (vfile) => {
   }
 
   return true;
-};
-
-/*
-This methods makes registry a singleton available to all callers of this plugin.
-Only one download will happen for the first callers and all others will use the cached version.
-*/
-const fetchCatalog = async () => {
-  if (loading) {
-    await sleep(500);
-    return fetchCatalog();
-  }
-
-  if (registry.length > 0) {
-    return registry;
-  }
-
-  loading = true;
-  console.log("Fetching connector registry...");
-  const response = await fetch(registry_url);
-  registry = await response.json();
-  console.log(`fetched ${registry.length} connectors form registry`);
-  loading = false;
 };
 
 const sleep = (ms) => {
