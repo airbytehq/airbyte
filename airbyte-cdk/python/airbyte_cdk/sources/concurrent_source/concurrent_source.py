@@ -4,7 +4,7 @@
 import logging
 from abc import ABC
 from queue import Queue
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Union
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
@@ -31,7 +31,6 @@ class ConcurrentSource(AbstractSource, ABC):
     ) -> None:
         super().__init__(**kwargs)
         self._threadpool = threadpool
-        assert isinstance(threadpool, ThreadPoolManager)
         self._message_repository = message_repository
 
     @property
@@ -56,7 +55,6 @@ class ConcurrentSource(AbstractSource, ABC):
 
         stream_instances_to_read_from = self._get_streams_to_read_from(catalog, logger, stream_to_instance_map)
         streams_currently_generating_partitions: List[str] = []
-        streams_to_partitions: Dict[str, Set[Partition]] = {}
         if not stream_instances_to_read_from:
             return
 
@@ -66,7 +64,6 @@ class ConcurrentSource(AbstractSource, ABC):
             stream_instances_to_read_from,
             partition_enqueuer,
             self._threadpool,
-            streams_to_partitions,
             stream_to_instance_map,
             logger,
             self._slice_logger,

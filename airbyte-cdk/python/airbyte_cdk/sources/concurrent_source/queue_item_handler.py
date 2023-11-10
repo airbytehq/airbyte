@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from typing import Dict, Iterable, List, Mapping, Optional, Set
+from typing import Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
 from airbyte_cdk.models import Type as MessageType
@@ -27,7 +27,6 @@ class QueueItemHandler:
         stream_instances_to_read_from: List[AbstractStream],
         partition_enqueuer: PartitionEnqueuer,
         thread_pool_manager: ThreadPoolManager,
-        streams_to_partitions: Dict[str, Set[Partition]],
         stream_to_instance_map: Mapping[str, AbstractStream],
         logger: logging.Logger,
         slice_logger: SliceLogger,
@@ -36,10 +35,10 @@ class QueueItemHandler:
     ):
         self._stream_to_instance_map = stream_to_instance_map
         self._record_counter = {}
+        self._streams_to_partitions = {}
         for stream in stream_instances_to_read_from:
-            streams_to_partitions[stream.name] = set()
+            self._streams_to_partitions[stream.name] = set()
             self._record_counter[stream.name] = 0
-        self._streams_to_partitions = streams_to_partitions
         self._thread_pool_manager = thread_pool_manager
         self._partition_enqueuer = partition_enqueuer
         self._stream_instances_to_read_from = stream_instances_to_read_from
