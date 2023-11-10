@@ -2,31 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import concurrent
-import datetime
 import logging
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Tuple, Union
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import (
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStateBlob,
-    AirbyteStateMessage,
-    AirbyteStateType,
-    AirbyteStreamState,
-    AirbyteStreamStatus,
-    AirbyteStreamStatusTraceMessage,
-    AirbyteTraceMessage,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    DestinationSyncMode,
-    StreamDescriptor,
-    SyncMode,
-    TraceType,
-)
-from airbyte_cdk.models import Type
-from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
@@ -158,60 +139,9 @@ def test_read_stream_emits_repository_message_on_error(mocker, message_repositor
         assert MESSAGE_FROM_REPOSITORY in messages
 
 
-GLOBAL_EMITTED_AT = 1
-
-
-def _as_record(stream: str, data: Dict[str, Any]) -> AirbyteMessage:
-    return AirbyteMessage(
-        type=Type.RECORD,
-        record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=GLOBAL_EMITTED_AT),
-    )
-
-
-def _as_records(stream: str, data: List[Dict[str, Any]]) -> List[AirbyteMessage]:
-    return [_as_record(stream, datum) for datum in data]
-
-
-def _as_stream_status(stream: str, status: AirbyteStreamStatus) -> AirbyteMessage:
-    trace_message = AirbyteTraceMessage(
-        emitted_at=datetime.datetime.now().timestamp() * 1000.0,
-        type=TraceType.STREAM_STATUS,
-        stream_status=AirbyteStreamStatusTraceMessage(
-            stream_descriptor=StreamDescriptor(name=stream),
-            status=status,
-        ),
-    )
-
-    return AirbyteMessage(type=MessageType.TRACE, trace=trace_message)
-
-
-def _as_state(state_data: Dict[str, Any], stream_name: str = "", per_stream_state: Dict[str, Any] = None):
-    if per_stream_state:
-        return AirbyteMessage(
-            type=Type.STATE,
-            state=AirbyteStateMessage(
-                type=AirbyteStateType.STREAM,
-                stream=AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.parse_obj(per_stream_state)
-                ),
-                data=state_data,
-            ),
-        )
-    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state_data))
-
-
 def _configured_stream(stream: Stream, sync_mode: SyncMode):
     return ConfiguredAirbyteStream(
         stream=stream.as_airbyte_stream(),
         sync_mode=sync_mode,
         destination_sync_mode=DestinationSyncMode.overwrite,
     )
-
-
-def _fix_emitted_at(messages: List[AirbyteMessage]) -> List[AirbyteMessage]:
-    for msg in messages:
-        if msg.type == Type.RECORD and msg.record:
-            msg.record.emitted_at = GLOBAL_EMITTED_AT
-        if msg.type == Type.TRACE and msg.trace:
-            msg.trace.emitted_at = GLOBAL_EMITTED_AT
-    return messages
