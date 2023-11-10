@@ -28,7 +28,7 @@ class StreamFacadeSource(ConcurrentSource):
     def __init__(
         self,
         streams: List[Stream],
-        threadpool,
+        threadpool: concurrent.futures.ThreadPoolExecutor,
         cursor_field: Optional[CursorField] = None,
         cursor_boundaries: Optional[Tuple[str, str]] = None,
         input_state: Optional[List[Mapping[str, Any]]] = _NO_STATE,
