@@ -2,475 +2,178 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from urllib.parse import urlencode
+
 import freezegun
 import pendulum
 import pytest
 from source_stripe.streams import CustomerBalanceTransactions, Persons, SetupAttempts
 
 
-def test_request_headers(accounts):
-    stream = accounts()
+def read_from_stream(stream, sync_mode, state):
+    records = []
+    for slice_ in stream.stream_slices(sync_mode=sync_mode, stream_state=state):
+        for record in stream.read_records(sync_mode=sync_mode, stream_slice=slice_, stream_state=state):
+            records.append(record)
+    return records
+
+
+def test_request_headers(stream_by_name):
+    stream = stream_by_name("accounts")
     headers = stream.request_headers()
     assert headers["Stripe-Version"] == "2022-11-15"
 
 
-lazy_substream_test_suite = (
-    (
-        {
-            "/v1/invoices": {
-                "has_more": False,
-                "object": "list",
-                "url": "/v1/invoices",
-                "data": [
-                    {
-                        "created": 1641038947,
-                        "customer": "cus_HezytZRkaQJC8W",
-                        "id": "in_1KD6OVIEn5WyEQxn9xuASHsD",
-                        "object": "invoice",
-                        "total": 1,
-                        "lines": {
-                            "data": [
-                                {
-                                    "id": "il_1",
-                                    "object": "line_item",
-                                },
-                                {
-                                    "id": "il_2",
-                                    "object": "line_item",
-                                },
-                            ],
-                            "has_more": True,
-                            "object": "list",
-                            "total_count": 3,
-                            "url": "/v1/invoices/in_1KD6OVIEn5WyEQxn9xuASHsD/lines",
-                        },
-                    }
-                ],
-            },
-            "/v1/invoices/in_1KD6OVIEn5WyEQxn9xuASHsD/lines?starting_after=il_2": {
-                "data": [
-                    {
-                        "id": "il_3",
-                        "object": "line_item",
+bank_accounts_full_refresh_test_case = (
+    {
+        "https://api.stripe.com/v1/customers?expand%5B%5D=data.sources": {
+            "has_more": False,
+            "object": "list",
+            "url": "/v1/customers",
+            "data": [
+                {
+                    "created": 1641038947,
+                    "id": "cus_HezytZRkaQJC8W",
+                    "object": "customer",
+                    "total": 1,
+                    "sources": {
+                        "data": [
+                            {
+                                "id": "cs_1",
+                                "object": "card",
+                            },
+                            {
+                                "id": "cs_2",
+                                "object": "bank_account",
+                            },
+                        ],
+                        "has_more": True,
+                        "object": "list",
+                        "total_count": 4,
+                        "url": "/v1/customers/cus_HezytZRkaQJC8W/sources",
                     },
-                ],
-                "has_more": False,
-                "object": "list",
-                "total_count": 3,
-                "url": "/v1/invoices/in_1KD6OVIEn5WyEQxn9xuASHsD/lines",
-            },
+                }
+            ],
         },
-        "invoices",
-        "invoice_line_items",
-        [
-            {"id": "il_1", "invoice_id": "in_1KD6OVIEn5WyEQxn9xuASHsD", "object": "line_item"},
-            {"id": "il_2", "invoice_id": "in_1KD6OVIEn5WyEQxn9xuASHsD", "object": "line_item"},
-            {"id": "il_3", "invoice_id": "in_1KD6OVIEn5WyEQxn9xuASHsD", "object": "line_item"},
-        ],
-        "full_refresh",
-        {},
-    ),
-    (
-        {
-            "/v1/subscriptions": {
-                "has_more": False,
-                "object": "list",
-                "url": "/v1/subscriptions",
-                "data": [
-                    {
-                        "created": 1641038947,
-                        "customer": "cus_HezytZRkaQJC8W",
-                        "id": "si_OptSP2o3XZUBpx",
-                        "object": "subscription",
-                        "total": 1,
-                        "items": {
-                            "data": [
-                                {
-                                    "id": "si_1",
-                                    "object": "subscription_item",
-                                },
-                                {
-                                    "id": "si_2",
-                                    "object": "subscription_item",
-                                },
-                            ],
-                            "has_more": True,
-                            "object": "list",
-                            "total_count": 3,
-                            "url": "/v1/subscription_items",
-                        },
-                    }
-                ],
-            },
-            "/v1/subscription_items?subscription=si_OptSP2o3XZUBpx&starting_after=si_2": {
-                "data": [
-                    {
-                        "id": "si_3",
-                        "object": "subscription_item",
-                    },
-                ],
-                "has_more": False,
-                "object": "list",
-                "total_count": 3,
-                "url": "/v1/subscription_items",
-            },
+        "https://api.stripe.com/v1/customers/cus_HezytZRkaQJC8W/sources?object=bank_account&starting_after=cs_2": {
+            "data": [
+                {
+                    "id": "cs_3",
+                    "object": "card",
+                },
+                {
+                    "id": "cs_4",
+                    "object": "bank_account",
+                },
+            ],
+            "has_more": False,
+            "object": "list",
+            "total_count": 4,
+            "url": "/v1/customers/cus_HezytZRkaQJC8W/sources",
         },
-        "subscriptions",
-        "subscription_items",
-        [
-            {"id": "si_1", "object": "subscription_item"},
-            {"id": "si_2", "object": "subscription_item"},
-            {"id": "si_3", "object": "subscription_item"},
-        ],
-        "full_refresh",
-        {},
-    ),
-    (
-        {
-            "/v1/customers?expand%5B%5D=data.sources": {
-                "has_more": False,
-                "object": "list",
-                "url": "/v1/customers",
-                "data": [
-                    {
-                        "created": 1641038947,
-                        "id": "cus_HezytZRkaQJC8W",
-                        "object": "customer",
-                        "total": 1,
-                        "sources": {
-                            "data": [
-                                {
-                                    "id": "cs_1",
-                                    "object": "card",
-                                },
-                                {
-                                    "id": "cs_2",
-                                    "object": "bank_account",
-                                },
-                            ],
-                            "has_more": True,
-                            "object": "list",
-                            "total_count": 4,
-                            "url": "/v1/customers/cus_HezytZRkaQJC8W/sources",
-                        },
-                    }
-                ],
-            },
-            "/v1/customers/cus_HezytZRkaQJC8W/sources": {
-                "data": [
-                    {
-                        "id": "cs_3",
-                        "object": "card",
-                    },
-                    {
-                        "id": "cs_4",
-                        "object": "bank_account",
-                    },
-                ],
-                "has_more": False,
-                "object": "list",
-                "total_count": 4,
-                "url": "/v1/customers/cus_HezytZRkaQJC8W/sources",
-            },
-        },
-        "customers",
-        "bank_accounts",
-        [
-            {"id": "cs_2", "object": "bank_account", "updated": 1692802815},
-            {"id": "cs_4", "object": "bank_account", "updated": 1692802815},
-        ],
-        "full_refresh",
-        {},
-    ),
-    (
-        {
-            "/v1/application_fees": {
-                "has_more": False,
-                "object": "list",
-                "url": "/v1/application_fees",
-                "data": [
-                    {
-                        "created": 1641038947,
-                        "customer": "cus_HezytZRkaQJC8W",
-                        "id": "af_OptSP2o3XZUBpx",
-                        "object": "application_fee",
-                        "total": 1,
-                        "refunds": {
-                            "data": [
-                                {
-                                    "id": "fr_1",
-                                    "object": "application_fee_refund",
-                                },
-                                {
-                                    "id": "fr_2",
-                                    "object": "application_fee_refund",
-                                },
-                            ],
-                            "has_more": True,
-                            "object": "list",
-                            "total_count": 3,
-                            "url": "/v1/application_fees/af_OptSP2o3XZUBpx/refunds",
-                        },
-                    }
-                ],
-            },
-            "/v1/application_fees/af_OptSP2o3XZUBpx/refunds": {
-                "data": [
-                    {
-                        "id": "fr_3",
-                        "object": "application_fee_refund",
-                    }
-                ],
-                "has_more": False,
-                "object": "list",
-                "total_count": 3,
-                "url": "/v1/application_fees/af_OptSP2o3XZUBpx/refunds",
-            },
-        },
-        "application_fees",
-        "application_fees_refunds",
-        [
-            {"id": "fr_1", "object": "application_fee_refund", "updated": 1692802815},
-            {"id": "fr_2", "object": "application_fee_refund", "updated": 1692802815},
-            {"id": "fr_3", "object": "application_fee_refund", "updated": 1692802815},
-        ],
-        "full_refresh",
-        {},
-    ),
-    (
-        {
-            "/v1/events?types%5B%5D=customer.source.created&types%5B%5D=customer.source.expiring&types"
-            "%5B%5D=customer.source.updated&types%5B%5D=customer.source.deleted": {
-                "data": [
-                    {
-                        "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
-                        "object": "event",
-                        "api_version": "2020-08-27",
-                        "created": 1692802016,
-                        "data": {
-                            "object": {"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}
-                        },
-                        "type": "customer.source.created",
-                    },
-                    {
-                        "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
-                        "object": "event",
-                        "api_version": "2020-08-27",
-                        "created": 1692802017,
-                        "data": {"object": {"object": "card", "card": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}},
-                        "type": "customer.source.updated",
-                    },
-                ],
-                "has_more": False,
-            }
-        },
-        "customers",
-        "bank_accounts",
-        [{"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1692802016}],
-        "incremental",
-        {"updated": 1692802015},
-    ),
-    (
-        {
-            "/v1/events?types%5B%5D=application_fee.refund.updated": {
-                "data": [
-                    {
-                        "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
-                        "object": "event",
-                        "api_version": "2020-08-27",
-                        "created": 1692802016,
-                        "data": {
-                            "object": {
-                                "object": "application_fee_refund",
-                                "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT",
-                                "created": 1653341716,
-                            }
-                        },
-                        "type": "application_fee.refund.updated",
-                    },
-                    {
-                        "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
-                        "object": "event",
-                        "api_version": "2020-08-27",
-                        "created": 1692802017,
-                        "data": {
-                            "object": {
-                                "object": "application_fee_refund",
-                                "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT",
-                                "created": 1653341716,
-                            }
-                        },
-                        "type": "application_fee.refund.updated",
-                    },
-                ],
-                "has_more": False,
-            }
-        },
-        "application_fees",
-        "application_fees_refunds",
-        [
-            {
-                "object": "application_fee_refund",
-                "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT",
-                "created": 1653341716,
-                "updated": 1692802016,
-            },
-            {
-                "object": "application_fee_refund",
-                "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT",
-                "created": 1653341716,
-                "updated": 1692802017,
-            },
-        ],
-        "incremental",
-        {"updated": 1692802015},
-    ),
-    (
-        {
-            "/v1/checkout/sessions": {
-                "has_more": False,
-                "object": "list",
-                "url": "/v1/checkout/sessions",
-                "data": [
-                    {
-                        "created": 1653341816,
-                        "expires_at": 1699444831,
-                        "id": "cs_vvhSo2LvGqT1K9GK0EcXtfsciJt",
-                        "object": "checkout_session",
-                        "total": 1,
-                    }
-                ],
-            },
-            "/v1/checkout/sessions/cs_vvhSo2LvGqT1K9GK0EcXtfsciJt/line_items?expand%5B%5D=data.discounts&expand%5B%5D=data.taxes": {
-                "has_more": False,
-                "object": "list",
-                "url": "/v1/checkout/sessions/cs_vvhSo2LvGqT1K9GK0EcXtfsciJt/line_items",
-                "data": [
-                    {
-                        "id": "li_1",
-                        "object": "line_item",
-                    },
-                    {
-                        "id": "li_2",
-                        "object": "line_item",
-                    },
-                ],
-            },
-        },
-        "checkout_sessions",
-        "checkout_sessions_line_items",
-        [
-            {
-                "object": "line_item",
-                "checkout_session_id": "cs_vvhSo2LvGqT1K9GK0EcXtfsciJt",
-                "id": "li_1",
-                "checkout_session_expires_at": 1699444831,
-                "checkout_session_created": 1653341816,
-                "checkout_session_updated": 1653341816,
-            },
-            {
-                "object": "line_item",
-                "checkout_session_id": "cs_vvhSo2LvGqT1K9GK0EcXtfsciJt",
-                "id": "li_2",
-                "checkout_session_expires_at": 1699444831,
-                "checkout_session_created": 1653341816,
-                "checkout_session_updated": 1653341816,
-            },
-        ],
-        "full_refresh",
-        {},
-    ),
-    (
-        {
-            "/v1/events?types%5B%5D=checkout.session.async_payment_failed&types%5B%5D=checkout.session.async_payment_succeeded&"
-            "types%5B%5D=checkout.session.completed&types%5B%5D=checkout.session.expired": {
-                "data": [
-                    {
-                        "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
-                        "object": "event",
-                        "api_version": "2020-08-27",
-                        "created": 1653341816,
-                        "data": {
-                            "object": {
-                                "object": "checkout_session",
-                                "id": "cs_vvhSo2LvGqT1K9GK0EcXtiJt",
-                                "created": 1653341716,
-                                "expires_at": 1699444831,
-                            }
-                        },
-                        "type": "checkout.session.completed",
-                    },
-                ],
-                "has_more": False,
-            },
-            "/v1/checkout/sessions/cs_vvhSo2LvGqT1K9GK0EcXtiJt/line_items?expand%5B%5D=data.discounts&expand%5B%5D=data.taxes": {
-                "has_more": False,
-                "object": "list",
-                "url": "/v1/checkout/sessions/cs_vvhSo2LvGqT1K9GK0EcXtiJt/line_items",
-                "data": [
-                    {
-                        "id": "li_1",
-                        "object": "line_item",
-                    },
-                    {
-                        "id": "li_2",
-                        "object": "line_item",
-                    },
-                ],
-            },
-        },
-        "checkout_sessions",
-        "checkout_sessions_line_items",
-        [
-            {
-                "object": "line_item",
-                "checkout_session_id": "cs_vvhSo2LvGqT1K9GK0EcXtiJt",
-                "id": "li_1",
-                "checkout_session_expires_at": 1699444831,
-                "checkout_session_created": 1653341716,
-                "checkout_session_updated": 1653341816,
-            },
-            {
-                "object": "line_item",
-                "checkout_session_id": "cs_vvhSo2LvGqT1K9GK0EcXtiJt",
-                "id": "li_2",
-                "checkout_session_expires_at": 1699444831,
-                "checkout_session_created": 1653341716,
-                "checkout_session_updated": 1653341816,
-            },
-        ],
-        "incremental",
-        {"checkout_session_updated": 1653300816},
-    ),
+    },
+    "bank_accounts",
+    [
+        {"id": "cs_2", "object": "bank_account", "updated": 1692802815},
+        {"id": "cs_4", "object": "bank_account", "updated": 1692802815},
+    ],
+    "full_refresh",
+    {},
 )
 
 
-@pytest.mark.parametrize("requests_mock_map, parent_stream_cls, stream_cls, expected_records, sync_mode, state", lazy_substream_test_suite)
-@freezegun.freeze_time("2023-08-23T15:00:15Z")
-def test_sub_streams(
-    request, requests_mock, requests_mock_map, parent_stream_cls, stream_cls, expected_records, stream_args, sync_mode, state
-):
-    parent_stream_cls = request.getfixturevalue(parent_stream_cls)
-    stream_cls = request.getfixturevalue(stream_cls)
+bank_accounts_incremental_test_case = (
+    {
+        "https://api.stripe.com/v1/events?types%5B%5D=customer.source.created&types%5B%5D=customer.source.expiring&types"
+        "%5B%5D=customer.source.updated&types%5B%5D=customer.source.deleted": {
+            "data": [
+                {
+                    "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
+                    "object": "event",
+                    "api_version": "2020-08-27",
+                    "created": 1692802016,
+                    "data": {"object": {"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}},
+                    "type": "customer.source.created",
+                },
+                {
+                    "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
+                    "object": "event",
+                    "api_version": "2020-08-27",
+                    "created": 1692802017,
+                    "data": {"object": {"object": "card", "card": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}},
+                    "type": "customer.source.updated",
+                },
+            ],
+            "has_more": False,
+        }
+    },
+    "bank_accounts",
+    [{"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1692802016}],
+    "incremental",
+    {"updated": 1692802015},
+)
 
+
+@pytest.mark.parametrize(
+    "requests_mock_map, stream_cls, expected_records, sync_mode, state",
+    (bank_accounts_incremental_test_case, bank_accounts_full_refresh_test_case),
+)
+@freezegun.freeze_time("2023-08-23T15:00:15Z")
+def test_lazy_substream_data_cursor_value_is_populated(
+    requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state
+):
+    config["start_date"] = str(pendulum.today().subtract(days=3))
+    stream = stream_by_name(stream_cls, config)
     for url, body in requests_mock_map.items():
         requests_mock.get(url, json=body)
 
-    # make start date a recent date so there's just one slice in a parent stream
-    stream_args["start_date"] = pendulum.today().subtract(days=3).int_timestamp
-    parent_stream = parent_stream_cls(stream_args)
-    stream = stream_cls(stream_args, parent_stream=parent_stream)
-    records = []
+    records = read_from_stream(stream, sync_mode, state)
+    assert records == expected_records
+    for record in records:
+        assert bool(record[stream.cursor_field])
 
-    for slice_ in stream.stream_slices(sync_mode=sync_mode, stream_state=state):
-        records.extend(stream.read_records(sync_mode=sync_mode, stream_slice=slice_, stream_state=state))
+
+@pytest.mark.parametrize("requests_mock_map, stream_cls, expected_records, sync_mode, state", (bank_accounts_full_refresh_test_case,))
+@freezegun.freeze_time("2023-08-23T15:00:15Z")
+def test_lazy_substream_data_is_expanded(
+    requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state
+):
+
+    config["start_date"] = str(pendulum.today().subtract(days=3))
+    stream = stream_by_name("bank_accounts", config)
+    for url, body in requests_mock_map.items():
+        requests_mock.get(url, json=body)
+
+    records = read_from_stream(stream, sync_mode, state)
+
     assert list(records) == expected_records
+    assert len(requests_mock.request_history) == 2
+    assert urlencode({"expand[]": "data.sources"}) in requests_mock.request_history[0].url
+
+
+@pytest.mark.parametrize(
+    "requests_mock_map, stream_cls, expected_records, sync_mode, state, expected_object",
+    ((*bank_accounts_full_refresh_test_case, "bank_account"), (*bank_accounts_incremental_test_case, "bank_account")),
+)
+@freezegun.freeze_time("2023-08-23T15:00:15Z")
+def test_lazy_substream_data_is_filtered(
+    requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state, expected_object
+):
+    config["start_date"] = str(pendulum.today().subtract(days=3))
+    stream = stream_by_name(stream_cls, config)
+    for url, body in requests_mock_map.items():
+        requests_mock.get(url, json=body)
+
+    records = read_from_stream(stream, sync_mode, state)
+    assert records == expected_records
+    for record in records:
+        assert record["object"] == expected_object
 
 
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
-def test_created_cursor_incremental_stream(requests_mock, balance_transactions, incremental_stream_args):
-    incremental_stream_args["start_date"] = pendulum.now().subtract(months=23).int_timestamp
-    stream = balance_transactions(incremental_stream_args)
+def test_created_cursor_incremental_stream(requests_mock, stream_by_name, config):
+    config["start_date"] = str(pendulum.now().subtract(months=23))
+    stream = stream_by_name("balance_transactions", {"lookback_window_days": 14, **config})
     requests_mock.get(
         "/v1/balance_transactions",
         [
@@ -518,18 +221,18 @@ def test_created_cursor_incremental_stream(requests_mock, balance_transactions, 
 )
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_get_start_timestamp(
-    balance_transactions, incremental_stream_args, start_date, lookback_window, max_days_from_now, stream_state, expected_start_timestamp
+    stream_by_name, config, start_date, lookback_window, max_days_from_now, stream_state, expected_start_timestamp
 ):
-    incremental_stream_args["start_date"] = pendulum.parse(start_date).int_timestamp
-    incremental_stream_args["lookback_window_days"] = lookback_window
-    incremental_stream_args["start_date_max_days_from_now"] = max_days_from_now
-    stream = balance_transactions(incremental_stream_args)
+    config["start_date"] = start_date
+    config["lookback_window_days"] = lookback_window
+    stream = stream_by_name("balance_transactions", config)
+    stream.start_date_max_days_from_now = max_days_from_now
     assert stream.get_start_timestamp(stream_state) == pendulum.parse(expected_start_timestamp).int_timestamp
 
 
 @pytest.mark.parametrize("sync_mode", ("full_refresh", "incremental"))
-def test_updated_cursor_incremental_stream_slices(credit_notes, sync_mode):
-    stream = credit_notes()
+def test_updated_cursor_incremental_stream_slices(stream_by_name, sync_mode):
+    stream = stream_by_name("credit_notes")
     assert list(stream.stream_slices(sync_mode)) == [{}]
 
 
@@ -537,13 +240,13 @@ def test_updated_cursor_incremental_stream_slices(credit_notes, sync_mode):
     "last_record, stream_state, expected_state",
     (({"updated": 110}, {"updated": 111}, {"updated": 111}), ({"created": 110}, {"updated": 111}, {"updated": 111})),
 )
-def test_updated_cursor_incremental_stream_get_updated_state(credit_notes, last_record, stream_state, expected_state):
-    stream = credit_notes()
+def test_updated_cursor_incremental_stream_get_updated_state(stream_by_name, last_record, stream_state, expected_state):
+    stream = stream_by_name("credit_notes")
     assert stream.get_updated_state(last_record, stream_state) == expected_state
 
 
 @pytest.mark.parametrize("sync_mode", ("full_refresh", "incremental"))
-def test_updated_cursor_incremental_stream_read_wo_state(requests_mock, sync_mode, credit_notes):
+def test_updated_cursor_incremental_stream_read_wo_state(requests_mock, sync_mode, stream_by_name):
     requests_mock.get(
         "/v1/credit_notes",
         [
@@ -570,7 +273,7 @@ def test_updated_cursor_incremental_stream_read_wo_state(requests_mock, sync_mod
             }
         ],
     )
-    stream = credit_notes()
+    stream = stream_by_name("credit_notes")
     records = [record for record in stream.read_records(sync_mode)]
     assert records == [
         {
@@ -593,7 +296,7 @@ def test_updated_cursor_incremental_stream_read_wo_state(requests_mock, sync_mod
 
 
 @freezegun.freeze_time("2023-08-23T00:00:00")
-def test_updated_cursor_incremental_stream_read_w_state(requests_mock, credit_notes):
+def test_updated_cursor_incremental_stream_read_w_state(requests_mock, stream_by_name):
     requests_mock.get(
         "/v1/events",
         [
@@ -615,7 +318,7 @@ def test_updated_cursor_incremental_stream_read_w_state(requests_mock, credit_no
         ],
     )
 
-    stream = credit_notes()
+    stream = stream_by_name("credit_notes")
     records = [
         record
         for record in stream.read_records("incremental", stream_state={"updated": pendulum.parse("2023-01-01T15:00:15Z").int_timestamp})
@@ -741,11 +444,11 @@ def test_persons_w_state(requests_mock, stream_args):
 
 
 @pytest.mark.parametrize("sync_mode, stream_state", (("full_refresh", {}), ("incremental", {}), ("incremental", {"updated": 1693987430})))
-def test_cursorless_incremental_stream(requests_mock, external_bank_accounts, sync_mode, stream_state):
+def test_cursorless_incremental_stream(requests_mock, stream_by_name, sync_mode, stream_state):
     # Testing streams that *only* have the cursor field value in incremental mode because of API discrepancies,
     # e.g. /bank_accounts does not return created/updated date, however /events?type=bank_account.updated returns the update date.
     # Key condition here is that the underlying stream has legacy cursor field set to None.
-    stream = external_bank_accounts()
+    stream = stream_by_name("external_account_bank_accounts")
     requests_mock.get(
         "/v1/accounts/<account_id>/external_accounts",
         json={
@@ -791,9 +494,9 @@ def test_cursorless_incremental_stream(requests_mock, external_bank_accounts, sy
 
 
 @pytest.mark.parametrize("sync_mode, stream_state", (("full_refresh", {}), ("incremental", {}), ("incremental", {"updated": 1693987430})))
-def test_cursorless_incremental_substream(requests_mock, bank_accounts, sync_mode, stream_state):
+def test_cursorless_incremental_substream(requests_mock, stream_by_name, sync_mode, stream_state):
     # same for substreams
-    stream = bank_accounts()
+    stream = stream_by_name("bank_accounts")
     requests_mock.get(
         "/v1/customers",
         json={
@@ -832,9 +535,9 @@ def test_cursorless_incremental_substream(requests_mock, bank_accounts, sync_mod
             stream.get_updated_state(stream_state, record)
 
 
-@pytest.mark.parametrize("stream", ("bank_accounts",))
-def test_get_updated_state(stream, request, requests_mock):
-    stream = request.getfixturevalue(stream)()
+@pytest.mark.parametrize("stream_name", ("bank_accounts",))
+def test_get_updated_state(stream_name, stream_by_name, requests_mock):
+    stream = stream_by_name(stream_name)
     response = {"data": [{"id": 1, stream.cursor_field: 1695292083}]}
     requests_mock.get("/v1/credit_notes", json=response)
     requests_mock.get("/v1/balance_transactions", json=response)
@@ -848,3 +551,76 @@ def test_get_updated_state(stream, request, requests_mock):
         for record in stream.read_records(sync_mode="incremental", stream_slice=slice_, stream_state=state):
             state = stream.get_updated_state(state, record)
             assert state
+
+
+@freezegun.freeze_time("2023-08-23T15:00:15Z")
+def test_subscription_items_extra_request_params(requests_mock, stream_by_name, config):
+    requests_mock.get(
+        "/v1/subscriptions",
+        json={
+            "object": "list",
+            "url": "/v1/subscriptions",
+            "has_more": False,
+            "data": [
+                {
+                    "id": "sub_1OApco2eZvKYlo2CEDCzwLrE",
+                    "object": "subscription",
+                    "created": 1699603174,
+                    "items": {
+                        "object": "list",
+                        "data": [
+                            {
+                                "id": "si_OynDmET1kQPTbI",
+                                "object": "subscription_item",
+                                "created": 1699603175,
+                                "quantity": 1,
+                                "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
+                            }
+                        ],
+                        "has_more": True,
+                    },
+                    "latest_invoice": None,
+                    "livemode": False,
+                }
+            ],
+            "has_more": False,
+        },
+    )
+    requests_mock.get(
+        "/v1/subscription_items?subscription=sub_1OApco2eZvKYlo2CEDCzwLrE",
+        json={
+            "object": "list",
+            "url": "/v1/subscription_items",
+            "has_more": False,
+            "data": [
+                {
+                    "id": "si_OynPdzMZykmCWm",
+                    "object": "subscription_item",
+                    "created": 1699603884,
+                    "quantity": 2,
+                    "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
+                }
+            ],
+        },
+    )
+    config["start_date"] = str(pendulum.now().subtract(days=3))
+    stream = stream_by_name("subscription_items", config)
+    records = read_from_stream(stream, "full_refresh", {})
+    assert records == [
+        {
+            "id": "si_OynDmET1kQPTbI",
+            "object": "subscription_item",
+            "created": 1699603175,
+            "quantity": 1,
+            "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
+        },
+        {
+            "id": "si_OynPdzMZykmCWm",
+            "object": "subscription_item",
+            "created": 1699603884,
+            "quantity": 2,
+            "subscription": "sub_1OApco2eZvKYlo2CEDCzwLrE",
+        },
+    ]
+    assert len(requests_mock.request_history) == 2
+    assert "subscription=sub_1OApco2eZvKYlo2CEDCzwLrE" in requests_mock.request_history[-1].url

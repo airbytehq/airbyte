@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
@@ -32,6 +33,8 @@ from source_stripe.streams import (
 )
 
 _MAX_CONCURRENCY = 3
+_CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
+USE_CACHE = not _CACHE_DISABLED
 
 
 class SourceStripe(AbstractSource):
@@ -103,7 +106,7 @@ class SourceStripe(AbstractSource):
         return IncrementalStripeStream(
             name="customers",
             path="customers",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=["customer.created", "customer.updated", "customer.deleted"],
             **args,
         )
@@ -121,7 +124,7 @@ class SourceStripe(AbstractSource):
         subscriptions = IncrementalStripeStream(
             name="subscriptions",
             path="subscriptions",
-            use_cache=True,
+            use_cache=USE_CACHE,
             extra_request_params={"status": "all"},
             event_types=[
                 "customer.subscription.created",
@@ -140,28 +143,28 @@ class SourceStripe(AbstractSource):
             path="subscription_items",
             extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice["parent"]["id"]},
             parent=subscriptions,
-            use_cache=True,
+            use_cache=USE_CACHE,
             sub_items_attr="items",
             **args,
         )
         transfers = IncrementalStripeStream(
             name="transfers",
             path="transfers",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=["transfer.created", "transfer.reversed", "transfer.updated"],
             **args,
         )
         application_fees = IncrementalStripeStream(
             name="application_fees",
             path="application_fees",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=["application_fee.created", "application_fee.refunded"],
             **args,
         )
         invoices = IncrementalStripeStream(
             name="invoices",
             path="invoices",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=[
                 "invoice.created",
                 "invoice.finalization_failed",
@@ -216,7 +219,7 @@ class SourceStripe(AbstractSource):
             ),
             Persons(**args),
             SetupAttempts(**incremental_args),
-            StripeStream(name="accounts", path="accounts", use_cache=True, **args),
+            StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
             CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
