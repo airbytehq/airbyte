@@ -4,6 +4,7 @@
 
 
 from dataclasses import dataclass
+from logging import Logger
 from typing import Any, List
 
 import asyncclick as click
@@ -42,16 +43,15 @@ class LogOptions:
     help_message: str = None
 
 
-def log_command_results(ctx: click.Context, logger, options: LogOptions = LogOptions(), command_results=List[CommandResult]):
+def log_command_results(ctx: click.Context, command_results: List[CommandResult], logger: Logger, options: LogOptions = LogOptions()):
     """
     Log the output of the subcommands run by `run_all_subcommands`.
     """
     command_path = ctx.command_path
 
     summary_template = Template(SUMMARY_TEMPLATE_STR)
-    summary_message = summary_template.render(
-        results=[(r.command.name, r.status is StepStatus.SUCCESS) for r in command_results], command_prefix=command_path
-    )
+    results = [(r.command.name, r.status is StepStatus.SUCCESS) for r in command_results]
+    summary_message = summary_template.render(results=results, command_prefix=command_path)
     logger.info(summary_message)
 
     result_contains_failures = any([r.status is StepStatus.FAILURE for r in command_results])
@@ -95,6 +95,7 @@ async def invoke_commands_sequentially(ctx: click.Context, commands: List[click.
     for command in commands:
         command_executions_results.append(await ctx.invoke(command))
     return command_executions_results
+
 
 def get_all_sibling_commands(ctx: click.Context) -> List[click.Command]:
     """

@@ -54,7 +54,7 @@ async def all_checks(ctx: click.Context, list_errors: bool):
         list_errors=list_errors,
         help_message="Run `airbyte-ci format check all --list-errors` to see detailed error messages for failed checks. Run `airbyte-ci format fix all` for a best effort fix.",
     )
-    log_command_results(ctx, logger, log_options, command_results)
+    log_command_results(ctx, command_results, logger, log_options)
     if failure:
         raise click.Abort()
 
