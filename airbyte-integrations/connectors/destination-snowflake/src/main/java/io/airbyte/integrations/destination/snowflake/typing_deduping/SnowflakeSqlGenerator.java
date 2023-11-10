@@ -145,6 +145,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             (map, column) -> map.put(column.getKey(), column.getValue().type()),
             LinkedHashMap::putAll);
     // soft-resetting https://github.com/airbytehq/airbyte/pull/31082
+    @SuppressWarnings("deprecation")
     final boolean hasPksWithNonNullConstraint = existingTable.columns().entrySet().stream()
         .anyMatch(c -> pks.contains(c.getKey()) && !c.getValue().isNullable());
 

@@ -19,7 +19,7 @@ from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.utils import METADATA_FILE_NAME
-from pipelines.models.contexts import PipelineContext
+from pipelines.models.contexts.pipeline_context import PipelineContext
 
 
 class ConnectorContext(PipelineContext):
@@ -54,7 +54,7 @@ class ConnectorContext(PipelineContext):
         code_tests_only: bool = False,
         use_local_cdk: bool = False,
         use_host_gradle_dist_tar: bool = False,
-        open_report_in_browser: bool = True,
+        enable_report_auto_open: bool = True,
         docker_hub_username: Optional[str] = None,
         docker_hub_password: Optional[str] = None,
         s3_build_cache_access_key_id: Optional[str] = None,
@@ -82,7 +82,7 @@ class ConnectorContext(PipelineContext):
             fast_tests_only (bool, optional): Whether to run only fast tests. Defaults to False.
             code_tests_only (bool, optional): Whether to ignore non-code tests like QA and metadata checks. Defaults to False.
             use_host_gradle_dist_tar (bool, optional): Used when developing java connectors with gradle. Defaults to False.
-            open_report_in_browser (bool, optional): Open HTML report in browser window. Defaults to True.
+            enable_report_auto_open (bool, optional): Open HTML report in browser window. Defaults to True.
             docker_hub_username (Optional[str], optional): Docker Hub username to use to read registries. Defaults to None.
             docker_hub_password (Optional[str], optional): Docker Hub password to use to read registries. Defaults to None.
             s3_build_cache_access_key_id (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
@@ -104,7 +104,7 @@ class ConnectorContext(PipelineContext):
         self.code_tests_only = code_tests_only
         self.use_local_cdk = use_local_cdk
         self.use_host_gradle_dist_tar = use_host_gradle_dist_tar
-        self.open_report_in_browser = open_report_in_browser
+        self.enable_report_auto_open = enable_report_auto_open
         self.docker_hub_username = docker_hub_username
         self.docker_hub_password = docker_hub_password
         self.s3_build_cache_access_key_id = s3_build_cache_access_key_id
@@ -127,7 +127,7 @@ class ConnectorContext(PipelineContext):
             ci_gcs_credentials=ci_gcs_credentials,
             ci_git_user=ci_git_user,
             ci_github_access_token=ci_github_access_token,
-            open_report_in_browser=open_report_in_browser,
+            enable_report_auto_open=enable_report_auto_open,
         )
 
     @property

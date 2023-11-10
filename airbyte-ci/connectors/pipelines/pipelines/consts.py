@@ -27,6 +27,7 @@ BUILD_PLATFORMS = [Platform("linux/amd64"), Platform("linux/arm64")]
 
 PLATFORM_MACHINE_TO_DAGGER_PLATFORM = {
     "x86_64": Platform("linux/amd64"),
+    "aarch64": Platform("linux/amd64"),
     "arm64": Platform("linux/arm64"),
     "amd64": Platform("linux/amd64"),
 }

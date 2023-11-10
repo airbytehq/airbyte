@@ -4720,7 +4720,8 @@ streams:
           custom_fields:
             type:
               - "null"
-              - string
+              - object
+            additionalProperties: true
           customer_details:
             oneOf:
               - type: "null"
@@ -15897,7 +15898,7 @@ streams:
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: received_date
-      datetime_format: "%Y-%m-%d %H:%M:%S"
+      datetime_format: "%Y-%m-%d"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
