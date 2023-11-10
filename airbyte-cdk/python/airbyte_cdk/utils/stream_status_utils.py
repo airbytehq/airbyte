@@ -8,21 +8,17 @@ from typing import Optional
 
 from airbyte_cdk.models import (
     AirbyteMessage,
+    AirbyteStream,
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
-    ConfiguredAirbyteStream,
     StreamDescriptor,
     TraceType,
 )
 from airbyte_cdk.models import Type as MessageType
 
 
-def as_airbyte_message(stream: ConfiguredAirbyteStream, current_status: AirbyteStreamStatus) -> AirbyteMessage:
-    return status_to_airbyte_message(stream.stream.name, stream.stream.namespace, current_status)
-
-
-def status_to_airbyte_message(stream_name: str, stream_namespace: Optional[str], current_status: AirbyteStreamStatus) -> AirbyteMessage:
+def as_airbyte_message(stream: AirbyteStream, current_status: AirbyteStreamStatus) -> AirbyteMessage:
     """
     Builds an AirbyteStreamStatusTraceMessage for the provided stream
     """
@@ -33,7 +29,7 @@ def status_to_airbyte_message(stream_name: str, stream_namespace: Optional[str],
         type=TraceType.STREAM_STATUS,
         emitted_at=now_millis,
         stream_status=AirbyteStreamStatusTraceMessage(
-            stream_descriptor=StreamDescriptor(name=stream_name, namespace=stream_namespace),
+            stream_descriptor=StreamDescriptor(name=stream.name, namespace=stream.namespace),
             status=current_status,
         ),
     )
