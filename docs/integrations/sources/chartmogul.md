@@ -4,7 +4,6 @@ This page contains the setup guide and reference information for the [Chartmogul
 ## Prerequisites
 - A Chartmogul API Key.
 - A desired start date from which to begin replicating data.
-- A desired interval period for the `CustomerCount` stream. The available options are **day**, **week**, **month**, and **quarter**.
 
 ## Setup guide
 ### Step 1: Set up a Chartmogul API key
@@ -30,8 +29,7 @@ For further reading on Chartmogul API Key creation and maintenance, please refer
 The **Start date** will only apply to the `Activities` stream. The `Customers` endpoint does not provide a way to filter by the creation or update dates.
 :::
 
-6. From the **Interval** dropdown menu, select an interval period for the `CustomerCount` stream. 
-7. Click **Set up source** and wait for the tests to complete.
+6. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -45,7 +43,10 @@ The Chartmogul source connector supports the following [sync modes](https://docs
 This connector outputs the following full refresh streams:
 
 * [Activities](https://dev.chartmogul.com/reference/list-activities)
-* [CustomerCount](https://dev.chartmogul.com/reference/retrieve-customer-count)
+* [CustomerCountDaily](https://dev.chartmogul.com/reference/retrieve-customer-count)
+* [CustomerCountWeekly](https://dev.chartmogul.com/reference/retrieve-customer-count)
+* [CustomerCountMonthly](https://dev.chartmogul.com/reference/retrieve-customer-count)
+* [CustomerCountQuarterly](https://dev.chartmogul.com/reference/retrieve-customer-count)
 * [Customers](https://dev.chartmogul.com/reference/list-customers)
 
 ## Performance considerations
@@ -56,6 +57,7 @@ The Chartmogul connector should not run into Chartmogul API limitations under no
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.0.0 | 2023-11-09 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Refactor CustomerCount stream into CustomerCountDaily, CustomerCountWeekly, CustomerCountMonthly, CustomerCountQuarterly Streams |
 | 0.2.1 | 2023-02-15 | [23075](https://github.com/airbytehq/airbyte/pull/23075) | Specified date formatting in specification |
 | 0.2.0 | 2022-11-15 | [19276](https://github.com/airbytehq/airbyte/pull/19276) | Migrate connector from Alpha (Python) to Beta (YAML) |
 | 0.1.1 | 2022-03-02 | [10756](https://github.com/airbytehq/airbyte/pull/10756) | Add new stream: customer-count |
