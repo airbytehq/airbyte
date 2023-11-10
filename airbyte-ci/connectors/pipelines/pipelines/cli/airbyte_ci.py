@@ -57,7 +57,7 @@ def display_welcome_message() -> None:
     )
 
 
-def check_up_to_date(throw_as_error = False) -> bool:
+def check_up_to_date(throw_as_error=False) -> bool:
     """Check if the installed version of pipelines is up to date."""
     latest_version = get_latest_version()
     if latest_version != __installed_version__:
