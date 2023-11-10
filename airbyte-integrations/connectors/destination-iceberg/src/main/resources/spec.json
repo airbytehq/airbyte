@@ -154,6 +154,43 @@
                 "order": 3
               }
             }
+          },
+          {
+            "title": "NessieCatalog",
+            "description": "The NessieCatalog connects to a Nessie server at the specified URI",
+            "required": ["catalog_type", "nessie_uri"],
+            "properties": {
+              "catalog_type": {
+                "title": "Catalog Type",
+                "type": "string",
+                "default": "Nessie",
+                "enum": ["Nessie"],
+                "order": 0
+              },
+              "nessie_uri": {
+                "title": "Nessie Server URI",
+                "type": "string",
+                "default": "http://localhost:19120/api/v1",
+                "examples": ["http://localhost:19120/api/v1"],
+                "order": 1
+              },
+              "nessie_ref": {
+                "title": "Nessie Reference",
+                "type": "string",
+                "default": "main",
+                "examples": ["main"],
+                "order": 2
+              },
+              "nessie_token": {
+                "title": "A Bearer token which will be used for interaction with the server.",
+                "type": "string",
+                "airbyte_secret": true,
+                "examples": [
+                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ8.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfL.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5b"
+                ],
+                "order": 4
+              }
+            }
           }
         ],
         "order": 0

@@ -30,6 +30,9 @@ public class IcebergConstants {
   public static final String REST_CATALOG_URI_CONFIG_KEY = "rest_uri";
   public static final String REST_CATALOG_CREDENTIAL_CONFIG_KEY = "rest_credential";
   public static final String REST_CATALOG_TOKEN_CONFIG_KEY = "rest_token";
+  public static final String NESSIE_CATALOG_TOKEN_CONFIG_KEY = "nessie_token";
+  public static final String NESSIE_CATALOG_URI_CONFIG_KEY = "nessie_uri";
+  public static final String NESSIE_CATALOG_REFERENCE_KEY = "nessie_ref";
 
   /**
    * Storage Config keys
