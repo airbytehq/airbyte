@@ -100,11 +100,10 @@ class WeaviateIndexingConfigModel(BaseModel):
 class NoEmbeddingConfigModel(BaseModel):
     mode: Literal["no_embedding"] = Field("no_embedding", const=True)
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "No external embedding"
-        schema_extra = {
-            "description": "Do not calculate and pass embeddings to Weaviate. Suitable for clusters with configured vectorizers to calculate embeddings within Weaviate or for classes that should only support regular text search."
-        }
+        description = "Do not calculate and pass embeddings to Weaviate. Suitable for clusters with configured vectorizers to calculate embeddings within Weaviate or for classes that should only support regular text search."
+        discriminator = "mode"
 
 
 class ConfigModel(BaseModel):

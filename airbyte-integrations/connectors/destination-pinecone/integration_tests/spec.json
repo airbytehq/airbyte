@@ -173,6 +173,7 @@
           "chunk_size": {
             "title": "Chunk size",
             "description": "Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)",
+            "minimum": 1,
             "maximum": 8191,
             "type": "integer"
           },
