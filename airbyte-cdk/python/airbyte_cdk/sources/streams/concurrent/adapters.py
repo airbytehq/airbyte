@@ -182,8 +182,6 @@ class StreamFacade(Stream):
                 yield self._slice_logger.create_slice_log_message(partition.to_slice())
             for record in partition.read():
                 yield record.data
-        # for record in self._abstract_stream.read():
-        #     yield record.data
 
     @property
     def name(self) -> str:
@@ -372,9 +370,6 @@ class StreamPartitionGenerator(PartitionGenerator):
             yield StreamPartition(
                 self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor
             )
-
-    def stream_name(self) -> str:
-        return self._stream.name
 
 
 @deprecated("This class is experimental. Use at your own risk.")

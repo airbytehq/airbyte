@@ -80,9 +80,6 @@ class InMemoryPartitionGenerator(PartitionGenerator):
     def generate(self) -> Iterable[Partition]:
         yield from self._partitions
 
-    def stream_name(self) -> str:
-        return self._partitions[0].stream_name()
-
 
 class InMemoryPartition(Partition):
     def stream_name(self) -> str:
