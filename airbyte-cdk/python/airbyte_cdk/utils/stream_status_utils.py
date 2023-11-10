@@ -4,7 +4,6 @@
 
 
 from datetime import datetime
-from typing import Optional
 
 from airbyte_cdk.models import (
     AirbyteMessage,
