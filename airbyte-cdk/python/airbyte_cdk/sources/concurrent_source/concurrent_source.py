@@ -114,47 +114,71 @@ class ConcurrentSource(AbstractSource, ABC):
     ):
         partition_reader = PartitionReader(queue)
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
-            if isinstance(airbyte_message_or_record_or_exception, Exception):
-                # An exception was raised while processing the stream
-                # Stop the threadpool and raise it
-                yield from self._stop_streams(streams_to_partitions, logger)
-                raise airbyte_message_or_record_or_exception
-
-            elif isinstance(airbyte_message_or_record_or_exception, PartitionGenerationCompletedSentinel):
-                yield from self._handle_partition_generation_completed(
-                    airbyte_message_or_record_or_exception,
-                    partition_generator_running,
-                    stream_instances_to_read_from,
-                    partition_generator,
-                    futures,
-                    logger,
-                    streams_to_partitions,
-                    record_counter,
-                )
-
-            elif isinstance(airbyte_message_or_record_or_exception, Partition):
-                # a new partition was generated and must be processed
-                self._handle_partition(airbyte_message_or_record_or_exception, streams_to_partitions, futures, partition_reader, logger)
-            elif isinstance(airbyte_message_or_record_or_exception, PartitionCompleteSentinel):
-                # all records for a partition were generated
-                partition = airbyte_message_or_record_or_exception.partition
-                status_message = self._handle_partition_completed(
-                    partition,
-                    streams_to_partitions,
-                    record_counter,
-                    partition_generator_running,
-                    logger,
-                )
-                yield from self._message_repository.consume_queue()
-                if status_message:
-                    yield status_message
-            else:
-                # record
-                yield from self._handle_record(airbyte_message_or_record_or_exception, record_counter, logger)
+            yield from self._handle_item(
+                airbyte_message_or_record_or_exception,
+                streams_to_partitions,
+                logger,
+                partition_generator_running,
+                stream_instances_to_read_from,
+                partition_generator,
+                futures,
+                record_counter,
+                partition_reader,
+            )
             if self._is_done(streams_to_partitions, stream_instances_to_read_from, partition_generator_running):
                 # all partitions were generated and process. we're done here
                 if all([f.done() for f in futures]) and queue.empty():
                     break
+
+    def _handle_item(
+        self,
+        airbyte_message_or_record_or_exception,
+        streams_to_partitions,
+        logger,
+        partition_generator_running,
+        stream_instances_to_read_from,
+        partition_generator,
+        futures,
+        record_counter,
+        partition_reader,
+    ):
+        if isinstance(airbyte_message_or_record_or_exception, Exception):
+            # An exception was raised while processing the stream
+            # Stop the threadpool and raise it
+            yield from self._stop_streams(streams_to_partitions, logger)
+            raise airbyte_message_or_record_or_exception
+
+        elif isinstance(airbyte_message_or_record_or_exception, PartitionGenerationCompletedSentinel):
+            yield from self._handle_partition_generation_completed(
+                airbyte_message_or_record_or_exception,
+                partition_generator_running,
+                stream_instances_to_read_from,
+                partition_generator,
+                futures,
+                logger,
+                streams_to_partitions,
+                record_counter,
+            )
+
+        elif isinstance(airbyte_message_or_record_or_exception, Partition):
+            # a new partition was generated and must be processed
+            self._handle_partition(airbyte_message_or_record_or_exception, streams_to_partitions, futures, partition_reader, logger)
+        elif isinstance(airbyte_message_or_record_or_exception, PartitionCompleteSentinel):
+            # all records for a partition were generated
+            partition = airbyte_message_or_record_or_exception.partition
+            status_message = self._handle_partition_completed(
+                partition,
+                streams_to_partitions,
+                record_counter,
+                partition_generator_running,
+                logger,
+            )
+            yield from self._message_repository.consume_queue()
+            if status_message:
+                yield status_message
+        else:
+            # record
+            yield from self._handle_record(airbyte_message_or_record_or_exception, record_counter, logger)
 
     def _get_streams_to_read_from(self, catalog, logger):
         stream_instances_to_read_from = []
