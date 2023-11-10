@@ -27,11 +27,13 @@ class ConcurrentSource(AbstractSource, ABC):
         self,
         threadpool: ThreadPoolManager,
         message_repository: MessageRepository = InMemoryMessageRepository(),
+        max_number_of_partition_generator_in_progress: int = 1,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._threadpool = threadpool
         self._message_repository = message_repository
+        self._max_number_of_partition_generator_in_progress = max_number_of_partition_generator_in_progress
 
     @property
     def message_repository(self) -> MessageRepository:
@@ -50,9 +52,6 @@ class ConcurrentSource(AbstractSource, ABC):
         config, internal_config = split_config(config)
         stream_to_instance_map: Mapping[str, AbstractStream] = {s.name: s for s in self._streams_as_abstract_streams(config)}
 
-        # FIXME
-        max_number_of_partition_generator_in_progress = max(1, 1)
-
         stream_instances_to_read_from = self._get_streams_to_read_from(catalog, logger, stream_to_instance_map)
         streams_currently_generating_partitions: List[str] = []
         if not stream_instances_to_read_from:
@@ -70,7 +69,7 @@ class ConcurrentSource(AbstractSource, ABC):
             self._message_repository,
             partition_reader,
         )
-        for _ in range(max_number_of_partition_generator_in_progress):
+        for _ in range(self._max_number_of_partition_generator_in_progress):
             status_message = queue_item_handler.start_next_partition_generator()
             if status_message:
                 yield status_message
