@@ -8,7 +8,6 @@ from typing import Any, Callable, List
 
 
 class ThreadPoolManager:
-    DEFAULT_TIMEOUT_SECONDS = 900
     DEFAULT_SLEEP_TIME = 0.1
     DEFAULT_MAX_QUEUE_SIZE = 10_000
 

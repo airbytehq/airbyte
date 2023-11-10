@@ -23,17 +23,21 @@ from airbyte_cdk.sources.utils.schema_helpers import split_config
 
 
 class ConcurrentSource(AbstractSource, ABC):
+    DEFAULT_TIMEOUT_SECONDS = 900
+
     def __init__(
         self,
         threadpool: ThreadPoolManager,
         message_repository: MessageRepository = InMemoryMessageRepository(),
         max_number_of_partition_generator_in_progress: int = 1,
+        timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self._threadpool = threadpool
         self._message_repository = message_repository
         self._max_number_of_partition_generator_in_progress = max_number_of_partition_generator_in_progress
+        self._timeout_seconds = timeout_seconds
 
     @property
     def message_repository(self) -> MessageRepository:
@@ -87,7 +91,7 @@ class ConcurrentSource(AbstractSource, ABC):
         queue_item_handler: QueueItemHandler,
     ) -> Iterable[AirbyteMessage]:
         # FIXME
-        while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=300):
+        while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
             yield from self._handle_item(
                 airbyte_message_or_record_or_exception,
                 queue_item_handler,
