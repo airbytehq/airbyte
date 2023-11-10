@@ -40,6 +40,7 @@ public class MongoDbDebeziumConstants {
     public static final String PASSWORD_CONFIGURATION_KEY = "password";
     public static final String USERNAME_CONFIGURATION_KEY = "username";
     public static final String SCHEMA_ENFORCED_CONFIGURATION_KEY = "schema_enforced";
+    public static final String SCHEMALESS_MODE_DATA_FIELD = "_ab_data";
 
   }
 

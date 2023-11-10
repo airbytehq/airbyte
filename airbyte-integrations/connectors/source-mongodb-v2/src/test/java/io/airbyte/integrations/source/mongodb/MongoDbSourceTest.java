@@ -312,7 +312,7 @@ class MongoDbSourceTest {
         MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/",
         MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin",
         MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY, DEFAULT_DISCOVER_SAMPLE_SIZE,
-        MongoConstants.SCHEMA_ENFORCED_KEY, isSchemaEnforced);
+        MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced);
 
     final Map<String, Object> config = new HashMap<>(baseConfig);
     username.ifPresent(u -> config.put(MongoConstants.USERNAME_CONFIGURATION_KEY, u));

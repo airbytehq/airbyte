@@ -103,7 +103,7 @@ public class MongoDbSource extends BaseConnector implements Source {
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
         final String databaseName = sourceConfig.getDatabaseName();
         final Integer sampleSize = sourceConfig.getSampleSize();
-        final boolean isSchemaEnforced = sourceConfig.getValidateSchema();
+        final boolean isSchemaEnforced = sourceConfig.getEnforceSchema();
         final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize, isSchemaEnforced);
         return new AirbyteCatalog().withStreams(streams);
       }
