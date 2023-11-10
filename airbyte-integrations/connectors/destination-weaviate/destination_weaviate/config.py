@@ -14,8 +14,8 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     OpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
 )
-from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
+from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from pydantic import BaseModel, Field
 
 

@@ -255,7 +255,6 @@
                     }
                   },
                   "required": ["filetype"]
-
                 },
                 {
                   "title": "Parquet Format",
