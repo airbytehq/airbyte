@@ -101,8 +101,9 @@ def mark_dagger_wrap():
 
 
 def call_current_command_with_dagger_run():
-    os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]
     mark_dagger_wrap()
+    if (os.environ.get("AIRBYTE_ROLE") == "airbyter") or (os.environ.get("CI") == "True"):
+        os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]
 
     exit_code = 0
     dagger_path = check_dagger_cli_install()

@@ -4,6 +4,8 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: source_bing_ads/spec.json
+        backward_compatibility_tests_config:
+          disable_for_version: "1.11.0"
   discovery:
     tests:
       - config_path: secrets/config.json
@@ -52,7 +54,7 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: secrets/config.json
-        configured_catalog_path: integration_tests/configured_catalog.json
+        configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
         timeout_seconds: 4800
   incremental:
     tests:
