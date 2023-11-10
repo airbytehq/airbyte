@@ -55,23 +55,22 @@ bank_accounts_full_refresh_test_case = (
                 }
             ],
         },
-        "https://api.stripe.com/v1/customers/cus_HezytZRkaQJC8W/sources?object=bank_account&starting_after=cs_2":
-            {
-                "data": [
-                    {
-                        "id": "cs_3",
-                        "object": "card",
-                    },
-                    {
-                        "id": "cs_4",
-                        "object": "bank_account",
-                    },
-                ],
-                "has_more": False,
-                "object": "list",
-                "total_count": 4,
-                "url": "/v1/customers/cus_HezytZRkaQJC8W/sources",
-            }
+        "https://api.stripe.com/v1/customers/cus_HezytZRkaQJC8W/sources?object=bank_account&starting_after=cs_2": {
+            "data": [
+                {
+                    "id": "cs_3",
+                    "object": "card",
+                },
+                {
+                    "id": "cs_4",
+                    "object": "bank_account",
+                },
+            ],
+            "has_more": False,
+            "object": "list",
+            "total_count": 4,
+            "url": "/v1/customers/cus_HezytZRkaQJC8W/sources",
+        },
     },
     "bank_accounts",
     [
@@ -79,7 +78,7 @@ bank_accounts_full_refresh_test_case = (
         {"id": "cs_4", "object": "bank_account", "updated": 1692802815},
     ],
     "full_refresh",
-    {}
+    {},
 )
 
 
@@ -93,9 +92,7 @@ bank_accounts_incremental_test_case = (
                     "object": "event",
                     "api_version": "2020-08-27",
                     "created": 1692802016,
-                    "data": {
-                        "object": {"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}
-                    },
+                    "data": {"object": {"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}},
                     "type": "customer.source.created",
                 },
                 {
@@ -119,7 +116,7 @@ bank_accounts_incremental_test_case = (
 
 @pytest.mark.parametrize(
     "requests_mock_map, stream_cls, expected_records, sync_mode, state",
-    (bank_accounts_incremental_test_case, bank_accounts_full_refresh_test_case)
+    (bank_accounts_incremental_test_case, bank_accounts_full_refresh_test_case),
 )
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_lazy_substream_data_cursor_value_is_populated(
@@ -136,10 +133,7 @@ def test_lazy_substream_data_cursor_value_is_populated(
         assert bool(record[stream.cursor_field])
 
 
-@pytest.mark.parametrize(
-    "requests_mock_map, stream_cls, expected_records, sync_mode, state",
-    (bank_accounts_full_refresh_test_case,)
-)
+@pytest.mark.parametrize("requests_mock_map, stream_cls, expected_records, sync_mode, state", (bank_accounts_full_refresh_test_case,))
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_lazy_substream_data_is_expanded(
     requests_mock, stream_by_name, config, requests_mock_map, stream_cls, expected_records, sync_mode, state
@@ -159,10 +153,7 @@ def test_lazy_substream_data_is_expanded(
 
 @pytest.mark.parametrize(
     "requests_mock_map, stream_cls, expected_records, sync_mode, state, expected_object",
-    (
-        (*bank_accounts_full_refresh_test_case, "bank_account"),
-        (*bank_accounts_incremental_test_case, "bank_account")
-     )
+    ((*bank_accounts_full_refresh_test_case, "bank_account"), (*bank_accounts_incremental_test_case, "bank_account")),
 )
 @freezegun.freeze_time("2023-08-23T15:00:15Z")
 def test_lazy_substream_data_is_filtered(
