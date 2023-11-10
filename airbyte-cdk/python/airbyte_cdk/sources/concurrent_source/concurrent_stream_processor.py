@@ -20,7 +20,7 @@ from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 
 
-class QueueItemHandler:
+class ConcurrentStreamProcessor:
     def __init__(
         self,
         streams_currently_generating_partitions: List[str],
@@ -33,6 +33,18 @@ class QueueItemHandler:
         message_repository: MessageRepository,
         partition_reader: PartitionReader,
     ):
+        """
+        This class is responsible for handling items from a concurrent stream read process.
+        :param streams_currently_generating_partitions:
+        :param stream_instances_to_read_from:
+        :param partition_enqueuer:
+        :param thread_pool_manager:
+        :param stream_to_instance_map:
+        :param logger:
+        :param slice_logger:
+        :param message_repository:
+        :param partition_reader:
+        """
         self._stream_to_instance_map = stream_to_instance_map
         self._record_counter = {}
         self._streams_to_partitions = {}

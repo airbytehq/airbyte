@@ -8,8 +8,8 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent_source.concurrent_stream_processor import ConcurrentStreamProcessor
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
-from airbyte_cdk.sources.concurrent_source.queue_item_handler import QueueItemHandler
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
@@ -78,7 +78,7 @@ class ConcurrentSource(AbstractSource, ABC):
             return
 
         partition_reader = PartitionReader(queue)
-        queue_item_handler = QueueItemHandler(
+        queue_item_handler = ConcurrentStreamProcessor(
             streams_currently_generating_partitions,
             stream_instances_to_read_from,
             partition_enqueuer,
@@ -108,7 +108,7 @@ class ConcurrentSource(AbstractSource, ABC):
     def _consume_from_queue(
         self,
         queue: Queue[QueueItem],
-        queue_item_handler: QueueItemHandler,
+        queue_item_handler: ConcurrentStreamProcessor,
     ) -> Iterable[AirbyteMessage]:
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
             yield from self._handle_item(
@@ -122,7 +122,7 @@ class ConcurrentSource(AbstractSource, ABC):
     def _handle_item(
         self,
         queue_item: QueueItem,
-        queue_item_handler: QueueItemHandler,
+        queue_item_handler: ConcurrentStreamProcessor,
     ) -> Iterable[AirbyteMessage]:
         # handle queue item and call the appropriate handler depending on the type of the queue item
         if isinstance(queue_item, Exception):
