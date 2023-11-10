@@ -23,6 +23,13 @@ from airbyte_cdk.sources.utils.schema_helpers import split_config
 
 
 class ConcurrentSource(AbstractSource, ABC):
+    """
+    A Source that reads data from multiple AbstractStreams concurrently.
+    It does so by submitting partition generation, and partition read tasks to a thread pool.
+    The tasks asynchronously add their output to a shared queue.
+    The read is done when all partitions for all streams were generated and read.
+    """
+
     DEFAULT_TIMEOUT_SECONDS = 900
 
     def __init__(
@@ -33,6 +40,13 @@ class ConcurrentSource(AbstractSource, ABC):
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
         **kwargs: Any,
     ) -> None:
+        """
+        :param threadpool: The threadpool to submit tasks to
+        :param message_repository: The repository to emit messages to
+        :param max_number_of_partition_generator_in_progress: The maximum number of concurrent partition generation tasks. Limiting this number ensures the source starts reading records instead in a reasonable time instead of generating partitions for all streams first.
+        :param timeout_seconds: The maximum number of seconds to wait for a record to be read from the queue. If no record is read within this time, the source will stop reading and return.
+        :param kwargs:
+        """
         super().__init__(**kwargs)
         self._threadpool = threadpool
         self._message_repository = message_repository
@@ -58,6 +72,8 @@ class ConcurrentSource(AbstractSource, ABC):
 
         stream_instances_to_read_from = self._get_streams_to_read_from(catalog, logger, stream_to_instance_map)
         streams_currently_generating_partitions: List[str] = []
+
+        # Return early if there are no streams to read from
         if not stream_instances_to_read_from:
             return
 
@@ -73,10 +89,14 @@ class ConcurrentSource(AbstractSource, ABC):
             self._message_repository,
             partition_reader,
         )
+
+        # Enqueue initial partition generation tasks
         for _ in range(self._max_number_of_partition_generator_in_progress):
             status_message = queue_item_handler.start_next_partition_generator()
             if status_message:
                 yield status_message
+
+        # Read from the queue until all partitions were generated and read
         yield from self._consume_from_queue(
             queue,
             queue_item_handler,
@@ -95,16 +115,16 @@ class ConcurrentSource(AbstractSource, ABC):
                 airbyte_message_or_record_or_exception,
                 queue_item_handler,
             )
-            if queue_item_handler.is_done():
+            if queue_item_handler.is_done() and self._threadpool.is_done() and queue.empty():
                 # all partitions were generated and process. we're done here
-                if self._threadpool.is_done() and queue.empty():
-                    break
+                break
 
     def _handle_item(
         self,
         queue_item: QueueItem,
         queue_item_handler: QueueItemHandler,
     ) -> Iterable[AirbyteMessage]:
+        # handle queue item and call the appropriate handler depending on the type of the queue item
         if isinstance(queue_item, Exception):
             yield from queue_item_handler.on_exception(queue_item)
 
