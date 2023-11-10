@@ -57,7 +57,7 @@ def display_welcome_message() -> None:
     )
 
 
-def check_up_to_date() -> bool:
+def check_up_to_date(throw_as_error = False) -> bool:
     """Check if the installed version of pipelines is up to date."""
     latest_version = get_latest_version()
     if latest_version != __installed_version__:
@@ -69,7 +69,12 @@ def check_up_to_date() -> bool:
 
         🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
         """
-        raise Exception(upgrade_error_message)
+
+        if throw_as_error:
+            raise Exception(upgrade_error_message)
+        else:
+            logging.warning(upgrade_error_message)
+            return False
 
     main_logger.info(f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
     return True
@@ -316,7 +321,7 @@ async def airbyte_ci(ctx: click.Context):  # noqa D103
         # In our CI the docker host used by the Dagger Engine is different from the one used by the runner.
         check_local_docker_configuration()
 
-    check_up_to_date()
+    check_up_to_date(throw_as_error=ctx.obj["is_local"])
 
     if not ctx.obj["is_local"]:
         log_git_info(ctx)
