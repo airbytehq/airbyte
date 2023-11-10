@@ -80,3 +80,6 @@ class INTERNAL_TOOL_PATHS(str, Enum):
     CI_CREDENTIALS = "airbyte-ci/connectors/ci_credentials"
     CONNECTOR_OPS = "airbyte-ci/connectors/connector_ops"
     METADATA_SERVICE = "airbyte-ci/connectors/metadata_service/lib"
+
+
+DAGGER_WRAP_ENV_VAR_NAME = "_DAGGER_WRAP_APPLIED"

@@ -21,7 +21,7 @@ from pipelines import main_logger
 from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
-from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH, CIContext
+from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_PIPELINE_PACKAGE_PATH, CIContext
 from pipelines.helpers import github
 from pipelines.helpers.git import (
     get_current_git_branch,
@@ -221,12 +221,19 @@ def is_dagger_run_enabled_by_default() -> bool:
 
     return False
 
-def is_current_process_wrapped_by_dagger_run() -> bool:
-    # check if the command is already wrapped by dagger run
-    # by checking if sys.argv contains the dagger run command
-    # e.g. `dagger run aibyte-ci connectors publish`
+def check_dagger_wrap():
+    """
+    Check if the command is already wrapped by dagger run.
+    This is useful to avoid infinite recursion when calling dagger run from dagger run.
+    """
+    return os.getenv(DAGGER_WRAP_ENV_VAR_NAME) == "true"
 
-    called_with_dagger_run = os.getenv("_DAGGER_WRAP_APPLIED") == "true"
+
+def is_current_process_wrapped_by_dagger_run() -> bool:
+    """
+    Check if the current process is wrapped by dagger run.
+    """
+    called_with_dagger_run = check_dagger_wrap()
     main_logger.info(f"Called with dagger run: {called_with_dagger_run}")
     return called_with_dagger_run
 
@@ -296,7 +303,7 @@ async def airbyte_ci(ctx: click.Context):  # noqa D103
     display_welcome_message()
 
     if ctx.obj["enable_dagger_run"] and not is_current_process_wrapped_by_dagger_run():
-        main_logger.info("Re-Running airbyte-ci with dagger run.")
+        main_logger.debug("Re-Running airbyte-ci with dagger run.")
         from pipelines.cli.dagger_run import call_current_command_with_dagger_run
         call_current_command_with_dagger_run()
         return
