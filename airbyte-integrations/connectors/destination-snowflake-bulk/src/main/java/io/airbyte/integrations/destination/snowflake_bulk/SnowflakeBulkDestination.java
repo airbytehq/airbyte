@@ -33,7 +33,7 @@ public class SnowflakeBulkDestination extends SnowflakeInternalStagingDestinatio
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
       final ConfiguredAirbyteCatalog catalog,
       final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new BulkConsumer(config, catalog, outputRecordCollector);
+    return new BulkConsumer(outputRecordCollector, this.getDatabase(this.getDataSource(config)), getSqlOperations(), getNamingResolver(), config, catalog);
   }
 
 
