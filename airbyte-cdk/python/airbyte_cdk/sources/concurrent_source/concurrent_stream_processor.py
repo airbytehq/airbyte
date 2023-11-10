@@ -23,7 +23,6 @@ from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_s
 class ConcurrentStreamProcessor:
     def __init__(
         self,
-        streams_currently_generating_partitions: List[str],
         stream_instances_to_read_from: List[AbstractStream],
         partition_enqueuer: PartitionEnqueuer,
         thread_pool_manager: ThreadPoolManager,
@@ -35,7 +34,6 @@ class ConcurrentStreamProcessor:
     ):
         """
         This class is responsible for handling items from a concurrent stream read process.
-        :param streams_currently_generating_partitions:
         :param stream_instances_to_read_from:
         :param partition_enqueuer:
         :param thread_pool_manager:
@@ -54,7 +52,7 @@ class ConcurrentStreamProcessor:
         self._thread_pool_manager = thread_pool_manager
         self._partition_enqueuer = partition_enqueuer
         self._stream_instances_to_read_from = stream_instances_to_read_from
-        self._streams_currently_generating_partitions = streams_currently_generating_partitions
+        self._streams_currently_generating_partitions = []
         self._logger = logger
         self._slice_logger = slice_logger
         self._message_repository = message_repository

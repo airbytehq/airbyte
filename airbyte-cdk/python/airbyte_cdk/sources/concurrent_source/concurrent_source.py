@@ -71,7 +71,6 @@ class ConcurrentSource(AbstractSource, ABC):
         stream_to_instance_map: Mapping[str, AbstractStream] = {s.name: s for s in self._streams_as_abstract_streams(config)}
 
         stream_instances_to_read_from = self._get_streams_to_read_from(catalog, logger, stream_to_instance_map)
-        streams_currently_generating_partitions: List[str] = []
 
         # Return early if there are no streams to read from
         if not stream_instances_to_read_from:
@@ -79,7 +78,6 @@ class ConcurrentSource(AbstractSource, ABC):
 
         partition_reader = PartitionReader(queue)
         queue_item_handler = ConcurrentStreamProcessor(
-            streams_currently_generating_partitions,
             stream_instances_to_read_from,
             partition_enqueuer,
             self._threadpool,
