@@ -284,7 +284,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
         )
         handler._streams_currently_generating_partitions = [_STREAM_NAME]
 
-        handler._stream_to_instance_map[_STREAM_NAME] = self._stream
+        handler._stream_name_to_instance[_STREAM_NAME] = self._stream
 
         sentinel = PartitionCompleteSentinel(partition)
 

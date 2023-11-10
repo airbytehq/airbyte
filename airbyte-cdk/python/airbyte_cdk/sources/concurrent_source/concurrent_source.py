@@ -66,9 +66,9 @@ class ConcurrentSource(AbstractSource, ABC):
     ) -> Iterator[AirbyteMessage]:
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
-        stream_to_instance_map: Mapping[str, AbstractStream] = {s.name: s for s in self._streams_as_abstract_streams(config)}
+        stream_name_to_instance: Mapping[str, AbstractStream] = {s.name: s for s in self._streams_as_abstract_streams(config)}
 
-        stream_instances_to_read_from = self._get_streams_to_read_from(catalog, logger, stream_to_instance_map)
+        stream_instances_to_read_from = self._get_streams_to_read_from(catalog, logger, stream_name_to_instance)
 
         # Return early if there are no streams to read from
         if not stream_instances_to_read_from:
@@ -79,7 +79,7 @@ class ConcurrentSource(AbstractSource, ABC):
             stream_instances_to_read_from,
             PartitionEnqueuer(queue),
             self._threadpool,
-            stream_to_instance_map,
+            stream_name_to_instance,
             logger,
             self._slice_logger,
             self._message_repository,
@@ -141,7 +141,7 @@ class ConcurrentSource(AbstractSource, ABC):
             raise ValueError(f"Unknown queue item type: {type(queue_item)}")
 
     def _get_streams_to_read_from(
-        self, catalog: ConfiguredAirbyteCatalog, logger: logging.Logger, stream_to_instance_map: Mapping[str, AbstractStream]
+        self, catalog: ConfiguredAirbyteCatalog, logger: logging.Logger, stream_name_to_instance: Mapping[str, AbstractStream]
     ) -> List[AbstractStream]:
         """
         Iterate over the configured streams and return a list of streams to read from.
@@ -151,7 +151,7 @@ class ConcurrentSource(AbstractSource, ABC):
         """
         stream_instances_to_read_from = []
         for configured_stream in catalog.streams:
-            stream_instance = stream_to_instance_map.get(configured_stream.stream.name)
+            stream_instance = stream_name_to_instance.get(configured_stream.stream.name)
             if not stream_instance:
                 if not self.raise_exception_on_missing_stream:
                     continue

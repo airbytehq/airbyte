@@ -26,7 +26,7 @@ class ConcurrentStreamProcessor:
         stream_instances_to_read_from: List[AbstractStream],
         partition_enqueuer: PartitionEnqueuer,
         thread_pool_manager: ThreadPoolManager,
-        stream_to_instance_map: Mapping[str, AbstractStream],
+        stream_name_to_instance: Mapping[str, AbstractStream],
         logger: logging.Logger,
         slice_logger: SliceLogger,
         message_repository: MessageRepository,
@@ -37,13 +37,13 @@ class ConcurrentStreamProcessor:
         :param stream_instances_to_read_from: List of streams to read from
         :param partition_enqueuer: PartitionEnqueuer instance
         :param thread_pool_manager: ThreadPoolManager instance
-        :param stream_to_instance_map: Mapping of stream name to stream instance
+        :param stream_name_to_instance: Mapping of stream name to stream instance
         :param logger: Logger instance
         :param slice_logger: SliceLogger instance
         :param message_repository: MessageRepository instance
         :param partition_reader: PartitionReader instance
         """
-        self._stream_to_instance_map = stream_to_instance_map
+        self._stream_name_to_instance = stream_name_to_instance
         self._record_counter = {}
         self._streams_to_partitions = {}
         for stream in stream_instances_to_read_from:
@@ -84,7 +84,7 @@ class ConcurrentStreamProcessor:
     def _on_stream_is_done(self, stream_name: str) -> AirbyteMessage:
         self._logger.info(f"Read {self._record_counter[stream_name]} records from {stream_name} stream")
         self._logger.info(f"Marking stream {stream_name} as STOPPED")
-        stream = self._stream_to_instance_map[stream_name]
+        stream = self._stream_name_to_instance[stream_name]
         self._logger.info(f"Finished syncing {stream.name}")
         return stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.COMPLETE)
 
@@ -101,7 +101,7 @@ class ConcurrentStreamProcessor:
         # AbstractStreams are expected to return data as they are expected.
         # Any transformation on the data should be done before reaching this point
         message = stream_data_to_airbyte_message(record.stream_name, record.data)
-        stream = self._stream_to_instance_map[record.stream_name]
+        stream = self._stream_name_to_instance[record.stream_name]
 
         if self._record_counter[stream.name] == 0:
             self._logger.info(f"Marking stream {stream.name} as RUNNING")
@@ -119,7 +119,7 @@ class ConcurrentStreamProcessor:
     def _stop_streams(self) -> Iterable[AirbyteMessage]:
         self._thread_pool_manager.shutdown()
         for stream_name, partitions in self._streams_to_partitions.items():
-            stream = self._stream_to_instance_map[stream_name]
+            stream = self._stream_name_to_instance[stream_name]
             if not all([p.is_closed() for p in partitions]):
                 self._logger.info(f"Marking stream {stream.name} as STOPPED")
                 self._logger.info(f"Finished syncing {stream.name}")
