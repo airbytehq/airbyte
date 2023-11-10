@@ -14,7 +14,8 @@ from pipelines.airbyte_ci.format.containers import (
     format_license_container,
     format_python_container,
 )
-from pipelines.helpers.cli import LogOptions, invoke_commands_concurrently, log_command_results
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.helpers.cli import LogOptions, get_all_sibling_commands, invoke_commands_concurrently, log_command_results
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 from pipelines.models.steps import CommandResult, StepStatus
 
@@ -43,8 +44,9 @@ async def all_checks(ctx: click.Context, list_errors: bool):
     """
     Run all format checks and fail if any checks fail.
     """
-    commands_to_invoke = [command for command_name, command in check.commands.items() if command_name != ctx.command.name]
-    command_results = await invoke_commands_concurrently(ctx, commands_to_invoke)
+    all_commands = get_all_sibling_commands(ctx)
+
+    command_results = await invoke_commands_concurrently(ctx, all_commands)
     failure = any([r.status is StepStatus.FAILURE for r in command_results])
     parent_command = ctx.parent.command
     logger = logging.getLogger(parent_command.name)
@@ -57,7 +59,7 @@ async def all_checks(ctx: click.Context, list_errors: bool):
         raise click.Abort()
 
 
-@check.command()
+@check.command(cls=DaggerPipelineCommand)
 @pass_pipeline_context
 async def python(pipeline_context: ClickPipelineContext) -> CommandResult:
     """Format python code via black and isort."""
@@ -72,7 +74,7 @@ async def python(pipeline_context: ClickPipelineContext) -> CommandResult:
     return await get_check_command_result(check.commands["python"], check_commands, container)
 
 
-@check.command()
+@check.command(cls=DaggerPipelineCommand)
 @pass_pipeline_context
 async def java(pipeline_context: ClickPipelineContext) -> CommandResult:
     """Format java, groovy, and sql code via spotless."""
@@ -82,7 +84,7 @@ async def java(pipeline_context: ClickPipelineContext) -> CommandResult:
     return await get_check_command_result(check.commands["java"], check_commands, container)
 
 
-@check.command()
+@check.command(cls=DaggerPipelineCommand)
 @pass_pipeline_context
 async def js(pipeline_context: ClickPipelineContext):
     """Format yaml and json code via prettier."""

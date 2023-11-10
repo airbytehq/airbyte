@@ -95,3 +95,9 @@ async def invoke_commands_sequentially(ctx: click.Context, commands: List[click.
     for command in commands:
         command_executions_results.append(await ctx.invoke(command))
     return command_executions_results
+
+def get_all_sibling_commands(ctx: click.Context) -> List[click.Command]:
+    """
+    Get all sibling commands of the current command.
+    """
+    return [c for c in ctx.parent.command.commands.values() if c.name != ctx.command.name]

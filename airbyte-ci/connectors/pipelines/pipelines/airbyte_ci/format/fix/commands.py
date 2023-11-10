@@ -14,12 +14,13 @@ from pipelines.airbyte_ci.format.containers import (
     format_python_container,
 )
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs
-from pipelines.helpers.cli import invoke_commands_concurrently, invoke_commands_sequentially
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.helpers.cli import invoke_commands_concurrently, invoke_commands_sequentially, get_all_sibling_commands
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 from pipelines.models.steps import CommandResult, StepStatus
 
 # HELPERS
-LANGUAGE_FIX_COMMAND_NAMES = ["python", "java", "js"]
+
 
 
 async def get_format_command_result(click_command: click.Command, container: dagger.Container, format_commands: List[str]) -> CommandResult:
@@ -50,13 +51,14 @@ async def fix():
     pass
 
 
-@fix.command(name="all")
+@fix.command(cls=DaggerPipelineCommand, name="all")
 @click.pass_context
 async def all_fix(ctx: click.Context):
     """Run code format checks and fix any failures."""
+    sibling_commands = get_all_sibling_commands(ctx)
+
     # We can run language commands concurrently because they modify different set of files.
-    commands_to_invoke_concurrently = [fix.commands[command_name] for command_name in LANGUAGE_FIX_COMMAND_NAMES]
-    command_results = await invoke_commands_concurrently(ctx, commands_to_invoke_concurrently)
+    command_results = await invoke_commands_concurrently(ctx, sibling_commands)
 
     # We have to run license command sequentially because it modifies the same set of files as other commands.
     # If we ran it concurrently with language commands, we face race condition issues.
@@ -67,7 +69,7 @@ async def all_fix(ctx: click.Context):
         raise click.Abort()
 
 
-@fix.command()
+@fix.command(cls=DaggerPipelineCommand)
 @pass_pipeline_context
 @click_ignore_unused_kwargs
 async def java(ctx: ClickPipelineContext) -> CommandResult:
@@ -78,7 +80,7 @@ async def java(ctx: ClickPipelineContext) -> CommandResult:
     return await get_format_command_result(fix.commands["java"], container, format_commands)
 
 
-@fix.command()
+@fix.command(cls=DaggerPipelineCommand)
 @pass_pipeline_context
 @click_ignore_unused_kwargs
 async def js(ctx: ClickPipelineContext) -> CommandResult:
@@ -100,7 +102,7 @@ async def license_fix(ctx: ClickPipelineContext) -> CommandResult:
     return await get_format_command_result(fix.commands["license"], container, format_commands)
 
 
-@fix.command()
+@fix.command(cls=DaggerPipelineCommand)
 @pass_pipeline_context
 @click_ignore_unused_kwargs
 async def python(ctx: ClickPipelineContext) -> CommandResult:

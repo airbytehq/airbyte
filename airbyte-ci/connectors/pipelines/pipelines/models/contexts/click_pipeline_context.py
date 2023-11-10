@@ -68,6 +68,10 @@ class ClickPipelineContext(BaseModel, Singleton):
         if not Singleton._initialized[ClickPipelineContext]:
             super().__init__(**data)
             Singleton._initialized[ClickPipelineContext] = True
+
+            """
+            Note: Its important to hold onto the original click context object, as it is used to hold onto the Dagger client.
+            """
             self._og_click_context = self._click_context()
 
     _dagger_client_lock: anyio.Lock = PrivateAttr(default_factory=anyio.Lock)
