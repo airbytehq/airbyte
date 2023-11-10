@@ -74,7 +74,6 @@ class ConcurrentSource(AbstractSource, ABC):
     def message_repository(self) -> MessageRepository:
         return self._message_repository
 
-    # FIXME: This probably deserves a nicer interface with an adapter
     def read(
         self,
         logger: logging.Logger,
