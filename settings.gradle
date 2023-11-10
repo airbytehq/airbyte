@@ -18,9 +18,12 @@ pluginManagement {
 // Configure the gradle enterprise plugin to enable build scans. Enabling the plugin at the top of the settings file allows the build scan to record
 // as much information as possible.
 plugins {
-    id "com.gradle.enterprise" version "3.13.1"
+    id "com.gradle.enterprise" version "3.15.1"
     id 'com.github.burrunan.s3-build-cache' version "1.5"
 }
+
+ext.isCiServer = System.getenv().containsKey("CI")
+ext.isAirbyteCI = System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
 
 dependencyResolutionManagement {
     // Set FAIL_ON_PROJECT_REPOS to ensure there are no more `repositories { ... }` blocks than necessary.
@@ -129,14 +132,12 @@ gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
+        uploadInBackground = (!isCiServer && !isAirbyteCI) // Disable in CI or scan URLs may not work.
         buildScanPublished { PublishedBuildScan scan ->
             file("scan-journal.log") << "${new Date()} - ${scan.buildScanId} - ${scan.buildScanUri}\n"
         }
     }
 }
-
-ext.isCiServer = System.getenv().containsKey("CI")
-ext.isAirbyteCI = System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
 
 if (isCiServer || isAirbyteCI) {
     buildCache {
