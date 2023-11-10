@@ -142,7 +142,6 @@ public class MongoDbCdcEventUtils {
     return normalizeObjectIdNoSchema(objectNode);
   }
 
-
   private static void formatDocument(final Document document, final ObjectNode objectNode, final Set<String> columnNames) {
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
@@ -164,6 +163,7 @@ public class MongoDbCdcEventUtils {
       throw new RuntimeException(e);
     }
   }
+
   private static ObjectNode readDocument(final BsonReader reader,
                                          final ObjectNode jsonNodes,
                                          final Set<String> includedFields,
