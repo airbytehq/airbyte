@@ -202,6 +202,8 @@ public class RocksetUtils {
         .anyMatch(coll -> coll.getName().equals(cname));
   }
 
+
+
   public static void clearCollectionIfCollectionExists(ApiClient client, String workspace, String cname) {
     Exceptions.toRuntime(() -> {
 
@@ -212,8 +214,10 @@ public class RocksetUtils {
       final QueryRequest qr = new QueryRequest().sql(new QueryRequestSql().query(String.format("SELECT _id from %s.%s", workspace, cname)));
       try {
         final QueryResponse resp = new QueriesApi(client).query(qr);
+        @SuppressWarnings("unchecked")
         final List<String> ids =
-            resp.getResults().stream().map(f -> (LinkedTreeMap<String, Object>) f).map(f -> (String) f.get("_id")).collect(Collectors.toList());
+            resp.getResults().stream().map(f ->
+                (LinkedTreeMap<String, Object>) f).map(f -> (String) f.get("_id")).collect(Collectors.toList());
         final DeleteDocumentsRequest ddr = new DeleteDocumentsRequest();
         for (String id : ids) {
           ddr.addDataItem(new DeleteDocumentsRequestData().id(id));
@@ -236,6 +240,7 @@ public class RocksetUtils {
 
       final QueryRequest qr = new QueryRequest().sql(new QueryRequestSql().query(elementCount));
       final QueryResponse resp = new QueriesApi(client).query(qr);
+      @SuppressWarnings("unchecked")
       Optional<Number> count =
           resp.getResults().stream().map(f -> (LinkedTreeMap<String, Object>) f).map(f -> f.get("numel")).map(f -> (Number) f).findFirst();
       return count.filter(number -> number.intValue() == 0).isPresent();
@@ -244,6 +249,7 @@ public class RocksetUtils {
 
   }
 
+  @SuppressWarnings("deprecation")
   private static Duration jitter(String... args) {
     final Hasher hsh = Hashing.murmur3_32().newHasher();
     for (String s : args) {

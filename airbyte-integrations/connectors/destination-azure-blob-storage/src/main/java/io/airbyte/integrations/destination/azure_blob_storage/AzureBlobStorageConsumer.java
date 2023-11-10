@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -139,9 +140,22 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
   }
 
   @Override
-  protected void close(final boolean hasFailed) throws Exception {
+  protected void close(final boolean hasFailed) {
     for (final AzureBlobStorageWriter handler : streamNameAndNamespaceToWriters.values()) {
-      handler.close(hasFailed);
+      try {
+        handler.close(hasFailed);
+      } catch (IOException e) {
+        LOGGER.warn("handler " + handler.toString() + " threw an exception", e);
+      }
+    }
+  }
+
+  @Override
+  public void close() {
+    try {
+      super.close();
+    } catch (Exception e) {
+      LOGGER.warn("close method threw an exception", e);
     }
   }
 

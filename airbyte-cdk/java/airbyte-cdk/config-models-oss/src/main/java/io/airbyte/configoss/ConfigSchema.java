@@ -84,11 +84,13 @@ public enum ConfigSchema implements AirbyteConfig {
     return KNOWN_SCHEMAS_ROOT.resolve(schemaFilename).toFile();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T> Class<T> getClassName() {
     return (Class<T>) className;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T> String getId(final T object) {
     if (getClassName().isInstance(object)) {

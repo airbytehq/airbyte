@@ -291,6 +291,7 @@ public class MongoUtils {
     return getFieldsName(collection, "$ROOT");
   }
 
+  @SuppressWarnings("unchecked")
   private static List<String> getFieldsName(final MongoCollection<Document> collection, final String fieldName) {
     final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
         new Document("$limit", DISCOVER_LIMIT),
@@ -298,7 +299,7 @@ public class MongoUtils {
         new Document("$unwind", "$arrayofkeyvalue"),
         new Document("$group", new Document(ID, null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
     if (output.cursor().hasNext()) {
-      return (List) output.cursor().next().get("allkeys");
+      return (List<String>) output.cursor().next().get("allkeys");
     } else {
       return Collections.emptyList();
     }

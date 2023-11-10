@@ -41,7 +41,7 @@ public class OracleStrictEncryptDestination extends SpecModifyingDestination imp
                                             Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final JsonNode cloneConfig = Jsons.clone(config);
-    ((ObjectNode) cloneConfig).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+    ((ObjectNode) cloneConfig).set("encryption", Jsons.jsonNode(ImmutableMap.builder()
         .put("encryption_method", "client_nne")
         .put("encryption_algorithm", "AES256")
         .build()));

@@ -47,6 +47,7 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
     printWriter = new PrintWriter(outputStream, true, StandardCharsets.UTF_8);
   }
 
+  @Deprecated
   @Override
   protected void writeRecord(final AirbyteRecordMessage record) {
     final ObjectNode json = MAPPER.createObjectNode();

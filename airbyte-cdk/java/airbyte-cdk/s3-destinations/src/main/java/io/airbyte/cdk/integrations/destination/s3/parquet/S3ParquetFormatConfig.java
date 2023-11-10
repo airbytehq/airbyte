@@ -50,7 +50,7 @@ public class S3ParquetFormatConfig implements S3FormatConfig {
     return compressionCodec;
   }
 
-  public int getBlockSize() {
+  public long getBlockSize() {
     return blockSize;
   }
 

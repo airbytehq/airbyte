@@ -59,7 +59,7 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     mongoClient.close();
   }
 
@@ -74,7 +74,7 @@ public class MongoDatabase extends AbstractDatabase implements AutoCloseable {
   public Set<String> getCollectionNames() {
     final MongoIterable<String> collectionNames = database.listCollectionNames();
     if (collectionNames == null) {
-      return Collections.EMPTY_SET;
+      return Collections.emptySet();
     }
     return MoreIterators.toSet(database.listCollectionNames().iterator()).stream()
         .filter(c -> !c.startsWith(MONGO_RESERVED_COLLECTION_PREFIX)).collect(Collectors.toSet());

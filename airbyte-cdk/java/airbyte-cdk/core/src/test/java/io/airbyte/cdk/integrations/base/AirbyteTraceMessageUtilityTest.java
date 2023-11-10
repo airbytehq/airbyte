@@ -55,6 +55,7 @@ public class AirbyteTraceMessageUtilityTest {
     assertJsonNodeIsTraceMessage(Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8)));
   }
 
+  @SuppressWarnings("divzero")
   @Test
   void testCorrectStacktraceFormat() {
     try {

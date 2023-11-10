@@ -64,6 +64,7 @@ class FailureTrackingAirbyteMessageConsumerTest {
     verify(consumer).close(true);
   }
 
+  @SuppressWarnings("try")
   static class TestConsumer extends FailureTrackingAirbyteMessageConsumer {
 
     @Override

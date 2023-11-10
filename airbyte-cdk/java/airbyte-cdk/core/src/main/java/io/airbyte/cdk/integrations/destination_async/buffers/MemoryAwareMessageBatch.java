@@ -52,7 +52,7 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     memoryManager.free(sizeInBytes);
   }
 

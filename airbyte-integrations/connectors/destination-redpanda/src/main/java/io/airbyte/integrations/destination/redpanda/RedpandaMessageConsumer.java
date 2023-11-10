@@ -98,4 +98,13 @@ public class RedpandaMessageConsumer extends FailureTrackingAirbyteMessageConsum
     redpandaOperations.close();
   }
 
+  @Override
+  public void close() {
+    try {
+      super.close();
+    } catch (Exception e) {
+      LOGGER.warn("exception thrown during close", e);
+    }
+  }
+
 }

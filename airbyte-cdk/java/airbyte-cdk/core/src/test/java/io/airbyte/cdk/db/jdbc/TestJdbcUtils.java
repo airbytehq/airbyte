@@ -385,9 +385,9 @@ class TestJdbcUtils {
     expected.put("boolean", true);
     expected.put("smallint", (short) 1);
     expected.put("int", 1);
-    expected.put("bigint", (long) 1);
-    expected.put("float", (double) 1.0);
-    expected.put("double", (double) 1.0);
+    expected.put("bigint", 1L);
+    expected.put("float", 1.0D);
+    expected.put("double", 1.0D);
     expected.put("real", (float) 1.0);
     expected.put("numeric", new BigDecimal(1));
     expected.put("decimal", new BigDecimal(1));
@@ -418,7 +418,7 @@ class TestJdbcUtils {
 
       assertExpectedOutputValues(connection,
           ((ObjectNode) Jsons.jsonNode(Collections.emptyMap()))
-              .put("bigint", (long) value));
+              .put("bigint", value));
       assertExpectedOutputTypes(connection);
     }
   }

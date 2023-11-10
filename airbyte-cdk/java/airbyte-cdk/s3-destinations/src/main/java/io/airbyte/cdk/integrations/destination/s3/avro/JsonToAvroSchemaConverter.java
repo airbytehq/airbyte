@@ -51,6 +51,8 @@ public class JsonToAvroSchemaConverter {
 
   private final Map<String, String> standardizedNames = new HashMap<>();
 
+
+  @SuppressWarnings("deprecation")
   static List<JsonSchemaType> getNonNullTypes(final String fieldName, final JsonNode fieldDefinition) {
     return getTypes(fieldName, fieldDefinition).stream()
         .filter(type -> type != JsonSchemaType.NULL).collect(Collectors.toList());
@@ -216,8 +218,10 @@ public class JsonToAvroSchemaConverter {
                          final JsonNode fieldDefinition,
                          final boolean appendExtraProps,
                          final boolean addStringToLogicalTypes) {
+    @SuppressWarnings("deprecation")
+    JsonSchemaType nullType = JsonSchemaType.NULL;
     Preconditions
-        .checkState(fieldType != JsonSchemaType.NULL, "Null types should have been filtered out");
+        .checkState(fieldType != nullType, "Null types should have been filtered out");
 
     // the additional properties fields are filtered out and never passed into this method;
     // but this method is able to handle them for completeness

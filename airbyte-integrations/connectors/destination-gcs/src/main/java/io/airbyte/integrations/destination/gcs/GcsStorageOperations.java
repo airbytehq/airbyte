@@ -28,6 +28,7 @@ public class GcsStorageOperations extends S3StorageOperations {
   /**
    * GCS only supports the legacy AmazonS3#doesBucketExist method.
    */
+  @SuppressWarnings("deprecation")
   @Override
   protected boolean doesBucketExist(final String bucket) {
     return s3Client.doesBucketExist(bucket);

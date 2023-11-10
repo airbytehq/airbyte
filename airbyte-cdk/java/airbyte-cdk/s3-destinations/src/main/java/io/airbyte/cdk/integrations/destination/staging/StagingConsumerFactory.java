@@ -190,8 +190,11 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
         tableName = streamId.rawName();
       } else {
         outputSchema = getOutputSchema(abStream, config.get("schema").asText(), namingResolver);
-        tableName = namingResolver.getRawTableName(streamName);
+        @SuppressWarnings("deprecation")
+        String rawTableName = namingResolver.getRawTableName(streamName);
+        tableName = rawTableName;
       }
+      @SuppressWarnings("deprecation")
       final String tmpTableName = namingResolver.getTmpTableName(streamName);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
 

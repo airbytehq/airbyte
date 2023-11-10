@@ -9,6 +9,13 @@ airbyteJavaConnector {
     useLocalCdk = false
 }
 
+//remove after updating to CDK > 0.4.5
+java {
+   compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
 airbyteJavaConnector.addCdkDependencies()
 
 application {
@@ -21,4 +28,10 @@ dependencies {
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
 
     testImplementation 'com.hivemq:hivemq-testcontainer-junit5:2.0.0'
+}
+
+java {
+   compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
 }

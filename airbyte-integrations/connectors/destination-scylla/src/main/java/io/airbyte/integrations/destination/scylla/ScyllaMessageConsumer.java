@@ -102,4 +102,13 @@ public class ScyllaMessageConsumer extends FailureTrackingAirbyteMessageConsumer
     scyllaCqlProvider.close();
   }
 
+  @Override
+  public void close() {
+    try {
+      super.close();
+    } catch (Exception e) {
+      LOGGER.warn("close method threw exception", e);
+    }
+  }
+
 }

@@ -26,8 +26,8 @@ public class TypeAndDedupeTransaction {
    * @param suffix table suffix for temporary tables
    * @throws Exception if the safe query fails
    */
-  public static void executeTypeAndDedupe(final SqlGenerator sqlGenerator,
-                                          final DestinationHandler destinationHandler,
+  public static void executeTypeAndDedupe(final SqlGenerator<?> sqlGenerator,
+                                          final DestinationHandler<?> destinationHandler,
                                           StreamConfig streamConfig,
                                           Optional<Instant> minExtractedAt,
                                           String suffix)
@@ -56,7 +56,7 @@ public class TypeAndDedupeTransaction {
    * @param streamConfig which stream to operate on
    * @throws Exception if the safe query fails
    */
-  public static void executeSoftReset(final SqlGenerator sqlGenerator, final DestinationHandler destinationHandler, StreamConfig streamConfig)
+  public static void executeSoftReset(final SqlGenerator<?> sqlGenerator, final DestinationHandler<?> destinationHandler, StreamConfig streamConfig)
       throws Exception {
     LOGGER.info("Attempting soft reset for stream {} {}", streamConfig.id().originalNamespace(), streamConfig.id().originalName());
     destinationHandler.execute(sqlGenerator.prepareTablesForSoftReset(streamConfig));

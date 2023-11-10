@@ -64,7 +64,7 @@ class TestHarnessUtilsTest {
           forceShutdown);
     }
 
-    @SuppressWarnings("BusyWait")
+    @SuppressWarnings({"BusyWait", "deprecation"})
     @DisplayName("Verify that shutdown waits indefinitely when heartbeat and process are healthy.")
     @Test
     void testStartsWait() throws InterruptedException {

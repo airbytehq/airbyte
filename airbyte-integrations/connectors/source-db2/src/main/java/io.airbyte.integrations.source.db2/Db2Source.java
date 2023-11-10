@@ -94,6 +94,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
         "SYSPROC", "SYSPUBLIC", "SYSSTAT", "SYSTOOLS");
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivileges(), sourceOperations::rowToJson)) {

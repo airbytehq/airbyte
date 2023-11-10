@@ -110,7 +110,15 @@ public class SelectdbConsumer extends CommitOnStateAirbyteMessageConsumer {
         writeConfig.getsci().close();
       }
     }
+  }
 
+  @Override
+  public void close() {
+    try {
+      super.close();
+    } catch (Exception e) {
+      LOGGER.warn("close method threw exception", e);
+    }
   }
 
 }

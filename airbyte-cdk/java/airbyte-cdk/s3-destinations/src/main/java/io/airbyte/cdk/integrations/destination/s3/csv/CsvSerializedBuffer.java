@@ -66,6 +66,7 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
    * @param record AirbyteRecordMessage to be written
    * @throws IOException
    */
+  @Deprecated
   @Override
   protected void writeRecord(final AirbyteRecordMessage record) throws IOException {
     csvPrinter.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), record));

@@ -87,7 +87,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
       final JdbcDatabase database = getDatabase(dataSource);
       final NamingConventionTransformer namingResolver = getNamingResolver();
       final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
+      attemptTableOperations(outputSchema, database, namingResolver, getSqlOperations(), false);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);

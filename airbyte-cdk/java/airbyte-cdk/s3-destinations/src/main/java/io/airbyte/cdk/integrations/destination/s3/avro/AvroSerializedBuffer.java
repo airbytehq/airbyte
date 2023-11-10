@@ -47,6 +47,7 @@ public class AvroSerializedBuffer extends BaseSerializedBuffer {
         .create(schema, outputStream);
   }
 
+  @Deprecated
   @Override
   protected void writeRecord(final AirbyteRecordMessage record) throws IOException {
     dataFileWriter.append(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record));

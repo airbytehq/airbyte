@@ -110,6 +110,15 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
     }
   }
 
+  @Override
+  public void close() {
+    try {
+      super.close();
+    } catch (Exception e) {
+      LOGGER.warn("exception thrown during close", e);
+    }
+  }
+
   /* Helpers */
 
   private void insertRecordToTmpCollection(final MongodbWriteConfig writeConfig,

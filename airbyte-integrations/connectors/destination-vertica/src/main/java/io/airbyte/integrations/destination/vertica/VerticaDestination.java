@@ -79,8 +79,8 @@ public class VerticaDestination extends AbstractJdbcDestination implements Desti
       final JdbcDatabase database = getDatabase(dataSource);
       final VerticaSqlOperations mySQLSqlOperations = (VerticaSqlOperations) getSqlOperations();
       final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(),
-          mySQLSqlOperations);
+      attemptTableOperations(outputSchema, database, getNamingResolver(),
+          mySQLSqlOperations, false);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
       final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);

@@ -133,6 +133,7 @@ public class BufferDequeueTest {
     assertTrue(dequeue.getTimeOfLastRecord(ghostStream).isEmpty());
   }
 
+  @SuppressWarnings("try")
   @Test
   void cleansUpMemoryForEmptyQueues() throws Exception {
     final var bufferManager = new BufferManager();
@@ -160,11 +161,10 @@ public class BufferDequeueTest {
     try (final var batch = dequeue.take(STREAM_DESC, totalBatchSize)) {
       // slop allocation gets cleaned up
       assertEquals(BLOCK_SIZE_BYTES + totalBatchSize, memoryManager.getCurrentMemoryBytes());
-      batch.close();
-      // back to initial state after flush clears the batch
-      assertEquals(BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes());
-      assertEquals(0, bufferManager.getBuffers().get(STREAM_DESC).getMaxMemoryUsage());
     }
+    // back to initial state after flush clears the batch
+    assertEquals(BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes());
+    assertEquals(0, bufferManager.getBuffers().get(STREAM_DESC).getMaxMemoryUsage());
   }
 
 }

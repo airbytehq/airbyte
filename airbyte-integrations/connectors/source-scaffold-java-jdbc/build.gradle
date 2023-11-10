@@ -9,6 +9,13 @@ airbyteJavaConnector {
     useLocalCdk = true
 }
 
+//remove after updating to CDK > 0.4.5
+java {
+   compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
 airbyteJavaConnector.addCdkDependencies()
 
 application {

@@ -144,6 +144,7 @@ public class ParquetSerializedBufferTest {
         + "\"_airbyte_additional_properties\": null}";
   }
 
+  @SuppressWarnings("try")
   private static void runTest(final Long minExpectedByte,
                               final Long maxExpectedByte,
                               final S3DestinationConfig config,

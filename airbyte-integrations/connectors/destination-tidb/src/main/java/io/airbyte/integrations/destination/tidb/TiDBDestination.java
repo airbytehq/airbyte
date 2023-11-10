@@ -50,7 +50,7 @@ public class TiDBDestination extends AbstractJdbcDestination implements Destinat
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(), getSqlOperations());
+      attemptTableOperations(outputSchema, database, getNamingResolver(), getSqlOperations(), false);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);

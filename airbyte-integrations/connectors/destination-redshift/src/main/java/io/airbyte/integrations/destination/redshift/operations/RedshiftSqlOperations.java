@@ -26,10 +26,10 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format("""
                          CREATE TABLE IF NOT EXISTS %s.%s (
-                          %s VARCHAR PRIMARY KEY,
-                          %s SUPER,
-                          %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
-                          """, schemaName, tableName,
+                         %s VARCHAR PRIMARY KEY,
+                         %s SUPER,
+                         %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
+                         """, schemaName, tableName,
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);

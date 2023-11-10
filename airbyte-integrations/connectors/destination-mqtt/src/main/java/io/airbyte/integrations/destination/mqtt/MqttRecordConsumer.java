@@ -128,6 +128,15 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
     }
   }
 
+  @Override
+  public void close() {
+    try {
+      super.close();
+    } catch (Exception e) {
+      LOGGER.warn("exception thrown during close", e);
+    }
+  }
+
   private static class MessageActionListener implements IMqttActionListener {
 
     private final AirbyteMessage lastStateMessage;

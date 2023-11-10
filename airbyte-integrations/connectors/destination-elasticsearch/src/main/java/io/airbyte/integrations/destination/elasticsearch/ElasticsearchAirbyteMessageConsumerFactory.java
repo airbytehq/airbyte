@@ -54,7 +54,8 @@ public class ElasticsearchAirbyteMessageConsumerFactory {
         new InMemoryRecordBufferingStrategy(recordWriterFunction(connection, writeConfigs), MAX_BATCH_SIZE_BYTES),
         onCloseFunction(connection),
         catalog,
-        isValidFunction(connection));
+        isValidFunction(connection),
+        null);
   }
 
   // is there any json node that wont fit in the index?

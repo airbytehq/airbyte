@@ -132,6 +132,7 @@ class YamlsTest {
     assertEquals(values, deserialize);
   }
 
+  @SuppressWarnings("try")
   @Test
   void testStreamRead() throws IOException {
     final List<ToClass> classes = Lists.newArrayList(

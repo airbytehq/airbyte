@@ -93,7 +93,8 @@ public class BufferedStreamConsumerTest {
         new InMemoryRecordBufferingStrategy(recordWriter, 1_000),
         onClose,
         CATALOG,
-        isValidRecord);
+        isValidRecord,
+        null);
 
     when(isValidRecord.apply(any())).thenReturn(true);
   }
@@ -175,7 +176,8 @@ public class BufferedStreamConsumerTest {
         new InMemoryRecordBufferingStrategy(recordWriter, 10_000),
         onClose,
         CATALOG,
-        isValidRecord);
+        isValidRecord,
+        null);
 
     consumer.start();
     consumeRecords(consumer, expectedRecordsBatch1);

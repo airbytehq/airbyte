@@ -107,4 +107,13 @@ public class KinesisMessageConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
+  @Override
+  public void close() {
+    try {
+      super.close();
+    } catch (Exception e) {
+      LOGGER.warn("exception thrown during close", e);
+    }
+  }
+
 }

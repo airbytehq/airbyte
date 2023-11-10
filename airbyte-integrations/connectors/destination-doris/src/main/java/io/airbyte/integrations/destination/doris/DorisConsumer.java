@@ -118,7 +118,14 @@ public class DorisConsumer extends CommitOnStateAirbyteMessageConsumer {
         writeConfig.getDorisStreamLoad().close();
       }
     }
-
   }
 
+  @Override
+  public void close() {
+    try {
+      super.close();
+    } catch (Exception e) {
+      LOGGER.warn("exception thrown during close", e);
+    }
+  }
 }

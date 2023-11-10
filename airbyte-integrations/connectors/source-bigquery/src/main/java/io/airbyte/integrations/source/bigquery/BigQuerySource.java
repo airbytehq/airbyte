@@ -212,6 +212,6 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   }
 
   @Override
-  public void close() throws Exception {}
+  public void close() {}
 
 }

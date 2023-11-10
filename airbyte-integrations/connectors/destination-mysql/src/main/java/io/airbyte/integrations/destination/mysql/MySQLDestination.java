@@ -60,8 +60,8 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       final MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
 
       final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(),
-          mySQLSqlOperations);
+      attemptTableOperations(outputSchema, database, getNamingResolver(),
+          mySQLSqlOperations, false);
 
       mySQLSqlOperations.verifyLocalFileEnabled(database);
 

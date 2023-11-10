@@ -104,6 +104,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     return new HashSet<>(database.bufferedResultSetQuery(

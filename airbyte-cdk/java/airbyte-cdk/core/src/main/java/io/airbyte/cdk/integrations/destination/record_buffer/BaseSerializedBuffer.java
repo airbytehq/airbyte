@@ -82,10 +82,9 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
 
   protected abstract void closeWriter() throws IOException;
 
-  public SerializableBuffer withCompression(final boolean useCompression) {
+  public void withCompression(final boolean useCompression) {
     if (!isStarted) {
       this.useCompression = useCompression;
-      return this;
     }
     throw new RuntimeException("Options should be configured before starting to write");
   }
@@ -179,14 +178,22 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     if (!isClosed) {
       // inputStream can be null if the accept method encounters
       // an error before inputStream is initialized
       if (inputStream != null) {
-        inputStream.close();
+        try {
+          inputStream.close();
+        } catch (IOException e) {
+          LOGGER.info("inputStream.close threw an exception", e);
+        }
       }
-      bufferStorage.deleteFile();
+      try {
+        bufferStorage.deleteFile();
+      } catch (IOException e) {
+        LOGGER.info("bufferStorage.deleteFile threw an exception", e);
+      }
       isClosed = true;
     }
   }

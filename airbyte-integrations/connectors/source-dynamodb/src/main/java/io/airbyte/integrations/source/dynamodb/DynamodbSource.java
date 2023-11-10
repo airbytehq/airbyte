@@ -99,14 +99,14 @@ public class DynamodbSource extends BaseConnector implements Source {
                                                     final JsonNode state) {
 
     final var streamState = DynamodbUtils.deserializeStreamState(state, featureFlags.useStreamCapableState());
-
+    @SuppressWarnings("rawtypes")
     final StateManager stateManager = StateManagerFactory
         .createStateManager(streamState.airbyteStateType(), streamState.airbyteStateMessages(), catalog);
 
     final var dynamodbConfig = DynamodbConfig.createDynamodbConfig(config);
 
     try (final var dynamodbOperations = new DynamodbOperations(dynamodbConfig)) {
-
+      @SuppressWarnings("rawtypes")
       final var streamIterators = catalog.getStreams().stream()
           .map(str -> switch (str.getSyncMode()) {
           case INCREMENTAL -> scanIncremental(dynamodbOperations, str.getStream(), str.getCursorField().get(0), stateManager);
@@ -119,12 +119,14 @@ public class DynamodbSource extends BaseConnector implements Source {
     }
   }
 
+  @SuppressWarnings("rawtypes")
   private AutoCloseableIterator<AirbyteMessage> scanIncremental(final DynamodbOperations dynamodbOperations,
                                                                 final AirbyteStream airbyteStream,
                                                                 final String cursorField,
                                                                 final StateManager stateManager) {
 
     final var streamPair = new AirbyteStreamNameNamespacePair(airbyteStream.getName(), airbyteStream.getNamespace());
+    @SuppressWarnings("unchecked")
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(streamPair);
 
     final Map<String, JsonNode> properties = objectMapper.convertValue(airbyteStream.getJsonSchema().get("properties"), new TypeReference<>() {});

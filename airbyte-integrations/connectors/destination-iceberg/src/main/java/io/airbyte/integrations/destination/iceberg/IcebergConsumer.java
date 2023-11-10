@@ -223,4 +223,13 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
     }
   }
 
+  @Override
+  public void close() {
+    try {
+      super.close();
+    } catch (Exception e) {
+      log.warn("exception thrown during close", e);
+    }
+  }
+
 }

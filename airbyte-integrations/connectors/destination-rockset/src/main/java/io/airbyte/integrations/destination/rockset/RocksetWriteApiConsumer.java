@@ -141,6 +141,14 @@ public class RocksetWriteApiConsumer extends FailureTrackingAirbyteMessageConsum
     exec.shutdown();
     LOGGER.info("Executors shut down");
   }
+  @Override
+  public void close() {
+    try {
+      super.close();
+    } catch (Exception e) {
+      LOGGER.warn("close method threw exception", e);
+    }
+  }
 
   private void addRequestToBatch(Object document, String cname) {
     synchronized (this.records) {

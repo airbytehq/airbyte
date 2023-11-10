@@ -5,12 +5,6 @@ plugins {
     id "com.github.eirnym.js2p" version "1.0"
 }
 
-java {
-    compileJava {
-        options.compilerArgs += "-Xlint:-unchecked"
-    }
-}
-
 dependencies {
     annotationProcessor libs.bundles.micronaut.annotation.processor
     api libs.bundles.micronaut.annotation

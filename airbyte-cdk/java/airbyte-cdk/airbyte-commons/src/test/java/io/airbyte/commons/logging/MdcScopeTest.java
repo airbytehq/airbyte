@@ -22,6 +22,7 @@ class MdcScopeTest {
     MDC.setContextMap(originalMap);
   }
 
+  @SuppressWarnings("try")
   @Test
   @DisplayName("The MDC context is properly overrided")
   void testMDCModified() {
@@ -33,6 +34,7 @@ class MdcScopeTest {
     }
   }
 
+  @SuppressWarnings("try")
   @Test
   @DisplayName("The MDC context is properly restored")
   void testMDCRestore() {

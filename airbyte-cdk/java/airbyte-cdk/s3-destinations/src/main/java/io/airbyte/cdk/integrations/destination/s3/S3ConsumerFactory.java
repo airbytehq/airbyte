@@ -36,6 +36,7 @@ public class S3ConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(S3ConsumerFactory.class);
   private static final DateTime SYNC_DATETIME = DateTime.now(DateTimeZone.UTC);
 
+  @SuppressWarnings("deprecation")
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                        final BlobStorageOperations storageOperations,
                                        final NamingConventionTransformer namingResolver,

@@ -90,6 +90,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     lastByteCount = 0L;
   }
 
+  @Deprecated
   @Override
   public long accept(final AirbyteRecordMessage record) throws Exception {
     if (inputStream == null && !isClosed) {
@@ -158,10 +159,18 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     if (!isClosed) {
-      inputStream.close();
-      Files.deleteIfExists(bufferFile);
+      try {
+        inputStream.close();
+      } catch (Exception e) {
+        LOGGER.warn("inputStream.close throw an exception", e);
+      }
+      try {
+        Files.deleteIfExists(bufferFile);
+      } catch (IOException e) {
+        LOGGER.warn("inputStream.close throw an exception", e);
+      }
       isClosed = true;
     }
   }

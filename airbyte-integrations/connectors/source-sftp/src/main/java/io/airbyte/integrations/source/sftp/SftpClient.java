@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.sftp;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -90,9 +91,10 @@ public class SftpClient {
     return channelSftp != null && channelSftp.isConnected();
   }
 
-  public Vector lsFile(SupportedFileExtension fileExtension) {
+  @SuppressWarnings("unchecked")
+  public Vector<LsEntry> lsFile(SupportedFileExtension fileExtension) {
     try {
-      return channelSftp.ls("*." + fileExtension.typeName);
+      return (Vector<LsEntry>)channelSftp.ls("*." + fileExtension.typeName);
     } catch (SftpException e) {
       LOGGER.error("Exception occurred while trying to find files with type {} : ", fileExtension, e);
       throw new RuntimeException(e);

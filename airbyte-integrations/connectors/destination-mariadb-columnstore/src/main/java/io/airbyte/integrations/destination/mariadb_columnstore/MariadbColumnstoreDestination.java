@@ -55,11 +55,12 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
 
       mariadbColumnstoreSqlOperations.verifyLocalFileEnabled(database);
 
-      attemptSQLCreateAndDropTableOperations(
+      attemptTableOperations(
           outputSchema,
           database,
           getNamingResolver(),
-          mariadbColumnstoreSqlOperations);
+          mariadbColumnstoreSqlOperations,
+          false);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()

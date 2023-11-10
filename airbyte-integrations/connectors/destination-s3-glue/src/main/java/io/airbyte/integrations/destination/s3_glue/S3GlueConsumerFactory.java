@@ -61,7 +61,8 @@ public class S3GlueConsumerFactory {
             flushBufferFunction(storageOperations, writeConfigs, catalog)),
         onCloseFunction(storageOperations, metastoreOperations, writeConfigs, glueConfig, s3Config),
         catalog,
-        storageOperations::isValidData);
+        storageOperations::isValidData,
+        null);
   }
 
   private static List<S3GlueWriteConfig> createWriteConfigs(final BlobStorageOperations storageOperations,

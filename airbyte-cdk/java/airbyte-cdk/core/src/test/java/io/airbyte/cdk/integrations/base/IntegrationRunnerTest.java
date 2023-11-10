@@ -65,6 +65,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("try")
 class IntegrationRunnerTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunnerTest.class);
