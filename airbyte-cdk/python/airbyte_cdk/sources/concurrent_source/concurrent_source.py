@@ -107,9 +107,6 @@ class ConcurrentSource(AbstractSource, ABC):
         )
         yield from self._consume_from_queue(
             queue,
-            streams_to_partitions,
-            streams_currently_generating_partitions,
-            stream_instances_to_read_from,
             queue_item_handler,
         )
         self._threadpool.check_for_errors_and_shutdown()
@@ -119,9 +116,6 @@ class ConcurrentSource(AbstractSource, ABC):
     def _consume_from_queue(
         self,
         queue: Queue[QueueItem],
-        streams_to_partitions: Dict[str, Set[Partition]],
-        streams_currently_generating_partitions: List[str],
-        stream_instances_to_read_from: List[AbstractStream],
         queue_item_handler: QueueItemHandler,
     ) -> Iterable[AirbyteMessage]:
         # FIXME
