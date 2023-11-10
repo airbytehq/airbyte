@@ -8,7 +8,11 @@ from enum import Enum
 from typing import List, Optional
 
 from airbyte_cdk.sources.config import BaseConfig
+from facebook_business.adobjects.ad import Ad
+from facebook_business.adobjects.adcreative import AdCreative
+from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
+from facebook_business.adobjects.campaign import Campaign
 from pydantic import BaseModel, Field, PositiveInt
 
 logger = logging.getLogger("airbyte")
@@ -17,6 +21,10 @@ logger = logging.getLogger("airbyte")
 ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
 ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
+ValidCampaignStatuses = Enum("ValidCampaignStatuses", Campaign.EffectiveStatus.__dict__)
+ValidAdSetStatuses = Enum("ValidAdSetStatuses", AdSet.EffectiveStatus.__dict__)
+ValidAdStatuses = Enum("ValidAdStatuses", Ad.EffectiveStatus.__dict__)
+ValidAdCreativeStatuses = Enum("ValidAdCreativeStatuses", AdCreative.Status.__dict__)
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 EMPTY_PATTERN = "^$"
 
@@ -104,6 +112,7 @@ class ConnectorConfig(BaseConfig):
 
     class Config:
         title = "Source Facebook Marketing"
+        use_enum_values = True
 
     account_id: str = Field(
         title="Ad Account ID",
@@ -155,23 +164,44 @@ class ConnectorConfig(BaseConfig):
         default_factory=lambda: datetime.now(tz=timezone.utc),
     )
 
-    include_deleted: bool = Field(
-        title="Include Deleted Campaigns, Ads, and AdSets",
+    campaign_statuses: Optional[List[ValidCampaignStatuses]] = Field(
+        title="Campaign Statuses",
         order=4,
-        default=False,
-        description="Set to active if you want to include data from deleted Campaigns, Ads, and AdSets.",
+        description="Select statuses you want to to be loaded in the stream. Empty means all available.",
+        default=[],
+    )
+
+    adset_statuses: Optional[List[ValidAdSetStatuses]] = Field(
+        title="AdSet Statuses",
+        order=5,
+        description="Select statuses you want to to be loaded in the stream. Empty means all available.",
+        default=[],
+    )
+
+    ad_statuses: Optional[List[ValidAdStatuses]] = Field(
+        title="Ad Statuses",
+        order=6,
+        description="Select statuses you want to to be loaded in the stream. Empty means all available.",
+        default=[],
+    )
+
+    adcreative_statuses: Optional[List[ValidAdCreativeStatuses]] = Field(
+        title="AdCreative Statuses",
+        order=7,
+        description="Select statuses you want to to be loaded in the stream. Empty means all available.",
+        default=[],
     )
 
     fetch_thumbnail_images: bool = Field(
         title="Fetch Thumbnail Images from Ad Creative",
-        order=5,
+        order=8,
         default=False,
         description="Set to active if you want to fetch the thumbnail_url and store the result in thumbnail_data_url for each Ad Creative.",
     )
 
     custom_insights: Optional[List[InsightConfig]] = Field(
         title="Custom Insights",
-        order=6,
+        order=9,
         description=(
             "A list which contains ad statistics entries, each entry must have a name and can contains fields, "
             'breakdowns or action_breakdowns. Click on "add" to fill this field.'
@@ -180,7 +210,7 @@ class ConnectorConfig(BaseConfig):
 
     page_size: Optional[PositiveInt] = Field(
         title="Page Size of Requests",
-        order=7,
+        order=10,
         default=100,
         description=(
             "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. "
@@ -190,7 +220,7 @@ class ConnectorConfig(BaseConfig):
 
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Insights Lookback Window",
-        order=8,
+        order=11,
         description=(
             "The attribution window. Facebook freezes insight data 28 days after it was generated, "
             "which means that all data from the past 28 days may have changed since we last emitted it, "

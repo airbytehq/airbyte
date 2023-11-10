@@ -14,11 +14,11 @@ This page guides you through the process of setting up the Facebook Marketing so
 
 <!-- env:oss -->
 
-### (For Airbyte Open Source) Generate an access token and request a rate limit increase:
+### (For Airbyte Open Source) Generate an access token and request a rate limit increase
 
 To set up Facebook Marketing as a source in Airbyte Open Source, you will first need to create a Facebook app and generate a Marketing API access token. You will then need to request a rate limit increase from Facebook. The following steps will guide you through this process:
 
-1. Navigate to [Meta for Developers](https://developers.facebook.com/apps/) and follow the steps provided in the [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create a Facebook app. 
+1. Navigate to [Meta for Developers](https://developers.facebook.com/apps/) and follow the steps provided in the [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create a Facebook app.
 2. While creating the app, when you are prompted for "What do you want your app to do?", select **Other**. You will also need to set the app type to **Business** when prompted.
 3. From your App’s dashboard, [set up the Marketing API](https://developers.facebook.com/docs/marketing-apis/get-started).
 4. Generate a Marketing API access token: From your App’s Dashboard, click **Marketing API** --> **Tools**. Select all the available token permissions (`ads_management`, `ads_read`, `read_insights`, `business_management`) and click **Get token**. Copy the generated token for later use.
@@ -32,7 +32,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
 
 <!-- /env:oss -->
 
-### Set up Facebook Marketing as a source in Airbyte:
+### Set up Facebook Marketing as a source in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account, or navigate to your Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
@@ -47,7 +47,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
    **For Airbyte Open Source**: In the **Access Token** field, enter the access token you generated with your Facebook app.
    <!-- /env:oss -->
 
-#### Facebook Marketing Source Settings:
+#### Facebook Marketing Source Settings
 
 1. For **Account ID**, enter the [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762) to use when pulling data from the Facebook Marketing API. To find this ID, open your Meta Ads Manager. The Ad Account ID number is in the **Account** dropdown menu or in your browser's address bar. Refer to the [Facebook docs](https://www.facebook.com/business/help/1492627900875762) for more information.
 2. (Optional) For **Start Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. If not set then all data will be replicated for usual streams and only last 2 years for insight streams.
@@ -57,12 +57,10 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
    :::
 
 3. (Optional) For **End Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. This is the date until which you'd like to replicate data for all Incremental streams. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.
-4. (Optional) Toggle the **Include Deleted Campaigns, Ads, and AdSets** button to include data from deleted Campaigns, Ads, and AdSets.
-
-   :::info
-   The Facebook Marketing API does not have a concept of deleting records in the same way that a database does. While you can archive or delete an ad campaign, the API maintains a record of the campaign. Toggling the **Include Deleted** button lets you replicate records for campaigns or ads even if they were archived or deleted from the Facebook platform.
-   :::
-
+4. (Optional) Multiselect the **Campaign Statuses** to include data from Campaigns for particular statuses.
+4. (Optional) Multiselect the **AdSet Statuses** to include data from AdSets for particular statuses.
+4. (Optional) Multiselect the **Ad Statuses** to include data from Ads for particular statuses.
+4. (Optional) Multiselect the **AdCreative Statuses** to include data from AdCreatives for particular statuses.
 5. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
 6. (Optional) In the **Custom Insights** section, you may provide a list of ad statistics entries. Each entry should have a unique name and can contain fields, breakdowns or action_breakdowns. Fields refer to the different data points you can collect from an ad, while breakdowns and action_breakdowns let you segment this data for more detailed insights. Click on **Add** to create a new entry in this list.
 
@@ -179,6 +177,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.0   | 2023-11-13 |  | Replace "Include Deleted Campaigns, Ads, and AdSets" option in configuration with specific statuses selection per stream
 | 1.2.0   | 2023-10-31 | [31999](https://github.com/airbytehq/airbyte/pull/31999) | Extend the `AdCreatives` stream schema                                                                                                                                                                                                                                                            |
 | 1.1.17  | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                                                                                                                                                   |
 | 1.1.16  | 2023-10-11 | [31284](https://github.com/airbytehq/airbyte/pull/31284) | Fix error occurring when trying to access the `funding_source_details` field of the `AdAccount` stream                                                                                                                                                                                            |

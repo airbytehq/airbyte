@@ -67,7 +67,7 @@ class TestBackoff:
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/1/", [{"status_code": 200}])
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/2/", [{"status_code": 200}])
 
-        stream = Campaigns(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False)
+        stream = Campaigns(api=api, start_date=pendulum.now(), end_date=pendulum.now())
         try:
             records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
             assert records
@@ -111,7 +111,7 @@ class TestBackoff:
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/", responses)
         requests_mock.register_uri("POST", FacebookSession.GRAPH + f"/{FB_API_VERSION}/", batch_responses)
 
-        stream = AdCreatives(api=api, include_deleted=False)
+        stream = AdCreatives(api=api)
         records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
         assert records == [
@@ -155,7 +155,7 @@ class TestBackoff:
             "GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns", [fb_call_amount_data_response]
         )
 
-        stream = Campaigns(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
+        stream = Campaigns(api=api, start_date=pendulum.now(), end_date=pendulum.now(), page_size=100)
         try:
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
         except AirbyteTracedException:
@@ -192,7 +192,7 @@ class TestBackoff:
             [error, success, error, success],
         )
 
-        stream = Activities(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
+        stream = Activities(api=api, start_date=pendulum.now(), end_date=pendulum.now(), page_size=100)
         try:
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
         except FacebookRequestError:
@@ -218,7 +218,7 @@ class TestBackoff:
             [success],
         )
 
-        stream = Activities(api=api, start_date=None, end_date=None, include_deleted=False, page_size=100)
+        stream = Activities(api=api, start_date=None, end_date=None, page_size=100)
         list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
     def test_limit_error_retry_next_page(self, fb_call_amount_data_response, requests_mock, api, account_id):
@@ -240,7 +240,7 @@ class TestBackoff:
             ],
         )
 
-        stream = Videos(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
+        stream = Videos(api=api, start_date=pendulum.now(), end_date=pendulum.now(), page_size=100)
         try:
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
         except AirbyteTracedException:

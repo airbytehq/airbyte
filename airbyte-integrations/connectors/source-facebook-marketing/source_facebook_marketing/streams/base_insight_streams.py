@@ -26,7 +26,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
 
     cursor_field = "date_start"
-    enable_deleted = False
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
         "1d_click",

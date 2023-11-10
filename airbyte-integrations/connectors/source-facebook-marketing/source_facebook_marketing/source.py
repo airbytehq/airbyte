@@ -61,7 +61,6 @@ UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 
 class SourceFacebookMarketing(AbstractSource):
-
     # Skip exceptions on missing streams
     raise_exception_on_missing_stream = False
 
@@ -145,18 +144,19 @@ class SourceFacebookMarketing(AbstractSource):
                 api=api,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
+                filter_statuses=config.adset_statuses,
                 page_size=config.page_size,
             ),
             Ads(
                 api=api,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
+                filter_statuses=config.ad_statuses,
                 page_size=config.page_size,
             ),
             AdCreatives(
                 api=api,
+                filter_statuses=config.adcreative_statuses,
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
             ),
@@ -184,38 +184,33 @@ class SourceFacebookMarketing(AbstractSource):
                 api=api,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
+                filter_statuses=config.campaign_statuses,
                 page_size=config.page_size,
             ),
             CustomConversions(
                 api=api,
-                include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
             CustomAudiences(
                 api=api,
-                include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
             Images(
                 api=api,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
             Videos(
                 api=api,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
             Activities(
                 api=api,
                 start_date=config.start_date,
                 end_date=config.end_date,
-                include_deleted=config.include_deleted,
                 page_size=config.page_size,
             ),
         ]

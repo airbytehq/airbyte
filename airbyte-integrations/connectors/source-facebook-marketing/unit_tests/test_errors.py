@@ -289,20 +289,17 @@ class TestRealErrors:
         requests_mock.register_uri("GET", f"{act_url}adcreatives", [retryable_error_response, ad_creative_response])
 
         api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
-        stream = AdCreatives(api=api, include_deleted=False)
+        stream = AdCreatives(api=api)
         ad_creative_records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
         assert ad_creative_records == ad_creative_data
-
-        # requests_mock.register_uri("GET", f"{self.act_url}advideos", [error_400_service_temporarily_unavailable, ad_creative_response])
-        # stream = Videos(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
 
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", CONFIG_ERRORS)
     def test_config_error_during_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during account info read"""
 
         api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
-        stream = AdCreatives(api=api, include_deleted=False)
+        stream = AdCreatives(api=api)
 
         requests_mock.register_uri("GET", f"{act_url}", [config_error_response, ad_account_response])
         try:
@@ -319,7 +316,7 @@ class TestRealErrors:
         """Error raised during actual nodes read"""
 
         api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
-        stream = AdCreatives(api=api, include_deleted=False)
+        stream = AdCreatives(api=api)
 
         requests_mock.register_uri("GET", f"{act_url}", [ad_account_response])
         requests_mock.register_uri("GET", f"{act_url}adcreatives", [config_error_response, ad_creative_response])
