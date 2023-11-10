@@ -170,40 +170,193 @@ def test_lazy_substream_data_is_filtered(
         assert record["object"] == expected_object
 
 
-@freezegun.freeze_time("2023-08-23T15:00:15Z")
-def test_created_cursor_incremental_stream(requests_mock, stream_by_name, config):
-    config["start_date"] = str(pendulum.now().subtract(months=23))
-    stream = stream_by_name("balance_transactions", {"lookback_window_days": 14, **config})
-    requests_mock.get(
-        "/v1/balance_transactions",
-        [
-            {
-                "json": {
-                    "data": [{"id": "txn_1KVQhfEcXtiJtvvhF7ox3YEm", "object": "balance_transaction", "amount": 435, "status": "available"}],
-                    "has_more": False,
-                }
-            },
-            {
-                "json": {
-                    "data": [
-                        {"id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX", "object": "balance_transaction", "amount": -9164, "status": "available"}
-                    ],
-                    "has_more": False,
-                }
-            },
-        ],
-    )
+balance_transactions_api_objects = [
+    {
+        "id": "txn_1KVQhfEcXtiJtvvhF7ox3YEm",
+        "object": "balance_transaction",
+        "amount": 435,
+        "created": 1653299388,
+        "status": "available"
+    },
+    {
+        "id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX",
+        "object": "balance_transaction",
+        "amount": -9164,
+        "created": 1679568588,
+        "status": "available"
+    }
+]
 
-    slices = list(stream.stream_slices("full_refresh"))
-    assert slices == [{"created[gte]": 1631199615, "created[lte]": 1662735615}, {"created[gte]": 1662735616, "created[lte]": 1692802815}]
-    records = []
-    for slice_ in slices:
-        for record in stream.read_records("full_refresh", stream_slice=slice_):
-            records.append(record)
-    assert records == [
-        {"id": "txn_1KVQhfEcXtiJtvvhF7ox3YEm", "object": "balance_transaction", "amount": 435, "status": "available"},
-        {"id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX", "object": "balance_transaction", "amount": -9164, "status": "available"},
-    ]
+
+refunds_api_objects = [
+    {
+        "id": "re_3NYB8LAHLf1oYfwN3EZRDIfF",
+        "object": "refund",
+        "amount": 100,
+        "charge": "ch_3NYB8LAHLf1oYfwN3P6BxdKj",
+        "created": 1653299388,
+        "currency": "usd",
+    },
+    {
+        "id": "re_Lf1oYfwN3EZRDIfF3NYB8LAH",
+        "object": "refund",
+        "amount": 15,
+        "charge": "ch_YfwN3P6BxdKj3NYB8LAHLf1o",
+        "created": 1679568588,
+        "currency": "eur",
+    }
+]
+
+
+@pytest.mark.parametrize(
+    "requests_mock_map, expected_records, expected_slices, stream_name, sync_mode, state",
+    (
+        (
+            {
+                "/v1/balance_transactions": [
+                    {
+                        "json": {
+                            "data": [balance_transactions_api_objects[0]],
+                            "has_more": False,
+                        }
+                    },
+                    {
+                        "json": {
+                            "data": [balance_transactions_api_objects[-1]],
+                            "has_more": False,
+                        }
+                    },
+                ],
+            },
+            [
+                {
+                    "id": "txn_1KVQhfEcXtiJtvvhF7ox3YEm",
+                    "object": "balance_transaction",
+                    "amount": 435,
+                    "created": 1653299388,
+                    "status": "available"
+                },
+                {
+                    "id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX",
+                    "object": "balance_transaction",
+                    "amount": -9164,
+                    "created": 1679568588,
+                    "status": "available"
+                },
+            ],
+            [{"created[gte]": 1631199615, "created[lte]": 1662735615}, {"created[gte]": 1662735616, "created[lte]": 1692802815}],
+            "balance_transactions",
+            "full_refresh",
+            {}
+        ),
+        (
+            {
+                "/v1/balance_transactions": [
+                    {
+                        "json": {
+                            "data": [balance_transactions_api_objects[-1]],
+                            "has_more": False,
+                        }
+                    },
+                ],
+            },
+            [
+                {
+                    "id": "txn_tiJtvvhF7ox3YEmKvVQhfEcX",
+                    "object": "balance_transaction",
+                    "amount": -9164,
+                    "created": 1679568588,
+                    "status": "available"
+                },
+            ],
+            [{"created[gte]": 1665308989, "created[lte]": 1692802815}],
+            "balance_transactions",
+            "incremental",
+            {"created": 1666518588}
+        ),
+        (
+            {
+                "/v1/refunds": [
+                    {
+                        "json": {
+                            "data": [refunds_api_objects[0]],
+                            "has_more": False,
+                        }
+                    },
+                    {
+                        "json": {
+                            "data": [refunds_api_objects[-1]],
+                            "has_more": False,
+                        }
+                    },
+                ],
+            },
+            [
+                {
+                    "id": "re_3NYB8LAHLf1oYfwN3EZRDIfF",
+                    "object": "refund",
+                    "amount": 100,
+                    "charge": "ch_3NYB8LAHLf1oYfwN3P6BxdKj",
+                    "created": 1653299388,
+                    "currency": "usd",
+                },
+                {
+                    "id": "re_Lf1oYfwN3EZRDIfF3NYB8LAH",
+                    "object": "refund",
+                    "amount": 15,
+                    "charge": "ch_YfwN3P6BxdKj3NYB8LAHLf1o",
+                    "created": 1679568588,
+                    "currency": "eur",
+                }
+            ],
+            [{"created[gte]": 1631199615, "created[lte]": 1662735615}, {"created[gte]": 1662735616, "created[lte]": 1692802815}],
+            "refunds",
+            "full_refresh",
+            {}
+        ),
+        (
+                {
+                    "/v1/refunds": [
+                        {
+                            "json": {
+                                "data": [refunds_api_objects[-1]],
+                                "has_more": False,
+                            }
+                        },
+                    ],
+                },
+                [
+                    {
+                        "id": "re_Lf1oYfwN3EZRDIfF3NYB8LAH",
+                        "object": "refund",
+                        "amount": 15,
+                        "charge": "ch_YfwN3P6BxdKj3NYB8LAHLf1o",
+                        "created": 1679568588,
+                        "currency": "eur",
+                    }
+                ],
+                [{"created[gte]": 1665308989, "created[lte]": 1692802815}],
+                "refunds",
+                "incremental",
+                {"created": 1666518588}
+        ),
+    )
+)
+@freezegun.freeze_time("2023-08-23T15:00:15Z")
+def test_created_cursor_incremental_stream(
+    requests_mock, requests_mock_map, stream_by_name, expected_records, expected_slices, stream_name, sync_mode, state, config
+):
+    config["start_date"] = str(pendulum.now().subtract(months=23))
+    stream = stream_by_name(stream_name, {"lookback_window_days": 14, **config})
+    for url, response in requests_mock_map.items():
+        requests_mock.get(url, response)
+
+    slices = list(stream.stream_slices(sync_mode, stream_state=state))
+    assert slices == expected_slices
+    records = read_from_stream(stream, sync_mode, state)
+    assert records == expected_records
+    for record in records:
+        assert bool(record[stream.cursor_field])
 
 
 @pytest.mark.parametrize(
@@ -583,7 +736,6 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
                     "livemode": False,
                 }
             ],
-            "has_more": False,
         },
     )
     requests_mock.get(
@@ -624,3 +776,321 @@ def test_subscription_items_extra_request_params(requests_mock, stream_by_name, 
     ]
     assert len(requests_mock.request_history) == 2
     assert "subscription=sub_1OApco2eZvKYlo2CEDCzwLrE" in requests_mock.request_history[-1].url
+
+
+checkout_session_api_response = {
+    "/v1/checkout/sessions": {
+        "object": "list",
+        "url": "/v1/checkout/sessions",
+        "has_more": False,
+        "data": [
+            {
+                "id": "cs_test_a1yxusdFIgDDkWTaKn6JTYniMDBzrmnBiXH8oRSExZt7tcbIzIEoZk1Lre",
+                "object": "checkout.session",
+                "created": 1699647441,
+                "expires_at": 1699647441,
+                "payment_intent": "pi_1Gt0KQ2eZvKYlo2CeWXUgmhy",
+                "status": "open",
+                "line_items": {
+                    "object": "list",
+                    "has_more": False,
+                    "url": "/v1/checkout/sessions",
+                    "data": [
+                        {
+                            "id": "li_1OB18o2eZvKYlo2CObYam50U",
+                            "object": "item",
+                            "amount_discount": 0,
+                            "amount_subtotal": 0,
+                            "amount_tax": 0,
+                            "amount_total": 0,
+                            "currency": "usd",
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "cs_test_XH8oRSExZt7tcbIzIEoZk1Lrea1yxusdFIgDDkWTaKn6JTYniMDBzrmnBi",
+                "object": "checkout.session",
+                "created": 1699744164,
+                "expires_at": 1699644174,
+                "payment_intent": "pi_lo2CeWXUgmhy1Gt0KQ2eZvKY",
+                "status": "open",
+                "line_items": {
+                    "object": "list",
+                    "has_more": False,
+                    "url": "/v1/checkout/sessions",
+                    "data": [
+                        {
+                            "id": "li_KYlo2CObYam50U1OB18o2eZv",
+                            "object": "item",
+                            "amount_discount": 0,
+                            "amount_subtotal": 0,
+                            "amount_tax": 0,
+                            "amount_total": 0,
+                            "currency": "usd",
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}
+
+
+checkout_session_line_items_api_response = {
+    "/v1/checkout/sessions/cs_test_a1yxusdFIgDDkWTaKn6JTYniMDBzrmnBiXH8oRSExZt7tcbIzIEoZk1Lre/line_items": {
+        "object": "list",
+        "has_more": False,
+        "data": [
+            {
+                "id": "li_1OB18o2eZvKYlo2CObYam50U",
+                "object": "item",
+                "amount_discount": 0,
+                "amount_subtotal": 0,
+                "amount_tax": 0,
+                "amount_total": 0,
+                "currency": "usd",
+            }
+        ],
+        "link": "/v1/checkout/sessions/cs_test_a1yxusdFIgDDkWTaKn6JTYniMDBzrmnBiXH8oRSExZt7tcbIzIEoZk1Lre/line_items"
+    },
+    "/v1/checkout/sessions/cs_test_XH8oRSExZt7tcbIzIEoZk1Lrea1yxusdFIgDDkWTaKn6JTYniMDBzrmnBi/line_items": {
+        "object": "list",
+        "has_more": False,
+        "url": "/v1/checkout/sessions/cs_test_XH8oRSExZt7tcbIzIEoZk1Lrea1yxusdFIgDDkWTaKn6JTYniMDBzrmnBi/line_items",
+        "data": [
+            {
+                "id": "li_KYlo2CObYam50U1OB18o2eZv",
+                "object": "item",
+                "amount_discount": 0,
+                "amount_subtotal": 0,
+                "amount_tax": 0,
+                "amount_total": 0,
+                "currency": "usd",
+            }
+        ]
+    }
+}
+
+
+checkout_session_events_response = {
+        "/v1/events": {
+            "data": [
+                {
+                    "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
+                    "object": "event",
+                    "api_version": "2020-08-27",
+                    "created": 1699902016,
+                    "data": {
+                        "object": {
+                            "object": "checkout_session",
+                            "checkout_session": "cs_test_a1yxusdFIgDDkWTaKn6JTYniMDBzrmnBiXH8oRSExZt7tcbIzIEoZk1Lre",
+                            "created": 1653341716,
+                            "id": "cs_test_a1yxusdFIgDDkWTaKn6JTYniMDBzrmnBiXH8oRSExZt7tcbIzIEoZk1Lre",
+                            "expires_at": 1692896410
+                        }
+                    },
+                    "type": "checkout.session.completed",
+                },
+                {
+                    "id": "evt_XtiJtvvhBP5mxQmL1NdNFoEc",
+                    "object": "event",
+                    "api_version": "2020-08-27",
+                    "created": 1699901630,
+                    "data": {
+                        "object": {
+                            "object": "checkout_session",
+                            "checkout_session": "cs_test_XH8oRSExZt7tcbIzIEoZk1Lrea1yxusdFIgDDkWTaKn6JTYniMDBzrmnBi",
+                            "created": 1653341716,
+                            "id": "cs_test_XH8oRSExZt7tcbIzIEoZk1Lrea1yxusdFIgDDkWTaKn6JTYniMDBzrmnBi",
+                            "expires_at": 1692896410
+                        }
+                    },
+                    "type": "checkout.session.completed",
+                }
+            ],
+            "has_more": False,
+        },
+    }
+
+
+@pytest.mark.parametrize(
+    "requests_mock_map, stream_name, sync_mode, state, expected_slices",
+    (
+        (
+            checkout_session_api_response,
+            "checkout_sessions_line_items",
+            "full_refresh",
+            {},
+            [
+                {
+                    "parent": {
+                        "id": "cs_test_a1yxusdFIgDDkWTaKn6JTYniMDBzrmnBiXH8oRSExZt7tcbIzIEoZk1Lre",
+                        "object": "checkout.session",
+                        "created": 1699647441,
+                        "updated": 1699647441,
+                        "expires_at": 1699647441,
+                        "payment_intent": "pi_1Gt0KQ2eZvKYlo2CeWXUgmhy",
+                        "status": "open",
+                        "line_items": {
+                            "object": "list",
+                            "has_more": False,
+                            "url": "/v1/checkout/sessions",
+                            "data": [
+                                {
+                                    "id": "li_1OB18o2eZvKYlo2CObYam50U",
+                                    "object": "item",
+                                    "amount_discount": 0,
+                                    "amount_subtotal": 0,
+                                    "amount_tax": 0,
+                                    "amount_total": 0,
+                                    "currency": "usd",
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "parent": {
+                        "id": "cs_test_XH8oRSExZt7tcbIzIEoZk1Lrea1yxusdFIgDDkWTaKn6JTYniMDBzrmnBi",
+                        "object": "checkout.session",
+                        "created": 1699744164,
+                        "updated": 1699744164,
+                        "expires_at": 1699644174,
+                        "payment_intent": "pi_lo2CeWXUgmhy1Gt0KQ2eZvKY",
+                        "status": "open",
+                        "line_items": {
+                            "object": "list",
+                            "has_more": False,
+                            "url": "/v1/checkout/sessions",
+                            "data": [
+                                {
+                                    "id": "li_KYlo2CObYam50U1OB18o2eZv",
+                                    "object": "item",
+                                    "amount_discount": 0,
+                                    "amount_subtotal": 0,
+                                    "amount_tax": 0,
+                                    "amount_total": 0,
+                                    "currency": "usd",
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        ),
+        (
+            checkout_session_events_response,
+            "checkout_sessions_line_items",
+            "incremental",
+            {"checkout_session_updated": 1685898010},
+            [
+                {
+                    "parent": {
+                        "object": "checkout_session",
+                        "checkout_session": "cs_test_a1yxusdFIgDDkWTaKn6JTYniMDBzrmnBiXH8oRSExZt7tcbIzIEoZk1Lre",
+                        "created": 1653341716,
+                        "id": "cs_test_a1yxusdFIgDDkWTaKn6JTYniMDBzrmnBiXH8oRSExZt7tcbIzIEoZk1Lre",
+                        "expires_at": 1692896410,
+                        "updated": 1699902016
+                    }
+                },
+                {
+                    "parent": {
+                        "object": "checkout_session",
+                        "checkout_session": "cs_test_XH8oRSExZt7tcbIzIEoZk1Lrea1yxusdFIgDDkWTaKn6JTYniMDBzrmnBi",
+                        "created": 1653341716,
+                        "updated": 1699901630,
+                        "id": "cs_test_XH8oRSExZt7tcbIzIEoZk1Lrea1yxusdFIgDDkWTaKn6JTYniMDBzrmnBi",
+                        "expires_at": 1692896410
+                    }
+                }
+            ]
+        ),
+    )
+)
+@freezegun.freeze_time("2023-08-23T15:00:15")
+def test_parent_incremental_substream_stream_slices(
+    requests_mock, requests_mock_map, stream_by_name, stream_name, sync_mode, state, expected_slices
+):
+    for url, response in requests_mock_map.items():
+        requests_mock.get(url, json=response)
+
+    stream = stream_by_name(stream_name)
+    slices = stream.stream_slices(sync_mode, stream_state=state)
+    assert list(slices) == expected_slices
+
+
+checkout_session_line_items_slice_to_record_data_map = {
+    "id": "checkout_session_id",
+    "expires_at": "checkout_session_expires_at",
+    "created": "checkout_session_created",
+    "updated": "checkout_session_updated"
+}
+
+
+@pytest.mark.parametrize(
+    "requests_mock_map, stream_name, sync_mode, state, mapped_fields",
+    (
+        ({**checkout_session_api_response, **checkout_session_line_items_api_response}, "checkout_sessions_line_items", "full_refresh", {}, checkout_session_line_items_slice_to_record_data_map),
+        ({**checkout_session_events_response, **checkout_session_line_items_api_response}, "checkout_sessions_line_items", "incremental", {"checkout_session_updated": 1685898010}, checkout_session_line_items_slice_to_record_data_map)
+    )
+)
+def test_parent_incremental_substream_records_contain_data_from_slice(
+    requests_mock, requests_mock_map, stream_by_name, stream_name, sync_mode, state, mapped_fields
+):
+    for url, response in requests_mock_map.items():
+        requests_mock.get(url, json=response)
+
+    stream = stream_by_name(stream_name)
+    for slice_ in stream.stream_slices(sync_mode, stream_state=state):
+        for record in stream.read_records(sync_mode, stream_slice=slice_, stream_state=state):
+            for key, value in mapped_fields.items():
+                assert slice_["parent"][key] == record[value]
+
+
+@pytest.mark.parametrize(
+    "requests_mock_map, stream_name, state",
+    (
+        (
+            {
+                "/v1/events": (
+                    {
+                        "data": [
+                            {
+                                "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
+                                "object": "event",
+                                "api_version": "2020-08-27",
+                                "created": 1699902016,
+                                "data": {
+                                    "object": {
+                                        "object": "checkout_session",
+                                        "checkout_session": "cs_1K9GK0EcXtiJtvvhSo2LvGqT",
+                                        "created": 1653341716,
+                                        "id": "cs_1K9GK0EcXtiJtvvhSo2LvGqT",
+                                        "expires_at": 1692896410
+                                    }
+                                },
+                                "type": "checkout.session.completed",
+                            }
+                        ],
+                        "has_more": False,
+                    },
+                    200
+                ),
+                "/v1/checkout/sessions/cs_1K9GK0EcXtiJtvvhSo2LvGqT/line_items": ({}, 404),
+            },
+            "checkout_sessions_line_items",
+            {"checkout_session_updated": 1686934810}
+        ),
+    )
+)
+@freezegun.freeze_time("2023-08-23T15:00:15")
+def test_parent_incremental_substream_handles_404(requests_mock, requests_mock_map, stream_by_name, stream_name, state, caplog):
+    for url, (response, status) in requests_mock_map.items():
+        requests_mock.get(url, json=response, status_code=status)
+
+    stream = stream_by_name(stream_name)
+    records = read_from_stream(stream, "incremental", state)
+    assert records == []
+    assert "Data was not found for URL" in caplog.text

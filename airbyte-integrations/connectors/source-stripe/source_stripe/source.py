@@ -22,7 +22,7 @@ from source_stripe.streams import (
     CustomerBalanceTransactions,
     Events,
     IncrementalStripeStream,
-    ParentIncrementalStipeLazySubStream,
+    ParentIncrementalStipeSubStream,
     Persons,
     SetupAttempts,
     StripeLazySubStream,
@@ -408,7 +408,7 @@ class SourceStripe(AbstractSource):
                 response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
-            ParentIncrementalStipeLazySubStream(
+            ParentIncrementalStipeSubStream(
                 name="checkout_sessions_line_items",
                 path=lambda self, stream_slice, *args, **kwargs: f"checkout/sessions/{stream_slice['parent']['id']}/line_items",
                 parent=checkout_sessions,
