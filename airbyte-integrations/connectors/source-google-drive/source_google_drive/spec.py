@@ -7,14 +7,12 @@ from typing import Any, Dict, Literal, Union
 
 import dpath.util
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic import BaseModel, Field
 
 
 class OAuthCredentials(BaseModel):
-    class Config(OneOfOptionConfig):
+    class Config:
         title = "Authenticate via Google (OAuth)"
-        discriminator = "auth_type"
 
     auth_type: Literal["Client"] = Field("Client", const=True)
     client_id: str = Field(
@@ -35,9 +33,8 @@ class OAuthCredentials(BaseModel):
 
 
 class ServiceAccountCredentials(BaseModel):
-    class Config(OneOfOptionConfig):
+    class Config:
         title = "Service Account Key Authentication"
-        discriminator = "auth_type"
 
     auth_type: Literal["Service"] = Field("Service", const=True)
     service_account_info: str = Field(

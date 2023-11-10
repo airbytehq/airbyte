@@ -247,6 +247,5 @@ Before parsing each document, the connector exports Google Document files to Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 |---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
-| 0.0.2 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
 | 0.0.1   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458)   | Initial Google Drive source                                           |
 
