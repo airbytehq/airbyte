@@ -122,7 +122,6 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
     state = None
     logger = _init_logger()
 
-    # FIXME: probably also need to test to verify the slices can be logged!
     source, concurrent_source = _init_sources([stream_1_slice_to_partition, stream_2_slice_to_partition], state, logger)
 
     config = {}
@@ -143,7 +142,6 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
                 ),
             ),
         ),
-        # AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "1"}')),
         AirbyteMessage(
             type=MessageType.TRACE,
             trace=AirbyteTraceMessage(
@@ -172,7 +170,6 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
                 emitted_at=1577836800000,
             ),
         ),
-        # AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "2"}')),
         AirbyteMessage(
             type=MessageType.RECORD,
             record=AirbyteRecordMessage(
@@ -299,7 +296,6 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_a_tr
                 ),
             ),
         ),
-        # AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "1"}')),
         AirbyteMessage(
             type=MessageType.TRACE,
             trace=AirbyteTraceMessage(
@@ -363,7 +359,6 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_e
                 ),
             ),
         ),
-        # AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "1"}')),
         AirbyteMessage(
             type=MessageType.TRACE,
             trace=AirbyteTraceMessage(
