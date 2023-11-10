@@ -34,674 +34,27 @@ _STREAM_NAME = "stream"
 _ANOTHER_STREAM_NAME = "stream2"
 
 
-def test_handle_partition_done_no_other_streams_to_generate_partitions_for():
-    streams_currently_generating_partitions = [_STREAM_NAME]
-    stream_instances_to_read_from = []
-    partition_enqueuer = Mock(spec=PartitionEnqueuer)
-    thread_pool_manager = Mock(spec=ThreadPoolManager)
-    partition = Mock(spec=Partition)
-    partition.is_closed.return_value = False
-    streams_to_partitions = {_STREAM_NAME: {partition}}
-    record_counter = {_STREAM_NAME: 0}
-    stream_to_instance_map = {}
-    logger = Mock(spec=logging.Logger)
-    slice_logger = Mock(spec=SliceLogger)
-    message_repository = Mock(spec=MessageRepository)
-    partition_reader = Mock(spec=PartitionReader)
-
-    handler = QueueItemHandler(
-        streams_currently_generating_partitions,
-        stream_instances_to_read_from,
-        partition_enqueuer,
-        thread_pool_manager,
-        streams_to_partitions,
-        record_counter,
-        stream_to_instance_map,
-        logger,
-        slice_logger,
-        message_repository,
-        partition_reader,
-    )
-
-    stream = Mock(spec=AbstractStream)
-    stream.name = _STREAM_NAME
-    stream.as_airbyte_stream.return_value = AirbyteStream(
-        name=_STREAM_NAME,
-        json_schema={},
-        supported_sync_modes=[SyncMode.full_refresh],
-    )
-    stream_to_instance_map[_STREAM_NAME] = stream
-    sentinel = PartitionGenerationCompletedSentinel(stream)
-    messages = list(handler.on_partition_generation_completed(sentinel))
-
-    expected_messages = []
-    assert expected_messages == messages
-
-
-@freezegun.freeze_time("2020-01-01T00:00:00")
-def test_handle_last_stream_partition_done():
-    streams_currently_generating_partitions = [_STREAM_NAME]
-    stream_instances_to_read_from = []
-    partition_enqueuer = Mock(spec=PartitionEnqueuer)
-    thread_pool_manager = Mock(spec=ThreadPoolManager)
-    partition = Mock(spec=Partition)
-    partition.is_closed.return_value = True
-    streams_to_partitions = {_STREAM_NAME: {partition}}
-    record_counter = {_STREAM_NAME: 0}
-    stream_to_instance_map = {}
-    logger = Mock(spec=logging.Logger)
-    slice_logger = Mock(spec=SliceLogger)
-    message_repository = Mock(spec=MessageRepository)
-    partition_reader = Mock(spec=PartitionReader)
-
-    handler = QueueItemHandler(
-        streams_currently_generating_partitions,
-        stream_instances_to_read_from,
-        partition_enqueuer,
-        thread_pool_manager,
-        streams_to_partitions,
-        record_counter,
-        stream_to_instance_map,
-        logger,
-        slice_logger,
-        message_repository,
-        partition_reader,
-    )
-
-    stream = Mock(spec=AbstractStream)
-    stream.name = _STREAM_NAME
-    stream.as_airbyte_stream.return_value = AirbyteStream(
-        name=_STREAM_NAME,
-        json_schema={},
-        supported_sync_modes=[SyncMode.full_refresh],
-    )
-    stream_to_instance_map[_STREAM_NAME] = stream
-    sentinel = PartitionGenerationCompletedSentinel(stream)
-    messages = handler.on_partition_generation_completed(sentinel)
-
-    expected_messages = [
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
-                ),
-            ),
-        )
-    ]
-    assert expected_messages == messages
-
-
-def test_handle_partition():
-    streams_currently_generating_partitions = [_STREAM_NAME]
-    stream_instances_to_read_from = []
-    partition_enqueuer = Mock(spec=PartitionEnqueuer)
-    thread_pool_manager = Mock(spec=ThreadPoolManager)
-    partition = Mock(spec=Partition)
-    partition.stream_name.return_value = _STREAM_NAME
-    partition.is_closed.return_value = True
-    streams_to_partitions = {_STREAM_NAME: {partition}}
-    record_counter = {_STREAM_NAME: 0}
-    stream_to_instance_map = {}
-    logger = Mock(spec=logging.Logger)
-    slice_logger = Mock(spec=SliceLogger)
-    message_repository = Mock(spec=MessageRepository)
-    partition_reader = Mock(spec=PartitionReader)
-
-    handler = QueueItemHandler(
-        streams_currently_generating_partitions,
-        stream_instances_to_read_from,
-        partition_enqueuer,
-        thread_pool_manager,
-        streams_to_partitions,
-        record_counter,
-        stream_to_instance_map,
-        logger,
-        slice_logger,
-        message_repository,
-        partition_reader,
-    )
-
-    handler.on_partition(partition)
-
-    thread_pool_manager.submit.assert_called_with(partition_reader.process_partition, partition)
-    assert partition in streams_to_partitions[_STREAM_NAME]
-
-
-def test_handle_partition_emits_log_message_if_it_should_be_logged():
-    streams_currently_generating_partitions = [_STREAM_NAME]
-    stream_instances_to_read_from = []
-    partition_enqueuer = Mock(spec=PartitionEnqueuer)
-    thread_pool_manager = Mock(spec=ThreadPoolManager)
-    partition = Mock(spec=Partition)
-    log_message = Mock(spec=LogMessage)
-    partition.to_slice.return_value = log_message
-    partition.stream_name.return_value = _STREAM_NAME
-    partition.is_closed.return_value = True
-    streams_to_partitions = {_STREAM_NAME: {partition}}
-    record_counter = {_STREAM_NAME: 0}
-    stream_to_instance_map = {}
-    logger = Mock(spec=logging.Logger)
-    slice_logger = Mock(spec=SliceLogger)
-    slice_logger.should_log_slice_message.return_value = True
-    slice_logger.create_slice_log_message.return_value = log_message
-    message_repository = Mock(spec=MessageRepository)
-    partition_reader = Mock(spec=PartitionReader)
-
-    handler = QueueItemHandler(
-        streams_currently_generating_partitions,
-        stream_instances_to_read_from,
-        partition_enqueuer,
-        thread_pool_manager,
-        streams_to_partitions,
-        record_counter,
-        stream_to_instance_map,
-        logger,
-        slice_logger,
-        message_repository,
-        partition_reader,
-    )
-
-    handler.on_partition(partition)
-
-    thread_pool_manager.submit.assert_called_with(partition_reader.process_partition, partition)
-    message_repository.emit_message.assert_called_with(log_message)
-    assert partition in streams_to_partitions[_STREAM_NAME]
-
-
-def test_handle_on_partition_complete_sentinel_with_messages_from_repository():
-    streams_currently_generating_partitions = [_STREAM_NAME]
-    stream_instances_to_read_from = []
-    partition_enqueuer = Mock(spec=PartitionEnqueuer)
-    thread_pool_manager = Mock(spec=ThreadPoolManager)
-    partition = Mock(spec=Partition)
-    log_message = Mock(spec=LogMessage)
-    partition.to_slice.return_value = log_message
-    partition.stream_name.return_value = _STREAM_NAME
-    partition.is_closed.return_value = True
-    streams_to_partitions = {_STREAM_NAME: {partition}}
-    record_counter = {_STREAM_NAME: 0}
-    stream_to_instance_map = {}
-    logger = Mock(spec=logging.Logger)
-    slice_logger = Mock(spec=SliceLogger)
-    slice_logger.should_log_slice_message.return_value = True
-    slice_logger.create_slice_log_message.return_value = log_message
-    message_repository = Mock(spec=MessageRepository)
-    partition_reader = Mock(spec=PartitionReader)
-
-    handler = QueueItemHandler(
-        streams_currently_generating_partitions,
-        stream_instances_to_read_from,
-        partition_enqueuer,
-        thread_pool_manager,
-        streams_to_partitions,
-        record_counter,
-        stream_to_instance_map,
-        logger,
-        slice_logger,
-        message_repository,
-        partition_reader,
-    )
-
-    sentinel = PartitionCompleteSentinel(partition)
-
-    message_repository.consume_queue.return_value = [
-        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
-    ]
-
-    messages = list(handler.on_partition_complete_sentinel(sentinel))
-
-    expected_messages = [
-        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
-    ]
-    assert expected_messages == messages
-
-    partition.close.assert_called_once()
-
-
-@freezegun.freeze_time("2020-01-01T00:00:00")
-def test_handle_on_partition_complete_sentinel_yields_status_message_if_the_stream_is_done():
-    streams_currently_generating_partitions = [_STREAM_NAME]
-    stream_instances_to_read_from = []
-    partition_enqueuer = Mock(spec=PartitionEnqueuer)
-    thread_pool_manager = Mock(spec=ThreadPoolManager)
-    partition = Mock(spec=Partition)
-    log_message = Mock(spec=LogMessage)
-    partition.to_slice.return_value = log_message
-    partition.stream_name.return_value = _STREAM_NAME
-    partition.is_closed.return_value = True
-    streams_to_partitions = {_STREAM_NAME: {partition}}
-    record_counter = {_STREAM_NAME: 0}
-    stream_to_instance_map = {}
-    logger = Mock(spec=logging.Logger)
-    slice_logger = Mock(spec=SliceLogger)
-    slice_logger.should_log_slice_message.return_value = True
-    slice_logger.create_slice_log_message.return_value = log_message
-    message_repository = Mock(spec=MessageRepository)
-    message_repository.consume_queue.return_value = []
-    partition_reader = Mock(spec=PartitionReader)
-
-    handler = QueueItemHandler(
-        streams_currently_generating_partitions,
-        stream_instances_to_read_from,
-        partition_enqueuer,
-        thread_pool_manager,
-        streams_to_partitions,
-        record_counter,
-        stream_to_instance_map,
-        logger,
-        slice_logger,
-        message_repository,
-        partition_reader,
-    )
-
-    stream = Mock(spec=AbstractStream)
-    stream.name = _STREAM_NAME
-    stream.as_airbyte_stream.return_value = AirbyteStream(
-        name=_STREAM_NAME,
-        json_schema={},
-        supported_sync_modes=[SyncMode.full_refresh],
-    )
-    stream_to_instance_map[_STREAM_NAME] = stream
-
-    sentinel = PartitionCompleteSentinel(partition)
-
-    # Remove the stream from the list of currently generating to mark it as done
-    handler._streams_currently_generating_partitions = []
-
-    messages = list(handler.on_partition_complete_sentinel(sentinel))
-
-    expected_messages = [
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(
-                        name=_STREAM_NAME,
-                    ),
-                    status=AirbyteStreamStatus.COMPLETE,
-                ),
-                emitted_at=1577836800000.0,
-            ),
-        )
-    ]
-    assert expected_messages == messages
-    partition.close.assert_called_once()
-
-
-@freezegun.freeze_time("2020-01-01T00:00:00")
-def test_handle_on_partition_complete_sentinel_yields_no_status_message_if_the_stream_is_not_done():
-    streams_currently_generating_partitions = [_STREAM_NAME]
-    stream_instances_to_read_from = []
-    partition_enqueuer = Mock(spec=PartitionEnqueuer)
-    thread_pool_manager = Mock(spec=ThreadPoolManager)
-    partition = Mock(spec=Partition)
-    log_message = Mock(spec=LogMessage)
-    partition.to_slice.return_value = log_message
-    partition.stream_name.return_value = _STREAM_NAME
-    partition.is_closed.return_value = True
-    streams_to_partitions = {_STREAM_NAME: {partition}}
-    record_counter = {_STREAM_NAME: 0}
-    stream_to_instance_map = {}
-    logger = Mock(spec=logging.Logger)
-    slice_logger = Mock(spec=SliceLogger)
-    slice_logger.should_log_slice_message.return_value = True
-    slice_logger.create_slice_log_message.return_value = log_message
-    message_repository = Mock(spec=MessageRepository)
-    message_repository.consume_queue.return_value = []
-    partition_reader = Mock(spec=PartitionReader)
-
-    handler = QueueItemHandler(
-        streams_currently_generating_partitions,
-        stream_instances_to_read_from,
-        partition_enqueuer,
-        thread_pool_manager,
-        streams_to_partitions,
-        record_counter,
-        stream_to_instance_map,
-        logger,
-        slice_logger,
-        message_repository,
-        partition_reader,
-    )
-
-    stream = Mock(spec=AbstractStream)
-    stream.name = _STREAM_NAME
-    stream.as_airbyte_stream.return_value = AirbyteStream(
-        name=_STREAM_NAME,
-        json_schema={},
-        supported_sync_modes=[SyncMode.full_refresh],
-    )
-    stream_to_instance_map[_STREAM_NAME] = stream
-
-    sentinel = PartitionCompleteSentinel(partition)
-
-    messages = list(handler.on_partition_complete_sentinel(sentinel))
-
-    expected_messages = []
-    assert expected_messages == messages
-    partition.close.assert_called_once()
-
-
-@freezegun.freeze_time("2020-01-01T00:00:00")
-def test_on_record_no_status_message_no_repository_messge():
-    streams_currently_generating_partitions = [_STREAM_NAME]
-    stream_instances_to_read_from = []
-    partition_enqueuer = Mock(spec=PartitionEnqueuer)
-    thread_pool_manager = Mock(spec=ThreadPoolManager)
-    partition = Mock(spec=Partition)
-    log_message = Mock(spec=LogMessage)
-    partition.to_slice.return_value = log_message
-    partition.stream_name.return_value = _STREAM_NAME
-    partition.is_closed.return_value = True
-    streams_to_partitions = {_STREAM_NAME: {partition}}
-    record_counter = {_STREAM_NAME: 0}
-    stream_to_instance_map = {}
-    logger = Mock(spec=logging.Logger)
-    slice_logger = Mock(spec=SliceLogger)
-    slice_logger.should_log_slice_message.return_value = True
-    slice_logger.create_slice_log_message.return_value = log_message
-    message_repository = Mock(spec=MessageRepository)
-    message_repository.consume_queue.return_value = []
-    partition_reader = Mock(spec=PartitionReader)
-
-    handler = QueueItemHandler(
-        streams_currently_generating_partitions,
-        stream_instances_to_read_from,
-        partition_enqueuer,
-        thread_pool_manager,
-        streams_to_partitions,
-        record_counter,
-        stream_to_instance_map,
-        logger,
-        slice_logger,
-        message_repository,
-        partition_reader,
-    )
-
-    stream = Mock(spec=AbstractStream)
-    stream.name = _STREAM_NAME
-    stream.as_airbyte_stream.return_value = AirbyteStream(
-        name=_STREAM_NAME,
-        json_schema={},
-        supported_sync_modes=[SyncMode.full_refresh],
-    )
-    stream_to_instance_map[_STREAM_NAME] = stream
-
-    data = {"id": 1, "value": "A"}
-    record = Mock(spec=Record)
-    record.stream_name = _STREAM_NAME
-    record.data = data
-
-    # Simulate a first record
-    record_counter[_STREAM_NAME] = 1
-
-    messages = list(handler.on_record(record))
-
-    expected_messages = [
-        AirbyteMessage(
-            type=MessageType.RECORD,
-            record=AirbyteRecordMessage(
-                stream=_STREAM_NAME,
-                data=data,
-                emitted_at=1577836800000,
-            ),
-        )
-    ]
-    assert expected_messages == messages
-
-
-@freezegun.freeze_time("2020-01-01T00:00:00")
-def test_on_record_with_repository_messge():
-    streams_currently_generating_partitions = [_STREAM_NAME]
-    stream_instances_to_read_from = []
-    partition_enqueuer = Mock(spec=PartitionEnqueuer)
-    thread_pool_manager = Mock(spec=ThreadPoolManager)
-    partition = Mock(spec=Partition)
-    log_message = Mock(spec=LogMessage)
-    partition.to_slice.return_value = log_message
-    partition.stream_name.return_value = _STREAM_NAME
-    partition.is_closed.return_value = True
-    streams_to_partitions = {_STREAM_NAME: {partition}}
-    record_counter = {_STREAM_NAME: 0}
-    stream_to_instance_map = {}
-    logger = Mock(spec=logging.Logger)
-    slice_logger = Mock(spec=SliceLogger)
-    slice_logger.should_log_slice_message.return_value = True
-    slice_logger.create_slice_log_message.return_value = log_message
-    message_repository = Mock(spec=MessageRepository)
-    message_repository.consume_queue.return_value = [
-        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
-    ]
-    partition_reader = Mock(spec=PartitionReader)
-
-    handler = QueueItemHandler(
-        streams_currently_generating_partitions,
-        stream_instances_to_read_from,
-        partition_enqueuer,
-        thread_pool_manager,
-        streams_to_partitions,
-        record_counter,
-        stream_to_instance_map,
-        logger,
-        slice_logger,
-        message_repository,
-        partition_reader,
-    )
-
-    stream = Mock(spec=AbstractStream)
-    stream.name = _STREAM_NAME
-    stream.as_airbyte_stream.return_value = AirbyteStream(
-        name=_STREAM_NAME,
-        json_schema={},
-        supported_sync_modes=[SyncMode.full_refresh],
-    )
-    stream_to_instance_map[_STREAM_NAME] = stream
-
-    data = {"id": 1, "value": "A"}
-    record = Mock(spec=Record)
-    record.stream_name = _STREAM_NAME
-    record.data = data
-
-    # Simulate a first record
-    record_counter[_STREAM_NAME] = 1
-
-    messages = list(handler.on_record(record))
-
-    expected_messages = [
-        AirbyteMessage(
-            type=MessageType.RECORD,
-            record=AirbyteRecordMessage(
-                stream=_STREAM_NAME,
-                data=data,
-                emitted_at=1577836800000,
-            ),
-        ),
-        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository")),
-    ]
-    assert expected_messages == messages
-    assert record_counter[_STREAM_NAME] == 2
-
-
-@freezegun.freeze_time("2020-01-01T00:00:00")
-def test_on_record_emits_status_message_on_first_record_no_repository_message():
-    streams_currently_generating_partitions = [_STREAM_NAME]
-    stream_instances_to_read_from = []
-    partition_enqueuer = Mock(spec=PartitionEnqueuer)
-    thread_pool_manager = Mock(spec=ThreadPoolManager)
-    partition = Mock(spec=Partition)
-    log_message = Mock(spec=LogMessage)
-    partition.to_slice.return_value = log_message
-    partition.stream_name.return_value = _STREAM_NAME
-    partition.is_closed.return_value = True
-    streams_to_partitions = {_STREAM_NAME: {partition}}
-    record_counter = {_STREAM_NAME: 0}
-    stream_to_instance_map = {}
-    logger = Mock(spec=logging.Logger)
-    slice_logger = Mock(spec=SliceLogger)
-    slice_logger.should_log_slice_message.return_value = True
-    slice_logger.create_slice_log_message.return_value = log_message
-    message_repository = Mock(spec=MessageRepository)
-    message_repository.consume_queue.return_value = []
-    partition_reader = Mock(spec=PartitionReader)
-
-    handler = QueueItemHandler(
-        streams_currently_generating_partitions,
-        stream_instances_to_read_from,
-        partition_enqueuer,
-        thread_pool_manager,
-        streams_to_partitions,
-        record_counter,
-        stream_to_instance_map,
-        logger,
-        slice_logger,
-        message_repository,
-        partition_reader,
-    )
-
-    stream = Mock(spec=AbstractStream)
-    stream.name = _STREAM_NAME
-    stream.as_airbyte_stream.return_value = AirbyteStream(
-        name=_STREAM_NAME,
-        json_schema={},
-        supported_sync_modes=[SyncMode.full_refresh],
-    )
-    stream_to_instance_map[_STREAM_NAME] = stream
-
-    data = {"id": 1, "value": "A"}
-    record = Mock(spec=Record)
-    record.stream_name = _STREAM_NAME
-    record.data = data
-
-    messages = list(handler.on_record(record))
-
-    expected_messages = [
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
-                ),
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.RECORD,
-            record=AirbyteRecordMessage(
-                stream=_STREAM_NAME,
-                data=data,
-                emitted_at=1577836800000,
-            ),
-        ),
-    ]
-    assert expected_messages == messages
-    assert record_counter[_STREAM_NAME] == 1
-
-
-@freezegun.freeze_time("2020-01-01T00:00:00")
-def test_on_record_emits_status_message_on_first_record_with_repository_message():
-    streams_currently_generating_partitions = [_STREAM_NAME]
-    stream_instances_to_read_from = []
-    partition_enqueuer = Mock(spec=PartitionEnqueuer)
-    thread_pool_manager = Mock(spec=ThreadPoolManager)
-    partition = Mock(spec=Partition)
-    log_message = Mock(spec=LogMessage)
-    partition.to_slice.return_value = log_message
-    partition.stream_name.return_value = _STREAM_NAME
-    partition.is_closed.return_value = True
-    streams_to_partitions = {_STREAM_NAME: {partition}}
-    record_counter = {_STREAM_NAME: 0}
-    stream_to_instance_map = {}
-    logger = Mock(spec=logging.Logger)
-    slice_logger = Mock(spec=SliceLogger)
-    slice_logger.should_log_slice_message.return_value = True
-    slice_logger.create_slice_log_message.return_value = log_message
-    message_repository = Mock(spec=MessageRepository)
-    message_repository.consume_queue.return_value = [
-        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
-    ]
-    partition_reader = Mock(spec=PartitionReader)
-
-    handler = QueueItemHandler(
-        streams_currently_generating_partitions,
-        stream_instances_to_read_from,
-        partition_enqueuer,
-        thread_pool_manager,
-        streams_to_partitions,
-        record_counter,
-        stream_to_instance_map,
-        logger,
-        slice_logger,
-        message_repository,
-        partition_reader,
-    )
-
-    stream = Mock(spec=AbstractStream)
-    stream.name = _STREAM_NAME
-    stream.as_airbyte_stream.return_value = AirbyteStream(
-        name=_STREAM_NAME,
-        json_schema={},
-        supported_sync_modes=[SyncMode.full_refresh],
-    )
-    stream_to_instance_map[_STREAM_NAME] = stream
-
-    data = {"id": 1, "value": "A"}
-    record = Mock(spec=Record)
-    record.stream_name = _STREAM_NAME
-    record.data = data
-
-    messages = list(handler.on_record(record))
-
-    expected_messages = [
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
-                ),
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.RECORD,
-            record=AirbyteRecordMessage(
-                stream=_STREAM_NAME,
-                data=data,
-                emitted_at=1577836800000,
-            ),
-        ),
-        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository")),
-    ]
-    assert expected_messages == messages
-    assert record_counter[_STREAM_NAME] == 1
-
-
 class TestQueueItemHandler(unittest.TestCase):
     def setUp(self):
         self._streams_currently_generating_partitions = [_STREAM_NAME]
         self._partition_enqueuer = Mock(spec=PartitionEnqueuer)
         self._thread_pool_manager = Mock(spec=ThreadPoolManager)
 
-        log_message = Mock(spec=LogMessage)
-
         self._an_open_partition = Mock(spec=Partition)
         self._an_open_partition.is_closed.return_value = False
-        self._an_open_partition.to_slice.return_value = log_message
+        self._log_message = Mock(spec=LogMessage)
+        self._an_open_partition.to_slice.return_value = self._log_message
         self._an_open_partition.stream_name.return_value = _STREAM_NAME
 
         self._a_closed_partition = Mock(spec=Partition)
         self._a_closed_partition.is_closed.return_value = True
+        self._a_closed_partition.stream_name.return_value = _ANOTHER_STREAM_NAME
 
         self._record_counter = {_STREAM_NAME: 0, _ANOTHER_STREAM_NAME: 0}
         self._stream_to_instance_map = {}
         self._logger = Mock(spec=logging.Logger)
         self._slice_logger = Mock(spec=SliceLogger)
-        self._slice_logger.create_slice_log_message.return_value = log_message
+        self._slice_logger.create_slice_log_message.return_value = self._log_message
         self._message_repository = Mock(spec=MessageRepository)
         self._message_repository.consume_queue.return_value = []
         self._partition_reader = Mock(spec=PartitionReader)
@@ -713,6 +66,473 @@ class TestQueueItemHandler(unittest.TestCase):
             json_schema={},
             supported_sync_modes=[SyncMode.full_refresh],
         )
+
+        self._record_data = {"id": 1, "value": "A"}
+        self._record = Mock(spec=Record)
+        self._record.stream_name = _STREAM_NAME
+        self._record.data = self._record_data
+
+    def test_handle_partition_done_no_other_streams_to_generate_partitions_for(self):
+        stream_instances_to_read_from = []
+        streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}}
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        self._stream_to_instance_map[_STREAM_NAME] = self._stream
+        sentinel = PartitionGenerationCompletedSentinel(self._stream)
+        messages = list(handler.on_partition_generation_completed(sentinel))
+
+        expected_messages = []
+        assert expected_messages == messages
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_handle_last_stream_partition_done(self):
+        stream_instances_to_read_from = []
+        streams_to_partitions = {_STREAM_NAME: {self._a_closed_partition}}
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        self._stream_to_instance_map[_STREAM_NAME] = self._stream
+        sentinel = PartitionGenerationCompletedSentinel(self._stream)
+        messages = handler.on_partition_generation_completed(sentinel)
+
+        expected_messages = [
+            AirbyteMessage(
+                type=MessageType.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.STREAM_STATUS,
+                    emitted_at=1577836800000.0,
+                    stream_status=AirbyteStreamStatusTraceMessage(
+                        stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
+                    ),
+                ),
+            )
+        ]
+        assert expected_messages == messages
+
+    def test_handle_partition(self):
+        stream_instances_to_read_from = []
+        streams_to_partitions = {_ANOTHER_STREAM_NAME: {self._a_closed_partition}}
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        handler.on_partition(self._a_closed_partition)
+
+        self._thread_pool_manager.submit.assert_called_with(self._partition_reader.process_partition, self._a_closed_partition)
+        assert self._a_closed_partition in streams_to_partitions[_ANOTHER_STREAM_NAME]
+
+    def test_handle_partition_emits_log_message_if_it_should_be_logged(self):
+        stream_instances_to_read_from = []
+        streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}}
+        slice_logger = Mock(spec=SliceLogger)
+        slice_logger.should_log_slice_message.return_value = True
+        slice_logger.create_slice_log_message.return_value = self._log_message
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        handler.on_partition(self._an_open_partition)
+
+        self._thread_pool_manager.submit.assert_called_with(self._partition_reader.process_partition, self._an_open_partition)
+        self._message_repository.emit_message.assert_called_with(self._log_message)
+        assert self._an_open_partition in streams_to_partitions[_STREAM_NAME]
+
+    def test_handle_on_partition_complete_sentinel_with_messages_from_repository(self):
+        stream_instances_to_read_from = []
+        partition = Mock(spec=Partition)
+        log_message = Mock(spec=LogMessage)
+        partition.to_slice.return_value = log_message
+        partition.stream_name.return_value = _STREAM_NAME
+        partition.is_closed.return_value = True
+        streams_to_partitions = {_STREAM_NAME: {partition}}
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        sentinel = PartitionCompleteSentinel(partition)
+
+        self._message_repository.consume_queue.return_value = [
+            AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
+        ]
+
+        messages = list(handler.on_partition_complete_sentinel(sentinel))
+
+        expected_messages = [
+            AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
+        ]
+        assert expected_messages == messages
+
+        partition.close.assert_called_once()
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_handle_on_partition_complete_sentinel_yields_status_message_if_the_stream_is_done(self):
+        self._streams_currently_generating_partitions = [_STREAM_NAME]
+        stream_instances_to_read_from = []
+        partition = Mock(spec=Partition)
+        log_message = Mock(spec=LogMessage)
+        partition.to_slice.return_value = log_message
+        partition.stream_name.return_value = _STREAM_NAME
+        partition.is_closed.return_value = True
+        streams_to_partitions = {_STREAM_NAME: {partition}}
+        self._message_repository.consume_queue.return_value = []
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        stream = Mock(spec=AbstractStream)
+        stream.name = _STREAM_NAME
+        stream.as_airbyte_stream.return_value = AirbyteStream(
+            name=_STREAM_NAME,
+            json_schema={},
+            supported_sync_modes=[SyncMode.full_refresh],
+        )
+        self._stream_to_instance_map[_STREAM_NAME] = stream
+
+        sentinel = PartitionCompleteSentinel(partition)
+
+        # Remove the stream from the list of currently generating to mark it as done
+        handler._streams_currently_generating_partitions = []
+
+        messages = list(handler.on_partition_complete_sentinel(sentinel))
+
+        expected_messages = [
+            AirbyteMessage(
+                type=MessageType.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.STREAM_STATUS,
+                    stream_status=AirbyteStreamStatusTraceMessage(
+                        stream_descriptor=StreamDescriptor(
+                            name=_STREAM_NAME,
+                        ),
+                        status=AirbyteStreamStatus.COMPLETE,
+                    ),
+                    emitted_at=1577836800000.0,
+                ),
+            )
+        ]
+        assert expected_messages == messages
+        partition.close.assert_called_once()
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_handle_on_partition_complete_sentinel_yields_no_status_message_if_the_stream_is_not_done(self):
+        stream_instances_to_read_from = []
+        partition = Mock(spec=Partition)
+        log_message = Mock(spec=LogMessage)
+        partition.to_slice.return_value = log_message
+        partition.stream_name.return_value = _STREAM_NAME
+        partition.is_closed.return_value = True
+        streams_to_partitions = {_STREAM_NAME: {partition}}
+        stream_to_instance_map = {}
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        stream_to_instance_map[_STREAM_NAME] = self._stream
+
+        sentinel = PartitionCompleteSentinel(partition)
+
+        messages = list(handler.on_partition_complete_sentinel(sentinel))
+
+        expected_messages = []
+        assert expected_messages == messages
+        partition.close.assert_called_once()
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_on_record_no_status_message_no_repository_messge(self):
+        self._streams_currently_generating_partitions = [_STREAM_NAME]
+        stream_instances_to_read_from = []
+        partition = Mock(spec=Partition)
+        log_message = Mock(spec=LogMessage)
+        partition.to_slice.return_value = log_message
+        partition.stream_name.return_value = _STREAM_NAME
+        partition.is_closed.return_value = True
+        streams_to_partitions = {_STREAM_NAME: {partition}}
+        self._message_repository.consume_queue.return_value = []
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        self._stream_to_instance_map[_STREAM_NAME] = self._stream
+
+        # Simulate a first record
+        self._record_counter[_STREAM_NAME] = 1
+
+        messages = list(handler.on_record(self._record))
+
+        expected_messages = [
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(
+                    stream=_STREAM_NAME,
+                    data=self._record_data,
+                    emitted_at=1577836800000,
+                ),
+            )
+        ]
+        assert expected_messages == messages
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_on_record_with_repository_messge(self):
+        self._streams_currently_generating_partitions = [_STREAM_NAME]
+        stream_instances_to_read_from = []
+        partition = Mock(spec=Partition)
+        log_message = Mock(spec=LogMessage)
+        partition.to_slice.return_value = log_message
+        partition.stream_name.return_value = _STREAM_NAME
+        partition.is_closed.return_value = True
+        streams_to_partitions = {_STREAM_NAME: {partition}}
+        slice_logger = Mock(spec=SliceLogger)
+        slice_logger.should_log_slice_message.return_value = True
+        slice_logger.create_slice_log_message.return_value = log_message
+        self._message_repository.consume_queue.return_value = [
+            AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
+        ]
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        stream = Mock(spec=AbstractStream)
+        stream.name = _STREAM_NAME
+        stream.as_airbyte_stream.return_value = AirbyteStream(
+            name=_STREAM_NAME,
+            json_schema={},
+            supported_sync_modes=[SyncMode.full_refresh],
+        )
+        self._stream_to_instance_map[_STREAM_NAME] = stream
+
+        # Simulate a first record
+        self._record_counter[_STREAM_NAME] = 1
+
+        messages = list(handler.on_record(self._record))
+
+        expected_messages = [
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(
+                    stream=_STREAM_NAME,
+                    data=self._record_data,
+                    emitted_at=1577836800000,
+                ),
+            ),
+            AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository")),
+        ]
+        assert expected_messages == messages
+        assert self._record_counter[_STREAM_NAME] == 2
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_on_record_emits_status_message_on_first_record_no_repository_message(self):
+        self._streams_currently_generating_partitions = [_STREAM_NAME]
+        stream_instances_to_read_from = []
+        partition = Mock(spec=Partition)
+        partition.stream_name.return_value = _STREAM_NAME
+        partition.is_closed.return_value = True
+        streams_to_partitions = {_STREAM_NAME: {partition}}
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        self._stream_to_instance_map[_STREAM_NAME] = self._stream
+
+        messages = list(handler.on_record(self._record))
+
+        expected_messages = [
+            AirbyteMessage(
+                type=MessageType.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.STREAM_STATUS,
+                    emitted_at=1577836800000.0,
+                    stream_status=AirbyteStreamStatusTraceMessage(
+                        stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
+                    ),
+                ),
+            ),
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(
+                    stream=_STREAM_NAME,
+                    data=self._record_data,
+                    emitted_at=1577836800000,
+                ),
+            ),
+        ]
+        assert expected_messages == messages
+        assert self._record_counter[_STREAM_NAME] == 1
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_on_record_emits_status_message_on_first_record_with_repository_message(self):
+        self._streams_currently_generating_partitions = [_STREAM_NAME]
+        stream_instances_to_read_from = []
+        partition = Mock(spec=Partition)
+        log_message = Mock(spec=LogMessage)
+        partition.to_slice.return_value = log_message
+        partition.stream_name.return_value = _STREAM_NAME
+        partition.is_closed.return_value = True
+        streams_to_partitions = {_STREAM_NAME: {partition}}
+        self._message_repository.consume_queue.return_value = [
+            AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
+        ]
+
+        handler = QueueItemHandler(
+            self._streams_currently_generating_partitions,
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            streams_to_partitions,
+            self._record_counter,
+            self._stream_to_instance_map,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+
+        stream = Mock(spec=AbstractStream)
+        stream.name = _STREAM_NAME
+        stream.as_airbyte_stream.return_value = AirbyteStream(
+            name=_STREAM_NAME,
+            json_schema={},
+            supported_sync_modes=[SyncMode.full_refresh],
+        )
+        self._stream_to_instance_map[_STREAM_NAME] = stream
+
+        messages = list(handler.on_record(self._record))
+
+        expected_messages = [
+            AirbyteMessage(
+                type=MessageType.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.STREAM_STATUS,
+                    emitted_at=1577836800000.0,
+                    stream_status=AirbyteStreamStatusTraceMessage(
+                        stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
+                    ),
+                ),
+            ),
+            AirbyteMessage(
+                type=MessageType.RECORD,
+                record=AirbyteRecordMessage(
+                    stream=_STREAM_NAME,
+                    data=self._record_data,
+                    emitted_at=1577836800000,
+                ),
+            ),
+            AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository")),
+        ]
+        assert expected_messages == messages
+        assert self._record_counter[_STREAM_NAME] == 1
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_on_exception_stops_streams_and_raises_an_exception(self):
