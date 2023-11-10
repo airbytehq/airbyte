@@ -69,7 +69,6 @@ class ConcurrentSource(AbstractSource, ABC):
         futures: List[Future[Any]] = []
         queue: Queue = Queue()
         partition_generator = PartitionEnqueuer(queue)
-        partition_reader = PartitionReader(queue)
         config, internal_config = split_config(config)
         self._stream_to_instance_map: Mapping[str, AbstractStream] = {s.name: s for s in self._streams_as_abstract_streams(config)}
         max_number_of_partition_generator_in_progress = max(1, self._max_workers // 2)
@@ -87,7 +86,33 @@ class ConcurrentSource(AbstractSource, ABC):
             yield self._start_next_partition_generator(
                 stream_instances_to_read_from, futures, partition_generator_running, partition_generator, logger
             )
+        yield from self._consume_from_queue(
+            queue,
+            logger,
+            streams_to_partitions,
+            partition_generator,
+            partition_generator_running,
+            stream_instances_to_read_from,
+            futures,
+            record_counter,
+        )
+        # TODO Some sort of error handling
+        self._check_for_errors(futures)
+        self._threadpool.shutdown(wait=False, cancel_futures=True)
+        logger.info(f"Finished syncing {self.name}")
 
+    def _consume_from_queue(
+        self,
+        queue,
+        logger,
+        streams_to_partitions,
+        partition_generator,
+        partition_generator_running,
+        stream_instances_to_read_from,
+        futures,
+        record_counter,
+    ):
+        partition_reader = PartitionReader(queue)
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
             if isinstance(airbyte_message_or_record_or_exception, Exception):
                 # An exception was raised while processing the stream
@@ -108,10 +133,10 @@ class ConcurrentSource(AbstractSource, ABC):
                 )
 
             elif isinstance(airbyte_message_or_record_or_exception, Partition):
-                # A new partition was generated and must be processed
+                # a new partition was generated and must be processed
                 self._handle_partition(airbyte_message_or_record_or_exception, streams_to_partitions, futures, partition_reader, logger)
             elif isinstance(airbyte_message_or_record_or_exception, PartitionCompleteSentinel):
-                # All records for a partition were generated
+                # all records for a partition were generated
                 partition = airbyte_message_or_record_or_exception.partition
                 status_message = self._handle_partition_completed(
                     partition,
@@ -127,13 +152,9 @@ class ConcurrentSource(AbstractSource, ABC):
                 # record
                 yield from self._handle_record(airbyte_message_or_record_or_exception, record_counter, logger)
             if self._is_done(streams_to_partitions, stream_instances_to_read_from, partition_generator_running):
-                # All partitions were generated and process. We're done here
+                # all partitions were generated and process. we're done here
                 if all([f.done() for f in futures]) and queue.empty():
                     break
-        # TODO Some sort of error handling
-        self._check_for_errors(futures)
-        self._threadpool.shutdown(wait=False, cancel_futures=True)
-        logger.info(f"Finished syncing {self.name}")
 
     def _get_streams_to_read_from(self, catalog, logger):
         stream_instances_to_read_from = []
