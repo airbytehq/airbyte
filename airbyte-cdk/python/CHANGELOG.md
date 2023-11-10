@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.53.4
+Concurrent CDK: fix futures pruning
+
 ## 0.53.3
 Fix spec schema generation for File CDK and Vector DB CDK and allow skipping invalid files in document file parser
 
