@@ -25,7 +25,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.schema_helpers import split_config
-from airbyte_cdk.utils.stream_status_utils import status_to_airbyte_message
+from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 
 
 class Status(Enum):
@@ -265,10 +265,8 @@ class ConcurrentSource(AbstractSource, ABC):
         streams_currently_generating_partitions.append(stream.name)
         logger.info(f"Marking stream {stream.name} as STARTED")
         logger.info(f"Syncing stream: {stream.name} ")
-        return status_to_airbyte_message(
-            # FIXME pass namespace
-            stream.name,
-            None,
+        return stream_status_as_airbyte_message(
+            stream.as_airbyte_stream(),
             AirbyteStreamStatus.STARTED,
         )
 
@@ -284,7 +282,7 @@ class ConcurrentSource(AbstractSource, ABC):
         if record_counter[stream.name] == 0:
             logger.info(f"Marking stream {stream.name} as RUNNING")
 
-            status_message = status_to_airbyte_message(stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.RUNNING)
+            status_message = stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.RUNNING)
         if message.type == MessageType.RECORD:
             record_counter[stream.name] += 1
         if status_message:
@@ -361,7 +359,7 @@ class ConcurrentSource(AbstractSource, ABC):
         logger.info(f"Marking stream {stream_name} as STOPPED")
         stream = stream_to_instance_map[stream_name]
         logger.info(f"Finished syncing {stream.name}")
-        return status_to_airbyte_message(stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.COMPLETE)
+        return stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.COMPLETE)
 
     def _stop_streams(
         self, stream_to_partitions: Dict[str, Set[Partition]], logger: logging.Logger, stream_to_instance_map: Mapping[str, AbstractStream]
@@ -372,7 +370,7 @@ class ConcurrentSource(AbstractSource, ABC):
             if not all([p.is_closed() for p in partitions]):
                 logger.info(f"Marking stream {stream.name} as STOPPED")
                 logger.info(f"Finished syncing {stream.name}")
-                yield status_to_airbyte_message(stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.INCOMPLETE)
+                yield stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.INCOMPLETE)
 
     def _submit_task(self, logger: logging.Logger, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
