@@ -47,7 +47,7 @@ class KYVEStream(HttpStream, IncrementalMixin):
             "type": "object",
             "properties": {
                 "key": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "value": {
                     "type": "object"
