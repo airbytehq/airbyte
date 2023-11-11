@@ -6,16 +6,26 @@ package io.airbyte.integrations.destination.snowflake_bulk;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV2TableMigrator;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,10 +41,16 @@ public class BulkConsumer implements AirbyteMessageConsumer {
   private final JsonNode config;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final SqlOperations sqlOperations;
+  private final JdbcDatabase database;
+  private final ConfiguredAirbyteCatalog catalog;
+  private final NamingConventionTransformer namingResolver;
 
   private final String configStaging;
   private final String configFormat;
   private final List<AirbyteRecordMessage> messageList;
+
+  private final SnowflakeSqlGenerator sqlGenerator;
+  private final DefaultTyperDeduper typerDeduper;
 
   // same as JdbcBufferedConsumerFactory
   public BulkConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
@@ -47,16 +63,25 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     this.config = config;
     this.outputRecordCollector = outputRecordCollector;
     this.sqlOperations = sqlOperations;
+    this.database = database;
+    this.catalog = catalog;
+    this.namingResolver = namingResolver;
 
     this.configStaging = config.get(CONFIG_STAGE_KEY).asText();
     this.configFormat = config.get(CONFIG_FORMAT_KEY).asText();
     this.messageList = new ArrayList<>();
+
+    this.sqlGenerator = new SnowflakeSqlGenerator();
+
+    // last so it can use the above
+    this.typerDeduper = this.getTyperDeduper();
   }
 
   @Override
-  public void start() {
+  public void start() throws Exception {
     LOGGER.info("start staging:{} format:{}", this.configStaging, this.configFormat);
-    // todo: ensure table
+    typerDeduper.prepareTables();
+    LOGGER.info("tables created");
   }
 
   @Override
@@ -86,7 +111,8 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     }
     LOGGER.info("uploading {} files", this.messageList.size());
 
-    final String tableName = "testing";
+    final String tableName = "testing"; // TODO: use sqlGenerator to get right table name
+                                        // TODO: actually, have to know the streams! so we need to make a map
 
     final String sql = getSqlForMessages(tableName, this.configStaging, this.configFormat, this.messageList);
     LOGGER.info("runSql {}", sql);
@@ -94,10 +120,32 @@ public class BulkConsumer implements AirbyteMessageConsumer {
   }
 
   @Override
-  public void close() {
+  public void close() throws Exception {
     LOGGER.info("sync close");
     this.flush();
+    typerDeduper.commitFinalTables();
+    typerDeduper.cleanup();
     LOGGER.info("sync complete");
+  }
+
+  // from SnowflakeInternalStagingDestination.getSerializedMessageConsumer
+  private DefaultTyperDeduper getTyperDeduper() {
+    final String defaultNamespace = this.config.get("schema").asText();
+    for (final ConfiguredAirbyteStream stream : this.catalog.getStreams()) {
+      if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
+        stream.getStream().setNamespace(defaultNamespace);
+      }
+    }
+
+    final JdbcDatabase database = this.database;
+    final String databaseName = this.config.get(JdbcUtils.DATABASE_KEY).asText();
+    final SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
+    final CatalogParser catalogParser = new CatalogParser(this.sqlGenerator);
+    final ParsedCatalog parsedCatalog = catalogParser.parseCatalog(this.catalog);
+    // todo: mess with catalog
+    final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(this.namingResolver, database, databaseName);
+    final SnowflakeV2TableMigrator v2TableMigrator = new SnowflakeV2TableMigrator(database, databaseName, this.sqlGenerator, snowflakeDestinationHandler);
+    return new DefaultTyperDeduper<>(this.sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator, 8);
   }
 
   private static String getSqlForMessages(

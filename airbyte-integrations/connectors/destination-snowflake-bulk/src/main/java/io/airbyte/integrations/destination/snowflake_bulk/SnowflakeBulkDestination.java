@@ -10,6 +10,7 @@ import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveDestinationRunner;
 import io.airbyte.integrations.destination.snowflake.SnowflakeInternalStagingDestination;
+import io.airbyte.integrations.destination.snowflake.SnowflakeInternalStagingSqlOperations;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
@@ -33,7 +34,14 @@ public class SnowflakeBulkDestination extends SnowflakeInternalStagingDestinatio
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
       final ConfiguredAirbyteCatalog catalog,
       final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new BulkConsumer(outputRecordCollector, this.getDatabase(this.getDataSource(config)), getSqlOperations(), getNamingResolver(), config, catalog);
+
+    return new BulkConsumer(
+        outputRecordCollector,
+        this.getDatabase(this.getDataSource(config)),
+        new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
+        getNamingResolver(),
+        config,
+        catalog);
   }
 
 

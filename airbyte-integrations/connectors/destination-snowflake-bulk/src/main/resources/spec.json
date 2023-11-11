@@ -164,23 +164,29 @@
         ],
         "order": 6
       },
-      "jdbc_url_params": {
-        "description": "Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3",
-        "title": "JDBC URL Params",
-        "type": "string",
-        "order": 7
-      },
       "snowflake_stage_name": {
         "description": "The name of the created STAGE that has access to the bulk files, all of which are in a single directory.",
         "title": "Snowflake Stage Name",
         "type": "string",
-        "order": 8
+        "order": 6
       },
       "snowflake_file_format": {
         "description": "The name of the created FILE FORMAT that knows how to read the files. It should have a delimiter that _does not_ exist in the data itself so Airbyte will write a single row.",
         "title": "Snowflake File Format",
         "type": "string",
+        "order": 7
+      },
+      "jdbc_url_params": {
+        "description": "Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3",
+        "title": "JDBC URL Params",
+        "type": "string",
         "order": 9
+      },
+      "raw_data_schema": {
+        "type": "string",
+        "description": "The schema to write raw tables into (default: airbyte_internal)",
+        "title": "Raw Table Schema Name",
+        "order": 10
       }
     }
   },
