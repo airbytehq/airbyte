@@ -7,6 +7,7 @@ import pytest
 from pendulum import duration
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams import (
+    AdSets,
     AdsInsights,
     AdsInsightsActionType,
     AdsInsightsAgeAndGender,
@@ -23,6 +24,25 @@ def test_filter_all_statuses(api, mocker):
     mocker.patch.multiple(FBMarketingStream, __abstractmethods__=set())
     expected = {}
     assert FBMarketingStream(api=api)._filter_all_statuses() == expected
+
+    expected = {
+        "filtering": [
+            {
+                "field": "adset.effective_status",
+                "operator": "IN",
+                "value": ["ACTIVE", "ARCHIVED", "CAMPAIGN_PAUSED", "DELETED", "IN_PROCESS", "PAUSED", "WITH_ISSUES"],
+            }
+        ]
+    }
+    assert (
+        AdSets(
+            start_date="",
+            end_date="",
+            api=api,
+            filter_statuses=["ACTIVE", "ARCHIVED", "CAMPAIGN_PAUSED", "DELETED", "IN_PROCESS", "PAUSED", "WITH_ISSUES"],
+        )._filter_all_statuses()
+        == expected
+    )
 
 
 @pytest.mark.parametrize(
