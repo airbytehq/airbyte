@@ -13,6 +13,7 @@ import io.airbyte.api.model.generated.*;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -96,6 +97,23 @@ public class WebBackendConnectionsHandler {
         .pageCurrent(workspaceIdPageRequestBody.getPageCurrent()).pageSize(workspaceIdPageRequestBody.getPageSize());
   }
 
+  public WebBackendConnectionsPageReadList webBackendConnectionsPageForWorkspace(WorkspaceIdPageRequestBody workspaceIdPageRequestBody)
+      throws IOException {
+    final List<WebBackendConnectionPageRead> reads = Lists.newArrayList();
+    if (workspaceIdPageRequestBody.getPageSize() == null || workspaceIdPageRequestBody.getPageSize() == 0) {
+      workspaceIdPageRequestBody.setPageSize(10);
+    }
+    if (workspaceIdPageRequestBody.getPageCurrent() == null || workspaceIdPageRequestBody.getPageCurrent() == 0) {
+      workspaceIdPageRequestBody.setPageCurrent(1);
+    }
+    for (final ConnectionRead connection : connectionsHandler.connectionPageReadList(workspaceIdPageRequestBody).getConnections()) {
+      reads.add(buildWebBackendConnectionPageRead(connection));
+    }
+    return new WebBackendConnectionsPageReadList().connections(reads)
+        .total(connectionsHandler.pageConnectionsForWorkspaceCount(workspaceIdPageRequestBody))
+        .pageCurrent(workspaceIdPageRequestBody.getPageCurrent()).pageSize(workspaceIdPageRequestBody.getPageSize());
+  }
+
   public WebBackendConnectionFilterParam webBackendConnectionsFilterParam()
       throws IOException {
     return new WebBackendConnectionFilterParam()
@@ -131,21 +149,44 @@ public class WebBackendConnectionsHandler {
     return webBackendConnectionRead;
   }
 
+  private WebBackendConnectionPageRead buildWebBackendConnectionPageRead(final ConnectionRead connectionRead)
+      throws IOException {
+    StandardDestinationDefinition destinationDefinition =
+        configRepository.getStandardDestinationDefinationByDestinationId(connectionRead.getDestinationId());
+    StandardDestinationDefinition sourceDefinition = configRepository.getStandardSourceDefinationBySourceId(connectionRead.getSourceId());
+    final JobReadList syncJobReadList = getSyncJobs(connectionRead);
+
+    WebBackendConnectionPageRead webBackendConnectionPageRead = new WebBackendConnectionPageRead().connectionId(connectionRead.getConnectionId())
+        .name(connectionRead.getName()).status(connectionRead.getStatus()).entityName(destinationDefinition.getName())
+        .connectorName(sourceDefinition.getName())
+        .isSyncing(syncJobReadList.getJobs()
+            .stream()
+            .map(JobWithAttemptsRead::getJob)
+            .anyMatch(WebBackendConnectionsHandler::isRunningJob));
+
+    syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).findFirst()
+        .ifPresent(job -> {
+          webBackendConnectionPageRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
+          webBackendConnectionPageRead.setLatestSyncJobStatus(job.getStatus());
+        });
+    return webBackendConnectionPageRead;
+  }
+
   public WebBackendConnectionReadList listConnectionsPageWithoutOperation(final UUID workspaceId,
                                                                           UUID sourceId,
                                                                           UUID destinationId,
                                                                           final boolean includeDeleted,
                                                                           final Integer pageSize,
                                                                           final Integer pageCurrent)
-          throws ConfigNotFoundException, IOException, JsonValidationException {
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     ConnectionReadList connectionReadList = new ConnectionReadList();
     if (!ObjectUtils.isEmpty(sourceId)) {
       connectionReadList = getConnectionReadList(
-              configRepository.listSourceStandardSyncsWithoutOperations(workspaceId, sourceId, pageSize, pageCurrent), includeDeleted);
+          configRepository.listSourceStandardSyncsWithoutOperations(workspaceId, sourceId, pageSize, pageCurrent), includeDeleted);
     } else if (!ObjectUtils.isEmpty(destinationId)) {
       connectionReadList =
-              getConnectionReadList(configRepository.listDestinationStandardSyncsWithoutOperations(workspaceId, destinationId, pageSize, pageCurrent),
-                      includeDeleted);
+          getConnectionReadList(configRepository.listDestinationStandardSyncsWithoutOperations(workspaceId, destinationId, pageSize, pageCurrent),
+              includeDeleted);
     }
     final List<WebBackendConnectionRead> reads = Lists.newArrayList();
     for (final ConnectionRead connection : connectionReadList.getConnections()) {
