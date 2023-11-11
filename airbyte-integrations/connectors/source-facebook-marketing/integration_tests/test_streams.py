@@ -49,7 +49,7 @@ class TestFacebookMarketingSource:
 
         assert states, "incremental read should produce states"
         for name, state in states[-1].state.data.items():
-            assert "include_deleted" in state, f"State for {name} should include `include_deleted` flag"
+            assert "filter_statuses" in state, f"State for {name} should include `filter_statuses` flag"
 
         assert deleted_records, f"{stream_name} stream should have deleted records returned"
         assert is_specific_deleted_pulled, f"{stream_name} stream should have a deleted record with id={deleted_id}"
@@ -68,11 +68,11 @@ class TestFacebookMarketingSource:
     def test_streams_with_include_deleted_and_state(
         self, stream_name, deleted_num, include_deleted_in_state, config_with_include_deleted, configured_catalog, state
     ):
-        """Should ignore state because of include_deleted enabled"""
+        """Should ignore state because of filter_statuses changed"""
         if include_deleted_in_state:
             state = copy.deepcopy(state)
             for value in state.values():
-                value["include_deleted"] = True
+                value["filter_statuses"] = ["ARCHIVED"]
 
         catalog = self._slice_catalog(configured_catalog, {stream_name})
         records, states = self._read_records(config_with_include_deleted, catalog, state=state)

@@ -45,12 +45,86 @@
         "type": "string",
         "format": "date-time"
       },
-      "include_deleted": {
-        "title": "Include Deleted Campaigns, Ads, and AdSets",
-        "description": "Set to active if you want to include data from deleted Campaigns, Ads, and AdSets.",
-        "default": false,
+      "campaign_statuses": {
+        "title": "Campaign Statuses",
+        "description": "Select statuses you want to to be loaded in the stream. Empty means all available.",
+        "default": [],
         "order": 4,
-        "type": "boolean"
+        "type": "array",
+        "items": {
+          "title": "ValidCampaignStatuses",
+          "description": "An enumeration.",
+          "enum": [
+            "ACTIVE",
+            "ARCHIVED",
+            "DELETED",
+            "IN_PROCESS",
+            "PAUSED",
+            "WITH_ISSUES"
+          ]
+        }
+      },
+      "adset_statuses": {
+        "title": "AdSet Statuses",
+        "description": "Select statuses you want to to be loaded in the stream. Empty means all available.",
+        "default": [],
+        "order": 5,
+        "type": "array",
+        "items": {
+          "title": "ValidAdSetStatuses",
+          "description": "An enumeration.",
+          "enum": [
+            "ACTIVE",
+            "ARCHIVED",
+            "CAMPAIGN_PAUSED",
+            "DELETED",
+            "IN_PROCESS",
+            "PAUSED",
+            "WITH_ISSUES"
+          ]
+        }
+      },
+      "ad_statuses": {
+        "title": "Ad Statuses",
+        "description": "Select statuses you want to to be loaded in the stream. Empty means all available.",
+        "default": [],
+        "order": 6,
+        "type": "array",
+        "items": {
+          "title": "ValidAdStatuses",
+          "description": "An enumeration.",
+          "enum": [
+            "ACTIVE",
+            "ADSET_PAUSED",
+            "ARCHIVED",
+            "CAMPAIGN_PAUSED",
+            "DELETED",
+            "DISAPPROVED",
+            "IN_PROCESS",
+            "PAUSED",
+            "PENDING_BILLING_INFO",
+            "PENDING_REVIEW",
+            "PREAPPROVED",
+            "WITH_ISSUES"
+          ]
+        }
+      },
+      "adcreative_statuses": {
+        "title": "AdCreative Statuses",
+        "description": "Select statuses you want to to be loaded in the stream. Empty means all available.",
+        "default": [],
+        "order": 7,
+        "type": "array",
+        "items": {
+          "title": "ValidAdCreativeStatuses",
+          "description": "An enumeration.",
+          "enum": [
+            "ACTIVE",
+            "DELETED",
+            "IN_PROCESS",
+            "WITH_ISSUES"
+          ]
+        }
       },
       "fetch_thumbnail_images": {
         "title": "Fetch Thumbnail Images from Ad Creative",
