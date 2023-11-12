@@ -44,8 +44,7 @@ public class BulkConsumer implements AirbyteMessageConsumer {
 
   private static final String CONFIG_STAGE_KEY = "snowflake_stage_name";
   private static final String CONFIG_FORMAT_KEY = "snowflake_file_format";
-  private static final int MAX_BULK_FILES = 5; // TODO: 1000
-                                               // https://docs.snowflake.com/en/sql-reference/sql/copy-into-table#optional-parameters
+  private static final int MAX_BULK_FILES = 1000; // https://docs.snowflake.com/en/sql-reference/sql/copy-into-table#optional-parameters
 
   private final JsonNode config;
   private final Consumer<AirbyteMessage> outputRecordCollector;
@@ -60,8 +59,10 @@ public class BulkConsumer implements AirbyteMessageConsumer {
 
   private final SnowflakeSqlGenerator sqlGenerator;
   private final String defaultNamespace;
+
   private DefaultTyperDeduper typerDeduper;
   private ParsedCatalog parsedCatalog;
+  private SnowflakeDestinationHandler snowflakeDestinationHandler;
 
   public static final String QUOTE = "\"";
 
@@ -88,11 +89,11 @@ public class BulkConsumer implements AirbyteMessageConsumer {
 
     this.defaultNamespace = this.config.get("schema").asText();
     // set up other instance variables using the above
-    this.setTyperDeduperAndCatalog();
+    this.setTyperDeduperAndCatalogAndHandler();
   }
 
   // from SnowflakeInternalStagingDestination.getSerializedMessageConsumer
-  private void setTyperDeduperAndCatalog() {
+  private void setTyperDeduperAndCatalogAndHandler() {
     for (final ConfiguredAirbyteStream stream : this.catalog.getStreams()) {
       if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
         stream.getStream().setNamespace(this.defaultNamespace);
@@ -107,10 +108,11 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     final JdbcDatabase database = this.database;
     final String databaseName = this.config.get(JdbcUtils.DATABASE_KEY).asText();
     final SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
+    this.snowflakeDestinationHandler = snowflakeDestinationHandler;
 
     final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(this.namingResolver, database, databaseName);
-    final SnowflakeV2TableMigrator v2TableMigrator = new SnowflakeV2TableMigrator(database, databaseName, this.sqlGenerator, snowflakeDestinationHandler);
-    final DefaultTyperDeduper typerDeduper = new DefaultTyperDeduper<>(this.sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator, 8);
+    final SnowflakeV2TableMigrator v2TableMigrator = new SnowflakeV2TableMigrator(database, databaseName, this.sqlGenerator, this.snowflakeDestinationHandler);
+    final DefaultTyperDeduper typerDeduper = new DefaultTyperDeduper<>(this.sqlGenerator, this.snowflakeDestinationHandler, this.parsedCatalog, migrator, v2TableMigrator, 8);
     this.typerDeduper = typerDeduper;
 
   }
@@ -123,7 +125,7 @@ public class BulkConsumer implements AirbyteMessageConsumer {
   }
 
   @Override
-  public void accept(final AirbyteMessage message) {
+  public void accept(final AirbyteMessage message) throws Exception {
     if (message.getType() == Type.STATE) {
       LOGGER.info("Emitting state: {}", message);
       outputRecordCollector.accept(message);
@@ -147,7 +149,7 @@ public class BulkConsumer implements AirbyteMessageConsumer {
 
     if(!this.streamMessages.containsKey(stream)) {
       LOGGER.info("  does not have key: {}", stream);
-      this.streamMessages.put(stream, new ArrayList<>()); // TODO: not sure this stream is a reliable hash key
+      this.streamMessages.put(stream, new ArrayList<>());
     }
     final List messageList = this.streamMessages.get(stream);
     messageList.add(recordMessage);
@@ -158,14 +160,15 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     }
   }
 
-  private void flush(final StreamConfig stream, final List messages) {
+  private void flush(final StreamConfig stream, final List messages) throws Exception {
     if (messages == null || messages.size() == 0) {
       return;
     }
     LOGGER.info("uploading stream:{} count:{}", stream, messages.size());
 
     final String sql = getSqlForMessages(stream, this.configStaging, this.configFormat, messages);
-    LOGGER.info("runSql {}", sql);
+    this.snowflakeDestinationHandler.execute(sql);
+
     messages.clear();
   }
 
@@ -181,7 +184,6 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     this.typerDeduper.cleanup();
     LOGGER.info("sync complete");
   }
-
 
   private ColumnId colId(final String name) {
     return this.sqlGenerator.buildColumnId(name, "");
@@ -215,16 +217,6 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     for(final StreamConfig stream : parsedCatalog.streams()) {
       fillKnownSchema(stream.columns());
     }
-
-//    for(final StreamConfig stream : parsedCatalog.streams()) {
-//      LOGGER.info(" streamname: {}", stream.id().rawName());
-//      final HashMap<ColumnId, AirbyteType> columns = stream.columns();
-//      for(final Map.Entry<ColumnId, AirbyteType> entry : columns.entrySet()) {
-//        final ColumnId columnId = entry.getKey();
-//        final AirbyteType type = entry.getValue();
-//        LOGGER.info("        column id:{} type:{}", columnId, type);
-//      }
-//    }
   }
 
   // Like createTable from SnowflakeSqlGenerator with Airbyte columns removed
@@ -268,7 +260,7 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     sb.append("'");
     sb.append(" FILE_FORMAT = ");
     sb.append("'" + formatName + "'");
-    sb.append(" FILES = (");
+    sb.append(" FILES = (\n");
     for (int i = 0; i < messages.size(); i++) {
       final String fileName = messages.get(i).getData().get("file_name").asText();
       if (i > 0) {
