@@ -7,6 +7,7 @@ from io import IOBase
 from io import StringIO
 import json
 import os
+from urllib.parse import urlparse
 from typing import Iterable, List, Optional, Set
 
 
@@ -24,9 +25,28 @@ class SourceS3BulkStreamReader(SourceS3StreamReader):
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         full_file_uri = f"s3://{self.config.bucket}/{file.uri}"
+       
+        # Parse the URL
+        parsed_url = urlparse(full_file_uri)
+
+        # Extract the protocol (e.g., "s3")
+        file_protocol = parsed_url.scheme
+
+        # Extract the hostname (e.g., "www.example.com")
+        file_host = parsed_url.netloc
+
+        # Extract the path (e.g., "/path/to/")
+        file_path = parsed_url.path
+
+        # extract the file name
+        file_name = os.path.basename(file_path)
+
         record = {
             "file_uri": full_file_uri,
-            "file_name": os.path.basename(full_file_uri),
+            "file_name": file_name,
+            "file_protocol": file_protocol,
+            "file_path": file_path,
+            "file_host": file_host,
         }
 
         json_string = json.dumps(record)

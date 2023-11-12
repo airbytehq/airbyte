@@ -262,12 +262,16 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     sb.append("'" + formatName + "'");
     sb.append(" FILES = (\n");
     for (int i = 0; i < messages.size(); i++) {
-      final String fileName = messages.get(i).getData().get("file_name").asText();
+      String filePath = messages.get(i).getData().get("file_path").asText();
+      // leading slash causes error
+      if (filePath.startsWith("/")) {
+        filePath = filePath.substring(1);
+      }
       if (i > 0) {
         sb.append(",\n");
       }
       sb.append("'");
-      sb.append(fileName);
+      sb.append(filePath);
       sb.append("'");
     }
     sb.append(");");
@@ -303,35 +307,34 @@ public class BulkConsumer implements AirbyteMessageConsumer {
 
 
 // Example full SQL
-//  CREATE OR REPLACE TABLE "BULK_TEST"."FILES_TMP" (
-//  "F1" NUMBER,
-//  "F2" NUMBER,
-//  "F3" NUMBER,
-//  "F4" NUMBER,
-//  "F5" FLOAT,
-//  "F6" FLOAT,
-//  "F7" FLOAT,
-//  "F8" FLOAT,
-//  "F9" TEXT,
-//  "F10" TEXT,
-//  "F11" TEXT,
-//  "F12" TEXT,
-//  "F13" TEXT,
-//  "F14" TEXT,
-//  "F15" TEXT,
-//  "F16" TEXT
-//  );
+//CREATE OR REPLACE TABLE "BULK_PATH_TEST"."ZIPPED1_TMP" (
+// "F1" NUMBER,
+// "F2" NUMBER,
+// "F3" NUMBER,
+// "F4" NUMBER,
+// "F5" FLOAT,
+// "F6" FLOAT,
+// "F7" FLOAT,
+// "F8" FLOAT,
+// "F9" TEXT,
+// "F10" TEXT,
+// "F11" TEXT,
+// "F12" TEXT,
+// "F13" TEXT,
+// "F14" TEXT,
+// "F15" TEXT,
+// "F16" TEXT
+// );
 //
-//  COPY INTO "BULK_TEST"."FILES_TMP" FROM '@brian_ext_stage' FILE_FORMAT = 'brian_csv_format' FILES = (
-//    'data_0_0_1.csv',
-//    'data_0_0_10.csv',
-//    'data_0_0_100.csv',
-//    'data_0_0_101.csv',
-//    'data_0_0_102.csv'
-//  );
-//  INSERT INTO "BULK_TEST"."FILES" (_AIRBYTE_RAW_ID, _AIRBYTE_EXTRACTED_AT, _AIRBYTE_META, "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "F13", "F14", "F15", "F16")
-//  SELECT UUID_STRING(), CURRENT_TIMESTAMP(), PARSE_JSON('{}'),* FROM "BULK_TEST"."FILES_TMP"
+// COPY INTO "BULK_PATH_TEST"."ZIPPED1_TMP" FROM '@brian_s3_stage' FILE_FORMAT = 'brian_csv_format' FILES = (
+// 'lineitem1TB/data_0_1_0.csv.gz',
+// 'lineitem1TB/data_0_7_0.csv.gz',
+// 'lineitem1TB/data_0_0_0.csv.gz',
+// 'lineitem1TB/data_0_2_0.csv.gz',
+// 'lineitem1TB/data_0_3_0.csv.gz');
+//  INSERT INTO "BULK_PATH_TEST"."ZIPPED1" (_AIRBYTE_RAW_ID, _AIRBYTE_EXTRACTED_AT, _AIRBYTE_META, "F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12","F13","F14","F15","F16")
+//  SELECT UUID_STRING(), CURRENT_TIMESTAMP(), PARSE_JSON('{}'),* FROM "BULK_PATH_TEST"."ZIPPED1_TMP"
 //  ;
 //
-//  DROP TABLE "BULK_TEST"."FILES_TMP";
+//  DROP TABLE "BULK_PATH_TEST"."ZIPPED1_TMP";
 
