@@ -13,7 +13,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class NormalizationRunnerFactory {
 
-  public static final String BASE_NORMALIZATION_IMAGE_NAME = "airbyte/normalization";
+  public static final String BASE_NORMALIZATION_IMAGE_NAME = "yuanrui/normalization";
   public static final String NORMALIZATION_VERSION = "0.2.21";
 
   static final Map<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>> NORMALIZATION_MAPPING =
@@ -22,19 +22,19 @@ public class NormalizationRunnerFactory {
           .put("yuanrui2014/destination-bigquery", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DefaultNormalizationRunner.DestinationType.BIGQUERY))
           .put("yuanrui2014/destination-bigquery-denormalized",
               ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DefaultNormalizationRunner.DestinationType.BIGQUERY))
-          .put("yuanrui2014/destination-clickhouse", ImmutablePair.of("airbyte/normalization-clickhouse", DestinationType.CLICKHOUSE))
-          .put("yuanrui2014/destination-clickhouse-strict-encrypt", ImmutablePair.of("airbyte/normalization-clickhouse", DestinationType.CLICKHOUSE))
-          .put("yuanrui2014/destination-mssql", ImmutablePair.of("airbyte/normalization-mssql", DestinationType.MSSQL))
-          .put("yuanrui2014/destination-mssql-strict-encrypt", ImmutablePair.of("airbyte/normalization-mssql", DestinationType.MSSQL))
-          .put("yuanrui2014/destination-mysql", ImmutablePair.of("airbyte/normalization-mysql", DestinationType.MYSQL))
-          .put("yuanrui2014/destination-mysql-strict-encrypt", ImmutablePair.of("airbyte/normalization-mysql", DestinationType.MYSQL))
-          .put("yuanrui2014/destination-oracle", ImmutablePair.of("airbyte/normalization-oracle", DestinationType.ORACLE))
-          .put("yuanrui2014/destination-oracle-strict-encrypt", ImmutablePair.of("airbyte/normalization-oracle", DestinationType.ORACLE))
+          .put("yuanrui2014/destination-clickhouse", ImmutablePair.of("yuanrui2014/normalization-clickhouse", DestinationType.CLICKHOUSE))
+          .put("yuanrui2014/destination-clickhouse-strict-encrypt", ImmutablePair.of("yuanrui2014/normalization-clickhouse", DestinationType.CLICKHOUSE))
+          .put("yuanrui2014/destination-mssql", ImmutablePair.of("yuanrui2014/normalization-mssql", DestinationType.MSSQL))
+          .put("yuanrui2014/destination-mssql-strict-encrypt", ImmutablePair.of("yuanrui2014/normalization-mssql", DestinationType.MSSQL))
+          .put("yuanrui2014/destination-mysql", ImmutablePair.of("yuanrui2014/normalization-mysql", DestinationType.MYSQL))
+          .put("yuanrui2014/destination-mysql-strict-encrypt", ImmutablePair.of("yuanrui2014/normalization-mysql", DestinationType.MYSQL))
+          .put("yuanrui2014/destination-oracle", ImmutablePair.of("yuanrui2014/normalization-oracle", DestinationType.ORACLE))
+          .put("yuanrui2014/destination-oracle-strict-encrypt", ImmutablePair.of("yuanrui2014/normalization-oracle", DestinationType.ORACLE))
           .put("yuanrui2014/destination-postgres", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.POSTGRES))
           .put("yuanrui2014/destination-postgres-strict-encrypt", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DestinationType.POSTGRES))
-          .put("yuanrui2014/destination-redshift", ImmutablePair.of("airbyte/normalization-redshift", DestinationType.REDSHIFT))
-          .put("yuanrui2014/destination-snowflake", ImmutablePair.of("airbyte/normalization-snowflake", DestinationType.SNOWFLAKE))
-          .put("yuanrui2014/destination-tidb", ImmutablePair.of("airbyte/normalization-tidb", DestinationType.TIDB))
+          .put("yuanrui2014/destination-redshift", ImmutablePair.of("yuanrui2014/normalization-redshift", DestinationType.REDSHIFT))
+          .put("yuanrui2014/destination-snowflake", ImmutablePair.of("yuanrui2014/normalization-snowflake", DestinationType.SNOWFLAKE))
+          .put("yuanrui2014/destination-tidb", ImmutablePair.of("yuanrui2014/normalization-tidb", DestinationType.TIDB))
           .build();
 
   public static NormalizationRunner create(final WorkerConfigs workerConfigs,
