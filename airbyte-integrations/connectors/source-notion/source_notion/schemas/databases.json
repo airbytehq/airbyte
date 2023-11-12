@@ -545,6 +545,28 @@
                     "type": "object"
                   }
                 }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["unique_id"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "unique_id": {
+                    "type": "object",
+                    "properties": {
+                      "prefix": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
               }
             ]
           }
