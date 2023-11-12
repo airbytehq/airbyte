@@ -33,9 +33,12 @@ _MAX_CONCURRENCY = 100
 
 
 class FileBasedSource(AbstractSource, ABC):
+    concurrency_level = _MAX_CONCURRENCY
+    stream_reader_pool = []
+
     def __init__(
         self,
-        stream_reader: AbstractFileBasedStreamReader,
+        stream_reader_pool: List[AbstractFileBasedStreamReader],
         spec_class: Type[AbstractFileBasedSpec],
         catalog_path: Optional[str] = None,
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,
@@ -43,10 +46,11 @@ class FileBasedSource(AbstractSource, ABC):
         parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
         validation_policies: Mapping[ValidationPolicy, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
         cursor_cls: Type[AbstractFileBasedCursor] = DefaultConcurrentFileBasedCursor,
+        # partition_cls: Type[FileBasedPartition] = StreamPartition,
     ):
-        self.stream_reader = stream_reader
+        self._stream_reader_pool = stream_reader_pool
         self.spec_class = spec_class
-        self.availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
+        self.availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader_pool[0])
         self.discovery_policy = discovery_policy
         self.parsers = parsers
         self.validation_policies = validation_policies
@@ -105,7 +109,6 @@ class FileBasedSource(AbstractSource, ABC):
         """
         try:
             parsed_config = self._get_parsed_config(config)
-            self.stream_reader.config = parsed_config
             streams: List[Stream] = []
             for stream_config in parsed_config.streams:
                 self._validate_input_schema(stream_config)
@@ -113,20 +116,30 @@ class FileBasedSource(AbstractSource, ABC):
                     DefaultFileBasedStream(
                         config=stream_config,
                         catalog_schema=self.stream_schemas.get(stream_config.name),
-                        stream_reader=self.stream_reader,
                         availability_strategy=self.availability_strategy,
                         discovery_policy=self.discovery_policy,
                         parsers=self.parsers,
                         validation_policy=self._validate_and_get_validation_policy(stream_config),
                     )
                 )
-            return self._make_concurrent_streams(streams, parsed_config)
+
+            self._setup_stream_readers(parsed_config)
+            if len(self.stream_reader_pool) > 1:
+                # Ideally we'd set up the stream reader pool in __init__, but we do not have the config object until we call `self.streams`
+                # and it is required by the StreamReader.
+                # TODO: have the source take in already-parsed config (maybe)
+                self._setup_stream_reader_pool()
+                return self._get_concurrent_streams(streams, parsed_config)
+            return streams
 
         except ValidationError as exc:
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR) from exc
 
-    def _make_concurrent_streams(self, streams: List[Stream], config: AbstractFileBasedSpec):
-        concurrency_level = _MAX_CONCURRENCY
+    def _setup_stream_readers(self, config: AbstractFileBasedSpec):
+        for stream_reader in self._stream_reader_pool:
+            stream_reader.config = config
+
+    def _get_concurrent_streams(self, streams: List[Stream], config: AbstractFileBasedSpec):
         concurrent_streams = []
         for stream, stream_config in zip(streams, config.streams):
             cursor = self.cursor_cls(
@@ -135,10 +148,13 @@ class FileBasedSource(AbstractSource, ABC):
                 message_repository=self.message_repository,
             )
             stream.cursor = cursor
-            concurrent_stream = StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, None, cursor)
+            concurrent_stream = StreamFacade.create_from_stream(stream, self, entrypoint_logger, self.concurrency_level, None, cursor)
             concurrent_streams.append(concurrent_stream)
-        streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+        streams[0].logger.info(f"Using concurrent cdk with concurrency level {self.concurrency_level}")
         return concurrent_streams
+
+    def _setup_stream_reader_pool(self):
+        self.partition_cls.set_stream_reader_pool(self.stream_reader_pool)
 
     def read(
         self,

@@ -21,6 +21,7 @@ from airbyte_cdk.sources.file_based.exceptions import (
     SchemaInferenceError,
     StopSyncPerValidationPolicy,
 )
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType, merge_schemas, schemaless_schema
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
@@ -75,13 +76,16 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         slices = [{"files": list(group[1])} for group in itertools.groupby(sorted_files_to_read, lambda f: f.last_modified)]
         return slices
 
-    def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:
+    def read_records_from_slice(
+        self, stream_slice: StreamSlice, stream_reader: Optional[AbstractFileBasedStreamReader]
+    ) -> Iterable[AirbyteMessage]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
 
         If an error is encountered reading records from a file, log a message and do not attempt
         to sync the rest of the file.
         """
+        #
         schema = self.catalog_schema
         if schema is None:
             # On read requests we should always have the catalog available
@@ -96,7 +100,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             n_skipped = line_no = 0
 
             try:
-                for record in parser.parse_records(self.config, file, self.stream_reader, self.logger, schema):
+                for record in parser.parse_records(self.config, file, stream_reader, self.logger, schema):
                     line_no += 1
                     if self.config.schemaless:
                         record = {"data": record}

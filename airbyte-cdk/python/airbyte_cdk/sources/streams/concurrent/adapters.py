@@ -6,11 +6,13 @@ import copy
 import json
 import logging
 from functools import lru_cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
+from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -251,9 +253,12 @@ class StreamPartition(Partition):
     In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
     """
 
+    _reader_pool: Iterator[AbstractFileBasedStreamReader] = []
+    readers: MutableMapping[str, AbstractFileBasedStreamReader] = {}
+
     def __init__(
         self,
-        stream: Stream,
+        stream: AbstractFileBasedStream,
         _slice: Optional[Mapping[str, Any]],
         message_repository: MessageRepository,
         sync_mode: SyncMode,
@@ -272,6 +277,13 @@ class StreamPartition(Partition):
         self._cursor_field = cursor_field
         self._state = state
 
+    @classmethod
+    def set_reader_pool(cls, readers: List[AbstractFileBasedStreamReader]):
+        if not cls._reader_pool:
+            cls._reader_pool = readers
+        else:
+            raise AssertionError("set_reader_pool should only be called once")
+
     def read(self) -> Iterable[Record]:
         """
         Read messages from the stream.
@@ -279,17 +291,25 @@ class StreamPartition(Partition):
         Otherwise, the message will be emitted on the message repository.
         """
         try:
+            thread_id = self.get_thread_id()
+            if thread_id not in self.readers:
+                try:
+                    self.readers[thread_id] = next(self._reader_pool)
+                except StopIteration:
+                    raise AssertionError(
+                        "Ran out of readers for the threadpool. This means that there are more threads than readers; this should never happen because threads and readers should be 1:1."
+                    )
+            stream_reader = self.readers[thread_id]
+
             # using `stream_state=self._state` have a very different behavior than the current one as today the state is updated slice
             #  by slice incrementally. We don't have this guarantee with Concurrent CDK. For HttpStream, `stream_state` is passed to:
             #  * fetch_next_page
             #  * parse_response
             #  Both are not used for Stripe so we should be good for the first iteration of Concurrent CDK. However, Stripe still do
             #  `if not stream_state` to know if it calls the Event stream or not
-            for record_data in self._stream.read_records(
-                cursor_field=self._cursor_field,
-                sync_mode=SyncMode.full_refresh,
+            for record_data in self._stream.read_records_from_slice(
                 stream_slice=copy.deepcopy(self._slice),
-                stream_state=self._state,
+                stream_reader=stream_reader,
             ):
                 if isinstance(record_data, Mapping):
                     data_to_return = dict(record_data)

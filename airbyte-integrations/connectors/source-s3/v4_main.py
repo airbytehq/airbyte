@@ -16,7 +16,7 @@ from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
 def get_source(args: List[str]):
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
     try:
-        return SourceS3(SourceS3StreamReader(), Config, catalog_path, cursor_cls=Cursor)
+        return SourceS3([SourceS3StreamReader() for _ in range(SourceS3.concurrency_level)], Config, catalog_path, cursor_cls=Cursor)
     except Exception:
         print(
             AirbyteMessage(

@@ -39,7 +39,6 @@ class AbstractFileBasedStream(Stream):
         self,
         config: FileBasedStreamConfig,
         catalog_schema: Optional[Mapping[str, Any]],
-        stream_reader: AbstractFileBasedStreamReader,
         availability_strategy: AbstractFileBasedAvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy,
         parsers: Dict[Type[Any], FileTypeParser],
@@ -49,7 +48,7 @@ class AbstractFileBasedStream(Stream):
         self.config = config
         self.catalog_schema = catalog_schema
         self.validation_policy = validation_policy
-        self.stream_reader = stream_reader
+        # self.stream_reader = stream_reader
         self._discovery_policy = discovery_policy
         self._availability_strategy = availability_strategy
         self._parsers = parsers
@@ -58,6 +57,10 @@ class AbstractFileBasedStream(Stream):
     @abstractmethod
     def primary_key(self) -> PrimaryKeyType:
         ...
+
+    @property
+    def stream_reader(self) -> AbstractFileBasedStreamReader:
+        return self.stream_reader
 
     @cache
     def list_files(self) -> List[RemoteFile]:
@@ -94,7 +97,9 @@ class AbstractFileBasedStream(Stream):
         return self.read_records_from_slice(stream_slice)
 
     @abstractmethod
-    def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
+    def read_records_from_slice(
+        self, stream_slice: StreamSlice, stream_reader: Optional[AbstractFileBasedStreamReader]
+    ) -> Iterable[Mapping[str, Any]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
         """

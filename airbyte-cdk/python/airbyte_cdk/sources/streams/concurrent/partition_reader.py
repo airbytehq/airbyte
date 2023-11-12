@@ -30,6 +30,7 @@ class PartitionReader:
         :param partition: The partition to read data from
         :return: None
         """
+        # partition.stream_reader = stream_reader_pool[get_current_thread().id]
         try:
             for record in partition.read():
                 self._queue.put(record)
