@@ -107,7 +107,6 @@ class FileBasedSource(AbstractSource, ABC):
             parsed_config = self._get_parsed_config(config)
             self.stream_reader.config = parsed_config
             streams: List[Stream] = []
-            concurrency_level = _MAX_CONCURRENCY
             for stream_config in parsed_config.streams:
                 self._validate_input_schema(stream_config)
                 streams.append(
@@ -121,26 +120,25 @@ class FileBasedSource(AbstractSource, ABC):
                         validation_policy=self._validate_and_get_validation_policy(stream_config),
                     )
                 )
-            concurrent_cursors = [
-                self.cursor_cls(
-                    stream=s,
-                    stream_config=stream_config,
-                    message_repository=self.message_repository,
-                )
-                for s, stream_config in zip(streams, parsed_config.streams)
-            ]
-            streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
-            concurrent_streams = [
-                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, None, cursor)
-                for stream, cursor in zip(streams, concurrent_cursors)
-            ]
-            for stream, cursor in zip(streams, concurrent_cursors):
-                stream.cursor = cursor
-
-            return concurrent_streams
+            return self._make_concurrent_streams(streams, parsed_config)
 
         except ValidationError as exc:
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR) from exc
+
+    def _make_concurrent_streams(self, streams: List[Stream], config: AbstractFileBasedSpec):
+        concurrency_level = _MAX_CONCURRENCY
+        concurrent_streams = []
+        for stream, stream_config in zip(streams, config.streams):
+            cursor = self.cursor_cls(
+                stream=stream,
+                stream_config=stream_config,
+                message_repository=self.message_repository,
+            )
+            stream.cursor = cursor
+            concurrent_stream = StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, None, cursor)
+            concurrent_streams.append(concurrent_stream)
+        streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+        return concurrent_streams
 
     def read(
         self,
