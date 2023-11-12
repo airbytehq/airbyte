@@ -822,5 +822,12 @@
   "settings.support.submit.success.title": "Thank you!",
   "settings.support.submit.success.text": "Your message has been received. \nWe will get back to you as soon as we can.",
   "table.name.open.newTab": "Open in new tab",
-  "table.page.size.label": "Items per page"
+  "table.page.size.label": "Items per page",
+  "sync.successful": "Successful",
+  "sync.running": "Running",
+  "sync.failed": "Failed",
+  "sync.waiting": "Waiting",
+  "sync.disabled": "Disabled",
+  "connection.active": "Active",
+  "connection.inactive": "Inactive"
 }

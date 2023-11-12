@@ -1,9 +1,15 @@
+import { Box, IconButton, Tooltip } from "@mui/material";
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
+import { DisabledIcon } from "components/icons/DisabledIcon";
+import { FailedIcon } from "components/icons/FailedIcon";
+import { GreenIcon } from "components/icons/GreenIcon";
+import { GreenLoaderIcon } from "components/icons/GreenLoaderIcon";
+import { WaitingIcon } from "components/icons/WaitingIcon";
 import { LabeledSwitch } from "components/LabeledSwitch";
 import Table from "components/Table";
 
@@ -16,7 +22,6 @@ import NameCell from "./components/NameCell";
 import NewTabIconButton from "./components/NewTabIconButton";
 import { ITableDataItem, SortOrderEnum } from "./types";
 import { RoutePaths } from "../../pages/routePaths";
-
 const SwitchContent = styled.div`
   display: flex;
   align-items: center;
@@ -37,13 +42,13 @@ interface IProps {
   data: ITableDataItem[];
   entity: "source" | "destination" | "connection";
   onClickRow?: (data: ITableDataItem) => void;
-  onChangeStatus: (id: string, status: string | undefined) => void;
-  onSync: (id: string) => void;
+  onChangeStatus?: (id: string, status: string | undefined) => void;
+  onSync?: (id: string) => void;
   rowId?: string;
   statusLoading?: boolean;
   switchSize?: string;
 }
-
+//
 const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSync, rowId, statusLoading }) => {
   const { query, push } = useRouter();
   const allowSync = useFeature(FeatureItem.AllowSync);
@@ -72,28 +77,77 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
 
   const columns = React.useMemo(
     () => [
-      {
-        Header: "",
-        accessor: "lastSyncStatus",
-        customWidth: 1,
-        Cell: ({ cell }: CellProps<ITableDataItem>) => {
-          return (
-            <SwitchContent
-              onClick={(e) => {
-                onChangeStatus(cell.row.original.connectionId, cell.row.original.status);
-                e.preventDefault();
-              }}
-            >
-              <LabeledSwitch
-                swithSize="medium"
-                id={`${cell.row.original.connectionId}`}
-                checked={cell.row.original.status === "Active" ? true : false}
-                loading={rowId === cell.row.original.connectionId && statusLoading ? true : false}
-              />
-            </SwitchContent>
-          );
-        },
-      },
+      onChangeStatus
+        ? {
+            Header: "",
+            accessor: "lastSyncStatus",
+            customWidth: 1,
+            Cell: ({ cell }: CellProps<ITableDataItem>) => {
+              return (
+                <SwitchContent
+                  onClick={(e) => {
+                    onChangeStatus(cell.row.original.connectionId, cell.row.original.status);
+                    e.preventDefault();
+                  }}
+                >
+                  <LabeledSwitch
+                    swithSize="medium"
+                    id={`${cell.row.original.connectionId}`}
+                    checked={cell.row.original.status === "Active" ? true : false}
+                    loading={rowId === cell.row.original.connectionId && statusLoading ? true : false}
+                  />
+                </SwitchContent>
+              );
+            },
+          }
+        : {
+            Header: "Sync Status",
+            accessor: "latestSyncJobStatus",
+            Cell: ({ cell }: CellProps<ITableDataItem>) => {
+              return cell.row.original.latestSyncJobStatus === "succeeded" ? (
+                <Box pl={3}>
+                  {" "}
+                  <Tooltip title={<FormattedMessage id="sync.successful" />} placement="top">
+                    <IconButton>
+                      <GreenIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              ) : cell.row.original.latestSyncJobStatus === "running" ? (
+                <Box pl={3}>
+                  <Tooltip title={<FormattedMessage id="sync.running" />} placement="top">
+                    <IconButton>
+                      <GreenLoaderIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              ) : cell.row.original.latestSyncJobStatus === "failed" ? (
+                <Box pl={3}>
+                  <Tooltip title={<FormattedMessage id="sync.failed" />} placement="top">
+                    <IconButton>
+                      <FailedIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              ) : cell.row.original.latestSyncJobStatus === "waiting" ? (
+                <Box pl={3}>
+                  <Tooltip title={<FormattedMessage id="sync.waiting" />} placement="top">
+                    <IconButton>
+                      <WaitingIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              ) : cell.row.original.latestSyncJobStatus === "disabled" ? (
+                <Box pl={3}>
+                  <Tooltip title={<FormattedMessage id="sync.disabled" />} placement="top">
+                    <IconButton>
+                      <DisabledIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              ) : null;
+            },
+          },
       {
         Header: <FormattedMessage id="tables.name" />,
         headerHighlighted: true,
@@ -115,6 +169,13 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
       {
         Header: <FormattedMessage id="tables.status" />,
         accessor: "status",
+        Cell: ({ cell }: CellProps<ITableDataItem>) => {
+          return cell.row.original.status === "active" ? (
+            <FormattedMessage id="connection.active" />
+          ) : (
+            <FormattedMessage id="connection.inactive" />
+          );
+        },
       },
       {
         Header: (
@@ -122,7 +183,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
             <FormattedMessage id="tables.lastSyncAt" />
           </HeaderColumns>
         ),
-        accessor: "lastSync",
+        accessor: "latestSyncJobCreatedAt",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <LastSyncCell timeInSecond={cell.value} enabled={row.original.enabled} />
         ),

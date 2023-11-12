@@ -21,7 +21,7 @@ import { usePageConfig } from "hooks/services/usePageConfig";
 import useRouter from "hooks/useRouter";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
-import ConnectionsTable from "./components/ConnectionsTable";
+import NewConnectionsTable from "./components/NewConnectionsTable";
 import { RoutePaths } from "../../../routePaths";
 
 const BtnInnerContainer = styled.div`
@@ -89,7 +89,7 @@ const AllConnectionsPage: React.FC = () => {
   const [filters, setFilters] = useState<FilterConnectionRequestBody>(initialFiltersState);
 
   const { connections, total, pageSize } = useFilteredConnectionList(filters);
-
+  console.log(connections, "connections");
   const onSelectFilter = useCallback(
     (
       filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId" | "pageSize",
@@ -197,7 +197,8 @@ const AllConnectionsPage: React.FC = () => {
             </DDsContainer>
 
             <Separator height="10px" />
-            <ConnectionsTable connections={connections} onSetMessageId={onSetMessageId} />
+
+            <NewConnectionsTable connections={connections as any} onSetMessageId={onSetMessageId} />
             <Separator height="24px" />
             <Footer>
               <PageSize currentPageSize={currentPageSize} totalPage={total / pageSize} onChange={onChangePageSize} />
