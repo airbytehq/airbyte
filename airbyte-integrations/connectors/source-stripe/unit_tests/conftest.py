@@ -3,6 +3,7 @@
 #
 
 import os
+from pathlib import Path
 
 import pytest
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -39,10 +40,11 @@ def stream_by_name(config):
     from source_stripe.source import SourceStripe
 
     def mocker(stream_name, source_config=config):
-        source = SourceStripe()
+        source = SourceStripe(SourceStripe.read_catalog(str(Path(__file__).parent.parent / "integration_tests" / "configured_catalog.json")))
         streams = source.streams(source_config)
         for stream in streams:
             if stream.name == stream_name:
-                return stream
+                # as `configured_catalog.json` returns all streams with sync_mode full_refresh, the stream here will be a `StreamFacade`
+                return stream._legacy_stream  # pylint: disable=protected-access
 
     return mocker
