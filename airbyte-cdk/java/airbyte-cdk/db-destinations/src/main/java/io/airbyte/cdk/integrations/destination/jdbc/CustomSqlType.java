@@ -11,17 +11,17 @@ public record CustomSqlType(String name, String vendor, Integer vendorTypeNumber
 
   @Override
   public String getName() {
-    return null;
+    return name;
   }
 
   @Override
   public String getVendor() {
-    return null;
+    return vendor;
   }
 
   @Override
   public Integer getVendorTypeNumber() {
-    return null;
+    return vendorTypeNumber;
   }
 
 }

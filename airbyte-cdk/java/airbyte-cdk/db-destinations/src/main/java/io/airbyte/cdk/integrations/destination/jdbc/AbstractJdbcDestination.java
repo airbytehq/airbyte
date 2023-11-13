@@ -25,8 +25,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.NoOpDestinationV1V2Migrator;
-import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -214,25 +214,39 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
+  protected JdbcSqlGenerator getSqlGenerator(final DataSource dataSource) {
+    return new JdbcSqlGenerator(getNamingResolver(), dataSource);
+  }
+
+  /**
+   * "database" key at root of the config json, for any other variants in config, override this method.
+   * @param config
+   * @return
+   */
+  protected String getDatabaseName(final JsonNode config) {
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
+  }
+
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final DataSource dataSource = getDataSource(config);
     if (TypingAndDedupingFlag.isDestinationV2()) {
-      final JdbcSqlGenerator sqlGenerator = new JdbcSqlGenerator(getNamingResolver(), sqlOperations, dataSource);
+      final JdbcSqlGenerator sqlGenerator = getSqlGenerator(dataSource);
       final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
           .map(override -> new CatalogParser(sqlGenerator, override))
           .orElse(new CatalogParser(sqlGenerator))
           .parseCatalog(catalog);
       // TODO make a migrator
-      final var migrator = new NoOpDestinationV1V2Migrator<JdbcDatabase>();
-      final TyperDeduper typerDeduper = new DefaultTyperDeduper<JdbcDatabase>(sqlGenerator, new JdbcDestinationHandler(), parsedCatalog, migrator, 8);
+      final var migrator = new NoOpDestinationV1V2Migrator<TableDefinition>();
+      final DestinationHandler<TableDefinition> destinationHandler = new JdbcDestinationHandler(getDatabaseName(config), getDatabase(dataSource));
+      final TyperDeduper typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, 8);
       return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(dataSource), sqlOperations, namingResolver, config,
           catalog, typerDeduper);
     }
     return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(dataSource), sqlOperations, namingResolver, config,
-        catalog, new NoopTyperDeduper());
+        catalog);
   }
 
 }
