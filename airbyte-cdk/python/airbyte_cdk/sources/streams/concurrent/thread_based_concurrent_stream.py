@@ -154,7 +154,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         if len(futures) < self._max_concurrent_tasks:
             return
 
-        for index in range(len(futures)):
+        for index in reversed(range(len(futures))):
             future = futures[index]
             optional_exception = future.exception()
             if optional_exception:
