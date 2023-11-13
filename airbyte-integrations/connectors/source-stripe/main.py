@@ -10,13 +10,14 @@ from typing import List
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
+
 from source_stripe import SourceStripe
 
 
 def _get_source(args: List[str]):
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
     try:
-        return SourceStripe(SourceStripe.read_catalog(catalog_path))
+        return SourceStripe(SourceStripe.read_catalog(catalog_path) if catalog_path else None)
     except Exception as error:
         print(
             AirbyteMessage(

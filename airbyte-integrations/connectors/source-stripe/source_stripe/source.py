@@ -3,7 +3,7 @@
 #
 
 import os
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Tuple, Optional
 
 import pendulum
 import stripe
@@ -39,11 +39,16 @@ USE_CACHE = not _CACHE_DISABLED
 
 
 class SourceStripe(AbstractSource):
-    def __init__(self, catalog: ConfiguredAirbyteCatalog, **kwargs):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], **kwargs):
         super().__init__(**kwargs)
-        self._streams_configured_as_full_refresh = {
-            configured_stream.stream.name for configured_stream in catalog.streams if configured_stream.sync_mode == SyncMode.full_refresh
-        }
+        if catalog:
+            self._streams_configured_as_full_refresh = {
+                configured_stream.stream.name
+                for configured_stream in catalog.streams if configured_stream.sync_mode == SyncMode.full_refresh
+            }
+        else:
+            # things will NOT be executed concurrently
+            self._streams_configured_as_full_refresh = set()
 
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
 
