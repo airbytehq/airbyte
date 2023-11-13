@@ -141,7 +141,7 @@ class SourceStripe(AbstractSource):
         subscription_items = StripeLazySubStream(
             name="subscription_items",
             path="subscription_items",
-            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice['parent']['id']},
+            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice["parent"]["id"]},
             parent=subscriptions,
             use_cache=USE_CACHE,
             sub_items_attr="items",
