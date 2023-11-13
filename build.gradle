@@ -19,7 +19,6 @@ plugins {
     id 'com.github.spotbugs' version '5.0.13'
     id 'version-catalog'
     id 'ru.vyarus.use-python'
-    id("com.dorongold.task-tree") version "2.1.1"
 }
 
 
@@ -259,9 +258,7 @@ allprojects {
             }
         }
     }
-    tasks.matching { it.name =~ /spotless.*/ }.configureEach {
-        //dependsOn tasks.matching { it.name == 'generate' }
-    }
+
     tasks.matching { it.name =~ /spotlessStyling.*/ }.configureEach {
         dependsOn rootProject.tasks.named('nodeSetup')
         dependsOn rootProject.tasks.named('npmSetup')
@@ -343,7 +340,6 @@ allprojects {
     }
 
     tasks.register('format') {
-        //dependsOn tasks.matching { it.name == 'generate' }
         dependsOn tasks.matching { it.name =~ /spotless.*Apply/ }
         dependsOn tasks.matching { it.name =~ /.*PythonFormat/ }
     }
