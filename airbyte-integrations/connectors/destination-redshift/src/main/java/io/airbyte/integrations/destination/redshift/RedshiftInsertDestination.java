@@ -15,8 +15,10 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
 import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
@@ -80,4 +82,8 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
     return Jsons.jsonNode(configBuilder.build());
   }
 
+  @Override
+  protected JdbcSqlGenerator getSqlGenerator(DataSource dataSource) {
+    return new RedshiftSqlGenerator(super.getNamingResolver(), dataSource);
+  }
 }

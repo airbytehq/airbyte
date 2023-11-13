@@ -4,10 +4,9 @@
 
 package io.airbyte.cdk.integrations.destination.jdbc.typing_deduping;
 
-import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
-import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.TypeInfoRecordSet;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
@@ -22,6 +21,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeQue
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.sql.SQLType;
@@ -36,21 +36,18 @@ import java.util.Optional;
 import javax.sql.DataSource;
 import lombok.SneakyThrows;
 import org.apache.commons.text.StringSubstitutor;
+import org.jooq.impl.DSL;
 
-public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedupeQueryBuilder {
+public class JdbcSqlGenerator implements SqlGenerator<TableDefinition> {
 
   private final NamingConventionTransformer namingTransformer;
 
-  private final SqlOperations sqlOperations;
-
-  private final DataSource dataSourceSupplier;
+  private final DataSource dataSource;
 
   public JdbcSqlGenerator(final NamingConventionTransformer namingTransformer,
-                          final SqlOperations sqlOperations,
-                          final DataSource dataSourceSupplier) {
+                          final DataSource datasource) {
     this.namingTransformer = namingTransformer;
-    this.sqlOperations = sqlOperations;
-    this.dataSourceSupplier = dataSourceSupplier;
+    this.dataSource = datasource;
   }
 
   @Override
@@ -135,11 +132,13 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
   @SneakyThrows
   @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
-    final Connection connection = dataSourceSupplier.getConnection();
+    final Connection connection = dataSource.getConnection();
+
     final Statement statement = connection.createStatement();
     final SQLType structType = preferredStructType(TypeInfoRecordSet.getTypeInfoList(connection.getMetaData()));
 
     final String columnDeclarations = columnsAndTypes(statement, stream, structType);
+
     return new StringSubstitutor(Map.of(
         "final_namespace", statement.enquoteIdentifier(stream.id().finalNamespace(), false),
         "final_table_id", statement.enquoteIdentifier(stream.id().finalTableId("", suffix), false),
@@ -159,15 +158,14 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
 
   @SneakyThrows
   @Override
-  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final JdbcDatabase existingTable) throws TableNotMigratedException {
-    // existingTable.getMetaData().getColumns()
+  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) throws TableNotMigratedException {
     return false;
   }
 
   @SneakyThrows
   @Override
   public String clearLoadedAt(final StreamId streamId) {
-    final Connection connection = dataSourceSupplier.getConnection();
+    final Connection connection = dataSource.getConnection();
     final Statement statement = connection.createStatement();
     return new StringSubstitutor(Map.of("raw_table_id", statement.enquoteIdentifier(streamId.rawTableId(""), false)))
         .replace("""
@@ -180,7 +178,7 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
                             final String finalSuffix,
                             final Optional<Instant> minRawTimestamp,
                             final boolean useExpensiveSaferCasting) {
-    return updateTableQuery(stream, finalSuffix);
+    return "";
   }
 
   @Override
@@ -190,31 +188,6 @@ public class JdbcSqlGenerator implements SqlGenerator<JdbcDatabase>, TypeAndDedu
 
   @Override
   public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
-    return null;
-  }
-
-  @Override
-  public String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
-    return null;
-  }
-
-  @Override
-  public String dedupRawTable(final StreamId id, final String finalSuffix) {
-    return null;
-  }
-
-  @Override
-  public String dedupFinalTable(final StreamId id, final String finalSuffix, final List<ColumnId> primaryKey, final ColumnId cursor) {
-    return null;
-  }
-
-  @Override
-  public String commitRawTable(final StreamId id) {
-    return null;
-  }
-
-  @Override
-  public String cdcDeletes(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
     return null;
   }
 

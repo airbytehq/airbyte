@@ -22,6 +22,7 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartF
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.cdk.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -60,13 +61,19 @@ public class JdbcBufferedConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcBufferedConsumerFactory.class);
 
+  /**
+   *
+   * Deprecated in favor of {@link JdbcBufferedConsumerFactory#create(Consumer, JdbcDatabase, SqlOperations, NamingConventionTransformer, JsonNode, ConfiguredAirbyteCatalog, TyperDeduper)}
+   */
+  @Deprecated
   public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                               final JdbcDatabase database,
                                               final SqlOperations sqlOperations,
                                               final NamingConventionTransformer namingResolver,
                                               final JsonNode config,
                                               final ConfiguredAirbyteCatalog catalog) {
-    return create(outputRecordCollector, database, sqlOperations, namingResolver, config, catalog, null);
+    // Preserving backward compatibility although only Vertica destination was using this factory method so far.
+    return create(outputRecordCollector, database, sqlOperations, namingResolver, config, catalog, new NoopTyperDeduper());
   }
 
   public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
