@@ -3,8 +3,9 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional
 
+import backoff
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
@@ -12,75 +13,13 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v11.services.services.google_ads_service.pagers import SearchPager
+from google.ads.googleads.v13.services.services.google_ads_service.pagers import SearchPager
+from google.ads.googleads.v13.services.types.google_ads_service import SearchGoogleAdsResponse
+from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests
 
-from .google_ads import GoogleAds
+from .google_ads import GoogleAds, logger
 from .models import CustomerModel
-from .utils import ExpiredPageTokenError, get_resource_name, traced_exception
-
-
-def parse_dates(stream_slice):
-    start_date = pendulum.parse(stream_slice["start_date"])
-    end_date = pendulum.parse(stream_slice["end_date"])
-    return start_date, end_date
-
-
-def chunk_date_range(
-    start_date: str,
-    end_date: str = None,
-    conversion_window: int = 0,
-    days_of_data_storage: int = None,
-    time_zone=None,
-    time_format="YYYY-MM-DD",
-    slice_duration: pendulum.Duration = pendulum.duration(days=14),
-    slice_step: pendulum.Duration = pendulum.duration(days=1),
-) -> Iterable[Optional[MutableMapping[str, any]]]:
-    """
-    Splits a date range into smaller chunks based on the provided parameters.
-
-    Args:
-        start_date (str): The beginning date of the range.
-        end_date (str, optional): The ending date of the range. Defaults to today's date.
-        conversion_window (int): Number of days to subtract from the start date. Defaults to 0.
-        days_of_data_storage (int, optional): Maximum age of data that can be retrieved. Used to adjust the start date.
-        time_zone: Time zone to be used for date parsing and today's date calculation. If not provided, the default time zone is used.
-        time_format (str): Format to be used when returning dates. Defaults to 'YYYY-MM-DD'.
-        slice_duration (pendulum.Duration): Duration of each chunk. Defaults to 14 days.
-        slice_step (pendulum.Duration): Step size to move to the next chunk. Defaults to 1 day.
-
-    Returns:
-        Iterable[Optional[MutableMapping[str, any]]]: An iterable of dictionaries containing start and end dates for each chunk.
-        If the adjusted start date is greater than the end date, returns a list with a None value.
-
-    Notes:
-        - If the difference between `end_date` and `start_date` is large (e.g., >= 1 month), processing all records might take a long time.
-        - Tokens for fetching subsequent pages of data might expire after 2 hours, leading to potential errors.
-        - The function adjusts the start date based on `days_of_data_storage` and `conversion_window` to adhere to certain data retrieval policies, such as Google Ads' policy of only retrieving data not older than a certain number of days.
-        - The method returns `start_date` and `end_date` with a difference typically spanning 15 days to avoid token expiration issues.
-    """
-    start_date = pendulum.parse(start_date, tz=time_zone)
-    today = pendulum.today(tz=time_zone)
-    end_date = pendulum.parse(end_date, tz=time_zone) if end_date else today
-
-    # For some metrics we can only get data not older than N days, it is Google Ads policy
-    if days_of_data_storage:
-        start_date = max(start_date, pendulum.now(tz=time_zone).subtract(days=days_of_data_storage - conversion_window))
-
-    # As in to return some state when state in abnormal
-    if start_date > end_date:
-        return [None]
-
-    # applying conversion window
-    start_date = start_date.subtract(days=conversion_window)
-    slice_start = start_date
-
-    while slice_start <= end_date:
-        slice_end = min(end_date, slice_start + slice_duration)
-        yield {
-            "start_date": slice_start.format(time_format),
-            "end_date": slice_end.format(time_format),
-        }
-        slice_start = slice_end + slice_step
+from .utils import ExpiredPageTokenError, chunk_date_range, generator_backoff, get_resource_name, parse_dates, traced_exception
 
 
 class GoogleAdsStream(Stream, ABC):
@@ -111,10 +50,26 @@ class GoogleAdsStream(Stream, ABC):
         customer_id = stream_slice["customer_id"]
         try:
             response_records = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=customer_id)
-            for response in response_records:
-                yield from self.parse_response(response, stream_slice)
+
+            yield from self.parse_records_with_backoff(response_records, stream_slice)
         except GoogleAdsException as exception:
             traced_exception(exception, customer_id, self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
+
+    @generator_backoff(
+        wait_gen=backoff.expo,
+        exception=(InternalServerError, ServerError, ServiceUnavailable, TooManyRequests),
+        max_tries=5,
+        max_time=600,
+        on_backoff=lambda details: logger.info(
+            f"Caught retryable error {details['exception']} after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        ),
+        factor=5,
+    )
+    def parse_records_with_backoff(
+        self, response_records: Iterator[SearchGoogleAdsResponse], stream_slice: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        for response in response_records:
+            yield from self.parse_response(response, stream_slice)
 
 
 class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):

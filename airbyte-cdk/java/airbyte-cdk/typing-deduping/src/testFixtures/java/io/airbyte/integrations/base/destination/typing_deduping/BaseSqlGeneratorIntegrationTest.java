@@ -382,8 +382,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             }
             """)));
 
-    final String sql = generator.updateTable(stream, "", Optional.empty());
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, stream, Optional.empty(), "");
 
     final List<JsonNode> rawRecords = dumpRawTableRecords(streamId);
     final List<JsonNode> finalRecords = dumpFinalTableRecords(streamId, "");
@@ -411,8 +410,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
 
-    final String sql = generator.updateTable(incrementalDedupStream, "_foo", Optional.empty());
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, Optional.empty(), "_foo");
 
     verifyRecords(
         "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
@@ -462,8 +460,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     // Execute T+D to set loaded_at on the records
     createFinalTable(incrementalAppendStream, "");
-    final String sql = generator.updateTable(incrementalAppendStream, "", Optional.empty());
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalAppendStream, Optional.empty(), "");
 
     assertEquals(
         destinationHandler.getMinTimestampForSync(streamId).get(),
@@ -520,8 +517,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(streamId);
     assertTrue(minTimestampForSync.isPresent(), "After writing some raw records, the min timestamp should be present.");
 
-    final String sql = generator.updateTable(incrementalDedupStream, "", minTimestampForSync);
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, minTimestampForSync, "");
 
     verifyRecords(
         "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
@@ -545,8 +541,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
 
-    final String sql = generator.updateTable(incrementalDedupStream, "", minTimestampForSync);
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, minTimestampForSync, "");
 
     verifyRecords(
         "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
@@ -590,8 +585,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
                 }
                 """)));
 
-    final String sql = generator.updateTable(incrementalAppendStream, "", Optional.of(Instant.parse("2023-01-01T00:00:00Z")));
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalAppendStream,
+        Optional.of(Instant.parse("2023-01-01T00:00:00Z")), "");
 
     final List<JsonNode> rawRecords = dumpRawTableRecords(streamId);
     final List<JsonNode> finalRecords = dumpFinalTableRecords(streamId, "");
@@ -615,8 +610,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     insertRawTableRecords(
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/json_types_in_string_inputrecords.jsonl"));
-    final String sql = generator.updateTable(incrementalDedupStream, "_foo", Optional.empty());
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, Optional.empty(), "_foo");
     verifyRecords(
         "sqlgenerator/json_types_in_string_expectedrecords_raw.jsonl",
         dumpRawTableRecords(streamId),
@@ -632,8 +626,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/timestampformats_inputrecords.jsonl"));
 
-    final String sql = generator.updateTable(incrementalAppendStream, "", Optional.empty());
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalAppendStream, Optional.empty(), "");
 
     DIFFER.diffFinalTableRecords(
         BaseTypingDedupingTest.readRecords("sqlgenerator/timestampformats_expectedrecords_final.jsonl"),
@@ -648,8 +641,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords.jsonl"));
 
-    final String sql = generator.updateTable(incrementalDedupStream, "", Optional.empty());
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, Optional.empty(), "");
 
     verifyRecords(
         "sqlgenerator/incrementaldedup_expectedrecords_raw.jsonl",
@@ -701,8 +693,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
                 }
                 """)));
 
-    final String sql = generator.updateTable(streamConfig, "", Optional.empty());
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, streamConfig, Optional.empty(), "");
 
     final List<JsonNode> actualRawRecords = dumpRawTableRecords(streamId);
     final List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamId, "");
@@ -722,8 +713,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords.jsonl"));
 
-    final String sql = generator.updateTable(incrementalAppendStream, "", Optional.empty());
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalAppendStream, Optional.empty(), "");
 
     verifyRecordCounts(
         3,
@@ -779,8 +769,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             }
             """)));
 
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", Optional.empty());
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, cdcIncrementalDedupStream, Optional.empty(), "");
 
     verifyRecordCounts(
         1,
@@ -813,10 +802,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             }
             """)));
 
-    final String sql = generator.updateTable(cdcIncrementalAppendStream, "", Optional.empty());
     // Execute T+D twice
-    destinationHandler.execute(sql);
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, cdcIncrementalAppendStream, Optional.empty(), "");
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, cdcIncrementalAppendStream, Optional.empty(), "");
 
     verifyRecordCounts(
         1,
@@ -838,8 +826,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "",
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcupdate_inputrecords_final.jsonl"));
 
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", Optional.empty());
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, cdcIncrementalDedupStream, Optional.empty(), "");
 
     verifyRecordCounts(
         11,
@@ -869,9 +856,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_updateafterdelete_inputrecords.jsonl"));
 
-    final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(cdcIncrementalAppendStream.id());
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", minTimestampForSync);
-    destinationHandler.execute(sql);
+    final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(cdcIncrementalDedupStream.id());
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, cdcIncrementalDedupStream, minTimestampForSync, "");
 
     verifyRecordCounts(
         2,
@@ -908,9 +894,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_insertafterdelete_inputrecords_final.jsonl"));
 
     final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(cdcIncrementalAppendStream.id());
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", minTimestampForSync);
-    destinationHandler.execute(sql);
-
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, cdcIncrementalDedupStream, minTimestampForSync, "");
     verifyRecordCounts(
         2,
         dumpRawTableRecords(streamId),
@@ -957,8 +941,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             }
             """)));
 
-    final String sql = generator.softReset(incrementalAppendStream);
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeSoftReset(generator, destinationHandler, incrementalAppendStream);
 
     final List<JsonNode> actualRawRecords = dumpRawTableRecords(streamId);
     final List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamId, "");
@@ -1001,8 +984,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     final String createTable = generator.createTable(stream, "", false);
     destinationHandler.execute(createTable);
-    final String updateTable = generator.updateTable(stream, "", Optional.empty());
-    destinationHandler.execute(updateTable);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, stream, Optional.empty(), "");
 
     verifyRecords(
         "sqlgenerator/weirdcolumnnames_expectedrecords_raw.jsonl",
@@ -1050,9 +1032,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
       final String createTable = generator.createTable(stream, "", false);
       destinationHandler.execute(createTable);
-      final String updateTable = generator.updateTable(stream, "", Optional.empty());
       // Not verifying anything about the data; let's just make sure we don't crash.
-      destinationHandler.execute(updateTable);
+      TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, stream, Optional.empty(), "");
     } finally {
       teardownNamespace(modifiedStreamId.finalNamespace());
     }
@@ -1085,8 +1066,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     final String createTable = generator.createTable(stream, "", false);
     destinationHandler.execute(createTable);
-    final String updateTable = generator.updateTable(stream, "", Optional.empty());
-    destinationHandler.execute(updateTable);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, stream, Optional.empty(), "");
 
     DIFFER.diffFinalTableRecords(
         BaseTypingDedupingTest.readRecords("sqlgenerator/reservedkeywords_expectedrecords_final.jsonl"),
@@ -1160,8 +1140,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     final String createTable = generator.createTable(stream, "", false);
     destinationHandler.execute(createTable);
-    final String updateTable = generator.updateTable(stream, "", Optional.empty());
-    destinationHandler.execute(updateTable);
+    TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, stream, Optional.empty(), "");
 
     verifyRecords(
         "sqlgenerator/nocolumns_expectedrecords_raw.jsonl",
@@ -1196,12 +1175,11 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     // Create a soft reset table. Use incremental append mode, in case the destination connector uses
     // different
     // indexing/partitioning/etc.
-    final String createOldTempTable = generator.createTable(incrementalAppendStream, SqlGenerator.SOFT_RESET_SUFFIX, false);
+    final String createOldTempTable = generator.createTable(incrementalAppendStream, TypeAndDedupeTransaction.SOFT_RESET_SUFFIX, false);
     destinationHandler.execute(createOldTempTable);
 
     // Execute a soft reset. This should not crash.
-    final String softReset = generator.softReset(incrementalDedupStream);
-    destinationHandler.execute(softReset);
+    TypeAndDedupeTransaction.executeSoftReset(generator, destinationHandler, incrementalAppendStream);
   }
 
   protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {

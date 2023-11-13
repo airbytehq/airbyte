@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping, Optional
 from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
+from airbyte_cdk.utils import is_cloud_environment
 from source_s3.source import SourceS3Spec
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 
@@ -50,6 +51,15 @@ class SourceS3(FileBasedSource):
                 + s4_spec["properties"][v3_property_key]["description"]
             )
             self._clean_required_fields(s4_spec["properties"][v3_property_key])
+
+        if is_cloud_environment():
+            s4_spec["properties"]["endpoint"].update(
+                {
+                    "description": "Endpoint to an S3 compatible service. Leave empty to use AWS. "
+                    "The custom endpoint must be secure, but the 'https' prefix is not required.",
+                    "pattern": "^(?!http://).*$",  # ignore-https-check
+                }
+            )
 
         return ConnectorSpecification(
             documentationUrl=self.spec_class.documentation_url(),

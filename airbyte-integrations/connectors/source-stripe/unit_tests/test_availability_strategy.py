@@ -87,13 +87,13 @@ def test_traverse_over_substreams_failure(mocker):
     assert id(check_availability_mock.call_args_list[1].args[0]) == id(child_1)
 
 
-def test_substream_availability(mocker, invoice_line_items):
+def test_substream_availability(mocker, stream_by_name):
     check_availability_mock = mocker.MagicMock()
     check_availability_mock.return_value = (True, None)
     mocker.patch(
         "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability", check_availability_mock
     )
-    stream = invoice_line_items()
+    stream = stream_by_name("invoice_line_items")
     is_available, reason = stream.availability_strategy.check_availability(stream, mocker.Mock(), mocker.Mock())
     assert is_available and reason is None
 
@@ -102,13 +102,13 @@ def test_substream_availability(mocker, invoice_line_items):
     assert isinstance(check_availability_mock.call_args_list[1].args[0], StripeLazySubStream)
 
 
-def test_substream_availability_no_parent(mocker, invoice_line_items):
+def test_substream_availability_no_parent(mocker, stream_by_name):
     check_availability_mock = mocker.MagicMock()
     check_availability_mock.return_value = (True, None)
     mocker.patch(
         "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability", check_availability_mock
     )
-    stream = invoice_line_items()
+    stream = stream_by_name("invoice_line_items")
     stream.parent = None
 
     stream.availability_strategy.check_availability(stream, mocker.Mock(), mocker.Mock())
@@ -117,8 +117,8 @@ def test_substream_availability_no_parent(mocker, invoice_line_items):
     assert isinstance(check_availability_mock.call_args_list[0].args[0], StripeLazySubStream)
 
 
-def test_403_error_handling(invoices, requests_mock):
-    stream = invoices()
+def test_403_error_handling(stream_by_name, requests_mock):
+    stream = stream_by_name("invoices")
     logger = logging.getLogger("airbyte")
     for error_code in STRIPE_ERROR_CODES:
         requests_mock.get(f"{stream.url_base}{stream.path()}", status_code=403, json={"error": {"code": f"{error_code}"}})
