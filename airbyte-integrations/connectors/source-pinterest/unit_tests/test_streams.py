@@ -22,9 +22,9 @@ from source_pinterest.streams import (
     BoardSections,
     CampaignAnalytics,
     Campaigns,
-    CatalogFeeds,
-    CatalogProductGroups,
     Catalogs,
+    CatalogsFeeds,
+    CatalogsProductGroups,
     ConversionTags,
     CustomerLists,
     Keywords,
@@ -73,19 +73,19 @@ def test_parse_response(patch_base_class, test_response, test_current_stream_sta
 
 def test_parse_response_with_sensitive_data(patch_base_class):
     """Test that sensitive data is removed"""
-    stream = CatalogFeeds(config=MagicMock())
+    stream = CatalogsFeeds(config=MagicMock())
     response = MagicMock()
     response.json.return_value = {
         "items": [
             {
-                "id": "CatalogFeeds1",
+                "id": "CatalogsFeeds1",
                 "credentials": {'password': "bla"}
             }
         ],
         "bookmark": "string"
     }
     actual_response = list(stream.parse_response(response=response, stream_state=None))
-    assert actual_response == [{"id": "CatalogFeeds1"}]
+    assert actual_response == [{"id": "CatalogsFeeds1"}]
 
 
 def test_request_headers(patch_base_class):
@@ -205,8 +205,8 @@ def test_backoff_on_rate_limit_error(requests_mock, test_response, status_code, 
             "ad_accounts/234/ads/analytics",
         ),
         (Catalogs(config=MagicMock()), None, "catalogs"),
-        (CatalogFeeds(config=MagicMock()), None, "catalogs/feeds"),
-        (CatalogProductGroups(config=MagicMock()), None, "catalogs/product_groups"),
+        (CatalogsFeeds(config=MagicMock()), None, "catalogs/feeds"),
+        (CatalogsProductGroups(config=MagicMock()), None, "catalogs/product_groups"),
         (
             Keywords(parent=None, config=MagicMock()),
             {"parent": {"id": "234", "ad_account_id": "AD_ACCOUNT_1"}},

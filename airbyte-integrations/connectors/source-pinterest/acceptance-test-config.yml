@@ -23,24 +23,24 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         empty_streams:
-          - bypass_reason: The stream could return 0 records, because of low rate-limits
-            name: ad_account_analytics
-          - bypass_reason: The stream could return 0 records, because of low rate-limits
-            name: ad_analytics
-          - bypass_reason: The stream could return 0 records, because of low rate-limits
-            name: ad_group_analytics
-          - bypass_reason: The stream could return 0 records, because of low rate-limits
-            name: board_section_pins
-          - bypass_reason: The stream could return 0 records, because of low rate-limits
-            name: board_sections
-          - bypass_reason: The stream could return 0 records, because of low rate-limits
-            name: campaign_analytics
-          - bypass_reason: The stream could return 0 records, because of low rate-limits
-            name: user_account_analytics
-          - bypass_reason: Not possible to add data
-            name: conversion_tags
-          - bypass_reason: Not possible to add data
-            name: customer_lists
+          - name: conversion_tags
+            bypass_reason: Not possible to add data
+          - name: customer_lists
+            bypass_reason: Not possible to add data
+          - name: catalogs
+            bypass_reason: Not possible to add data
+          - name: catalogs_feeds
+            bypass_reason: Not possible to add data
+          - name: catalogs_product_groups
+            bypass_reason: Not possible to add data
+          - name: product_group_report
+            bypass_reason: Not possible to add data
+          - name: product_group_targeting_report
+            bypass_reason: Not possible to add data
+          - name: product_item_report
+            bypass_reason: Not possible to add data
+          - name: keyword_report
+            bypass_reason: Not possible to add data
         timeout_seconds: 1200
         expect_records:
           path: "integration_tests/expected_records.jsonl"
@@ -56,6 +56,13 @@ acceptance_tests:
               bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
             - name: "media"
               bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
+          board_section_pins:
+            - name: "links"
+              bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
+            - name: "link"
+              bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
+            - name: "media"
+              bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
           ads:
             - name: "updated_time"
               bypass_reason: "can be updated"
@@ -65,6 +72,13 @@ acceptance_tests:
           campaigns:
             - name: "updated_time"
               bypass_reason: "can be updated"
+          audiences:
+            - name: "size"
+              bypass_reason: "can be changed"
+            - name: "updated_timestamp"
+              bypass_reason: "can be changed"
+            - name: "created_timestamp"
+              bypass_reason: "can be changed"
   incremental:
     tests:
       - config_path: secrets/config.json

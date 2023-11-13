@@ -125,7 +125,7 @@ class Catalogs(PinterestStream):
         return "catalogs"
 
 
-class CatalogFeeds(PinterestStream):
+class CatalogsFeeds(PinterestStream):
     """Docs: https://developers.pinterest.com/docs/api/v5/#operation/feeds/list"""
 
     use_cache = True
@@ -140,7 +140,7 @@ class CatalogFeeds(PinterestStream):
             yield record
 
 
-class CatalogProductGroupsAvailabilityStrategy(HttpAvailabilityStrategy):
+class CatalogsProductGroupsAvailabilityStrategy(HttpAvailabilityStrategy):
     def reasons_for_unavailable_status_codes(
         self, stream: Stream, logger: logging.Logger, source: Optional[Source], error: HTTPError
     ) -> Dict[int, str]:
@@ -150,7 +150,7 @@ class CatalogProductGroupsAvailabilityStrategy(HttpAvailabilityStrategy):
         return reasons_for_codes
 
 
-class CatalogProductGroups(PinterestStream):
+class CatalogsProductGroups(PinterestStream):
     """Docs: https://developers.pinterest.com/docs/api/v5/#operation/catalogs_product_groups/list"""
 
     use_cache = True
@@ -160,7 +160,7 @@ class CatalogProductGroups(PinterestStream):
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return CatalogProductGroupsAvailabilityStrategy()
+        return CatalogsProductGroupsAvailabilityStrategy()
 
 
 class AdAccounts(PinterestStream):
