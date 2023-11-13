@@ -113,7 +113,7 @@ class ConcurrentSource(AbstractSource, ABC):
                 airbyte_message_or_record_or_exception,
                 concurrent_stream_processor,
             )
-            if concurrent_stream_processor.is_done() and self._threadpool.is_done() and queue.empty():
+            if concurrent_stream_processor.is_done() and queue.empty():
                 # all partitions were generated and processed. we're done here
                 break
 
