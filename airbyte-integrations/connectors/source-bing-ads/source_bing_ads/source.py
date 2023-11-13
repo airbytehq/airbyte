@@ -74,7 +74,6 @@ from source_bing_ads.streams import (  # noqa: F401
     UserLocationPerformanceReportMonthly,
     UserLocationPerformanceReportWeekly,
 )
-from suds import TypeNotFound, WebFault
 
 
 class SourceBingAds(AbstractSource):
@@ -101,28 +100,11 @@ class SourceBingAds(AbstractSource):
     def validate_custom_reposts(self, config: Mapping[str, Any], client: Client):
         custom_reports = self.get_custom_reports(config, client)
         for custom_report in custom_reports:
-            try:
-                for account in Accounts(client, config).read_records(SyncMode.full_refresh):
-                    list(
-                        custom_report.read_records(
-                            sync_mode=SyncMode.full_refresh,
-                            stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]},
-                        )
-                    )
-            except TypeNotFound:
+            is_valid, reason = custom_report.validate_report_configuration()
+            if not is_valid:
                 raise AirbyteTracedException(
-                    message=f"Config validation error: You have provided invalid Reporting Object: {custom_report.report_name}. "
-                    f"Please verify it in Bing Ads Docs"
-                    f" https://learn.microsoft.com/en-us/advertising/reporting-service/reporting-service-reference?view=bingads-13",
-                    internal_message="invalid reporting object was provided.",
-                    failure_type=FailureType.config_error,
-                )
-            except WebFault as e:
-                raise AirbyteTracedException(
-                    message=f"Config validation error: You have provided invalid Reporting Columns: {custom_report.custom_report_columns}. "
-                    f"Make sure that you provided right columns for this report, not all columns can be added/removed."
-                    f"Please, verify it",
-                    internal_message=f"invalid reporting columns were provided. {e}",
+                    message=f"Config validation error: {custom_report.name}: {reason}",
+                    internal_message=f"{custom_report.name}: {reason}",
                     failure_type=FailureType.config_error,
                 )
 

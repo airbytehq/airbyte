@@ -13,7 +13,8 @@ from source_bing_ads.reports import ReportsMixin
 from source_bing_ads.source import SourceBingAds
 from source_bing_ads.streams import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, AppInstallAds, BingAdsStream, Campaigns
 from suds import TypeNotFound, WebFault
-
+from unittest.mock import MagicMock
+from bingads.service_info import SERVICE_INFO_DICT_V13
 
 @pytest.fixture(name="config")
 def config_fixture():
@@ -105,49 +106,49 @@ def test_source_check_connection_failed_invalid_creds(config, logger_mock):
 
 @patch.object(source_bing_ads.source, "Client")
 def test_validate_custom_reposts(mocked_client, config_with_custom_reports, logger_mock):
-    with (
-        patch.object(
-            Accounts,
-            "read_records",
-            return_value=iter([{"Id": 180519267, "ParentCustomerId": 78798732}, {"Id": 180278106, "ParentCustomerId": 82372972}]),
-        )
-    ):
-        assert SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client) is None
-
+    reporting_service_mock = MagicMock()
+    reporting_service_mock._get_service_info_dict.return_value = SERVICE_INFO_DICT_V13
+    mocked_client.get_service.return_value = reporting_service_mock
+    mocked_client.environment = "production"
+    res = SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
+    assert res is None
 
 @patch.object(source_bing_ads.source, "Client")
 def test_validate_custom_reposts_failed_invalid_report_object(mocked_client, config_with_custom_reports, logger_mock):
-    with patch.object(
-        Accounts,
-        "read_records",
-        return_value=iter([{"Id": 180519267, "ParentCustomerId": 78798732}, {"Id": 180278106, "ParentCustomerId": 82372972}]),
-    ):
-        with patch.object(ReportsMixin, "get_report_request", side_effect=TypeNotFound(name="NonExistingReportingObject")):
-            with pytest.raises(AirbyteTracedException) as e:
-                SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
+    reporting_service_mock = MagicMock()
+    reporting_service_mock._get_service_info_dict.return_value = SERVICE_INFO_DICT_V13
+    mocked_client.get_service.return_value = reporting_service_mock
+    mocked_client.environment = "production"
+    config_with_custom_reports["custom_reports"][0]["reporting_object"] = "NonExistingReportRequest"
 
-    assert e.value.internal_message == "invalid reporting object was provided."
+    with pytest.raises(AirbyteTracedException) as e:
+        SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
+    assert e.value.internal_message == ("my test custom report: NonExistingReport: Reporting Data Object that"
+                                        " you provided doesn't exist. Please ensure it is correct in Bing Ads Docs.")
     assert (
-        "Config validation error: You have provided invalid Reporting Object: DSAAutoTargetPerformanceReport. "
-        "Please verify it in Bing Ads Docs"
+        "Config validation error: my test custom report: NonExistingReport: "
+        "Reporting Data Object that you provided doesn't exist. Please ensure it is correct in Bing Ads Docs."
     ) in e.value.message
 
 
 @patch.object(source_bing_ads.source, "Client")
 def test_validate_custom_reposts_failed_invalid_report_columns(mocked_client, config_with_custom_reports, logger_mock):
-    with patch.object(
-        Accounts,
-        "read_records",
-        return_value=iter([{"Id": 180519267, "ParentCustomerId": 78798732}, {"Id": 180278106, "ParentCustomerId": 82372972}]),
-    ):
-        with patch.object(
-            BingAdsStream, "read_records", side_effect=WebFault(fault="Invalid client data.", document="Invalid cleint data.")
-        ):
-            with pytest.raises(AirbyteTracedException) as e:
-                SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
+    reporting_service_mock = MagicMock()
+    reporting_service_mock._get_service_info_dict.return_value = SERVICE_INFO_DICT_V13
+    mocked_client.get_service.return_value = reporting_service_mock
+    mocked_client.environment = "production"
+    config_with_custom_reports["custom_reports"][0]["report_columns"] = ["TimePeriod", "NonExistingColumn", "ConversionRate"]
 
-    assert e.value.internal_message == "invalid reporting columns were provided. "
-    assert ("Config validation error: You have provided invalid Reporting Columns: ['AbsoluteTopImpressionRatePercent'") in e.value.message
+    with pytest.raises(AirbyteTracedException) as e:
+        SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
+    assert e.value.internal_message == ("my test custom report: Reporting Columns are invalid. "
+                                        "Columns that you provided don't belong to Reporting Data Object Columns:"
+                                        " ['TimePeriod', 'NonExistingColumn', 'ConversionRate']. "
+                                        "Please ensure it is correct in Bing Ads Docs.")
+    assert ('Config validation error: my test custom report: Reporting Columns are '
+            "invalid. Columns that you provided don't belong to Reporting Data Object "
+            "Columns: ['TimePeriod', 'NonExistingColumn', 'ConversionRate']. Please "
+            'ensure it is correct in Bing Ads Docs.') in e.value.message
 
 
 @patch.object(source_bing_ads.source, "Client")
