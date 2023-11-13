@@ -12,11 +12,13 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Projections;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -237,9 +239,8 @@ public class MongoUtil {
     if (isSchemaEnforced) {
       discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize));
     } else {
-      // In schemaless mode, we only sample one record as we're only interested in the _id field (which
-      // exists on every record).
-      discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, 1));
+      // In schemaless mode, we only sample one record as we're only interested in the _id field (which exists on every record).
+      discoveredFields = new HashSet<>(getFieldsForSchemaless(mongoCollection));
     }
     return Optional
         .ofNullable(
@@ -286,6 +287,27 @@ public class MongoUtil {
         discoveredFields.addAll(fields.entrySet().stream()
             .map(e -> new MongoField(e.getKey(), convertToSchemaType(e.getValue())))
             .collect(Collectors.toSet()));
+      }
+    }
+
+    return discoveredFields;
+  }
+
+  private static Set<Field> getFieldsForSchemaless(final MongoCollection<Document> collection) {
+    final Set<Field> discoveredFields = new HashSet<>();
+
+    final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
+        Aggregates.sample(1), // Selects one random document
+        Aggregates.project(Projections.fields(
+            Projections.excludeId(), // Excludes the _id field from the result
+            Projections.computed("_idType", new Document("$type", "$_id")) // Gets the type of the _id field
+        ))
+    ));
+
+    try (final MongoCursor<Document> cursor = output.allowDiskUse(true).cursor()) {
+      while (cursor.hasNext()) {
+        final JsonSchemaType schemaType = convertToSchemaType((String) cursor.next().get("_idType"));
+        discoveredFields.add(new MongoField(MongoConstants.ID_FIELD, schemaType));
       }
     }
 
