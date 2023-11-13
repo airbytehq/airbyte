@@ -161,6 +161,12 @@ class TestWeaviateIndexer(unittest.TestCase):
         self.indexer.index([mock_chunk1, mock_chunk2, mock_chunk3], None, "test")
         assert mock_client.batch.create_objects.call_count == 2
 
+    def test_index_on_empty_batch(self):
+        mock_client = Mock()
+        self.indexer.client = mock_client
+        self.indexer.index([], None, "test")
+        assert mock_client.batch.create_objects.call_count == 0
+
     @patch("destination_weaviate.indexer.uuid.uuid4")
     @patch("time.sleep", return_value=None)
     def test_index_flushes_batch_and_propagates_error(self, MockTime, MockUUID):
@@ -193,12 +199,12 @@ class TestWeaviateIndexer(unittest.TestCase):
         mock_chunk = Chunk(
             page_content="some_content",
             embedding=[1, 2, 3],
-            metadata={"someField": "some_value", "complex": {"a": [1, 2, 3]}, "UPPERCASE_NAME": "abc"},
+            metadata={"someField": "some_value", "complex": {"a": [1, 2, 3]}, "UPPERCASE_NAME": "abc", "id": 12, "empty_list": []},
             record=AirbyteRecordMessage(stream="test", data={"someField": "some_value"}, emitted_at=0),
         )
         self.indexer.index([mock_chunk], None, "test")
         mock_client.batch.add_data_object.assert_called_with(
-            {"someField": "some_value", "complex": '{"a": [1, 2, 3]}', "uPPERCASE_NAME": "abc", "text": "some_content"},
+            {"someField": "some_value", "complex": '{"a": [1, 2, 3]}', "uPPERCASE_NAME": "abc", "text": "some_content", "raw_id": 12},
             "Test",
             ANY,
             vector=[1, 2, 3],
