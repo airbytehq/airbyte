@@ -5,7 +5,6 @@ This page contains the setup guide and reference information for the Bing Ads so
 ## Prerequisites
 - Microsoft Advertising account
 - Microsoft Developer Token
-- Reports start date
 
 ## Setup guide
 
@@ -52,16 +51,16 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 4. Enter a name for your source.
 5. For **Tenant ID**, enter the custom tenant or use the common tenant.
 6. Add the developer token from [Step 1](#step-1-set-up-bing-ads).
-7. For **Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-8. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode, let it with 0 default value.
+7. For **Reports Replication Start Date**,  enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
+8. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
 9. For *Custom Reports* - see [custom reports](#custom-reports) section, list of custom reports object:
    1. For *Report Name* enter the name that you want for your custom report.
    2. For *Reporting Data Object* enter the Bing Ads Reporting Object that you want to sync in the custom report.
    3. For *Columns* add list columns of Reporting Data Object that you want to see in the custom report.
    4. For *Aggregation* add time aggregation. See [report aggregation](#report-aggregation) section.
 10. Click **Authenticate your Bing Ads account**.
-10. Log in and authorize the Bing Ads account.
-11. Click **Set up source**.
+11. Log in and authorize the Bing Ads account.
+12. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -74,13 +73,14 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 4. Enter a name for your source.
 5. For **Tenant ID**, enter the custom tenant or use the common tenant.
 6. Enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Developer Token** from [Step 1](#step-1-set-up-bing-ads).
-7. For **Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-8. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode, let it with 0 default value.
+7. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
+8. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
 9. For *Custom Reports* - see [custom reports](#custom-reports) section:
    1. For *Report Name* enter the name that you want for your custom report.
    2. For *Reporting Data Object* enter the Bing Ads Reporting Object that you want to sync in the custom report.
    3. For *Columns* add columns of Reporting Data Object that you want to see in the custom report.
    4. For *Aggregation* select time aggregation. See [report aggregation](#report-aggregation) section.
+
 10. Click **Set up source**.
 <!-- /env:oss -->
 
@@ -187,7 +187,8 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.12.0  | 2023-11-08 | [32306](https://github.com/airbytehq/airbyte/pull/32306)                                                                         | Add Custom reports and decrease backoff max tries number                                                                                     |
+| 1.13.0  | 2023-11-13 | [32306](https://github.com/airbytehq/airbyte/pull/32306)                                                                         | Add Custom reports and decrease backoff max tries number                                                                                     |
+| 1.12.0  | 2023-11-09 | [32340](https://github.com/airbytehq/airbyte/pull/32340)                                                                         | Remove default start date in favor of Time Period - Last Year and This Year, if start date is not provided                                   |
 | 1.11.0  | 2023-11-06 | [32201](https://github.com/airbytehq/airbyte/pull/32201)                                                                         | Skip broken CSV report files                                                                                                                 |
 | 1.10.0  | 2023-11-06 | [32148](https://github.com/airbytehq/airbyte/pull/32148)                                                                         | Add new fields to stream Ads: "BusinessName", "CallToAction", "Headline", "Images", "Videos", "Text"                                         |
 | 1.9.0   | 2023-11-03 | [32131](https://github.com/airbytehq/airbyte/pull/32131)                                                                         | Add  "CampaignId", "AccountId", "CustomerId" fields to Ad Groups, Ads and Campaigns streams.                                                 |

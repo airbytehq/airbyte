@@ -4,12 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Bing Ads Spec",
     "type": "object",
-    "required": [
-      "developer_token",
-      "client_id",
-      "refresh_token",
-      "reports_start_date"
-    ],
+    "required": ["developer_token", "client_id", "refresh_token"],
     "additionalProperties": true,
     "properties": {
       "auth_method": {
@@ -57,13 +52,12 @@
         "type": "string",
         "title": "Reports replication start date",
         "format": "date",
-        "default": "2020-01-01",
-        "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format.",
+        "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format. If not set, data from previous and current calendar year will be replicated.",
         "order": 5
       },
       "lookback_window": {
         "title": "Lookback window",
-        "description": "Also known as attribution or conversion window. How far into the past to look for records (in days). If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. Used only for performance report streams in incremental mode.",
+        "description": "Also known as attribution or conversion window. How far into the past to look for records (in days). If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. Used only for performance report streams in incremental mode without specified Reports Start Date.",
         "type": "integer",
         "default": 0,
         "minimum": 0,

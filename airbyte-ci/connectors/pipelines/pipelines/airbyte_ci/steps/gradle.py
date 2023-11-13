@@ -7,11 +7,10 @@ from typing import ClassVar, List
 
 import pipelines.dagger.actions.system.docker
 from dagger import CacheSharingMode, CacheVolume
-from pipelines import hacks
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.utils import sh_dash_c
-from pipelines.models.contexts import PipelineContext
+from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult
 
 
@@ -125,8 +124,6 @@ class GradleTask(Step, ABC):
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
             # Set the current working directory.
             .with_workdir("/airbyte")
-            # TODO: remove this once we finish the project to boost source-postgres CI performance.
-            .with_env_variable("CACHEBUSTER", hacks.get_cachebuster(self.context, self.logger))
         )
 
         # Augment the base container with S3 build cache secrets when available.
