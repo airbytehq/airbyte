@@ -113,6 +113,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConf
   // const { sourceDefinitions } = useSourceDefinitionList();
   // const destination = useGetDestination(params.id);
 
+  const { DestinationRead, WebBackendConnectionReadList, total, pageSize } = useGetDestinationItem(filters);
   const onSelectFilter = useCallback(
     (
       filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId" | "pageSize",
@@ -139,7 +140,6 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConf
     },
     [onSelectFilter]
   );
-  const { DestinationRead, WebBackendConnectionReadList, total, pageSize } = useGetDestinationItem(filters);
 
   const destinationDefinition = useDestinationDefinition(DestinationRead?.destinationDefinitionId);
 
