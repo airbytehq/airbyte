@@ -828,6 +828,7 @@
   "sync.failed": "失败",
   "sync.waiting": "等待中",
   "sync.disabled": "已暂停",
+  "sync.notstarted": "未开始",
   "connection.active": "积极的",
   "connection.inactive": "不活跃"
 }
