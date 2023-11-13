@@ -3,7 +3,7 @@
 #
 
 import os
-from typing import Any, List, Mapping, MutableMapping, Tuple, Optional
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import stripe
@@ -44,7 +44,8 @@ class SourceStripe(AbstractSource):
         if catalog:
             self._streams_configured_as_full_refresh = {
                 configured_stream.stream.name
-                for configured_stream in catalog.streams if configured_stream.sync_mode == SyncMode.full_refresh
+                for configured_stream in catalog.streams
+                if configured_stream.sync_mode == SyncMode.full_refresh
             }
         else:
             # things will NOT be executed concurrently
