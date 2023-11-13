@@ -6,10 +6,8 @@ package io.airbyte.integrations.destination.redshift.typing_deduping;
 
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
-import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import java.sql.SQLType;
-import java.util.function.Supplier;
 import javax.sql.DataSource;
 
 public class RedshiftSqlGenerator extends JdbcSqlGenerator {
