@@ -822,5 +822,12 @@
   "settings.support.submit.success.title": "谢谢！",
   "settings.support.submit.success.text": "您的消息已成功发送。 \n我们将尽快回复您。",
   "table.name.open.newTab": "在新标签页中打开链接",
-  "table.page.size.label": "每页展示条数"
+  "table.page.size.label": "每页展示条数",
+  "sync.successful": "成功",
+  "sync.running": "同步中",
+  "sync.failed": "失败",
+  "sync.waiting": "等待中",
+  "sync.disabled": "已暂停",
+  "connection.active": "积极的",
+  "connection.inactive": "不活跃"
 }

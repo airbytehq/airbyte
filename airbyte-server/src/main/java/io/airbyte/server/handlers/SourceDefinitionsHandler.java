@@ -304,7 +304,8 @@ public class SourceDefinitionsHandler {
 
   public static String loadIcon(final String name) {
     try {
-      return name == null ? null : MoreResources.readResource("icons/" + name);
+      //return name == null ? null : MoreResources.readResource("icons/" + name);
+      return name;
     } catch (final Exception e) {
       return null;
     }
