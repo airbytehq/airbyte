@@ -30,6 +30,8 @@ acceptance_tests:
             bypass_reason: "This stream is not available on our current account, it requires a business/enterprise account"
           - name: portfolios
             bypass_reason: "This stream is not available on our current account, it requires a business/enterprise account"
+          - name: portfolios_memberships
+            bypass_reason: "This stream is not available on our current account, it requires a business/enterprise account"
   full_refresh:
     # tests:
     #   - config_path: "secrets/config.json"
