@@ -45,7 +45,6 @@ class AmazonSPStream(HttpStream, ABC):
         period_in_days: Optional[int],
         report_options: Optional[str],
         advanced_stream_options: Optional[str],
-        max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         *args,
         **kwargs,
@@ -140,6 +139,8 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
 
 
 class ReportsAmazonSPStream(Stream, ABC):
+    max_wait_seconds = 3600
+
     """
     API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reports_2020-09-04.md
     API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/reports-api-model/reports_2020-09-04.json
@@ -172,7 +173,6 @@ class ReportsAmazonSPStream(Stream, ABC):
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
-        max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         advanced_stream_options: Optional[str],
         authenticator: HttpAuthenticator = None,
@@ -186,7 +186,6 @@ class ReportsAmazonSPStream(Stream, ABC):
         self.marketplace_id = marketplace_id
         self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work as well
         self._report_options = report_options or "{}"
-        self.max_wait_seconds = max_wait_seconds
         self._advanced_stream_options = dict()
         if advanced_stream_options is not None:
             self._advanced_stream_options = json_lib.loads(advanced_stream_options)
