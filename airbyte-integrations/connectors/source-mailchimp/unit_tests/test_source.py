@@ -62,7 +62,7 @@ def test_get_oauth_data_center_ok(requests_mock, access_token, data_center):
     assert MailChimpAuthenticator().get_oauth_data_center(access_token) == data_center
 
 
-def test_get_oauth_data_center_exception(requests_mock, access_token, data_center):
+def test_get_oauth_data_center_exception(requests_mock, access_token):
     responses = [
         {"json": {}, "status_code": 200},
         {"json": {"error": "invalid_token"}, "status_code": 200},
