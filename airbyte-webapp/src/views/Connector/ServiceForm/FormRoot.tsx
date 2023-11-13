@@ -53,7 +53,13 @@ const FormRoot: React.FC<FormRootProps> = ({
 
   return (
     <Form>
-      {!isEditMode && <DefinitioDetails name={selectedService?.name} icon={selectedService?.icon} type={formType} />}
+      {!isEditMode && (
+        <DefinitioDetails
+          name={selectedService?.name}
+          icon={`https://airbyte-icons.s3.amazonaws.com/${selectedService?.icon}`}
+          type={formType}
+        />
+      )}
       <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
       {isLoadingSchema && (
         <LoaderContainer>

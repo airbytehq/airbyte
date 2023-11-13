@@ -11,7 +11,7 @@ const IconContainer = styled.img`
 const IconDefaultContainer = styled.div`
   padding: 4px 0 3px;
 `;
-
+// <IconContainer alt="" src={`data:image/svg+xml;utf8,${encodeURIComponent(icon)}`} />
 export const getIcon = (icon?: string): React.ReactNode => {
   if (!icon) {
     return (
@@ -21,5 +21,5 @@ export const getIcon = (icon?: string): React.ReactNode => {
     );
   }
 
-  return <IconContainer alt="" src={`data:image/svg+xml;utf8,${encodeURIComponent(icon)}`} />;
+  return <IconContainer alt="" src={icon} />;
 };
