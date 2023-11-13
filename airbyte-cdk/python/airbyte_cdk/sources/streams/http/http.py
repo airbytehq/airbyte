@@ -14,6 +14,7 @@ from urllib.parse import urljoin
 import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
 from airbyte_cdk.sources.streams.core import Stream, StreamData
@@ -42,6 +43,9 @@ class HttpStream(Stream, ABC):
     def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
         self._session = self.request_session()
+        self._session.mount(
+            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
+        )
         self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator

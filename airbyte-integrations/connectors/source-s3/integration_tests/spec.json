@@ -318,6 +318,7 @@
         "title": "Endpoint",
         "description": "Endpoint to an S3 compatible service. Leave empty to use AWS.",
         "default": "",
+        "examples": ["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
         "order": 4,
         "type": "string"
       },
