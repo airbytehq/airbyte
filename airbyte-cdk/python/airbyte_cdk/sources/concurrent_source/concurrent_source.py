@@ -94,7 +94,6 @@ class ConcurrentSource(AbstractSource, ABC):
             concurrent_stream_processor,
         )
         self._threadpool.check_for_errors_and_shutdown()
-        self._threadpool.shutdown()
         logger.info(f"Finished syncing {self.name}")
 
     def _submit_initial_partition_generators(self, concurrent_stream_processor: ConcurrentStreamProcessor) -> Iterable[AirbyteMessage]:
