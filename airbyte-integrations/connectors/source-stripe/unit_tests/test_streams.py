@@ -345,6 +345,10 @@ def test_created_cursor_incremental_stream(
     assert records == expected_records
     for record in records:
         assert bool(record[stream.cursor_field])
+    call_history = iter(requests_mock.request_history)
+    for slice_ in slices:
+        call = next(call_history)
+        assert urlencode(slice_) in call.url
 
 
 @pytest.mark.parametrize(
