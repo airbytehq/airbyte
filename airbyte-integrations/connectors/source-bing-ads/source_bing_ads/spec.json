@@ -109,7 +109,15 @@
               "items": {
                 "title": "ValidEnums",
                 "description": "An enumeration of aggregations.",
-                "enum": ["Hourly", "Daily", "Weekly", "Monthly", "DayOfWeek", "HourOfDay", "WeeklyStartingMonday"]
+                "enum": [
+                  "Hourly",
+                  "Daily",
+                  "Weekly",
+                  "Monthly",
+                  "DayOfWeek",
+                  "HourOfDay",
+                  "WeeklyStartingMonday"
+                ]
               },
               "default": ["Hourly"]
             }

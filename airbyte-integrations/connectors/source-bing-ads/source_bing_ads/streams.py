@@ -5,10 +5,12 @@ import os
 import re
 import ssl
 import time
+import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
 from datetime import timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.error import URLError
+from urllib.parse import urlparse
 
 import _csv
 import pandas as pd
@@ -17,6 +19,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from bingads.service_client import ServiceClient
+from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from numpy import nan
@@ -33,10 +36,7 @@ from source_bing_ads.reports import (
     PerformanceReportsMixin,
     ReportsMixin,
 )
-from suds import sudsobject, WebFault
-import xml.etree.ElementTree as ET
-from urllib.parse import urlparse
-from bingads.v13.internal.reporting.row_report import _RowReport
+from suds import WebFault, sudsobject
 
 
 class BingAdsBaseStream(Stream, ABC):
@@ -1301,20 +1301,24 @@ class CustomReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
         request_object = tree.find(f".//{{*}}complexType[@name='{self.report_name}Request']")
 
         if not request_object:
-            return False, (f"{self.report_name}: Reporting Data Object that you provided doesn't exist. "
-                           f"Please ensure it is correct in Bing Ads Docs.")
+            return False, (
+                f"{self.report_name}: Reporting Data Object that you provided doesn't exist. "
+                f"Please ensure it is correct in Bing Ads Docs."
+            )
 
         report_object_columns = self._get_object_columns(request_object, tree)
         is_custom_cols_in_report_object_cols = all(x in report_object_columns for x in self.custom_report_columns)
 
         if not is_custom_cols_in_report_object_cols:
-            return False, (f"Reporting Columns are invalid. Columns that you provided don't belong to Reporting Data Object Columns:"
-                           f" {self.custom_report_columns}. Please ensure it is correct in Bing Ads Docs.")
+            return False, (
+                f"Reporting Columns are invalid. Columns that you provided don't belong to Reporting Data Object Columns:"
+                f" {self.custom_report_columns}. Please ensure it is correct in Bing Ads Docs."
+            )
 
         return True, ""
 
     def _clear_namespace(self, type: str) -> str:
-        return re.sub(r'^[a-z]+:', '', type)
+        return re.sub(r"^[a-z]+:", "", type)
 
     def _get_object_columns(self, request_el: ET.Element, tree: ET.ElementTree) -> List[str]:
         column_el = request_el.find(".//{*}element[@name='Columns']")
@@ -1322,11 +1326,11 @@ class CustomReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
 
         array_of_columns_elements = tree.find(f".//{{*}}complexType[@name='{array_of_columns_name}']")
         inner_array_of_columns_elements = array_of_columns_elements.find(".//{*}element")
-        column_el_name = self._clear_namespace(inner_array_of_columns_elements.get('type'))
+        column_el_name = self._clear_namespace(inner_array_of_columns_elements.get("type"))
 
         column_el = tree.find(f".//{{*}}simpleType[@name='{column_el_name}']")
-        column_enum_items = column_el.findall('.//{*}enumeration')
-        column_enum_items_values = [el.get('value') for el in column_enum_items]
+        column_enum_items = column_el.findall(".//{*}enumeration")
+        column_enum_items_values = [el.get("value") for el in column_enum_items]
         return column_enum_items_values
 
     def get_report_record_timestamp(self, datestring: str) -> int:
@@ -1349,7 +1353,7 @@ class CustomReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
         try:
             super().send_request(params, customer_id, account_id)
         except WebFault as e:
-            self.logger.error(f"Could not sync custom report {self.name}: Please validate your column and aggregation configuration. "
-                              f"Error form server: [{e.fault.faultstring}]")
-
-
+            self.logger.error(
+                f"Could not sync custom report {self.name}: Please validate your column and aggregation configuration. "
+                f"Error form server: [{e.fault.faultstring}]"
+            )
