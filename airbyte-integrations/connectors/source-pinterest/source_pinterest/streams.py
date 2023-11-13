@@ -20,6 +20,10 @@ from .utils import get_analytics_columns, to_datetime_str
 MAX_RATE_LIMIT_CODE = 8
 
 
+class NonJSONResponse(Exception):
+    pass
+
+
 class PinterestStream(HttpStream, ABC):
     url_base = "https://api.pinterest.com/v5/"
     primary_key = "id"
@@ -69,8 +73,13 @@ class PinterestStream(HttpStream, ABC):
                 yield record
 
     def should_retry(self, response: requests.Response) -> bool:
-        if isinstance(response.json(), dict):
-            self.max_rate_limit_exceeded = response.json().get("code", 0) == MAX_RATE_LIMIT_CODE
+        try:
+            resp = response.json()
+        except requests.exceptions.JSONDecodeError:
+            raise NonJSONResponse(f"Received unexpected response in non json format: '{response.text}'")
+
+        if isinstance(resp, dict):
+            self.max_rate_limit_exceeded = resp.get("code", 0) == MAX_RATE_LIMIT_CODE
         # when max rate limit exceeded, we should skip the stream.
         if response.status_code == requests.codes.too_many_requests and self.max_rate_limit_exceeded:
             self.logger.error(f"For stream {self.name} Max Rate Limit exceeded.")

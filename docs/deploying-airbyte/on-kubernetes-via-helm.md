@@ -79,17 +79,21 @@ After adding the repo, perform the repo indexing process by running `helm repo u
 
 After this you can browse all charts uploaded to repository by running `helm search repo airbyte`
 
-It'll produce the output below:
+It'll produce output similar to below:
 
 ```text
-NAME                            CHART VERSION   APP VERSION     DESCRIPTION
-airbyte-oss/airbyte             0.30.23         0.39.37-alpha   Helm chart to deploy airbyte
-airbyte-oss/airbyte-bootloader  0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-bootloader
-airbyte-oss/pod-sweeper         0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-pod-sweeper
-airbyte-oss/server              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-server
-airbyte-oss/temporal            0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-temporal
-airbyte-oss/webapp              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-webapp
-airbyte-oss/worker              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-worker
+NAME                            	CHART VERSION	APP VERSION	DESCRIPTION
+airbyte/airbyte                 	0.49.9       	0.50.33    	Helm chart to deploy airbyte
+airbyte/airbyte-api-server      	0.49.9       	0.50.33    	Helm chart to deploy airbyte-api-server
+airbyte/airbyte-bootloader      	0.49.9       	0.50.33    	Helm chart to deploy airbyte-bootloader
+airbyte/connector-builder-server	0.49.9       	0.50.33    	Helm chart to deploy airbyte-connector-builder-...
+airbyte/cron                    	0.49.9       	0.50.33    	Helm chart to deploy airbyte-cron
+airbyte/metrics                 	0.49.9       	0.50.33    	Helm chart to deploy airbyte-metrics
+airbyte/pod-sweeper             	0.49.9       	0.50.33    	Helm chart to deploy airbyte-pod-sweeper
+airbyte/server                  	0.49.9       	0.50.33    	Helm chart to deploy airbyte-server
+airbyte/temporal                	0.49.9       	0.50.33    	Helm chart to deploy airbyte-temporal
+airbyte/webapp                  	0.49.9       	0.50.33    	Helm chart to deploy airbyte-webapp
+airbyte/worker                  	0.49.9       	0.50.33    	Helm chart to deploy airbyte-worker
 ```
 
 ## Deploy Airbyte

@@ -52,8 +52,8 @@ If you face any installation problems feel free to reach out the Airbyte Connect
 ### Setting up connector secrets access
 
 If you plan to use Airbyte CI to run CAT (Connector Acceptance Tests), we recommend setting up GSM
-access so that Airbyte CI can pull remote secrets from GSM. For setup instructions, see the 
-CI Credentials package (which Airbyte CI uses under the hood) README's 
+access so that Airbyte CI can pull remote secrets from GSM. For setup instructions, see the
+CI Credentials package (which Airbyte CI uses under the hood) README's
 [Get GSM Access](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md#get-gsm-access)
 instructions.
 
@@ -155,7 +155,7 @@ Available commands:
 | `--enable-dependency-scanning / --disable-dependency-scanning` | False    | ` --disable-dependency-scanning` |                             | When enabled the dependency scanning will be performed to detect the connectors to select according to a dependency change.                                                                                                                                                                                                                                                                                                                                                               |
 | `--docker-hub-username`                                        |          |                                  | DOCKER_HUB_USERNAME         | Your username to connect to DockerHub. Required for the publish subcommand.                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `--docker-hub-password`                                        |          |                                  | DOCKER_HUB_PASSWORD         | Your password to connect to DockerHub. Required for the publish subcommand.                                                                                                                                                                                                                                                                                                                                                                                                               |
-                                                                                                                                           
+
 
 ### <a id="connectors-list-command"></a>`connectors list` command
 Retrieve the list of connectors satisfying the provided filters.
@@ -408,7 +408,13 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 2.5.3   | [#31974](https://github.com/airbytehq/airbyte/pull/31974)  | Fix latest CDK install and pip cache mount on connector install.                            |
+| 2.5.9   | [#32427](https://github.com/airbytehq/airbyte/pull/32427)  | Re-enable caching for source-postgres                                                                 |
+| 2.5.8   | [#32402](https://github.com/airbytehq/airbyte/pull/32402)  | Set Dagger Cloud token for airbyters only                                                                 |
+| 2.5.7   | [#31628](https://github.com/airbytehq/airbyte/pull/31628)  | Add ClickPipelineContext class                                                                            |
+| 2.5.6   | [#32139](https://github.com/airbytehq/airbyte/pull/32139)  | Test coverage report on Python connector UnitTest.                                                        |
+| 2.5.5   | [#32114](https://github.com/airbytehq/airbyte/pull/32114)  | Create cache mount for `/var/lib/docker` to store images in `dind` context.                               |
+| 2.5.4   | [#32090](https://github.com/airbytehq/airbyte/pull/32090)  | Do not cache `docker login`.                                                                              |
+| 2.5.3   | [#31974](https://github.com/airbytehq/airbyte/pull/31974)  | Fix latest CDK install and pip cache mount on connector install.                                          |
 | 2.5.2   | [#31871](https://github.com/airbytehq/airbyte/pull/31871)  | Deactivate PR comments, add HTML report links to the PR status when its ready.                            |
 | 2.5.1   | [#31774](https://github.com/airbytehq/airbyte/pull/31774)  | Add a docker configuration check on `airbyte-ci` startup.                                                 |
 | 2.5.0   | [#31766](https://github.com/airbytehq/airbyte/pull/31766)  | Support local connectors secrets.                                                                         |

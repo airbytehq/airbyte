@@ -90,7 +90,11 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     ) -> Iterable[RemoteFile]:
         yield from self.filter_files_by_globs_and_start_date(
             [
-                RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"))
+                RemoteFile(
+                    uri=f,
+                    mime_type=data.get("mime_type", None),
+                    last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                )
                 for f, data in self.files.items()
             ],
             globs,
