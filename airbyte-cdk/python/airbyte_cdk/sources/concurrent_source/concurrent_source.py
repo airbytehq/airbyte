@@ -134,7 +134,6 @@ class ConcurrentSource(AbstractSource, ABC):
         elif isinstance(queue_item, PartitionCompleteSentinel):
             yield from concurrent_stream_processor.on_partition_complete_sentinel(queue_item)
         elif isinstance(queue_item, Record):
-            # record
             yield from concurrent_stream_processor.on_record(queue_item)
         else:
             raise ValueError(f"Unknown queue item type: {type(queue_item)}")
