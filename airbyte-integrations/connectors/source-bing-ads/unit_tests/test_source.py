@@ -142,7 +142,7 @@ def test_ads_stream_slices(mocked_client, config):
 def test_AccountPerformanceReportMonthly_request_params(mocked_client, config):
 
     accountperformancereportmonthly = AccountPerformanceReportMonthly(mocked_client, config)
-    request_params = accountperformancereportmonthly.request_params(account_id=180278106)
+    request_params = accountperformancereportmonthly.request_params(account_id=180278106, stream_slice={"time_period": "ThisYear"})
     del request_params["report_request"]
     assert request_params == {
         "overwrite_result_file": True,
@@ -151,6 +151,21 @@ def test_AccountPerformanceReportMonthly_request_params(mocked_client, config):
         "result_file_name": "AccountPerformanceReport",
         "timeout_in_milliseconds": 300000,
     }
+
+
+@patch.object(source_bing_ads.source, "Client")
+def test_AccountPerformanceReportMonthly_stream_slices(mocked_client, config):
+
+    accountperformancereportmonthly = AccountPerformanceReportMonthly(mocked_client, config)
+    accounts_read_records = iter([{"Id": 180519267, "ParentCustomerId": 100}, {"Id": 180278106, "ParentCustomerId": 200}])
+    with patch.object(Accounts, "read_records", return_value=accounts_read_records):
+        stream_slice = list(accountperformancereportmonthly.stream_slices())
+        assert stream_slice == [
+            {"account_id": 180519267, "customer_id": 100, "time_period": "LastYear"},
+            {"account_id": 180519267, "customer_id": 100, "time_period": "ThisYear"},
+            {"account_id": 180278106, "customer_id": 200, "time_period": "LastYear"},
+            {"account_id": 180278106, "customer_id": 200, "time_period": "ThisYear"},
+        ]
 
 
 @pytest.mark.parametrize(
@@ -229,4 +244,21 @@ def test_bulk_stream_read_with_chunks(mocked_client, config):
         "Title": "Contoso Quick Setup",
         "Tracking Template": None,
         "Type": "App Install Ad",
+    }
+
+
+@patch.object(source_bing_ads.source, "Client")
+def test_transform(mocked_client, config):
+    record = {"AdFormatPreference": "All", "DevicePreference": 0, "EditorialStatus": "ActiveLimited", "FinalAppUrls": None}
+    transformed_record = Ads(mocked_client, config).transform(
+        record=record, stream_slice={"ad_group_id": 90909090, "account_id": 909090, "customer_id": 9090909}
+    )
+    assert transformed_record == {
+        "AccountId": 909090,
+        "AdFormatPreference": "All",
+        "AdGroupId": 90909090,
+        "CustomerId": 9090909,
+        "DevicePreference": 0,
+        "EditorialStatus": "ActiveLimited",
+        "FinalAppUrls": None,
     }

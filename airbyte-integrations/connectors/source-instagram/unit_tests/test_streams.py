@@ -76,7 +76,7 @@ def test_media_insights_read(api, user_stories_data, user_media_insights_data, r
 def test_media_insights_read_error(api, requests_mock):
     test_id = "test_id"
     stream = MediaInsights(api=api)
-    media_response = [{"id": "test_id"}, {"id": "test_id_2"}, {"id": "test_id_3"}, {"id": "test_id_4"}]
+    media_response = [{"id": "test_id"}, {"id": "test_id_2"}, {"id": "test_id_3"}, {"id": "test_id_4"}, {"id": "test_id_5"}]
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/media", json={"data": media_response})
 
     media_insights_response_test_id = {
@@ -132,6 +132,21 @@ def test_media_insights_read_error(api, requests_mock):
     }
     requests_mock.register_uri(
         "GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/test_id_4/insights", json=media_insights_response_test_id_4
+    )
+
+    error_response_wrong_permissions_code_10 = {
+        "error": {
+            "message": "(#10) Application does not have permission for this action",
+            "type": "OAuthException",
+            "code": 10,
+            "fbtrace_id": "fake_trace_id",
+        }
+    }
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FB_API_VERSION}/test_id_5/insights",
+        json=error_response_wrong_permissions_code_10,
+        status_code=400,
     )
 
     records = read_full_refresh(stream)
@@ -299,6 +314,11 @@ def test_stories_insights_read(api, requests_mock, user_stories_data, user_media
         {"json": {"error": {"type": "OAuthException", "code": 1}}},
         {"json": {"error": {"code": 4}}},
         {"json": {}, "status_code": 429},
+        {
+            "json": {"error": {"code": 1, "message": "Please reduce the amount of data you're asking for, then retry your request"}},
+            "status_code": 500,
+        },
+        {"json": {"error": {"code": 1, "message": "An unknown error occurred"}}, "status_code": 500},
         {"json": {"error": {"type": "OAuthException", "message": "(#10) Not enough viewers for the media to show insights", "code": 10}}},
         {"json": {"error": {"code": 100, "error_subcode": 33}}, "status_code": 400},
         {"json": {"error": {"is_transient": True}}},
@@ -308,6 +328,8 @@ def test_stories_insights_read(api, requests_mock, user_stories_data, user_media
         "oauth_error",
         "rate_limit_error",
         "too_many_request_error",
+        "reduce_amount_of_data_error",
+        "unknown_error",
         "viewers_insights_error",
         "4028_issue_error",
         "transient_error",

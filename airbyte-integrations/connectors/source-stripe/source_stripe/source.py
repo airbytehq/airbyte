@@ -141,7 +141,7 @@ class SourceStripe(AbstractSource):
         subscription_items = StripeLazySubStream(
             name="subscription_items",
             path="subscription_items",
-            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice["parent"]["id"]},
+            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice['parent']['id']},
             parent=subscriptions,
             use_cache=USE_CACHE,
             sub_items_attr="items",
@@ -184,7 +184,7 @@ class SourceStripe(AbstractSource):
         checkout_sessions = UpdatedCursorIncrementalStripeStream(
             name="checkout_sessions",
             path="checkout/sessions",
-            use_cache=True,
+            use_cache=USE_CACHE,
             legacy_cursor_field="created",
             event_types=[
                 "checkout.session.async_payment_failed",

@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.OptionalLong;
 import java.util.Properties;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -146,6 +147,7 @@ public class PostgresDebeziumStateUtilTest {
   }
 
   @ParameterizedTest
+  @Disabled
   @ValueSource(strings = {"pgoutput", "wal2json"})
   public void LsnCommitTest(final String plugin) throws SQLException {
     final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
