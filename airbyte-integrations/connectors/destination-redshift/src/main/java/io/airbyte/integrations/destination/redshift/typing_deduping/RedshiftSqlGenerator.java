@@ -15,9 +15,8 @@ import javax.sql.DataSource;
 public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer,
-                              final SqlOperations sqlOperations,
-                              final Supplier<DataSource> dataSourceSupplier) {
-    super(namingTransformer, sqlOperations, dataSourceSupplier.get());
+                              final DataSource dataSource) {
+    super(namingTransformer, dataSource);
   }
 
   @Override
