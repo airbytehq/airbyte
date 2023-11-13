@@ -14,8 +14,8 @@ from airbyte_cdk.utils import AirbyteTracedException
 from bingads.service_info import SERVICE_INFO_DICT_V13
 from source_bing_ads.reports import ReportsMixin
 from source_bing_ads.source import SourceBingAds
-from source_bing_ads.streams import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, AppInstallAds, BingAdsStream, Campaigns
-from suds import TypeNotFound, WebFault
+from source_bing_ads.streams import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, AppInstallAds, Campaigns
+from suds import WebFault
 
 
 @pytest.fixture(name="config")
@@ -465,7 +465,7 @@ def test_custom_report_send_request(mocked_client, config_with_custom_reports, l
 
     custom_report = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)[0]
     with patch.object(ReportsMixin, "send_request", side_effect=WebFault(fault=Fault(), document=None)):
-        test = custom_report.send_request(params={}, customer_id="13131313", account_id="800800808")
+        custom_report.send_request(params={}, customer_id="13131313", account_id="800800808")
         assert (
             "Could not sync custom report my test custom report: Please validate your column and aggregation configuration. "
             "Error form server: [Invalid Client Data]"
