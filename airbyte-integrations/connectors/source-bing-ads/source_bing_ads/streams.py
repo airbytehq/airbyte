@@ -1351,7 +1351,7 @@ class CustomReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
 
     def send_request(self, params: Mapping[str, Any], customer_id: str, account_id: str) -> _RowReport:
         try:
-            super().send_request(params, customer_id, account_id)
+            return super().send_request(params, customer_id, account_id)
         except WebFault as e:
             self.logger.error(
                 f"Could not sync custom report {self.name}: Please validate your column and aggregation configuration. "

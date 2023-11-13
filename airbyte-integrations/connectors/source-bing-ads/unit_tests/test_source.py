@@ -14,6 +14,8 @@ from source_bing_ads.reports import ReportsMixin
 from source_bing_ads.source import SourceBingAds
 from source_bing_ads.streams import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, AppInstallAds, BingAdsStream, Campaigns
 from suds import TypeNotFound, WebFault
+import xml.etree.ElementTree as ET
+from urllib.parse import urlparse
 
 
 @pytest.fixture(name="config")
@@ -376,3 +378,65 @@ def test_transform(mocked_client, config):
         "EditorialStatus": "ActiveLimited",
         "FinalAppUrls": None,
     }
+
+
+@patch.object(source_bing_ads.source, "Client")
+def test_custom_report_clear_namespace(mocked_client, config_with_custom_reports, logger_mock):
+    custom_report = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)[0]
+    assert custom_report._clear_namespace("tns:ReportAggregation") == "ReportAggregation"
+
+@patch.object(source_bing_ads.source, "Client")
+def test_custom_report_get_object_columns(mocked_client, config_with_custom_reports, logger_mock):
+    reporting_service_mock = MagicMock()
+    reporting_service_mock._get_service_info_dict.return_value = SERVICE_INFO_DICT_V13
+    mocked_client.get_service.return_value = reporting_service_mock
+    mocked_client.environment = "production"
+
+    custom_report = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)[0]
+
+    tree = ET.parse(urlparse(SERVICE_INFO_DICT_V13[("reporting", mocked_client.environment)]).path)
+    request_object = tree.find(f".//{{*}}complexType[@name='{custom_report.report_name}Request']")
+
+    assert custom_report._get_object_columns(request_object, tree) == ['TimePeriod', 'AccountId', 'AccountName', 'AccountNumber', 'AccountStatus',
+                                                                       'CampaignId', 'CampaignName', 'CampaignStatus', 'AdGroupId','AdGroupName',
+                                                                       'AdGroupStatus', 'AdDistribution', 'Language', 'Network', 'TopVsOther',
+                                                                       'DeviceType', 'DeviceOS', 'BidStrategyType', 'TrackingTemplate',
+                                                                       'CustomParameters', 'DynamicAdTargetId', 'DynamicAdTarget', 'DynamicAdTargetStatus',
+                                                                       'WebsiteCoverage', 'Impressions', 'Clicks', 'Ctr', 'AverageCpc',
+                                                                       'Spend', 'AveragePosition', 'Conversions', 'ConversionRate',
+                                                                       'CostPerConversion', 'Assists', 'Revenue', 'ReturnOnAdSpend',
+                                                                       'CostPerAssist', 'RevenuePerConversion', 'RevenuePerAssist', 'AllConversions',
+                                                                       'AllRevenue', 'AllConversionRate', 'AllCostPerConversion', 'AllReturnOnAdSpend',
+                                                                       'AllRevenuePerConversion', 'ViewThroughConversions', 'Goal', 'GoalType', 'AbsoluteTopImpressionRatePercent',
+                                                                       'TopImpressionRatePercent', 'AverageCpm', 'ConversionsQualified', 'AllConversionsQualified',
+                                                                       'ViewThroughConversionsQualified', 'AdId', 'ViewThroughRevenue']
+
+@patch.object(source_bing_ads.source, "Client")
+def test_custom_report_send_request(mocked_client, config_with_custom_reports, logger_mock, caplog):
+    class Fault:
+        faultstring = 'Invalid Client Data'
+
+    custom_report = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)[0]
+    with patch.object(ReportsMixin, "send_request", side_effect=WebFault(fault=Fault(), document=None)):
+        test = custom_report.send_request(params={}, customer_id="13131313", account_id="800800808")
+        assert ("Could not sync custom report my test custom report: Please validate your column and aggregation configuration. "
+                "Error form server: [Invalid Client Data]") in caplog.text
+
+@pytest.mark.parametrize(
+    "aggregation,datastring,expected",
+    (
+            ("DayOfWeek", "1", 1,),
+            ("HourOfDay", "20", 20,),
+            ("Hourly", "2022-11-13|10", 1668333600,),
+            ("Hourly", "2022-11-13|10", 1668333600,),
+            ("Daily", "2022-11-13", 1668297600,),
+            ("Weekly", "2022-11-13", 1668297600,),
+            ("Monthly", "2022-11-13", 1668297600,),
+            ("WeeklyStartingMonday", "2022-11-13", 1668297600,),
+    )
+)
+@patch.object(source_bing_ads.source, "Client")
+def test_custom_report_get_report_record_timestamp(mocked_client, config_with_custom_reports, aggregation, datastring, expected):
+    custom_report = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)[0]
+    custom_report.report_aggregation = aggregation
+    assert custom_report.get_report_record_timestamp(datastring) == expected
