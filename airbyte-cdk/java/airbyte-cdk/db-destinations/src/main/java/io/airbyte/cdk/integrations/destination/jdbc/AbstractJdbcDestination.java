@@ -219,7 +219,9 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   /**
-   * "database" key at root of the config json, for any other variants in config, override this method.
+   * "database" key at root of the config json, for any other variants in config, override this
+   * method.
+   *
    * @param config
    * @return
    */

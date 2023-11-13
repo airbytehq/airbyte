@@ -24,6 +24,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
 
   private final String databaseName;
   private final JdbcDatabase jdbcDatabase;
+
   public JdbcDestinationHandler(final String databaseName,
                                 final JdbcDatabase jdbcDatabase) {
     this.databaseName = databaseName;
@@ -34,10 +35,10 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
   public Optional<TableDefinition> findExistingTable(StreamId id) throws Exception {
 
     DatabaseMetaData metaData = jdbcDatabase.getMetaData();
-    //TODO: normalize namespace and finalName strings to quoted-lowercase
+    // TODO: normalize namespace and finalName strings to quoted-lowercase
     final LinkedHashMap<String, ColumnDefinition> columnDefinitions = new LinkedHashMap<>();
-    try(ResultSet columns = metaData.getColumns(databaseName, id.finalNamespace(), id.finalName(), null)){
-      while(columns.next()) {
+    try (ResultSet columns = metaData.getColumns(databaseName, id.finalNamespace(), id.finalName(), null)) {
+      while (columns.next()) {
         String columnName = columns.getString("COLUMN_NAME");
         String typeName = columns.getString("TYPE_NAME");
         int columnSize = columns.getInt("COLUMN_SIZE");
