@@ -129,8 +129,10 @@ class MongoDbCdcEventUtilsTest {
     assertEquals("pattern", transformed.get("field14").asText());
     assertFalse(transformed.has("field15"));
     assertEquals("value", transformed.get("field16").get("key").asText());
-    // Assert that UUIDs can be serialized. Currently, they will be represented as base 64 encoded strings. Since the original mongo source
-    // may have these UUIDs written by a variety of sources, each with different encodings - we cannot decode these back to the original UUID.
+    // Assert that UUIDs can be serialized. Currently, they will be represented as base 64 encoded
+    // strings. Since the original mongo source
+    // may have these UUIDs written by a variety of sources, each with different encodings - we cannot
+    // decode these back to the original UUID.
     assertTrue(transformed.has("field17"));
     assertTrue(transformed.has("field18"));
   }
