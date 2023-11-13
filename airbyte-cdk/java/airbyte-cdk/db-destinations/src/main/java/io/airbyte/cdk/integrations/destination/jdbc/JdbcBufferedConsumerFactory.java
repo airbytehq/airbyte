@@ -63,7 +63,8 @@ public class JdbcBufferedConsumerFactory {
 
   /**
    *
-   * Deprecated in favor of {@link JdbcBufferedConsumerFactory#create(Consumer, JdbcDatabase, SqlOperations, NamingConventionTransformer, JsonNode, ConfiguredAirbyteCatalog, TyperDeduper)}
+   * Deprecated in favor of
+   * {@link JdbcBufferedConsumerFactory#create(Consumer, JdbcDatabase, SqlOperations, NamingConventionTransformer, JsonNode, ConfiguredAirbyteCatalog, TyperDeduper)}
    */
   @Deprecated
   public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
@@ -72,7 +73,8 @@ public class JdbcBufferedConsumerFactory {
                                               final NamingConventionTransformer namingResolver,
                                               final JsonNode config,
                                               final ConfiguredAirbyteCatalog catalog) {
-    // Preserving backward compatibility although only Vertica destination was using this factory method so far.
+    // Preserving backward compatibility although only Vertica destination was using this factory method
+    // so far.
     return create(outputRecordCollector, database, sqlOperations, namingResolver, config, catalog, new NoopTyperDeduper());
   }
 

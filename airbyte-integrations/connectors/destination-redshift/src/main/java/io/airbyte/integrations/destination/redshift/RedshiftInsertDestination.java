@@ -86,4 +86,5 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   protected JdbcSqlGenerator getSqlGenerator(DataSource dataSource) {
     return new RedshiftSqlGenerator(super.getNamingResolver(), dataSource);
   }
+
 }

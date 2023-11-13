@@ -17,11 +17,9 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeQueryBuilder;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.sql.SQLType;
@@ -36,7 +34,6 @@ import java.util.Optional;
 import javax.sql.DataSource;
 import lombok.SneakyThrows;
 import org.apache.commons.text.StringSubstitutor;
-import org.jooq.impl.DSL;
 
 public class JdbcSqlGenerator implements SqlGenerator<TableDefinition> {
 
