@@ -53,7 +53,7 @@ acceptance_tests:
         timeout_seconds: 7200
   full_refresh:
     tests:
-      - config_path: secrets/config.json
+      - config_path: secrets/config_full_refresh.json
         configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
         timeout_seconds: 7200
   incremental:
