@@ -237,7 +237,8 @@ public class MongoUtil {
     if (isSchemaEnforced) {
       discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize));
     } else {
-      // In schemaless mode, we only sample one record as we're only interested in the _id field (which exists on every record). 
+      // In schemaless mode, we only sample one record as we're only interested in the _id field (which
+      // exists on every record).
       discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, 1));
     }
     return Optional
