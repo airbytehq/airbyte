@@ -168,7 +168,18 @@ export interface WebBackendConnectionRead {
   catalogId?: string;
   catalogDiff?: CatalogDiff;
 }
-
+export interface WebBackendNewConnectionList {
+  connectionId: ConnectionId;
+  connectorName: string;
+  entityName: string;
+  isSyncing: boolean;
+  latestSyncJobCreatedAt?: number;
+  latestSyncJobStatus?: JobStatus;
+  name: string;
+  status: ConnectionStatus;
+  statusLang?: string;
+  syncCatalog?: AirbyteCatalog;
+}
 export interface WebBackendConnectionReadList {
   connections: WebBackendConnectionRead[];
 }
@@ -1032,7 +1043,7 @@ export interface WebBackendConnectionSearch {
 }
 
 export interface ConnectionSearch {
-  connectionId?: ConnectionId;
+  connectionId?: string;
   name?: string;
   namespaceDefinition?: NamespaceDefinitionType;
   /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */

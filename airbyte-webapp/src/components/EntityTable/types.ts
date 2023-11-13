@@ -35,6 +35,7 @@ interface ITableDataItem {
   lastSyncStatus: string | null;
   connectorIcon?: string;
   entityIcon?: string;
+  latestSyncJobStatus?: string;
 }
 
 enum Status {
