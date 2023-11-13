@@ -14,9 +14,11 @@
       "enum": [
         "REGULAR",
         "VIDEO",
+        "SHOPPING",
         "CAROUSEL",
         "MAX_VIDEO",
         "SHOP_THE_PIN",
+        "COLLECTION",
         "IDEA"
       ]
     },
