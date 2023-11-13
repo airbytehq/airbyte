@@ -343,7 +343,7 @@ streams:
   - "#/definitions/opportunity_categories_stream"
   # - "#/definitions/opportunity_products_stream"
   - "#/definitions/opportunity_state_reasons_stream"
-  - "#/definitions/organizations_stream"
+  - "#/definitions/organisations_stream"
   - "#/definitions/pipelines_stream"
   - "#/definitions/pipeline_stages_stream"
   # - "#/definitions/pricebook_entries_stream"
