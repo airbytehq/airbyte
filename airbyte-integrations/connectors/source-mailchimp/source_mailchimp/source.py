@@ -45,7 +45,7 @@ class MailChimpAuthenticator:
             # See https://mailchimp.com/developer/marketing/docs/fundamentals/#api-structure
             apikey = authorization.get("apikey") or config.get("apikey")
             if not apikey:
-                raise Exception("No apikey in creds")
+                raise Exception("Please provide a valid API key for authentication.")
             auth_string = f"anystring:{apikey}".encode("utf8")
             b64_encoded = base64.b64encode(auth_string).decode("utf8")
             auth = TokenAuthenticator(token=b64_encoded, auth_method="Basic")
@@ -66,8 +66,19 @@ class SourceMailchimp(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = MailChimpAuthenticator().get_auth(config)
-            requests.get(f"https://{authenticator.data_center}.api.mailchimp.com/3.0/ping", headers=authenticator.get_auth_header())
+            response = requests.get(f"https://{authenticator.data_center}.api.mailchimp.com/3.0/ping", headers=authenticator.get_auth_header())
+            
+            # A successful response will return a simple JSON object with a single key: health_status.
+            # Otherwise, Mailchimp errors are returned as a JSON object with keys:
+            # {type, title, status, detail, instance}
+
+            if not response.json().get('health_status'):
+                error_title = response.json().get("title", "Unknown Error")
+                error_details = response.json().get("details", "An unknown error occurred. Please verify your credentials and try again.")
+                return False, f"Encountered an error while connecting to Mailchimp. Type: {error_title}. Details: {error_details}"
             return True, None
+        
+        # Handle any other exceptions that may occur.
         except Exception as e:
             return False, repr(e)
 

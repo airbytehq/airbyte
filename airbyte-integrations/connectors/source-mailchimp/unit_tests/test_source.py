@@ -13,7 +13,7 @@ logger = logging.getLogger("airbyte")
 
 def test_check_connection_ok(requests_mock, config, data_center):
     responses = [
-        {"json": [], "status_code": 200},
+        {"json": {"health_status": "Everything's Chimpy!"}},
     ]
     requests_mock.register_uri("GET", f"https://{data_center}.api.mailchimp.com/3.0/ping", responses)
     ok, error_msg = SourceMailchimp().check_connection(logger, config=config)
@@ -22,12 +22,36 @@ def test_check_connection_ok(requests_mock, config, data_center):
     assert not error_msg
 
 
-def test_check_connection_error(requests_mock, config, data_center):
-    requests_mock.register_uri("GET", f"https://{data_center}.api.mailchimp.com/3.0/ping", body=requests.ConnectionError())
+@pytest.mark.parametrize(
+    "response, expected_message",
+    [
+        (
+            {"json": {
+                "title": "API Key Invalid", 
+                "details": "Your API key may be invalid, or you've attempted to access the wrong datacenter."
+            }},
+            "Encountered an error while connecting to Mailchimp. Type: API Key Invalid. Details: Your API key may be invalid, or you've attempted to access the wrong datacenter."
+        ),
+        (
+            {"json": {
+                "title": "Forbidden",
+                "details": "You don't have permission to access this resource."
+            }},
+            "Encountered an error while connecting to Mailchimp. Type: Forbidden. Details: You don't have permission to access this resource."
+        ),
+        (
+            {"json": {}},
+            "Encountered an error while connecting to Mailchimp. Type: Unknown Error. Details: An unknown error occurred. Please verify your credentials and try again."
+        )
+    ],
+    ids=["API Key Invalid", "Forbidden", "Unknown Error"]
+)
+def test_check_connection_error(requests_mock, config, data_center, response, expected_message):
+    requests_mock.register_uri("GET", f"https://{data_center}.api.mailchimp.com/3.0/ping", json=response['json'])
     ok, error_msg = SourceMailchimp().check_connection(logger, config=config)
 
     assert not ok
-    assert error_msg
+    assert error_msg == expected_message
 
 
 def test_get_oauth_data_center_ok(requests_mock, access_token, data_center):
