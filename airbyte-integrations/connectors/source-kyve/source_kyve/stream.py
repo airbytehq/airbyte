@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 import gzip
 import hashlib
 import json
@@ -6,11 +9,10 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams import IncrementalMixin
-from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_kyve.util import CustomResourceSchemaLoader
 
 logger = logging.getLogger("airbyte")
+
 
 class KYVEStream(HttpStream, IncrementalMixin):
     url_base = None
@@ -45,38 +47,29 @@ class KYVEStream(HttpStream, IncrementalMixin):
         schema = {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "type": "object",
-            "properties": {
-                "key": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "object"
-                }
-            },
-            "required": [
-                "key",
-                "value"
-            ]
+            "properties": {"key": {"type": "string"}, "value": {"type": "object"}},
+            "required": ["key", "value"],
         }
 
         return schema
 
-    def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
-             next_page_token: Mapping[str, Any] = None) -> str:
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
         return f"/kyve/v1/bundles/{self.pool_id}"
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # Set the pagesize in the request parameters
         params = {"pagination.limit": self.page_size}
 
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
-            params['next_page_token'] = next_page_token
+            params["next_page_token"] = next_page_token
 
         # In case we use incremental streaming, we start with the stored _offset
         offset = stream_state.get(self.cursor_field, self._offset) or 0
@@ -86,11 +79,11 @@ class KYVEStream(HttpStream, IncrementalMixin):
         return params
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         try:
             # set the state to store the latest bundle_id
@@ -113,9 +106,9 @@ class KYVEStream(HttpStream, IncrementalMixin):
             else:
                 response_from_storage_provider = requests.get(f"https://storage.kyve.network/{storage_id}")
 
-            #if not response_from_storage_provider.ok:
+            # if not response_from_storage_provider.ok:
             #    logger.error(f"Reading bundle {storage_id} with status code {response.status_code}")
-                # todo future: this is a temporary fix until the bugs with Arweave are solved
+            # todo future: this is a temporary fix until the bugs with Arweave are solved
             #    continue
             try:
                 decompressed = gzip.decompress(response_from_storage_provider.content)
