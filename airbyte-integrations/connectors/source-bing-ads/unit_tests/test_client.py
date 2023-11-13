@@ -8,11 +8,11 @@ from unittest import mock
 from unittest.mock import patch
 from urllib.error import URLError
 
-from bingads.v13.bulk import BulkServiceManager
 import pytest
 import source_bing_ads.client
 from airbyte_cdk.utils import AirbyteTracedException
 from bingads.authorization import AuthorizationData, OAuthTokens
+from bingads.v13.bulk import BulkServiceManager
 from bingads.v13.reporting.exceptions import ReportingDownloadException
 from suds import sudsobject
 
