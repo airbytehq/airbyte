@@ -15,6 +15,19 @@ from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from source_pinterest.reports import CampaignAnalyticsReport
 
+from .reports.reports import (
+    AdGroupReport,
+    AdGroupTargetingReport,
+    AdvertizerReport,
+    AdvertizerTargetingReport,
+    CampaignTargetingReport,
+    KeywordReport,
+    PinPromotionReport,
+    PinPromotionTargetingReport,
+    ProductGroupReport,
+    ProductGroupTargetingReport,
+    ProductItemReport,
+)
 from .streams import (
     AdAccountAnalytics,
     AdAccounts,
@@ -29,6 +42,9 @@ from .streams import (
     BoardSections,
     CampaignAnalytics,
     Campaigns,
+    CatalogFeeds,
+    CatalogProductGroups,
+    Catalogs,
     ConversionTags,
     CustomerLists,
     Keywords,
@@ -114,9 +130,23 @@ class SourcePinterest(AbstractSource):
             campaigns,
             CampaignAnalytics(campaigns, config=config),
             CampaignAnalyticsReport(ad_accounts, config=report_config),
+            CampaignTargetingReport(ad_accounts, config=report_config),
             UserAccountAnalytics(None, config=config),
             Keywords(ad_groups, config=config),
             Audiences(ad_accounts, config=config),
             ConversionTags(ad_accounts, config=config),
             CustomerLists(ad_accounts, config=config),
+            Catalogs(config=config),
+            CatalogFeeds(config=config),
+            CatalogProductGroups(config=config),
+            AdvertizerReport(ad_accounts, config=report_config),
+            AdvertizerTargetingReport(ad_accounts, config=report_config),
+            AdGroupReport(ad_accounts, config=report_config),
+            AdGroupTargetingReport(ad_accounts, config=report_config),
+            PinPromotionReport(ad_accounts, config=report_config),
+            PinPromotionTargetingReport(ad_accounts, config=report_config),
+            ProductGroupReport(ad_accounts, config=report_config),
+            ProductGroupTargetingReport(ad_accounts, config=report_config),
+            KeywordReport(ad_accounts, config=report_config),
+            ProductItemReport(ad_accounts, config=report_config),
         ]

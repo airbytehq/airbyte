@@ -2,16 +2,21 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import ABC
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from requests import HTTPError
 
 from .utils import get_analytics_columns, to_datetime_str
 
@@ -43,10 +48,6 @@ class PinterestStream(HttpStream, ABC):
     @property
     def window_in_days(self):
         return 30  # Set window_in_days to 30 days date range
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("bookmark", {}) if self.data_fields else {}
@@ -115,6 +116,53 @@ class Boards(PinterestStream):
         return "boards"
 
 
+class Catalogs(PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/catalogs/list"""
+
+    use_cache = True
+
+    def path(self, **kwargs) -> str:
+        return "catalogs"
+
+
+class CatalogFeeds(PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/feeds/list"""
+
+    use_cache = True
+
+    def path(self, **kwargs) -> str:
+        return "catalogs/feeds"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        # Remove sensitive data
+        for record in super().parse_response(response, stream_state, **kwargs):
+            record.pop("credentials", None)
+            yield record
+
+
+class CatalogProductGroupsAvailabilityStrategy(HttpAvailabilityStrategy):
+    def reasons_for_unavailable_status_codes(
+        self, stream: Stream, logger: logging.Logger, source: Optional[Source], error: HTTPError
+    ) -> Dict[int, str]:
+        reasons_for_codes: Dict[int, str] = super().reasons_for_unavailable_status_codes(stream, logger, source, error)
+        reasons_for_codes[409] = "Can't access catalog product groups because there is no existing catalog."
+
+        return reasons_for_codes
+
+
+class CatalogProductGroups(PinterestStream):
+    """Docs: https://developers.pinterest.com/docs/api/v5/#operation/catalogs_product_groups/list"""
+
+    use_cache = True
+
+    def path(self, **kwargs) -> str:
+        return "catalogs/product_groups"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return CatalogProductGroupsAvailabilityStrategy()
+
+
 class AdAccounts(PinterestStream):
     use_cache = True
 
@@ -148,10 +196,7 @@ class Keywords(PinterestSubStream, PinterestStream):
     """Docs: https://developers.pinterest.com/docs/api/v5/#operation/keywords/get"""
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        # return f"ad_accounts/{stream_slice['parent']['id']}/keywords?ad_group_id=2680068678993"
         return f"ad_accounts/{stream_slice['parent']['ad_account_id']}/keywords?ad_group_id={stream_slice['parent']['id']}"
-        # return f"ad_accounts/{stream_slice['parent']['id']}/keywords?campaign_id=626744128982"
-        # return f"ads/{stream_slice['parent']['id']}/keywords"
 
 
 class ConversionTags(PinterestSubStream, PinterestStream):
