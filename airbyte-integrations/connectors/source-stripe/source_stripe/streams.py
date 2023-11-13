@@ -4,6 +4,7 @@
 
 import copy
 import math
+import os
 from abc import ABC, abstractmethod
 from itertools import chain
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -18,42 +19,47 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_stripe.availability_strategy import StripeAvailabilityStrategy, StripeSubStreamAvailabilityStrategy
 
 STRIPE_API_VERSION = "2022-11-15"
+CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
+USE_CACHE = not CACHE_DISABLED
 
 
 class IRecordExtractor(ABC):
     @abstractmethod
-    def extract_records(self, response: requests.Response) -> Iterable[Mapping]:
+    def extract_records(self, records: Iterable[MutableMapping]) -> Iterable[Mapping]:
         pass
 
 
 class DefaultRecordExtractor(IRecordExtractor):
-    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping]:
-        response_json = response.json()
-        yield from response_json.get("data", [])
+    def __init__(self, response_filter: Optional[Callable] = None):
+        self._response_filter = response_filter or (lambda x: x)
+
+    def extract_records(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
+        yield from filter(self._response_filter, records)
 
 
 class EventRecordExtractor(DefaultRecordExtractor):
-    def __init__(self, cursor_field: str):
+    def __init__(self, cursor_field: str, response_filter: Optional[Callable] = None):
+        super().__init__(response_filter)
         self.cursor_field = cursor_field
 
-    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping]:
-        records = super().extract_records(response)
-        # set the record updated date = date of event creation
+    def extract_records(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
         for record in records:
             item = record["data"]["object"]
             item[self.cursor_field] = record["created"]
             if record["type"].endswith(".deleted"):
                 item["is_deleted"] = True
-            yield item
+            if self._response_filter(item):
+                yield item
 
 
 class UpdatedCursorIncrementalRecordExtractor(DefaultRecordExtractor):
-    def __init__(self, cursor_field: str, legacy_cursor_field: Optional[str]):
+    def __init__(self, cursor_field: str, legacy_cursor_field: Optional[str], response_filter: Optional[Callable] = None):
+        super().__init__(response_filter)
         self.cursor_field = cursor_field
         self.legacy_cursor_field = legacy_cursor_field
 
-    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping]:
-        records = super().extract_records(response)
+    def extract_records(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
+        records = super().extract_records(records)
         for record in records:
             if self.cursor_field in record:
                 yield record
@@ -64,18 +70,6 @@ class UpdatedCursorIncrementalRecordExtractor(DefaultRecordExtractor):
 
             # yield the record with the added cursor_field
             yield record | {self.cursor_field: current_cursor_value}
-
-
-class FilteringRecordExtractor(UpdatedCursorIncrementalRecordExtractor):
-    def __init__(self, cursor_field: str, legacy_cursor_field: Optional[str], object_type: str):
-        super().__init__(cursor_field, legacy_cursor_field)
-        self.object_type = object_type
-
-    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping]:
-        records = super().extract_records(response)
-        for record in records:
-            if record["object"] == self.object_type:
-                yield record
 
 
 class StripeStream(HttpStream, ABC):
@@ -131,13 +125,14 @@ class StripeStream(HttpStream, ABC):
         use_cache: bool = False,
         expand_items: Optional[List[str]] = None,
         extra_request_params: Optional[Union[Mapping[str, Any], Callable]] = None,
+        response_filter: Optional[Callable] = None,
         primary_key: Optional[str] = "id",
         **kwargs,
     ):
         self.account_id = account_id
         self.start_date = start_date
         self.slice_range = slice_range or self.DEFAULT_SLICE_RANGE
-        self._record_extractor = record_extractor or DefaultRecordExtractor()
+        self._record_extractor = record_extractor or DefaultRecordExtractor(response_filter)
         self._name = name
         self._path = path
         self._use_cache = use_cache
@@ -159,7 +154,10 @@ class StripeStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # Stripe default pagination is 10, max is 100
-        params = {"limit": 100, **self.extra_request_params(stream_state, stream_slice, next_page_token)}
+        params = {
+            "limit": 100,
+            **self.extra_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        }
         if self.expand_items:
             params["expand[]"] = self.expand_items
         # Handle pagination by inserting the next page's token in the request parameters
@@ -176,7 +174,7 @@ class StripeStream(HttpStream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        yield from self.record_extractor.extract_records(response)
+        yield from self.record_extractor.extract_records(response.json().get("data", []))
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         headers = {"Stripe-Version": STRIPE_API_VERSION}
@@ -321,12 +319,15 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
         legacy_cursor_field: Optional[str] = "created",
         event_types: Optional[List[str]] = None,
         record_extractor: Optional[IRecordExtractor] = None,
+        response_filter: Optional[Callable] = None,
         **kwargs,
     ):
         self._event_types = event_types
         self._cursor_field = cursor_field
         self._legacy_cursor_field = legacy_cursor_field
-        record_extractor = record_extractor or UpdatedCursorIncrementalRecordExtractor(self.cursor_field, self.legacy_cursor_field)
+        record_extractor = record_extractor or UpdatedCursorIncrementalRecordExtractor(
+            self.cursor_field, self.legacy_cursor_field, response_filter
+        )
         super().__init__(*args, record_extractor=record_extractor, **kwargs)
         # `lookback_window_days` is hardcoded as it does not make any sense to re-export events,
         # as each event holds the latest value of a record.
@@ -340,7 +341,7 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
             slice_range=self.slice_range,
             event_types=self.event_types,
             cursor_field=self.cursor_field,
-            record_extractor=EventRecordExtractor(cursor_field=self.cursor_field),
+            record_extractor=EventRecordExtractor(cursor_field=self.cursor_field, response_filter=response_filter),
         )
 
     def update_cursor_field(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
@@ -486,7 +487,7 @@ class CheckoutSessionsLineItems(CreatedCursorIncrementalStripeStream):
         return UpdatedCursorIncrementalStripeStream(
             name="checkout_sessions",
             path="checkout/sessions",
-            use_cache=True,
+            use_cache=USE_CACHE,
             legacy_cursor_field="expires_at",
             event_types=[
                 "checkout.session.async_payment_failed",
@@ -518,7 +519,10 @@ class CheckoutSessionsLineItems(CreatedCursorIncrementalStripeStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # override to not refer to slice values
-        params = {"limit": 100, **self.extra_request_params(stream_state, stream_slice, next_page_token)}
+        params = {
+            "limit": 100,
+            **self.extra_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        }
         if self.expand_items:
             params["expand[]"] = self.expand_items
         if next_page_token:
@@ -574,7 +578,7 @@ class CustomerBalanceTransactions(StripeStream):
         return IncrementalStripeStream(
             name="customers",
             path="customers",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=["customer.created", "customer.updated", "customer.deleted"],
             authenticator=self.authenticator,
             account_id=self.account_id,
@@ -658,7 +662,7 @@ class Persons(UpdatedCursorIncrementalStripeStream, HttpSubStream):
     event_types = ["person.created", "person.updated", "person.deleted"]
 
     def __init__(self, *args, **kwargs):
-        parent = StripeStream(*args, name="accounts", path="accounts", use_cache=True, **kwargs)
+        parent = StripeStream(*args, name="accounts", path="accounts", use_cache=USE_CACHE, **kwargs)
         super().__init__(*args, parent=parent, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
@@ -718,10 +722,6 @@ class StripeLazySubStream(StripeStream, HttpSubStream):
     """
 
     @property
-    def filter(self) -> Optional[Mapping[str, Any]]:
-        return self._filter
-
-    @property
     def add_parent_id(self) -> bool:
         return self._add_parent_id
 
@@ -743,14 +743,12 @@ class StripeLazySubStream(StripeStream, HttpSubStream):
     def __init__(
         self,
         *args,
-        response_filter: Optional[Mapping[str, Any]] = None,
         add_parent_id: bool = False,
         parent_id: Optional[str] = None,
         sub_items_attr: Optional[str] = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        self._filter = response_filter
         self._add_parent_id = add_parent_id
         self._parent_id = parent_id
         self._sub_items_attr = sub_items_attr
@@ -774,9 +772,7 @@ class StripeLazySubStream(StripeStream, HttpSubStream):
         if not items_obj:
             return
 
-        items = items_obj.get("data", [])
-        if self.filter:
-            items = [i for i in items if i.get(self.filter["attr"]) == self.filter["value"]]
+        items = list(self.record_extractor.extract_records(items_obj.get("data", [])))
 
         # get next pages
         items_next_pages = []
@@ -811,7 +807,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         parent_id: Optional[str] = None,
         add_parent_id: bool = False,
         sub_items_attr: Optional[str] = None,
-        response_filter: Optional[Mapping[str, Any]] = None,
+        response_filter: Optional[Callable] = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -821,6 +817,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
             cursor_field=cursor_field,
             legacy_cursor_field=legacy_cursor_field,
             event_types=event_types,
+            response_filter=response_filter,
             **kwargs,
         )
         self.lazy_substream = StripeLazySubStream(
@@ -829,7 +826,9 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
             parent_id=parent_id,
             add_parent_id=add_parent_id,
             sub_items_attr=sub_items_attr,
-            response_filter=response_filter,
+            record_extractor=UpdatedCursorIncrementalRecordExtractor(
+                cursor_field=cursor_field, legacy_cursor_field=legacy_cursor_field, response_filter=response_filter
+            ),
             **kwargs,
         )
         self._parent_stream = None

@@ -70,4 +70,4 @@ In legacy normalization, columns of [Airbyte type](https://docs.airbyte.com/unde
 
 You also now see the following changes in Airbyte-provided columns:
 
-![Airbyte Destinations V2 Column Changes](../release_notes/assets/destinations-v2-column-changes.png)
+![Airbyte Destinations V2 Column Changes](../release_notes/assets/updated_table_columns.png)
