@@ -111,6 +111,7 @@ class AbstractSource(Source, ABC):
                     )
 
                 try:
+                    self._apply_log_level_to_stream_logger(logger, stream_instance)
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
                     stream_is_available, reason = stream_instance.check_availability(logger, self)
                     if not stream_is_available:
@@ -257,6 +258,15 @@ class AbstractSource(Source, ABC):
                 total_records_counter += 1
                 if internal_config.is_limit_reached(total_records_counter):
                     return
+
+    @staticmethod
+    def _apply_log_level_to_stream_logger(logger: logging.Logger, stream_instance: Stream) -> None:
+        """
+        Necessary because we use different loggers at the source and stream levels. We must
+        apply the source's log level to each stream's logger.
+        """
+        if hasattr(logger, "level"):
+            stream_instance.logger.setLevel(logger.level)
 
     def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream) -> AirbyteMessage:
         """
