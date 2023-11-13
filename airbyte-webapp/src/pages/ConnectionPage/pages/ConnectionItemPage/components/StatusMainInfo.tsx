@@ -74,7 +74,7 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
             <Link to={sourceConnectionPath} className={styles.connectorLink}>
               <ConnectorCard
                 connectionName={source.sourceName}
-                icon={sourceDefinition?.icon}
+                icon={`https://airbyte-icons.s3.amazonaws.com/${sourceDefinition?.icon}`}
                 connectorName={source.name}
                 releaseStage={sourceDefinition?.releaseStage}
               />
@@ -83,7 +83,7 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
             <Link to={destinationConnectionPath} className={styles.connectorLink}>
               <ConnectorCard
                 connectionName={destination.destinationName}
-                icon={destinationDefinition?.icon}
+                icon={`https://airbyte-icons.s3.amazonaws.com/${destinationDefinition?.icon}`}
                 connectorName={destination.name}
                 releaseStage={destinationDefinition?.releaseStage}
               />
