@@ -148,7 +148,8 @@
                   "Monthly",
                   "DayOfWeek",
                   "HourOfDay",
-                  "WeeklyStartingMonday"
+                  "WeeklyStartingMonday",
+                  "Summary"
                 ]
               },
               "default": ["Hourly"]

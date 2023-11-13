@@ -1269,9 +1269,14 @@ class UserLocationPerformanceReportMonthly(UserLocationPerformanceReport):
 class CustomReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     custom_report_columns = []
-    cursor_field = "TimePeriod"
     report_schema_name = None
     primary_key = None
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        # Summary aggregation doesn't include TimePeriod field
+        if self.report_aggregation != "Summary":
+            return "TimePeriod"
 
     @property
     def report_columns(self):
@@ -1299,12 +1304,6 @@ class CustomReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
         ]
         tree = ET.parse(urlparse(reporting_service_file).path)
         request_object = tree.find(f".//{{*}}complexType[@name='{self.report_name}Request']")
-
-        if not request_object:
-            return False, (
-                f"{self.report_name}: Reporting Data Object that you provided doesn't exist. "
-                f"Please ensure it is correct in Bing Ads Docs."
-            )
 
         report_object_columns = self._get_object_columns(request_object, tree)
         is_custom_cols_in_report_object_cols = all(x in report_object_columns for x in self.custom_report_columns)
