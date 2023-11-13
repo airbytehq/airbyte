@@ -1,6 +1,9 @@
 const fetch = require("node-fetch");
 const visit = require("unist-util-visit");
 
+const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><title>Available</title><path fill="currentColor" d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"/></svg>`;
+const crossIcon = `<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><title>Not available</title><path fill="currentColor" d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z"/></svg>`;
+
 const REGISTRY_URL =
   "https://connectors.airbyte.com/files/generated_reports/connector_registry_report.json";
 
@@ -59,27 +62,35 @@ const buildConnectorHTMLContent = (
   // note - you can't have any leading whitespace here
   const htmlContent = `<div>
     <div class="header">
-      <img src="${
-        registryEntry.iconUrl_oss
-      }" alt="connector logo" style="max-height: 40px; max-width: 40px; float: left; margin-right: 10px" />
-      <h1 id="${originalId}" style="position: relative;">${originalTitle}</h1>
+      <img src="${registryEntry.iconUrl_oss}" alt="" class="connectorIcon"  />
+      <h1 id="${originalId}">${originalTitle}</h1>
     </div>
 
-    <small>
-      <div style="width: 100%; background-color: rgb(220 220 220 / 25%); margin-bottom: 5px; padding: 5px">
-        <strong>Availability</strong>: Airbyte Cloud: ${
-          registryEntry.is_cloud ? "✅" : "❌"
-        }, Airbyte OSS: ${registryEntry.is_oss ? "✅" : "❌"}
-        <br />
-        <strong>Support Level</strong>: <a href="/project-overview/product-support-levels/">${capitalizeFirstLetter(
-          registryEntry.supportLevel_oss
-        )}</a>
-        <br />
-        <strong>Latest Version</strong>: ${registryEntry.dockerImageTag_oss}
-        <br />
-        <strong>Definition Id</strong>: ${registryEntry.definitionId}
+    <dl class="connectorMetadata">
+      <div>
+        <dt>Availability</dt>
+        <dd class="availability">
+          <span class="${registryEntry.is_cloud ? "available" : "unavailable"}">${registryEntry.is_cloud ? checkIcon : crossIcon} Airbyte Cloud</span>
+          <span class="${registryEntry.is_oss ? "available" : "unavailable"}">${registryEntry.is_oss ? checkIcon : crossIcon} Airbyte OSS</span>
+        </dd>
       </div>
-    </small>
+      <div>
+        <dt>Support Level</dt>
+        <dd>
+          <a href="/project-overview/product-support-levels/">${escape(capitalizeFirstLetter(
+            registryEntry.supportLevel_oss
+          ))}</a>
+        </dd>
+      </div>
+      <div>
+        <dt>Latest Version</dt>
+        <dd>${escape(registryEntry.dockerImageTag_oss)}</dd>
+      </div>
+      <div>
+        <dt>Definition Id</dt>
+        <dd>${escape(registryEntry.definitionId)}</dd>
+      </div>
+    </dl>
   </div>`;
 
   return htmlContent;
@@ -98,6 +109,10 @@ const isDocsPage = (vfile) => {
   }
 
   return true;
+};
+
+const escape = (string) => {
+  return string.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 };
 
 const capitalizeFirstLetter = (string) => {
