@@ -1,13 +1,19 @@
 const fetch = require("node-fetch");
 const visit = require("unist-util-visit");
 
-const registry_url =
+const REGISTRY_URL =
   "https://connectors.airbyte.com/files/generated_reports/connector_registry_report.json";
-let registry = [];
+
+const fetchCatalog = async () => {
+  console.log("Fetching connector registry...");
+  const json = await fetch(REGISTRY_URL).then(resp => resp.json());
+  console.log(`fetched ${json.length} connectors form registry`);
+  return json;
+};
+
+const catalog = fetchCatalog();
 
 const plugin = () => {
-  let registryFetcher = fetchCatalog();
-
   const transformer = async (ast, vfile) => {
     if (!isDocsPage(vfile)) return;
 
@@ -19,7 +25,7 @@ const plugin = () => {
       ""
     )}-${connectorName}`;
 
-    await Promise.resolve(registryFetcher);
+    const registry = await catalog;
 
     const registryEntry = registry.find(
       (r) => r.dockerRepository_oss === dockerRepository
@@ -27,13 +33,10 @@ const plugin = () => {
 
     if (!registryEntry) return;
 
-    let originalTitle = "";
-    let originalId = "";
-
     visit(ast, "heading", (node) => {
       if (node.depth === 1 && node.children.length === 1) {
-        originalTitle = node.children[0].value;
-        originalId = node.data.hProperties.id;
+        const originalTitle = node.children[0].value;
+        const originalId = node.data.hProperties.id;
 
         node.type = "html";
         node.children = undefined;
@@ -46,13 +49,6 @@ const plugin = () => {
     });
   };
   return transformer;
-};
-
-const fetchCatalog = async () => {
-  console.log("Fetching connector registry...");
-  const response = await fetch(registry_url);
-  registry = await response.json();
-  console.log(`fetched ${registry.length} connectors form registry`);
 };
 
 const buildConnectorHTMLContent = (
