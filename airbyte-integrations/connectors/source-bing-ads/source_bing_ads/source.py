@@ -108,8 +108,8 @@ class SourceBingAds(AbstractSource):
                     failure_type=FailureType.config_error,
                 )
 
-    def _validate_reporting_object_name(self, report_object: str) -> str:
-        # reporting mixin adds it if user didn't provide it
+    def _clear_reporting_object_name(self, report_object: str) -> str:
+        # reporting mixin adds it
         if report_object.endswith("Request"):
             return report_object.replace("Request", "")
         return report_object
@@ -120,7 +120,7 @@ class SourceBingAds(AbstractSource):
                 report["name"],
                 (CustomReport,),
                 {
-                    "report_name": self._validate_reporting_object_name(report["reporting_object"]),
+                    "report_name": self._clear_reporting_object_name(report["reporting_object"]),
                     "custom_report_columns": report["report_columns"],
                     "report_aggregation": report["report_aggregation"],
                 },

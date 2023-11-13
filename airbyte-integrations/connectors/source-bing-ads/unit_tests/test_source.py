@@ -169,10 +169,10 @@ def test_get_custom_reports(mocked_client, config_with_custom_reports):
     assert "AccountId" in custom_reports[0].custom_report_columns
 
 
-def test_validate_reporting_object_name():
-    reporting_object = SourceBingAds()._validate_reporting_object_name("DSAAutoTargetPerformanceReportRequest")
+def test_clear_reporting_object_name():
+    reporting_object = SourceBingAds()._clear_reporting_object_name("DSAAutoTargetPerformanceReportRequest")
     assert reporting_object == "DSAAutoTargetPerformanceReport"
-    reporting_object = SourceBingAds()._validate_reporting_object_name("DSAAutoTargetPerformanceReport")
+    reporting_object = SourceBingAds()._clear_reporting_object_name("DSAAutoTargetPerformanceReport")
     assert reporting_object == "DSAAutoTargetPerformanceReport"
 
 
