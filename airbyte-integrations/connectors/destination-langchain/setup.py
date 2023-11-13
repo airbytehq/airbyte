@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk==0.51.10",
+    "airbyte-cdk",
     "langchain",
     "openai",
     "requests",
