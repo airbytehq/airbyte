@@ -40,7 +40,9 @@ def stream_by_name(config):
     from source_stripe.source import SourceStripe
 
     def mocker(stream_name, source_config=config):
-        source = SourceStripe(SourceStripe.read_catalog(str(Path(__file__).parent.parent / "integration_tests" / "configured_catalog.json")))
+        source = SourceStripe(
+            SourceStripe.read_catalog(str(Path(__file__).parent.parent / "integration_tests" / "configured_catalog.json"))
+        )
         streams = source.streams(source_config)
         for stream in streams:
             if stream.name == stream_name:

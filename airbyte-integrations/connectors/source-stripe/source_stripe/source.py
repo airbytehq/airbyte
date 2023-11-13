@@ -18,7 +18,6 @@ from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import SyncMode
-
 from source_stripe.streams import (
     CheckoutSessionsLineItems,
     CreatedCursorIncrementalStripeStream,
@@ -443,7 +442,9 @@ class SourceStripe(AbstractSource):
 
         return [
             StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, self._create_empty_state(), NoopCursor())
-            if stream.name in self._streams_configured_as_full_refresh else stream for stream in streams
+            if stream.name in self._streams_configured_as_full_refresh
+            else stream
+            for stream in streams
         ]
 
     def _create_empty_state(self) -> MutableMapping[str, Any]:
