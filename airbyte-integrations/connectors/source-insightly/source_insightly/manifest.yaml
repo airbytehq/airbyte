@@ -98,7 +98,7 @@ definitions:
     name: "emails"
     primary_key: "EMAIL_ID"
     $parameters:
-      path: "/Emails"
+      path: "/Emails/Search"
 
   events_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -133,7 +133,7 @@ definitions:
     name: "leads"
     primary_key: "LEAD_ID"
     $parameters:
-      path: "/Leads"
+      path: "/Leads/Search"
 
   lead_sources_stream:
     $ref: "#/definitions/base_stream"
@@ -182,7 +182,7 @@ definitions:
     name: "opportunity_products"
     primary_key: "OPPORTUNITY_ITEM_ID"
     $parameters:
-      path: "/OpportunityLineItem"
+      path: "/OpportunityLineItem/Search"
 
   opportunity_state_reasons_stream:
     $ref: "#/definitions/base_stream"
@@ -196,7 +196,7 @@ definitions:
     name: "organisations"
     primary_key: "ORGANISATION_ID"
     $parameters:
-      path: "/Organisations"
+      path: "/Organisations/Search"
 
   pipelines_stream:
     $ref: "#/definitions/base_stream"
@@ -217,21 +217,21 @@ definitions:
     name: "price_book_entries"
     primary_key: "PRICEBOOK_ENTRY_ID"
     $parameters:
-      path: "/PricebookEntry"
+      path: "/PricebookEntry/Search"
 
   pricebooks_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "price_books"
     primary_key: "PRICEBOOK_ID"
     $parameters:
-      path: "/Pricebook"
+      path: "/Pricebook/Search"
 
   products_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "products"
     primary_key: "PRODUCT_ID"
     $parameters:
-      path: "/Product"
+      path: "/Product/Search"
 
   project_categories_stream:
     $ref: "#/definitions/base_stream"
@@ -259,14 +259,14 @@ definitions:
     name: "quote_products"
     primary_key: "QUOTATION_ITEM_ID"
     $parameters:
-      path: "/QuotationLineItem"
+      path: "/QuotationLineItem/Search"
 
   quotes_stream:
     $ref: "#/definitions/base_incremental_stream"
     name: "quotes"
     primary_key: "QUOTE_ID"
     $parameters:
-      path: "/Quotation"
+      path: "/Quotation/Search"
 
   relationships_stream:
     $ref: "#/definitions/base_stream"
@@ -315,7 +315,7 @@ definitions:
     name: "tickets"
     primary_key: "TICKET_ID"
     $parameters:
-      path: "/Tickets"
+      path: "/Ticket/Search"
 
   users_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -343,7 +343,7 @@ streams:
   - "#/definitions/opportunity_categories_stream"
   # - "#/definitions/opportunity_products_stream"
   - "#/definitions/opportunity_state_reasons_stream"
-  - "#/definitions/organisations_stream"
+  - "#/definitions/organizations_stream"
   - "#/definitions/pipelines_stream"
   - "#/definitions/pipeline_stages_stream"
   # - "#/definitions/pricebook_entries_stream"
