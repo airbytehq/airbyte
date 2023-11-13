@@ -232,8 +232,14 @@ public class MongoUtil {
      * Fetch the keys/types from the first N documents and the last N documents from the collection.
      * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
      */
+    final Set<Field> discoveredFields;
     final MongoCollection<Document> mongoCollection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
-    final Set<Field> discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize));
+    if (isSchemaEnforced) {
+      discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize));
+    } else {
+      // In schemaless mode, we only sample one record as we're only interested in the _id field (which exists on every record). 
+      discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, 1));
+    }
     return Optional
         .ofNullable(
             !discoveredFields.isEmpty() ? createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields), isSchemaEnforced)
