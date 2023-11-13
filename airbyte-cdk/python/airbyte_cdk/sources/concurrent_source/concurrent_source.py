@@ -72,6 +72,7 @@ class ConcurrentSource(AbstractSource, ABC):
 
         # Return early if there are no streams to read from
         if not stream_instances_to_read_from:
+            yield from []
             return
 
         queue: Queue[QueueItem] = Queue()
