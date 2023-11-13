@@ -75,15 +75,7 @@ def test_parse_response_with_sensitive_data(patch_base_class):
     """Test that sensitive data is removed"""
     stream = CatalogsFeeds(config=MagicMock())
     response = MagicMock()
-    response.json.return_value = {
-        "items": [
-            {
-                "id": "CatalogsFeeds1",
-                "credentials": {'password': "bla"}
-            }
-        ],
-        "bookmark": "string"
-    }
+    response.json.return_value = {"items": [{"id": "CatalogsFeeds1", "credentials": {"password": "bla"}}], "bookmark": "string"}
     actual_response = list(stream.parse_response(response=response, stream_state=None))
     assert actual_response == [{"id": "CatalogsFeeds1"}]
 
@@ -210,23 +202,11 @@ def test_backoff_on_rate_limit_error(requests_mock, test_response, status_code, 
         (
             Keywords(parent=None, config=MagicMock()),
             {"parent": {"id": "234", "ad_account_id": "AD_ACCOUNT_1"}},
-            "ad_accounts/AD_ACCOUNT_1/keywords?ad_group_id=234"
+            "ad_accounts/AD_ACCOUNT_1/keywords?ad_group_id=234",
         ),
-        (
-            Audiences(parent=None, config=MagicMock()),
-            {"parent": {"id": "AD_ACCOUNT_1"}},
-            "ad_accounts/AD_ACCOUNT_1/audiences"
-        ),
-        (
-            ConversionTags(parent=None, config=MagicMock()),
-            {"parent": {"id": "AD_ACCOUNT_1"}},
-            "ad_accounts/AD_ACCOUNT_1/conversion_tags"
-        ),
-        (
-            CustomerLists(parent=None, config=MagicMock()),
-            {"parent": {"id": "AD_ACCOUNT_1"}},
-            "ad_accounts/AD_ACCOUNT_1/customer_lists"
-        ),
+        (Audiences(parent=None, config=MagicMock()), {"parent": {"id": "AD_ACCOUNT_1"}}, "ad_accounts/AD_ACCOUNT_1/audiences"),
+        (ConversionTags(parent=None, config=MagicMock()), {"parent": {"id": "AD_ACCOUNT_1"}}, "ad_accounts/AD_ACCOUNT_1/conversion_tags"),
+        (CustomerLists(parent=None, config=MagicMock()), {"parent": {"id": "AD_ACCOUNT_1"}}, "ad_accounts/AD_ACCOUNT_1/customer_lists"),
     ],
 )
 def test_path(patch_base_class, stream_cls, slice, expected):
