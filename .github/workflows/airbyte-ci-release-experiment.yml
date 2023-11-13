@@ -31,7 +31,6 @@ jobs:
         id: checkout_airbyte
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
           ref: ${{ github.sha }} # This is required to make sure that the same commit is checked out on all runners
 
       - name: Get short SHA
