@@ -16,6 +16,7 @@ import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLI
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.PARAM_CA_CERTIFICATE;
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.parseSSLConfig;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.parseSSLConfigDeprecated;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_NO_SCHEMA_QUERY;
@@ -185,8 +186,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append(AMPERSAND);
     }
-
-    final Map<String, String> sslParameters = parseSSLConfig(config);
+    @SuppressWarnings("deprecation")
+    final Map<String, String> sslParameters = parseSSLConfigDeprecated(config);
     if (config.has(PARAM_SSL_MODE) && config.get(PARAM_SSL_MODE).has(PARAM_CA_CERTIFICATE)) {
       sslParameters.put(CA_CERTIFICATE_PATH,
           JdbcSSLConnectionUtils.fileFromCertPem(config.get(PARAM_SSL_MODE).get(PARAM_CA_CERTIFICATE).asText()).toString());

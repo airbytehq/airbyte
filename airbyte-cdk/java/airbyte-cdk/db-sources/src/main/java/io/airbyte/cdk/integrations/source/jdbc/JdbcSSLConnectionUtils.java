@@ -10,6 +10,7 @@ import io.airbyte.cdk.db.util.SSLCertificateUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStoreException;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -58,7 +61,7 @@ public class JdbcSSLConnectionUtils {
       this.spec = Arrays.asList(spec);
     }
 
-    public static Optional<SslMode> bySpec(final String spec) {
+    private static Optional<SslMode> bySpec(final String spec) {
       return Arrays.stream(SslMode.values())
           .filter(sslMode -> sslMode.spec.contains(spec))
           .findFirst();
@@ -72,13 +75,22 @@ public class JdbcSSLConnectionUtils {
   public static final String PARAM_CLIENT_KEY = "client_key";
   public static final String PARAM_CLIENT_KEY_PASSWORD = "client_key_password";
 
+
+
+  public static record SSLConfig(SslMode sslMode, URL keyStoreUrl, String keyStorePassword, String keyStoreType) {
+    SSLConfig(SslMode sslMode) {
+      this(sslMode, null, null, null);
+    }
+  }
+
   /**
    * Parses SSL related configuration and generates keystores to be used by connector
    *
    * @param config configuration
    * @return map containing relevant parsed values including location of keystore or an empty map
    */
-  public static Map<String, String> parseSSLConfig(final JsonNode config) {
+  @Deprecated
+  public static Map<String, String> parseSSLConfigDeprecated(final JsonNode config) {
     LOGGER.debug("source config: {}", config);
 
     Pair<URI, String> caCertKeyStorePair = null;
@@ -130,32 +142,62 @@ public class JdbcSSLConnectionUtils {
     return additionalParameters;
   }
 
-  public static Pair<URI, String> prepareCACertificateKeyStore(final JsonNode config) {
-    // if config available
+  public static SSLConfig parseSSLConfig(final JsonNode config) {
+    LOGGER.debug("source config: {}", config);
+    // assume ssl if not explicitly mentioned.
+    if (config.has(JdbcUtils.SSL_KEY) && ! config.get(JdbcUtils.SSL_KEY).asBoolean()) {
+      return new SSLConfig(SslMode.DISABLED);
+    }
+    if (!config.has(JdbcUtils.SSL_MODE_KEY)) {
+      return new SSLConfig(SslMode.DISABLED);
+    }
+
+    JsonNode sslConfigAsJson = config.get(JdbcUtils.SSL_MODE_KEY);
+    final String specMode = sslConfigAsJson.get(PARAM_MODE).asText();
+    SslMode sslMode = SslMode.bySpec(specMode).orElseThrow(() -> new IllegalArgumentException("unexpected ssl mode"));
+
+    Pair<URI, String> certificateKeyStore = prepareClientCertificateKeyStore(sslConfigAsJson);
+    if (certificateKeyStore == null) {
+      LOGGER.debug("no client certificate keystore found. Looking for CA certificate key store.");
+      certificateKeyStore = JdbcSSLConnectionUtils.prepareCACertificateKeyStore(sslConfigAsJson);
+    }
+    if (certificateKeyStore == null) {
+      LOGGER.debug("no CA certificate keystore found. Returning SSLConfig.");
+      return new SSLConfig(sslMode);
+    }
+
+    LOGGER.debug("uri for cert keystore: {}", certificateKeyStore.getLeft().toString());
+    try {
+      return new SSLConfig(sslMode,
+          certificateKeyStore.getLeft().toURL(),
+          certificateKeyStore.getRight(),
+          KEY_STORE_TYPE_PKCS12);
+    } catch (final MalformedURLException e) {
+      throw new RuntimeException("Unable to get a URL for trust key store");
+    }
+  }
+
+  private static @Nullable Pair<URI, String> prepareCACertificateKeyStore(final JsonNode sslConfigAsJson) {
     // if has CA cert - make keystore
     // if has client cert
     // if has client password - make keystore using password
     // if no client password - make keystore using random password
-    Pair<URI, String> caCertKeyStorePair = null;
-    if (Objects.nonNull(config)) {
-      if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
-        final var encryption = config.get(JdbcUtils.SSL_MODE_KEY);
-        if (encryption.has(PARAM_CA_CERTIFICATE) && !encryption.get(PARAM_CA_CERTIFICATE).asText().isEmpty()) {
-          final String clientKeyPassword = getOrGeneratePassword(encryption);
-          try {
-            final URI caCertKeyStoreUri = SSLCertificateUtils.keyStoreFromCertificate(
-                encryption.get(PARAM_CA_CERTIFICATE).asText(),
-                clientKeyPassword,
-                null,
-                null);
-            caCertKeyStorePair = new ImmutablePair<>(caCertKeyStoreUri, clientKeyPassword);
-          } catch (final CertificateException | IOException | KeyStoreException | NoSuchAlgorithmException e) {
-            throw new RuntimeException("Failed to create keystore for CA certificate", e);
-          }
-        }
+
+    if (sslConfigAsJson.has(PARAM_CA_CERTIFICATE) && !sslConfigAsJson.get(PARAM_CA_CERTIFICATE).asText().isEmpty()) {
+      final String clientKeyPassword = getOrGeneratePassword(sslConfigAsJson);
+      try {
+        final URI caCertKeyStoreUri = SSLCertificateUtils.keyStoreFromCertificate(
+            sslConfigAsJson.get(PARAM_CA_CERTIFICATE).asText(),
+            clientKeyPassword,
+            null,
+            null);
+        return new ImmutablePair<>(caCertKeyStoreUri, clientKeyPassword);
+      } catch (final CertificateException | IOException | KeyStoreException | NoSuchAlgorithmException e) {
+        throw new RuntimeException("Failed to create keystore for CA certificate", e);
       }
+    } else {
+      return null;
     }
-    return caCertKeyStorePair;
   }
 
   private static String getOrGeneratePassword(final JsonNode sslModeConfig) {
@@ -168,30 +210,26 @@ public class JdbcSSLConnectionUtils {
     return clientKeyPassword;
   }
 
-  public static Pair<URI, String> prepareClientCertificateKeyStore(final JsonNode config) {
+  private static @Nullable Pair<URI, String> prepareClientCertificateKeyStore(final @Nonnull JsonNode sslConfigAsJson) {
     Pair<URI, String> clientCertKeyStorePair = null;
-    if (Objects.nonNull(config)) {
-      if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
-        final var encryption = config.get(JdbcUtils.SSL_MODE_KEY);
-        if (encryption.has(PARAM_CLIENT_CERTIFICATE) && !encryption.get(PARAM_CLIENT_CERTIFICATE).asText().isEmpty()
-            && encryption.has(PARAM_CLIENT_KEY) && !encryption.get(PARAM_CLIENT_KEY).asText().isEmpty()) {
-          final String clientKeyPassword = getOrGeneratePassword(encryption);
-          try {
-            final URI clientCertKeyStoreUri = SSLCertificateUtils.keyStoreFromClientCertificate(encryption.get(PARAM_CLIENT_CERTIFICATE).asText(),
-                encryption.get(PARAM_CLIENT_KEY).asText(),
-                clientKeyPassword, null);
-            clientCertKeyStorePair = new ImmutablePair<>(clientCertKeyStoreUri, clientKeyPassword);
-          } catch (final CertificateException | IOException
-              | KeyStoreException | NoSuchAlgorithmException
-              | InvalidKeySpecException | InterruptedException e) {
-            throw new RuntimeException("Failed to create keystore for Client certificate", e);
-          }
-        }
+    if (sslConfigAsJson.has(PARAM_CLIENT_CERTIFICATE) && !sslConfigAsJson.get(PARAM_CLIENT_CERTIFICATE).asText().isEmpty()
+        && sslConfigAsJson.has(PARAM_CLIENT_KEY) && !sslConfigAsJson.get(PARAM_CLIENT_KEY).asText().isEmpty()) {
+      final String clientKeyPassword = getOrGeneratePassword(sslConfigAsJson);
+      try {
+        final URI clientCertKeyStoreUri = SSLCertificateUtils.keyStoreFromClientCertificate(sslConfigAsJson.get(PARAM_CLIENT_CERTIFICATE).asText(),
+            sslConfigAsJson.get(PARAM_CLIENT_KEY).asText(),
+            clientKeyPassword, null);
+        return new ImmutablePair<>(clientCertKeyStoreUri, clientKeyPassword);
+      } catch (final CertificateException | IOException
+          | KeyStoreException | NoSuchAlgorithmException
+          | InvalidKeySpecException | InterruptedException e) {
+        throw new RuntimeException("Failed to create keystore for Client certificate", e);
       }
     }
-    return clientCertKeyStorePair;
+    return null;
   }
 
+  // SGX TODO: should be private
   public static Path fileFromCertPem(final String certPem) {
     try {
       final Path path = Files.createTempFile(null, ".crt");
@@ -202,5 +240,4 @@ public class JdbcSSLConnectionUtils {
       throw new RuntimeException("Cannot save root certificate to file", e);
     }
   }
-
 }
