@@ -115,6 +115,7 @@ def test_validate_custom_reposts(mocked_client, config_with_custom_reports, logg
     res = SourceBingAds().validate_custom_reposts(config=config_with_custom_reports, client=mocked_client)
     assert res is None
 
+
 @patch.object(source_bing_ads.source, "Client")
 def test_validate_custom_reposts_failed_invalid_report_columns(mocked_client, config_with_custom_reports, logger_mock):
     reporting_service_mock = MagicMock()
