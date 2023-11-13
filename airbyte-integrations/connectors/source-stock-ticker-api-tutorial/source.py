@@ -22,18 +22,19 @@
 
 
 import argparse  # helps parse commandline arguments
-import json
-import sys
-import os
-import requests
 import datetime
-from datetime import date
-from datetime import timedelta
+import json
+import os
+import sys
+from datetime import date, timedelta
+
+import requests
+
 
 def read(config, catalog):
     # Assert required configuration was provided
     if "api_key" not in config or "stock_ticker" not in config:
-        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        log_error("Input config must contain the properties 'api_key' and 'stock_ticker'")
         sys.exit(1)
 
     # Find the stock_prices stream if it is present in the input catalog
@@ -43,26 +44,30 @@ def read(config, catalog):
             stock_prices_stream = configured_stream
 
     if stock_prices_stream is None:
-        log("No streams selected")
+        log_error("No streams selected")
         return
 
     # We only support full_refresh at the moment, so verify the user didn't ask for another sync mode
     if stock_prices_stream["sync_mode"] != "full_refresh":
-        log("This connector only supports full refresh syncs! (for now)")
+        log_error("This connector only supports full refresh syncs! (for now)")
         sys.exit(1)
 
     # If we've made it this far, all the configuration is good and we can pull the last 7 days of market data
-    response = _call_api(ticker=config["stock_ticker"], token = config["api_key"])
+    response = _call_api(ticker=config["stock_ticker"], token=config["api_key"])
     if response.status_code != 200:
         # In a real scenario we'd handle this error better :)
-        log("Failure occurred when calling Polygon.io API")
+        log_error("Failure occurred when calling Polygon.io API")
         sys.exit(1)
     else:
-        # Stock prices are returned sorted by by date in ascending order
+        # Stock prices are returned sorted by date in ascending order
         # We want to output them one by one as AirbyteMessages
         results = response.json()["results"]
         for result in results:
-            data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
+            data = {
+                "date": date.fromtimestamp(result["t"] / 1000).isoformat(),
+                "stock_ticker": config["stock_ticker"],
+                "price": result["c"],
+            }
             record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
@@ -83,7 +88,7 @@ def _call_api(ticker, token):
 def check(config):
     # Assert required configuration was provided
     if "api_key" not in config or "stock_ticker" not in config:
-        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        log_error("Input config must contain the properties 'api_key' and 'stock_ticker'")
         sys.exit(1)
     else:
         # Validate input configuration by attempting to get the daily closing prices of the input stock ticker
@@ -107,25 +112,23 @@ def log(message):
     print(json.dumps(log_json))
 
 
+def log_error(error_message):
+    current_time_in_ms = int(datetime.datetime.now().timestamp()) * 1000
+    log_json = {"type": "TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}
+    print(json.dumps(log_json))
+
+
 def discover():
     catalog = {
-        "streams": [{
-            "name": "stock_prices",
-            "supported_sync_modes": ["full_refresh"],
-            "json_schema": {
-                "properties": {
-                    "date": {
-                        "type": "string"
-                    },
-                    "price": {
-                        "type": "number"
-                    },
-                    "stock_ticker": {
-                        "type": "string"
-                    }
-                }
+        "streams": [
+            {
+                "name": "stock_prices",
+                "supported_sync_modes": ["full_refresh"],
+                "json_schema": {
+                    "properties": {"date": {"type": "string"}, "price": {"type": "number"}, "stock_ticker": {"type": "string"}}
+                },
             }
-        }]
+        ]
     }
     airbyte_message = {"type": "CATALOG", "catalog": catalog}
     print(json.dumps(airbyte_message))
@@ -173,9 +176,7 @@ def run(args):
     read_parser.add_argument("--state", type=str, required=False, help="path to the json-encoded state file")
     required_read_parser = read_parser.add_argument_group("required named arguments")
     required_read_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
-    required_read_parser.add_argument(
-        "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
-    )
+    required_read_parser.add_argument("--catalog", type=str, required=True, help="path to the catalog used to determine which data to read")
 
     parsed_args = main_parser.parse_args(args)
     command = parsed_args.command

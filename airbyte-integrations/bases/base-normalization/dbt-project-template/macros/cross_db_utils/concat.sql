@@ -30,3 +30,7 @@
 {% macro tidb__concat(fields) -%}
     concat({{ fields|join(', ') }})
 {%- endmacro %}
+
+{% macro duckdb__concat(fields) -%}
+    concat({{ fields|join(', ') }})
+{%- endmacro %}

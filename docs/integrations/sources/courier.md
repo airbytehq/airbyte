@@ -17,7 +17,7 @@ Generate an API key per the [Courier documentation](https://www.courier.com/docs
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Courier connector and select **Courier** from the Source type dropdown.
 4. Enter your `api_key`.

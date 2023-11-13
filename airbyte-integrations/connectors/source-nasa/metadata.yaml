@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.nasa.gov
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 1a8667d7-7978-43cd-ba4d-d32cbd478971
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-nasa
+  githubIssueLabel: source-nasa
+  icon: nasa.svg
+  license: MIT
+  name: Nasa
+  releaseDate: 2023-10-09
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/nasa
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

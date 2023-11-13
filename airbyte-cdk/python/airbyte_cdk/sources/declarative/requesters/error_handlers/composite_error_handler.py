@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass
@@ -10,11 +10,10 @@ import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class CompositeErrorHandler(ErrorHandler, JsonSchemaMixin):
+class CompositeErrorHandler(ErrorHandler):
     """
     Error handler that sequentially iterates over a list of `ErrorHandler`s
 
@@ -39,9 +38,9 @@ class CompositeErrorHandler(ErrorHandler, JsonSchemaMixin):
     """
 
     error_handlers: List[ErrorHandler]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if not self.error_handlers:
             raise ValueError("CompositeErrorHandler expects at least 1 underlying error handler")
 
@@ -49,8 +48,12 @@ class CompositeErrorHandler(ErrorHandler, JsonSchemaMixin):
     def max_retries(self) -> Union[int, None]:
         return self.error_handlers[0].max_retries
 
+    @property
+    def max_time(self) -> Union[int, None]:
+        return max([error_handler.max_time or 0 for error_handler in self.error_handlers])
+
     def interpret_response(self, response: requests.Response) -> ResponseStatus:
-        should_retry = None
+        should_retry = ResponseStatus(ResponseAction.FAIL)
         for retrier in self.error_handlers:
             should_retry = retrier.interpret_response(response)
             if should_retry.action == ResponseAction.SUCCESS:

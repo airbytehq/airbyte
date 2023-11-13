@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Services Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "consumption_report_interval": {
+      "type": ["null", "number"]
+    },
+    "date_created": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_updated": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "default_channel_creator_role_sid": {
+      "type": ["null", "string"]
+    },
+    "default_channel_role_sid": {
+      "type": ["null", "string"]
+    },
+    "default_service_role_sid": {
+      "type": ["null", "string"]
+    },
+    "friendly_name": {
+      "type": ["null", "string"]
+    },
+    "limits": {
+      "type": ["null", "object"],
+      "properties": {
+        "channel_members": {
+          "type": ["null", "number"]
+        },
+        "user_channels": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "links": {
+      "type": ["null", "object"],
+      "properties": {
+        "channels": {
+          "type": ["null", "string"]
+        },
+        "users": {
+          "type": ["null", "string"]
+        },
+        "roles": {
+          "type": ["null", "string"]
+        },
+        "bindings": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "notifications": {
+      "type": ["null", "object"],
+      "properties": {
+        "users": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "post_webhook_url": {
+      "type": ["null", "string"]
+    },
+    "pre_webhook_url": {
+      "type": ["null", "string"]
+    },
+    "pre_webhook_retry_count": {
+      "type": ["null", "number"]
+    },
+    "post_webhook_retry_count": {
+      "type": ["null", "number"]
+    },
+    "reachability_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "read_status_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "sid": {
+      "type": ["null", "string"]
+    },
+    "typing_indicator_timeout": {
+      "type": ["null", "number"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "webhook_filters": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "webhook_method": {
+      "type": ["null", "string"]
+    },
+    "media": {
+      "type": ["null", "object"],
+      "properties": {
+        "size_limit_mb": {
+          "type": ["null", "number"]
+        },
+        "compatibility_message": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

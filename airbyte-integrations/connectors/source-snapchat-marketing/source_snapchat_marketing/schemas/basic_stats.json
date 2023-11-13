@@ -221,6 +221,12 @@
     },
     "earned_reach": {
       "type": ["null", "number"]
+    },
+    "story_opens": {
+      "type": ["null", "number"]
+    },
+    "story_completes": {
+      "type": ["null", "number"]
     }
   }
 }

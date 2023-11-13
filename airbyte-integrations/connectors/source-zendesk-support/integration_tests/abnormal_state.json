@@ -30,7 +30,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2222-07-20T10:05:18Z" },
+      "stream_state": { "generated_timestamp": 8001820514 },
       "stream_descriptor": { "name": "tickets" }
     }
   },
@@ -88,6 +88,111 @@
     "stream": {
       "stream_state": { "created_at": "2222-07-19T22:21:26Z" },
       "stream_descriptor": { "name": "ticket_audits" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "audit_logs" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-12-11T19:34:06Z" },
+      "stream_descriptor": { "name": "posts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-12-11T19:34:06Z" },
+      "stream_descriptor": { "name": "topics" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "organization_memberships" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "ticket_skips" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "custom_roles" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "schedules" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "sla_policies" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "post_votes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "post_comments" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "post_comment_votes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "articles" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "article_votes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "article_comments" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "article_comment_votes" }
     }
   }
 ]

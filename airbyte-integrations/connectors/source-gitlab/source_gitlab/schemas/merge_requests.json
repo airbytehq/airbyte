@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
@@ -21,6 +21,10 @@
       "type": ["null", "string"]
     },
     "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "prepared_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -126,20 +130,72 @@
     "approvals_before_merge": {
       "type": ["null", "boolean", "string", "object"]
     },
+    "author": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
     "author_id": {
       "type": ["null", "integer"]
+    },
+    "assignee": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "assignee_id": {
       "type": ["null", "integer"]
     },
+    "closed_by": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
     "closed_by_id": {
       "type": ["null", "integer"]
+    },
+    "milestone": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "milestone_id": {
       "type": ["null", "integer"]
     },
+    "merged_by": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
     "merged_by_id": {
       "type": ["null", "integer"]
+    },
+    "draft": {
+      "type": ["null", "boolean"]
+    },
+    "detailed_merge_status": {
+      "type": ["null", "string"]
+    },
+    "squash_on_merge": {
+      "type": ["null", "boolean"]
+    },
+    "merge_user": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "username": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "web_url": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }

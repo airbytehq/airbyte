@@ -1,19 +1,22 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.protocol.models.DestinationSyncMode;
-import java.util.ArrayList;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
 /**
+ * @param streamName output stream name
+ * @param namespace
  * @param datasetId the dataset ID is equivalent to output schema
+ * @param datasetLocation location of dataset (e.g. US, EU)
+ * @param tmpTableId BigQuery temporary table
+ * @param targetTableId BigQuery final raw table
+ * @param tableSchema schema for the table
+ * @param syncMode BigQuery's mapping of write modes to Airbyte's sync mode
  */
 public record BigQueryWriteConfig(
                                   String streamName,
@@ -23,10 +26,7 @@ public record BigQueryWriteConfig(
                                   TableId tmpTableId,
                                   TableId targetTableId,
                                   Schema tableSchema,
-                                  DestinationSyncMode syncMode,
-                                  List<String> stagedFiles) {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryWriteConfig.class);
+                                  DestinationSyncMode syncMode) {
 
   public BigQueryWriteConfig(final String streamName,
                              final String namespace,
@@ -44,17 +44,7 @@ public record BigQueryWriteConfig(
         TableId.of(datasetId, tmpTableName),
         TableId.of(datasetId, targetTableName),
         tableSchema,
-        syncMode,
-        new ArrayList<>());
-  }
-
-  public void addStagedFile(final String file) {
-    this.stagedFiles.add(file);
-    LOGGER.info("Added staged file: {}", file);
-  }
-
-  public void clearStagedFiles() {
-    this.stagedFiles.clear();
+        syncMode);
   }
 
 }

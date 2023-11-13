@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.rockset;
@@ -10,11 +10,11 @@ import static io.airbyte.integrations.destination.rockset.RocksetUtils.ROCKSET_W
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.standardtest.destination.PerStreamStateMessageTest;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,0 +1,31 @@
+data:
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 94bd199c-2ff0-4aa2-b98e-17f0acb72610
+  dockerImageTag: 0.3.0
+  dockerRepository: airbyte/destination-duckdb
+  githubIssueLabel: destination-duckdb
+  icon: duckdb.svg
+  license: MIT
+  name: DuckDB
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  releases:
+    breakingChanges:
+      0.3.0:
+        message: "This version uses the DuckDB 0.9.1 database driver, which is not backwards compatible with prior versions. MotherDuck users can upgrade their database by visiting https://app.motherduck.com/ and accepting the upgrade. For more information, see the connector migration guide."
+        upgradeDeadline: "2023-10-31"
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/duckdb
+  tags:
+    - language:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

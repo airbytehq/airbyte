@@ -1,21 +1,21 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.redshift;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -38,7 +38,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
   // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
   // constructor.
   public RedshiftSource() {
-    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new RedshiftSourceOperations());
   }
 
   @Override

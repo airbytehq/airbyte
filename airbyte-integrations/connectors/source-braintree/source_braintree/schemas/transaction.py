@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from .cards import (
     Address,
@@ -61,7 +61,7 @@ class Transaction(BaseModel):
     created_at: datetime
     credit_card_details: CreditCard
     currency_iso_code: str
-    custom_fields: str
+    custom_fields: Dict[str, str]
     customer_details: Customer
     cvv_response_code: str
     disbursement_details: DisbursementDetails

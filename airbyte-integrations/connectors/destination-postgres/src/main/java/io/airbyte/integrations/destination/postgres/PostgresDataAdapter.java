@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres;
 
+import io.airbyte.cdk.integrations.destination.jdbc.DataAdapter;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.jdbc.DataAdapter;
 
 public class PostgresDataAdapter extends DataAdapter {
 

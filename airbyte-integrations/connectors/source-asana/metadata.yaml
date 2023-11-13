@@ -1,0 +1,27 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  allowedHosts:
+    hosts:
+      - app.asana.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
+  dockerImageTag: 0.6.1
+  dockerRepository: airbyte/source-asana
+  documentationUrl: https://docs.airbyte.com/integrations/sources/asana
+  githubIssueLabel: source-asana
+  icon: asana.svg
+  license: MIT
+  name: Asana
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: beta
+  supportLevel: community
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

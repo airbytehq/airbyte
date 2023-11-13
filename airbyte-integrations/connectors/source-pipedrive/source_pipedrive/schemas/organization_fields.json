@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "integer"]
@@ -21,7 +22,9 @@
       "type": ["null", "string"]
     },
     "update_time": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "last_updated_by_user_id": {
       "type": ["null", "integer"]
@@ -56,6 +59,21 @@
     "sortable_flag": {
       "type": ["null", "boolean"]
     },
+    "parent_id": {
+      "type": ["null", "integer"]
+    },
+    "id_suffix": {
+      "type": ["null", "string"]
+    },
+    "is_subfield": {
+      "type": ["null", "boolean"]
+    },
+    "json_column_flag": {
+      "type": ["null", "boolean"]
+    },
+    "group_id": {
+      "type": ["null", "integer"]
+    },
     "options": {
       "type": ["null", "array"],
       "items": {
@@ -72,6 +90,18 @@
     },
     "mandatory_flag": {
       "type": ["null", "boolean"]
+    },
+    "display_name": {
+      "type": ["null", "string"]
+    },
+    "use_field": {
+      "type": ["null", "string"]
+    },
+    "display_field": {
+      "type": ["null", "string"]
+    },
+    "link": {
+      "type": ["null", "string"]
     }
   }
 }

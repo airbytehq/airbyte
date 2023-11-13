@@ -189,6 +189,7 @@
     },
     "cover": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "idAttachment": {
           "type": ["null", "string"]
@@ -197,30 +198,30 @@
           "type": ["null", "string"]
         },
         "idUploadedBackground": {
-          "type": ["null", "boolean"]
+          "type": ["null", "string"]
         },
         "size": {
           "type": ["null", "string"]
         },
         "brightness": {
           "type": ["null", "string"]
+        },
+        "edgeColor": {
+          "type": ["null", "string"]
+        },
+        "sharedSourceUrl": {
+          "type": ["null", "string"]
+        },
+        "idPlugin": {
+          "type": ["null", "string"]
         }
       }
     },
     "idChecklists": {
-      "anyOf": [
-        {
-          "type": ["null", "array"],
-          "items": {
-            "additionalProperties": false,
-            "properties": {
-              "id": {
-                "type": ["null", "string"]
-              }
-            }
-          }
-        }
-      ]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "idMembers": {
       "type": ["null", "array"],

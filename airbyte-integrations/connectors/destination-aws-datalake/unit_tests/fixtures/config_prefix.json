@@ -1,0 +1,17 @@
+{
+  "aws_account_id": "111111111111",
+  "credentials": {
+    "credentials_title": "IAM User",
+    "aws_access_key_id": "aws_key_id",
+    "aws_secret_access_key": "aws_secret_key"
+  },
+  "region": "us-east-1",
+  "bucket_name": "datalake-bucket",
+  "bucket_prefix": "prefix",
+  "lakeformation_database_name": "test",
+  "format": {
+    "format_type": "Parquet",
+    "compression_codec": "SNAPPY"
+  },
+  "partitioning": "NO PARTITIONING"
+}

@@ -1,0 +1,37 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 200
+  allowedHosts:
+    hosts:
+      - amplitude.com
+      - analytics.eu.amplitude.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+  connectorSubtype: api
+  connectorType: source
+  definitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
+  dockerImageTag: 0.3.6
+  dockerRepository: airbyte/source-amplitude
+  documentationUrl: https://docs.airbyte.com/integrations/sources/amplitude
+  githubIssueLabel: source-amplitude
+  icon: amplitude.svg
+  license: MIT
+  name: Amplitude
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - events
+      - active_users
+      - annotations
+      - cohorts
+  supportLevel: certified
+  tags:
+    - language:low-code
+    - language:python
+metadataSpecVersion: "1.0"

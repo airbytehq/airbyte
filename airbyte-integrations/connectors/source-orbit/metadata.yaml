@@ -1,0 +1,28 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 95bcc041-1d1a-4c2e-8802-0ca5b1bfa36a
+  dockerImageTag: 0.3.0
+  dockerRepository: airbyte/source-orbit
+  githubIssueLabel: source-orbit
+  icon: orbit.svg
+  license: MIT
+  name: Orbit
+  releaseDate: "2022-06-27"
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/orbit
+  tags:
+    - language:lowcode
+  ab_internal:
+    sl: 100
+    ql: 100
+metadataSpecVersion: "1.0"

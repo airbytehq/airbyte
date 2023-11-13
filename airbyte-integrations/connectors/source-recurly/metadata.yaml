@@ -1,0 +1,24 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: api
+  connectorType: source
+  definitionId: cd42861b-01fc-4658-a8ab-5d11d0510f01
+  dockerImageTag: 0.4.1
+  dockerRepository: airbyte/source-recurly
+  documentationUrl: https://docs.airbyte.com/integrations/sources/recurly
+  githubIssueLabel: source-recurly
+  icon: recurly.svg
+  license: MIT
+  name: Recurly
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

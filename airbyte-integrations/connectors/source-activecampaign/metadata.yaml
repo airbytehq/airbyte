@@ -1,0 +1,25 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9f32dab3-77cb-45a1-9d33-347aa5fbe363
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-activecampaign
+  documentationUrl: https://docs.airbyte.com/integrations/sources/activecampaign
+  githubIssueLabel: source-activecampaign
+  icon: activecampaign.svg
+  license: MIT
+  name: ActiveCampaign
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:low-code
+    - language:python
+metadataSpecVersion: "1.0"

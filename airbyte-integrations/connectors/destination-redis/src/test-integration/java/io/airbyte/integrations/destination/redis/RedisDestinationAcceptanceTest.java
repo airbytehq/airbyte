@@ -1,26 +1,23 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redis;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RedisDestinationAcceptanceTest.class);
-
-  private JsonNode configJson;
+  private JsonNode jsonConfig;
 
   private RedisCache redisCache;
 
@@ -34,12 +31,11 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
-    configJson = RedisDataFactory.jsonConfig(
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+    jsonConfig = RedisDataFactory.jsonConfig(
         redisContainer.getHost(),
         redisContainer.getFirstMappedPort());
-    var redisConfig = new RedisConfig(configJson);
-    redisCache = new RedisHCache(redisConfig);
+    redisCache = new RedisHCache(jsonConfig);
     redisNameTransformer = new RedisNameTransformer();
   }
 
@@ -55,7 +51,7 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-    return configJson;
+    return jsonConfig;
   }
 
   @Override

@@ -1,0 +1,71 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "Date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "LineAmountTypes": {
+      "type": ["null", "string"]
+    },
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "Narration": {
+      "type": ["null", "string"]
+    },
+    "JournalLines": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "LineAmount": {
+            "type": ["null", "number"]
+          },
+          "Description": {
+            "type": ["null", "string"]
+          },
+          "TaxAmount": {
+            "type": ["null", "number"]
+          },
+          "AccountID": {
+            "type": ["null", "string"]
+          },
+          "AccountCode": {
+            "type": ["null", "string"]
+          },
+          "IsBlank": {
+            "type": ["null", "boolean"]
+          },
+          "TaxType": {
+            "type": ["null", "string"]
+          },
+          "Tracking": {
+            "items": {
+              "$ref": "tracking_categories.json"
+            },
+            "type": ["null", "array"]
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "Url": {
+      "type": ["null", "string"]
+    },
+    "ShowOnCashBasisReports": {
+      "type": ["null", "boolean"]
+    },
+    "HasAttachments": {
+      "type": ["null", "boolean"]
+    },
+    "UpdatedDateUTC": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "ManualJournalID": {
+      "type": ["string"]
+    }
+  },
+  "additionalProperties": true
+}

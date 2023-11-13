@@ -1,0 +1,35 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  allowedHosts:
+    hosts:
+      - api.chartmogul.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: b6604cbd-1b12-4c08-8767-e140d0fb0877
+  dockerImageTag: 1.0.0
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >
+          Refactor and break `customer_count` stream 
+          into multiple streams (daily, weekly, monthly, quarterly).
+          You need to update your schema and use the new streams.
+        upgradeDeadline: "2023-11-21"
+  dockerRepository: airbyte/source-chartmogul
+  documentationUrl: https://docs.airbyte.com/integrations/sources/chartmogul
+  githubIssueLabel: source-chartmogul
+  icon: chartmogul.svg
+  license: MIT
+  name: Chartmogul
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: beta
+  supportLevel: community
+  tags:
+    - language:low-code
+metadataSpecVersion: "1.0"

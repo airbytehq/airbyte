@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mysql.cj.MysqlType;
-import io.airbyte.db.Database;
-import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.File;
 import java.io.IOException;
@@ -98,6 +98,15 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .airbyteType(JsonSchemaType.BOOLEAN)
             .addInsertValues("null", "1", "0")
             .addExpectedValues(null, "true", "false")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("tinyint")
+            .fullSourceDataType("tinyint(1) unsigned")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .addInsertValues("null", "0", "1", "2", "3")
+            .addExpectedValues(null, "0", "1", "2", "3")
             .build());
 
     addDataTypeTestData(
@@ -226,10 +235,10 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
-            .airbyteType(JsonSchemaType.NUMBER)
-            .fullSourceDataType("decimal(19,2)")
-            .addInsertValues("1700000.01")
-            .addExpectedValues("1700000.01")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("decimal(32,0)")
+            .addInsertValues("1700000.01", "123")
+            .addExpectedValues("1700000", "123")
             .build());
 
     for (final String type : Set.of("date", "date not null default '0000-00-00'")) {
@@ -238,8 +247,8 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .sourceType("date")
               .fullSourceDataType(type)
               .airbyteType(JsonSchemaType.STRING_DATE)
-              .addInsertValues("'1999-01-08'", "'2021-01-01'")
-              .addExpectedValues("1999-01-08", "2021-01-01")
+              .addInsertValues("'1999-01-08'", "'2021-01-01'", "'2022/11/12'", "'1987.12.01'")
+              .addExpectedValues("1999-01-08", "2021-01-01", "2022-11-12", "1987-12-01")
               .build());
     }
 
@@ -258,7 +267,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
               .addInsertValues("'2005-10-10 23:22:21'", "'2013-09-05T10:10:02'", "'2013-09-06T10:10:02'")
-              .addExpectedValues("2005-10-10T23:22:21.000000", "2013-09-05T10:10:02.000000", "2013-09-06T10:10:02.000000")
+              .addExpectedValues("2005-10-10T23:22:21", "2013-09-05T10:10:02", "2013-09-06T10:10:02")
               .build());
     }
 
@@ -280,7 +289,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
               .addInsertValues("'-22:59:59'", "'23:59:59'", "'00:00:00'")
-              .addExpectedValues("22:59:59.000000", "23:59:59.000000", "00:00:00.000000")
+              .addExpectedValues("22:59:59", "23:59:59", "00:00:00.000000")
               .build());
 
     }
@@ -297,11 +306,11 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("year")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.INTEGER)
             // MySQL converts values in the ranges '0' - '69' to YEAR value in the range 2000 - 2069
             // and '70' - '99' to 1970 - 1999.
-            .addInsertValues("null", "'1997'", "'0'", "'50'", "'70'", "'80'", "'99'")
-            .addExpectedValues(null, "1997", "2000", "2050", "1970", "1980", "1999")
+            .addInsertValues("null", "'1997'", "'0'", "'50'", "'70'", "'80'", "'99'", "'00'", "'000'")
+            .addExpectedValues(null, "1997", "2000", "2050", "1970", "1980", "1999", "2000", "2000")
             .build());
 
     // char types can be string or binary, so they are tested separately
@@ -433,6 +442,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues(null, "xs,s", "m,xl")
             .build());
 
+    addDecimalValuesTest();
   }
 
   protected void addJsonDataTypeTest() {
@@ -472,6 +482,17 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
       LOGGER.error(String.format("Fail to read the file: %s. Error: %s", file.getAbsoluteFile(), e.getMessage()));
     }
     return null;
+  }
+
+  protected void addDecimalValuesTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("decimal")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .fullSourceDataType("decimal(19,2)")
+            .addInsertValues("1700000.01", "'123'")
+            .addExpectedValues("1700000.01", "123.0")
+            .build());
   }
 
 }

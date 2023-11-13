@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -12,7 +12,6 @@ TEST_REQUIREMENTS = [
     "requests-mock",
     "pytest-mock",
     "freezegun",
-    "source-acceptance-test",
 ]
 
 setup(

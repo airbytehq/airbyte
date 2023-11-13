@@ -1,1 +1,0 @@
-export { ResizablePanels } from "./ResizablePanels";

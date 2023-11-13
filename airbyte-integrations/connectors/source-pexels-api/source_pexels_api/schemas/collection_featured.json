@@ -1,0 +1,98 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1667390893.json",
+  "title": "Root",
+  "type": "object",
+  "properties": {
+    "collections": {
+      "$id": "#root/collections",
+      "title": "Collections",
+      "type": "array",
+      "default": [],
+      "items": {
+        "$id": "#root/collections/items",
+        "title": "Items",
+        "type": "object",
+        "properties": {
+          "id": {
+            "$id": "#root/collections/items/id",
+            "title": "Id",
+            "type": "string",
+            "default": "",
+            "pattern": "^.*$"
+          },
+          "title": {
+            "$id": "#root/collections/items/title",
+            "title": "Title",
+            "type": "string",
+            "default": "",
+            "pattern": "^.*$"
+          },
+          "description": {
+            "$id": "#root/collections/items/description",
+            "title": "Description",
+            "type": ["string", "null"],
+            "default": null
+          },
+          "private": {
+            "$id": "#root/collections/items/private",
+            "title": "Private",
+            "type": "boolean",
+            "default": true
+          },
+          "media_count": {
+            "$id": "#root/collections/items/media_count",
+            "title": "Media_count",
+            "type": "integer",
+            "default": 0
+          },
+          "photos_count": {
+            "$id": "#root/collections/items/photos_count",
+            "title": "Photos_count",
+            "type": "integer",
+            "default": 0
+          },
+          "videos_count": {
+            "$id": "#root/collections/items/videos_count",
+            "title": "Videos_count",
+            "type": "integer",
+            "default": 0
+          }
+        }
+      }
+    },
+    "page": {
+      "$id": "#root/page",
+      "title": "Page",
+      "type": "integer",
+      "default": 0
+    },
+    "per_page": {
+      "$id": "#root/per_page",
+      "title": "Per_page",
+      "type": "integer",
+      "default": 0
+    },
+    "total_results": {
+      "$id": "#root/total_results",
+      "title": "Total_results",
+      "type": "integer",
+      "default": 0
+    },
+    "next_page": {
+      "$id": "#root/next_page",
+      "title": "Next_page",
+      "type": "string",
+      "default": "",
+      "pattern": "^.*$"
+    },
+    "prev_page": {
+      "$id": "#root/prev_page",
+      "title": "Prev_page",
+      "type": "string",
+      "default": "",
+      "pattern": "^.*$"
+    }
+  }
+}

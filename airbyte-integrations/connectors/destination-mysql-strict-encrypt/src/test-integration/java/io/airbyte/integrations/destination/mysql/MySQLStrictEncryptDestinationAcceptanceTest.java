@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mysql;
@@ -9,24 +9,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -37,7 +38,7 @@ import org.testcontainers.containers.MySQLContainer;
 public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private MySQLContainer<?> db;
-  private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
+  private final StandardNameTransformer namingResolver = new MySQLNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -45,17 +46,7 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
   }
 
   @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
     return true;
   }
 
@@ -150,7 +141,7 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     db = new MySQLContainer<>("mysql:8.0");
     db.start();
     setLocalInFileToTrue();

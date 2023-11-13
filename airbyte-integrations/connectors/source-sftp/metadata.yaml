@@ -1,0 +1,25 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: file
+  connectorType: source
+  definitionId: a827c52e-791c-4135-a245-e233c5255199
+  dockerImageTag: 0.1.2
+  dockerRepository: airbyte/source-sftp
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sftp
+  githubIssueLabel: source-sftp
+  icon: sftp.svg
+  license: MIT
+  name: SFTP
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:java
+    - language:python
+metadataSpecVersion: "1.0"

@@ -33,6 +33,15 @@
     "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
+    },
+    "alt": {
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
     }
   }
 }

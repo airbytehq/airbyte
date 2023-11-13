@@ -1,0 +1,56 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  allowedHosts:
+    hosts:
+      - ${subdomain}.zendesk.com
+      - zendesk.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
+  dockerImageTag: 2.2.1
+  dockerRepository: airbyte/source-zendesk-support
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
+  githubIssueLabel: source-zendesk-support
+  icon: zendesk-support.svg
+  license: ELv2
+  maxSecondsBetweenMessages: 10800
+  name: Zendesk Support
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "`cursor_field` for `Tickets` stream is changed to `generated_timestamp`"
+        upgradeDeadline: "2023-07-19"
+      2.0.0:
+        message:
+          The `Deleted Tickets` stream was removed. Deleted tickets are still
+          available from the Tickets stream.
+        upgradeDeadline: "2023-10-04"
+  suggestedStreams:
+    streams:
+      - brands
+      - groups
+      - organizations
+      - satisfaction_ratings
+      - tags
+      - ticket_audits
+      - ticket_comments
+      - ticket_fields
+      - ticket_forms
+      - ticket_metric_events
+      - ticket_metrics
+      - tickets
+      - users
+  supportLevel: certified
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

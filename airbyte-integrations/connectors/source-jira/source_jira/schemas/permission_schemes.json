@@ -10,13 +10,11 @@
     "id": {
       "type": "integer",
       "description": "The ID of the permission scheme.",
-      "format": "int64",
       "readOnly": true
     },
     "self": {
       "type": "string",
       "description": "The URL of the permission scheme.",
-      "format": "uri",
       "readOnly": true
     },
     "name": {
@@ -79,23 +77,19 @@
               "properties": {
                 "16x16": {
                   "type": "string",
-                  "description": "The URL of the item's 16x16 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 16x16 pixel avatar."
                 },
                 "24x24": {
                   "type": "string",
-                  "description": "The URL of the item's 24x24 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 24x24 pixel avatar."
                 },
                 "32x32": {
                   "type": "string",
-                  "description": "The URL of the item's 32x32 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 32x32 pixel avatar."
                 },
                 "48x48": {
                   "type": "string",
-                  "description": "The URL of the item's 48x48 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 48x48 pixel avatar."
                 }
               }
             },
@@ -139,13 +133,11 @@
           "id": {
             "type": "integer",
             "description": "The ID of the permission granted details.",
-            "format": "int64",
             "readOnly": true
           },
           "self": {
             "type": "string",
             "description": "The URL of the permission granted details.",
-            "format": "uri",
             "readOnly": true
           },
           "holder": {

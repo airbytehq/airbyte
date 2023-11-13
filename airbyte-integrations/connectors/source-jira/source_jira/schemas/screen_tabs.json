@@ -6,12 +6,15 @@
     "id": {
       "type": "integer",
       "description": "The ID of the screen tab.",
-      "format": "int64",
       "readOnly": true
     },
     "name": {
       "type": "string",
       "description": "The name of the screen tab. The maximum length is 255 characters."
+    },
+    "screenId": {
+      "type": ["null", "integer"],
+      "description": "Id of the related screen."
     }
   },
   "additionalProperties": true,

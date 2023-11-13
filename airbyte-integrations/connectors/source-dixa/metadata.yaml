@@ -1,0 +1,28 @@
+data:
+  allowedHosts:
+    hosts:
+      - exports.dixa.io
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 0b5c867e-1b12-4d02-ab74-97b2184ff6d7
+  dockerImageTag: 0.3.0
+  dockerRepository: airbyte/source-dixa
+  githubIssueLabel: source-dixa
+  icon: dixa.svg
+  license: MIT
+  name: Dixa
+  releaseDate: 2021-07-07
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dixa
+  tags:
+    - language:lowcode
+  ab_internal:
+    sl: 100
+    ql: 100
+metadataSpecVersion: "1.0"

@@ -1,3 +1,0 @@
--e ../../bases/source-acceptance-test
--e ../source-file
--e .

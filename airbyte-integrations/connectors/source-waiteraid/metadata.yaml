@@ -1,0 +1,25 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 03a53b13-794a-4d6b-8544-3b36ed8f3ce4
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-waiteraid
+  githubIssueLabel: source-waiteraid
+  icon: waiteraid.svg
+  license: MIT
+  name: Waiteraid
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/waiteraid
+  tags:
+    - language:low-code
+    - language:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

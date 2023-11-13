@@ -1,0 +1,5 @@
+{
+  "api_token": "<api_token>",
+  "endpoint": "api.opsgenie.com",
+  "start_date": "2022-01-01T00:00:00Z"
+}

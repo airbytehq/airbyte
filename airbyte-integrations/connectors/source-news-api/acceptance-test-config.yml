@@ -1,9 +1,9 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-news-api:dev
 tests:
   spec:
-    - spec_path: "source_news_api/spec.yaml"
+    - spec_path: "integration_tests/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

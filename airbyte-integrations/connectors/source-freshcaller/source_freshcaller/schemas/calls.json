@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
   "properties": {
@@ -99,8 +99,25 @@
       },
       "type": ["object", "null"]
     },
-
+    "recording_to_redact": {
+      "type": ["object", "null"],
+      "properties": {
+        "id": {
+          "type": ["integer", "null"]
+        },
+        "url": {
+          "type": ["string", "null"]
+        },
+        "duration": {
+          "type": ["number", "null"]
+        },
+        "duration_unit": {
+          "type": ["string", "null"]
+        }
+      }
+    },
     "participants": {
+      "type": ["array", "null"],
       "items": {
         "properties": {
           "id": {
@@ -155,7 +172,9 @@
           }
         },
         "type": "object"
-      },
+      }
+    },
+    "parallel_call_groups": {
       "type": ["array", "null"]
     }
   }

@@ -1,0 +1,28 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  allowedHosts:
+    hosts:
+      - ${subdomain}.atlassian.net
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: cf40a7f8-71f8-45ce-a7fa-fca053e4028c
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-confluence
+  documentationUrl: https://docs.airbyte.com/integrations/sources/confluence
+  githubIssueLabel: source-confluence
+  icon: confluence.svg
+  license: MIT
+  name: Confluence
+  releaseDate: 2021-11-05
+  releaseStage: beta
+  supportLevel: community
+  tags:
+    - language:low-code
+metadataSpecVersion: "1.0"

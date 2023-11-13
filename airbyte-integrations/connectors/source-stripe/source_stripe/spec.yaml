@@ -6,7 +6,6 @@ connectionSpecification:
   required:
     - client_secret
     - account_id
-    - start_date
   properties:
     account_id:
       type: string
@@ -30,8 +29,10 @@ connectionSpecification:
       description: >-
         UTC date and time in the format 2017-01-25T00:00:00Z. Only data generated
         after this date will be replicated.
+      default: "2017-01-25T00:00:00Z"
       examples:
         - "2017-01-25T00:00:00Z"
+      format: date-time
       order: 2
     lookback_window_days:
       type: integer
@@ -41,7 +42,8 @@ connectionSpecification:
       description: >-
         When set, the connector will always re-export data from the past N days,
         where N is the value set here. This is useful if your data is frequently updated
-        after creation. More info <a
+        after creation. Applies only to streams that do not support event-based incremental syncs: CheckoutSessionLineItems, 
+        Events, SetupAttempts, ShippingRates, BalanceTransactions, Files, FileLinks. More info <a
         href="https://docs.airbyte.com/integrations/sources/stripe#requirements">here</a>
       order: 3
     slice_range:
@@ -55,3 +57,14 @@ connectionSpecification:
         the less requests will be made and faster the sync will be. On the other hand, the more seldom
         the state is persisted.
       order: 4
+    num_workers:
+      type: integer
+      title: Number of concurrent workers
+      minimum: 1
+      maximum: 3
+      default: 2
+      examples: [1, 2, 3]
+      description: >-
+        The number of worker thread to use for the sync. The bigger the value is, the faster the sync will be.
+        Be careful as rate limiting is not implemented.
+      order: 5

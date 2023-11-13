@@ -1,0 +1,31 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  allowedHosts:
+    hosts:
+      - ${host}
+      - ${tunnel_method.tunnel_host}
+  connectorSubtype: database
+  connectorType: source
+  definitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
+  dockerImageTag: 0.1.17
+  dockerRepository: airbyte/source-clickhouse
+  documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
+  githubIssueLabel: source-clickhouse
+  icon: clickhouse.svg
+  license: MIT
+  name: ClickHouse
+  registries:
+    cloud:
+      dockerImageTag: 0.1.8
+      dockerRepository: airbyte/source-clickhouse-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:java
+    - language:python
+metadataSpecVersion: "1.0"

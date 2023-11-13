@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.uploader;
@@ -14,11 +14,11 @@ import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.LoadJobConfiguration;
 import com.google.cloud.bigquery.TableId;
+import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.util.List;
 import java.util.function.Consumer;
 import org.slf4j.Logger;

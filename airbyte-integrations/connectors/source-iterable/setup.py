@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,10 +8,11 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
     "pendulum~=2.1.2",
+    "python-dateutil~=2.8.2",
     "requests~=2.25",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "responses==0.13.3", "freezegun==1.1.0"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "responses==0.23.1", "freezegun==1.1.0"]
 
 
 setup(

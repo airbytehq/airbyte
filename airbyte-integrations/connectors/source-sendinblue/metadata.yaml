@@ -1,0 +1,25 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 2e88fa20-a2f6-43cc-bba6-98a0a3f244fb
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-sendinblue
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sendinblue
+  githubIssueLabel: source-sendinblue
+  icon: sendinblue.svg
+  license: MIT
+  name: Sendinblue
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:low-code
+    - language:python
+metadataSpecVersion: "1.0"

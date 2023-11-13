@@ -1,22 +1,30 @@
-# # See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
-# # for more information about how to configure these tests
-
 connector_image: airbyte/source-appfollow:dev
-tests:
+test_strictness_level: low
+acceptance_tests:
   spec:
-    - spec_path: "source_appfollow/spec.yaml"
-# Enable these once we get appfollow credentials
-#   connection:
-#     - config_path: "secrets/config.json"
-#       status: "succeed"
-#     - config_path: "integration_tests/invalid_config.json"
-#       status: "failed"
-#   discovery:
-#     - config_path: "secrets/config.json"
-#   basic_read:
-#     - config_path: "secrets/config.json"
-#       configured_catalog_path: "integration_tests/configured_catalog.json"
-#       empty_streams: []
-#   full_refresh:
-#     - config_path: "secrets/config.json"
-#       configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - spec_path: "source_appfollow/spec.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.1"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: "ratings"
+            bypass_reason: "Endpoint not allowed in integration account"
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

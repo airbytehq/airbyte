@@ -1,0 +1,20 @@
+{
+  "values": [
+    {
+      "id": "10000",
+      "name": "Default Issue Type Scheme",
+      "description": "Default issue type scheme is the list of global issue types. All newly created issue types will automatically be added to this scheme.",
+      "isDefault": true
+    },
+    {
+      "id": "10126",
+      "name": "IT: Scrum Issue Type Scheme",
+      "defaultIssueTypeId": "10001"
+    },
+    {
+      "id": "10128",
+      "name": "P2: Scrum Issue Type Scheme",
+      "defaultIssueTypeId": "10001"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import asdict
@@ -76,7 +76,7 @@ def test_field_schema_unknown_type():
 
 
 @datatype_inputs
-def test_field_schema(json_type, data_type, length, decimal_place, api_name, pick_list_values, expected_values):
+def test_field_schema(json_type, data_type, length, decimal_place, api_name, pick_list_values, autonumber, expected_values):
     if pick_list_values:
         pick_list_values = [ZohoPickListItem(actual_value=value, display_value=value) for value in pick_list_values]
     field = FieldMeta(
@@ -88,5 +88,7 @@ def test_field_schema(json_type, data_type, length, decimal_place, api_name, pic
         system_mandatory=True,
         display_label=api_name,
         pick_list_values=pick_list_values,
+        auto_number=autonumber or {"prefix": "", "suffix": ""},
     )
+
     assert field.schema == expected_values

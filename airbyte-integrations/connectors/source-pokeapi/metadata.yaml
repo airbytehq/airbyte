@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-pokeapi
+  githubIssueLabel: source-pokeapi
+  icon: pokeapi.svg
+  license: MIT
+  name: PokeAPI
+  releaseDate: "2020-05-04"
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

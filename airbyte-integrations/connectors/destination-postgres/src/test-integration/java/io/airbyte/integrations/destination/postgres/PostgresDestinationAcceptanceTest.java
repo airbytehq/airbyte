@@ -1,22 +1,23 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -26,7 +27,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private PostgreSQLContainer<?> db;
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   @Override
   protected String getImageName() {
@@ -72,16 +73,6 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
     return true;
   }
@@ -103,6 +94,11 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
   @Override
   protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportIncrementalSchemaChanges() {
     return true;
   }
 
@@ -132,7 +128,7 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     db = new PostgreSQLContainer<>("postgres:13-alpine");
     db.start();
   }

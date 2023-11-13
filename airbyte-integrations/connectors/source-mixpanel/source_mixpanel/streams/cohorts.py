@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Iterable, Mapping
@@ -40,6 +40,7 @@ class Cohorts(IncrementalMixpanelStream):
     primary_key: str = "id"
 
     cursor_field = "created"
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "cohorts/list"

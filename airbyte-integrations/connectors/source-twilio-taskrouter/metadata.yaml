@@ -1,0 +1,25 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 2446953b-b794-429b-a9b3-c821ba992a48
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-twilio-taskrouter
+  githubIssueLabel: source-twilio-taskrouter
+  icon: twilio.svg
+  license: MIT
+  name: Twilio Taskrouter
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/twilio-taskrouter
+  tags:
+    - language:low-code
+    - language:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

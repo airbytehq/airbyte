@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "slug": {
+      "type": ["null", "string"]
+    },
+    "parent": {
+      "type": ["null", "integer"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "display": {
+      "type": ["null", "string"]
+    },
+    "image": {
+      "$ref": "product_images.json"
+    },
+    "menu_order": {
+      "type": ["null", "integer"]
+    },
+    "count": {
+      "type": ["null", "integer"]
+    }
+  }
+}

@@ -8,8 +8,7 @@
     },
     "id": {
       "type": "integer",
-      "description": "The ID of the notification scheme.",
-      "format": "int64"
+      "description": "The ID of the notification scheme."
     },
     "self": {
       "type": "string"
@@ -33,8 +32,7 @@
             "properties": {
               "id": {
                 "type": "integer",
-                "description": "The ID of the event. The event can be a [Jira system event](https://confluence.atlassian.com/x/8YdKLg#Creatinganotificationscheme-eventsEvents) or a [custom event](https://confluence.atlassian.com/x/AIlKLg).",
-                "format": "int64"
+                "description": "The ID of the event. The event can be a [Jira system event](https://confluence.atlassian.com/x/8YdKLg#Creatinganotificationscheme-eventsEvents) or a [custom event](https://confluence.atlassian.com/x/AIlKLg)."
               },
               "name": {
                 "type": "string",
@@ -57,8 +55,7 @@
                 },
                 "id": {
                   "type": "integer",
-                  "description": "The ID of the notification.",
-                  "format": "int64"
+                  "description": "The ID of the notification."
                 },
                 "notificationType": {
                   "type": "string",
@@ -93,7 +90,6 @@
                     "self": {
                       "type": "string",
                       "description": "The URL for these group details.",
-                      "format": "uri",
                       "readOnly": true
                     }
                   }
@@ -190,23 +186,19 @@
                               "properties": {
                                 "16x16": {
                                   "type": "string",
-                                  "description": "The URL of the item's 16x16 pixel avatar.",
-                                  "format": "uri"
+                                  "description": "The URL of the item's 16x16 pixel avatar."
                                 },
                                 "24x24": {
                                   "type": "string",
-                                  "description": "The URL of the item's 24x24 pixel avatar.",
-                                  "format": "uri"
+                                  "description": "The URL of the item's 24x24 pixel avatar."
                                 },
                                 "32x32": {
                                   "type": "string",
-                                  "description": "The URL of the item's 32x32 pixel avatar.",
-                                  "format": "uri"
+                                  "description": "The URL of the item's 32x32 pixel avatar."
                                 },
                                 "48x48": {
                                   "type": "string",
-                                  "description": "The URL of the item's 48x48 pixel avatar.",
-                                  "format": "uri"
+                                  "description": "The URL of the item's 48x48 pixel avatar."
                                 }
                               }
                             },
@@ -268,7 +260,6 @@
                         "customId": {
                           "type": "integer",
                           "description": "If the field is a custom field, the custom ID of the field.",
-                          "format": "int64",
                           "readOnly": true
                         },
                         "configuration": {
@@ -292,7 +283,6 @@
                     "self": {
                       "type": "string",
                       "description": "The URL the project role details.",
-                      "format": "uri",
                       "readOnly": true
                     },
                     "name": {
@@ -302,7 +292,6 @@
                     "id": {
                       "type": "integer",
                       "description": "The ID of the project role.",
-                      "format": "int64",
                       "readOnly": true
                     },
                     "description": {
@@ -320,7 +309,6 @@
                           "id": {
                             "type": "integer",
                             "description": "The ID of the role actor.",
-                            "format": "int64",
                             "readOnly": true
                           },
                           "displayName": {
@@ -345,7 +333,6 @@
                           "avatarUrl": {
                             "type": "string",
                             "description": "The avatar of the role actor.",
-                            "format": "uri",
                             "readOnly": true
                           },
                           "actorUser": {
@@ -430,23 +417,19 @@
                               "properties": {
                                 "16x16": {
                                   "type": "string",
-                                  "description": "The URL of the item's 16x16 pixel avatar.",
-                                  "format": "uri"
+                                  "description": "The URL of the item's 16x16 pixel avatar."
                                 },
                                 "24x24": {
                                   "type": "string",
-                                  "description": "The URL of the item's 24x24 pixel avatar.",
-                                  "format": "uri"
+                                  "description": "The URL of the item's 24x24 pixel avatar."
                                 },
                                 "32x32": {
                                   "type": "string",
-                                  "description": "The URL of the item's 32x32 pixel avatar.",
-                                  "format": "uri"
+                                  "description": "The URL of the item's 32x32 pixel avatar."
                                 },
                                 "48x48": {
                                   "type": "string",
-                                  "description": "The URL of the item's 48x48 pixel avatar.",
-                                  "format": "uri"
+                                  "description": "The URL of the item's 48x48 pixel avatar."
                                 }
                               }
                             },
@@ -542,23 +525,19 @@
                       "properties": {
                         "16x16": {
                           "type": "string",
-                          "description": "The URL of the item's 16x16 pixel avatar.",
-                          "format": "uri"
+                          "description": "The URL of the item's 16x16 pixel avatar."
                         },
                         "24x24": {
                           "type": "string",
-                          "description": "The URL of the item's 24x24 pixel avatar.",
-                          "format": "uri"
+                          "description": "The URL of the item's 24x24 pixel avatar."
                         },
                         "32x32": {
                           "type": "string",
-                          "description": "The URL of the item's 32x32 pixel avatar.",
-                          "format": "uri"
+                          "description": "The URL of the item's 32x32 pixel avatar."
                         },
                         "48x48": {
                           "type": "string",
-                          "description": "The URL of the item's 48x48 pixel avatar.",
-                          "format": "uri"
+                          "description": "The URL of the item's 48x48 pixel avatar."
                         }
                       }
                     },
@@ -642,23 +621,19 @@
               "properties": {
                 "16x16": {
                   "type": "string",
-                  "description": "The URL of the item's 16x16 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 16x16 pixel avatar."
                 },
                 "24x24": {
                   "type": "string",
-                  "description": "The URL of the item's 24x24 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 24x24 pixel avatar."
                 },
                 "32x32": {
                   "type": "string",
-                  "description": "The URL of the item's 32x32 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 32x32 pixel avatar."
                 },
                 "48x48": {
                   "type": "string",
-                  "description": "The URL of the item's 48x48 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 48x48 pixel avatar."
                 }
               }
             },

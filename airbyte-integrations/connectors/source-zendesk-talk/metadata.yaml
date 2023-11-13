@@ -1,0 +1,28 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${subdomain}.zendesk.com
+      - zendesk.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: c8630570-086d-4a40-99ae-ea5b18673071
+  dockerImageTag: 0.1.9
+  dockerRepository: airbyte/source-zendesk-talk
+  githubIssueLabel: source-zendesk-talk
+  icon: zendesk-talk.svg
+  license: MIT
+  name: Zendesk Talk
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-talk
+  tags:
+    - language:python
+  ab_internal:
+    sl: 200
+    ql: 400
+  supportLevel: certified
+metadataSpecVersion: "1.0"

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,7 +8,7 @@ from typing import Any, Mapping
 
 def transform_properties(record: Mapping[str, Any], dict_key: str = "properties") -> Mapping[str, Any]:
     """
-    Transfrom nested `properties` object.
+    Transform nested `properties` object.
     Move unique named entities into `name`, `value` to handle normalization.
     EXAMPLE INPUT:
     {

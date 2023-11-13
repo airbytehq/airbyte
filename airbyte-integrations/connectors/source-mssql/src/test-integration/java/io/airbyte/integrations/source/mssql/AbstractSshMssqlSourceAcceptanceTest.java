@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -7,24 +7,24 @@ package io.airbyte.integrations.source.mssql;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
+import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.ssh.SshBastionContainer;
-import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
 import java.util.Objects;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -48,7 +48,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     startTestContainers();
-    config = bastion.getTunnelConfig(getTunnelMethod(), getMSSQLDbConfigBuilder(db));
+    config = bastion.getTunnelConfig(getTunnelMethod(), getMSSQLDbConfigBuilder(db), false);
     populateDatabaseTestData();
   }
 
@@ -65,14 +65,14 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
         .put(JdbcUtils.DATABASE_KEY, dbName);
   }
 
-  private static Database getDatabaseFromConfig(final JsonNode config) {
+  private Database getDatabaseFromConfig(final JsonNode config) {
     final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt()),
+            db.getHost(),
+            db.getFirstMappedPort()),
         null);
     return new Database(dslContext);
   }

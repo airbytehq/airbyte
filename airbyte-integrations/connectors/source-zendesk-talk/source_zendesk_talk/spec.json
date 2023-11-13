@@ -57,6 +57,18 @@
                 "title": "Access Token",
                 "description": "The value of the API token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/zendesk-talk\">docs</a> for more information.",
                 "airbyte_secret": true
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "Client ID",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "description": "Client Secret",
+                "airbyte_secret": true
               }
             }
           }
@@ -68,7 +80,8 @@
         "order": 2,
         "description": "The date from which you'd like to replicate data for Zendesk Talk API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
         "examples": ["2020-10-15T00:00:00Z"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "format": "date-time"
       }
     }
   },

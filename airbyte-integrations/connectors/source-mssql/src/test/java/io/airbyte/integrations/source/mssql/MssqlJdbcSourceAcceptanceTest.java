@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -10,17 +10,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.JDBCType;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -40,10 +48,23 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   static void init() {
     // In mssql, timestamp is generated automatically, so we need to use
     // the datetime type instead so that we can set the value manually.
-    COL_TIMESTAMP_TYPE = "DATETIME";
+    COL_TIMESTAMP_TYPE = "DATETIME2";
 
     dbContainer = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     dbContainer.start();
+  }
+
+  @Override
+  protected DataSource getDataSource(final JsonNode jdbcConfig) {
+    final Map<String, String> connectionProperties = JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY,
+        getJdbcParameterDelimiter());
+    connectionProperties.put("encrypt", "false");
+    return DataSourceFactory.create(
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        getDriverClass(),
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        connectionProperties);
   }
 
   @BeforeEach
@@ -59,9 +80,10 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
         configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d",
+        String.format("jdbc:sqlserver://%s:%d;",
             configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
-            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()));
+            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
+        Map.of("encrypt", "false"));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
@@ -72,6 +94,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
       config = Jsons.clone(configWithoutDbName);
       ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
+      ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")));
 
       super.setup();
     } finally {
@@ -153,6 +176,36 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     final AirbyteConnectionStatus status = source.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: S0001; Error code: 4060;"));
+  }
+
+  @Override
+  protected AirbyteCatalog getCatalog(final String defaultNamespace) {
+    return new AirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createAirbyteStream(
+            TABLE_NAME,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
+        CatalogHelpers.createAirbyteStream(
+            TABLE_NAME_WITHOUT_PK,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(Collections.emptyList()),
+        CatalogHelpers.createAirbyteStream(
+            TABLE_NAME_COMPOSITE_PK,
+            defaultNamespace,
+            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+            .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(
+                List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
 }

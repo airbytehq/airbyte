@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from setuptools import find_packages, setup
@@ -10,6 +10,6 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-cdk", "pytest==6.1.2"],
+    install_requires=["airbyte-cdk", "pytest"],
     package_data={"": ["*.json"]},
 )

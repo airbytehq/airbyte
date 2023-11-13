@@ -1,0 +1,76 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "ItemID": {
+      "type": ["string"]
+    },
+    "Code": {
+      "type": ["null", "string"]
+    },
+    "Name": {
+      "type": ["null", "string"]
+    },
+    "IsSold": {
+      "type": ["null", "boolean"]
+    },
+    "IsPurchased": {
+      "type": ["null", "boolean"]
+    },
+    "Description": {
+      "type": ["null", "string"]
+    },
+    "PurchaseDescription": {
+      "type": ["null", "string"]
+    },
+    "PurchaseDetails": {
+      "properties": {
+        "TaxType": {
+          "type": ["null", "string"]
+        },
+        "COGSAccountCode": {
+          "type": ["null", "string"]
+        },
+        "UnitPrice": {
+          "type": ["null", "number"]
+        },
+        "AccountCode": {
+          "type": ["null", "string"]
+        }
+      },
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "SalesDetails": {
+      "properties": {
+        "TaxType": {
+          "type": ["null", "string"]
+        },
+        "UnitPrice": {
+          "type": ["null", "number"]
+        },
+        "AccountCode": {
+          "type": ["null", "string"]
+        }
+      },
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "IsTrackedAsInventory": {
+      "type": ["null", "boolean"]
+    },
+    "InventoryAssetAccountCode": {
+      "type": ["null", "string"]
+    },
+    "TotalCostPool": {
+      "type": ["null", "number"]
+    },
+    "QuantityOnHand": {
+      "type": ["null", "number"]
+    },
+    "UpdatedDateUTC": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": true
+}

@@ -33,6 +33,8 @@ Connector uses `reports_start_date` config for initial reports sync and current 
 
 Connector has `hourly_reports`, `daily_reports`, `weekly_reports`, `monthly_reports` report streams. For example `account_performance_report_daily`, `ad_group_performance_report_weekly`. All these reports streams will be generated on execute.
 
+If `lookback_window` is set to a non-null value, initial reports sync will start at `reports_start_date - lookback_window`. Following reports sync will start at `cursor_value - lookback_window`. 
+
 ## Request caching
 
 Based on [library](https://vcrpy.readthedocs.io/en/latest/)

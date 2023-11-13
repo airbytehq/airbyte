@@ -1,0 +1,32 @@
+data:
+  connectorSubtype: file
+  connectorType: destination
+  definitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
+  dockerImageTag: 0.5.4
+  dockerRepository: airbyte/destination-s3
+  githubIssueLabel: destination-s3
+  icon: s3.svg
+  license: ELv2
+  name: S3
+  registries:
+    cloud:
+      enabled: true
+      dockerImageTag: 0.5.1
+    oss:
+      enabled: true
+      dockerImageTag: 0.5.1
+  releaseStage: generally_available
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 1Gi
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/s3
+  tags:
+    - language:java
+  ab_internal:
+    sl: 300
+    ql: 300
+  supportLevel: certified
+metadataSpecVersion: "1.0"

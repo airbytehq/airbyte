@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import dataclass
@@ -10,7 +10,7 @@ from pendulum.tz.timezone import Timezone
 
 
 @dataclass
-class Customer:
+class CustomerModel:
     id: str
     time_zone: Union[timezone, str] = "local"
     is_manager_account: bool = False

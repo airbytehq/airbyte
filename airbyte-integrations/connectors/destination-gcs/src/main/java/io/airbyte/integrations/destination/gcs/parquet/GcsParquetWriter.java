@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs.parquet;
@@ -7,15 +7,15 @@ package io.airbyte.integrations.destination.gcs.parquet;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.cdk.integrations.destination.s3.S3Format;
+import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory;
+import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetFormatConfig;
+import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
-import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
-import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
-import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;

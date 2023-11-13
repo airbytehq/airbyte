@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Optional
@@ -57,22 +57,22 @@ class CsvFormat(BaseModel):
         description="Whether newline characters are allowed in CSV values. Turning this on may affect performance. Leave blank to default to False.",
         order=6,
     )
-    additional_reader_options: str = Field(
-        default="{}",
+    additional_reader_options: Optional[str] = Field(
         description='Optionally add a valid JSON string here to provide additional options to the csv reader. Mappings must correspond to options <a href="https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html#pyarrow.csv.ConvertOptions" target="_blank">detailed here</a>. \'column_types\' is used internally to handle schema so overriding that would likely cause problems.',
         examples=[
             '{"timestamp_parsers": ["%m/%d/%Y %H:%M", "%Y/%m/%d %H:%M"], "strings_can_be_null": true, "null_values": ["NA", "NULL"]}'
         ],
         order=7,
     )
-    advanced_options: str = Field(
-        default="{}",
+    advanced_options: Optional[str] = Field(
         description="Optionally add a valid JSON string here to provide additional <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html#pyarrow.csv.ReadOptions\" target=\"_blank\">Pyarrow ReadOptions</a>. Specify 'column_names' here if your CSV doesn't have header, or if you want to use custom column names. 'block_size' and 'encoding' are already used above, specify them again here will override the values above.",
         examples=['{"column_names": ["column1", "column2"]}'],
         order=8,
     )
     block_size: int = Field(
         default=10000,
+        ge=1,
+        le=2_147_483_647,  # int32_t max
         description="The chunk size in bytes to process at a time in memory from each file. If your data is particularly wide and failing during schema detection, increasing this should solve it. Beware of raising this too high as you could hit OOM errors.",
         order=9,
     )

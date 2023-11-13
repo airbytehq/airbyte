@@ -1,10 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+import json
 
 import pytest
+import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
@@ -86,29 +87,32 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status i
             "",
             None,
             "",
-            {"status_code": 403, "headers": {"error", "authentication_error"}, "json": {"reason": "permission denied"}},
+            {"status_code": 403, "headers": {"error": "authentication_error"}, "json": {"reason": "permission denied"}},
             None,
             id="test_response_does_not_match_filter",
         ),
     ],
 )
-def test_matches(action, http_codes, predicate, error_contains, back_off, error_message, response, expected_response_status):
-    mock_response = MagicMock()
-    mock_response.status_code = response.get("status_code")
-    mock_response.headers = response.get("headers")
-    mock_response.json.return_value = response.get("json")
-
+def test_matches(requests_mock, action, http_codes, predicate, error_contains, back_off, error_message, response, expected_response_status):
+    requests_mock.register_uri(
+        "GET",
+        "https://airbyte.io/",
+        text=response.get("json") and json.dumps(response.get("json")),
+        headers=response.get("headers") or {},
+        status_code=response.get("status_code"),
+    )
+    response = requests.get("https://airbyte.io/")
     response_filter = HttpResponseFilter(
         action=action,
         config={},
-        options={},
+        parameters={},
         http_codes=http_codes,
         predicate=predicate,
         error_message_contains=error_contains,
         error_message=error_message,
     )
 
-    actual_response_status = response_filter.matches(mock_response, backoff_time=back_off or 10)
+    actual_response_status = response_filter.matches(response, backoff_time=back_off or 10)
     if expected_response_status:
         assert actual_response_status.action == expected_response_status.action
         assert actual_response_status.retry_in == expected_response_status.retry_in

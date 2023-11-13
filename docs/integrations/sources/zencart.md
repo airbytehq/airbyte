@@ -1,6 +1,6 @@
 # Zencart
 
-[Zencart](https://zen-cart.com) is an open source online store management system built on PHP, MySQL, and HTML.
+[Zencart](https://www.zen-cart.com) is an open source online store management system built on PHP, MySQL, and HTML.
 
 ## Sync overview
 

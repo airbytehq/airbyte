@@ -1,0 +1,38 @@
+plugins {
+    id 'application'
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.2.0'
+    features = ['db-sources']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
+
+application {
+    mainClass = 'io.airbyte.integrations.source.dynamodb.DynamodbSource'
+}
+
+def testContainersVersion = '1.17.5'
+def assertVersion = '3.23.1'
+
+dependencies {
+
+    implementation platform('software.amazon.awssdk:bom:2.18.1')
+    // https://mvnrepository.com/artifact/software.amazon.awssdk/dynamodb
+    implementation 'software.amazon.awssdk:dynamodb'
+
+    testImplementation 'org.skyscreamer:jsonassert:1.5.1'
+
+
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4.2'
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
+
+
+    testImplementation "org.assertj:assertj-core:${assertVersion}"
+    testImplementation "org.testcontainers:localstack:${testContainersVersion}"
+}

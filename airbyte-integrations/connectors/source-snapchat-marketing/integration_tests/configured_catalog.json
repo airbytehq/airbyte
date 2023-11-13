@@ -5,9 +5,10 @@
         "name": "organizations",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": true
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
       "destination_sync_mode": "overwrite"
     },
     {
@@ -16,11 +17,13 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -28,11 +31,13 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -40,11 +45,13 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -52,11 +59,13 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -64,11 +73,13 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -76,11 +87,13 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -88,11 +101,13 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "cursor_field": ["updated_at"],
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
     }
   ]
 }

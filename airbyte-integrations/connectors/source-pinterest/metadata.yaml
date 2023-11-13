@@ -1,0 +1,29 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.pinterest.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
+  dockerImageTag: 0.7.1
+  dockerRepository: airbyte/source-pinterest
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+  githubIssueLabel: source-pinterest
+  icon: pinterest.svg
+  license: MIT
+  name: Pinterest
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
+  tags:
+    - language:python
+  ab_internal:
+    sl: 200
+    ql: 400
+  supportLevel: certified
+metadataSpecVersion: "1.0"

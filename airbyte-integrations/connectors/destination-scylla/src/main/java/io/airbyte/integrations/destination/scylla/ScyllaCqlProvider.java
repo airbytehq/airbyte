@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.scylla;
@@ -14,7 +14,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.schemabuilder.SchemaBuilder;
 import com.datastax.driver.core.utils.UUIDs;
-import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import java.io.Closeable;
 import java.time.Instant;
 import java.util.Date;

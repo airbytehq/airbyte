@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import Mock
@@ -19,6 +19,8 @@ from source_twilio.streams import (
     Calls,
     ConferenceParticipants,
     Conferences,
+    ConversationParticipants,
+    Conversations,
     DependentPhoneNumbers,
     IncomingPhoneNumbers,
     Keys,
@@ -27,9 +29,13 @@ from source_twilio.streams import (
     OutgoingCallerIds,
     Queues,
     Recordings,
+    Step,
     Transcriptions,
     UsageRecords,
     UsageTriggers,
+    UserConversations,
+    Users,
+    VerifyServices,
 )
 
 
@@ -93,9 +99,15 @@ def test_check_connection_handles_exceptions(mocker, config, exception, expected
         (OutgoingCallerIds),
         (Queues),
         (Recordings),
+        (Step),
         (Transcriptions),
         (UsageRecords),
         (UsageTriggers),
+        (Conversations),
+        (ConversationParticipants),
+        (Users),
+        (UserConversations),
+        (VerifyServices),
     ],
 )
 def test_streams(stream_cls, config):

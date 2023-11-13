@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -7,16 +7,17 @@ package io.airbyte.integrations.destination.gcs;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.destination.s3.S3Format;
+import io.airbyte.cdk.integrations.destination.s3.avro.JsonSchemaType;
+import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion;
+import io.airbyte.cdk.integrations.standardtest.destination.argproviders.NumberDataTypeTestArgumentProvider;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.avro.JsonSchemaType;
-import io.airbyte.integrations.standardtest.destination.NumberDataTypeTestArgumentProvider;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -35,8 +36,13 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
 
-  protected GcsAvroParquetDestinationAcceptanceTest(final S3Format s3Format) {
+  public GcsAvroParquetDestinationAcceptanceTest(final S3Format s3Format) {
     super(s3Format);
+  }
+
+  @Override
+  public ProtocolVersion getProtocolVersion() {
+    return ProtocolVersion.V1;
   }
 
   @ParameterizedTest
@@ -85,7 +91,8 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
   }
 
   private Set<Type> getExpectedSchemaType(final JsonNode fieldDefinition) {
-    final JsonNode typeProperty = fieldDefinition.get("type");
+    // The $ref is a migration to V1 data type protocol see well_known_types.yaml
+    final JsonNode typeProperty = fieldDefinition.get("type") == null ? fieldDefinition.get("$ref") : fieldDefinition.get("type");
     final JsonNode airbyteTypeProperty = fieldDefinition.get("airbyte_type");
     final String airbyteTypePropertyText = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
     return Arrays.stream(JsonSchemaType.values())

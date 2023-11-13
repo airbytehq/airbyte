@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from functools import cache
@@ -184,7 +184,8 @@ class Engage(IncrementalMixpanelStream):
         types = {
             "boolean": {"type": ["null", "boolean"]},
             "number": {"type": ["null", "number"], "multipleOf": 1e-20},
-            "datetime": {"type": ["null", "string"], "format": "date-time"},
+            # no format specified as values can be "2021-12-16T00:00:00", "1638298874", "15/08/53895"
+            "datetime": {"type": ["null", "string"]},
             "object": {"type": ["null", "object"], "additionalProperties": True},
             "list": {"type": ["null", "array"], "required": False, "items": {}},
             "string": {"type": ["null", "string"]},

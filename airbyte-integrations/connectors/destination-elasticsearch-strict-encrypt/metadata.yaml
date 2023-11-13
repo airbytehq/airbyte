@@ -1,0 +1,20 @@
+data:
+  registries:
+    cloud:
+      enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
+    oss:
+      enabled: false # strict encrypt connectors are not used on OSS.
+  connectorSubtype: api
+  connectorType: destination
+  definitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c
+  dockerImageTag: 0.1.6
+  dockerRepository: airbyte/destination-elasticsearch-strict-encrypt
+  githubIssueLabel: destination-elasticsearch
+  icon: elasticsearch.svg
+  license: MIT
+  name: ElasticSearch
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/elasticsearch
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"

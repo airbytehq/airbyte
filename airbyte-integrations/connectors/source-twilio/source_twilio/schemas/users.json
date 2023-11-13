@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Users Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "is_notifiable": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "is_online": {
+      "type": ["null", "string"]
+    },
+    "friendly_name": {
+      "type": ["null", "string"]
+    },
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "role_sid": {
+      "type": ["null", "string"]
+    },
+    "sid": {
+      "type": ["null", "string"]
+    },
+    "attributes": {
+      "type": ["null", "string"]
+    },
+    "identity": {
+      "type": ["null", "string"]
+    },
+    "chat_service_sid": {
+      "type": ["null", "string"]
+    },
+    "links": {
+      "type": ["null", "object"],
+      "properties": {
+        "user_conversations": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

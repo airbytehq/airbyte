@@ -6,14 +6,15 @@ repos:
     rev: v0.8.8
     hooks:
       - id: licenseheaders
-        args: ["--tmpl=LICENSE_SHORT", "--ext=py", "-f"]
+        args:
+          ["--tmpl=LICENSE_SHORT", "--ext=py", "-x=**/models/__init__.py", "-f"]
   - repo: https://github.com/psf/black
     rev: 22.3.0
     hooks:
       - id: black
         args: ["--config", "pyproject.toml"]
   - repo: https://github.com/timothycrosley/isort
-    rev: 5.10.1
+    rev: 5.12.0
     hooks:
       - id: isort
         args:
@@ -32,13 +33,11 @@ repos:
         exclude: |
           (?x)^.*(
               .github/|
-              source_specs.yaml|
-              destination_specs.yaml|
               .gitlab-ci.yml
           ).?$
 
   - repo: https://github.com/csachs/pyproject-flake8
-    rev: v0.0.1a2.post1
+    rev: v6.0.0
     hooks:
       - id: pyproject-flake8
         args: ["--config", "pyproject.toml"]

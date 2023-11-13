@@ -1,0 +1,28 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.timelyapp.com
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: bc617b5f-1b9e-4a2d-bebe-782fd454a771
+  dockerImageTag: 0.3.0
+  dockerRepository: airbyte/source-timely
+  githubIssueLabel: source-timely
+  icon: timely.svg
+  license: MIT
+  name: Timely
+  releaseDate: 2022-06-22
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/timely
+  tags:
+    - language:low-code
+  ab_internal:
+    sl: 100
+    ql: 100
+metadataSpecVersion: "1.0"

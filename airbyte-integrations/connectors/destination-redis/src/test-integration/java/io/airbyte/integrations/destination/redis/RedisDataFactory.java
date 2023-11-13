@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redis;
@@ -21,6 +21,10 @@ public class RedisDataFactory {
         .put("username", "default")
         .put("password", "pw")
         .put("cache_type", "hash")
+        .put("ssl", "false")
+        .put("ssl_mode", ImmutableMap.builder()
+            .put("mode", "disable")
+            .build())
         .build());
   }
 

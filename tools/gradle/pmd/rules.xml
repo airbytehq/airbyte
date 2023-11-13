@@ -10,6 +10,7 @@
     <exclude-pattern>.*/generated/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-integrations/.*</exclude-pattern>
     <exclude-pattern>.*/test-integration/.*</exclude-pattern>
+    <exclude-pattern>.*/airbyte-cdk/.*</exclude-pattern>
 
     <rule ref="category/java/bestpractices.xml">
         <!-- exclude permanently -->
@@ -99,6 +100,7 @@
         <exclude name="AvoidFieldNameMatchingMethodName"/>
         <exclude name="BeanMembersShouldSerialize"/>
         <exclude name="DataflowAnomalyAnalysis"/>
+        <exclude name="TestClassWithoutTestCases"/>
         <exclude name="UseLocaleWithCaseConversions"/>
         <!-- to be applied eventually -->
         <exclude name="CloseResource"/>
@@ -107,7 +109,6 @@
         <exclude name="ReturnEmptyCollectionRatherThanNull"/>
         <exclude name="SimpleDateFormatNeedsLocale"/>
         <exclude name="SingletonClassReturningNewInstance"/>
-        <exclude name="UseEqualsToCompareStrings"/>
         <exclude name="UseProperClassLoader"/>
     </rule>
     <rule ref="category/java/errorprone.xml/AssignmentInOperand">

@@ -1,16 +1,18 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.db2;
 
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import java.sql.JDBCType;
 import java.util.Collections;
 import java.util.Set;
@@ -94,19 +96,19 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES))));
+            enquoteIdentifier(TABLE_NAME_WITH_SPACES, connection.getMetaData().getIdentifierQuoteString()))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES + 2))));
+            enquoteIdentifier(TABLE_NAME_WITH_SPACES + 2, connection.getMetaData().getIdentifierQuoteString()))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME))));
+            enquoteIdentifier(TABLE_NAME, connection.getMetaData().getIdentifierQuoteString()))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITHOUT_CURSOR_TYPE))));
+            enquoteIdentifier(TABLE_NAME_WITHOUT_CURSOR_TYPE, connection.getMetaData().getIdentifierQuoteString()))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE))));
+            enquoteIdentifier(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE, connection.getMetaData().getIdentifierQuoteString()))));
     super.tearDown();
   }
 

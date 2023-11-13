@@ -101,6 +101,7 @@
     }
   },
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": "string"
@@ -154,6 +155,61 @@
               "items": {
                 "$ref": "#/definitions/content"
               }
+            }
+          }
+        }
+      }
+    },
+    "body": {
+      "type": "object",
+      "properties": {
+        "storage": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string"
+            },
+            "representation": {
+              "type": "string"
+            },
+            "embeddedContent": {
+              "type": "array"
+            },
+            "_expandable": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "view": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string"
+            },
+            "representation": {
+              "type": "string"
+            },
+            "_expandable": {
+              "type": "object",
+              "properties": {
+                "webresource": {
+                  "type": "string"
+                }
+              }
+            },
+            "embeddedContent": {
+              "type": "string"
+            },
+            "mediaToken": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
             }
           }
         }

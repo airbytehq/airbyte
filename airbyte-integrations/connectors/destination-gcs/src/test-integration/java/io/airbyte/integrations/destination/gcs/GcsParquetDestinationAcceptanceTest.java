@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -8,14 +8,15 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
+import io.airbyte.cdk.integrations.destination.s3.S3Format;
+import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants;
+import io.airbyte.cdk.integrations.destination.s3.avro.JsonFieldNameUpdater;
+import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetWriter;
+import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper;
+import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.gcs.parquet.GcsParquetWriter;
-import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.avro.AvroConstants;
-import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
-import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
-import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,8 +34,13 @@ import org.apache.parquet.hadoop.ParquetReader;
 
 public class GcsParquetDestinationAcceptanceTest extends GcsAvroParquetDestinationAcceptanceTest {
 
-  protected GcsParquetDestinationAcceptanceTest() {
+  public GcsParquetDestinationAcceptanceTest() {
     super(S3Format.PARQUET);
+  }
+
+  @Override
+  public ProtocolVersion getProtocolVersion() {
+    return ProtocolVersion.V1;
   }
 
   @Override

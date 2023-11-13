@@ -1,0 +1,192 @@
+{
+  "title": "GET_ORDER_REPORT_DATA_SHIPPING",
+  "description": "GET_ORDER_REPORT_DATA_SHIPPING",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "AmazonOrderID": {
+      "type": ["null", "string"]
+    },
+    "AmazonSessionID": {
+      "type": ["null", "string"]
+    },
+    "OrderDate": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "OrderPostedDate": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "BillingData": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "BuyerEmailAddress": {
+          "type": ["null", "string"]
+        },
+        "BuyerName": {
+          "type": ["null", "string"]
+        },
+        "BuyerPhoneNumber": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "FulfillmentData": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "FulfillmentMethod": {
+          "type": ["null", "string"]
+        },
+        "FulfillmentServiceLevel": {
+          "type": ["null", "string"]
+        },
+        "Address": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "Name": {
+              "type": ["null", "string"]
+            },
+            "AddressFieldOne": {
+              "type": ["null", "string"]
+            },
+            "City": {
+              "type": ["null", "string"]
+            },
+            "StateOrRegion": {
+              "type": ["null", "string"]
+            },
+            "PostalCode": {
+              "type": ["null", "string"]
+            },
+            "CountryCode": {
+              "type": ["null", "string"]
+            },
+            "PhoneNumber": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "IsBusinessOrder": {
+      "type": ["null", "string"]
+    },
+    "Item": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "AmazonOrderItemCode": {
+          "type": ["null", "string"]
+        },
+        "SKU": {
+          "type": ["null", "string"]
+        },
+        "Title": {
+          "type": ["null", "string"]
+        },
+        "Quantity": {
+          "type": ["null", "string"]
+        },
+        "ProductTaxCode": {
+          "type": ["null", "string"]
+        },
+        "ItemPrice": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "Component": {
+              "type": ["array"],
+              "items": {
+                "type": ["null", "object"]
+              },
+              "properties": {
+                "Type": {
+                  "type": ["null", "string"]
+                },
+                "Amount": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "currency": {
+                      "type": ["null", "string"]
+                    },
+                    "value": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "ItemFees": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "Fee": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "Type": {
+                  "type": ["null", "string"]
+                },
+                "Amount": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "currency": {
+                      "type": ["null", "string"]
+                    },
+                    "value": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Promotion": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "PromotionClaimCode": {
+              "type": ["null", "string"]
+            },
+            "MerchantPromotionID": {
+              "type": ["null", "string"]
+            },
+            "Component": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "Type": {
+                  "type": ["null", "string"]
+                },
+                "Amount": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "currency": {
+                      "type": ["null", "string"]
+                    },
+                    "value": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "SignatureConfirmationRecommended": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.helpers;
@@ -30,11 +30,12 @@ public class LoggerHelper {
   }
 
   public static String getJobErrorMessage(List<BigQueryError> errors, Job job) {
-    if (!errors.isEmpty()) {
-      return String.format("Error is happened during execution for job: %s, \n For more details see Big Query Error collection: %s:", job,
-          errors.stream().map(BigQueryError::toString).collect(Collectors.joining(",\n ")));
+    if (errors == null || errors.isEmpty()) {
+      return StringUtils.EMPTY;
+
     }
-    return StringUtils.EMPTY;
+    return String.format("An error occurred during execution of job: %s, \n For more details see Big Query Error collection: %s:", job,
+        errors.stream().map(BigQueryError::toString).collect(Collectors.joining(",\n ")));
   }
 
 }

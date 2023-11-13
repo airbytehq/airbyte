@@ -1,23 +1,39 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import base64
+import logging
+from datetime import datetime
 from typing import Any, List, Mapping, Tuple
 
-import requests
+import pendulum
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_zendesk_support.streams import SourceZendeskException
+from source_zendesk_support.streams import DATETIME_FORMAT, ZendeskConfigException
 
 from .streams import (
+    AccountAttributes,
+    ArticleComments,
+    ArticleCommentVotes,
+    Articles,
+    ArticleVotes,
+    AttributeDefinitions,
+    AuditLogs,
     Brands,
     CustomRoles,
     GroupMemberships,
     Groups,
     Macros,
+    OrganizationFields,
+    OrganizationMemberships,
     Organizations,
+    PostComments,
+    PostCommentVotes,
+    Posts,
+    PostVotes,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
@@ -29,14 +45,14 @@ from .streams import (
     TicketMetricEvents,
     TicketMetrics,
     Tickets,
+    TicketSkips,
+    Topics,
+    UserFields,
     Users,
     UserSettingsStream,
-    UserSubscriptionStream,
 )
 
-# The Zendesk Subscription Plan gains complete access to all the streams
-FULL_ACCESS_PLAN = "Enterprise"
-FULL_ACCESS_ONLY_STREAMS = ["ticket_forms"]
+logger = logging.getLogger("airbyte")
 
 
 class BasicApiTokenAuthenticator(TokenAuthenticator):
@@ -55,8 +71,22 @@ class SourceZendeskSupport(AbstractSource):
     """
 
     @classmethod
-    def get_authenticator(cls, config: Mapping[str, Any]) -> BasicApiTokenAuthenticator:
+    def get_default_start_date(cls) -> str:
+        """
+        Gets the default start date for data retrieval.
 
+        The default date is set to the current date and time in UTC minus 2 years.
+
+        Returns:
+            str: The default start date in 'YYYY-MM-DDTHH:mm:ss[Z]' format.
+
+        Note:
+            Start Date is a required request parameter for Zendesk Support API streams.
+        """
+        return pendulum.now(tz="UTC").subtract(years=2).format("YYYY-MM-DDTHH:mm:ss[Z]")
+
+    @classmethod
+    def get_authenticator(cls, config: Mapping[str, Any]) -> [TokenAuthenticator, BasicApiTokenAuthenticator]:
         # old authentication flow support
         auth_old = config.get("auth_method")
         if auth_old:
@@ -70,7 +100,7 @@ class SourceZendeskSupport(AbstractSource):
             elif auth.get("credentials") == "api_token":
                 return BasicApiTokenAuthenticator(config["credentials"]["email"], config["credentials"]["api_token"])
             else:
-                raise SourceZendeskException(f"Not implemented authorization method: {config['credentials']}")
+                raise ZendeskConfigException(message=f"Not implemented authorization method: {config['credentials']}")
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -81,16 +111,18 @@ class SourceZendeskSupport(AbstractSource):
         (False, error) otherwise.
         """
         auth = self.get_authenticator(config)
-        settings = None
         try:
+            datetime.strptime(config["start_date"], DATETIME_FORMAT)
             settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=None).get_settings()
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             return False, e
-
         active_features = [k for k, v in settings.get("active_features", {}).items() if v]
-        # logger.info("available features: %s" % active_features)
         if "organization_access_enabled" not in active_features:
-            return False, "Organization access is not enabled. Please check admin permission of the current account"
+            return (
+                False,
+                "Please verify that the account linked to the API key has admin permissions and try again."
+                "For more information visit https://support.zendesk.com/hc/en-us/articles/4408832171034-About-team-member-product-roles-and-access.",
+            )
         return True, None
 
     @classmethod
@@ -100,8 +132,9 @@ class SourceZendeskSupport(AbstractSource):
         """
         return {
             "subdomain": config["subdomain"],
-            "start_date": config["start_date"],
+            "start_date": config.get("start_date", cls.get_default_start_date()),
             "authenticator": cls.get_authenticator(config),
+            "ignore_pagination": config.get("ignore_pagination", False),
         }
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -109,32 +142,51 @@ class SourceZendeskSupport(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         args = self.convert_config2stream_args(config)
-        all_streams_mapping = {
-            # sorted in alphabet order
-            "group_membership": GroupMemberships(**args),
-            "groups": Groups(**args),
-            "macros": Macros(**args),
-            "organizations": Organizations(**args),
-            "satisfaction_ratings": SatisfactionRatings(**args),
-            "sla_policies": SlaPolicies(**args),
-            "tags": Tags(**args),
-            "ticket_audits": TicketAudits(**args),
-            "ticket_comments": TicketComments(**args),
-            "ticket_fields": TicketFields(**args),
-            "ticket_forms": TicketForms(**args),
-            "ticket_metrics": TicketMetrics(**args),
-            "ticket_metric_events": TicketMetricEvents(**args),
-            "tickets": Tickets(**args),
-            "users": Users(**args),
-            "brands": Brands(**args),
-            "custom_roles": CustomRoles(**args),
-            "schedules": Schedules(**args),
-        }
-        # check the users Zendesk Subscription Plan
-        subscription_plan = UserSubscriptionStream(**args).get_subscription_plan()
-        if subscription_plan != FULL_ACCESS_PLAN:
-            # only those the streams that are not listed in FULL_ACCESS_ONLY_STREAMS should be available
-            return [stream_cls for stream_name, stream_cls in all_streams_mapping.items() if stream_name not in FULL_ACCESS_ONLY_STREAMS]
-        else:
-            # all streams should be available for user, otherwise
-            return [stream_cls for stream_cls in all_streams_mapping.values()]
+        streams = [
+            Articles(**args),
+            ArticleComments(**args),
+            ArticleCommentVotes(**args),
+            ArticleVotes(**args),
+            AuditLogs(**args),
+            GroupMemberships(**args),
+            Groups(**args),
+            Macros(**args),
+            Organizations(**args),
+            OrganizationFields(**args),
+            OrganizationMemberships(**args),
+            Posts(**args),
+            PostComments(**args),
+            PostCommentVotes(**args),
+            PostVotes(**args),
+            SatisfactionRatings(**args),
+            SlaPolicies(**args),
+            Tags(**args),
+            TicketAudits(**args),
+            TicketComments(**args),
+            TicketFields(**args),
+            TicketMetrics(**args),
+            TicketMetricEvents(**args),
+            TicketSkips(**args),
+            Tickets(**args),
+            Topics(**args),
+            Users(**args),
+            Brands(**args),
+            CustomRoles(**args),
+            Schedules(**args),
+            UserFields(**args),
+        ]
+        ticket_forms_stream = TicketForms(**args)
+        account_attributes = AccountAttributes(**args)
+        attribute_definitions = AttributeDefinitions(**args)
+        # TicketForms, AccountAttributes and AttributeDefinitions streams are only available for Enterprise Plan users,
+        # but Zendesk API does not provide a public API to get user's subscription plan.
+        # That's why we try to read at least one record from one of these streams and expose all of them in case of success
+        # or skip them otherwise
+        try:
+            for stream_slice in ticket_forms_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+                for _ in ticket_forms_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                    streams.extend([ticket_forms_stream, account_attributes, attribute_definitions])
+                    break
+        except Exception as e:
+            logger.warning(f"An exception occurred while trying to access TicketForms stream: {str(e)}. Skipping this stream.")
+        return streams

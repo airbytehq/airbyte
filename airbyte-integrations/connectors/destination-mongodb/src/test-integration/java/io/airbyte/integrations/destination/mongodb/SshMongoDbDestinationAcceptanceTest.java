@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mongodb;
@@ -9,13 +9,13 @@ import static com.mongodb.client.model.Projections.excludeId;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCursor;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.mongodb.MongoDatabase;
-import io.airbyte.integrations.base.ssh.SshBastionContainer;
-import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.util.HostPortResolver;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.bson.Document;
 import org.testcontainers.containers.MongoDBContainer;
@@ -31,7 +31,7 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     container = new MongoDBContainer(DOCKER_IMAGE_NAME)
         .withNetwork(network)
         .withExposedPorts(DEFAULT_PORT);
@@ -45,7 +45,7 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveIpAddress(container))
         .put(JdbcUtils.PORT_KEY, container.getExposedPorts().get(0))
         .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
-        .put(AUTH_TYPE, getAuthTypeConfig()));
+        .put(AUTH_TYPE, getAuthTypeConfig()), false);
   }
 
   @Override
@@ -59,14 +59,15 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
             .put("authorization", "login/password")
             .put(JdbcUtils.USERNAME_KEY, "user")
             .put(JdbcUtils.PASSWORD_KEY, "invalid_pass")
-            .build())));
+            .build())),
+        false);
   }
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-      final String streamName,
-      final String namespace,
-      final JsonNode streamSchema) {
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema) {
     final MongoDatabase database = getMongoDatabase(HostPortResolver.resolveIpAddress(container),
         container.getExposedPorts().get(0), DATABASE_NAME);
     final var collection = database.getOrCreateNewCollection(namingResolver.getRawTableName(streamName));
@@ -78,7 +79,6 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
     }
     return result;
   }
-
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {

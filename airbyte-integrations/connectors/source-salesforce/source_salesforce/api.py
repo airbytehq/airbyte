@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import concurrent.futures
@@ -8,10 +8,12 @@ from typing import Any, List, Mapping, Optional, Tuple
 
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from requests import adapters as request_adapters
 from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
 
-from .exceptions import TypeSalesforceException
+from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING, TypeSalesforceException
 from .rate_limiting import default_backoff_handler
 from .utils import filter_streams_by_criteria
 
@@ -130,7 +132,9 @@ QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS = [
 # The following objects are not supported by the Bulk API. Listed objects are version specific.
 UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "AcceptedEventRelation",
+    "AssetTokenEvent",
     "Attachment",
+    "AttachedContentNote",
     "CaseStatus",
     "ContractStatus",
     "DeclinedEventRelation",
@@ -143,13 +147,38 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "KnowledgeArticleVoteStat",
     "OrderStatus",
     "PartnerRole",
+    "QuoteTemplateRichTextData",
     "RecentlyViewed",
     "ServiceAppointmentStatus",
     "ShiftStatus",
     "SolutionStatus",
     "TaskPriority",
     "TaskStatus",
+    "TaskWhoRelation",
     "UndecidedEventRelation",
+    "WorkOrderLineItemStatus",
+    "WorkOrderStatus",
+    "UserRecordAccess",
+    "OwnedContentDocument",
+    "OpenActivity",
+    "NoteAndAttachment",
+    "Name",
+    "LookedUpFromActivity",
+    "FolderedContentDocument",
+    "ContractStatus",
+    "ContentFolderItem",
+    "CombinedAttachment",
+    "CaseTeamTemplateRecord",
+    "CaseTeamTemplateMember",
+    "CaseTeamTemplate",
+    "CaseTeamRole",
+    "CaseTeamMember",
+    "AttachedContentDocument",
+    "AggregateResult",
+    "ChannelProgramLevelShare",
+    "AccountBrandShare",
+    "AccountFeed",
+    "AssetFeed",
 ]
 
 UNSUPPORTED_FILTERING_STREAMS = [
@@ -174,10 +203,12 @@ UNSUPPORTED_FILTERING_STREAMS = [
     "UriEvent",
 ]
 
+UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
+
 
 class Salesforce:
     logger = logging.getLogger("airbyte")
-    version = "v52.0"
+    version = "v57.0"
     parallel_tasks_size = 100
     # https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm
     # Request Size Limits
@@ -229,10 +260,13 @@ class Salesforce:
         """
         stream_objects = {}
         for stream_object in self.describe()["sobjects"]:
+            if stream_object["name"] in UNSUPPORTED_STREAMS:
+                self.logger.warning(f"Stream {stream_object['name']} can not be used without object ID therefore will be ignored.")
+                continue
             if stream_object["queryable"]:
                 stream_objects[stream_object.pop("name")] = stream_object
             else:
-                self.logger.warn(f"Stream {stream_object['name']} is not queryable and will be ignored.")
+                self.logger.warning(f"Stream {stream_object['name']} is not queryable and will be ignored.")
 
         if catalog:
             return {
@@ -264,7 +298,7 @@ class Salesforce:
                 resp = self.session.post(url, headers=headers, data=body)
             resp.raise_for_status()
         except HTTPError as err:
-            self.logger.warn(f"http error body: {err.response.text}")
+            self.logger.warning(f"http error body: {err.response.text}")
             raise
         return resp
 
@@ -276,9 +310,13 @@ class Salesforce:
             "client_secret": self.client_secret,
             "refresh_token": self.refresh_token,
         }
-
-        resp = self._make_request("POST", login_url, body=login_body, headers={"Content-Type": "application/x-www-form-urlencoded"})
-
+        try:
+            resp = self._make_request("POST", login_url, body=login_body, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        except HTTPError as err:
+            if err.response.status_code == requests.codes.BAD_REQUEST:
+                if error_message := AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(err.response.json().get("error_description")):
+                    raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
+            raise
         auth = resp.json()
         self.access_token = auth["access_token"]
         self.instance_url = auth["instance_url"]
@@ -316,7 +354,7 @@ class Salesforce:
         stream_schemas = {}
         for i in range(0, len(stream_names), self.parallel_tasks_size):
             chunk_stream_names = stream_names[i : i + self.parallel_tasks_size]
-            with concurrent.futures.ThreadPoolExecutor(max_workers=len(chunk_stream_names)) as executor:
+            with concurrent.futures.ThreadPoolExecutor() as executor:
                 for stream_name, schema, err in executor.map(
                     lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names]
                 ):

@@ -1,15 +1,15 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integration.destination.pubsub;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.standardtest.destination.PerStreamStateMessageTest;
 import io.airbyte.integrations.destination.pubsub.PubsubConsumer;
-import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +25,7 @@ public class PubsubConsumerTest extends PerStreamStateMessageTest {
   private PubsubConsumer consumer;
 
   @Mock
-  private JsonNode config;
+  private PubsubDestinationConfig config;
   @Mock
   private ConfiguredAirbyteCatalog catalog;
 

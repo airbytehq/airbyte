@@ -1,5 +1,5 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
   "properties": {
     "advertiser_id": {
       "type": "integer"

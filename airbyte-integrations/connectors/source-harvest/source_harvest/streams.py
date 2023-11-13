@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC, abstractmethod
@@ -295,16 +295,15 @@ class ReportsBase(HarvestStream, ABC):
         :return: report path suffix
         """
 
-    def __init__(self, from_date: pendulum.date = None, **kwargs):
+    def __init__(self, from_date: Optional[pendulum.date] = None, to_date: Optional[pendulum.date] = None, **kwargs):
         super().__init__(**kwargs)
 
         current_date = pendulum.now().date()
-        self._from_date = from_date or current_date.subtract(years=1)
+        self._from_date = from_date or current_date.subtract(days=365)
+        self._to_date = to_date or current_date
         # `to` date greater than `from` date causes an exception on Harvest
         if self._from_date > current_date:
             self._to_date = from_date
-        else:
-            self._to_date = current_date
 
     def path(self, **kwargs) -> str:
         return f"reports/{self.report_path}"
@@ -347,16 +346,16 @@ class IncrementalReportsBase(ReportsBase, ABC):
         Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
         """
         start_date = self._from_date
-        end_date = pendulum.now().date()
+        end_date = self._to_date
 
         # determine stream_state, if no stream_state we use start_date
         if stream_state:
             start_date = pendulum.parse(stream_state.get(self.cursor_field)).date()
 
         while start_date < end_date:
-            # Max size of date chunks is 1 year
+            # Max size of date chunks is 365 days
             # Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/
-            end_date_slice = end_date if start_date >= end_date.subtract(years=1) else start_date.add(years=1)
+            end_date_slice = end_date if start_date >= end_date.subtract(days=365) else start_date.add(days=365)
             date_slice = {"from": start_date.strftime(self.date_param_template), "to": end_date_slice.strftime(self.date_param_template)}
 
             start_date = end_date_slice

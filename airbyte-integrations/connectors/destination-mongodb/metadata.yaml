@@ -1,0 +1,25 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/destination-mongodb
+  githubIssueLabel: destination-mongodb
+  icon: mongodb.svg
+  license: ELv2
+  name: MongoDB
+  registries:
+    cloud:
+      dockerRepository: airbyte/destination-mongodb-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/mongodb
+  tags:
+    - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

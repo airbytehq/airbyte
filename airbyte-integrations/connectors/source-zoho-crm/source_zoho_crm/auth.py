@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Dict, Mapping, Tuple
@@ -11,9 +11,9 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 class ZohoOauth2Authenticator(Oauth2Authenticator):
     def _prepare_refresh_token_params(self) -> Dict[str, str]:
         return {
-            "refresh_token": self.refresh_token,
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
+            "refresh_token": self.get_refresh_token(),
+            "client_id": self.get_client_id(),
+            "client_secret": self.get_client_secret(),
             "grant_type": "refresh_token",
         }
 
@@ -27,9 +27,9 @@ class ZohoOauth2Authenticator(Oauth2Authenticator):
         Returns a tuple of (access_token, token_lifespan_in_seconds)
         """
         try:
-            response = requests.request(method="POST", url=self.token_refresh_endpoint, params=self._prepare_refresh_token_params())
+            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), params=self._prepare_refresh_token_params())
             response.raise_for_status()
             response_json = response.json()
-            return response_json[self.access_token_name], response_json[self.expires_in_name]
+            return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e

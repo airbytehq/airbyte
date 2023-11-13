@@ -17,10 +17,10 @@
       "type": ["null", "string"]
     },
     "price": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "quantity": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "open-date": {
       "type": ["null", "string"]
@@ -80,7 +80,7 @@
       "type": ["null", "string"]
     },
     "pending-quantity": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "fulfillment-channel": {
       "type": ["null", "string"]

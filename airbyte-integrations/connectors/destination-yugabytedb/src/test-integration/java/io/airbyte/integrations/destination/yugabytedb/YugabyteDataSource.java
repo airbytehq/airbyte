@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.yugabytedb;
 
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
 import java.util.Collections;
 import javax.sql.DataSource;
 

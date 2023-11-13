@@ -1,10 +1,28 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import patch
 
 from destination_typesense.writer import TypesenseWriter
+
+
+@patch("typesense.Client")
+def test_default_batch_size(client):
+    writer = TypesenseWriter(client, "steam_name")
+    assert writer.batch_size == 10000
+
+
+@patch("typesense.Client")
+def test_empty_batch_size(client):
+    writer = TypesenseWriter(client, "steam_name", "")
+    assert writer.batch_size == 10000
+
+
+@patch("typesense.Client")
+def test_custom_batch_size(client):
+    writer = TypesenseWriter(client, "steam_name", 9000)
+    assert writer.batch_size == 9000
 
 
 @patch("typesense.Client")

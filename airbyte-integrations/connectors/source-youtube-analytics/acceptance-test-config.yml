@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-youtube-analytics:dev
 tests:
@@ -8,7 +8,7 @@ tests:
     - config_path: "secrets/config.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+      status: "exception"
   discovery:
     - config_path: "secrets/config.json"
       backward_compatibility_tests_config:
@@ -18,18 +18,19 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
       timeout_seconds: 1200
       empty_streams:
-      - channel_annotations_a1
-      - channel_cards_a1
-      - channel_demographics_a1
-      - channel_end_screens_a1
-      - channel_sharing_service_a1
-      - channel_province_a2
-      - playlist_basic_a1
-      - playlist_combined_a1
-      - playlist_device_os_a1
-      - playlist_playback_location_a1
-      - playlist_province_a1
-      - playlist_traffic_source_a1
+        - channel_annotations_a1
+        - channel_cards_a1
+        - channel_demographics_a1
+        - channel_end_screens_a1
+        - channel_sharing_service_a1
+        - channel_province_a2
+        - playlist_basic_a1
+        - playlist_combined_a1
+        - playlist_device_os_a1
+        - playlist_playback_location_a1
+        - playlist_province_a1
+        - playlist_traffic_source_a1
+      fail_on_extra_columns: false
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -1,1 +1,0 @@
-export { PersonQuoteCover } from "./PersonQuoteCover";

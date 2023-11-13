@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
 
-import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -21,7 +21,6 @@ public class MySqlStreamingQueryConfig extends AdaptiveStreamingQueryConfig {
 
   @Override
   public void initialize(final Connection connection, final Statement preparedStatement) throws SQLException {
-    connection.setAutoCommit(false);
     preparedStatement.setFetchSize(Integer.MIN_VALUE);
     LOGGER.info("Set initial fetch size: {} rows", preparedStatement.getFetchSize());
   }

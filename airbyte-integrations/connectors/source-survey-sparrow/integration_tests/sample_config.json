@@ -1,0 +1,5 @@
+{
+  "access_token": "<sample token>",
+  "survey_id": [1234, 5678],
+  "region": { "url_base": "https://eu-api.surveysparrow.com/v3" }
+}

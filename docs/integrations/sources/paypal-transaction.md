@@ -19,8 +19,10 @@ Our Paypal Transactions Source Connector does not support OAuth at this time due
 
 ## Step 2: Set up the Paypal Transaction connector in Airbyte
 
-### For Airbyte Cloud:
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+<!-- env:cloud -->
+**For Airbyte Cloud:**
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Paypal Transaction connector and select **Paypal Transaction** from the Source type dropdown.
 4. Enter your client id
@@ -28,8 +30,11 @@ Our Paypal Transactions Source Connector does not support OAuth at this time due
 6. Choose if your account is sandbox
 7. Enter the date you want your sync to start from
 8. Click **Set up source**.
+<!-- /env:cloud -->
 
-### For Airbyte Open Source:
+<!-- env:oss -->
+**For Airbyte Open Source:**
+
 1. Navigate to the Airbyte Open Source dashboard
 2. Set the name for your source
 3. Enter your client id
@@ -37,6 +42,7 @@ Our Paypal Transactions Source Connector does not support OAuth at this time due
 5. Choose if your account is sandbox
 6. Enter the date you want your sync to start from
 7. Click **Set up source**
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -61,12 +67,12 @@ Paypal transaction API has some [limits](https://developer.paypal.com/docs/integ
 
 * `start_date_min` = 3 years, API call lists transaction for the previous three years.
 * `start_date_max` = 1.5 days, it takes a maximum of three hours for executed transactions to appear in the list transactions call. It is set to 1.5 days by default based on experience, otherwise API throw an error.
-* `stream_slice_period` = 1 day, the maximum supported date range is 31 days.
+* `stream_slice_period` = 7 day, the maximum supported date range is 31 days.
 * `records_per_request` = 10000, the maximum number of records in a single request.
 * `page_size` = 500, the maximum page size is 500.
 * `requests_per_minute` = 30, maximum limit is 50 requests per minute from IP address to all endpoint
 
-Transactions sync is performed with default `stream_slice_period` = 1 day, it means that there will be 1 request for each day between start_date and now or end_date. if `start_date` is greater then `start_date_max`. Balances sync is similarly performed with default `stream_slice_period` = 1 day, but it will do additional request for the end_date of the sync now.
+By default, syncs are performed with a slice period of 7 days. If you see errors with the message `Result set size is greater than the maximum limit. Change the filter criteria and try again.`, lower the size of the slice period in your connection configuration.
 
 ## Data type map
 
@@ -81,6 +87,15 @@ Transactions sync is performed with default `stream_slice_period` = 1 day, it me
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
+| 2.2.0 | 2023-10-25 | [31852](https://github.com/airbytehq/airbyte/pull/31852) | The size of the time_window can be configured                                                                               |
+| 2.1.2 | 2023-10-23 | [31759](https://github.com/airbytehq/airbyte/pull/31759) | Keep transaction_id as a string and fetch data in 7-day batches
+| 2.1.1 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                              |
+| 2.1.0   | 2023-08-14 | [29223](https://github.com/airbytehq/airbyte/pull/29223) | Migrate Python CDK to Low Code schema                                                                                        |
+| 2.0.0   | 2023-07-05 | [27916](https://github.com/airbytehq/airbyte/pull/27916) | Update `Balances` schema                                                                                                     |
+| 1.0.0   | 2023-07-03 | [27968](https://github.com/airbytehq/airbyte/pull/27968) | mark `Client ID` and `Client Secret` as required fields                                                                      |
+| 0.1.13  | 2023-02-20 | [22916](https://github.com/airbytehq/airbyte/pull/22916) | Specified date formatting in specification                                                                                   |
+| 0.1.12  | 2023-02-18 | [23211](https://github.com/airbytehq/airbyte/pull/23211) | Fix error handler                                                                                                            |
+| 0.1.11  | 2023-01-27 | [22019](https://github.com/airbytehq/airbyte/pull/22019) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                  |
 | 0.1.10  | 2022-09-04 | [17554](https://github.com/airbytehq/airbyte/pull/17554) | Made the spec and source config to be consistent                                                                             |
 | 0.1.9   | 2022-08-18 | [15741](https://github.com/airbytehq/airbyte/pull/15741) | Removed `OAuth2.0` option                                                                                                    |
 | 0.1.8   | 2022-07-25 | [15000](https://github.com/airbytehq/airbyte/pull/15000) | Added support of `OAuth2.0` authentication, fixed bug when normalization couldn't handle nested cursor field and primary key |

@@ -239,7 +239,7 @@ In some cases, describing schemas is impossible to do reliably. For example, Mon
 
 That is, we would rather not describe a schema at all than describe it incorrectly, as incorrect descriptions **will** lead to failures downstream.
 
-To keep schema descriptions reliable, [automate schema generation](https://docs.airbyte.io/connector-development/cdk-python/schemas#generating-schemas-from-openapi-definitions) whenever possible.
+To keep schema descriptions reliable, [automate schema generation](https://docs.airbyte.com/connector-development/cdk-python/schemas#generating-schemas-from-openapi-definitions) whenever possible.
 
 #### Be very cautious about breaking changes to output schemas
 
@@ -266,7 +266,7 @@ For example, to set up CDC for databases, a user must create logical replication
 
 ### External Documentation
 
-This section is concerned with the external-facing documentation of a connector that goes in [https://docs.airbyte.io](https://docs.airbyte.io) e.g: [this one](https://docs.airbyte.io/integrations/sources/amazon-seller-partner)
+This section is concerned with the external-facing documentation of a connector that goes in [https://docs.airbyte.com](https://docs.airbyte.com) e.g: [this one](https://docs.airbyte.com/integrations/sources/amazon-seller-partner)
 
 **Documentation should communicate persona-impacting behaviors**
 

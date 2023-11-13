@@ -1,0 +1,14 @@
+[
+  {
+    "label": "Issue Type",
+    "value": "issuetype"
+  },
+  {
+    "label": "Key",
+    "value": "issuekey"
+  },
+  {
+    "label": "Summary",
+    "value": "summary"
+  }
+]

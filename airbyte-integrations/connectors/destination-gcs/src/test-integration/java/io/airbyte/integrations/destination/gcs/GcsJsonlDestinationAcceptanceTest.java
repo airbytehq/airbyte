@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -7,9 +7,10 @@ package io.airbyte.integrations.destination.gcs;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.s3.S3Format;
+import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.s3.S3Format;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -20,8 +21,13 @@ import java.util.Map;
 
 public class GcsJsonlDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
 
-  protected GcsJsonlDestinationAcceptanceTest() {
+  public GcsJsonlDestinationAcceptanceTest() {
     super(S3Format.JSONL);
+  }
+
+  @Override
+  public ProtocolVersion getProtocolVersion() {
+    return ProtocolVersion.V1;
   }
 
   @Override

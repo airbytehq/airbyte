@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Issue Transitions",
+  "type": "object",
+  "properties": {
+    "fields": {
+      "type": ["null", "string"]
+    },
+    "hasScreen": {
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "issueId": {
+      "type": ["null", "string"]
+    },
+    "isAvailable": {
+      "type": ["null", "boolean"]
+    },
+    "isConditional": {
+      "type": ["null", "boolean"]
+    },
+    "isGlobal": {
+      "type": ["null", "boolean"]
+    },
+    "isInitial": {
+      "type": ["null", "boolean"]
+    },
+    "isLooped": {
+      "type": ["null", "boolean"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "to": {
+      "type": ["null", "object"],
+      "properties": {
+        "description": {
+          "type": ["null", "string"]
+        },
+        "iconUrl": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "self": {
+          "type": ["null", "string"]
+        },
+        "statusCategory": {
+          "type": ["null", "object"],
+          "properties": {
+            "colorName": {
+              "type": ["null", "string"]
+            },
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "key": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

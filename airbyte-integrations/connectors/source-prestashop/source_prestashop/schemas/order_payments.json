@@ -1,42 +1,42 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "order_reference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_currency": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "amount": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "payment_method": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "conversion_rate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "transaction_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "card_number": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "card_brand": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "card_expiration": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "card_holder": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     }
   }

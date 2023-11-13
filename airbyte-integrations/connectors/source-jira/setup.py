@@ -1,15 +1,17 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "requests==2.25.1", "pendulum>=1.2.0", "vcrpy==4.1.1"]
+MAIN_REQUIREMENTS = ["airbyte-cdk>=0.51.19"]
 
 TEST_REQUIREMENTS = [
-    "pytest==6.1.2",
-    "source-acceptance-test",
+    "requests-mock~=1.9.3",
+    "pytest-mock~=3.6.1",
+    "pytest==6.2.5",
+    "responses~=0.22.0",
 ]
 
 setup(

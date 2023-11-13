@@ -21,7 +21,6 @@
     "self": {
       "type": "string",
       "description": "The URL of the issue link type. Read only.",
-      "format": "uri",
       "readOnly": true
     }
   },

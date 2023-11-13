@@ -1,0 +1,34 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  allowedHosts:
+    hosts:
+      - api.hubapi.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
+  dockerImageTag: 1.7.0
+  dockerRepository: airbyte/source-hubspot
+  documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
+  githubIssueLabel: source-hubspot
+  icon: hubspot.svg
+  license: ELv2
+  name: HubSpot
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - contacts
+      - companies
+      - deals
+  supportLevel: certified
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

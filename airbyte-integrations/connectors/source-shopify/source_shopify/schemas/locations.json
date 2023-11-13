@@ -11,6 +11,9 @@
     "address2": {
       "type": ["null", "string"]
     },
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
+    },
     "city": {
       "type": ["null", "string"]
     },
@@ -18,6 +21,9 @@
       "type": ["null", "string"]
     },
     "country_code": {
+      "type": ["null", "string"]
+    },
+    "country_name": {
       "type": ["null", "string"]
     },
     "created_at": {
@@ -37,6 +43,9 @@
       "type": ["null", "string"]
     },
     "province": {
+      "type": ["null", "string"]
+    },
+    "province_code": {
       "type": ["null", "string"]
     },
     "updated_at": {

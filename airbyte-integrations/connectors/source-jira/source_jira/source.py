@@ -1,16 +1,18 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from base64 import b64encode
-from json.decoder import JSONDecodeError
 from typing import Any, List, Mapping, Optional, Tuple
 
+import pendulum
+import requests
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from pydantic.error_wrappers import ValidationError
 
 from .streams import (
     ApplicationRoles,
@@ -18,12 +20,12 @@ from .streams import (
     BoardIssues,
     Boards,
     Dashboards,
-    Epics,
     Filters,
     FilterSharing,
     Groups,
     IssueComments,
     IssueCustomFieldContexts,
+    IssueCustomFieldOptions,
     IssueFieldConfigurations,
     IssueFields,
     IssueLinkTypes,
@@ -35,6 +37,8 @@ from .streams import (
     IssueResolutions,
     Issues,
     IssueSecuritySchemes,
+    IssueTransitions,
+    IssueTypes,
     IssueTypeSchemes,
     IssueTypeScreenSchemes,
     IssueVotes,
@@ -49,6 +53,7 @@ from .streams import (
     ProjectComponents,
     ProjectEmail,
     ProjectPermissionSchemes,
+    ProjectRoles,
     Projects,
     ProjectTypes,
     ProjectVersions,
@@ -61,55 +66,73 @@ from .streams import (
     Sprints,
     TimeTracking,
     Users,
+    UsersGroupsDetailed,
     Workflows,
     WorkflowSchemes,
     WorkflowStatusCategories,
     WorkflowStatuses,
 )
+from .utils import read_full_refresh
 
 
 class SourceJira(AbstractSource):
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        start_date = config.get("start_date")
+        if start_date:
+            config["start_date"] = pendulum.parse(start_date)
+
+        config["projects"] = config.get("projects", [])
+        return config
+
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
-        token = b64encode(bytes(config["email"] + ":" + config["api_token"], "utf-8")).decode("ascii")
-        authenticator = TokenAuthenticator(token, auth_method="Basic")
-        return authenticator
+        return BasicHttpAuthenticator(config["email"], config["api_token"])
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        alive = True
-        error_msg = None
-
         try:
+            config = self._validate_and_transform(config)
             authenticator = self.get_authenticator(config)
-            args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-            issue_resolutions = IssueResolutions(**args)
-            for item in issue_resolutions.read_records(sync_mode=SyncMode.full_refresh):
-                continue
-        except ConnectionError as error:
-            alive, error_msg = False, repr(error)
-        # If the input domain is incorrect or doesn't exist, then the response would be empty, resulting in a
-        # JSONDecodeError
-        except JSONDecodeError:
-            alive, error_msg = (
-                False,
-                "Unable to connect to the Jira API with the provided credentials. Please make sure the input "
-                "credentials and environment are correct.",
+            kwargs = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
+            labels_stream = Labels(**kwargs)
+            next(read_full_refresh(labels_stream), None)
+            # check projects
+            projects_stream = Projects(**kwargs)
+            projects = {project["key"] for project in read_full_refresh(projects_stream)}
+            unknown_projects = set(config["projects"]) - projects
+            if unknown_projects:
+                return False, "unknown project(s): " + ", ".join(unknown_projects)
+            return True, None
+        except ValidationError as validation_error:
+            return False, validation_error
+        except requests.exceptions.RequestException as request_error:
+            has_response = request_error.response is not None
+            is_invalid_domain = (
+                isinstance(request_error, requests.exceptions.InvalidURL)
+                or has_response
+                and request_error.response.status_code == requests.codes.not_found
             )
 
-        return alive, error_msg
+            if is_invalid_domain:
+                raise AirbyteTracedException(
+                    message="Config validation error: please check that your domain is valid and does not include protocol (e.g: https://).",
+                    internal_message=str(request_error),
+                    failure_type=FailureType.config_error,
+                ) from None
+
+            # sometimes jira returns non json response
+            if has_response and request_error.response.headers.get("content-type") == "application/json":
+                message = " ".join(map(str, request_error.response.json().get("errorMessages", "")))
+                return False, f"{message} {request_error}"
+
+            # we don't know what this is, rethrow it
+            raise request_error
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
-        args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
-        users_args = {**args, "max_results": config.get("max_results", 50)}
-        incremental_args = {**args, "start_date": config.get("start_date", "")}
-        render_fields = config.get("render_fields", False)
-        issues_stream = Issues(
-            **incremental_args,
-            additional_fields=config.get("additional_fields", []),
-            expand_changelog=config.get("expand_issue_changelog", False),
-            render_fields=render_fields,
-        )
+        args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
+        incremental_args = {**args, "start_date": config.get("start_date")}
+        issues_stream = Issues(**incremental_args)
         issue_fields_stream = IssueFields(**args)
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
@@ -122,7 +145,6 @@ class SourceJira(AbstractSource):
             Boards(**args),
             BoardIssues(**incremental_args),
             Dashboards(**args),
-            Epics(render_fields=render_fields, **incremental_args),
             Filters(**args),
             FilterSharing(**args),
             Groups(**args),
@@ -131,6 +153,7 @@ class SourceJira(AbstractSource):
             issue_fields_stream,
             IssueFieldConfigurations(**args),
             IssueCustomFieldContexts(**args),
+            IssueCustomFieldOptions(**args),
             IssueLinkTypes(**args),
             IssueNavigatorSettings(**args),
             IssueNotificationSchemes(**args),
@@ -139,7 +162,9 @@ class SourceJira(AbstractSource):
             IssueRemoteLinks(**incremental_args),
             IssueResolutions(**args),
             IssueSecuritySchemes(**args),
+            IssueTransitions(**args),
             IssueTypeSchemes(**args),
+            IssueTypes(**args),
             IssueTypeScreenSchemes(**args),
             IssueVotes(**incremental_args),
             IssueWatchers(**incremental_args),
@@ -149,6 +174,7 @@ class SourceJira(AbstractSource):
             Permissions(**args),
             PermissionSchemes(**args),
             Projects(**args),
+            ProjectRoles(**args),
             ProjectAvatars(**args),
             ProjectCategories(**args),
             ProjectComponents(**args),
@@ -163,7 +189,8 @@ class SourceJira(AbstractSource):
             Sprints(**args),
             SprintIssues(**incremental_args),
             TimeTracking(**args),
-            Users(**users_args),
+            Users(**args),
+            UsersGroupsDetailed(**args),
             Workflows(**args),
             WorkflowSchemes(**args),
             WorkflowStatuses(**args),

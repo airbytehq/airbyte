@@ -61,13 +61,13 @@
       "type": ["null", "string"]
     },
     "refinementsInformation": {
-      "type": ["array"],
-      "items": {
-        "type": ["null", "object"]
-      },
+      "type": ["null", "object"],
       "properties": {
+        "count": {
+          "type": ["null", "string"]
+        },
         "refinementName": {
-          "type": ["object"],
+          "type": ["null", "object"],
           "properties": {
             "refinementField": {
               "type": ["null", "object"],

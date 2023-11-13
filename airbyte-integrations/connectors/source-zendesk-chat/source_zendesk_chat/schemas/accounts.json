@@ -119,8 +119,6 @@
           "type": ["null", "boolean"]
         },
         "price": {
-          "minimum": -1e33,
-          "maximum": 1e33,
           "type": ["null", "number"]
         },
         "rest_api": {

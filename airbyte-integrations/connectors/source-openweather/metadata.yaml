@@ -1,0 +1,24 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.openweathermap.org
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 561d7787-b45e-4f3b-af58-0163c3ba9d5a
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-openweather
+  githubIssueLabel: source-openweather
+  icon: openweather.svg
+  license: MIT
+  name: Openweather
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/openweather
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

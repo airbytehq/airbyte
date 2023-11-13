@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dev_null;
@@ -7,12 +7,12 @@ package io.airbyte.integrations.destination.dev_null;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.spec_modification.SpecModifyingDestination;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.spec_modification.SpecModifyingDestination;
 import io.airbyte.integrations.destination.e2e_test.TestingDestinations;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +41,12 @@ public class DevNullDestination extends SpecModifyingDestination implements Dest
 
     ((ObjectNode) spec.getConnectionSpecification()).put("title", DEV_NULL_DESTINATION_TITLE);
 
-    final ArrayNode types = (ArrayNode) spec.getConnectionSpecification().get("oneOf");
+    final ObjectNode properties = (ObjectNode) spec.getConnectionSpecification().get("properties").get("test_destination");
+    final ArrayNode types = (ArrayNode) properties.get("oneOf");
     final Iterator<JsonNode> typesIterator = types.elements();
     while (typesIterator.hasNext()) {
       final JsonNode typeNode = typesIterator.next();
-      if (!typeNode.get("properties").get("type").get("const").asText().equalsIgnoreCase("silent")) {
+      if (!typeNode.get("properties").get("test_destination_type").get("const").asText().equalsIgnoreCase("silent")) {
         typesIterator.remove();
       }
     }

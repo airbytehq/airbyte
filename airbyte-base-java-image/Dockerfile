@@ -4,9 +4,9 @@ ARG DOCKER_BUILD_ARCH=amd64
 
 WORKDIR /app
 
-RUN yum install -y tar
+RUN yum install -y tar && yum clean all
 
-# Add the DataDaog Java APM agent
+# Add the Datadog Java APM agent
 ADD https://dtdg.co/latest-java-tracer dd-java-agent.jar
 
 # Add the OpenTelemetry Java APM agent

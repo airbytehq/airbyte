@@ -41,6 +41,21 @@
     "Language": {
       "type": ["null", "string"]
     },
+    "AccountName": {
+      "type": ["null", "string"]
+    },
+    "CampaignName": {
+      "type": ["null", "string"]
+    },
+    "CampaignType": {
+      "type": ["null", "string"]
+    },
+    "AdGroupName": {
+      "type": ["null", "string"]
+    },
+    "AdGroupType": {
+      "type": ["null", "string"]
+    },
     "Impressions": {
       "type": ["null", "integer"]
     },

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -22,8 +22,13 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfigFactory;
+import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations;
+import io.airbyte.cdk.integrations.destination.s3.StorageProvider;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -87,7 +92,7 @@ public class S3DestinationTest {
 
   @Test
   public void createsThenDeletesTestFile() {
-    S3BaseChecks.attemptS3WriteAndDelete(mock(S3StorageOperations.class), config, "fake-fileToWriteAndDelete", s3);
+    S3BaseChecks.attemptS3WriteAndDelete(mock(S3StorageOperations.class), config, "fake-fileToWriteAndDelete");
 
     // We want to enforce that putObject happens before deleteObject, so use inOrder.verify()
     final InOrder inOrder = Mockito.inOrder(s3);

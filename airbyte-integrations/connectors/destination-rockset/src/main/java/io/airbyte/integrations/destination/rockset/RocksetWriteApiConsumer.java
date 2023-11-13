@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.rockset;
@@ -16,11 +16,11 @@ import com.rockset.client.api.DocumentsApi;
 import com.rockset.client.model.AddDocumentsRequest;
 import com.rockset.client.model.AddDocumentsResponse;
 import com.rockset.client.model.DocumentStatus;
+import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;

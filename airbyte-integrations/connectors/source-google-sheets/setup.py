@@ -1,27 +1,29 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    "airbyte-cdk",
     "backoff",
     "requests",
     "google-auth-httplib2",
     "google-api-python-client",
-    "PyYAML==5.4",
+    "PyYAML~=6.0",
     "pydantic~=1.9.2",
+    "Unidecode",
 ]
 
 TEST_REQUIREMENTS = [
+    "requests-mock~=1.9.3",
+    "pytest-mock~=3.6.1",
     "pytest~=6.1",
-    "source-acceptance-test",
 ]
 
 setup(
-    name="google_sheets_source",
+    name="source_google_sheets",
     description="Source implementation for Google Sheets.",
     author="Airbyte",
     author_email="contact@airbyte.io",

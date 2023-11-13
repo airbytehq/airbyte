@@ -1,0 +1,27 @@
+data:
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:1.0.0@sha256:dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
+  dockerImageTag: 0.3.0
+  dockerRepository: airbyte/source-younium
+  githubIssueLabel: source-younium
+  icon: younium.svg
+  license: MIT
+  name: Younium
+  releaseDate: 2022-11-09
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/younium
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

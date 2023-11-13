@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.S3StorageOperations;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

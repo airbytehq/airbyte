@@ -1,0 +1,23 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "server_upload_time": "2100-01-01T00:00:00.00+00:00" },
+      "stream_descriptor": { "name": "events" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "date": "2100-01-01" },
+      "stream_descriptor": { "name": "active_users" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "date": "2100-01-01" },
+      "stream_descriptor": { "name": "average_session_length" }
+    }
+  }
+]

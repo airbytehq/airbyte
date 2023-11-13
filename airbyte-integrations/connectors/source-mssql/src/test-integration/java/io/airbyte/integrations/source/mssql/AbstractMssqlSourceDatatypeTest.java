@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.protocol.models.JsonSchemaType;
 import org.jooq.DSLContext;
 import org.testcontainers.containers.MSSQLServerContainer;
@@ -142,45 +142,45 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_DATE)
             .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'", "null")
-            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", "1999-01-08T00:00:00Z", null)
+            .addExpectedValues("0001-01-01", "9999-12-31", "1999-01-08", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smalldatetime")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("'1900-01-01'", "'2079-06-06'", "null")
-            .addExpectedValues("1900-01-01T00:00:00.000000Z", "2079-06-06T00:00:00.000000Z", null)
+            .addExpectedValues("1900-01-01T00:00:00.000000", "2079-06-06T00:00:00.000000", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
-            .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("'1753-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04Z'",
-                "'9999-12-31T13:00:04.123Z'", "null")
-            .addExpectedValues("1753-01-01T00:00:00.000000Z", "9999-12-31T00:00:00.000000Z", "9999-12-31T13:00:04.000000Z",
-                "9999-12-31T13:00:04.123000Z", null)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+            .addInsertValues("'1753-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04'",
+                "'9999-12-31T13:00:04.123'", "null")
+            .addExpectedValues("1753-01-01T00:00:00.000000", "9999-12-31T00:00:00.000000", "9999-12-31T13:00:04",
+                "9999-12-31T13:00:04.123", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime2")
-            .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04.123456Z'", "null")
-            .addExpectedValues("0001-01-01T00:00:00.000000Z", "9999-12-31T00:00:00.000000Z", "9999-12-31T13:00:04.123456Z", null)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04.123456'", "null")
+            .addExpectedValues("0001-01-01T00:00:00.000000", "9999-12-31T00:00:00.000000", "9999-12-31T13:00:04.123456", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'13:00:01'", "'13:00:04Z'", "'13:00:04.123456Z'")
             .addExpectedValues(null, "13:00:01", "13:00:04", "13:00:04.123456")
             .createTablePatternSql(CREATE_TABLE_SQL)
@@ -189,7 +189,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetimeoffset")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
             .addInsertValues("'0001-01-10 00:00:00 +01:00'", "'9999-01-10 00:00:00 +01:00'", "null")
             .addExpectedValues("0001-01-10 00:00:00.0000000 +01:00",
                 "9999-01-10 00:00:00.0000000 +01:00", null)

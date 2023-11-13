@@ -1,0 +1,44 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 200
+  allowedHosts:
+    hosts:
+      - ${api_url}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
+  dockerImageTag: 2.0.0
+  dockerRepository: airbyte/source-gitlab
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
+  githubIssueLabel: source-gitlab
+  icon: gitlab.svg
+  license: MIT
+  name: Gitlab
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  releases:
+    breakingChanges:
+      2.0.0:
+        message:
+          In this release, several streams were updated to date-time field format, as declared in the Gitlab API.
+          These changes impact pipeline.created_at and pipeline.updated_at fields for stream Deployments and expires_at field for stream Group Members and stream Project Members.
+          Users will need to refresh the source schema and reset affected streams after upgrading.
+        upgradeDeadline: "2023-11-09"
+  suggestedStreams:
+    streams:
+      - merge_requests
+      - users
+      - issues
+      - projects
+      - commits
+  supportLevel: certified
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

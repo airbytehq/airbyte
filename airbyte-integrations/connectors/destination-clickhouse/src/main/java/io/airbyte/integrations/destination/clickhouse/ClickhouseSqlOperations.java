@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
@@ -7,10 +7,10 @@ package io.airbyte.integrations.destination.clickhouse;
 import com.clickhouse.client.ClickHouseFormat;
 import com.clickhouse.jdbc.ClickHouseConnection;
 import com.clickhouse.jdbc.ClickHouseStatement;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

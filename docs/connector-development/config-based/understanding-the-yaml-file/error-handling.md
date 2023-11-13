@@ -27,8 +27,8 @@ Schema:
       - max_retries
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       response_filters:
         type: array
         items:
@@ -59,8 +59,8 @@ Schema:
       - action
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       action:
         "$ref": "#/definitions/ResponseAction"
       http_codes:
@@ -114,7 +114,7 @@ requester:
   <...>
   error_handler:
     response_filters:
-        - error_message_contain: "ignorethisresponse"
+        - error_message_contains: "ignorethisresponse"
           action: IGNORE
 ```
 
@@ -143,8 +143,8 @@ requester:
     response_filters:
         - http_codes: [ 404 ]
           action: IGNORE
-                    - http_codes: [ 429 ]
-                    action: RETRY
+        - http_codes: [ 429 ]
+          action: RETRY
 ```
 
 ## Backoff Strategies
@@ -157,8 +157,8 @@ Schema:
   BackoffStrategy:
     type: object
     anyOf:
-      - "$ref": "#/definitions/ExponentialBackoff"
-      - "$ref": "#/definitions/ConstantBackoff"
+      - "$ref": "#/definitions/ExponentialBackoffStrategy"
+      - "$ref": "#/definitions/ConstantBackoffStrategy"
       - "$ref": "#/definitions/WaitTimeFromHeader"
       - "$ref": "#/definitions/WaitUntilTimeFromHeader"
 ```
@@ -170,12 +170,12 @@ This is the default backoff strategy. The requester will backoff with an exponen
 Schema:
 
 ```yaml
-  ExponentialBackoff:
+  ExponentialBackoffStrategy:
     type: object
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       factor:
         type: integer
         default: 5
@@ -183,19 +183,19 @@ Schema:
 
 ### Constant Backoff
 
-When using the `ConstantBackoff` strategy, the requester will backoff with a constant interval.
+When using the `ConstantBackoffStrategy` strategy, the requester will backoff with a constant interval.
 
 Schema:
 
 ```yaml
-  ConstantBackoff:
+  ConstantBackoffStrategy:
     type: object
     additionalProperties: true
     required:
       - backoff_time_in_seconds
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       backoff_time_in_seconds:
         type: number
 ```
@@ -214,8 +214,8 @@ Schema:
     required:
       - header
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       header:
         type: string
       regex:
@@ -263,8 +263,8 @@ Schema:
     required:
       - header
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       header:
         type: string
       regex:
@@ -320,8 +320,8 @@ Schema:
     required:
       - error_handlers
     additionalProperties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       error_handlers:
         type: array
         items:
@@ -340,13 +340,13 @@ requester:
           - predicate: "{{ 'code' in response }}"
             action: RETRY
         backoff_strategies:
-          - type: "ConstantBackoff"
+          - type: "ConstantBackoffStrategy"
             backoff_time_in_seconds: 5
       - response_filters:
           - http_codes: [ 403 ]
             action: RETRY
         backoff_strategies:
-          - type: "ExponentialBackoff"
+          - type: "ExponentialBackoffStrategy"
 ```
 
 ## More readings

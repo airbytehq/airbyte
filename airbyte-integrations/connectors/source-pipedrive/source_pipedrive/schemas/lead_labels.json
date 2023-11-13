@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "color": {
+      "type": ["null", "string"]
+    },
+    "add_time": {
+      "type": ["null", "string"]
+    },
+    "update_time": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -28,6 +28,9 @@
     },
     "survey_url": {
       "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
     }
   }
 }

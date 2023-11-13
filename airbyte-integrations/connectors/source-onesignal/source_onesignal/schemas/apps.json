@@ -1,25 +1,27 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
       "type": ["null", "string"]
     },
     "players": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "messageable_players": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "gcm_key": {
       "type": ["null", "string"]
@@ -76,10 +78,25 @@
       "type": ["null", "string"]
     },
     "basic_auth_key": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "additional_data_is_root_payload": {
       "type": ["null", "boolean"]
+    },
+    "apns_key_id": {
+      "type": ["null", "integer"]
+    },
+    "fcm_v1_service_account_json": {
+      "type": ["null", "string"]
+    },
+    "apns_p8": {
+      "type": ["null", "string"]
+    },
+    "apns_bundle_id": {
+      "type": ["null", "integer"]
+    },
+    "apns_team_id": {
+      "type": ["null", "integer"]
     }
   }
 }

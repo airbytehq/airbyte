@@ -1,0 +1,32 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 200
+  allowedHosts:
+    hosts:
+      - oauth2.googleapis.com
+      - www.googleapis.com
+      - analyticsdata.googleapis.com
+      - analyticsreporting.googleapis.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+  connectorSubtype: api
+  connectorType: source
+  definitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
+  dockerImageTag: 0.2.2
+  dockerRepository: airbyte/source-google-analytics-v4
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4
+  githubIssueLabel: source-google-analytics-v4
+  icon: google-analytics.svg
+  license: Elv2
+  name: Google Analytics (Universal Analytics)
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  supportLevel: certified
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

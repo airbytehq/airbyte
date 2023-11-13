@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import date, datetime
@@ -29,21 +29,32 @@ def convert_type(fb_type: str, nullable: bool) -> Dict[str, Union[str, Dict]]:
         "FLOAT": {"type": "number"},
         "DOUBLE": {"type": "number"},
         "DOUBLE PRECISION": {"type": "number"},
-        "BOOLEAN": {"type": "integer"},
+        "BOOLEAN": {"type": "boolean"},
         # Firebolt bigint is max 8 byte so it fits in Airbyte's "integer"
         "BIGINT": {"type": "integer"},
         "LONG": {"type": "integer"},
         "DECIMAL": {"type": "string", "airbyte_type": "big_number"},
         "DATE": {"type": "string", "format": "date"},
+        "PGDATE": {"type": "string", "format": "date"},
         "TIMESTAMP": {
             "type": "string",
-            "format": "datetime",
+            "format": "date-time",
             "airbyte_type": "timestamp_without_timezone",
         },
         "DATETIME": {
             "type": "string",
+            "format": "date-time",
+            "airbyte_type": "timestamp_without_timezone",
+        },
+        "TIMESTAMPNTZ": {
+            "type": "string",
             "format": "datetime",
             "airbyte_type": "timestamp_without_timezone",
+        },
+        "TIMESTAMPTZ": {
+            "type": "string",
+            "format": "datetime",
+            "airbyte_type": "timestamp_with_timezone",
         },
     }
     if fb_type.upper().startswith("ARRAY"):
@@ -52,6 +63,10 @@ def convert_type(fb_type: str, nullable: bool) -> Dict[str, Union[str, Dict]]:
         airbyte_type = convert_type(inner_type, nullable=True)
         result = {"type": "array", "items": airbyte_type}
     else:
+        # Strip complex type info e.g. DECIMAL(8,23) -> DECIMAL
+        fb_type = fb_type[: fb_type.find("(")] if "(" in fb_type else fb_type
+        # Remove NULL/NOT NULL from child type of an array e.g. ARRAY(INT NOT NULL)
+        fb_type = fb_type.removesuffix(" NOT NULL").removesuffix(" NULL")
         result = map.get(fb_type.upper(), {"type": "string"})
         if nullable:
             result["type"] = ["null", result["type"]]

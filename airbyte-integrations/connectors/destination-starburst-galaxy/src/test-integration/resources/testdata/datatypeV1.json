@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "properties": {
+    "string_type": {
+      "$ref": "WellKnownTypes.json#/definitions/String"
+    },
+    "integer_type": {
+      "$ref": "WellKnownTypes.json#/definitions/Integer"
+    },
+    "number_type": {
+      "$ref": "WellKnownTypes.json#/definitions/Number"
+    },
+    "boolean_type": {
+      "$ref": "WellKnownTypes.json#/definitions/Boolean"
+    },
+    "binary_type": {
+      "$ref": "WellKnownTypes.json#/definitions/BinaryData"
+    },
+    "date_type": {
+      "$ref": "WellKnownTypes.json#/definitions/Date"
+    },
+    "timestamp_with_tz_type": {
+      "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+    },
+    "timestamp_without_tz_type": {
+      "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
+    },
+    "time_with_tz_type": {
+      "$ref": "WellKnownTypes.json#/definitions/TimeWithTimezone"
+    },
+    "time_without_tz_type": {
+      "$ref": "WellKnownTypes.json#/definitions/TimeWithoutTimezone"
+    }
+  }
+}

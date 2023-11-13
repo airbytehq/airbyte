@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -10,18 +10,20 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import Events, Issues, ProjectDetail, Projects
+from .streams import Events, Issues, ProjectDetail, Projects, Releases
 
 
 # Source
 class SourceSentry(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
-            projects_stream = Projects(
+            stream = ProjectDetail(
                 authenticator=TokenAuthenticator(token=config["auth_token"]),
                 hostname=config.get("hostname"),
+                organization=config.get("organization"),
+                project=config.get("project"),
             )
-            next(projects_stream.read_records(sync_mode=SyncMode.full_refresh))
+            next(stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
         except Exception as e:
             return False, e
@@ -41,4 +43,5 @@ class SourceSentry(AbstractSource):
             Issues(**project_stream_args),
             ProjectDetail(**project_stream_args),
             Projects(**stream_args),
+            Releases(**project_stream_args),
         ]

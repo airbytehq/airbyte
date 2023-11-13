@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import abstractmethod
@@ -8,11 +8,10 @@ from typing import Union
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class ErrorHandler(JsonSchemaMixin):
+class ErrorHandler:
     """
     Defines whether a request was successful and how to handle a failure.
     """
@@ -22,6 +21,14 @@ class ErrorHandler(JsonSchemaMixin):
     def max_retries(self) -> Union[int, None]:
         """
         Specifies maximum amount of retries for backoff policy. Return None for no limit.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def max_time(self) -> Union[int, None]:
+        """
+        Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
         """
         pass
 

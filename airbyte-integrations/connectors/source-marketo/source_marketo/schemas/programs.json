@@ -37,6 +37,9 @@
     "headStart": {
       "type": ["null", "boolean"]
     },
+    "isHeadStart": {
+      "type": ["null", "boolean"]
+    },
     "folder": {
       "type": ["object", "null"],
       "properties": {

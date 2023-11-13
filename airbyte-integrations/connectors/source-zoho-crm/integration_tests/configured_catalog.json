@@ -9,7 +9,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -21,7 +21,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -33,7 +33,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -45,7 +45,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -57,7 +57,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -69,7 +69,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -81,7 +81,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -93,7 +93,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -105,7 +105,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -117,7 +117,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -129,7 +129,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -141,7 +141,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -153,7 +153,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -165,7 +165,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -177,7 +177,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -189,7 +189,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -201,7 +201,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -213,7 +213,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -225,7 +225,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
     {
@@ -237,7 +237,7 @@
         "default_cursor_field": ["Modified_Time"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     }
   ]

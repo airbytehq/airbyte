@@ -1,0 +1,17 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: ccd3901d-edf3-4e58-900c-942d6990aa59
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-qonto
+  githubIssueLabel: source-qonto
+  icon: qonto.svg
+  license: MIT
+  name: Qonto My
+  releaseDate: "2023-10-19"
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/qonto
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

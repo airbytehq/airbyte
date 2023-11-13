@@ -14,8 +14,7 @@
       "type": "array",
       "description": "The major, minor, and revision version numbers of the Jira version.",
       "items": {
-        "type": "integer",
-        "format": "int32"
+        "type": "integer"
       }
     },
     "deploymentType": {
@@ -24,8 +23,7 @@
     },
     "buildNumber": {
       "type": "integer",
-      "description": "The build number of the Jira version.",
-      "format": "int32"
+      "description": "The build number of the Jira version."
     },
     "buildDate": {
       "type": "string",

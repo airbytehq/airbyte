@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.scylla;
 
 import com.google.common.base.CharMatcher;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.commons.text.Names;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 
 class ScyllaNameTransformer extends StandardNameTransformer {
 

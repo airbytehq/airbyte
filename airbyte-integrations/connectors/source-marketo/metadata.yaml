@@ -1,0 +1,29 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 200
+  allowedHosts:
+    hosts:
+      - "*.mktorest.com"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
+  dockerImageTag: 1.2.2
+  dockerRepository: airbyte/source-marketo
+  documentationUrl: https://docs.airbyte.com/integrations/sources/marketo
+  githubIssueLabel: source-marketo
+  icon: marketo.svg
+  license: ELv2
+  name: Marketo
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  supportLevel: certified
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

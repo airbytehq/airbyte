@@ -1,0 +1,27 @@
+{
+  "marketers": {
+    "id": "$#@!1"
+  },
+  "campaigns": {
+    "id": "$#@!1"
+  },
+  "campaigns_geo_location": {},
+  "promoted_links": {
+    "id": "$#@!1"
+  },
+  "promoted_links_sequence_for_campaigns": {},
+  "budgets": {
+    "id": "$#@!1"
+  },
+  "performance_report_campaigns_by_marketers": {},
+  "performance_report_periodic_by_marketers": {},
+  "performance_report_periodic_by_marketers_campaign": {},
+  "performance_promoted_links": {},
+  "performance_report_marketers_by_publisher": {},
+  "performance_report_publishers_by_campaigns": {},
+  "performance_report_marketers_by_platforms": {},
+  "performance_report_marketers_campaigns_by_platforms": {},
+  "performance_report_marketers_by_geo_performance": {},
+  "performance_report_marketers_campaigns_by_geo": {},
+  "performance_report_marketers_by_interest": {}
+}

@@ -1,0 +1,33 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  allowedHosts:
+    hosts:
+      - api.pipedrive.com # Please change to the hostname of the source.
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d8286229-c680-4063-8c59-23b9b391c700
+  dockerImageTag: 2.2.1
+  dockerRepository: airbyte/source-pipedrive
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
+  githubIssueLabel: source-pipedrive
+  icon: pipedrive.svg
+  license: MIT
+  name: Pipedrive
+  releases:
+    breakingChanges:
+      2.0.0:
+        upgradeDeadline: 2023-10-04
+        message: "This version removes the `pipeline_ids` field from the `deal_fields` stream. Config has changed to only use API key. Please update your config."
+  releaseDate: 2021-07-19
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

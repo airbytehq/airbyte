@@ -1,0 +1,6 @@
+{
+  "endpoint": "Test Mocked API Server",
+  "iban": "REPLACEME",
+  "api_key": "my-orgs:fdsf12345",
+  "start_date": "2023-11-11"
+}

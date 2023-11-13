@@ -1,0 +1,25 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 62235e65-af7a-4138-9130-0bda954eb6a8
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-spacex-api
+  githubIssueLabel: source-spacex-api
+  icon: spacex.svg
+  license: MIT
+  name: SpaceX API
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/spacex-api
+  tags:
+    - language:low-code
+    - language:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

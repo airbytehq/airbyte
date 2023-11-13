@@ -36,10 +36,43 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
+        "id": 0
+      },
+      "stream_descriptor": {
+        "name": "order_products"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
         "id": 4
       },
       "stream_descriptor": {
         "name": "pages"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 0
+      },
+      "stream_descriptor": {
+        "name": "brands"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 0
+      },
+      "stream_descriptor": {
+        "name": "categories"
       }
     }
   },

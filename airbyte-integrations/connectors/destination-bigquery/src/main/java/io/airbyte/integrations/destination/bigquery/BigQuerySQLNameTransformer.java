@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
 
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 
 public class BigQuerySQLNameTransformer extends StandardNameTransformer {
 
@@ -39,6 +39,10 @@ public class BigQuerySQLNameTransformer extends StandardNameTransformer {
       return BigQueryConsts.NAMESPACE_PREFIX + normalizedName;
     }
     return normalizedName;
+  }
+
+  public String getTmpTableName(final String streamName, final String randomSuffix) {
+    return convertStreamName("_airbyte_tmp" + "_" + randomSuffix + "_" + streamName);
   }
 
 }

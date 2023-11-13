@@ -11,6 +11,9 @@
     "language": {
       "type": ["string", "null"]
     },
+    "theme_id": {
+      "type": ["string", "null"]
+    },
     "folder_id": {
       "type": ["string", "null"]
     },

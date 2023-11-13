@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - "onesignal.com"
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
+  dockerImageTag: 1.1.0
+  dockerRepository: airbyte/source-onesignal
+  documentationUrl: https://docs.airbyte.com/integrations/sources/onesignal
+  githubIssueLabel: source-onesignal
+  icon: onesignal.svg
+  license: MIT
+  name: OneSignal
+  releaseDate: 2023-08-31
+  releaseStage: alpha
+  tags:
+    - language:lowcode
+  supportLevel: community
+metadataSpecVersion: "1.0"

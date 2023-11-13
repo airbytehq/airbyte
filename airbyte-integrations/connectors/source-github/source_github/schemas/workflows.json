@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "https://json-schema.org/draft-04/schema#",
   "type": ["null", "object"],
   "properties": {
     "id": {
@@ -18,7 +18,7 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "updated_at": {

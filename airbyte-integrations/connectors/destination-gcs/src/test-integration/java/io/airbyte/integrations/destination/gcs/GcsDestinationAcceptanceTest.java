@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -14,20 +14,22 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.s3.S3Format;
+import io.airbyte.cdk.integrations.destination.s3.S3FormatConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.S3FormatConfig;
-import io.airbyte.integrations.destination.s3.S3StorageOperations;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -64,12 +66,17 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   protected NamingConventionTransformer nameTransformer;
   protected S3StorageOperations s3StorageOperations;
 
-  protected GcsDestinationAcceptanceTest(final S3Format outputFormat) {
+  public GcsDestinationAcceptanceTest(final S3Format outputFormat) {
     this.outputFormat = outputFormat;
   }
 
   protected JsonNode getBaseConfigJson() {
     return Jsons.deserialize(IOs.readFile(Path.of(SECRET_FILE_PATH)));
+  }
+
+  @Override
+  public ProtocolVersion getProtocolVersion() {
+    return ProtocolVersion.V1;
   }
 
   @Override
@@ -154,7 +161,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
    * <li>Construct the GCS client.</li>
    */
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random GCS bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);

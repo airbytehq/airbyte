@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - "restapi.e-conomic.com"
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 42495935-95de-4f5c-ae08-8fac00f6b308
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-visma-economic
+  githubIssueLabel: source-visma-economic
+  icon: visma-economic.svg
+  license: MIT
+  name: Visma Economic
+  releaseDate: "2022-11-08"
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/visma-economic
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

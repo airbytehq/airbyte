@@ -1,22 +1,22 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
-import io.airbyte.db.DataTypeUtils;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
+import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.charset.Charset;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
@@ -35,7 +35,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
    * @throws SQLException
    */
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json)
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json)
       throws SQLException {
 
     final SQLServerResultSetMetaData metadata = (SQLServerResultSetMetaData) resultSet
@@ -81,7 +81,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JDBCType getFieldType(final JsonNode field) {
+  public JDBCType getDatabaseFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText();
       if (typeName.equalsIgnoreCase("geography")
@@ -89,6 +89,19 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
           || typeName.equalsIgnoreCase("hierarchyid")) {
         return JDBCType.VARCHAR;
       }
+
+      if (typeName.equalsIgnoreCase("datetime")) {
+        return JDBCType.TIMESTAMP;
+      }
+
+      if (typeName.equalsIgnoreCase("datetimeoffset")) {
+        return JDBCType.TIMESTAMP_WITH_TIMEZONE;
+      }
+
+      if (typeName.equalsIgnoreCase("real")) {
+        return JDBCType.REAL;
+      }
+
       return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
     } catch (final IllegalArgumentException ex) {
       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
@@ -111,11 +124,6 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     node.put(columnName, value);
   }
 
-  @Override
-  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DataTypeUtils.toISOTimeString(resultSet.getTimestamp(index).toLocalDateTime()));
-  }
-
   protected void putGeometry(final ObjectNode node,
                              final String columnName,
                              final ResultSet resultSet,
@@ -130,6 +138,22 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
                               final int index)
       throws SQLException {
     node.put(columnName, Geography.deserialize(resultSet.getBytes(index)).toString());
+  }
+
+  @Override
+  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
+    return switch (jdbcType) {
+      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
+      case DOUBLE, DECIMAL, FLOAT, NUMERIC, REAL -> JsonSchemaType.NUMBER;
+      case BOOLEAN, BIT -> JsonSchemaType.BOOLEAN;
+      case NULL -> JsonSchemaType.NULL;
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
+      case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
+      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+      case DATE -> JsonSchemaType.STRING_DATE;
+      default -> JsonSchemaType.STRING;
+    };
   }
 
 }

@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "default_cursor_field": ["dt"],
+  "additionalProperties": true,
   "properties": {
     "host": {
       "type": ["null", "string"]

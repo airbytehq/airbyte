@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -28,3 +28,8 @@ class TypeSalesforceException(SalesforceException):
 class TmpFileIOError(Error):
     def __init__(self, msg: str, err: str = None):
         self.logger.fatal(f"{msg}. Error: {err}")
+
+
+AUTHENTICATION_ERROR_MESSAGE_MAPPING = {
+    "expired access/refresh token": "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
+}

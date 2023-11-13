@@ -1,5 +1,7 @@
 {
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "identities": {
       "type": ["null", "array"]
@@ -20,7 +22,7 @@
       "type": ["null", "string"]
     },
     "imap": {
-      "type": ["null", "string"]
+      "type": ["null", "object"]
     }
   }
 }

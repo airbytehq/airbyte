@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -12,9 +12,10 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
+    "pytest-mock~=3.6.1",
     "pytest~=6.1",
+    "pytest-lazy-fixture",
     "requests-mock",
-    "source-acceptance-test",
 ]
 
 setup(

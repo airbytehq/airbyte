@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dynamodb;
@@ -14,10 +14,10 @@ import com.amazonaws.services.dynamodbv2.document.*;
 import com.amazonaws.services.dynamodbv2.document.spec.ScanSpec;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
@@ -105,7 +105,7 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random s3 bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);

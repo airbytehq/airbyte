@@ -4,7 +4,7 @@
       "stream": {
         "name": "athlete_stats",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "athlete_id": {
@@ -21,7 +21,7 @@
       "stream": {
         "name": "activities",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
             "start_date": {

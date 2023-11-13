@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - openexchangerates.org
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 77d5ca6b-d345-4dce-ba1e-1935a75778b8
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-open-exchange-rates
+  githubIssueLabel: source-open-exchange-rates
+  icon: open-exchange-rates.svg
+  license: MIT
+  name: Open Exchange Rates
+  releaseDate: 2023-10-02
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/open-exchange-rates
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

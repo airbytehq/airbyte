@@ -1,0 +1,27 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.getbase.com
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 982eaa4c-bba1-4cce-a971-06a41f700b8c
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-zendesk-sell
+  githubIssueLabel: source-zendesk-sell
+  icon: zendesk.svg
+  license: MIT
+  name: Zendesk Sell
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sell
+  tags:
+    - language:lowcode
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

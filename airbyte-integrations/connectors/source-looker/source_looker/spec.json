@@ -5,7 +5,7 @@
     "title": "Looker Spec",
     "type": "object",
     "required": ["domain", "client_id", "client_secret"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "domain": {
         "type": "string",
@@ -25,7 +25,8 @@
       "client_secret": {
         "title": "Client Secret",
         "type": "string",
-        "description": "The Client Secret is second part of an API3 key."
+        "description": "The Client Secret is second part of an API3 key.",
+        "airbyte_secret": true
       },
       "run_look_ids": {
         "title": "Look IDs to Run",

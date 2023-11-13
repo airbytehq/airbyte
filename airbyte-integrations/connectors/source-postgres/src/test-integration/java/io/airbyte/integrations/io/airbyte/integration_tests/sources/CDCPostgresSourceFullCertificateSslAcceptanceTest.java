@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -17,6 +17,11 @@ public class CDCPostgresSourceFullCertificateSslAcceptanceTest extends AbstractC
         .put("client_key", certs.getClientKey())
         .put("client_key_password", PASSWORD)
         .build();
+  }
+
+  @Override
+  protected String getServerImageName() {
+    return "postgres:16-bullseye";
   }
 
 }

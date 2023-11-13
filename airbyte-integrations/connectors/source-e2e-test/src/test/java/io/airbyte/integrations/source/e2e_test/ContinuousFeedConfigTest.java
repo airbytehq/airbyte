@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.e2e_test;
@@ -13,7 +13,7 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.validation.json.JsonValidationException;
 import java.util.Optional;
 import java.util.stream.Stream;
