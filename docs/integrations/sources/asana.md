@@ -70,6 +70,7 @@ The connector is restricted by normal Asana [requests limitation](https://develo
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.6.1   | 2023-11-13 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Fix hidden config access |
 | 0.6.0   | 2023-11-03 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Add new stream Portfolio Memberships with Parent Portfolio        |
 | 0.5.0   | 2023-10-30 | [31114](https://github.com/airbytehq/airbyte/pull/31114) | Add Portfolios stream |
 | 0.4.0   | 2023-10-24 | [31084](https://github.com/airbytehq/airbyte/pull/31084) | Add StoriesCompact stream                                         |
