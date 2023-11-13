@@ -289,8 +289,8 @@ class ReportsAmazonSPStream(Stream, ABC):
         report = requests.get(url)
         report.raise_for_status()
         if "compressionAlgorithm" in payload:
-            return gzip.decompress(report.content).decode(report.encoding)
-        return report.content.decode(report.encoding)
+            return gzip.decompress(report.content).decode("iso-8859-1")
+        return report.content.decode("iso-8859-1")
 
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
