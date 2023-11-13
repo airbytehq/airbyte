@@ -8,6 +8,7 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
@@ -74,29 +75,28 @@ def message_repository():
 class _MockStream(Stream):
     def __init__(
         self,
-        inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[Mapping[str, Any]]]] = None,
         name: str = None,
+        available: bool = True,
     ):
-        self._inputs_and_mocked_outputs = inputs_and_mocked_outputs
         self._name = name
+        self._available = available
 
     @property
     def name(self):
         return self._name
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:  # type: ignore
-        # Remove None values
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        if self._inputs_and_mocked_outputs:
-            for _input, output in self._inputs_and_mocked_outputs:
-                if kwargs == _input:
-                    return output
-
-        raise Exception(f"No mocked output supplied for input: {kwargs}. Mocked inputs/outputs: {self._inputs_and_mocked_outputs}")
+        yield from [{"data": 1}, {"data": 2}]
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return "pk"
+
+    def check_availability(self, logger: logging.Logger, source: Optional[Source] = None) -> Tuple[bool, Optional[str]]:
+        if self._available:
+            return True, None
+        else:
+            return False, "Stream is not available"
 
 
 def test_read_nonexistent_stream_raises_exception(mocker):
@@ -137,6 +137,18 @@ def test_read_stream_emits_repository_message_on_error(mocker, message_repositor
     with pytest.raises(RuntimeError):
         messages = list(source.read(logger, {}, ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])))
         assert MESSAGE_FROM_REPOSITORY in messages
+
+
+def test_concurrent_source_reading_from_no_streams(mocker):
+    stream = _MockStream(name="my_stream", available=False)
+    mocker.patch.object(_MockStream, "get_json_schema", return_value={})
+    source = _MockSource(streams=[stream])
+    configured_stream = _configured_stream(stream, SyncMode.full_refresh)
+    configured_stream.stream.name = "no_my_stream"
+    messages = []
+    for m in source.read(logger, {}, ConfiguredAirbyteCatalog(streams=[_configured_stream(stream, SyncMode.full_refresh)])):
+        messages.append(m)
+    assert messages == []
 
 
 def _configured_stream(stream: Stream, sync_mode: SyncMode):
