@@ -4,18 +4,14 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static io.airbyte.cdk.db.PostgresUtils.getCertificate;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.PostgresUtils;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.cdk.testutils.PostgresTestDatabase;
+import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -26,80 +22,53 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
 import java.util.List;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@ExtendWith(SystemStubsExtension.class)
 public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends AbstractPostgresSourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
   private static final String STREAM_NAME_MATERIALIZED_VIEW = "testview";
   private static final String SCHEMA_NAME = "public";
-  @SystemStub
-  private EnvironmentVariables environmentVariables;
-  private PostgreSQLContainer<?> container;
+
+  private PostgresTestDatabase testdb;
   private JsonNode config;
   protected static final String PASSWORD = "Passw0rd";
   protected static PostgresUtils.Certificate certs;
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
+  protected FeatureFlags featureFlags() {
+    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
+  }
 
-    container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
-        .asCompatibleSubstituteFor("postgres"));
-    container.start();
-    certs = getCertificate(container);
+  @Override
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+    testdb = PostgresTestDatabase.make("postgres:16-bullseye", "withCert");
+    certs = testdb.getCertificate();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
         .build());
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveHost(container))
-        .put("port", HostPortResolver.resolvePort(container))
-        .put("database", container.getDatabaseName())
+    config = Jsons.jsonNode(testdb.makeConfigBuilder()
         .put("schemas", Jsons.jsonNode(List.of("public")))
-        .put("username", "postgres")
-        .put("password", "postgres")
         .put("ssl", true)
         .put("replication_method", replicationMethod)
         .put("ssl_mode", getCertificateConfiguration())
         .build());
-
-    try (final DSLContext dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            container.getHost(),
-            container.getFirstMappedPort(),
-            config.get("database").asText()),
-        SQLDialect.POSTGRES)) {
-      final Database database = new Database(dslContext);
-
-      database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-        ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-        ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-        ctx.fetch("CREATE MATERIALIZED VIEW testview AS select * from id_and_name where id = '2';");
-        return null;
-      });
-    }
+    testdb.database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+      ctx.fetch("CREATE MATERIALIZED VIEW testview AS select * from id_and_name where id = '2';");
+      return null;
+    });
   }
 
   public abstract ImmutableMap getCertificateConfiguration();
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    container.close();
+    testdb.close();
   }
 
   @Override

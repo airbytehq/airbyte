@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.base.adaptive;
 
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,7 @@ public class AdaptiveSourceRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdaptiveSourceRunner.class);
 
-  public static final String DEPLOYMENT_MODE_KEY = "DEPLOYMENT_MODE";
+  public static final String DEPLOYMENT_MODE_KEY = EnvVariableFeatureFlags.DEPLOYMENT_MODE;
   public static final String CLOUD_MODE = "CLOUD";
 
   public static OssSourceBuilder baseOnEnv() {

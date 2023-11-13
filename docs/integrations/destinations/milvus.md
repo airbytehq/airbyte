@@ -57,7 +57,9 @@ For testing purposes, it's also possible to use the [Fake embeddings](https://py
 
 ### Indexing
 
-To get started, create a new collection in your Milvus instance. Make sure that
+If the specified collection doesn't exist, the connector will create it for you with a primary key field `pk` and the configured vector field matching the embedding configuration. Dynamic fields will be enabled. The vector field will have an L2 IVF_FLAT index with an `nlist` parameter of 1024.
+
+If you want to change any of these settings, create a new collection in your Milvus instance yourself. Make sure that
 * The primary key field is set to [auto_id](https://milvus.io/docs/create_collection.md)
 * There is a vector field with the correct dimensionality (1536 for OpenAI, 1024 for Cohere) and [a configured index](https://milvus.io/docs/build_index.md)
 
@@ -65,7 +67,7 @@ If the record contains a field with the same name as the primary key, it will be
 
 ### Setting up a collection
 
-When using the Zilliz cloud, this can be done using the UI - in this case only the colleciton name and the vector dimensionality needs to be configured, the vector field with index will be automatically created under the name `vector`. Using the REST API, the following command will create the index:
+When using the Zilliz cloud, this can be done using the UI - in this case only the collection name and the vector dimensionality needs to be configured, the vector field with index will be automatically created under the name `vector`. Using the REST API, the following command will create the index:
 ```
 POST /v1/vector/collections/create
 {
@@ -77,13 +79,15 @@ POST /v1/vector/collections/create
 }
 ```
 
-When using a self-hosted Milvus clustger, the collection needs to be created using the Milvus CLI or Python client. The following commands will create a collection set up for loading data via Airbyte:
+When using a self-hosted Milvus cluster, the collection needs to be created using the Milvus CLI or Python client. The following commands will create a collection set up for loading data via Airbyte:
 ```python
-from pymilvus import CollectionSchema, FieldSchema, DataType
+from pymilvus import CollectionSchema, FieldSchema, DataType, connections, Collection
+
+connections.connect() # connect to locally running Milvus instance without authentication
 
 pk = FieldSchema(name="pk",dtype=DataType.INT64, is_primary=True, auto_id=True)
 vector = FieldSchema(name="vector",dtype=DataType.FLOAT_VECTOR,dim=1536)
-schema = CollectionSchema(fields=[id, vector], enable_dynamic_field=True)
+schema = CollectionSchema(fields=[pk, vector], enable_dynamic_field=True)
 collection = Collection(name="test_collection", schema=schema)
 collection.create_index(field_name="vector", index_params={ "metric_type":"L2", "index_type":"IVF_FLAT", "params":{"nlist":1024} })
 ```
@@ -105,6 +109,8 @@ vector_store.similarity_search("test")
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.8   | 2023-11-08 | [#31563](https://github.com/airbytehq/airbyte/pull/32262) | Auto-create collection if it doesn't exist |
+| 0.0.7   | 2023-10-23 | [#31563](https://github.com/airbytehq/airbyte/pull/31563) | Add field mapping option |
 | 0.0.6 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.0.5   | 2023-10-15 | [#31329](https://github.com/airbytehq/airbyte/pull/31329) | Add OpenAI-compatible embedder option |
 | 0.0.4   | 2023-10-04 | [#31075](https://github.com/airbytehq/airbyte/pull/31075) | Fix OpenAI embedder batch size |

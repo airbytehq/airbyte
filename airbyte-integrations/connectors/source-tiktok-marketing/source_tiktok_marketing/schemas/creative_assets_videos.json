@@ -14,7 +14,9 @@
       "type": ["null", "string"]
     },
     "preview_url_expire_time": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "duration": {
       "type": ["null", "number"]

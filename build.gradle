@@ -37,7 +37,6 @@ ext {
     version = System.getenv("VERSION") ?: env.VERSION
     image_tag = System.getenv("VERSION") ?: 'dev'
     skipSlowTests = (System.getProperty('skipSlowTests', 'false') != 'false')
-
 }
 // Pyenv support.
 try {
@@ -506,27 +505,52 @@ subprojects { subproj ->
     }
 
     test {
-        maxHeapSize = '3g'
-        maxParallelForks = Runtime.runtime.availableProcessors()
-        // This allows to set up a `gradle.properties` file inside the connector folder to reduce parallelization.
-        // This is especially useful for connectors that share resources, like Redshift or Snowflake.
-        // This limits the number of test classes that execute in parallel.
-        // See also usages of parallelExecutionsPerThread.
-        if (subproj.hasProperty('numberThreads')) {
-            int numberThreads = 0
-            String numberThreadsString = subproj.property('numberThreads').toString()
-            if (numberThreadsString.isInteger()) {
-                numberThreads = numberThreadsString as int
-            }
-            if (numberThreads > 0 && numberThreads < maxParallelForks) {
-                maxParallelForks = numberThreads
+        useJUnitPlatform()
+        testLogging() {
+            events 'skipped', 'started', 'passed', 'failed'
+            exceptionFormat 'full'
+            // Swallow the logs when running in airbyte-ci, rely on test reports instead.
+            showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+        }
+
+        // Set the timezone to UTC instead of picking up the host machine's timezone,
+        // which on a developer's laptop is more likely to be PST.
+        systemProperty 'user.timezone', 'UTC'
+
+        // Enable parallel test execution in JUnit by default.
+        // This is to support @Execution(ExecutionMode.CONCURRENT) annotations
+        // See https://junit.org/junit5/docs/current/user-guide/#writing-tests-parallel-execution for details.
+        systemProperty 'junit.jupiter.execution.parallel.enabled', 'true'
+        // Concurrency takes place at the class level.
+        systemProperty 'junit.jupiter.execution.parallel.mode.classes.default', 'concurrent'
+        // Within a class, the test methods are still run serially on the same thread.
+        systemProperty 'junit.jupiter.execution.parallel.mode.default', 'same_thread'
+        // Effectively disable JUnit concurrency by running tests in only one thread by default.
+        systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'fixed'
+        systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', 1
+
+        if (!subproj.hasProperty('testExecutionConcurrency')) {
+            // By default, let gradle spawn as many independent workers as it wants.
+            maxParallelForks = Runtime.runtime.availableProcessors()
+            maxHeapSize = '3G'
+        } else {
+            // Otherwise, run tests within the same JVM.
+            // Let gradle spawn only one worker.
+            maxParallelForks = 1
+            maxHeapSize = '8G'
+            // Manage test execution concurrency in JUnit.
+            String concurrency = subproj.property('testExecutionConcurrency').toString()
+            if (concurrency.isInteger() && (concurrency as int) > 0) {
+                // Define a fixed number of threads when the property is set to a positive integer.
+                systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', concurrency
+            } else {
+                // Otherwise let JUnit manage the concurrency dynamically.
+                systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'dynamic'
             }
         }
 
-        systemProperty 'user.timezone', 'UTC'
-
+        // Exclude all connector unit tests upon request.
         if (rootProject.ext.skipSlowTests) {
-            // Exclude all connector unit tests
             exclude '**/io/airbyte/integrations/source/**'
             exclude '**/io/airbyte/integrations/destination/**'
         }
@@ -535,19 +559,11 @@ subprojects { subproj ->
             enabled = !rootProject.ext.skipSlowTests
             excludes = ['**/*Test*', '**/generated*']
         }
-        useJUnitPlatform {
-            excludeTags('cloud-storage')
-        }
-        testLogging() {
-            events "passed", "skipped", "failed"
-            exceptionFormat 'full'
-            // uncomment to get the full log output
-            // showStandardStreams = true
-        }
         finalizedBy jacocoTestReportTask
     }
 
     // TODO: These should be added to the CDK or to the individual projects that need them:
+
     dependencies {
         implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
@@ -561,16 +577,10 @@ subprojects { subproj ->
 
         // SLF4J as a facade over Log4j2 required dependencies
         implementation libs.bundles.log4j
+        implementation libs.appender.log4j2
 
         // Bridges from other logging implementations to SLF4J
         implementation libs.bundles.slf4j
-
-        // Dependencies for logging to cloud storage, as well as the various clients used to do so.
-        implementation libs.appender.log4j2
-        implementation libs.aws.java.sdk.s3
-        implementation libs.google.cloud.storage
-
-        implementation libs.s3
 
         // Lombok dependencies
         compileOnly libs.lombok
@@ -588,6 +598,9 @@ subprojects { subproj ->
         // adds owasp plugin
         spotbugsPlugins libs.findsecbugs.plugin
         implementation libs.spotbugs.annotations
+
+        // Airbyte dependencies.
+        implementation libs.airbyte.protocol
     }
 
     tasks.withType(SpotBugsTask).configureEach {
@@ -599,9 +612,6 @@ subprojects { subproj ->
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
-    tasks.named('check').configure {
-        dependsOn tasks.named('jacocoTestCoverageVerification')
-    }
 }
 
 // integration and performance test tasks per project
@@ -611,7 +621,6 @@ allprojects {
             [
                     'integrationTestJava',
                     'integrationTestPython',
-                    'standardSourceTestFile',
             ].contains(it.name)
         }
     }

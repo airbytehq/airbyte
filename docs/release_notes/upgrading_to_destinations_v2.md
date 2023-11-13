@@ -37,7 +37,7 @@ The following table details the delivered data modified by Destinations V2:
 | Normalized tabular data       | API Source                            | Unnested tables, `_airbyte` metadata columns, SCD tables |
 | Normalized tabular data       | Tabular Source (database, file, etc.) | `_airbyte` metadata columns, SCD tables                  |
 
-![Airbyte Destinations V2 Column Changes](./assets/destinations-v2-column-changes.png)
+![Airbyte Destinations V2 Column Changes](./assets/updated_table_columns.png)
 
 Whenever possible, we've taken this opportunity to use the best data type for storing JSON for your querying convenience. For example, `destination-bigquery` now loads `JSON` blobs as type `JSON` in BigQuery (introduced last [year](https://cloud.google.com/blog/products/data-analytics/bigquery-now-natively-supports-semi-structured-data)), instead of type `string`.
 
@@ -136,7 +136,7 @@ If you have written downstream transformations directly from the output of raw t
 
 We may make further changes to raw tables in the future, as these tables are intended to be a staging ground for Airbyte to optimize the performance of your syncs. We cannot guarantee the same level of stability as for final tables in your destination schema, nor will features like error handling be implemented in the raw tables.
 
-As a user previously not running Normalization, Upgrading to Destinations V2 will increase the compute costs in your destination data warehouse. This is because Destinations V2 will now be performing the operations to generate a final typed table.
+As a user previously not running Normalization, Upgrading to Destinations V2 will increase the compute costs in your destination data warehouse. This is because Destinations V2 will now be performing the operations to generate a final typed table. Some destinations may provide an option to disable this - check your connectors's settings.
 
 ### Upgrade Paths for Connections using CDC
 

@@ -24,7 +24,6 @@ RUN poetry install --no-root --only main --no-interaction --no-ansi
 COPY . /app
 RUN poetry install --only main --no-cache --no-interaction --no-ansi
 
-LABEL io.airbyte.version=2.0.2
-LABEL io.airbyte.name=airbyte/connector-acceptance-test
+
 WORKDIR /test_input
 ENTRYPOINT ["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "-r", "fEsx", "--show-capture=log"]

@@ -1,7 +1,14 @@
 # Google Sheets
 
-The Google Sheets Destination is configured to push data to a single Google Sheets spreadsheet with multiple Worksheets as streams. To replicate data to multiple spreadsheets, you can create multiple instances of the Google Sheets Destination in your Airbyte instance.
-This page guides you through the process of setting up the Google Sheets destination connector.
+The Google Sheets Destination is configured to push data to a single Google Sheets spreadsheet with multiple Worksheets as streams. To replicate data to multiple spreadsheets, you can create multiple instances of the Google Sheets Destination in your Airbyte instance. 
+
+:::warning
+
+Google Sheets imposes rate limits and hard limits on the amount of data it can receive, which results in sync failure. Only use Google Sheets as a destination for small, non-production use cases,  as it is not designed for handling large-scale data operations.
+
+Read more about the [limitations](#limitations) of using Google Sheets below.
+
+:::
 
 ## Prerequisites
 
@@ -12,41 +19,74 @@ This page guides you through the process of setting up the Google Sheets destina
 
 ### Google Account
 
-#### If you don't have a Google Account
-
-Visit the [Google Support](https://support.google.com/accounts/answer/27441?hl=en) and create your Google Account.
+To create a Google account, visit [Google](https://support.google.com/accounts/answer/27441?hl=en) and create a Google Account.
 
 ### Google Sheets (Google Spreadsheets)
 
-1. Once you acquire your Google Account, simply open the [Google Support](https://support.google.com/docs/answer/6000292?hl=en&co=GENIE.Platform%3DDesktop) to create the fresh empty Google to be used as a destination for your data replication, or if already have one - follow the next step.
-2. You will need the link of the Spreadsheet you'd like to sync. To get it, click Share button in the top right corner of Google Sheets interface, and then click Copy Link in the dialog that pops up.
-   These two steps are highlighted in the screenshot below:
-
-![](../../.gitbook/assets/google_spreadsheet_url.png)
+1. Once you are logged into your Google account, create a new Google Sheet. [Follow this guide](https://support.google.com/docs/answer/6000292?hl=en&co=GENIE.Platform%3DDesktop) to create a new sheet. You may use an existing Google Sheet.
+2. You will need the link of the Google Sheet you'd like to sync. To get it, click "Share" in the top right corner of the Google Sheets interface, and then click Copy Link in the dialog that pops up.
 
 ## Step 2: Set up the Google Sheets destination connector in Airbyte
 
+<!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
-3. On the source setup page, select **Google Sheets** from the Source type dropdown and enter a name for this connector.
-4. Select `Sign in with Google`.
-5. Log in and Authorize to the Google account and click `Set up source`.
+1. Select **Google Sheets** from the Source type dropdown and enter a name for this connector.
+2. Select `Sign in with Google`.
+3. Log in and Authorize to the Google account and click `Set up source`.
+4. Copy the Google Sheet link to **Spreadsheet Link**
+<!-- /env:cloud -->
 
+<!-- env:oss -->
 **For Airbyte Open Source:**
-
-At this moment the `Google Sheets Destination` works only with Airbyte Cloud.
+ Authentication to Google Sheets is only available using OAuth for authentication. 
+ 
+ 1. Select **Google Sheets** from the Source type dropdown and enter a name for this connector.
+2. Follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. You will need to grant the scopes described in the [Google Sheets API](https://developers.google.com/identity/protocols/oauth2/scopes#sheets). 
+3. Copy your Client ID, Client secret, and Refresh Token from the previous step. 
+4. Copy the Google Sheet link to **Spreadsheet Link**
+<!-- /env:oss -->
 
 ### Output schema
 
-Each worksheet in the selected spreadsheet will be the output as a separate source-connector stream. The data is coerced to string before the output to the spreadsheet. The nested data inside of the source connector data is normalized to the `first-level-nesting` and represented as string, this produces nested lists and objects to be a string rather than normal lists and objects, the further data processing is required if you need to analyze the data.
+Each worksheet in the selected spreadsheet will be the output as a separate source-connector stream. 
 
-Airbyte only supports replicating `Grid Sheets`, which means the text raw data only could be replicated to the target spreadsheet. See the [Google Sheets API docs](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) for more info on all available sheet types.
+The output columns are re-ordered in alphabetical order. The output columns should **not** be reordered manually after the sync, as this could cause future syncs to fail.
+
+All data is coerced to a `string` format in Google Sheets.
+Any nested lists and objects will be formatted as a string rather than normal lists and objects. Further data processing is required if you require the data for downstream analysis.
+
+Airbyte only supports replicating `Grid Sheets`, which means only text is replicated. Objects like charts or images cannot be synced. See the [Google Sheets API docs](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) for more info on all available sheet types.
+
+### Rate Limiting & Performance Considerations
+
+The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 60 requests per 60 seconds per user and 300 requests per 60 seconds per project, which will result in slow sync speeds. Airbyte batches requests to the API in order to efficiently pull data and respects these rate limits.
+
+### <a name="limitations"></a>Limitations
+
+Google Sheets imposes hard limits on the amount of data that can be synced. If you attempt to sync more data than is allowed, the sync will fail.
+
+**Maximum of 10 Million Cells**
+
+A Google Sheets document can contain a maximum of 10 million cells. These can be in a single worksheet or in multiple sheets.
+If you already have reached the 10 million limit, it will not allow you to add more columns (and vice versa, i.e., if the 10 million cells limit is reached with a certain number of rows, it will not allow more rows).
+
+**Maximum of 50,000 characters per cell**
+
+There can be at most 50,000 characters per cell. Do not use Google Sheets if you have fields with long text in your source.
+
+**Maximum of 18,278 Columns**
+
+There can be at most 18,278 columns in Google Sheets in a worksheet.
+
+**Maximum of 200 Worksheets in a Spreadsheet**
+
+You cannot create more than 200 worksheets within single spreadsheet.
+
+Syncs will fail if any of these limits are reached.
 
 #### Note:
 
-- The output columns are ordered alphabetically. The output columns should not be reordered manually after the sync, this could cause the data corruption for all next syncs.
 - The underlying process of record normalization is applied to avoid data corruption during the write process. This handles two scenarios:
 
 1. UnderSetting - when record has less keys (columns) than catalog declares
@@ -99,32 +139,6 @@ EXAMPLE:
 | Ful-Refresh Append             | Yes                  |
 | Incremental Append             | Yes                  |
 | Incremental Append-Deduplicate | Yes                  |
-
-### Rate Limiting & Performance Considerations
-
-At the time of writing, the [Google API rate limit](https://developers.google.com/sheets/api/limits) is 100 requests per 100 seconds per user and 500 requests per 100 seconds per project. Airbyte batches requests to the API in order to efficiently pull data and respects these rate limits. It is recommended that you use the same service user \(see the "Creating a service user" section below for more information on how to create one\) for no more than 3 instances of the Google Sheets Destination to ensure high transfer speeds.
-Please be aware of the [Google Spreadsheet limitations](#limitations) before you configure your airbyte data replication using Destination Google Sheets
-
-### <a name="limitations"></a>Google Sheets Limitations
-
-During the upload process and from the data storage perspective there are some limitations that should be considered beforehand as [determined by Google here](https://support.google.com/drive/answer/37603):
-
-- **Maximum of 10 Million Cells**
-
-A Google Sheets document can have a maximum of 10 million cells. These can be in a single worksheet or in multiple sheets.
-In case you already have the 10 million limit reached in fewer columns, it will not allow you to add more columns (and vice versa, i.e., if 10 million cells limit is reached with a certain number of rows, it will not allow more rows).
-
-- **Maximum of 18,278 Columns**
-
-At max, you can have 18,278 columns in Google Sheets in a worksheet.
-
-- **Up to 200 Worksheets in a Spreadsheet**
-
-You cannot create more than 200 worksheets within single spreadsheet.
-
-#### Future improvements:
-
-- Handle multiple spreadsheets to split big amount of data into parts, once the main spreadsheet is full and cannot be extended more, due to [limitations](#limitations).
 
 ## Changelog
 

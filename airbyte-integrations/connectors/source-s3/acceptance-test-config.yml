@@ -100,6 +100,11 @@ acceptance_tests:
           path: integration_tests/expected_records/zip_parquet.jsonl
           exact_order: true
         timeout_seconds: 1800
+      - config_path: secrets/unstructured_config.json
+        expect_records:
+          path: integration_tests/expected_records/unstructured.jsonl
+          exact_order: true
+        timeout_seconds: 1800
 
   connection:
     tests:
@@ -281,5 +286,7 @@ acceptance_tests:
       - spec_path: integration_tests/spec.json
         backward_compatibility_tests_config:
           disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
+      - spec_path: integration_tests/cloud_spec.json
+        deployment_mode: "cloud"
 connector_image: airbyte/source-s3:dev
 test_strictness_level: high
