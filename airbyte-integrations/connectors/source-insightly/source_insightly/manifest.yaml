@@ -18,9 +18,17 @@ definitions:
       count_total: "True"
       updated_after_utc: "{{ stream_state['DATE_UPDATED_UTC'] }}"
     error_handler:
-      response_filters:
-        - http_codes: [403]
-          action: IGNORE #ignore 403 errors for knowledge_article streams, lead streams and prospects
+      type: "CompositeErrorHandler"
+      error_handlers:
+        - response_filters:
+            - http_codes: [403]
+              action: IGNORE #ignore 403 errors for knowledge_article streams, lead streams and prospects
+        - response_filters:
+            - http_codes: [429]
+              action: RETRY
+          backoff_strategies:
+            - type: "ConstantBackoffStrategy"
+              backoff_time_in_seconds: 6.0
 
   date_incremental_sync:
     type: DatetimeBasedCursor
