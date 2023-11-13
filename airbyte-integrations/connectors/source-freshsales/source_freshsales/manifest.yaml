@@ -1,29 +1,5 @@
 version: 0.51.16
-spec:
-  type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/freshsales
-  connection_specification:
-    type: object
-    title: Freshsales Spec
-    $schema: http://json-schema.org/draft-07/schema#
-    required:
-      - domain_name
-      - api_key
-    properties:
-      domain_name:
-        type: string
-        order: 0
-        title: Domain
-        description: "The Name of your Freshsales domain"
-        examples:
-          - "mydomain.myfreshworks.com"
-      api_key:
-        type: string
-        order: 1
-        title: API Key
-        description: "Freshsales API Key. See <a href=\"https://crmsupport.freshworks.com/support/solutions/articles/50000002503-how-to-find-my-api-key-\">here</a>. The key is case sensitive."
-        airbyte_secret: true
-    additionalProperties: true
+
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -62,8 +38,8 @@ definitions:
     pagination_strategy:
       type: "PageIncrement"
       page_size: 50
-      start_from_page : 1
-      inject_on_first_request : true
+      start_from_page: 1
+      inject_on_first_request: true
     page_token_option:
       type: "RequestOption"
       inject_into: "request_parameter"
@@ -87,7 +63,7 @@ definitions:
       path: "contacts/filters"
     retriever:
       $ref: "#/definitions/retriever"
-      requester: 
+      requester:
         $ref: "#/definitions/basic_requester"
       record_selector:
         type: RecordSelector
@@ -124,7 +100,7 @@ definitions:
       path: "sales_accounts/filters"
     retriever:
       $ref: "#/definitions/retriever"
-      requester: 
+      requester:
         $ref: "#/definitions/basic_requester"
       record_selector:
         type: RecordSelector
@@ -136,7 +112,7 @@ definitions:
   accounts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "sales_accounts"
+      name: "accounts"
       filter: "All Accounts"
     retriever:
       $ref: "#/definitions/retriever"
@@ -147,7 +123,7 @@ definitions:
         type: RecordSelector
         extractor:
           field_path:
-            - accounts
+            - sales_accounts
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -161,7 +137,7 @@ definitions:
       path: "deals/filters"
     retriever:
       $ref: "#/definitions/retriever"
-      requester: 
+      requester:
         $ref: "#/definitions/basic_requester"
       record_selector:
         type: RecordSelector
@@ -173,7 +149,7 @@ definitions:
   open_deals_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "Open deals"
+      name: "open_deals"
       filter: "Open Deals"
     retriever:
       $ref: "#/definitions/retriever"
@@ -194,11 +170,11 @@ definitions:
     transformations:
       - type: RemoveFields
         field_pointers:
-          - [ "fc_widget_collaboration" ]
+          - ["fc_widget_collaboration"]
   won_deals_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "Won deals"
+      name: "won_deals"
       filter: "Won Deals"
     retriever:
       $ref: "#/definitions/retriever"
@@ -219,11 +195,11 @@ definitions:
     transformations:
       - type: RemoveFields
         field_pointers:
-          - [ "fc_widget_collaboration" ]
+          - ["fc_widget_collaboration"]
   lost_deals_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "Lost deals"
+      name: "lost_deals"
       filter: "Lost Deals"
     retriever:
       $ref: "#/definitions/retriever"
@@ -244,11 +220,11 @@ definitions:
     transformations:
       - type: RemoveFields
         field_pointers:
-          - [ "fc_widget_collaboration" ]
+          - ["fc_widget_collaboration"]
   open_tasks_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "Open tasks"
+      name: "open_tasks"
       path: "tasks"
       filter: "open"
     retriever:
@@ -261,7 +237,7 @@ definitions:
   completed_tasks_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "Completed tasks"
+      name: "completed_tasks"
       path: "tasks"
       filter: "completed"
     retriever:
@@ -274,7 +250,7 @@ definitions:
   past_appointments_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "Past appointments"
+      name: "past_appointments"
       path: "appointments"
       filter: "past"
     retriever:
@@ -287,7 +263,7 @@ definitions:
   upcoming_appointments_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "Upcoming appointments"
+      name: "upcoming_appointments"
       path: "appointments"
       filter: "upcoming"
     retriever:
@@ -297,7 +273,7 @@ definitions:
         extractor:
           field_path:
             - appointments
-  
+
 streams:
   - "#/definitions/contacts_stream"
   - "#/definitions/accounts_stream"
