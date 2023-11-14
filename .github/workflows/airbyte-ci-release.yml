@@ -1,4 +1,3 @@
-# TODO remove -experiment from the workflow file name after merging
 name: Connector Ops CI - Airbyte CI Release
 
 concurrency:
@@ -91,6 +90,12 @@ jobs:
         working-directory: airbyte-ci/connectors/pipelines/
         run: |
           echo "::set-output name=version::$(poetry version --short)"
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: "${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}"
 
       - name: Upload version release to GCS prod bucket
         id: upload_version_release_to_gcs
