@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string"
+    },
+    "fullPageUrl": {
+      "type": "string"
+    },
+    "pageTitle": {
+      "type": "string"
+    },
+    "activeUsers": {
+      "type": "integer"
+    },
+    "conversions": {
+      "type": "number"
+    },
+    "engagedSessions": {
+      "type": "integer"
+    },
+    "eventCount": {
+      "type": "integer"
+    },
+    "screenPageViews": {
+      "type": "integer"
+    },
+    "sessions": {
+      "type": "integer"
+    },
+    "userEngagementDuration": {
+      "type": "integer"
+    },
+    "propertyId": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false
+}

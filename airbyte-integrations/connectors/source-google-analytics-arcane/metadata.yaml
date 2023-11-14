@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 31ac91d1-aed1-4848-9237-602646843c83
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-google-analytics-arcane
+  githubIssueLabel: source-google-analytics-arcane
+  icon: google-analytics-arcane.svg
+  license: MIT
+  name: Google Analytics Arcane
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-arcane
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
