@@ -131,13 +131,57 @@
       },
       "report_options": {
         "title": "Report Options",
-        "description": "Additional information passed to reports. This varies by report type. Must be a valid json string.",
+        "description": "(DEPRECATED) Additional information passed to reports. This varies by report type. Must be a valid json string.",
         "examples": [
           "{\"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT\": {\"reportPeriod\": \"WEEK\"}}",
           "{\"GET_SOME_REPORT\": {\"custom\": \"true\"}}"
         ],
+        "type": "string",
+        "airbyte_hidden": true
+      },
+      "report_options_list": {
+        "title": "Report Options",
+        "description": "Additional information passed to reports. This varies by report type.",
         "order": 12,
-        "type": "string"
+        "type": "array",
+        "items": {
+          "type": "object",
+          "title": "Report Options",
+          "required": [
+            "stream_name",
+            "options_list"
+          ],
+          "properties": {
+            "stream_name": {
+              "type": "string",
+              "order": 0
+            },
+            "options_list": {
+              "title": "List of options",
+              "description": "List of options",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "option_name",
+                  "option_value"
+                ],
+                "properties": {
+                  "option_name": {
+                    "title": "Name",
+                    "type": "string",
+                    "order": 0
+                  },
+                  "option_value": {
+                    "title": "Value",
+                    "type": "string",
+                    "order": 1
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "max_wait_seconds": {
         "title": "Max wait time for reports (in seconds)",

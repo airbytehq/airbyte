@@ -282,11 +282,11 @@ class ReportsAmazonSPStream(Stream, ABC):
         return report_payload
 
     @default_backoff_handler(factor=5, max_tries=5)
-    def download_and_decompress_report_document(self, url, payload):
+    def download_and_decompress_report_document(self, payload: dict) -> str:
         """
         Unpacks a report document
         """
-        report = requests.get(url)
+        report = requests.get(payload.get("url"))
         report.raise_for_status()
         if "compressionAlgorithm" in payload:
             return gzip.decompress(report.content).decode("iso-8859-1")
@@ -297,7 +297,7 @@ class ReportsAmazonSPStream(Stream, ABC):
     ) -> Iterable[Mapping]:
         payload = response.json()
 
-        document = self.download_and_decompress_report_document(payload.get("url"), payload)
+        document = self.download_and_decompress_report_document(payload)
 
         document_records = self.parse_document(document)
         yield from document_records
@@ -954,10 +954,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
 
         payload = response.json()
 
-        document = self.decompress_report_document(
-            payload.get("url"),
-            payload,
-        )
+        document = self.download_and_decompress_report_document(payload)
         document_records = self.parse_document(document)
 
         # Not all (partial) responses include the request date, so adding it manually here
