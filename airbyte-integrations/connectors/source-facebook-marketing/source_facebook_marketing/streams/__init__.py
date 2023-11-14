@@ -28,6 +28,7 @@ from .streams import (
     AdsInsightsDma,
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
+    AdRuleLibraries,
     Campaigns,
     CustomAudiences,
     CustomConversions,
