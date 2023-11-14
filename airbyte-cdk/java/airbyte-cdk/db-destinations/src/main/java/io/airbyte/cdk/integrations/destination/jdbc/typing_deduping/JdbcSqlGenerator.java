@@ -47,6 +47,14 @@ public class JdbcSqlGenerator implements SqlGenerator<TableDefinition> {
     this.dataSource = datasource;
   }
 
+  /**
+   * Many JDBC destinations use double quotes to escape identifiers. Override this method if your
+   * destination does not. For example, mysql uses backticks.
+   */
+  protected String getQuote() {
+    return "\"";
+  }
+
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
     return new StreamId(
