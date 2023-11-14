@@ -20,6 +20,7 @@ import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcV1V2Migrator;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -234,20 +235,21 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final DataSource dataSource = getDataSource(config);
+    final JdbcDatabase database = getDatabase(dataSource);
     if (TypingAndDedupingFlag.isDestinationV2()) {
       final JdbcSqlGenerator sqlGenerator = getSqlGenerator(dataSource);
       final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
           .map(override -> new CatalogParser(sqlGenerator, override))
           .orElse(new CatalogParser(sqlGenerator))
           .parseCatalog(catalog);
-      // TODO make a migrator
-      final var migrator = new NoOpDestinationV1V2Migrator<TableDefinition>();
-      final DestinationHandler<TableDefinition> destinationHandler = new JdbcDestinationHandler(getDatabaseName(config), getDatabase(dataSource));
+      final String databaseName = getDatabaseName(config);
+      final var migrator = new JdbcV1V2Migrator(namingResolver, database, databaseName);
+      final DestinationHandler<TableDefinition> destinationHandler = new JdbcDestinationHandler(databaseName, database);
       final TyperDeduper typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, 8);
-      return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(dataSource), sqlOperations, namingResolver, config,
+      return JdbcBufferedConsumerFactory.create(outputRecordCollector, database, sqlOperations, namingResolver, config,
           catalog, typerDeduper);
     }
-    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(dataSource), sqlOperations, namingResolver, config,
+    return JdbcBufferedConsumerFactory.create(outputRecordCollector, database, sqlOperations, namingResolver, config,
         catalog);
   }
 
