@@ -295,7 +295,7 @@ class Reports(IncrementalMailChimpStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response = super().parse_response(response, **kwargs)
         for record in response:
-            yield self.remove_empty_fields(record)
+            yield self.remove_empty_datetime_fields(record)
 
 
 class Segments(MailChimpListSubStream):
