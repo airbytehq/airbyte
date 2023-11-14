@@ -66,7 +66,7 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
 
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
     final String schema = Optional.ofNullable(redshiftConfig.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse("public");
-    Builder<Object, Object> configBuilder = ImmutableMap.builder()
+    final Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
         .put(JdbcUtils.JDBC_URL_KEY, String.format("jdbc:redshift://%s:%s/%s",
@@ -83,8 +83,8 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator(DataSource dataSource) {
-    return new RedshiftSqlGenerator(super.getNamingResolver(), dataSource);
+  protected JdbcSqlGenerator getSqlGenerator() {
+    return new RedshiftSqlGenerator(super.getNamingResolver());
   }
 
 }

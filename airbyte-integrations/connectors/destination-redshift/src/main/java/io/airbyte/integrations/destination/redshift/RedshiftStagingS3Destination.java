@@ -139,8 +139,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  protected JdbcSqlGenerator getSqlGenerator(final DataSource dataSource) {
-    return new RedshiftSqlGenerator(getNamingResolver(), dataSource);
+  protected JdbcSqlGenerator getSqlGenerator() {
+    return new RedshiftSqlGenerator(getNamingResolver());
   }
 
   @Override

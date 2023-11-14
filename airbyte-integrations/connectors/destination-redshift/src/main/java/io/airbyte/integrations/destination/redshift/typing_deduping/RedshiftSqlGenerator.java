@@ -13,12 +13,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.sql.SQLType;
 import java.time.Instant;
 import java.util.Optional;
-import javax.sql.DataSource;
 
 public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
-  public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer,
-                              final DataSource dataSource) {
+  public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
   }
 

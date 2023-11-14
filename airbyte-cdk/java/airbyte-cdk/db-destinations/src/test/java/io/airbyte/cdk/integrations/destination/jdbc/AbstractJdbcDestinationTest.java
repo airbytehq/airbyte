@@ -16,7 +16,6 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import java.util.HashMap;
 import java.util.Map;
-import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 
 public class AbstractJdbcDestinationTest {
@@ -135,7 +134,7 @@ public class AbstractJdbcDestinationTest {
     }
 
     @Override
-    protected JdbcSqlGenerator getSqlGenerator(final DataSource dataSource) {
+    protected JdbcSqlGenerator getSqlGenerator() {
       // TODO do we need to populate this?
       return null;
     }
