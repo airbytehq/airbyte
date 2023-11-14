@@ -7,7 +7,6 @@ from typing import ClassVar, List
 
 import pipelines.dagger.actions.system.docker
 from dagger import CacheSharingMode, CacheVolume
-from pipelines import hacks
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.utils import sh_dash_c
@@ -69,7 +68,6 @@ class GradleTask(Step, ABC):
             "gradle.properties",
             "gradle",
             "gradlew",
-            "LICENSE_SHORT",
             "settings.gradle",
             "build.gradle",
             "tools/gradle",
@@ -77,7 +75,6 @@ class GradleTask(Step, ABC):
             "buildSrc",
             "tools/bin/build_image.sh",
             "tools/lib/lib.sh",
-            "tools/gradle/codestyle",
             "pyproject.toml",
         ] + self.build_include
 
@@ -85,8 +82,6 @@ class GradleTask(Step, ABC):
             "docker",  # required by :integrationTestJava.
             "findutils",  # gradle requires xargs, which is shipped in findutils.
             "jq",  # required by :acceptance-test-harness to inspect docker images.
-            "npm",  # required by :format.
-            "python3.11-pip",  # required by :format.
             "rsync",  # required for gradle cache synchronization.
         ]
 
@@ -125,8 +120,6 @@ class GradleTask(Step, ABC):
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
             # Set the current working directory.
             .with_workdir("/airbyte")
-            # TODO: remove this once we finish the project to boost source-postgres CI performance.
-            .with_env_variable("CACHEBUSTER", hacks.get_cachebuster(self.context, self.logger))
         )
 
         # Augment the base container with S3 build cache secrets when available.

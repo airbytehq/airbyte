@@ -53,7 +53,7 @@ def display_welcome_message() -> None:
         │                                                                                                 │
         │                                                                                                 │
         ╚─────────────────────────────────────────────────────────────────────────────────────────────────╝
-        """
+        """  # noqa: W605
     )
 
 
@@ -264,6 +264,7 @@ async def get_modified_files_str(ctx: click.Context):
     help="Airbyte CI top-level command group.",
     lazy_subcommands={
         "connectors": "pipelines.airbyte_ci.connectors.commands.connectors",
+        "format": "pipelines.airbyte_ci.format.commands.format_code",
         "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
         "test": "pipelines.airbyte_ci.test.commands.test",
     },
