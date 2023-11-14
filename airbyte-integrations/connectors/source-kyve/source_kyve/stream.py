@@ -20,9 +20,6 @@ class KYVEStream(HttpStream, IncrementalMixin):
     cursor_field = "offset"
     page_size = 100
 
-    # Set this as a noop.
-    primary_key = None
-
     name = None
 
     def __init__(self, config: Mapping[str, Any], pool_data: Mapping[str, Any], **kwargs):
@@ -106,10 +103,10 @@ class KYVEStream(HttpStream, IncrementalMixin):
             else:
                 response_from_storage_provider = requests.get(f"https://storage.kyve.network/{storage_id}")
 
-            # if not response_from_storage_provider.ok:
-            #    logger.error(f"Reading bundle {storage_id} with status code {response.status_code}")
-            # todo future: this is a temporary fix until the bugs with Arweave are solved
-            #    continue
+            if not response_from_storage_provider.ok:
+                # TODO: add fallback to different storage provider in case resource is unavailable
+               logger.error(f"Reading bundle {storage_id} with status code {response.status_code}")
+
             try:
                 decompressed = gzip.decompress(response_from_storage_provider.content)
             except gzip.BadGzipFile as e:
