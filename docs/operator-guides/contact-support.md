@@ -28,6 +28,8 @@ If you don't see a connector you need, you can submit a [connector request](http
 
 To stay updated on Airbyte's future plans, take a look at [our roadmap](https://github.com/orgs/airbytehq/projects/37/views/1).
 
+Please be sure to sign up for Airbyte with your company email address, as we do not support personal accounts.  
+
 ## Airbyte Enterprise (self-hosted) Support
 
 If you're running Airbyte Open Source with Airbyte Enterprise or have an OSS support package, we're here to help you with upgrading Airbyte versions, debugging connector issues, or troubleshooting schema changes.
