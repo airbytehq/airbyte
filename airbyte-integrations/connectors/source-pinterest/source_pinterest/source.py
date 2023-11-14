@@ -96,11 +96,16 @@ class SourcePinterest(AbstractSource):
         config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
         url = f"{PinterestStream.url_base}user_account"
-        auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
         try:
+            auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
             session = requests.get(url, headers=auth_headers)
             session.raise_for_status()
             return True, None
+        except requests.exceptions.HTTPError as e:
+            if '401 Client Error: Unauthorized for url' in str(e):
+                return False, "Try to re-authenticate because current refresh token is not valid"
+            else:
+                return False, e
         except requests.exceptions.RequestException as e:
             return False, e
 

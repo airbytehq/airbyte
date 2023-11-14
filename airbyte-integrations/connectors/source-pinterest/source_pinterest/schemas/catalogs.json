@@ -3,13 +3,15 @@
   "type": "object",
   "properties": {
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "id": {
       "type": ["null", "string"]
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "name": {
       "type": ["null", "string"]
