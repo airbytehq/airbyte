@@ -14,45 +14,9 @@ from dagger import Container, File
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed
-from pipelines.consts import LOCAL_BUILD_PLATFORM, PYPROJECT_TOML_FILE_PATH
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.models.steps import Step, StepResult, StepStatus
-
-
-class CodeFormatChecks(Step):
-    """A step to run the code format checks on a Python connector using Black, Isort and Flake."""
-
-    title = "Code format checks"
-
-    RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{PYPROJECT_TOML_FILE_PATH}", "--check", "."]
-    RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
-    RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{PYPROJECT_TOML_FILE_PATH}", "."]
-
-    async def _run(self) -> StepResult:
-        """Run a code format check on the container source code.
-
-        We call black, isort and flake commands:
-        - Black formats the code: fails if the code is not formatted.
-        - Isort checks the import orders: fails if the import are not properly ordered.
-        - Flake enforces style-guides: fails if the style-guide is not followed.
-
-        Args:
-            context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
-            step (Step): The step in which the code format checks are run. Defaults to Step.CODE_FORMAT_CHECKS
-        Returns:
-            StepResult: Failure or success of the code format checks with stdout and stderr.
-        """
-        connector_under_test = pipelines.dagger.actions.python.common.with_python_connector_source(self.context)
-
-        formatter = (
-            connector_under_test.with_exec(["echo", "Running black"])
-            .with_exec(self.RUN_BLACK_CMD)
-            .with_exec(["echo", "Running Isort"])
-            .with_exec(self.RUN_ISORT_CMD)
-            .with_exec(["echo", "Running Flake"])
-            .with_exec(self.RUN_FLAKE_CMD)
-        )
-        return await self.get_step_result(formatter)
 
 
 class PytestStep(Step, ABC):
@@ -261,15 +225,3 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         ]
 
     return step_results + [task.value for task in tasks]
-
-
-async def run_code_format_checks(context: ConnectorContext) -> List[StepResult]:
-    """Run the code format check steps for Python connectors.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-
-    Returns:
-        List[StepResult]: Results of the code format checks.
-    """
-    return [await CodeFormatChecks(context).run()]
