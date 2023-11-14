@@ -17,7 +17,7 @@ from airbyte_cdk.sources.streams.concurrent.adapters import (
     StreamPartitionGenerator,
 )
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE, StreamAvailable, StreamUnavailable
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import Stream
@@ -28,7 +28,7 @@ _ANY_SYNC_MODE = SyncMode.full_refresh
 _ANY_STATE = {"state_key": "state_value"}
 _ANY_CURSOR_FIELD = ["a", "cursor", "key"]
 _STREAM_NAME = "stream"
-_ANY_CURSOR = Mock()
+_ANY_CURSOR = Mock(spec=Cursor)
 
 
 @pytest.mark.parametrize(
@@ -216,7 +216,7 @@ class StreamFacadeTest(unittest.TestCase):
     def test_given_cursor_is_noop_when_supports_incremental_then_return_legacy_stream_response(self):
         assert (
             StreamFacade(
-                self._abstract_stream, self._legacy_stream, Mock(spec=NoopCursor), Mock(spec=SliceLogger), Mock(spec=logging.Logger)
+                self._abstract_stream, self._legacy_stream, _ANY_CURSOR, Mock(spec=SliceLogger), Mock(spec=logging.Logger)
             ).supports_incremental
             == self._legacy_stream.supports_incremental
         )
