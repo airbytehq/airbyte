@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.debezium.internals.mongodb;
 
+import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.SCHEMA_ENFORCED_CONFIGURATION_KEY;
 import static java.util.Arrays.asList;
 import static org.bson.BsonType.ARRAY;
 import static org.bson.BsonType.DOCUMENT;
@@ -127,6 +128,13 @@ public class MongoDbCdcEventUtils {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     final Document document = Document.parse(json);
     formatDocument(document, objectNode, configuredFields);
+    return normalizeObjectId(objectNode);
+  }
+
+  public static ObjectNode transformDataTypesNoSchema(final String json) {
+    final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+    final Document document = Document.parse(json);
+    formatDocumentNoSchema(document, objectNode);
     return normalizeObjectId(objectNode);
   }
 
@@ -318,6 +326,18 @@ public class MongoDbCdcEventUtils {
    */
   private static boolean shouldIncludeField(final String fieldName, final Set<String> includedFields, final boolean allowAll) {
     return allowAll || includedFields.contains(fieldName);
+  }
+
+  /**
+   * Parses source-mongodbv2 configuration json for the value of schema_enforced.
+   * @param config config json
+   * @return true unless a schema_enforced configured to false
+   */
+  public static boolean isEnforceSchema(final JsonNode config) {
+    return config == null || !config.has(SCHEMA_ENFORCED_CONFIGURATION_KEY)
+        || (config.has(SCHEMA_ENFORCED_CONFIGURATION_KEY) && config.get(
+        SCHEMA_ENFORCED_CONFIGURATION_KEY).asBoolean(true));
+
   }
 
 }

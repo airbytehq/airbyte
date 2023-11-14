@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.debezium.internals;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.cdk.integrations.debezium.CdcStateHandler;
@@ -78,6 +79,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
   private final HashMap<String, String> previousCheckpointOffset;
   private final DebeziumConnectorType debeziumConnectorType;
   private final ConfiguredAirbyteCatalog configuredAirbyteCatalog;
+  private final JsonNode config;
 
   /**
    * @param changeEventIterator Base iterator that we want to enrich with checkpoint messages
@@ -102,7 +104,8 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
                                          final Duration checkpointDuration,
                                          final Long checkpointRecords,
                                          final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
-                                         final DebeziumConnectorType debeziumConnectorType) {
+                                         final DebeziumConnectorType debeziumConnectorType,
+                                         final JsonNode config) {
     this.changeEventIterator = changeEventIterator;
     this.cdcStateHandler = cdcStateHandler;
     this.targetPosition = targetPosition;
@@ -117,6 +120,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
     this.syncCheckpointRecords = checkpointRecords;
     this.previousCheckpointOffset = (HashMap<String, String>) offsetManager.read();
     this.debeziumConnectorType = debeziumConnectorType;
+    this.config = config;
     resetCheckpointValues();
   }
 
@@ -174,7 +178,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
         }
       }
       recordsLastSync++;
-      return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt, debeziumConnectorType);
+      return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt, debeziumConnectorType, config);
     }
 
     isSyncFinished = true;
