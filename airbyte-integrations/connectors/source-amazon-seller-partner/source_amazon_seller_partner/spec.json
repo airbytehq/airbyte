@@ -5,7 +5,9 @@
     "title": "Amazon Seller Partner Spec",
     "type": "object",
     "required": [
+      "aws_access_key",
       "aws_environment",
+      "aws_secret_key",
       "region",
       "lwa_app_id",
       "lwa_client_secret",
@@ -107,7 +109,8 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-25T00:00:00Z"],
         "order": 9,
-        "type": "string"
+        "type": "string",
+        "format": "date-time"
       },
       "replication_end_date": {
         "title": "End Date",
@@ -115,13 +118,15 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$|^$",
         "examples": ["2017-01-25T00:00:00Z"],
         "order": 10,
-        "type": "string"
+        "type": "string",
+        "format": "date-time"
       },
       "period_in_days": {
         "title": "Period In Days",
         "type": "integer",
         "description": "Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
         "default": 90,
+        "minimum": 1,
         "order": 11
       },
       "report_options": {
@@ -140,6 +145,7 @@
         "default": 500,
         "examples": ["500", "1980"],
         "order": 13,
+        "minimum": 1,
         "type": "integer"
       },
       "advanced_stream_options": {

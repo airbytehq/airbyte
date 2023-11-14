@@ -6,12 +6,10 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk>=0.51.17",
+    "airbyte-cdk[file-based]>=0.53.5",
     "google-cloud-storage==2.12.0",
-    "pandas==1.5.3",
-    "pyarrow==12.0.1",
-    "fastavro==1.4.11",
     "smart-open[s3]==5.1.0",
+    "pandas==1.5.3",
 ]
 
 TEST_REQUIREMENTS = [
