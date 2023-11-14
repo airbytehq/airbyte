@@ -31,30 +31,16 @@ acceptance_tests:
           path: "integration_tests/expected_records.jsonl"
         fail_on_extra_columns: false
         empty_streams:
-<<<<<<< HEAD
-          - name: "interests"
-            bypass_reason: "No data in internal account. Migration to sandbox account is impending."
-          - name: "interest_categories"
-            bypass_reason: "No data in internal account. Migration to sandbox account is impending."
-=======
           - name: "automations"
             bypass_reason: "Cannot seed in free sandbox account, need to upgrade to paid account."
->>>>>>> ef95ef614a658a4e558c0608b31a785993d23907
       - config_path: "secrets/config_oauth.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_records: True
         fail_on_extra_columns: false
         empty_streams:
-<<<<<<< HEAD
-          - name: "interests"
-            bypass_reason: "No data in internal account. Migration to sandbox account is impending."
-          - name: "interest_categories"
-            bypass_reason: "No data in internal account. Migration to sandbox account is impending."
-=======
           - name: "automations"
             bypass_reason: "Cannot seed in free sandbox account, need to upgrade to paid account."
->>>>>>> ef95ef614a658a4e558c0608b31a785993d23907
   incremental:
     tests:
       - config_path: "secrets/config.json"
