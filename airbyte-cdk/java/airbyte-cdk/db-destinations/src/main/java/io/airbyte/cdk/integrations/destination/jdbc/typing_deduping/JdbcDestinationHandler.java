@@ -13,6 +13,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.SQLType;
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -32,29 +33,50 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
   }
 
   @Override
-  public Optional<TableDefinition> findExistingTable(StreamId id) throws Exception {
+  public Optional<TableDefinition> findExistingTable(final StreamId id) throws Exception {
+    return findExistingTable(jdbcDatabase, databaseName, id.finalNamespace(), id.finalName());
+  }
 
-    DatabaseMetaData metaData = jdbcDatabase.getMetaData();
-    // TODO: normalize namespace and finalName strings to quoted-lowercase
+  @Override
+  public boolean isFinalTableEmpty(final StreamId id) throws Exception {
+    return false;
+  }
+
+  @Override
+  public Optional<Instant> getMinTimestampForSync(final StreamId id) throws Exception {
+    return Optional.empty();
+  }
+
+  @Override
+  public void execute(final String sql) throws Exception {
+
+  }
+
+  public static Optional<TableDefinition> findExistingTable(
+                                                            final JdbcDatabase jdbcDatabase,
+                                                            final String databaseName,
+                                                            final String schemaName,
+                                                            final String tableName)
+      throws SQLException {
+    final DatabaseMetaData metaData = jdbcDatabase.getMetaData();
+    // TODO: normalize namespace and finalName strings to quoted-lowercase (as needed. Snowflake
+    // requires uppercase)
     final LinkedHashMap<String, ColumnDefinition> columnDefinitions = new LinkedHashMap<>();
-    try (ResultSet columns = metaData.getColumns(databaseName, id.finalNamespace(), id.finalName(), null)) {
+    try (final ResultSet columns = metaData.getColumns(databaseName, schemaName, tableName, null)) {
       while (columns.next()) {
-        String columnName = columns.getString("COLUMN_NAME");
-        String typeName = columns.getString("TYPE_NAME");
-        int columnSize = columns.getInt("COLUMN_SIZE");
-        int datatype = columns.getInt("DATA_TYPE");
+        final String columnName = columns.getString("COLUMN_NAME");
+        final String typeName = columns.getString("TYPE_NAME");
+        final int columnSize = columns.getInt("COLUMN_SIZE");
+        final int datatype = columns.getInt("DATA_TYPE");
         SQLType sqlType;
         try {
           sqlType = JDBCType.valueOf(datatype);
-        } catch (IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
           // Unknown jdbcType convert to customSqlType
           sqlType = new CustomSqlType("Unknown", "Unknown", datatype);
         }
         columnDefinitions.put(columnName, new ColumnDefinition(columnName, typeName, sqlType, columnSize));
       }
-    } catch (Exception e) {
-      log.error("Failed to retrieve columns from Database metadata for {}, {}, {}", databaseName, id.finalNamespace(), id.finalName());
-      return Optional.empty();
     }
     // Guard to fail fast
     if (columnDefinitions.isEmpty()) {
@@ -62,21 +84,6 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
     }
 
     return Optional.of(new TableDefinition(columnDefinitions));
-  }
-
-  @Override
-  public boolean isFinalTableEmpty(StreamId id) throws Exception {
-    return false;
-  }
-
-  @Override
-  public Optional<Instant> getMinTimestampForSync(StreamId id) throws Exception {
-    return Optional.empty();
-  }
-
-  @Override
-  public void execute(String sql) throws Exception {
-
   }
 
 }
