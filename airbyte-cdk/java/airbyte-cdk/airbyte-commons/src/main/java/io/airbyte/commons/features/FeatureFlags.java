@@ -49,4 +49,11 @@ public interface FeatureFlags {
    */
   String strictComparisonNormalizationTag();
 
+  /**
+   * Get the deployment mode used to deploy a connector.
+   *
+   * @return empty string for the default deployment mode, "CLOUD" for cloud deployment mode.
+   */
+  String deploymentMode();
+
 }

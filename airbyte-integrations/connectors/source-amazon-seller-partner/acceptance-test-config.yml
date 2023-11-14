@@ -2,10 +2,9 @@ connector_image: airbyte/source-amazon-seller-partner:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "integration_tests/spec.json"
-        # massively refactored `spec`
+      - spec_path: "source_amazon_seller_partner/spec.json"
         backward_compatibility_tests_config:
-          disable_for_version: "1.2.0"
+          disable_for_version: "1.5.1"
   connection:
     tests:
       - config_path: "secrets/config.json"
