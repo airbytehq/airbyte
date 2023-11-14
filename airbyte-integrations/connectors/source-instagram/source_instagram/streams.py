@@ -124,7 +124,7 @@ class Users(InstagramStream):
 class UserLifetimeInsights(InstagramStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights"""
 
-    primary_key = ["business_account_id", "metric", "date"]
+    primary_key = None
     LIFETIME_METRICS = ["audience_city", "audience_country", "audience_gender_age", "audience_locale"]
     period = "lifetime"
 
@@ -176,7 +176,7 @@ class UserInsights(InstagramIncrementalStream):
         "lifetime": ["online_followers"],
     }
 
-    primary_key = ["business_account_id", "date"]
+    primary_key = None
     cursor_field = "date"
 
     # For some metrics we can only get insights not older than 30 days, it is Facebook policy
