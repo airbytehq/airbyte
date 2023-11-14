@@ -16,7 +16,6 @@ import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLI
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.PARAM_CA_CERTIFICATE;
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.parseSSLConfig;
-import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.parseSSLConfigDeprecated;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_NO_SCHEMA_QUERY;
@@ -58,7 +57,6 @@ import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresReplicati
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils;
-import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.ConfigKeys;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SSLConfig;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
@@ -135,6 +133,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_ROOT_CERT = "sslrootcert";
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
+  public static final String CA_CERTIFICATE_PATH = "ca_certificate_path";
+
   public static final String SSL_KEY = "sslkey";
   public static final String SSL_PASSWORD = "sslpassword";
   public static final String MODE = "mode";
@@ -201,11 +201,13 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append(AMPERSAND);
     }
-    @SuppressWarnings("deprecation")
-    final Map<ConfigKeys, String> sslParameters = parseSSLConfig(config);
+
+    final SSLConfig sslConfig = parseSSLConfig(config);
+    final Map<String, String> sslParameters = new HashMap<>(sslConfig.asParameterMap());
     if (config.has(PARAM_SSL_MODE) && config.get(PARAM_SSL_MODE).has(PARAM_CA_CERTIFICATE)) {
-      Path fileForCertPem = createFileForCertPem(config.get(PARAM_SSL_MODE).get(PARAM_CA_CERTIFICATE).asText());
-      LOGGER.debug("root ssl ca crt file: {}", sslParameters.get(ConfigKeys.CA_CERTIFICATE_PATH));
+      sslParameters.put(CA_CERTIFICATE_PATH,
+          createFileForCertPem(config.get(PARAM_SSL_MODE).get(PARAM_CA_CERTIFICATE).asText()).toString());
+      LOGGER.debug("root ssl ca crt file: {}", sslParameters.get(CA_CERTIFICATE_PATH));
     }
 
     if (config.has(JdbcUtils.SCHEMAS_KEY) && config.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
@@ -230,23 +232,26 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
-
     configBuilder.putAll(sslParameters);
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  public String toJDBCQueryParams(final Map<ConfigKeys, String> sslParams) {
+  public String toJDBCQueryParams(final Map<String, String> sslParams) {
     return Objects.isNull(sslParams) ? ""
         : sslParams.entrySet()
             .stream()
             .map((entry) -> {
-              return switch (entry.getKey()) {
-                case SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()));
-                case TRUST_KEY_STORE_URI -> SSL_ROOT_CERT + EQUALS + entry.getValue();
-                case CLIENT_KEY_STORE_URI -> SSL_KEY + EQUALS + entry.getValue();
-                case CLIENT_KEY_STORE_PASS -> SSL_PASSWORD + EQUALS + entry.getValue();
-                default -> "";
-              };
+              try {
+                return switch (entry.getKey()) {
+                  case JdbcSSLConnectionUtils.SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()));
+                  case CA_CERTIFICATE_PATH -> SSL_ROOT_CERT + EQUALS + entry.getValue();
+                  case CLIENT_KEY_STORE_URL -> SSL_KEY + EQUALS + Path.of(new URI(entry.getValue()));
+                  case CLIENT_KEY_STORE_PASS -> SSL_PASSWORD + EQUALS + entry.getValue();
+                  default -> "";
+                };
+              } catch (final URISyntaxException e) {
+                throw new IllegalArgumentException("unable to convert to URI", e);
+              }
             })
             .filter(s -> Objects.nonNull(s) && !s.isEmpty())
             .collect(Collectors.joining(JdbcUtils.AMPERSAND));
