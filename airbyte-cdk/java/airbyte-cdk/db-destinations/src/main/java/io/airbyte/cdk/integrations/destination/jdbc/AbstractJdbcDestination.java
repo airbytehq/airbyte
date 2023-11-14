@@ -214,9 +214,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
-  protected JdbcSqlGenerator getSqlGenerator(final DataSource dataSource) {
-    return new JdbcSqlGenerator(getNamingResolver(), dataSource);
-  }
+  protected abstract JdbcSqlGenerator getSqlGenerator(final DataSource dataSource);
 
   /**
    * "database" key at root of the config json, for any other variants in config, override this

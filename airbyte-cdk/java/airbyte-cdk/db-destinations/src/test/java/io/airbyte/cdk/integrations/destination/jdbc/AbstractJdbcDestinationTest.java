@@ -11,10 +11,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import java.util.HashMap;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 
 public class AbstractJdbcDestinationTest {
@@ -132,6 +134,11 @@ public class AbstractJdbcDestinationTest {
       return config;
     }
 
+    @Override
+    protected JdbcSqlGenerator getSqlGenerator(final DataSource dataSource) {
+      // TODO do we need to populate this?
+      return null;
+    }
   }
 
 }
