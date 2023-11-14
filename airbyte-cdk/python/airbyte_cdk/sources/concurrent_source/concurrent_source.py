@@ -31,11 +31,20 @@ class ConcurrentSource:
     DEFAULT_TIMEOUT_SECONDS = 900
 
     @staticmethod
-    def create(num_workers, logger, slice_logger, message_repository):
+    def create(
+        num_workers: int,
+        initial_number_of_partitions_to_generate: int,
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+        message_repository: MessageRepository,
+        timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+    ) -> "ConcurrentSource":
         threadpool = ThreadPoolManager(
             concurrent.futures.ThreadPoolExecutor(max_workers=num_workers, thread_name_prefix="workerpool"), logger, num_workers
         )
-        return ConcurrentSource(threadpool, logger, slice_logger, message_repository)
+        return ConcurrentSource(
+            threadpool, logger, slice_logger, message_repository, initial_number_of_partitions_to_generate, timeout_seconds
+        )
 
     def __init__(
         self,

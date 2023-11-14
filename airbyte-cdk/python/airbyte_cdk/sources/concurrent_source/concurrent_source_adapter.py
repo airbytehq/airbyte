@@ -8,12 +8,13 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Union
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 
 
 class ConcurrentSourceAdapter(AbstractSource, ABC):
-    def __init__(self, concurrent_source: ConcurrentSource, **kwargs):
+    def __init__(self, concurrent_source: ConcurrentSource, **kwargs: Any) -> None:
         """
         ConcurrentSourceAdapter is a Source that wraps a concurrent source and exposes it as a regular source.
 
@@ -51,8 +52,8 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         :return:
         """
         all_streams = self.streams(config)
-        stream_name_to_instance: Mapping[str, AbstractStream] = {s.name: s for s in all_streams}
-        abstract_streams = []
+        stream_name_to_instance: Mapping[str, Stream] = {s.name: s for s in all_streams}
+        abstract_streams: List[AbstractStream] = []
         for configured_stream in configured_catalog.streams:
             stream_instance = stream_name_to_instance.get(configured_stream.stream.name)
             if not stream_instance:
