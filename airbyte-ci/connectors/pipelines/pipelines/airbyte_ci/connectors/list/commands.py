@@ -9,9 +9,9 @@ from rich.table import Table
 from rich.text import Text
 
 
-@click.command(cls=DaggerPipelineCommand, help="List all selected connectors.")
+@click.command(cls=DaggerPipelineCommand, help="List all selected connectors.", name="list")
 @click.pass_context
-async def list(
+async def list_connectors(
     ctx: click.Context,
 ):
     selected_connectors = sorted(ctx.obj["selected_connectors_with_modified_files"], key=lambda x: x.technical_name)

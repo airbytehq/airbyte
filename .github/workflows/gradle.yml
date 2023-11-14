@@ -103,8 +103,7 @@ jobs:
         with:
           read-only: ${{ github.ref != 'refs/heads/master' }}
           # TODO: be able to remove the skipSlowTests property
-          # TODO: remove the format task ASAP
-          arguments: --scan --no-daemon --no-watch-fs format check -DskipSlowTests=true
+          arguments: --scan --no-daemon --no-watch-fs check -DskipSlowTests=true
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-check-runner:

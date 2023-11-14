@@ -4,23 +4,30 @@
 
 import logging
 import os
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate, \
-    FixedWindowCallRatePolicy
+from airbyte_cdk.sources.streams.call_rate import (
+    AbstractAPIBudget,
+    FixedWindowCallRatePolicy,
+    HttpAPIBudget,
+    HttpRequestMatcher,
+    MovingWindowCallRatePolicy,
+    Rate,
+)
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import SyncMode
 from source_stripe.streams import (
     CheckoutSessionsLineItems,
     CreatedCursorIncrementalStripeStream,
@@ -45,15 +52,17 @@ STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
 class SourceStripe(AbstractSource):
-    def __init__(self, catalog_path: Optional[str] = None, **kwargs):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], **kwargs):
         super().__init__(**kwargs)
-        if catalog_path:
-            catalog = self.read_catalog(catalog_path)
-            # Only use concurrent cdk if all streams are running in full_refresh
-            all_sync_mode_are_full_refresh = all(stream.sync_mode == SyncMode.full_refresh for stream in catalog.streams)
-            self._use_concurrent_cdk = all_sync_mode_are_full_refresh
+        if catalog:
+            self._streams_configured_as_full_refresh = {
+                configured_stream.stream.name
+                for configured_stream in catalog.streams
+                if configured_stream.sync_mode == SyncMode.full_refresh
+            }
         else:
-            self._use_concurrent_cdk = False
+            # things will NOT be executed concurrently
+            self._streams_configured_as_full_refresh = set()
 
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
 
@@ -512,17 +521,19 @@ class SourceStripe(AbstractSource):
                 **args,
             ),
         ]
-        if self._use_concurrent_cdk:
-            # We cap the number of workers to avoid hitting the Stripe rate limit
-            # The limit can be removed or increased once we have proper rate limiting
-            concurrency_level = min(config.get("num_workers", 3), _MAX_CONCURRENCY)
-            streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
 
-            # The state is known to be empty because concurrent CDK is currently only used for full refresh
-            state = {}
-            cursor = NoopCursor()
-            return [
-                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, state, cursor) for stream in streams
-            ]
-        else:
-            return streams
+        # We cap the number of workers to avoid hitting the Stripe rate limit
+        # The limit can be removed or increased once we have proper rate limiting
+        concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
+        streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+
+        return [
+            StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, self._create_empty_state(), NoopCursor())
+            if stream.name in self._streams_configured_as_full_refresh
+            else stream
+            for stream in streams
+        ]
+
+    def _create_empty_state(self) -> MutableMapping[str, Any]:
+        # The state is known to be empty because concurrent CDK is currently only used for full refresh
+        return {}
