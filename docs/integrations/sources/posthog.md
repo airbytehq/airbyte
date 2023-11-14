@@ -62,7 +62,7 @@ These limits apply to **the entire team** (i.e. all users within your PostHog or
 
 For large or regular exports of events, use [batch exports](https://posthog.com/docs/cdp).
 
-Want to use the PostHog API beyond these limits? ** Email Posthog at `customers@posthog.com`.
+Want to use the PostHog API beyond these limits? Email Posthog at `customers@posthog.com`.
 
 ## Changelog
 
