@@ -14,7 +14,7 @@ There are some cases that require multiple requests to fetch all records as well
 
 ## Dynamic and static partitioning
 
-There are three possible sources for the partitions that need to be queried - the connector itself, supplied by the end user when configuring a Source based on the connector, or the API provides the list of partitions on another endpoint (for example the Woocommerce API also includes an `/orders` endpoint that returns all orders).
+There are three possible sources for the partitions that need to be queried - the connector itself, supplied by the end user when configuring a Source based on the connector, or the API provides the list of partitions via another endpoint (for example the Woocommerce API also includes an `/orders` endpoint that returns all orders).
 
 The first two options are a "static" form of partition routing (because the partitions won't change as long as the Airbyte configuration isn't changed). This can be achieved by configuring the Parameterized Requests component in the Connector Builder.
 
