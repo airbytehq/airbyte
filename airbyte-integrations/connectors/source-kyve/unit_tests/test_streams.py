@@ -102,11 +102,10 @@ def test_parse_response(patch_base_class, monkeypatch):
     class _MockContentResponse:
         def __init__(self):
             self.content = MOCK_RESPONSE_BINARY
+            self.ok = True
 
     mock_get_content = MagicMock(return_value=_MockContentResponse())
     monkeypatch.setattr("requests.get", mock_get_content)
-    mock_response_ok = MagicMock(return_value=True)
-    monkeypatch.setattr("requests.Response.ok", mock_response_ok)
 
     expected_parsed_object = {
         "key": "1",
