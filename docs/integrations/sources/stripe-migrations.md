@@ -9,7 +9,9 @@ This change fixes multiple issues for the `Refunds`, `Checkout Sessions` and `Ch
  - `CheckoutSessionsLineItems` potential data loss
  - Incremental streams with the `created` cursor duplicating some data
 
-Some changes here are breaking - the cursor field is changed for the `Refunds` and the `CheckoutSessionsLineItems` stream. A schema refresh and data reset of all effected streams is required after the update is applied.
+Also, this update affects three more streams: `Invoices`, `Subscriptions`, `SubscriptionSchedule`. Schemas are changed in this update so that the declared data types would match the actual data.
+
+Stream schema update is a breaking change as well as changing the cursor field for the `Refunds` and the `CheckoutSessionsLineItems` stream. A schema refresh and data reset of all effected streams is required after the update is applied.
 Because of the changed cursor field of the `Refunds` stream, incremental syncs will not reflect every update of the records that have been previously replicated. Only newly created records will be synced. To always have the up-to-date data, users are encouraged to make use of the lookback window.
 
 ## Upgrading to 4.0.0
