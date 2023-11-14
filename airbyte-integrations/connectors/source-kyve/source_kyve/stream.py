@@ -98,7 +98,7 @@ class KYVEStream(HttpStream, IncrementalMixin):
             storage_id = bundle.get("storage_id")
             storage_provider_id = bundle.get("storage_provider_id")
 
-            # 1: Arweave, 2: Bundle -> both are using arweave.net
+            # 1: Arweave, 2: Bundlr -> both are using arweave.net
             # 3: KYVE-Storage-Provider -> storage.kyve.network
             if storage_provider_id != "3":
                 # retrieve file from Arweave
