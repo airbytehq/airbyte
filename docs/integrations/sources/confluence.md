@@ -31,7 +31,7 @@ For detailed instructions on creating an Atlassian API Token, please refer to th
 | Feature                   | Supported? |
 | :------------------------ | :--------- |
 | Full Refresh Sync         | Yes        |
-| Incremental - Append Sync | No         |
+| Incremental - Append Sync | Yes        |
 | Incremental - Dedupe Sync | No         |
 | SSL connection            | No         |
 | Namespaces                | No         |
@@ -43,6 +43,7 @@ For detailed instructions on creating an Atlassian API Token, please refer to th
 - [Group](https://developer.atlassian.com/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get)
 - [Pages](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
 - [Space](https://developer.atlassian.com/cloud/confluence/rest/api-group-space/#api-wiki-rest-api-space-get)
+- [Search](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-search/#api-group-search)
 
 :::note
 The `audit` stream requires a Standard or Premium plan.
@@ -60,6 +61,7 @@ The Confluence connector should not run into Confluence API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 0.2.0   | 2023-11-14 | [32498](https://github.com/airbytehq/airbyte/pull/32498) | ✨ Source Confluence: add new stream Search                    |
 | 0.2.0   | 2023-08-14 | [29125](https://github.com/airbytehq/airbyte/pull/29125) | Migrate Confluence Source Connector to Low Code                |
 | 0.1.3   | 2023-03-13 | [23988](https://github.com/airbytehq/airbyte/pull/23988) | Add view and storage to pages body, add check for stream Audit |
 | 0.1.2   | 2023-03-06 | [23775](https://github.com/airbytehq/airbyte/pull/23775) | Set additionalProperties: true, update docs and spec           |

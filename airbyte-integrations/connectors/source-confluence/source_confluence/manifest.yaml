@@ -32,6 +32,19 @@ definitions:
       type: OffsetIncrement
       page_size: 25
 
+  cursor_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      # Remove leading /
+      cursor_value: '{{ response["_links"].get("next", "")[1:] }}'
+    page_token_option:
+      type: "RequestPath"
+
+  custom_field_transformation:
+    type: CustomTransformation
+    class_name: source_confluence.components.CustomFieldTransformation
+
   base_retriever:
     type: SimpleRetriever
     paginator:
@@ -121,12 +134,41 @@ definitions:
       name: "space"
       path: "space"
 
+  search_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        url_base: https://{{ config['domain_name'] }}/wiki/
+        request_parameters:
+          cql: space={{ config['space_name'] }} and type=page and lastmodified >= "{{ stream_state.lastUpdated or config['start_date'] }}"
+          expand: '["history.lastUpdated","body.view"]'
+    primary_key: "id"
+    $parameters:
+      name: "search"
+      path: /rest/api/content/search
+    transformations:
+      - "#/definitions/custom_field_transformation"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: lastUpdated
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%d %H:%M"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d %H:%M"
+
 streams:
   - "#/definitions/audit_stream"
   - "#/definitions/blogposts_stream"
   - "#/definitions/group_stream"
   - "#/definitions/pages_stream"
   - "#/definitions/space_stream"
+  - "#/definitions/search_stream"
 
 spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/confluence
@@ -157,3 +199,15 @@ spec:
         description: "Your Confluence domain name"
         type: string
         order: 2
+      space_name:
+        type: string
+        title: "Space Name"
+        description: 'The name of the Space you wish to extract.'
+        examples: ["Sample_Space"]
+        order: 3
+      start_date:
+        type: string
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}$
+        description: 'UTC date and time in the format "yyyy-mm-dd HH:MM". Any data before this date will not be replicated.'
+        examples: ["1970-01-01 01:15"]
+        order: 4

@@ -1,5 +1,7 @@
 {
   "api_token": "abcd",
   "domain_name": "example.atlassian.net",
-  "email": "test@example.com"
+  "email": "test@example.com",
+  "space_name": "TEST",
+  "start_date": "2023-11-09 01:15"
 }
