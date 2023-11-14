@@ -61,8 +61,8 @@ jobs:
           name: airbyte-ci-${{ matrix.os }}-${{ steps.get_short_sha.outputs.sha }}
           path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}
 
-      - name: Authenticate to Google Cloud
-        id: auth
+      - name: Authenticate to Google Cloud Dev
+        id: auth_dev
         uses: google-github-actions/auth@v1
         with:
           credentials_json: "${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}"
@@ -91,8 +91,8 @@ jobs:
         run: |
           echo "::set-output name=version::$(poetry version --short)"
 
-      - name: Authenticate to Google Cloud
-        id: auth
+      - name: Authenticate to Google Cloud Prod
+        id: auth_prod
         uses: google-github-actions/auth@v1
         with:
           credentials_json: "${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}"
