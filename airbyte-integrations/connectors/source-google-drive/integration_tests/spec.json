@@ -31,6 +31,8 @@
             },
             "globs": {
               "title": "Globs",
+              "default": ["**"],
+              "order": 1,
               "description": "The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href=\"https://en.wikipedia.org/wiki/Glob_(programming)\">here</a>.",
               "type": "array",
               "items": {
