@@ -12,13 +12,29 @@ from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability, StreamAvailable
+from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
+
+
+class LegacyStream(Stream):
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return None
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        yield from []
 
 
 class ConcurrentCdkSource(AbstractSource):
@@ -31,7 +47,7 @@ class ConcurrentCdkSource(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [StreamFacade(s) for s in self._streams]
+        return [StreamFacade(s, LegacyStream(), NoopCursor()) for s in self._streams]
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(connectionSpecification={})
@@ -40,7 +56,7 @@ class ConcurrentCdkSource(AbstractSource):
         return ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=StreamFacade(s).as_airbyte_stream(),
+                    stream=StreamFacade(s, LegacyStream(), NoopCursor()).as_airbyte_stream(),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 )
@@ -57,7 +73,7 @@ class InMemoryPartitionGenerator(PartitionGenerator):
     def __init__(self, partitions: List[Partition]):
         self._partitions = partitions
 
-    def generate(self, sync_mode: SyncMode) -> Iterable[Partition]:
+    def generate(self) -> Iterable[Partition]:
         yield from self._partitions
 
 
