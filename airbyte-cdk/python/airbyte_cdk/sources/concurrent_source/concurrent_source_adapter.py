@@ -34,17 +34,17 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         catalog: ConfiguredAirbyteCatalog,
         state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
-        concurrent_streams = self._streams_as_abstract_streams(config, catalog)
-        concurrent_stream_names = {stream.name for stream in concurrent_streams}
+        abstract_streams = self._select_abstract_streams(config, catalog)
+        concurrent_stream_names = {stream.name for stream in abstract_streams}
         configured_catalog_for_regular_streams = ConfiguredAirbyteCatalog(
             streams=[stream for stream in catalog.streams if stream.stream.name not in concurrent_stream_names]
         )
-        if concurrent_streams:
-            yield from self._concurrent_source.read(concurrent_streams)
+        if abstract_streams:
+            yield from self._concurrent_source.read(abstract_streams)
         if configured_catalog_for_regular_streams.streams:
             yield from super().read(logger, config, configured_catalog_for_regular_streams, state)
 
-    def _streams_as_abstract_streams(self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> List[AbstractStream]:
+    def _select_abstract_streams(self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> List[AbstractStream]:
         """
         Ensures the streams are StreamFacade and returns the underlying AbstractStream.
         This is necessary because AbstractSource.streams() returns a List[Stream] and not a List[AbstractStream].
