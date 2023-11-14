@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import concurrent
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 from unittest.mock import Mock
@@ -24,13 +23,14 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
-from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
+from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.utils import AirbyteTracedException
+from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import NeverLogSliceLogger
 
 
 class _MockStream(Stream):
@@ -82,12 +82,12 @@ class _MockSource(AbstractSource):
         return self._streams
 
 
-class _MockConcurrentSource(ConcurrentSource):
+class _MockConcurrentSource(ConcurrentSourceAdapter):
+    message_repository = InMemoryMessageRepository()
+
     def __init__(self, logger):
-        threadpool_manager = ThreadPoolManager(
-            concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="workerpool"), logger
-        )
-        super().__init__(threadpool_manager, InMemoryMessageRepository())
+        concurrent_source = ConcurrentSource.create(1, logger, NeverLogSliceLogger(), self.message_repository)
+        super().__init__(concurrent_source)
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         pass
