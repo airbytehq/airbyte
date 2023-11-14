@@ -145,7 +145,7 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
     lazy_subcommands={
         "build": "pipelines.airbyte_ci.connectors.build_image.commands.build",
         "test": "pipelines.airbyte_ci.connectors.test.commands.test",
-        "list": "pipelines.airbyte_ci.connectors.list.commands.list",
+        "list": "pipelines.airbyte_ci.connectors.list.commands.list_connectors",
         "publish": "pipelines.airbyte_ci.connectors.publish.commands.publish",
         "bump_version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
         "migrate_to_base_image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
