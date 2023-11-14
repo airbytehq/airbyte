@@ -73,10 +73,6 @@ class ConcurrentSource:
         self._timeout_seconds = timeout_seconds
         self._raise_exception_on_missing_stream = raise_exception_on_missing_stream
 
-    @property
-    def message_repository(self) -> MessageRepository:
-        return self._message_repository
-
     def read(
         self,
         streams: List[AbstractStream],
