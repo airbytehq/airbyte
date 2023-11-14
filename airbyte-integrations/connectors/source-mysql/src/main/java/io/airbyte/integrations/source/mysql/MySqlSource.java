@@ -283,7 +283,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(JdbcUtils.AMPERSAND).append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
-    final Map<String, String> sslParameters = JdbcSSLConnectionUtils.parseSSLConfig(config).asParameterMap();
+    final Map<String, String> sslParameters = JdbcSSLConnectionUtils.asParameterMap(JdbcSSLConnectionUtils.parseSSLConfig(config));
     jdbcUrl.append(JdbcUtils.AMPERSAND).append(toJDBCQueryParams(sslParameters));
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()

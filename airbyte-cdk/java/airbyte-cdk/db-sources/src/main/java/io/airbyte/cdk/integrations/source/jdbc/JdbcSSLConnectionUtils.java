@@ -79,18 +79,26 @@ public class JdbcSSLConnectionUtils {
     SSLConfig(SslMode sslMode) {
       this(sslMode, null, null);
     }
+  }
 
-    public Map<String, String> asParameterMap() {
-      return Map.of(
-          SSL_MODE,sslMode.name(),
-          CLIENT_KEY_STORE_URL, clientKeyStoreInfo == null?null:clientKeyStoreInfo.url.toString(),
-          CLIENT_KEY_STORE_PASS, clientKeyStoreInfo == null?null:clientKeyStoreInfo.password,
-          CLIENT_KEY_STORE_PASS, clientKeyStoreInfo == null?null:clientKeyStoreInfo.type,
-          TRUST_KEY_STORE_URL, caKeyStoreInfo == null?null:caKeyStoreInfo.url.toString(),
-          TRUST_KEY_STORE_PASS, caKeyStoreInfo == null?null:caKeyStoreInfo.password,
-          TRUST_KEY_STORE_PASS, caKeyStoreInfo == null?null:caKeyStoreInfo.type
-      );
+  public static Map<String, String> asParameterMap(SSLConfig sslConfig) {
+    Map<String, String> retVal = new HashMap<>();
+    if (sslConfig != null) {
+      retVal.put(SSL_MODE, sslConfig.sslMode.name());
+      if (sslConfig.clientKeyStoreInfo != null) {
+        retVal.putAll(Map.of(
+            CLIENT_KEY_STORE_URL, sslConfig.clientKeyStoreInfo.url.toString(),
+            CLIENT_KEY_STORE_PASS, sslConfig.clientKeyStoreInfo.password,
+            CLIENT_KEY_STORE_PASS, sslConfig.clientKeyStoreInfo.type));
+      }
+      if (sslConfig.caKeyStoreInfo != null) {
+        retVal.putAll(Map.of(
+            TRUST_KEY_STORE_URL,sslConfig.caKeyStoreInfo.url.toString(),
+            TRUST_KEY_STORE_PASS,sslConfig.caKeyStoreInfo.password,
+            TRUST_KEY_STORE_PASS,sslConfig.caKeyStoreInfo.type));
+      }
     }
+    return retVal;
   }
 
   /**
