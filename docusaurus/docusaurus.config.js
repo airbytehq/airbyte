@@ -30,7 +30,7 @@ const config = {
   projectName: "airbyte", // Usually your repo name.
 
   // Adds one off script tags to the head of each page
-  // .e.g <script async data-api-key="..." id="unifytag" src="..."></script>
+  // e.g. <script async data-api-key="..." id="unifytag" src="..."></script>
   scripts: [
     {
       src: "https://cdn.unifygtm.com/tag/v1/unify-tag-script.js",
