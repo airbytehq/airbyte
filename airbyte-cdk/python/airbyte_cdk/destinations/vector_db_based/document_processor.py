@@ -162,8 +162,8 @@ class DocumentProcessor:
                 primary_key.append(str(dpath.util.get(record.data, key)))
             except KeyError:
                 primary_key.append("__not_found__")
-        primary_key = "_".join(primary_key)
-        return f"{stream_identifier}_{primary_key}"
+        stringified_primary_key = "_".join(primary_key)
+        return f"{stream_identifier}_{stringified_primary_key}"
 
     def _split_document(self, doc: Document) -> List[Document]:
         chunks: List[Document] = self.splitter.split_documents([doc])
