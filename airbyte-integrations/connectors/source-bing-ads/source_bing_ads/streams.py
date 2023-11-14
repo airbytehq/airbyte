@@ -9,6 +9,7 @@ from datetime import timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.error import URLError
 
+import _csv
 import pandas as pd
 import pendulum
 from airbyte_cdk.models import SyncMode
@@ -181,13 +182,15 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
 
     def parse_response(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Iterable[Mapping]:
         if response is not None:
-            for row in response.report_records:
-                yield {column: self.get_column_value(row, column) for column in self.report_columns}
+            try:
+                for row in response.report_records:
+                    yield {column: self.get_column_value(row, column) for column in self.report_columns}
+            except _csv.Error as e:
+                self.logger.warning(f"CSV report file for stream `{self.name}` is broken or cannot be read correctly: {e}, skipping ...")
 
         yield from []
 
-    @staticmethod
-    def get_column_value(row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
+    def get_column_value(self, row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
         """
         Reads field value from row and transforms:
         1. empty values to logical None
@@ -198,7 +201,8 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
             return None
         if "%" in value:
             value = value.replace("%", "")
-
+        if value and set(self.get_json_schema()["properties"].get(column, {}).get("type")) & {"integer", "number"}:
+            value = value.replace(",", "")
         return value
 
 
