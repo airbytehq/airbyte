@@ -1283,7 +1283,7 @@ class CustomReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
         # adding common and default columns
         if "AccountId" not in self.custom_report_columns:
             self.custom_report_columns.append("AccountId")
-        if self.cursor_field not in self.custom_report_columns:
+        if self.cursor_field and self.cursor_field not in self.custom_report_columns:
             self.custom_report_columns.append(self.cursor_field)
         return list(frozenset(self.custom_report_columns))
 
