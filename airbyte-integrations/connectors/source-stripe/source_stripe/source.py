@@ -13,7 +13,7 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.call_rate import APIBudget, FixedWindowCallRatePolicy, HttpRequestMatcher
+from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, FixedWindowCallRatePolicy, HttpAPIBudget, HttpRequestMatcher
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -112,7 +112,7 @@ class SourceStripe(AbstractSource):
 
         return str(config["client_secret"]).startswith(STRIPE_TEST_ACCOUNT_PREFIX)
 
-    def get_api_call_budget(self, config: Mapping[str, Any]) -> APIBudget:
+    def get_api_call_budget(self, config: Mapping[str, Any]) -> AbstractAPIBudget:
         """Get API call budget which connector is allowed to use.
 
         :param config:
@@ -128,10 +128,11 @@ class SourceStripe(AbstractSource):
                     max_call_rate,
                     max_call_rate,
                 )
+                call_limit = max_call_rate
         else:
             call_limit = max_call_rate
 
-        call_budget = APIBudget(
+        call_budget = HttpAPIBudget(
             policies=[
                 FixedWindowCallRatePolicy(
                     next_reset_ts=datetime.now(),
@@ -139,7 +140,7 @@ class SourceStripe(AbstractSource):
                     call_limit=20,
                     matchers=[
                         HttpRequestMatcher(url="https://api.stripe.com/v1/files"),
-                        HttpRequestMatcher(url="https://api.stripe.com/v1/file_links")
+                        HttpRequestMatcher(url="https://api.stripe.com/v1/file_links"),
                     ],
                 ),
                 FixedWindowCallRatePolicy(
@@ -160,7 +161,7 @@ class SourceStripe(AbstractSource):
             "account_id": config["account_id"],
             "start_date": config["start_date"],
             "slice_range": config["slice_range"],
-            "call_budget": self.get_api_call_budget(config),
+            "api_budget": self.get_api_call_budget(config),
         }
         incremental_args = {**args, "lookback_window_days": config["lookback_window_days"]}
         subscriptions = IncrementalStripeStream(
