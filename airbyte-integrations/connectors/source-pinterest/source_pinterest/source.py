@@ -102,7 +102,7 @@ class SourcePinterest(AbstractSource):
             session.raise_for_status()
             return True, None
         except requests.exceptions.HTTPError as e:
-            if '401 Client Error: Unauthorized for url' in str(e):
+            if "401 Client Error: Unauthorized for url" in str(e):
                 return False, "Try to re-authenticate because current refresh token is not valid"
             else:
                 return False, e
