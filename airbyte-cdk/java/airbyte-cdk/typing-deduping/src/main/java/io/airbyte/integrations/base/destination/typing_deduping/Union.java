@@ -24,7 +24,7 @@ import java.util.List;
  */
 public record Union(List<AirbyteType> options) implements AirbyteType {
 
-  public static final String UNION = "UNION";
+  public static final String TYPE = "UNION";
 
   /**
    * This is a hack to handle weird schemas like {type: [object, string]}. If a stream's top-level
@@ -66,7 +66,7 @@ public record Union(List<AirbyteType> options) implements AirbyteType {
 
   @Override
   public String getTypeName() {
-    return UNION;
+    return TYPE;
   }
 
 }

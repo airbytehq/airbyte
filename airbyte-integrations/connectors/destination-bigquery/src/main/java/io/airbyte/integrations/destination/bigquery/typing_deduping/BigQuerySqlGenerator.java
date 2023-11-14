@@ -385,6 +385,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                      """);
   }
 
+  @Override
   public String clearLoadedAt(final StreamId streamId) {
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
