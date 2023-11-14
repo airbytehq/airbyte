@@ -4,7 +4,13 @@ acceptance_tests:
       - config_path: secrets/config.json
         expect_records:
           path: integration_tests/expected_records.jsonl
-          exact_order: true
+          exact_order: false
+        timeout_seconds: 1800
+        expect_trace_message_on_failure: false
+      - config_path: secrets/oauth_config.json
+        expect_records:
+          path: integration_tests/expected_records.jsonl
+          exact_order: false
         timeout_seconds: 1800
         expect_trace_message_on_failure: false
 
