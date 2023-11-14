@@ -76,3 +76,9 @@ connectionSpecification:
         The number of API calls per second that you allow connector to make. This value can not be bigger than real
         API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25 and 100
         calls per second for test and production tokens respectively.
+    call_rate_policy:
+      type: string
+      title: Call rate policy to use
+      examples: [fixed_window, moving_window, none]
+      description: >-
+        The call rate algorithm to use for tracking and limiting calls.

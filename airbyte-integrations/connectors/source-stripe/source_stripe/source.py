@@ -4,7 +4,7 @@
 
 import logging
 import os
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
@@ -15,7 +15,8 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
+from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate, \
+    FixedWindowCallRatePolicy
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -37,7 +38,7 @@ from source_stripe.streams import (
 
 logger = logging.getLogger("airbyte")
 
-_MAX_CONCURRENCY = 3
+_MAX_CONCURRENCY = 20
 _CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
 USE_CACHE = not _CACHE_DISABLED
 STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
@@ -147,19 +148,40 @@ class SourceStripe(AbstractSource):
         else:
             call_limit = max_call_rate
 
-        policies = [
-            MovingWindowCallRatePolicy(
-                rates=[Rate(limit=20, interval=timedelta(seconds=1))],
-                matchers=[
-                    HttpRequestMatcher(url="https://api.stripe.com/v1/files"),
-                    HttpRequestMatcher(url="https://api.stripe.com/v1/file_links"),
-                ],
-            ),
-            MovingWindowCallRatePolicy(
-                rates=[Rate(limit=call_limit, interval=timedelta(seconds=1))],
-                matchers=[],
-            ),
-        ]
+        if config.get("call_rate_policy") == "fixed_window":
+            policies = [
+                FixedWindowCallRatePolicy(
+                    next_reset_ts=datetime.now(),
+                    period=timedelta(seconds=1),
+                    call_limit=20,
+                    matchers=[
+                        HttpRequestMatcher(url="https://api.stripe.com/v1/files"),
+                        HttpRequestMatcher(url="https://api.stripe.com/v1/file_links"),
+                    ],
+                ),
+                FixedWindowCallRatePolicy(
+                    next_reset_ts=datetime.now(),
+                    period=timedelta(seconds=1),
+                    call_limit=call_limit,
+                    matchers=[],
+                ),
+            ]
+        elif config.get("call_rate_policy") == "moving_window":
+            policies = [
+                MovingWindowCallRatePolicy(
+                    rates=[Rate(limit=20, interval=timedelta(seconds=1))],
+                    matchers=[
+                        HttpRequestMatcher(url="https://api.stripe.com/v1/files"),
+                        HttpRequestMatcher(url="https://api.stripe.com/v1/file_links"),
+                    ],
+                ),
+                MovingWindowCallRatePolicy(
+                    rates=[Rate(limit=call_limit, interval=timedelta(seconds=1))],
+                    matchers=[],
+                ),
+            ]
+        else:
+            policies = []
 
         return HttpAPIBudget(policies=policies)
 
@@ -493,7 +515,7 @@ class SourceStripe(AbstractSource):
         if self._use_concurrent_cdk:
             # We cap the number of workers to avoid hitting the Stripe rate limit
             # The limit can be removed or increased once we have proper rate limiting
-            concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
+            concurrency_level = min(config.get("num_workers", 3), _MAX_CONCURRENCY)
             streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
 
             # The state is known to be empty because concurrent CDK is currently only used for full refresh
