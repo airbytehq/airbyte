@@ -478,6 +478,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         clearLoadedAt(stream.id())));
   }
 
+  @Override
   public String clearLoadedAt(final StreamId streamId) {
     return new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
         .replace("""

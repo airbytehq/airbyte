@@ -100,11 +100,11 @@ public class JdbcSqlGenerator implements SqlGenerator<TableDefinition> {
       return toDialectType(airbyteProtocolType, structType);
     }
     switch (type.getTypeName()) {
-      case Struct.STRUCT, UnsupportedOneOf.UNSUPPORTED_ONE_OF:
+      case Struct.TYPE, UnsupportedOneOf.TYPE:
         return structType;
-      case Array.ARRAY:
+      case Array.TYPE:
         return JDBCType.ARRAY;
-      case Union.UNION:
+      case Union.TYPE:
         return toDialectType(((Union) type).chooseType(), structType);
       default:
         throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
