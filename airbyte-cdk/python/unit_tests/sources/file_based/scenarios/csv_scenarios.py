@@ -76,6 +76,8 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                     "description": 'The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href="https://en.wikipedia.org/wiki/Glob_(programming)">here</a>.',
                                     "type": "array",
                                     "items": {"type": "string"},
+                                    "order": 1,
+                                    "default": ["**"],
                                 },
                                 "legacy_prefix": {
                                     "title": "Legacy Prefix",

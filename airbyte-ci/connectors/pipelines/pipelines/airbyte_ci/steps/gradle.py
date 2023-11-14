@@ -68,7 +68,6 @@ class GradleTask(Step, ABC):
             "gradle.properties",
             "gradle",
             "gradlew",
-            "LICENSE_SHORT",
             "settings.gradle",
             "build.gradle",
             "tools/gradle",
@@ -76,7 +75,6 @@ class GradleTask(Step, ABC):
             "buildSrc",
             "tools/bin/build_image.sh",
             "tools/lib/lib.sh",
-            "tools/gradle/codestyle",
             "pyproject.toml",
         ] + self.build_include
 
@@ -84,8 +82,6 @@ class GradleTask(Step, ABC):
             "docker",  # required by :integrationTestJava.
             "findutils",  # gradle requires xargs, which is shipped in findutils.
             "jq",  # required by :acceptance-test-harness to inspect docker images.
-            "npm",  # required by :format.
-            "python3.11-pip",  # required by :format.
             "rsync",  # required for gradle cache synchronization.
         ]
 
