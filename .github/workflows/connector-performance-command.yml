@@ -179,7 +179,7 @@ jobs:
         run: |
           export PATH="$PATH:/root/.local/bin"
           ci_credentials connectors-performance/$HARNESS_TYPE write-to-storage
-          connector_name=$(echo ${{ inputs.connector }} | cut -d / -f 2)
+          connector_name=$(echo ${{ inputs.connector }} | sed 's,.*/,,')
           ci_credentials connectors-performance/$connector_name write-to-storage
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -197,7 +197,7 @@ jobs:
         run: |
           echo "Building... ${{inputs.connector}}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY # this is a blank line
-          connector_name=$(echo ${{ inputs.connector }} | cut -d / -f 2)
+          connector_name=$(echo ${{ inputs.connector }} | sed 's,.*/,,')
           echo "Running ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check"
           ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check
         env:
