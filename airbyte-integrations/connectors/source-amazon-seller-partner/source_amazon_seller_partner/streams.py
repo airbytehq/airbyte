@@ -3,9 +3,9 @@
 #
 
 import csv
+import gzip
 import json as json_lib
 import time
-import zlib
 from abc import ABC, abstractmethod
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -281,21 +281,23 @@ class ReportsAmazonSPStream(Stream, ABC):
 
         return report_payload
 
-    def decompress_report_document(self, url, payload):
+    @default_backoff_handler(factor=5, max_tries=5)
+    def download_and_decompress_report_document(self, url, payload):
         """
         Unpacks a report document
         """
-        report = requests.get(url).content
+        report = requests.get(url)
+        report.raise_for_status()
         if "compressionAlgorithm" in payload:
-            return zlib.decompress(bytearray(report), 15 + 32).decode("iso-8859-1")
-        return report.decode("iso-8859-1")
+            return gzip.decompress(report.content).decode("iso-8859-1")
+        return report.content.decode("iso-8859-1")
 
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         payload = response.json()
 
-        document = self.decompress_report_document(payload.get("url"), payload)
+        document = self.download_and_decompress_report_document(payload.get("url"), payload)
 
         document_records = self.parse_document(document)
         yield from document_records

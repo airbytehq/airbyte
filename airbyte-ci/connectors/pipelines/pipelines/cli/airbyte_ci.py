@@ -8,6 +8,7 @@ import importlib
 import logging
 import multiprocessing
 import os
+import sys
 from pathlib import Path
 from typing import List, Optional
 
@@ -19,7 +20,7 @@ from pipelines import main_logger
 from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
-from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH, CIContext
+from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_PIPELINE_PACKAGE_PATH, CIContext
 from pipelines.helpers import github
 from pipelines.helpers.git import (
     get_current_git_branch,
@@ -52,11 +53,11 @@ def display_welcome_message() -> None:
         │                                                                                                 │
         │                                                                                                 │
         ╚─────────────────────────────────────────────────────────────────────────────────────────────────╝
-        """
+        """  # noqa: W605
     )
 
 
-def check_up_to_date() -> bool:
+def check_up_to_date(throw_as_error=False) -> bool:
     """Check if the installed version of pipelines is up to date."""
     latest_version = get_latest_version()
     if latest_version != __installed_version__:
@@ -68,7 +69,12 @@ def check_up_to_date() -> bool:
 
         🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
         """
-        raise Exception(upgrade_error_message)
+
+        if throw_as_error:
+            raise Exception(upgrade_error_message)
+        else:
+            logging.warning(upgrade_error_message)
+            return False
 
     main_logger.info(f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
     return True
@@ -206,6 +212,38 @@ def check_local_docker_configuration():
         )
 
 
+def is_dagger_run_enabled_by_default() -> bool:
+    dagger_run_by_default = [
+        ["connectors", "test"],
+        ["connectors", "build"],
+        ["test"],
+        ["metadata_service"],
+    ]
+
+    for command_tokens in dagger_run_by_default:
+        if all(token in sys.argv for token in command_tokens):
+            return True
+
+    return False
+
+
+def check_dagger_wrap():
+    """
+    Check if the command is already wrapped by dagger run.
+    This is useful to avoid infinite recursion when calling dagger run from dagger run.
+    """
+    return os.getenv(DAGGER_WRAP_ENV_VAR_NAME) == "true"
+
+
+def is_current_process_wrapped_by_dagger_run() -> bool:
+    """
+    Check if the current process is wrapped by dagger run.
+    """
+    called_with_dagger_run = check_dagger_wrap()
+    main_logger.info(f"Called with dagger run: {called_with_dagger_run}")
+    return called_with_dagger_run
+
+
 async def get_modified_files_str(ctx: click.Context):
     modified_files = await get_modified_files(
         ctx.obj["git_branch"],
@@ -226,11 +264,13 @@ async def get_modified_files_str(ctx: click.Context):
     help="Airbyte CI top-level command group.",
     lazy_subcommands={
         "connectors": "pipelines.airbyte_ci.connectors.commands.connectors",
+        "format": "pipelines.airbyte_ci.format.commands.format_code",
         "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
         "test": "pipelines.airbyte_ci.test.commands.test",
     },
 )
 @click.version_option(__installed_version__)
+@click.option("--enable-dagger-run/--disable-dagger-run", default=is_dagger_run_enabled_by_default)
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
@@ -247,6 +287,7 @@ async def get_modified_files_str(ctx: click.Context):
 @click.option("--ci-git-user", default="octavia-squidington-iii", envvar="CI_GIT_USER", type=str)
 @click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
 @click.option("--ci-report-bucket-name", envvar="CI_REPORT_BUCKET_NAME", type=str)
+@click.option("--ci-artifact-bucket-name", envvar="CI_ARTIFACT_BUCKET_NAME", type=str)
 @click.option(
     "--ci-gcs-credentials",
     help="The service account to use during CI.",
@@ -268,12 +309,20 @@ async def get_modified_files_str(ctx: click.Context):
 @click_ignore_unused_kwargs
 async def airbyte_ci(ctx: click.Context):  # noqa D103
     display_welcome_message()
+
+    if ctx.obj["enable_dagger_run"] and not is_current_process_wrapped_by_dagger_run():
+        main_logger.debug("Re-Running airbyte-ci with dagger run.")
+        from pipelines.cli.dagger_run import call_current_command_with_dagger_run
+
+        call_current_command_with_dagger_run()
+        return
+
     if ctx.obj["is_local"]:
         # This check is meaningful only when running locally
         # In our CI the docker host used by the Dagger Engine is different from the one used by the runner.
         check_local_docker_configuration()
 
-    check_up_to_date()
+    check_up_to_date(throw_as_error=ctx.obj["is_local"])
 
     if not ctx.obj["is_local"]:
         log_git_info(ctx)

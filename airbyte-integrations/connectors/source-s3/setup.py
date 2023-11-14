@@ -19,9 +19,6 @@ TEST_REQUIREMENTS = [
     "pytest-mock~=3.6.1",
     "pytest~=6.1",
     "pandas==2.0.3",
-    "psutil",
-    "pytest-order",
-    "netifaces~=0.11.0",
     "docker",
 ]
 
