@@ -97,7 +97,7 @@ public class BufferManager {
     final ArrayList<String> messages = new ArrayList<>();
 
     messages
-        .add(String.format("Global: max: %s, allocated: %s (%s MB), %% used: %s, ",
+        .add(String.format("Global: max: %s, allocated: %s (%s MB), %% used: %s",
             AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getMaxMemoryBytes()),
             AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes()),
             (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024,
