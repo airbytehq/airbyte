@@ -301,7 +301,7 @@ class Media(InstagramStream):
     so they are excluded when trying to get child objects to avoid the error
     """
 
-    INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children"]
+    INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children", "media_product_type"]
 
     def read_records(
         self,
