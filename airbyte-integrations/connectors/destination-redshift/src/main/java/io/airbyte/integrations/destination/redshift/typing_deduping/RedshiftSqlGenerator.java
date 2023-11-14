@@ -44,7 +44,10 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp, final boolean useExpensiveSaferCasting) {
+  public String updateTable(final StreamConfig stream,
+                            final String finalSuffix,
+                            final Optional<Instant> minRawTimestamp,
+                            final boolean useExpensiveSaferCasting) {
     return null;
   }
 
@@ -62,4 +65,5 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   public String clearLoadedAt(final StreamId streamId) {
     return null;
   }
+
 }

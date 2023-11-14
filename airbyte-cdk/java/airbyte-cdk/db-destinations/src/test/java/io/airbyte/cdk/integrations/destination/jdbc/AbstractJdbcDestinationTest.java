@@ -139,6 +139,7 @@ public class AbstractJdbcDestinationTest {
       // TODO do we need to populate this?
       return null;
     }
+
   }
 
 }
