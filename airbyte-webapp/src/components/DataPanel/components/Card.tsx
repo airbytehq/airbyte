@@ -52,7 +52,7 @@ const Card: React.FC<CardProps> = ({ data, onClick, checked }) => {
         onClick(data);
       }}
     >
-      <Image icon={data.icon} />
+      <Image icon={`https://airbyte-icons.s3.amazonaws.com/${data.icon}`} />
       <div>{data.name}</div>
     </Box>
   );
