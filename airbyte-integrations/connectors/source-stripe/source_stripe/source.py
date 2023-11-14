@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import concurrent
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
@@ -10,7 +9,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
-from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
+from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
@@ -36,7 +35,9 @@ from source_stripe.streams import (
 _MAX_CONCURRENCY = 3
 
 
-class SourceStripe(ConcurrentSource):
+class SourceStripe(ConcurrentSourceAdapter):
+    message_repository = InMemoryMessageRepository(entrypoint_logger.level)
+
     def __init__(self, config_path: Optional[str] = None, catalog_path: Optional[str] = None, **kwargs):
         if config_path:
             config = self.read_config(config_path)
@@ -44,10 +45,10 @@ class SourceStripe(ConcurrentSource):
         else:
             max_workers = 1
         entrypoint_logger.info(f"Initializing source with {max_workers} workers")
-        threadpool_manager = ThreadPoolManager(
-            concurrent.futures.ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="workerpool"), entrypoint_logger
+        concurrent_source = ConcurrentSource.create(
+            max_workers, max(max_workers // 2, 1), entrypoint_logger, self._slice_logger, self.message_repository, 300
         )
-        super().__init__(threadpool_manager, InMemoryMessageRepository(), max(max_workers // 2, 1), **kwargs)
+        super().__init__(concurrent_source, **kwargs)
         if catalog_path:
             catalog = self.read_catalog(catalog_path)
             # Only use concurrent cdk if all streams are running in full_refresh
@@ -55,8 +56,6 @@ class SourceStripe(ConcurrentSource):
             self._use_concurrent_cdk = all_sync_mode_are_full_refresh
         else:
             self._use_concurrent_cdk = False
-
-    message_repository = InMemoryMessageRepository(entrypoint_logger.level)
 
     @staticmethod
     def validate_and_fill_with_defaults(config: MutableMapping) -> MutableMapping:
@@ -76,7 +75,8 @@ class SourceStripe(ConcurrentSource):
             )
         if start_date:
             try:
-                start_date = pendulum.parse(start_date).int_timestamp
+                if not isinstance(start_date, int):
+                    start_date = pendulum.parse(start_date).int_timestamp
             except pendulum.parsing.exceptions.ParserError as e:
                 message = f"Invalid start date {start_date}. Please use YYYY-MM-DDTHH:MM:SSZ format."
                 raise AirbyteTracedException(
