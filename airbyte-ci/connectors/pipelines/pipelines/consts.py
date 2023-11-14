@@ -5,7 +5,6 @@
 import platform
 from enum import Enum
 
-import git
 from dagger import Platform
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
@@ -13,26 +12,26 @@ LICENSE_SHORT_FILE_PATH = "LICENSE_SHORT"
 CONNECTOR_TESTING_REQUIREMENTS = [
     "pip==21.3.1",
     "mccabe==0.6.1",
-    "flake8==4.0.1",
-    "pyproject-flake8==0.0.1a2",
-    "black==22.3.0",
-    "isort==5.6.4",
+    # "flake8==4.0.1",
+    # "pyproject-flake8==0.0.1a2",
     "pytest==6.2.5",
     "coverage[toml]==6.3.1",
     "pytest-custom_exit_code",
-    "licenseheaders==0.8.8",
 ]
 
 BUILD_PLATFORMS = [Platform("linux/amd64"), Platform("linux/arm64")]
 
 PLATFORM_MACHINE_TO_DAGGER_PLATFORM = {
     "x86_64": Platform("linux/amd64"),
-    "aarch64": Platform("linux/amd64"),
     "arm64": Platform("linux/arm64"),
+    "aarch64": Platform("linux/amd64"),
     "amd64": Platform("linux/amd64"),
 }
 LOCAL_BUILD_PLATFORM = PLATFORM_MACHINE_TO_DAGGER_PLATFORM[platform.machine()]
 AMAZONCORRETTO_IMAGE = "amazoncorretto:17.0.8-al2023"
+NODE_IMAGE = "node:18.18.0-slim"
+GO_IMAGE = "golang:1.17"
+PYTHON_3_10_IMAGE = "python:3.10.13-slim"
 DOCKER_VERSION = "24.0.2"
 DOCKER_DIND_IMAGE = f"docker:{DOCKER_VERSION}-dind"
 DOCKER_CLI_IMAGE = f"docker:{DOCKER_VERSION}-cli"
@@ -47,8 +46,6 @@ DOCKER_HOST_NAME = "global-docker-host"
 DOCKER_HOST_PORT = 2375
 DOCKER_TMP_VOLUME_NAME = "shared-tmp"
 DOCKER_VAR_LIB_VOLUME_NAME = "docker-cache"
-REPO = git.Repo(search_parent_directories=True)
-REPO_PATH = REPO.working_tree_dir
 STATIC_REPORT_PREFIX = "airbyte-ci"
 PIP_CACHE_VOLUME_NAME = "pip_cache"
 PIP_CACHE_PATH = "/root/.cache/pip"
@@ -82,3 +79,6 @@ class INTERNAL_TOOL_PATHS(str, Enum):
     CI_CREDENTIALS = "airbyte-ci/connectors/ci_credentials"
     CONNECTOR_OPS = "airbyte-ci/connectors/connector_ops"
     METADATA_SERVICE = "airbyte-ci/connectors/metadata_service/lib"
+
+
+DAGGER_WRAP_ENV_VAR_NAME = "_DAGGER_WRAP_APPLIED"
