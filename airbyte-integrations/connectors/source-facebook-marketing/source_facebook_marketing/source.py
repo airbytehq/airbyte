@@ -131,7 +131,7 @@ class SourceFacebookMarketing(AbstractSource):
             config.end_date = validate_end_date(config.start_date, config.end_date)
 
         account_id_list = config.account_ids.split(',') if config.account_ids else []
-        api = API(account_ids=account_id_list, access_token=config.access_token, page_size=config.page_size)
+        api = API(account_ids=account_id_list, access_token=config.access_token, page_size=config.page_size, parallelism=config.parallelism)
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
         report_start_date = config.start_date or pendulum.now().add(years=-2)

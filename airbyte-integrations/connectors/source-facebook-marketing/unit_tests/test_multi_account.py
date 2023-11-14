@@ -49,7 +49,7 @@ class TestMultiAccount:
     def test_get_multiple_accounts(self, multi_account_api, account_id, other_account_id):
         for account in multi_account_api.accounts:
             assert isinstance(account, AdAccount)
-        assert [account_id, other_account_id] == [account.get_id() for account in multi_account_api.accounts]
+        assert [f"act_{account_id}", f"act_{other_account_id}"] == [account.get_id() for account in multi_account_api.accounts]
 
     @pytest.mark.parametrize("route, stream_class, kwargs", [
         ("activities", Activities, {"start_date": pendulum.now(), "end_date": pendulum.now(), "include_deleted": False, "page_size": 100}),

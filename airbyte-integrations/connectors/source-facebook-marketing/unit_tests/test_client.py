@@ -109,7 +109,6 @@ class TestBackoff:
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/adcreatives", responses)
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/", responses)
         requests_mock.register_uri("POST", FacebookSession.GRAPH + f"/{FB_API_VERSION}/", batch_responses)
-
         stream = AdCreatives(api=api, include_deleted=False)
         records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
@@ -158,7 +157,8 @@ class TestBackoff:
         try:
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
         except AirbyteTracedException:
-            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "50", "25", "12", "6"]
+            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "50", "25", "12", "6", '3', '1', '0', '0', '0', '0', '0',
+                                                                           '0', '0', '0']
 
     def test_limit_error_retry_revert_page_size(self, requests_mock, api, account_id):
         """Error every time, check limit parameter decreases by 2 times every new call"""
@@ -186,10 +186,10 @@ class TestBackoff:
         }
 
         res = requests_mock.register_uri(
-                "GET",
-                FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/activities",
-                [error, success, error, success],
-            )
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/activities",
+            [error, success, error, success],
+        )
 
         stream = Activities(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
         try:
@@ -225,22 +225,24 @@ class TestBackoff:
         base_url = FacebookSession.GRAPH + f"/{FB_API_VERSION}"
 
         res = requests_mock.register_uri(
-                "GET",
-                f"{base_url}/act_{account_id}/advideos",
-                [
-                    {
-                        "json": {
-                            "data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}],
-                            "paging": {"next": f"{base_url}/act_{account_id}/advideos?after=after_page_1&limit=100"},
-                        },
-                        "status_code": 200,
+            "GET",
+            f"{base_url}/act_{account_id}/advideos",
+            [
+                {
+                    "json": {
+                        "data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}],
+                        "paging": {"next": f"{base_url}/act_{account_id}/advideos?after=after_page_1&limit=100"},
                     },
-                    fb_call_amount_data_response,
-                ],
-            )
+                    "status_code": 200,
+                },
+                fb_call_amount_data_response,
+            ],
+        )
 
         stream = Videos(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
         try:
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
         except AirbyteTracedException:
-            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "100", "50", "25", "12", "6"]
+            assert [x.qs.get("limit")[0] for x in res.request_history] == ['100', '100', '50', '25', '12', '6', '3', '1', '0', '0', '0',
+                                                                           '0', '0', '0',
+                                                                           '0', '0']

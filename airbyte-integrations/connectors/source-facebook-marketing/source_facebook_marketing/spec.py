@@ -156,6 +156,17 @@ class ConnectorConfig(BaseConfig):
         default_factory=lambda: datetime.now(tz=timezone.utc),
     )
 
+    parallelism: Optional[PositiveInt] = Field(
+        title="Maximum number of parallel connections",
+        order=9,
+        description=(
+            "Maximum number of parallel connections."
+            "Most users do not need to set this field unless they specifically need to tune the connector to address "
+            "specific issues or use cases."
+        ),
+        default=1,
+    )
+
     include_deleted: bool = Field(
         title="Include Deleted Campaigns, Ads, and AdSets",
         order=4,
