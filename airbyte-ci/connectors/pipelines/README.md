@@ -100,6 +100,9 @@ At this point you can run `airbyte-ci` commands.
 - [`connectors bump_version` command](#connectors-bump_version)
 - [`connectors upgrade_base_image` command](#connectors-upgrade_base_image)
 - [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image)
+- [`format` command subgroup](#format-subgroup)
+  * [`format check` command](#format-check-command)
+  * [`format fix` command](#format-fix-command)
 - [`metadata` command subgroup](#metadata-command-subgroup)
 - [`metadata validate` command](#metadata-validate-command)
   * [Example](#example)
@@ -205,7 +208,6 @@ flowchart TD
     entrypoint[[For each selected connector]]
     subgraph static ["Static code analysis"]
       qa[Run QA checks]
-      fmt[Run code format checks]
       sem["Check version follows semantic versionning"]
       incr["Check version is incremented"]
       metadata_validation["Run metadata validation on metadata.yaml"]
@@ -369,6 +371,29 @@ Migrate source-openweather to use the base image: `airbyte-ci connectors --name=
 | --------------------- | ----------------------------------------------------------- |
 | `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry |
 
+### <a id="format-subgroup"></a>`format` command subgroup
+
+Available commands:
+* `airbyte-ci format check all`
+* `airbyte-ci format fix all`
+
+### Examples
+- Check for formatting errors in the repository: `airbyte-ci format check all`
+- Fix formatting for only python files: `airbyte-ci format fix python`
+
+### <a id="format-check-command"></a>`format check all` command
+
+This command runs formatting checks, but does not format the code in place. It will exit 1 as soon as a failure is encountered. To fix errors, use `airbyte-ci format fix all`.
+
+Running `airbyte-ci format check` will run checks on all different types of code. Run `airbyte-ci format check --help` for subcommands to check formatting for only certain types of files.
+
+### <a id="format-fix-command"></a>`format fix all` command
+
+This command runs formatting checks and reformats any code that would be reformatted, so it's recommended to stage changes you might have before running this command.
+
+Running `airbyte-ci format fix all` will format all of the different types of code. Run `airbyte-ci format fix --help` for subcommands to format only certain types of files.
+
+
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
 
 Available commands:
@@ -408,7 +433,8 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 2.5.9   | [#32427](https://github.com/airbytehq/airbyte/pull/32427)  | Re-enable caching for source-postgres                                                                 |
+| 2.6.0   | [#31831](https://github.com/airbytehq/airbyte/pull/31831)  | Add `airbyte-ci format` commands, remove connector-specific formatting check                              |
+| 2.5.9   | [#32427](https://github.com/airbytehq/airbyte/pull/32427)  | Re-enable caching for source-postgres                                                                     |
 | 2.5.8   | [#32402](https://github.com/airbytehq/airbyte/pull/32402)  | Set Dagger Cloud token for airbyters only                                                                 |
 | 2.5.7   | [#31628](https://github.com/airbytehq/airbyte/pull/31628)  | Add ClickPipelineContext class                                                                            |
 | 2.5.6   | [#32139](https://github.com/airbytehq/airbyte/pull/32139)  | Test coverage report on Python connector UnitTest.                                                        |
