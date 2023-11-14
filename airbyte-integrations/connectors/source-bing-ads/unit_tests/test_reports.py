@@ -3,8 +3,9 @@
 #
 
 import copy
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
+import _csv
 import pendulum
 import pytest
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
@@ -230,3 +231,11 @@ def test_report_get_start_date_performance_report_wo_stream_state():
 def test_geographic_performance_report_pk(performance_report_cls):
     stream = performance_report_cls(client=Mock(), config=TEST_CONFIG)
     assert stream.primary_key is None
+
+
+def test_report_parse_response_csv_error(caplog):
+    stream_report = AccountPerformanceReportHourly(client=Mock(), config=TEST_CONFIG)
+    fake_response = MagicMock()
+    fake_response.report_records.__iter__ = MagicMock(side_effect=_csv.Error)
+    list(stream_report.parse_response(fake_response))
+    assert "CSV report file for stream `account_performance_report_hourly` is broken or cannot be read correctly: , skipping ..." in caplog.messages

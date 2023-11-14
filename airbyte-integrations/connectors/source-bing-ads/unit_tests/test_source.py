@@ -14,7 +14,7 @@ from airbyte_cdk.utils import AirbyteTracedException
 from bingads.service_info import SERVICE_INFO_DICT_V13
 from source_bing_ads.base_streams import Accounts, AdGroups, Ads, Campaigns
 from source_bing_ads.bulk_streams import AppInstallAds
-from source_bing_ads.report_streams import AccountPerformanceReportMonthly
+from source_bing_ads.report_streams import AccountPerformanceReportMonthly, BingAdsReportingServiceStream
 from source_bing_ads.source import SourceBingAds
 from suds import WebFault
 
@@ -239,7 +239,7 @@ def test_ads_stream_slices(mocked_client, config):
 def test_AccountPerformanceReportMonthly_request_params(mocked_client, config):
 
     accountperformancereportmonthly = AccountPerformanceReportMonthly(mocked_client, config)
-    request_params = accountperformancereportmonthly.request_params(account_id=180278106)
+    request_params = accountperformancereportmonthly.request_params(account_id=180278106, stream_slice={"time_period": "ThisYear"})
     del request_params["report_request"]
     assert request_params == {
         "overwrite_result_file": True,
@@ -258,9 +258,7 @@ def test_AccountPerformanceReportMonthly_stream_slices(mocked_client, config):
     with patch.object(Accounts, "read_records", return_value=accounts_read_records):
         stream_slice = list(accountperformancereportmonthly.stream_slices())
         assert stream_slice == [
-            {"account_id": 180519267, "customer_id": 100, "time_period": "LastYear"},
             {"account_id": 180519267, "customer_id": 100, "time_period": "ThisYear"},
-            {"account_id": 180278106, "customer_id": 200, "time_period": "LastYear"},
             {"account_id": 180278106, "customer_id": 200, "time_period": "ThisYear"},
         ]
 
@@ -445,7 +443,7 @@ def test_custom_report_send_request(mocked_client, config_with_custom_reports, l
         faultstring = "Invalid Client Data"
 
     custom_report = SourceBingAds().get_custom_reports(config_with_custom_reports, mocked_client)[0]
-    with patch.object(ReportsMixin, "send_request", side_effect=WebFault(fault=Fault(), document=None)):
+    with patch.object(BingAdsReportingServiceStream, "send_request", side_effect=WebFault(fault=Fault(), document=None)):
         custom_report.send_request(params={}, customer_id="13131313", account_id="800800808")
         assert (
             "Could not sync custom report my test custom report: Please validate your column and aggregation configuration. "
@@ -454,49 +452,34 @@ def test_custom_report_send_request(mocked_client, config_with_custom_reports, l
 
 
 @pytest.mark.parametrize(
-    "aggregation,datastring,expected",
-    (
-        (
-            "DayOfWeek",
-            "1",
-            1,
-        ),
-        (
-            "HourOfDay",
-            "20",
-            20,
-        ),
+    "aggregation, datastring, expected",
+    [
         (
             "Hourly",
             "2022-11-13|10",
-            1668333600,
-        ),
-        (
-            "Hourly",
-            "2022-11-13|10",
-            1668333600,
+            "2022-11-13T10:00:00+00:00",
         ),
         (
             "Daily",
             "2022-11-13",
-            1668297600,
+            "2022-11-13",
         ),
         (
             "Weekly",
             "2022-11-13",
-            1668297600,
+            "2022-11-13",
         ),
         (
             "Monthly",
             "2022-11-13",
-            1668297600,
+            "2022-11-13",
         ),
         (
             "WeeklyStartingMonday",
             "2022-11-13",
-            1668297600,
+            "2022-11-13",
         ),
-    ),
+    ],
 )
 @patch.object(source_bing_ads.source, "Client")
 def test_custom_report_get_report_record_timestamp(mocked_client, config_with_custom_reports, aggregation, datastring, expected):
