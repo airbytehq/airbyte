@@ -183,7 +183,7 @@ class SourceStripe(AbstractSource):
         else:
             policies = []
 
-        return HttpAPIBudget(policies=policies)
+        return HttpAPIBudget(policies=policies, maximum_attempts_to_acquire=10000)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self.validate_and_fill_with_defaults(config)
