@@ -41,7 +41,7 @@ jobs:
               - '**/*'
               - '!**/*.md'
 
-      - name: Run airbyte-ci format fix
+      - name: Run airbyte-ci format fix all
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "pull_request"
@@ -64,3 +64,14 @@ jobs:
           commit_message: Automated Commit - Formatting Changes
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
+
+      - name: Run airbyte-ci format check all
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          context: "pull_request"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "format check all"
