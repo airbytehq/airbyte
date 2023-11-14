@@ -7,6 +7,7 @@ import sys
 import urllib.parse as urlparse
 
 import backoff
+import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from facebook_business.exceptions import FacebookRequestError
 from requests.status_codes import codes as status_codes
@@ -92,3 +93,35 @@ def remove_params_from_url(url, params):
     return urlparse.urlunparse(
         [parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlparse.urlencode(filtered, doseq=True), parsed.fragment]
     )
+
+
+def fix_nested_timestamp(record, path):
+    if not path:
+        return
+
+    key = path[0]
+    remaining_path = path[1:]
+
+    if key not in record or not record[key]:
+        return
+
+    if remaining_path:
+        if isinstance(record[key], list):
+            for item in record[key]:
+                fix_nested_timestamp(item, remaining_path)
+        elif isinstance(record[key], dict):
+            fix_nested_timestamp(record[key], remaining_path)
+    else:
+        try:
+            # Parse the ISO format timestamp
+            dt = pendulum.parse(record[key])
+
+            # Convert to RFC 3339 format
+            rfc3339_timestamp = dt.to_rfc3339_string()
+            record[key] = rfc3339_timestamp
+        except Exception:
+            raise ValueError(
+                f"Error transforming timestamp for field '{'/'.join(path)}': '{record[key]}' is not a valid ISO 8601 timestamp. "
+                "Ensure the timestamp is in the correct format and includes a timezone. "
+                f"This error occurred while processing the record: {record}"
+            )

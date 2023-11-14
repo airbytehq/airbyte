@@ -16,7 +16,7 @@ from facebook_business.adobjects.igmedia import IGMedia
 from facebook_business.exceptions import FacebookRequestError
 from source_instagram.api import InstagramAPI
 
-from .common import remove_params_from_url
+from .common import fix_nested_timestamp, remove_params_from_url
 
 
 class InstagramStream(Stream, ABC):
@@ -24,6 +24,8 @@ class InstagramStream(Stream, ABC):
 
     page_size = 100
     primary_key = "id"
+    # Define fields to fix as tuples representing the path to the field
+    fix_timestamp_fields = []
 
     def __init__(self, api: InstagramAPI, **kwargs):
         super().__init__(**kwargs)
@@ -59,7 +61,14 @@ class InstagramStream(Stream, ABC):
             yield {"account": account}
 
     def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        return self._clear_url(record)
+        record = self.fix_timestamp_with_timezone(record)
+        record = self._clear_url(record)
+        return record
+
+    def fix_timestamp_with_timezone(self, record):
+        for path in self.fix_timestamp_fields:
+            fix_nested_timestamp(record, path)
+        return record
 
     @staticmethod
     def _clear_url(record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
@@ -128,6 +137,8 @@ class UserLifetimeInsights(InstagramStream):
     LIFETIME_METRICS = ["audience_city", "audience_country", "audience_gender_age", "audience_locale"]
     period = "lifetime"
 
+    fix_timestamp_fields = [("date",)]
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -138,13 +149,15 @@ class UserLifetimeInsights(InstagramStream):
         account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
         for insight in ig_account.get_insights(params=self.request_params()):
-            yield {
+            record = {
                 "page_id": account["page_id"],
                 "business_account_id": ig_account.get("id"),
                 "metric": insight["name"],
                 "date": insight["values"][0].get("end_time"),
                 "value": insight["values"][0].get("value"),
             }
+            record = self.transform(record)
+            yield record
 
     def request_params(
         self,
@@ -175,6 +188,7 @@ class UserInsights(InstagramIncrementalStream):
         "days_28": ["impressions", "reach"],
         "lifetime": ["online_followers"],
     }
+    fix_timestamp_fields = [("date",)]
 
     primary_key = ["business_account_id", "date"]
     cursor_field = "date"
@@ -239,6 +253,8 @@ class UserInsights(InstagramIncrementalStream):
             )
             self.should_exit_gracefully = True
 
+        complete_records = [self.transform(record) for record in complete_records]
+
         yield from complete_records
 
         # update state using IncrementalMixin
@@ -302,6 +318,7 @@ class Media(InstagramStream):
     """
 
     INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children", "media_product_type"]
+    fix_timestamp_fields = [("timestamp",), ("children", "timestamp")]
 
     def read_records(
         self,
@@ -405,6 +422,7 @@ class MediaInsights(Media):
 
 class Stories(InstagramStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories"""
+    fix_timestamp_fields = [("timestamp",),]
 
     def read_records(
         self,
