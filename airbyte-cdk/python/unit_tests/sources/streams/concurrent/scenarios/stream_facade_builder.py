@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
@@ -16,6 +17,7 @@ from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Curs
 from airbyte_cdk.sources.streams.concurrent.state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
+from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import NeverLogSliceLogger
 
 _NO_STATE = None
 
@@ -24,7 +26,7 @@ class StreamFacadeConcurrentConnectorStateConverter(EpochValueConcurrentStreamSt
     pass
 
 
-class StreamFacadeSource(ConcurrentSource):
+class StreamFacadeSource(ConcurrentSourceAdapter):
     def __init__(
         self,
         streams: List[Stream],
@@ -35,7 +37,8 @@ class StreamFacadeSource(ConcurrentSource):
     ):
         self._message_repository = InMemoryMessageRepository()
         threadpool_manager = ThreadPoolManager(threadpool, streams[0].logger)
-        super().__init__(threadpool_manager, message_repository=self._message_repository)
+        concurrent_source = ConcurrentSource(threadpool_manager, streams[0].logger, NeverLogSliceLogger(), self._message_repository)
+        super().__init__(concurrent_source)
         self._streams = streams
         self._threadpool = threadpool_manager
         self._cursor_field = cursor_field

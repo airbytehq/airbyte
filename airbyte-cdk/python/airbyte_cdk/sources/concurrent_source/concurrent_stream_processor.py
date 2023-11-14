@@ -49,7 +49,7 @@ class ConcurrentStreamProcessor:
             self._record_counter[stream.name] = 0
         self._thread_pool_manager = thread_pool_manager
         self._partition_enqueuer = partition_enqueuer
-        self._stream_instances_to_read_from = stream_instances_to_read_from
+        self._stream_instances_to_start_partition_generation = stream_instances_to_read_from
         self._streams_currently_generating_partitions: List[str] = []
         self._logger = logger
         self._slice_logger = slice_logger
@@ -66,9 +66,10 @@ class ConcurrentStreamProcessor:
         stream_name = sentinel.stream.name
         self._streams_currently_generating_partitions.remove(sentinel.stream.name)
         ret = []
+        # It is possible for the stream to already be done if no partitions were generated
         if self._is_stream_done(stream_name):
             ret.append(self._on_stream_is_done(stream_name))
-        if self._stream_instances_to_read_from:
+        if self._stream_instances_to_start_partition_generation:
             ret.append(self.start_next_partition_generator())
         return ret
 
@@ -139,8 +140,8 @@ class ConcurrentStreamProcessor:
         3. Add the stream to the list of streams currently generating partitions
         4. Return a stream status message
         """
-        if self._stream_instances_to_read_from:
-            stream = self._stream_instances_to_read_from.pop(0)
+        if self._stream_instances_to_start_partition_generation:
+            stream = self._stream_instances_to_start_partition_generation.pop(0)
             self._thread_pool_manager.submit(self._partition_enqueuer.generate_partitions, stream)
             self._streams_currently_generating_partitions.append(stream.name)
             self._logger.info(f"Marking stream {stream.name} as STARTED")
@@ -162,7 +163,7 @@ class ConcurrentStreamProcessor:
         """
         return (
             not self._streams_currently_generating_partitions
-            and not self._stream_instances_to_read_from
+            and not self._stream_instances_to_start_partition_generation
             and all([all(p.is_closed() for p in partitions) for partitions in self._streams_to_partitions.values()])
         )
 

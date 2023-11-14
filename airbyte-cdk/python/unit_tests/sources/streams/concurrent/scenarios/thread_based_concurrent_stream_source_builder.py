@@ -1,14 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import concurrent
 import json
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
-from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
+from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
@@ -38,12 +37,10 @@ class LegacyStream(Stream):
         yield from []
 
 
-class ConcurrentCdkSource(ConcurrentSource):
+class ConcurrentCdkSource(ConcurrentSourceAdapter):
     def __init__(self, streams: List[DefaultStream], message_repository: Optional[MessageRepository], max_workers, timeout_in_seconds):
-        threadpool_manager = ThreadPoolManager(
-            concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="workerpool"), streams[0]._logger
-        )
-        super().__init__(threadpool_manager, message_repository)
+        concurrent_source = ConcurrentSource.create(1, 1, streams[0]._logger, NeverLogSliceLogger(), message_repository)
+        super().__init__(concurrent_source)
         self._streams = streams
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
