@@ -73,11 +73,11 @@ This source is capable of syncing the following tables and their data:
 - [Orders](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference) \(incremental\)
 - [Orders Items](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems) \(incremental\)
 - [Seller Feedback Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(incremental\)
-- [Brand Analytics Alternate Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
-- [Brand Analytics Item Comparison Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
-- [Brand Analytics Market Basket Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
-- [Brand Analytics Repeat Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
-- [Brand Analytics Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
+- [Brand Analytics Alternate Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports) \(only available in OSS\)
+- [Brand Analytics Item Comparison Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports) \(only available in OSS\)
+- [Brand Analytics Market Basket Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports) \(only available in OSS\)
+- [Brand Analytics Repeat Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports) \(only available in OSS\)
+- [Brand Analytics Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports) \(only available in OSS\)
 - [Browse tree report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#browse-tree-report)
 - [Financial Event Groups](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialeventgroups)
 - [Financial Events](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialevents)
@@ -100,6 +100,9 @@ This source is capable of syncing the following tables and their data:
 - [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [FBA Reimbursements Report](https://sellercentral.amazon.com/help/hub/reference/G200732720)
 - [Order Data Shipping Report](https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_order_report_data_shipping)
+- [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(only available in OSS\)
+- [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(only available in OSS\)
+- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(only available in OSS\)
 
 ## Report options
 
