@@ -439,6 +439,14 @@ subprojects { subproj ->
     java {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        compileJava {
+            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing"]
+        }
+        compileTestJava {
+            //rawtypes and unchecked are necessary for mockito
+            //deprecation and removal are removed from error since we should still test those constructs.
+            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing,-rawtypes,-unchecked,-deprecation,-removal"]
+        }
     }
 
     if (isConnectorProject(subproj)) {
