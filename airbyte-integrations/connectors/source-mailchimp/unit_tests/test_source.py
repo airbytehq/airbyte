@@ -5,7 +5,6 @@
 import logging
 
 import pytest
-import requests
 from source_mailchimp.source import MailChimpAuthenticator, SourceMailchimp
 
 logger = logging.getLogger("airbyte")
