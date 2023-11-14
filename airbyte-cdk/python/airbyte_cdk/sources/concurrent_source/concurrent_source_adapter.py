@@ -21,8 +21,6 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         The source's streams are still defined through the streams() method.
         Streams wrapped in a StreamFacade will be processed concurrently.
         Other streams will be processed sequentially as a later step.
-        :param concurrent_source:
-        :param kwargs:
         """
         self._concurrent_source = concurrent_source
         super().__init__(**kwargs)
@@ -46,10 +44,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
 
     def _select_abstract_streams(self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> List[AbstractStream]:
         """
-        Ensures the streams are StreamFacade and returns the underlying AbstractStream.
-        This is necessary because AbstractSource.streams() returns a List[Stream] and not a List[AbstractStream].
-        :param config:
-        :return:
+        Selects streams that can be processed concurrently and returns their abstract representations.
         """
         all_streams = self.streams(config)
         stream_name_to_instance: Mapping[str, Stream] = {s.name: s for s in all_streams}
