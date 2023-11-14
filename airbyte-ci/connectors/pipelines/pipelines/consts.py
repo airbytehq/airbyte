@@ -5,7 +5,6 @@
 import platform
 from enum import Enum
 
-import git
 from dagger import Platform
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
@@ -24,8 +23,8 @@ BUILD_PLATFORMS = [Platform("linux/amd64"), Platform("linux/arm64")]
 
 PLATFORM_MACHINE_TO_DAGGER_PLATFORM = {
     "x86_64": Platform("linux/amd64"),
-    "aarch64": Platform("linux/amd64"),
     "arm64": Platform("linux/arm64"),
+    "aarch64": Platform("linux/amd64"),
     "amd64": Platform("linux/amd64"),
 }
 LOCAL_BUILD_PLATFORM = PLATFORM_MACHINE_TO_DAGGER_PLATFORM[platform.machine()]
@@ -47,8 +46,6 @@ DOCKER_HOST_NAME = "global-docker-host"
 DOCKER_HOST_PORT = 2375
 DOCKER_TMP_VOLUME_NAME = "shared-tmp"
 DOCKER_VAR_LIB_VOLUME_NAME = "docker-cache"
-REPO = git.Repo(search_parent_directories=True)
-REPO_PATH = REPO.working_tree_dir
 STATIC_REPORT_PREFIX = "airbyte-ci"
 PIP_CACHE_VOLUME_NAME = "pip_cache"
 PIP_CACHE_PATH = "/root/.cache/pip"
@@ -82,3 +79,6 @@ class INTERNAL_TOOL_PATHS(str, Enum):
     CI_CREDENTIALS = "airbyte-ci/connectors/ci_credentials"
     CONNECTOR_OPS = "airbyte-ci/connectors/connector_ops"
     METADATA_SERVICE = "airbyte-ci/connectors/metadata_service/lib"
+
+
+DAGGER_WRAP_ENV_VAR_NAME = "_DAGGER_WRAP_APPLIED"

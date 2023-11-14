@@ -124,17 +124,17 @@ At this point you can run `airbyte-ci` commands.
 
 #### Options
 
-| Option                                  | Default value                   | Mapped environment variable   | Description                                                                                 |
-| --------------------------------------- | ------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
-| `--no-tui`                              |                                 |                               | Disables the Dagger terminal UI.                                                            |
-| `--is-local/--is-ci`                    | `--is-local`                    |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
-| `--git-branch`                          | The checked out git branch name | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
-| `--git-revision`                        | The current branch head         | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
-| `--diffed-branch`                       | `origin/master`                 |                               | Branch to which the git diff will happen to detect new or modified files.                   |
-| `--gha-workflow-run-id`                 |                                 |                               | GHA CI only - The run id of the GitHub action workflow                                      |
-| `--ci-context`                          | `manual`                        |                               | The current CI context: `manual` for manual run, `pull_request`, `nightly_builds`, `master` |
-| `--pipeline-start-timestamp`            | Current epoch time              | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.       |
-| `--show-dagger-logs/--hide-dagger-logs` | `--hide-dagger-logs`            |                               | Flag to show or hide the dagger logs.                                                       |
+| Option                                     | Default value                                                                                  | Mapped environment variable   | Description                                                                                 |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `--enable-dagger-run/--disable-dagger-run` | `--enable-dagger-run``      |                               | Disables the Dagger terminal UI. |                               |                                                                                             |
+| `--is-local/--is-ci`                       | `--is-local`                                                                                   |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
+| `--git-branch`                             | The checked out git branch name                                                                | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
+| `--git-revision`                           | The current branch head                                                                        | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
+| `--diffed-branch`                          | `origin/master`                                                                                |                               | Branch to which the git diff will happen to detect new or modified files.                   |
+| `--gha-workflow-run-id`                    |                                                                                                |                               | GHA CI only - The run id of the GitHub action workflow                                      |
+| `--ci-context`                             | `manual`                                                                                       |                               | The current CI context: `manual` for manual run, `pull_request`, `nightly_builds`, `master` |
+| `--pipeline-start-timestamp`               | Current epoch time                                                                             | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.       |
+| `--show-dagger-logs/--hide-dagger-logs`    | `--hide-dagger-logs`                                                                           |                               | Flag to show or hide the dagger logs.                                                       |
 
 ### <a id="connectors-command-subgroup"></a>`connectors` command subgroup
 
@@ -433,6 +433,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2.7.0   | [#31930](https://github.com/airbytehq/airbyte/pull/31930)  | Merge airbyte-ci-internal into airbyte-ci                                                                 |
 | 2.6.0   | [#31831](https://github.com/airbytehq/airbyte/pull/31831)  | Add `airbyte-ci format` commands, remove connector-specific formatting check                              |
 | 2.5.9   | [#32427](https://github.com/airbytehq/airbyte/pull/32427)  | Re-enable caching for source-postgres                                                                     |
 | 2.5.8   | [#32402](https://github.com/airbytehq/airbyte/pull/32402)  | Set Dagger Cloud token for airbyters only                                                                 |
