@@ -104,11 +104,11 @@ public class MongoUtilTest {
     final MongoCollection mongoCollection = mock(MongoCollection.class);
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
     final List<Map<String, Object>> schemaDiscoveryJsonResponses =
-        Jsons.deserialize(MoreResources.readResource("schema_discovery_response.json"), new TypeReference<>() {});
+        Jsons.deserialize(MoreResources.readResource("schema_discovery_response_schemaless.json"), new TypeReference<>() {});
     final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(Document::new).toList();
 
     when(cursor.hasNext()).thenReturn(true, true, false);
-    when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
+    when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0));
     when(aggregateIterable.cursor()).thenReturn(cursor);
     when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
     when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
