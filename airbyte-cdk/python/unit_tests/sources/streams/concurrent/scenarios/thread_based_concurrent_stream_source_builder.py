@@ -39,7 +39,7 @@ class LegacyStream(Stream):
 
 class ConcurrentCdkSource(ConcurrentSourceAdapter):
     def __init__(self, streams: List[DefaultStream], message_repository: Optional[MessageRepository], max_workers, timeout_in_seconds):
-        concurrent_source = ConcurrentSource.create(1, streams[0]._logger, NeverLogSliceLogger(), message_repository)
+        concurrent_source = ConcurrentSource.create(1, 1, streams[0]._logger, NeverLogSliceLogger(), message_repository)
         super().__init__(concurrent_source)
         self._streams = streams
 

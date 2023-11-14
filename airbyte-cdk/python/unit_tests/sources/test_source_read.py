@@ -86,7 +86,7 @@ class _MockConcurrentSource(ConcurrentSourceAdapter):
     message_repository = InMemoryMessageRepository()
 
     def __init__(self, logger):
-        concurrent_source = ConcurrentSource.create(1, logger, NeverLogSliceLogger(), self.message_repository)
+        concurrent_source = ConcurrentSource.create(1, 1, logger, NeverLogSliceLogger(), self.message_repository)
         super().__init__(concurrent_source)
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
