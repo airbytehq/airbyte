@@ -55,6 +55,9 @@ acceptance_tests:
           organisations:
             - name: "IMAGE_URL"
               bypass_reason: "image url is a dynamic s3 url with a changing expiration date in the query parameter"
+          users:
+            - name: "USER_CURRENCY"
+              bypass_reason: "this can change between sequential reads"
   incremental:
     tests:
       - config_path: "secrets/config.json"
