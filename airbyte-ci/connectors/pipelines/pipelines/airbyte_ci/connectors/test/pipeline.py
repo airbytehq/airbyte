@@ -21,12 +21,7 @@ LANGUAGE_MAPPING = {
         ConnectorLanguage.PYTHON: python_connectors.run_all_tests,
         ConnectorLanguage.LOW_CODE: python_connectors.run_all_tests,
         ConnectorLanguage.JAVA: java_connectors.run_all_tests,
-    },
-    "run_code_format_checks": {
-        ConnectorLanguage.PYTHON: python_connectors.run_code_format_checks,
-        ConnectorLanguage.LOW_CODE: python_connectors.run_code_format_checks,
-        # ConnectorLanguage.JAVA: java_connectors.run_code_format_checks
-    },
+    }
 }
 
 
@@ -65,22 +60,6 @@ async def run_qa_checks(context: ConnectorContext) -> List[StepResult]:
     return [await QaChecks(context).run()]
 
 
-async def run_code_format_checks(context: ConnectorContext) -> List[StepResult]:
-    """Run the code format checks according to the connector language.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-
-    Returns:
-        List[StepResult]: The results of the code format checks steps.
-    """
-    if _run_code_format_checks := LANGUAGE_MAPPING["run_code_format_checks"].get(context.connector.language):
-        return await _run_code_format_checks(context)
-    else:
-        context.logger.warning(f"No code format checks defined for connector language {context.connector.language}!")
-        return []
-
-
 async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     """Run all the tests steps according to the connector language.
 
@@ -111,10 +90,7 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
     async with semaphore:
         async with context:
             async with asyncer.create_task_group() as task_group:
-                tasks = [
-                    task_group.soonify(run_all_tests)(context),
-                    task_group.soonify(run_code_format_checks)(context),
-                ]
+                tasks = [task_group.soonify(run_all_tests)(context)]
                 if not context.code_tests_only:
                     tasks += [
                         task_group.soonify(run_metadata_validation)(context),
