@@ -53,12 +53,14 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
   }
 
   public static Optional<TableDefinition> findExistingTable(
-      final JdbcDatabase jdbcDatabase,
-      final String databaseName,
-      final String schemaName,
-      final String tableName) throws SQLException {
+                                                            final JdbcDatabase jdbcDatabase,
+                                                            final String databaseName,
+                                                            final String schemaName,
+                                                            final String tableName)
+      throws SQLException {
     final DatabaseMetaData metaData = jdbcDatabase.getMetaData();
-    // TODO: normalize namespace and finalName strings to quoted-lowercase (as needed. Snowflake requires uppercase)
+    // TODO: normalize namespace and finalName strings to quoted-lowercase (as needed. Snowflake
+    // requires uppercase)
     final LinkedHashMap<String, ColumnDefinition> columnDefinitions = new LinkedHashMap<>();
     try (final ResultSet columns = metaData.getColumns(databaseName, schemaName, tableName, null)) {
       while (columns.next()) {

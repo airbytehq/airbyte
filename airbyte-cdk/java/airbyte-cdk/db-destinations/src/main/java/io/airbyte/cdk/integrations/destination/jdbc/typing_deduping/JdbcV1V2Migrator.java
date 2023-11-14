@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.integrations.destination.jdbc.typing_deduping;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -11,7 +15,8 @@ import java.util.Optional;
 import lombok.SneakyThrows;
 
 /**
- * Largely based on {@link io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator}.
+ * Largely based on
+ * {@link io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator}.
  */
 public class JdbcV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefinition> {
 
@@ -54,7 +59,8 @@ public class JdbcV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefinitio
 
   @Override
   protected NamespacedTableName convertToV1RawName(final StreamConfig streamConfig) {
-    @SuppressWarnings("deprecation") final String tableName = this.namingConventionTransformer.getRawTableName(streamConfig.id().originalName());
+    @SuppressWarnings("deprecation")
+    final String tableName = this.namingConventionTransformer.getRawTableName(streamConfig.id().originalName());
     return new NamespacedTableName(
         this.namingConventionTransformer.getIdentifier(streamConfig.id().originalNamespace()),
         tableName);
