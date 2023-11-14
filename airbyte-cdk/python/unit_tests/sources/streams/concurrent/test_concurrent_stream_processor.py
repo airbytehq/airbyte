@@ -77,7 +77,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
         self._record.data = self._record_data
 
     def test_handle_partition_done_no_other_streams_to_generate_partitions_for(self):
-        stream_instances_to_read_from = []
+        stream_instances_to_read_from = [self._stream]
 
         handler = ConcurrentStreamProcessor(
             stream_instances_to_read_from,
@@ -88,10 +88,9 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             self._message_repository,
             self._partition_reader,
         )
-        handler._streams_currently_generating_partitions = {_STREAM_NAME}
-        handler._streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}}
+        handler.start_next_partition_generator()
+        handler.on_partition(self._an_open_partition)
 
-        handler._stream_name_to_instance[_STREAM_NAME] = self._stream
         sentinel = PartitionGenerationCompletedSentinel(self._stream)
         messages = list(handler.on_partition_generation_completed(sentinel))
 
@@ -100,7 +99,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_handle_last_stream_partition_done(self):
-        stream_instances_to_read_from = []
+        stream_instances_to_read_from = [self._another_stream]
 
         handler = ConcurrentStreamProcessor(
             stream_instances_to_read_from,
@@ -111,11 +110,8 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             self._message_repository,
             self._partition_reader,
         )
-        handler._streams_currently_generating_partitions.append(_ANOTHER_STREAM_NAME)
-        handler._stream_name_to_instance[_ANOTHER_STREAM_NAME] = self._another_stream
-
-        handler._streams_to_partitions = {_ANOTHER_STREAM_NAME: {self._a_closed_partition}}
-        handler._record_counter[_ANOTHER_STREAM_NAME] = 1
+        handler.start_next_partition_generator()
+        handler.on_partition(self._a_closed_partition)
 
         sentinel = PartitionGenerationCompletedSentinel(self._another_stream)
         messages = handler.on_partition_generation_completed(sentinel)
@@ -155,7 +151,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
 
     def test_handle_partition_emits_log_message_if_it_should_be_logged(self):
         stream_instances_to_read_from = [self._stream]
-        streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}}
         self._slice_logger = Mock(spec=SliceLogger)
         self._slice_logger.should_log_slice_message.return_value = True
         self._slice_logger.create_slice_log_message.return_value = self._log_message
@@ -169,7 +164,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             self._message_repository,
             self._partition_reader,
         )
-        handler._streams_to_partitions = streams_to_partitions
 
         handler.on_partition(self._an_open_partition)
 
@@ -194,8 +188,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             self._message_repository,
             self._partition_reader,
         )
-        handler.streams_to_partitions = {_STREAM_NAME: {partition}}
-        handler._streams_currently_generating_partitions = [_STREAM_NAME]
+        handler.start_next_partition_generator()
 
         sentinel = PartitionCompleteSentinel(partition)
 
@@ -214,7 +207,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_handle_on_partition_complete_sentinel_yields_status_message_if_the_stream_is_done(self):
-        self._streams_currently_generating_partitions = []
+        self._streams_currently_generating_partitions = [self._another_stream]
         stream_instances_to_read_from = [self._another_stream]
         log_message = Mock(spec=LogMessage)
         self._a_closed_partition.to_slice.return_value = log_message
@@ -229,12 +222,10 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             self._message_repository,
             self._partition_reader,
         )
-        handler._stream_name_to_instance[_ANOTHER_STREAM_NAME] = self._another_stream
+        handler.start_next_partition_generator()
+        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream))
 
         sentinel = PartitionCompleteSentinel(self._a_closed_partition)
-
-        # Remove the stream from the list of currently generating to mark it as done
-        handler._streams_currently_generating_partitions = []
 
         messages = list(handler.on_partition_complete_sentinel(sentinel))
 
@@ -274,9 +265,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             self._message_repository,
             self._partition_reader,
         )
-        handler._streams_currently_generating_partitions = [_STREAM_NAME]
-
-        handler._stream_name_to_instance[_STREAM_NAME] = self._stream
+        handler.start_next_partition_generator()
 
         sentinel = PartitionCompleteSentinel(partition)
 
@@ -306,10 +295,8 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             self._partition_reader,
         )
 
-        handler._stream_name_to_instance[_STREAM_NAME] = self._stream
-
         # Simulate a first record
-        handler._record_counter[_STREAM_NAME] = 1
+        list(handler.on_record(self._record))
 
         messages = list(handler.on_record(self._record))
 
@@ -357,10 +344,9 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             json_schema={},
             supported_sync_modes=[SyncMode.full_refresh],
         )
-        handler._stream_name_to_instance[_STREAM_NAME] = stream
 
         # Simulate a first record
-        handler._record_counter[_STREAM_NAME] = 1
+        list(handler.on_record(self._record))
 
         messages = list(handler.on_record(self._record))
 
@@ -396,8 +382,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             self._partition_reader,
         )
 
-        handler._stream_name_to_instance[_STREAM_NAME] = self._stream
-
         messages = list(handler.on_record(self._record))
 
         expected_messages = [
@@ -421,7 +405,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             ),
         ]
         assert expected_messages == messages
-        assert handler._record_counter[_STREAM_NAME] == 1
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_on_record_emits_status_message_on_first_record_with_repository_message(self):
@@ -452,7 +435,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             json_schema={},
             supported_sync_modes=[SyncMode.full_refresh],
         )
-        handler._stream_name_to_instance[_STREAM_NAME] = stream
 
         messages = list(handler.on_record(self._record))
 
@@ -478,7 +460,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository")),
         ]
         assert expected_messages == messages
-        assert handler._record_counter[_STREAM_NAME] == 1
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_on_exception_stops_streams_and_raises_an_exception(self):
@@ -502,8 +483,6 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             json_schema={},
             supported_sync_modes=[SyncMode.full_refresh],
         )
-        handler._stream_name_to_instance[_STREAM_NAME] = self._stream
-        handler._stream_name_to_instance[_ANOTHER_STREAM_NAME] = another_stream
 
         exception = RuntimeError("Something went wrong")
 
@@ -545,7 +524,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
         assert not handler.is_done()
 
     def test_is_done_is_false_if_there_are_streams_still_generating_partitions(self):
-        stream_instances_to_read_from = []
+        stream_instances_to_read_from = [self._stream]
 
         handler = ConcurrentStreamProcessor(
             stream_instances_to_read_from,
@@ -556,12 +535,13 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             self._message_repository,
             self._partition_reader,
         )
-        handler._streams_currently_generating_partitions = [_STREAM_NAME]
+
+        handler.start_next_partition_generator()
 
         assert not handler.is_done()
 
     def test_is_done_is_false_if_all_partitions_are_not_closed(self):
-        stream_instances_to_read_from = []
+        stream_instances_to_read_from = [self._stream]
 
         handler = ConcurrentStreamProcessor(
             stream_instances_to_read_from,
@@ -572,7 +552,10 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             self._message_repository,
             self._partition_reader,
         )
-        handler._streams_to_partitions = {_STREAM_NAME: {self._an_open_partition}, _ANOTHER_STREAM_NAME: {self._a_closed_partition}}
+
+        handler.start_next_partition_generator()
+        handler.on_partition(self._an_open_partition)
+        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream))
 
         assert not handler.is_done()
 
