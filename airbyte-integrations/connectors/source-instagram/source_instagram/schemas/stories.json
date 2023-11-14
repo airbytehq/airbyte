@@ -22,6 +22,9 @@
     "media_type": {
       "type": ["null", "string"]
     },
+    "media_product_type": {
+      "type": ["null", "string"]
+    },
     "media_url": {
       "type": ["null", "string"]
     },

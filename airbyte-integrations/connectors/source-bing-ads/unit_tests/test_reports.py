@@ -42,18 +42,27 @@ class TestPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStre
 
 
 def test_get_column_value():
+    config = {
+        "developer_token": "developer_token",
+        "client_id": "client_id",
+        "refresh_token": "refresh_token",
+        "reports_start_date": "2020-01-01T00:00:00Z",
+    }
+    test_report = GeographicPerformanceReportDaily(client=Mock(), config=config)
+
     row_values = _RowValues(
-        {"AccountId": 1, "AverageCpc": 3, "AdGroupId": 2, "AccountName": 5, "Spend": 4},
-        {3: "11.5", 1: "33", 2: "--", 5: "123456789", 4: "120.3%"},
+        {"AccountId": 1, "AverageCpc": 3, "AdGroupId": 2, "AccountName": 5, "Spend": 4, "AllRevenue": 6, "Assists": 7},
+        {3: "11.5", 1: "33", 2: "--", 5: "123456789", 4: "120.3%", 6: "123,456,789.23", 7: "123,456,789"},
     )
     record = _RowReportRecord(row_values)
 
-    test_report = TestReport()
     assert test_report.get_column_value(record, "AccountId") == "33"
     assert test_report.get_column_value(record, "AverageCpc") == "11.5"
     assert test_report.get_column_value(record, "AdGroupId") is None
     assert test_report.get_column_value(record, "AccountName") == "123456789"
     assert test_report.get_column_value(record, "Spend") == "120.3"
+    assert test_report.get_column_value(record, "AllRevenue") == "123456789.23"
+    assert test_report.get_column_value(record, "Assists") == "123456789"
 
 
 def test_get_updated_state_init_state():

@@ -190,8 +190,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
 
         yield from []
 
-    @staticmethod
-    def get_column_value(row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
+    def get_column_value(self, row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
         """
         Reads field value from row and transforms:
         1. empty values to logical None
@@ -202,7 +201,8 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
             return None
         if "%" in value:
             value = value.replace("%", "")
-
+        if value and set(self.get_json_schema()["properties"].get(column, {}).get("type")) & {"integer", "number"}:
+            value = value.replace(",", "")
         return value
 
 
