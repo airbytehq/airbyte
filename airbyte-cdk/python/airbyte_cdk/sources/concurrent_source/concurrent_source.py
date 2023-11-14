@@ -43,7 +43,7 @@ class ConcurrentSource:
         logger: logging.Logger,
         slice_logger: SliceLogger = DebugSliceLogger(),
         message_repository: MessageRepository = InMemoryMessageRepository(),
-        max_number_of_partition_generator_in_progress: int = 1,
+        initial_number_partitions_to_generate: int = 1,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
         raise_exception_on_missing_stream: bool = True,
         **kwargs: Any,
@@ -51,7 +51,7 @@ class ConcurrentSource:
         """
         :param threadpool: The threadpool to submit tasks to
         :param message_repository: The repository to emit messages to
-        :param max_number_of_partition_generator_in_progress: The maximum number of concurrent partition generation tasks. Limiting this number ensures the source starts reading records instead in a reasonable time instead of generating partitions for all streams first.
+        :param max_number_of_partition_generator_in_progress: The initial number of concurrent partition generation tasks. Limiting this number ensures will limit the latency of the first records emitted. While the latency is not critical, emitting the records early allows the platform and the destination to process them as early as possible.
         :param timeout_seconds: The maximum number of seconds to wait for a record to be read from the queue. If no record is read within this time, the source will stop reading and return.
         :param kwargs:
         """
@@ -60,7 +60,7 @@ class ConcurrentSource:
         self._logger = logger
         self._slice_logger = slice_logger
         self._message_repository = message_repository
-        self._max_number_of_partition_generator_in_progress = max_number_of_partition_generator_in_progress
+        self._initial_number_partitions_to_generate = initial_number_partitions_to_generate
         self._timeout_seconds = timeout_seconds
         self._raise_exception_on_missing_stream = raise_exception_on_missing_stream
 
@@ -103,7 +103,7 @@ class ConcurrentSource:
         self._logger.info("Finished syncing")
 
     def _submit_initial_partition_generators(self, concurrent_stream_processor: ConcurrentStreamProcessor) -> Iterable[AirbyteMessage]:
-        for _ in range(self._max_number_of_partition_generator_in_progress):
+        for _ in range(self._initial_number_partitions_to_generate):
             status_message = concurrent_stream_processor.start_next_partition_generator()
             if status_message:
                 yield status_message
