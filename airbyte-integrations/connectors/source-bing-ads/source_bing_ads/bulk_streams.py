@@ -68,7 +68,7 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
         min_available_date = pendulum.now().subtract(days=30).astimezone(tz=timezone.utc)
         start_date = self.client.reports_start_date
         if stream_state.get(account_id, {}).get(self.cursor_field):
-            start_date = pendulum.from_format(stream_state[account_id][self.cursor_field], "MM/DD/YYYY HH:mm:ss.SSS")
+            start_date = pendulum.parse(stream_state[account_id][self.cursor_field])
         return None if start_date < min_available_date else min_available_date
 
     def read_records(
