@@ -239,7 +239,8 @@ public class MongoUtil {
     if (isSchemaEnforced) {
       discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize));
     } else {
-      // In schemaless mode, we only sample one record as we're only interested in the _id field (which exists on every record).
+      // In schemaless mode, we only sample one record as we're only interested in the _id field (which
+      // exists on every record).
       discoveredFields = new HashSet<>(getFieldsForSchemaless(mongoCollection));
     }
     return Optional
@@ -301,8 +302,7 @@ public class MongoUtil {
         Aggregates.project(Projections.fields(
             Projections.excludeId(), // Excludes the _id field from the result
             Projections.computed("_idType", new Document("$type", "$_id")) // Gets the type of the _id field
-        ))
-    ));
+        ))));
 
     try (final MongoCursor<Document> cursor = output.allowDiskUse(true).cursor()) {
       while (cursor.hasNext()) {
