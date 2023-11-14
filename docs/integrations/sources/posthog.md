@@ -52,7 +52,7 @@ There are separate limits for different kinds of resources.
 
 - For all analytics endpoints (such as calculating insights, retrieving persons, or retrieving session recordings), the rate limits are `240/minute` and `1200/hour`.
 
-- The [HogQL query](/docs/hogql#api-access) endpoint (`/api/project/:id/query`) has a rate limit of `120/hour`.
+- The [HogQL query](https://posthog.com/docs/hogql#api-access) endpoint (`/api/project/:id/query`) has a rate limit of `120/hour`.
 
 - For the rest of the create, read, update, and delete endpoints, the rate limits are `480/minute` and `4800/hour`.
 
@@ -60,9 +60,9 @@ There are separate limits for different kinds of resources.
 
 These limits apply to **the entire team** (i.e. all users within your PostHog organization). For example, if a script requesting feature flag metadata hits the rate limit, and another user, using a different personal API key, makes a single request to the persons API, this gets rate limited as well.
 
-For large or regular exports of events, use [batch exports](/docs/cdp/batch-exports).
+For large or regular exports of events, use [batch exports](https://posthog.com/docs/cdp).
 
-> **Want to use the PostHog API beyond these limits?** Email us at [customers@posthog.com](to:customers@posthog.com).
+Want to use the PostHog API beyond these limits? Email Posthog at `customers@posthog.com`.
 
 ## Changelog
 
