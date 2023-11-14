@@ -1,7 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import logging
+import os
 from datetime import datetime, timedelta
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -23,7 +25,6 @@ from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
     CustomerBalanceTransactions,
     Events,
-    FilteringRecordExtractor,
     IncrementalStripeStream,
     Persons,
     SetupAttempts,
@@ -37,6 +38,8 @@ from source_stripe.streams import (
 logger = logging.getLogger("airbyte")
 
 _MAX_CONCURRENCY = 3
+_CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
+USE_CACHE = not _CACHE_DISABLED
 STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
@@ -103,6 +106,18 @@ class SourceStripe(AbstractSource):
         return True, None
 
     @staticmethod
+    def customers(**args):
+        # The Customers stream is instantiated in a dedicated method to allow parametrization and avoid duplicated code.
+        # It can be used with and without expanded items (as an independent stream or as a parent stream for other streams).
+        return IncrementalStripeStream(
+            name="customers",
+            path="customers",
+            use_cache=USE_CACHE,
+            event_types=["customer.created", "customer.updated", "customer.deleted"],
+            **args,
+        )
+
+    @staticmethod
     def is_test_account(config: Mapping[str, Any]) -> bool:
         """Check if configuration uses Stripe test account (https://stripe.com/docs/keys#obtain-api-keys)
 
@@ -167,7 +182,7 @@ class SourceStripe(AbstractSource):
         subscriptions = IncrementalStripeStream(
             name="subscriptions",
             path="subscriptions",
-            use_cache=True,
+            use_cache=USE_CACHE,
             extra_request_params={"status": "all"},
             event_types=[
                 "customer.subscription.created",
@@ -184,9 +199,9 @@ class SourceStripe(AbstractSource):
         subscription_items = StripeLazySubStream(
             name="subscription_items",
             path="subscription_items",
-            extra_request_params=lambda self, *args, stream_slice, **kwargs: {"subscription": stream_slice[self.parent_id]},
+            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice[self.parent_id]},
             parent=subscriptions,
-            use_cache=True,
+            use_cache=USE_CACHE,
             parent_id="subscription_id",
             sub_items_attr="items",
             **args,
@@ -194,28 +209,21 @@ class SourceStripe(AbstractSource):
         transfers = IncrementalStripeStream(
             name="transfers",
             path="transfers",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=["transfer.created", "transfer.reversed", "transfer.updated"],
             **args,
         )
         application_fees = IncrementalStripeStream(
             name="application_fees",
             path="application_fees",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=["application_fee.created", "application_fee.refunded"],
-            **args,
-        )
-        customers = IncrementalStripeStream(
-            name="customers",
-            path="customers",
-            use_cache=True,
-            event_types=["customer.created", "customer.updated", "customer.deleted"],
             **args,
         )
         invoices = IncrementalStripeStream(
             name="invoices",
             path="invoices",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=[
                 "invoice.created",
                 "invoice.finalization_failed",
@@ -242,7 +250,7 @@ class SourceStripe(AbstractSource):
                 event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
                 legacy_cursor_field=None,
                 extra_request_params={"object": "card"},
-                record_extractor=FilteringRecordExtractor("updated", None, "card"),
+                response_filter=lambda record: record["object"] == "card",
                 **args,
             ),
             UpdatedCursorIncrementalStripeStream(
@@ -251,12 +259,12 @@ class SourceStripe(AbstractSource):
                 event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
                 legacy_cursor_field=None,
                 extra_request_params={"object": "bank_account"},
-                record_extractor=FilteringRecordExtractor("updated", None, "bank_account"),
+                response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
             Persons(**args),
             SetupAttempts(**incremental_args),
-            StripeStream(name="accounts", path="accounts", use_cache=True, **args),
+            StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
             CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
@@ -264,7 +272,7 @@ class SourceStripe(AbstractSource):
             UpdatedCursorIncrementalStripeStream(
                 name="checkout_sessions",
                 path="checkout/sessions",
-                use_cache=True,
+                use_cache=USE_CACHE,
                 legacy_cursor_field="expires_at",
                 event_types=[
                     "checkout.session.async_payment_failed",
@@ -303,7 +311,7 @@ class SourceStripe(AbstractSource):
                 event_types=["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"],
                 **args,
             ),
-            customers,
+            self.customers(**args),
             IncrementalStripeStream(
                 name="cardholders",
                 path="issuing/cardholders",
@@ -391,7 +399,7 @@ class SourceStripe(AbstractSource):
             ),
             transfers,
             IncrementalStripeStream(
-                name="refunds", path="refunds", use_cache=True, event_types=["refund.created", "refund.updated"], **args
+                name="refunds", path="refunds", use_cache=USE_CACHE, event_types=["refund.created", "refund.updated"], **args
             ),
             IncrementalStripeStream(
                 name="payment_intents",
@@ -454,19 +462,18 @@ class SourceStripe(AbstractSource):
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="bank_accounts",
                 path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice[self.parent_id]}/sources",
-                parent=customers,
+                parent=self.customers(expand_items=["data.sources"], **args),
                 event_types=["customer.source.created", "customer.source.expiring", "customer.source.updated", "customer.source.deleted"],
                 legacy_cursor_field=None,
                 parent_id="customer_id",
                 sub_items_attr="sources",
-                response_filter={"attr": "object", "value": "bank_account"},
                 extra_request_params={"object": "bank_account"},
-                record_extractor=FilteringRecordExtractor("updated", None, "bank_account"),
+                response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
             StripeLazySubStream(
                 name="invoice_line_items",
-                path=lambda self, *args, stream_slice, **kwargs: f"invoices/{stream_slice[self.parent_id]}/lines",
+                path=lambda self, stream_slice, *args, **kwargs: f"invoices/{stream_slice[self.parent_id]}/lines",
                 parent=invoices,
                 parent_id="invoice_id",
                 sub_items_attr="lines",
