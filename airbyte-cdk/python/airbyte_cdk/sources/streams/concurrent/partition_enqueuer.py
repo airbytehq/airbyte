@@ -30,7 +30,6 @@ class PartitionEnqueuer:
 
         This method is meant to be called in a separate thread.
         :param partition_generator: The partition Generator
-        :param sync_mode: The sync mode used
         :return:
         """
         try:

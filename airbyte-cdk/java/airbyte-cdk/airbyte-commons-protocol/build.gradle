@@ -1,3 +1,9 @@
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-unchecked"
+    }
+}
+
 dependencies {
     annotationProcessor libs.bundles.micronaut.annotation.processor
     testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
