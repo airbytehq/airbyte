@@ -93,7 +93,7 @@ public class BufferManager {
   }
 
   private void printQueueInfo() {
-    final var queueInfo = new StringBuilder().append("[QUEUE INFO] ");
+    final var queueInfo = new StringBuilder().append("[ASYNC QUEUE INFO] ");
     final ArrayList<String> messages = new ArrayList<>();
 
     messages

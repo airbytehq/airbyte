@@ -135,7 +135,7 @@ public class FlushWorkers implements AutoCloseable {
   }
 
   private void printWorkerInfo() {
-    final var workerInfo = new StringBuilder().append("[WORKER INFO] ");
+    final var workerInfo = new StringBuilder().append("[ASYNC WORKER INFO] ");
 
     final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
 
