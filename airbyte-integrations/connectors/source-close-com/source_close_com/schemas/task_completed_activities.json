@@ -9,6 +9,21 @@
     "id": {
       "type": ["null", "string"]
     },
+    "activity_at": {
+      "type": ["null", "string"]
+    },
+    "task_assigned_to": {
+      "type": ["null", "string"]
+    },
+    "task_assigned_to_name": {
+      "type": ["null", "string"]
+    },
+    "user_name": {
+      "type": ["null", "string"]
+    },
+    "users": {
+      "type": ["null", "array"]
+    },
     "task_id": {
       "type": ["null", "string"]
     },

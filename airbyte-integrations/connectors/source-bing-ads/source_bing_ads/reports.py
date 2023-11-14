@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import source_bing_ads.source
@@ -14,7 +14,6 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from bingads.service_client import ServiceClient
 from bingads.v13.internal.reporting.row_report import _RowReport
-from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
 from bingads.v13.reporting import ReportingDownloadParameters
 from suds import sudsobject
 
@@ -149,6 +148,8 @@ class ReportsMixin(ABC):
     # timeout for reporting download operations in milliseconds
     timeout: int = 300000
     report_file_format: str = "Csv"
+    # used when reports start date is not provided
+    time_periods = ["LastYear", "ThisYear"]
 
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key: List[str] = ["TimePeriod", "Network", "DeviceType"]
@@ -206,16 +207,22 @@ class ReportsMixin(ABC):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, account_id: str = None, **kwargs: Mapping[str, Any]
     ) -> Mapping[str, Any]:
+        stream_slice = kwargs["stream_slice"]
         start_date = self.get_start_date(stream_state, account_id)
 
         reporting_service = self.client.get_service("ReportingService")
         request_time_zone = reporting_service.factory.create("ReportTimeZone")
 
         report_time = reporting_service.factory.create("ReportTime")
-        report_time.CustomDateRangeStart = self.get_request_date(reporting_service, start_date)
-        report_time.CustomDateRangeEnd = self.get_request_date(reporting_service, datetime.utcnow())
-        report_time.PredefinedTime = None
         report_time.ReportTimeZone = request_time_zone.GreenwichMeanTimeDublinEdinburghLisbonLondon
+        if start_date:
+            report_time.CustomDateRangeStart = self.get_request_date(reporting_service, start_date)
+            report_time.CustomDateRangeEnd = self.get_request_date(reporting_service, datetime.utcnow())
+            report_time.PredefinedTime = None
+        else:
+            report_time.CustomDateRangeStart = None
+            report_time.CustomDateRangeEnd = None
+            report_time.PredefinedTime = stream_slice["time_period"]
 
         report_request = self.get_report_request(account_id, False, False, False, self.report_file_format, False, report_time)
 
@@ -292,28 +299,6 @@ class ReportsMixin(ABC):
         report_request.Columns = columns
         return report_request
 
-    def parse_response(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Iterable[Mapping]:
-        if response is not None:
-            for row in response.report_records:
-                yield {column: self.get_column_value(row, column) for column in self.report_columns}
-
-        yield from []
-
-    @staticmethod
-    def get_column_value(row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
-        """
-        Reads field value from row and transforms:
-        1. empty values to logical None
-        2. Percent values to numeric string e.g. "12.25%" -> "12.25"
-        """
-        value = row.value(column)
-        if not value or value == "--":
-            return None
-        if "%" in value:
-            value = value.replace("%", "")
-
-        return value
-
     def get_report_record_timestamp(self, datestring: str) -> int:
         """
         Parse report date field based on aggregation type
@@ -333,7 +318,8 @@ class ReportsMixin(ABC):
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for account in source_bing_ads.source.Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+            for period in self.time_periods:
+                yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
 
         yield from []
 
@@ -342,7 +328,7 @@ class PerformanceReportsMixin(ReportsMixin):
     def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
         start_date = super().get_start_date(stream_state, account_id)
 
-        if self.config.get("lookback_window"):
+        if self.config.get("lookback_window") and start_date:
             # Datetime subtract won't work with days = 0
             # it'll output an AirbyteError
             return start_date.subtract(days=self.config["lookback_window"])

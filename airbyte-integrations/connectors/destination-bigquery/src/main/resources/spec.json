@@ -50,6 +50,9 @@
           "europe-west7",
           "europe-west8",
           "europe-west9",
+          "europe-west12",
+          "me-central1",
+          "me-central2",
           "me-west1",
           "northamerica-northeast1",
           "northamerica-northeast2",
@@ -61,6 +64,7 @@
           "us-east3",
           "us-east4",
           "us-east5",
+          "us-south1",
           "us-west1",
           "us-west2",
           "us-west3",
@@ -162,16 +166,6 @@
                   "Keep all tmp files in GCS"
                 ],
                 "order": 4
-              },
-              "file_buffer_count": {
-                "title": "File Buffer Count",
-                "type": "integer",
-                "minimum": 10,
-                "maximum": 50,
-                "default": 10,
-                "description": "Number of file buffers allocated for writing data. Increasing this number is beneficial for connections using Change Data Capture (CDC) and up to the number of streams within a connection. Increasing the number of file buffers past the maximum number of streams has deteriorating effects",
-                "examples": ["10"],
-                "order": 5
               }
             }
           },
