@@ -103,7 +103,7 @@ class SourcePinterest(AbstractSource):
             return True, None
         except requests.exceptions.HTTPError as e:
             if "401 Client Error: Unauthorized for url" in str(e):
-                return False, "Try to re-authenticate because current refresh token is not valid"
+                return False, f"Try to re-authenticate because current refresh token is not valid. {e}"
             else:
                 return False, e
         except requests.exceptions.RequestException as e:
