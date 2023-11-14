@@ -6,11 +6,10 @@ import logging
 from contextlib import nullcontext as does_not_raise
 from unittest.mock import patch
 
-import freezegun
 import pytest
 import source_stripe
 import stripe
-from airbyte_cdk.sources.streams.call_rate import CachedLimiterSession, LimiterSession
+from airbyte_cdk.sources.streams.call_rate import CachedLimiterSession, LimiterSession, Rate
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.utils import AirbyteTracedException
 from source_stripe import SourceStripe
@@ -73,30 +72,19 @@ def test_given_stripe_error_when_check_connection_then_connection_not_available(
         ({"account_id": 1, "client_secret": "sk_test_some_secret", "call_rate_limit": 30}, 25),
     ),
 )
-@freezegun.freeze_time("2021-01-01")
 def test_call_budget_creation(mocker, input_config, default_call_limit):
     """Test that call_budget was created with specific config i.e., that first policy has specific matchers."""
 
-    fixed_window_mock = mocker.patch("source_stripe.source.FixedWindowCallRatePolicy")
+    policy_mock = mocker.patch("source_stripe.source.MovingWindowCallRatePolicy")
     matcher_mock = mocker.patch("source_stripe.source.HttpRequestMatcher")
     source = SourceStripe()
 
     source.get_api_call_budget(input_config)
 
-    fixed_window_mock.assert_has_calls(
+    policy_mock.assert_has_calls(
         calls=[
-            mocker.call(
-                matchers=[mocker.ANY, mocker.ANY],
-                call_limit=20,
-                next_reset_ts=datetime.datetime.now(),
-                period=datetime.timedelta(seconds=1),
-            ),
-            mocker.call(
-                matchers=[],
-                call_limit=default_call_limit,
-                next_reset_ts=datetime.datetime.now(),
-                period=datetime.timedelta(seconds=1),
-            ),
+            mocker.call(matchers=[mocker.ANY, mocker.ANY], rates=[Rate(limit=20, interval=datetime.timedelta(seconds=1))]),
+            mocker.call(matchers=[], rates=[Rate(limit=default_call_limit, interval=datetime.timedelta(seconds=1))]),
         ],
     )
 
