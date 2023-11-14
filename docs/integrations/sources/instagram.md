@@ -1,6 +1,10 @@
 # Instagram
 
+<HideInUI>
+
 This page contains the setup guide and reference information for the Instagram source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -41,6 +45,8 @@ This page contains the setup guide and reference information for the Instagram s
 7. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 8. Click **Set up source**.
 <!-- /env:oss -->
+
+<HideInUI>
 
 ## Supported sync modes
 
@@ -109,3 +115,5 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 | 0.1.8   | 2021-08-11 | [5354](https://github.com/airbytehq/airbyte/pull/5354)  | Added check for empty state and fixed tests                                                                               |
 | 0.1.7   | 2021-07-19 | [4805](https://github.com/airbytehq/airbyte/pull/4805)  | Add support for previous `STATE` format                                                                                   |
 | 0.1.6   | 2021-07-07 | [4210](https://github.com/airbytehq/airbyte/pull/4210)  | Refactor connector to use CDK: - improve error handling - fix sync fail with HTTP status 400 - integrate SAT              |
+
+</HideInUI>
