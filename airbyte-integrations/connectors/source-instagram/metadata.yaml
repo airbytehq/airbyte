@@ -19,6 +19,15 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - media
+      - media_insights
+      - stories
+      - user_insights
+      - story_insights
+      - users
+      - user_lifetime_insights
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   tags:
     - language:python
