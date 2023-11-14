@@ -67,29 +67,27 @@ const Services: React.FC = ({ children }) => (
 
 const App: React.FC = () => {
   return (
-    <React.StrictMode>
-      <StyleProvider>
-        <StoreProvider>
-          <ServicesProvider>
-            <Suspense fallback={<LoadingPage />}>
-              <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
-                <Router>
-                  <AuthContextProvider>
-                    <I18nProvider>
-                      <Services>
-                        <GoogleOAuthProvider clientId="797465575128-he9j9jrtastc66su472tnv3uvbtkllid.apps.googleusercontent.com">
-                          <Routing />
-                        </GoogleOAuthProvider>
-                      </Services>
-                    </I18nProvider>
-                  </AuthContextProvider>
-                </Router>
-              </ConfigServiceProvider>
-            </Suspense>
-          </ServicesProvider>
-        </StoreProvider>
-      </StyleProvider>
-    </React.StrictMode>
+    <StyleProvider>
+      <StoreProvider>
+        <ServicesProvider>
+          <Suspense fallback={<LoadingPage />}>
+            <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
+              <Router>
+                <AuthContextProvider>
+                  <I18nProvider>
+                    <Services>
+                      <GoogleOAuthProvider clientId="797465575128-he9j9jrtastc66su472tnv3uvbtkllid.apps.googleusercontent.com">
+                        <Routing />
+                      </GoogleOAuthProvider>
+                    </Services>
+                  </I18nProvider>
+                </AuthContextProvider>
+              </Router>
+            </ConfigServiceProvider>
+          </Suspense>
+        </ServicesProvider>
+      </StoreProvider>
+    </StyleProvider>
   );
 };
 

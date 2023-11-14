@@ -20,7 +20,11 @@ interface Iprops {
 const HeaderSection: React.FC<Iprops> = ({ data, destinationDefinition, onSelect, activeItem }) => {
   return (
     <>
-      <DefinitioDetails name={destinationDefinition.name} icon={destinationDefinition.icon} type="destination" />
+      <DefinitioDetails
+        name={destinationDefinition.name}
+        icon={`https://airbyte-icons.s3.amazonaws.com/${destinationDefinition.icon}`}
+        type="destination"
+      />
       <TabContainer>
         <TabMenu data={data} onSelect={onSelect} activeItem={activeItem} size="16" lastOne />
       </TabContainer>

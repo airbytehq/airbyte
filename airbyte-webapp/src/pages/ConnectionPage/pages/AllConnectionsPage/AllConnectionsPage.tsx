@@ -89,7 +89,7 @@ const AllConnectionsPage: React.FC = () => {
   const [filters, setFilters] = useState<FilterConnectionRequestBody>(initialFiltersState);
 
   const { connections, total, pageSize } = useFilteredConnectionList(filters);
-  console.log(connections, "connections");
+
   const onSelectFilter = useCallback(
     (
       filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId" | "pageSize",

@@ -139,8 +139,33 @@ export const SyncMode = {
   incremental: "incremental",
 } as const;
 
+export interface WebBackendConnectionFilterParam {
+  status?: WebBackendConnectionFilterParamItem[];
+  sources?: WebBackendConnectionFilterParamItem[];
+  destinations?: WebBackendConnectionFilterParamItem[];
+}
+
 export interface SourcePageReadList {
   sources: SourceRead[];
+  total?: number;
+  pageSize?: number;
+  pageCurrent?: number;
+}
+
+export interface WebBackendConnectionPageRead {
+  connectionId: ConnectionId;
+  name: string;
+  entityName: string;
+  connectorName: string;
+  isSyncing: boolean;
+  status: ConnectionStatus;
+  /** epoch time of the latest sync job. null if no sync job has taken place. */
+  latestSyncJobCreatedAt?: number;
+  latestSyncJobStatus?: JobStatus;
+}
+
+export interface WebBackendConnectionsPageReadList {
+  connections: WebBackendConnectionPageRead[];
   total?: number;
   pageSize?: number;
   pageCurrent?: number;
@@ -188,12 +213,6 @@ export interface WebBackendConnectionReadList {
 export interface WebBackendConnectionFilterParamItem {
   key?: string;
   value?: string;
-}
-
-export interface WebBackendConnectionFilterParam {
-  status?: WebBackendConnectionFilterParamItem[];
-  sources?: WebBackendConnectionFilterParamItem[];
-  destinations?: WebBackendConnectionFilterParamItem[];
 }
 
 export type SetInstancewideDestinationOauthParamsRequestBodyParams = { [key: string]: any };
@@ -246,44 +265,6 @@ export interface CompleteSourceOauthRequest {
 
 export interface OAuthConsentRead {
   consentUrl: string;
-}
-
-export type AdvancedAuthAuthFlowType = (typeof AdvancedAuthAuthFlowType)[keyof typeof AdvancedAuthAuthFlowType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const AdvancedAuthAuthFlowType = {
-  oauth20: "oauth2.0",
-  oauth10: "oauth1.0",
-} as const;
-
-export interface AdvancedAuth {
-  authFlowType?: AdvancedAuthAuthFlowType;
-  /** Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable. */
-  predicateKey?: string[];
-  /** Value of the predicate_key fields for the advanced auth to be applicable. */
-  predicateValue?: string;
-  oauthConfigSpecification?: OAuthConfigSpecification;
-}
-
-/**
- * The values required to configure OAuth flows. The schema for this must match the `OAuthConfigSpecification.oauthUserInputFromConnectorConfigSpecification` schema.
- */
-export type OAuthConfiguration = unknown;
-
-export interface DestinationOauthConsentRequest {
-  destinationDefinitionId: DestinationDefinitionId;
-  workspaceId: WorkspaceId;
-  /** The url to redirect to after getting the user consent */
-  redirectUrl: string;
-  oAuthInputConfiguration?: OAuthConfiguration;
-}
-
-export interface SourceOauthConsentRequest {
-  sourceDefinitionId: SourceDefinitionId;
-  workspaceId: WorkspaceId;
-  /** The url to redirect to after getting the user consent */
-  redirectUrl: string;
-  oAuthInputConfiguration?: OAuthConfiguration;
 }
 
 export interface OAuthConfigSpecification {
@@ -363,6 +344,44 @@ Examples:
         }
       } */
   completeOAuthServerOutputSpecification?: OAuthConfiguration;
+}
+
+export type AdvancedAuthAuthFlowType = (typeof AdvancedAuthAuthFlowType)[keyof typeof AdvancedAuthAuthFlowType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AdvancedAuthAuthFlowType = {
+  oauth20: "oauth2.0",
+  oauth10: "oauth1.0",
+} as const;
+
+export interface AdvancedAuth {
+  authFlowType?: AdvancedAuthAuthFlowType;
+  /** Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable. */
+  predicateKey?: string[];
+  /** Value of the predicate_key fields for the advanced auth to be applicable. */
+  predicateValue?: string;
+  oauthConfigSpecification?: OAuthConfigSpecification;
+}
+
+/**
+ * The values required to configure OAuth flows. The schema for this must match the `OAuthConfigSpecification.oauthUserInputFromConnectorConfigSpecification` schema.
+ */
+export type OAuthConfiguration = unknown;
+
+export interface DestinationOauthConsentRequest {
+  destinationDefinitionId: DestinationDefinitionId;
+  workspaceId: WorkspaceId;
+  /** The url to redirect to after getting the user consent */
+  redirectUrl: string;
+  oAuthInputConfiguration?: OAuthConfiguration;
+}
+
+export interface SourceOauthConsentRequest {
+  sourceDefinitionId: SourceDefinitionId;
+  workspaceId: WorkspaceId;
+  /** The url to redirect to after getting the user consent */
+  redirectUrl: string;
+  oAuthInputConfiguration?: OAuthConfiguration;
 }
 
 export type OAuthInputConfiguration = OAuthConfiguration;
@@ -695,11 +714,6 @@ export const JobStatus = {
   cancelled: "cancelled",
 } as const;
 
-export interface JobWithAttemptsRead {
-  job?: JobRead;
-  attempts?: AttemptRead[];
-}
-
 export interface StreamDescriptor {
   name: string;
   namespace?: string;
@@ -761,6 +775,11 @@ export interface JobRead {
   updatedAt: number;
   status: JobStatus;
   resetConfig?: ResetConfig;
+}
+
+export interface JobWithAttemptsRead {
+  job?: JobRead;
+  attempts?: AttemptRead[];
 }
 
 export interface JobIdRequestBody {
@@ -902,6 +921,10 @@ export interface OperatorConfiguration {
   dbt?: OperatorDbt;
 }
 
+export interface OperationReadList {
+  operations: OperationRead[];
+}
+
 export interface OperationCreate {
   workspaceId: WorkspaceId;
   name: string;
@@ -915,10 +938,6 @@ export interface OperationRead {
   operationId: OperationId;
   name: string;
   operatorConfiguration: OperatorConfiguration;
-}
-
-export interface OperationReadList {
-  operations: OperationRead[];
 }
 
 export interface WebBackendOperationCreateOrUpdate {
@@ -955,14 +974,6 @@ export type ConnectionScheduleDataCron = {
   cronTimeZone: string;
 };
 
-/**
- * schedule for when the the connection should run, per the schedule type
- */
-export interface ConnectionScheduleData {
-  basicSchedule?: ConnectionScheduleDataBasicSchedule;
-  cron?: ConnectionScheduleDataCron;
-}
-
 export type ConnectionScheduleDataBasicScheduleTimeUnit =
   (typeof ConnectionScheduleDataBasicScheduleTimeUnit)[keyof typeof ConnectionScheduleDataBasicScheduleTimeUnit];
 
@@ -979,6 +990,14 @@ export type ConnectionScheduleDataBasicSchedule = {
   timeUnit: ConnectionScheduleDataBasicScheduleTimeUnit;
   units: number;
 };
+
+/**
+ * schedule for when the the connection should run, per the schedule type
+ */
+export interface ConnectionScheduleData {
+  basicSchedule?: ConnectionScheduleDataBasicSchedule;
+  cron?: ConnectionScheduleDataCron;
+}
 
 /**
  * determine how the schedule data should be interpreted
@@ -1033,6 +1052,46 @@ export interface ConnectionDisplayFlag {
 
 export interface ConnectionReadList {
   connections: ConnectionRead[];
+}
+
+export interface ConnectionUpdate {
+  connectionId: ConnectionId;
+  namespaceDefinition?: NamespaceDefinitionType;
+  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
+  namespaceFormat?: string;
+  /** Name that will be set to this connection */
+  name?: string;
+  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
+  prefix?: string;
+  operationIds?: OperationId[];
+  syncCatalog: AirbyteCatalog;
+  schedule?: ConnectionSchedule;
+  scheduleType?: ConnectionScheduleType;
+  scheduleData?: ConnectionScheduleData;
+  status: ConnectionStatus;
+  resourceRequirements?: ResourceRequirements;
+  sourceCatalogId?: string;
+}
+
+export interface WebBackendConnectionCreate {
+  /** Optional name of the connection */
+  name?: string;
+  namespaceDefinition?: NamespaceDefinitionType;
+  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
+  namespaceFormat?: string;
+  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
+  prefix?: string;
+  sourceId: SourceId;
+  destinationId: DestinationId;
+  operationIds?: OperationId[];
+  syncCatalog?: AirbyteCatalog;
+  schedule?: ConnectionSchedule;
+  scheduleType?: ConnectionScheduleType;
+  scheduleData?: ConnectionScheduleData;
+  status: ConnectionStatus;
+  resourceRequirements?: ResourceRequirements;
+  operations?: OperationCreate[];
+  sourceCatalogId?: string;
 }
 
 export interface ConnectionCreate {
@@ -1138,25 +1197,6 @@ export interface WebBackendConnectionUpdate {
   sourceCatalogId?: string;
 }
 
-export interface ConnectionUpdate {
-  connectionId: ConnectionId;
-  namespaceDefinition?: NamespaceDefinitionType;
-  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
-  namespaceFormat?: string;
-  /** Name that will be set to this connection */
-  name?: string;
-  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
-  prefix?: string;
-  operationIds?: OperationId[];
-  syncCatalog: AirbyteCatalog;
-  schedule?: ConnectionSchedule;
-  scheduleType?: ConnectionScheduleType;
-  scheduleData?: ConnectionScheduleData;
-  status: ConnectionStatus;
-  resourceRequirements?: ResourceRequirements;
-  sourceCatalogId?: string;
-}
-
 export interface ConnectionStateCreateOrUpdate {
   connectionId: ConnectionId;
   connectionState: ConnectionState;
@@ -1181,6 +1221,29 @@ export const ReleaseStage = {
   custom: "custom",
 } as const;
 
+/**
+ * The values required to configure the destination. The schema for this must match the schema return by destination_definition_specifications/get for the destinationDefinition.
+ */
+export type DestinationConfiguration = unknown;
+
+export interface DestinationSearch {
+  destinationDefinitionId?: DestinationDefinitionId;
+  destinationId?: DestinationId;
+  workspaceId?: WorkspaceId;
+  connectionConfiguration?: DestinationConfiguration;
+  name?: string;
+  destinationName?: string;
+}
+
+export interface DestinationRead {
+  destinationDefinitionId: DestinationDefinitionId;
+  destinationId: DestinationId;
+  workspaceId: WorkspaceId;
+  connectionConfiguration: DestinationConfiguration;
+  name: string;
+  destinationName: string;
+}
+
 export interface DestinationPageReadList {
   destinations: DestinationRead[];
   total?: number;
@@ -1198,20 +1261,6 @@ export interface DestinationReadWithConnectionPage {
   total?: number;
   pageSize?: number;
   pageCurrent?: number;
-}
-
-/**
- * The values required to configure the destination. The schema for this must match the schema return by destination_definition_specifications/get for the destinationDefinition.
- */
-export type DestinationConfiguration = unknown;
-
-export interface DestinationSearch {
-  destinationDefinitionId?: DestinationDefinitionId;
-  destinationId?: DestinationId;
-  workspaceId?: WorkspaceId;
-  connectionConfiguration?: DestinationConfiguration;
-  name?: string;
-  destinationName?: string;
 }
 
 export interface DestinationCloneConfiguration {
@@ -1238,36 +1287,6 @@ export interface DestinationCoreConfig {
 }
 
 export type DestinationId = string;
-
-export interface WebBackendConnectionCreate {
-  /** Optional name of the connection */
-  name?: string;
-  namespaceDefinition?: NamespaceDefinitionType;
-  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
-  namespaceFormat?: string;
-  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
-  prefix?: string;
-  sourceId: SourceId;
-  destinationId: DestinationId;
-  operationIds?: OperationId[];
-  syncCatalog?: AirbyteCatalog;
-  schedule?: ConnectionSchedule;
-  scheduleType?: ConnectionScheduleType;
-  scheduleData?: ConnectionScheduleData;
-  status: ConnectionStatus;
-  resourceRequirements?: ResourceRequirements;
-  operations?: OperationCreate[];
-  sourceCatalogId?: string;
-}
-
-export interface DestinationRead {
-  destinationDefinitionId: DestinationDefinitionId;
-  destinationId: DestinationId;
-  workspaceId: WorkspaceId;
-  connectionConfiguration: DestinationConfiguration;
-  name: string;
-  destinationName: string;
-}
 
 /**
  * The values required to configure the destination. The schema for this should have an id of the existing destination along with the configuration you want to change in case.
@@ -1304,6 +1323,10 @@ export interface DestinationDefinitionSpecificationRead {
   supportsNormalization?: boolean;
 }
 
+export interface PrivateDestinationDefinitionReadList {
+  destinationDefinitions: PrivateDestinationDefinitionRead[];
+}
+
 export interface DestinationDefinitionIdWithWorkspaceId {
   destinationDefinitionId: DestinationDefinitionId;
   workspaceId: WorkspaceId;
@@ -1337,10 +1360,6 @@ export interface DestinationDefinitionRead {
 export interface PrivateDestinationDefinitionRead {
   destinationDefinition: DestinationDefinitionRead;
   granted: boolean;
-}
-
-export interface PrivateDestinationDefinitionReadList {
-  destinationDefinitions: PrivateDestinationDefinitionRead[];
 }
 
 export interface DestinationDefinitionReadList {
@@ -3291,7 +3310,7 @@ export const webBackendPageConnectionsForWorkspace = (
   workspaceIdPageRequestBody: WorkspaceIdPageRequestBody,
   options?: SecondParameter<typeof apiOverride>
 ) => {
-  return apiOverride<WebBackendConnectionPageReadList>(
+  return apiOverride<WebBackendConnectionsPageReadList>(
     {
       url: `/v1/web_backend/connections/page`,
       method: "post",

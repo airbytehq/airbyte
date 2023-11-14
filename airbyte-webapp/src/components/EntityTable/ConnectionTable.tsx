@@ -9,6 +9,7 @@ import { DisabledIcon } from "components/icons/DisabledIcon";
 import { FailedIcon } from "components/icons/FailedIcon";
 import { GreenIcon } from "components/icons/GreenIcon";
 import { GreenLoaderIcon } from "components/icons/GreenLoaderIcon";
+import { NotStartedIcon } from "components/icons/NotStartedIcon";
 import { WaitingIcon } from "components/icons/WaitingIcon";
 import { LabeledSwitch } from "components/LabeledSwitch";
 import Table from "components/Table";
@@ -145,7 +146,15 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
                     </IconButton>
                   </Tooltip>
                 </Box>
-              ) : null;
+              ) : (
+                <Box pl={3}>
+                  <Tooltip title={<FormattedMessage id="sync.notstarted" />} placement="top">
+                    <IconButton>
+                      <NotStartedIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              );
             },
           },
       {
