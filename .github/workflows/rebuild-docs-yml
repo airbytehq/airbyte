@@ -1,0 +1,12 @@
+name: Rebuild Docs
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Deploy Hook
+        run: curl -X POST ${{ secrets.VERCEL_DOCS_DEPLOY_HOOK_URL }}
