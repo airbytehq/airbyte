@@ -1,0 +1,62 @@
+package io.airbyte.cdk.integrations.destination.jdbc.typing_deduping;
+
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
+import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV1V2Migrator;
+import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils;
+import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import java.util.Collection;
+import java.util.Optional;
+import lombok.SneakyThrows;
+
+public class JdbcV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefinition> {
+
+  private final NamingConventionTransformer namingConventionTransformer;
+  private final JdbcDatabase database;
+  private final String databaseName;
+
+  public JdbcV1V2Migrator(NamingConventionTransformer namingConventionTransformer, JdbcDatabase database, String databaseName) {
+    this.namingConventionTransformer = namingConventionTransformer;
+    this.database = database;
+    this.databaseName = databaseName;
+  }
+
+  @SneakyThrows
+  @Override
+  protected boolean doesAirbyteInternalNamespaceExist(final StreamConfig streamConfig) throws Exception {
+    return !database
+        .queryJsons(
+            """
+            SELECT SCHEMA_NAME
+            FROM information_schema.schemata
+            WHERE schema_name = ?
+            AND catalog_name = ?;
+            """,
+            streamConfig.id().rawNamespace(),
+            databaseName)
+        .isEmpty();
+  }
+
+  @Override
+  protected boolean schemaMatchesExpectation(final TableDefinition existingTable, final Collection<String> columns) {
+    return CollectionUtils.containsAllIgnoreCase(existingTable.columns().keySet(), columns);
+  }
+
+  @SneakyThrows
+  @Override
+  protected Optional<TableDefinition> getTableIfExists(final String namespace, final String tableName) throws Exception {
+    return JdbcDestinationHandler.findExistingTable(database, databaseName, namespace, tableName);
+  }
+
+  @Override
+  protected NamespacedTableName convertToV1RawName(final StreamConfig streamConfig) {
+    // The implicit upper-casing happens for this in the SqlGenerator
+    @SuppressWarnings("deprecation") final String tableName = this.namingConventionTransformer.getRawTableName(streamConfig.id().originalName());
+    return new NamespacedTableName(
+        this.namingConventionTransformer.getIdentifier(streamConfig.id().originalNamespace()),
+        tableName);
+  }
+
+}
