@@ -69,15 +69,14 @@ class SourceMailchimp(AbstractSource):
         try:
             authenticator = MailChimpAuthenticator().get_auth(config)
             response = requests.get(
-                f"https://{authenticator.data_center}.api.mailchimp.com/3.0/ping", 
-                headers=authenticator.get_auth_header()
+                f"https://{authenticator.data_center}.api.mailchimp.com/3.0/ping", headers=authenticator.get_auth_header()
             )
 
             # A successful response will return a simple JSON object with a single key: health_status.
             # Otherwise, errors are returned as a JSON object with keys:
             # {type, title, status, detail, instance}
 
-            if not response.json().get('health_status'):
+            if not response.json().get("health_status"):
                 error_title = response.json().get("title", "Unknown Error")
                 error_details = response.json().get("details", "An unknown error occurred. Please verify your credentials and try again.")
                 return False, f"Encountered an error while connecting to Mailchimp. Type: {error_title}. Details: {error_details}"
