@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
+from abc import ABC
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
@@ -11,8 +12,17 @@ from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStrea
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 
 
-class ConcurrentSourceAdapter(AbstractSource):
+class ConcurrentSourceAdapter(AbstractSource, ABC):
     def __init__(self, concurrent_source: ConcurrentSource, **kwargs):
+        """
+        ConcurrentSourceAdapter is a Source that wraps a concurrent source and exposes it as a regular source.
+
+        The source's streams are still defined through the streams() method.
+        Streams wrapped in a StreamFacade will be processed concurrently.
+        Other streams will be processed sequentially as a later step.
+        :param concurrent_source:
+        :param kwargs:
+        """
         self._concurrent_source = concurrent_source
         super().__init__(**kwargs)
 

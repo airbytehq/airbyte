@@ -6,11 +6,10 @@ import logging
 from typing import Any, Callable, Dict, Iterable, Mapping, Optional, Tuple
 from unittest.mock import Mock
 
-from airbyte_cdk.models import ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability, StreamAvailable, StreamUnavailable
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -104,11 +103,3 @@ def test_concurrent_source_reading_from_no_streams():
     messages = []
     for m in source.read([stream]):
         messages.append(m)
-
-
-def _configured_stream(stream: Stream, sync_mode: SyncMode):
-    return ConfiguredAirbyteStream(
-        stream=stream.as_airbyte_stream(),
-        sync_mode=sync_mode,
-        destination_sync_mode=DestinationSyncMode.overwrite,
-    )
