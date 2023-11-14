@@ -13,27 +13,13 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     ProcessingConfigModel,
     SeparatorSplitterConfigModel,
 )
-from airbyte_cdk.destinations.vector_db_based.document_processor import (
-    DocumentProcessor,
-)
-from airbyte_cdk.models import (
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-)
-from airbyte_cdk.models.airbyte_protocol import (
-    AirbyteRecordMessage,
-    DestinationSyncMode,
-    SyncMode,
-)
+from airbyte_cdk.destinations.vector_db_based.document_processor import DocumentProcessor
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
+from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, DestinationSyncMode, SyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
-def initialize_processor(
-    config=ProcessingConfigModel(
-        chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None
-    )
-):
+def initialize_processor(config=ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None)):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -137,9 +123,7 @@ def test_process_single_chunk_limited_metadata():
 
 
 def test_process_single_chunk_without_namespace():
-    config = ProcessingConfigModel(
-        chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None
-    )
+    config = ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None)
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -307,9 +291,7 @@ def test_process_multiple_chunks_with_relevant_fields():
             "Does yyynot usexxxseparators yyyif not needed",
             10,
             0,
-            SeparatorSplitterConfigModel(
-                mode="separator", separators=['"xxx"', '"yyy"']
-            ),
+            SeparatorSplitterConfigModel(mode="separator", separators=['"xxx"', '"yyy"']),
             [
                 "text: Does yyynot use",
                 "separators yyyif not needed",
@@ -320,9 +302,7 @@ def test_process_multiple_chunks_with_relevant_fields():
             "Does alwaysyyy usexxxmain separators yyyfirst",
             10,
             0,
-            SeparatorSplitterConfigModel(
-                mode="separator", separators=['"yyy"', '"xxx"']
-            ),
+            SeparatorSplitterConfigModel(mode="separator", separators=['"yyy"', '"xxx"']),
             [
                 "text: Does always",
                 "usexxxmain separators yyyfirst",
@@ -396,9 +376,7 @@ def test_process_multiple_chunks_with_relevant_fields():
         ),
     ],
 )
-def test_text_splitters(
-    label, text, chunk_size, chunk_overlap, splitter_config, expected_chunks
-):
+def test_text_splitters(label, text, chunk_size, chunk_overlap, splitter_config, expected_chunks):
     processor = initialize_processor(
         ProcessingConfigModel(
             chunk_size=chunk_size,
@@ -459,9 +437,7 @@ def test_text_splitters(
         ),
         (
             "Proper separator",
-            SeparatorSplitterConfigModel(
-                mode="separator", separators=['"xxx"', '"\\n\\n"']
-            ),
+            SeparatorSplitterConfigModel(mode="separator", separators=['"xxx"', '"\\n\\n"']),
             False,
         ),
     ],
@@ -572,9 +548,7 @@ def test_process_multiple_chunks_with_dedupe_mode(
 
     processor.text_fields = ["text"]
 
-    processor.streams[
-        "namespace1_stream1"
-    ].destination_sync_mode = DestinationSyncMode.append_dedup
+    processor.streams["namespace1_stream1"].destination_sync_mode = DestinationSyncMode.append_dedup
     processor.streams["namespace1_stream1"].primary_key = primary_key
 
     chunks, id_to_delete = processor.process(record)
@@ -655,9 +629,7 @@ def test_process_multiple_chunks_with_dedupe_mode(
         ),
     ],
 )
-def test_process_cdc_records(
-    record, sync_mode, has_chunks, raises, expected_id_to_delete
-):
+def test_process_cdc_records(record, sync_mode, has_chunks, raises, expected_id_to_delete):
     processor = initialize_processor()
 
     processor.text_fields = ["text"]
