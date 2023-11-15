@@ -9,7 +9,6 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
 import static org.jooq.impl.DSL.createSchemaIfNotExists;
 import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.primaryKey;
 import static org.jooq.impl.DSL.quotedName;
 
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
@@ -31,7 +30,6 @@ import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
-import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
@@ -54,8 +52,9 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   /**
-   * This method returns Jooq internal DataType, Ideally we need to implement DataType interface
-   * with all the required fields for Jooq typed query construction
+   * This method returns Jooq internal DataType, Ideally we need to implement DataType interface with
+   * all the required fields for Jooq typed query construction
+   *
    * @return
    */
   private DataType<?> getSuperType() {
@@ -77,28 +76,31 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     return getSuperType();
   }
 
-  //TODO: Pull it into base class as abstract and formatted only for testing.
+  // TODO: Pull it into base class as abstract and formatted only for testing.
   protected DSLContext getDslContext() {
-//    return DSL.using(SQLDialect.POSTGRES, new Settings().withRenderFormatted(true));
+    // return DSL.using(SQLDialect.POSTGRES, new Settings().withRenderFormatted(true));
     return DSL.using(SQLDialect.POSTGRES);
   }
 
   /**
-   * Notes about Redshift specific SQL
-   * * 16MB Limit on the total size of the SQL sent in a session
-   * * Default mode of casting within SUPER is lax mode, to enable strict use SET cast_super_null_on_error='OFF';
-   * * * https://docs.aws.amazon.com/redshift/latest/dg/super-configurations.html
-   * * https://docs.aws.amazon.com/redshift/latest/dg/r_MERGE.html#r_MERGE_usage_notes
-   * * * (Cannot use WITH clause in MERGE statement). https://cloud.google.com/bigquery/docs/migration/redshift-sql#merge_statement
-   * * * https://docs.aws.amazon.com/redshift/latest/dg/r_WITH_clause.html#r_WITH_clause-usage-notes
-   * * Primary keys are informational only and not enforced (https://docs.aws.amazon.com/redshift/latest/dg/t_Defining_constraints.html)
+   * Notes about Redshift specific SQL * 16MB Limit on the total size of the SQL sent in a session *
+   * Default mode of casting within SUPER is lax mode, to enable strict use SET
+   * cast_super_null_on_error='OFF'; * *
+   * https://docs.aws.amazon.com/redshift/latest/dg/super-configurations.html *
+   * https://docs.aws.amazon.com/redshift/latest/dg/r_MERGE.html#r_MERGE_usage_notes * * (Cannot use
+   * WITH clause in MERGE statement).
+   * https://cloud.google.com/bigquery/docs/migration/redshift-sql#merge_statement * *
+   * https://docs.aws.amazon.com/redshift/latest/dg/r_WITH_clause.html#r_WITH_clause-usage-notes *
+   * Primary keys are informational only and not enforced
+   * (https://docs.aws.amazon.com/redshift/latest/dg/t_Defining_constraints.html)
    */
 
-
   List<Field<?>> buildFields(final Map<String, DataType<?>> metaColumns, final StreamConfig streamConfig) {
-    List<Field<?>> fields = metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(Collectors.toList());
-    List<Field<?>> dataFields = streamConfig.columns().entrySet().stream().map(column -> field(quotedName(column.getKey().name()), toDialectType(column.getValue()))).collect(
-        Collectors.toList());
+    List<Field<?>> fields =
+        metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(Collectors.toList());
+    List<Field<?>> dataFields =
+        streamConfig.columns().entrySet().stream().map(column -> field(quotedName(column.getKey().name()), toDialectType(column.getValue()))).collect(
+            Collectors.toList());
     fields.addAll(dataFields);
     return fields;
   }
@@ -108,8 +110,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     DSLContext dsl = getDslContext();
     CreateSchemaFinalStep createSchemaSql = createSchemaIfNotExists(quotedName(stream.id().finalNamespace()));
 
-    //TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
-    String finalTableIdentifier = stream.id().finalName()+suffix.toLowerCase();
+    // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
+    String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
     Map<String, DataType<?>> metaColumns = new LinkedHashMap<>();
     metaColumns.put(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false));
     metaColumns.put(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
