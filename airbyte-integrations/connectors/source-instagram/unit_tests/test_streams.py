@@ -32,13 +32,13 @@ def test_clear_url(config):
 
 
 def test_state_outdated(api, config):
-    assert UserInsights(api=api, start_date=datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%S"))._state_has_legacy_format(
+    assert UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format(
         {"state": MagicMock()}
     )
 
 
 def test_state_is_not_outdated(api, config):
-    assert not UserInsights(api=api, start_date=datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%S"))._state_has_legacy_format(
+    assert not UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format(
         {"state": {}}
     )
 
@@ -178,7 +178,7 @@ def test_user_read(api, user_data, requests_mock):
 def test_user_insights_read(api, config, user_insight_data, requests_mock):
     test_id = "test_id"
 
-    stream = UserInsights(api=api, start_date=datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%S"))
+    stream = UserInsights(api=api, start_date=config["start_date"])
 
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", [{"json": user_insight_data}])
 
@@ -275,7 +275,7 @@ def test_user_insights_state(api, user_insights, values, slice_dates, expected):
     import pendulum
 
     # UserInsights stream
-    stream = UserInsights(api=api, start_date=pendulum.parse("2023-01-01T01:01:01Z"))
+    stream = UserInsights(api=api, start_date="2023-01-01T01:01:01Z")
     # Populate the fixute with `values`
     user_insights(values)
     # simulate `read_recods` generator job
@@ -357,7 +357,7 @@ def test_common_error_retry(error_response, requests_mock, api, account_id):
 
 def test_exit_gracefully(api, config, requests_mock, caplog):
     test_id = "test_id"
-    stream = UserInsights(api=api, start_date=datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%S"))
+    stream = UserInsights(api=api, start_date=config["start_date"])
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", json={"data": []})
     records = read_incremental(stream, {})
     assert not records
