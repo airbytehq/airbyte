@@ -214,9 +214,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   public abstract JsonNode toJdbcConfig(JsonNode config);
 
-  protected JdbcSqlGenerator getSqlGenerator(final DataSource dataSource) {
-    return new JdbcSqlGenerator(getNamingResolver(), dataSource);
-  }
+  protected abstract JdbcSqlGenerator getSqlGenerator();
 
   /**
    * "database" key at root of the config json, for any other variants in config, override this
@@ -236,7 +234,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     final DataSource dataSource = getDataSource(config);
     final JdbcDatabase database = getDatabase(dataSource);
     if (TypingAndDedupingFlag.isDestinationV2()) {
-      final JdbcSqlGenerator sqlGenerator = getSqlGenerator(dataSource);
+      final JdbcSqlGenerator sqlGenerator = getSqlGenerator();
       final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
           .map(override -> new CatalogParser(sqlGenerator, override))
           .orElse(new CatalogParser(sqlGenerator))

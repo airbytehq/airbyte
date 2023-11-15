@@ -24,6 +24,7 @@ import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption;
 import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
@@ -39,6 +40,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftS3StagingSqlOperations;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -137,6 +139,11 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
+  protected JdbcSqlGenerator getSqlGenerator() {
+    return new RedshiftSqlGenerator(getNamingResolver());
+  }
+
+  @Override
   @Deprecated
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
@@ -145,9 +152,9 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
-  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(JsonNode config,
-                                                                       ConfiguredAirbyteCatalog catalog,
-                                                                       Consumer<AirbyteMessage> outputRecordCollector)
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final EncryptionConfig encryptionConfig =
         config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
