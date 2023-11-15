@@ -69,6 +69,11 @@ inputs:
   s3_build_cache_secret_key:
     description: "Gradle S3 Build Cache AWS secret key"
     required: false
+  airbyte_ci_binary_url:
+    description: "URL to airbyte-ci binary"
+    required: false
+    default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
+
 runs:
   using: "composite"
   steps:
@@ -89,22 +94,18 @@ runs:
       id: get-start-timestamp
       shell: bash
       run: echo "name=start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
-    - name: Install Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
-        token: ${{ inputs.github_token }}
-    - name: Install ci-connector-ops package
+    - name: Install airbyte-ci binary
+      id: install-airbyte-ci
       shell: bash
       run: |
-        pip install pipx
-        pipx ensurepath
-        pipx install airbyte-ci/connectors/pipelines/
+        curl -sSL ${{ inputs.airbyte_ci_binary_url }} --output airbyte-ci-bin
+        sudo mv airbyte-ci-bin /usr/local/bin/airbyte-ci
+        sudo chmod +x /usr/local/bin/airbyte-ci
     - name: Run airbyte-ci
       shell: bash
       run: |
         export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-        airbyte-ci-internal --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
+        airbyte-ci --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
       env:
         _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
         CI_CONTEXT: "${{ inputs.context }}"

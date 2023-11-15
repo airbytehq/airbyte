@@ -95,8 +95,13 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         while len(folder_id_queue) > 0:
             (path, folder_id) = folder_id_queue.pop()
             # fetch all files in this folder (1000 is the max page size)
+            # supportsAllDrives and includeItemsFromAllDrives are required to access files in shared drives
             request = service.files().list(
-                q=f"'{folder_id}' in parents", pageSize=1000, fields="nextPageToken, files(id, name, modifiedTime, mimeType)"
+                q=f"'{folder_id}' in parents",
+                pageSize=1000,
+                fields="nextPageToken, files(id, name, modifiedTime, mimeType)",
+                supportsAllDrives=True,
+                includeItemsFromAllDrives=True,
             )
             while True:
                 results = request.execute()

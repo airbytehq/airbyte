@@ -1,0 +1,59 @@
+name: Check for formatting errors on head ref
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+jobs:
+  format-check:
+    runs-on: "conn-prod-xlarge-runner"
+    name: "Check for formatting errors on ${{ github.head_ref }}"
+    timeout-minutes: 40
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+
+      - name: Run airbyte-ci format check
+        id: airbyte_ci_format_check_all
+        uses: ./.github/actions/run-dagger-pipeline
+        continue-on-error: true
+        with:
+          context: "master"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "format check all"
+
+      # This is helpful in the case that we change a previously committed generated file to be ignored by git.
+      - name: Remove any files that have been gitignored
+        run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
+
+      - name: Match GitHub User to Slack User
+        id: match-github-to-slack-user
+        uses: ./.github/actions/match-github-to-slack-user
+        env:
+          AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
+          GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Format Failure on Master Slack Channel
+        if: steps.airbyte_ci_format_check_all.outcome == 'failure'
+        uses: abinoda/slack-action@master
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+        with:
+          args: >-
+            {\"channel\":\"C03BEADRPNY\", \"blocks\":[
+            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"Formatting is broken on master! :bangbang: \n\n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
+            {\"type\":\"divider\"}]}
