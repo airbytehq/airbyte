@@ -68,7 +68,8 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   }
 
   protected SQLType widestType() {
-    return JDBCType.VARCHAR;
+    // Redshift and Mysql maps their SUPER and JSON to LONGVARCHAR code in Jdbc database metadata calls.
+    return JDBCType.LONGNVARCHAR;
   }
 
   protected SQLType preferredStructType(final LinkedHashMap<String, TypeInfoRecordSet> supportedTypes) {
@@ -91,16 +92,12 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
       return toDialectType(airbyteProtocolType, structType);
     }
-    switch (type.getTypeName()) {
-      case Struct.TYPE, UnsupportedOneOf.TYPE:
-        return structType;
-      case Array.TYPE:
-        return JDBCType.ARRAY;
-      case Union.TYPE:
-        return toDialectType(((Union) type).chooseType(), structType);
-      default:
-        throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
-    }
+    return switch (type.getTypeName()) {
+      case Struct.TYPE, UnsupportedOneOf.TYPE -> structType;
+      case Array.TYPE -> JDBCType.ARRAY;
+      case Union.TYPE -> toDialectType(((Union) type).chooseType(), structType);
+      default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
+    };
   }
 
   protected SQLType toDialectType(final AirbyteProtocolType airbyteProtocolType, final SQLType structType) {
