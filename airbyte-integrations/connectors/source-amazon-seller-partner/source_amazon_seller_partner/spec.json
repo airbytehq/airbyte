@@ -140,7 +140,7 @@
           "{\"GET_SALES_AND_TRAFFIC_REPORT\": {\"availability_sla_days\": 3}}",
           "{\"GET_SOME_REPORT\": {\"custom\": \"true\"}}"
         ],
-        "order": 11,
+        "order": 12,
         "type": "string"
       }
     }
