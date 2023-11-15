@@ -8,11 +8,26 @@
     "CampaignId": {
       "type": ["null", "integer"]
     },
+    "AdGroupId": {
+      "type": ["null", "integer"]
+    },
+    "KeywordId": {
+      "type": ["null", "integer"]
+    },
+    "Keyword": {
+      "type": ["null", "string"]
+    },
+    "AdId": {
+      "type": ["null", "integer"]
+    },
     "TimePeriod": {
       "type": ["null", "string"],
       "format": "date"
     },
     "CurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "DeliveredMatchType": {
       "type": ["null", "string"]
     },
     "AdDistribution": {
@@ -21,10 +36,10 @@
     "DeviceType": {
       "type": ["null", "string"]
     },
-    "Network": {
+    "Language": {
       "type": ["null", "string"]
     },
-    "DeliveredMatchType": {
+    "Network": {
       "type": ["null", "string"]
     },
     "DeviceOS": {
@@ -42,14 +57,23 @@
     "CampaignName": {
       "type": ["null", "string"]
     },
-    "CampaignType": {
+    "AdGroupName": {
       "type": ["null", "string"]
     },
-    "CampaignStatus": {
+    "KeywordStatus": {
       "type": ["null", "string"]
     },
-    "CampaignLabels": {
-      "type": ["null", "string"]
+    "HistoricalExpectedCtr": {
+      "type": ["null", "number"]
+    },
+    "HistoricalAdRelevance": {
+      "type": ["null", "number"]
+    },
+    "HistoricalLandingPageExperience": {
+      "type": ["null", "number"]
+    },
+    "HistoricalQualityScore": {
+      "type": ["null", "number"]
     },
     "Impressions": {
       "type": ["null", "integer"]
@@ -58,6 +82,9 @@
       "type": ["null", "integer"]
     },
     "Ctr": {
+      "type": ["null", "number"]
+    },
+    "CurrentMaxCpc": {
       "type": ["null", "number"]
     },
     "Spend": {
@@ -69,19 +96,16 @@
     "QualityScore": {
       "type": ["null", "number"]
     },
+    "ExpectedCtr": {
+      "type": ["null", "string"]
+    },
     "AdRelevance": {
       "type": ["null", "number"]
     },
     "LandingPageExperience": {
       "type": ["null", "number"]
     },
-    "PhoneImpressions": {
-      "type": ["null", "integer"]
-    },
-    "PhoneCalls": {
-      "type": ["null", "integer"]
-    },
-    "Ptr": {
+    "QualityImpact": {
       "type": ["null", "number"]
     },
     "Assists": {
@@ -96,8 +120,26 @@
     "CustomParameters": {
       "type": ["null", "string"]
     },
+    "FinalAppUrl": {
+      "type": ["null", "string"]
+    },
+    "Mainline1Bid": {
+      "type": ["null", "number"]
+    },
+    "MainlineBid": {
+      "type": ["null", "number"]
+    },
+    "FirstPageBid": {
+      "type": ["null", "number"]
+    },
+    "FinalUrlSuffix": {
+      "type": ["null", "string"]
+    },
     "ViewThroughConversions": {
       "type": ["null", "integer"]
+    },
+    "ViewThroughConversionsQualified": {
+      "type": ["null", "number"]
     },
     "AllCostPerConversion": {
       "type": ["null", "number"]
@@ -105,19 +147,13 @@
     "AllReturnOnAdSpend": {
       "type": ["null", "number"]
     },
-    "AllConversions": {
-      "type": ["null", "integer"]
+    "Conversions": {
+      "type": ["null", "number"]
+    },
+    "ConversionRate": {
+      "type": ["null", "number"]
     },
     "ConversionsQualified": {
-      "type": ["null", "number"]
-    },
-    "AllConversionRate": {
-      "type": ["null", "number"]
-    },
-    "AllRevenue": {
-      "type": ["null", "number"]
-    },
-    "AllRevenuePerConversion": {
       "type": ["null", "number"]
     },
     "AverageCpc": {
@@ -129,40 +165,16 @@
     "AverageCpm": {
       "type": ["null", "number"]
     },
-    "Conversions": {
-      "type": ["null", "number"]
-    },
-    "ConversionRate": {
-      "type": ["null", "number"]
-    },
-    "LowQualityClicks": {
+    "AllConversions": {
       "type": ["null", "integer"]
     },
-    "LowQualityClicksPercent": {
+    "AllConversionRate": {
       "type": ["null", "number"]
     },
-    "LowQualityImpressions": {
-      "type": ["null", "integer"]
-    },
-    "LowQualitySophisticatedClicks": {
-      "type": ["null", "integer"]
-    },
-    "LowQualityConversions": {
-      "type": ["null", "integer"]
-    },
-    "LowQualityConversionRate": {
+    "AllRevenue": {
       "type": ["null", "number"]
     },
-    "HistoricalQualityScore": {
-      "type": ["null", "number"]
-    },
-    "HistoricalExpectedCtr": {
-      "type": ["null", "number"]
-    },
-    "HistoricalAdRelevance": {
-      "type": ["null", "number"]
-    },
-    "HistoricalLandingPageExperience": {
+    "AllRevenuePerConversion": {
       "type": ["null", "number"]
     },
     "Revenue": {
@@ -173,15 +185,6 @@
     },
     "RevenuePerAssist": {
       "type": ["null", "number"]
-    },
-    "BudgetName": {
-      "type": ["null", "string"]
-    },
-    "BudgetStatus": {
-      "type": ["null", "string"]
-    },
-    "BudgetAssociationStatus": {
-      "type": ["null", "string"]
     }
   }
 }

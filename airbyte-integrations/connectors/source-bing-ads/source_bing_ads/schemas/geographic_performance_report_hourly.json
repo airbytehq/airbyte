@@ -12,18 +12,91 @@
     "AdGroupId": {
       "type": ["null", "integer"]
     },
-    "KeywordId": {
-      "type": ["null", "integer"]
-    },
-    "Keyword": {
-      "type": ["null", "string"]
-    },
-    "AdId": {
-      "type": ["null", "integer"]
-    },
     "TimePeriod": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "AccountNumber": {
+      "type": ["null", "string"]
+    },
+    "Country": {
+      "type": ["null", "string"]
+    },
+    "State": {
+      "type": ["null", "string"]
+    },
+    "MetroArea": {
+      "type": ["null", "string"]
+    },
+    "City": {
+      "type": ["null", "string"]
+    },
+    "ProximityTargetLocation": {
+      "type": ["null", "string"]
+    },
+    "Radius": {
+      "type": ["null", "string"]
+    },
+    "LocationType": {
+      "type": ["null", "string"]
+    },
+    "MostSpecificLocation": {
+      "type": ["null", "string"]
+    },
+    "AccountStatus": {
+      "type": ["null", "string"]
+    },
+    "CampaignStatus": {
+      "type": ["null", "string"]
+    },
+    "AdGroupStatus": {
+      "type": ["null", "string"]
+    },
+    "County": {
+      "type": ["null", "string"]
+    },
+    "PostalCode": {
+      "type": ["null", "string"]
+    },
+    "LocationId": {
+      "type": ["null", "string"]
+    },
+    "BaseCampaignId": {
+      "type": ["null", "string"]
+    },
+    "Goal": {
+      "type": ["null", "string"]
+    },
+    "GoalType": {
+      "type": ["null", "string"]
+    },
+    "AbsoluteTopImpressionRatePercent": {
+      "type": ["null", "number"]
+    },
+    "TopImpressionRatePercent": {
+      "type": ["null", "string"]
+    },
+    "AllConversionsQualified": {
+      "type": ["null", "string"]
+    },
+    "Neighborhood": {
+      "type": ["null", "string"]
+    },
+    "ViewThroughRevenue": {
+      "type": ["null", "string"]
+    },
+    "CampaignType": {
+      "type": ["null", "string"]
+    },
+    "AssetGroupId": {
+      "type": ["null", "string"]
+    },
+    "AssetGroupName": {
+      "type": ["null", "string"]
+    },
+    "AssetGroupStatus": {
+      "type": ["null", "string"]
     },
     "CurrencyCode": {
       "type": ["null", "string"]
@@ -61,9 +134,6 @@
     "AdGroupName": {
       "type": ["null", "string"]
     },
-    "KeywordStatus": {
-      "type": ["null", "string"]
-    },
     "Impressions": {
       "type": ["null", "integer"]
     },
@@ -73,28 +143,10 @@
     "Ctr": {
       "type": ["null", "number"]
     },
-    "CurrentMaxCpc": {
-      "type": ["null", "number"]
-    },
     "Spend": {
       "type": ["null", "number"]
     },
     "CostPerConversion": {
-      "type": ["null", "number"]
-    },
-    "QualityScore": {
-      "type": ["null", "number"]
-    },
-    "ExpectedCtr": {
-      "type": ["null", "string"]
-    },
-    "AdRelevance": {
-      "type": ["null", "number"]
-    },
-    "LandingPageExperience": {
-      "type": ["null", "number"]
-    },
-    "QualityImpact": {
       "type": ["null", "number"]
     },
     "Assists": {
@@ -105,24 +157,6 @@
     },
     "CostPerAssist": {
       "type": ["null", "number"]
-    },
-    "CustomParameters": {
-      "type": ["null", "string"]
-    },
-    "FinalAppUrl": {
-      "type": ["null", "string"]
-    },
-    "Mainline1Bid": {
-      "type": ["null", "number"]
-    },
-    "MainlineBid": {
-      "type": ["null", "number"]
-    },
-    "FirstPageBid": {
-      "type": ["null", "number"]
-    },
-    "FinalUrlSuffix": {
-      "type": ["null", "string"]
     },
     "ViewThroughConversions": {
       "type": ["null", "integer"]
