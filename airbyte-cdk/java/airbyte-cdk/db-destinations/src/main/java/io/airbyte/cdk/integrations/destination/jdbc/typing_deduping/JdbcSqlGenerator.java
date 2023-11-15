@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import org.jooq.DataType;
+import org.jooq.impl.SQLDataType;
 
 public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> {
 
@@ -114,5 +116,39 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
       case UNKNOWN -> widestType();
     };
   }
+
+  protected DataType<?> toDialectType(final AirbyteType type) {
+    if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
+      return toDialectType(airbyteProtocolType);
+    }
+    return switch (type.getTypeName()) {
+      case Struct.TYPE, UnsupportedOneOf.TYPE -> getStructType();
+      case Array.TYPE -> getArrayType();
+      // No nested Unions supported so this will definitely not result in infinite recursion.
+      case Union.TYPE -> toDialectType(((Union) type).chooseType());
+      default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
+    };
+  }
+
+  protected DataType<?> toDialectType(final AirbyteProtocolType airbyteProtocolType) {
+    return switch (airbyteProtocolType) {
+      case STRING -> SQLDataType.VARCHAR;
+      case NUMBER -> SQLDataType.FLOAT;
+      case INTEGER -> SQLDataType.BIGINT;
+      case BOOLEAN -> SQLDataType.BOOLEAN;
+      case TIMESTAMP_WITH_TIMEZONE -> SQLDataType.TIMESTAMPWITHTIMEZONE;
+      case TIMESTAMP_WITHOUT_TIMEZONE -> SQLDataType.TIMESTAMP;
+      case TIME_WITH_TIMEZONE -> SQLDataType.TIMEWITHTIMEZONE;
+      case TIME_WITHOUT_TIMEZONE -> SQLDataType.TIME;
+      case DATE -> SQLDataType.DATE;
+      case UNKNOWN -> getWidestType();
+    };
+  }
+
+  protected abstract DataType<?> getStructType();
+
+  protected abstract DataType<?> getArrayType();
+
+  protected abstract DataType<?> getWidestType();
 
 }
