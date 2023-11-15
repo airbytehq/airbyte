@@ -2,13 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
@@ -16,12 +17,12 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import SyncMode
 from source_stripe.streams import (
     CheckoutSessionsLineItems,
     CreatedCursorIncrementalStripeStream,
     CustomerBalanceTransactions,
     Events,
-    FilteringRecordExtractor,
     IncrementalStripeStream,
     Persons,
     SetupAttempts,
@@ -33,18 +34,22 @@ from source_stripe.streams import (
 )
 
 _MAX_CONCURRENCY = 3
+_CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
+USE_CACHE = not _CACHE_DISABLED
 
 
 class SourceStripe(AbstractSource):
-    def __init__(self, catalog_path: Optional[str] = None, **kwargs):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], **kwargs):
         super().__init__(**kwargs)
-        if catalog_path:
-            catalog = self.read_catalog(catalog_path)
-            # Only use concurrent cdk if all streams are running in full_refresh
-            all_sync_mode_are_full_refresh = all(stream.sync_mode == SyncMode.full_refresh for stream in catalog.streams)
-            self._use_concurrent_cdk = all_sync_mode_are_full_refresh
+        if catalog:
+            self._streams_configured_as_full_refresh = {
+                configured_stream.stream.name
+                for configured_stream in catalog.streams
+                if configured_stream.sync_mode == SyncMode.full_refresh
+            }
         else:
-            self._use_concurrent_cdk = False
+            # things will NOT be executed concurrently
+            self._streams_configured_as_full_refresh = set()
 
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
 
@@ -97,6 +102,18 @@ class SourceStripe(AbstractSource):
             return False, str(e)
         return True, None
 
+    @staticmethod
+    def customers(**args):
+        # The Customers stream is instantiated in a dedicated method to allow parametrization and avoid duplicated code.
+        # It can be used with and without expanded items (as an independent stream or as a parent stream for other streams).
+        return IncrementalStripeStream(
+            name="customers",
+            path="customers",
+            use_cache=USE_CACHE,
+            event_types=["customer.created", "customer.updated", "customer.deleted"],
+            **args,
+        )
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self.validate_and_fill_with_defaults(config)
         authenticator = TokenAuthenticator(config["client_secret"])
@@ -110,7 +127,7 @@ class SourceStripe(AbstractSource):
         subscriptions = IncrementalStripeStream(
             name="subscriptions",
             path="subscriptions",
-            use_cache=True,
+            use_cache=USE_CACHE,
             extra_request_params={"status": "all"},
             event_types=[
                 "customer.subscription.created",
@@ -127,9 +144,9 @@ class SourceStripe(AbstractSource):
         subscription_items = StripeLazySubStream(
             name="subscription_items",
             path="subscription_items",
-            extra_request_params=lambda self, *args, stream_slice, **kwargs: {"subscription": stream_slice[self.parent_id]},
+            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice[self.parent_id]},
             parent=subscriptions,
-            use_cache=True,
+            use_cache=USE_CACHE,
             parent_id="subscription_id",
             sub_items_attr="items",
             **args,
@@ -137,28 +154,21 @@ class SourceStripe(AbstractSource):
         transfers = IncrementalStripeStream(
             name="transfers",
             path="transfers",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=["transfer.created", "transfer.reversed", "transfer.updated"],
             **args,
         )
         application_fees = IncrementalStripeStream(
             name="application_fees",
             path="application_fees",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=["application_fee.created", "application_fee.refunded"],
-            **args,
-        )
-        customers = IncrementalStripeStream(
-            name="customers",
-            path="customers",
-            use_cache=True,
-            event_types=["customer.created", "customer.updated", "customer.deleted"],
             **args,
         )
         invoices = IncrementalStripeStream(
             name="invoices",
             path="invoices",
-            use_cache=True,
+            use_cache=USE_CACHE,
             event_types=[
                 "invoice.created",
                 "invoice.finalization_failed",
@@ -185,7 +195,7 @@ class SourceStripe(AbstractSource):
                 event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
                 legacy_cursor_field=None,
                 extra_request_params={"object": "card"},
-                record_extractor=FilteringRecordExtractor("updated", None, "card"),
+                response_filter=lambda record: record["object"] == "card",
                 **args,
             ),
             UpdatedCursorIncrementalStripeStream(
@@ -194,12 +204,12 @@ class SourceStripe(AbstractSource):
                 event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
                 legacy_cursor_field=None,
                 extra_request_params={"object": "bank_account"},
-                record_extractor=FilteringRecordExtractor("updated", None, "bank_account"),
+                response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
             Persons(**args),
             SetupAttempts(**incremental_args),
-            StripeStream(name="accounts", path="accounts", use_cache=True, **args),
+            StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
             CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
@@ -207,7 +217,7 @@ class SourceStripe(AbstractSource):
             UpdatedCursorIncrementalStripeStream(
                 name="checkout_sessions",
                 path="checkout/sessions",
-                use_cache=True,
+                use_cache=USE_CACHE,
                 legacy_cursor_field="expires_at",
                 event_types=[
                     "checkout.session.async_payment_failed",
@@ -246,7 +256,7 @@ class SourceStripe(AbstractSource):
                 event_types=["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"],
                 **args,
             ),
-            customers,
+            self.customers(**args),
             IncrementalStripeStream(
                 name="cardholders",
                 path="issuing/cardholders",
@@ -334,7 +344,7 @@ class SourceStripe(AbstractSource):
             ),
             transfers,
             IncrementalStripeStream(
-                name="refunds", path="refunds", use_cache=True, event_types=["refund.created", "refund.updated"], **args
+                name="refunds", path="refunds", use_cache=USE_CACHE, event_types=["refund.created", "refund.updated"], **args
             ),
             IncrementalStripeStream(
                 name="payment_intents",
@@ -397,19 +407,18 @@ class SourceStripe(AbstractSource):
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="bank_accounts",
                 path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice[self.parent_id]}/sources",
-                parent=customers,
+                parent=self.customers(expand_items=["data.sources"], **args),
                 event_types=["customer.source.created", "customer.source.expiring", "customer.source.updated", "customer.source.deleted"],
                 legacy_cursor_field=None,
                 parent_id="customer_id",
                 sub_items_attr="sources",
-                response_filter={"attr": "object", "value": "bank_account"},
                 extra_request_params={"object": "bank_account"},
-                record_extractor=FilteringRecordExtractor("updated", None, "bank_account"),
+                response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
             StripeLazySubStream(
                 name="invoice_line_items",
-                path=lambda self, *args, stream_slice, **kwargs: f"invoices/{stream_slice[self.parent_id]}/lines",
+                path=lambda self, stream_slice, *args, **kwargs: f"invoices/{stream_slice[self.parent_id]}/lines",
                 parent=invoices,
                 parent_id="invoice_id",
                 sub_items_attr="lines",
@@ -431,17 +440,19 @@ class SourceStripe(AbstractSource):
                 **args,
             ),
         ]
-        if self._use_concurrent_cdk:
-            # We cap the number of workers to avoid hitting the Stripe rate limit
-            # The limit can be removed or increased once we have proper rate limiting
-            concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
-            streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
 
-            # The state is known to be empty because concurrent CDK is currently only used for full refresh
-            state = {}
-            cursor = NoopCursor()
-            return [
-                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, state, cursor) for stream in streams
-            ]
-        else:
-            return streams
+        # We cap the number of workers to avoid hitting the Stripe rate limit
+        # The limit can be removed or increased once we have proper rate limiting
+        concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
+        streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+
+        return [
+            StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, self._create_empty_state(), NoopCursor())
+            if stream.name in self._streams_configured_as_full_refresh
+            else stream
+            for stream in streams
+        ]
+
+    def _create_empty_state(self) -> MutableMapping[str, Any]:
+        # The state is known to be empty because concurrent CDK is currently only used for full refresh
+        return {}

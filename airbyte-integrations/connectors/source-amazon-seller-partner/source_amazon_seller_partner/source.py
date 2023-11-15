@@ -4,12 +4,11 @@
 
 from typing import Any, List, Mapping, Tuple
 
-import boto3
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_amazon_seller_partner.auth import AWSAuthenticator, AWSSignature
+from source_amazon_seller_partner.auth import AWSAuthenticator
 from source_amazon_seller_partner.constants import get_marketplaces
 from source_amazon_seller_partner.streams import (
     BrandAnalyticsAlternatePurchaseReports,
@@ -71,17 +70,7 @@ from source_amazon_seller_partner.streams import (
 
 class SourceAmazonSellerPartner(AbstractSource):
     def _get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        endpoint, marketplace_id, region = get_marketplaces(config.get("aws_environment"))[config.get("region")]
-
-        sts_credentials = self.get_sts_credentials(config)
-        role_creds = sts_credentials["Credentials"]
-        aws_signature = AWSSignature(
-            service="execute-api",
-            aws_access_key_id=role_creds.get("AccessKeyId"),
-            aws_secret_access_key=role_creds.get("SecretAccessKey"),
-            aws_session_token=role_creds.get("SessionToken"),
-            region=region,
-        )
+        endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
         auth = AWSAuthenticator(
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
             client_id=config.get("lwa_app_id"),
@@ -93,7 +82,6 @@ class SourceAmazonSellerPartner(AbstractSource):
         stream_kwargs = {
             "url_base": endpoint,
             "authenticator": auth,
-            "aws_signature": aws_signature,
             "replication_start_date": config.get("replication_start_date"),
             "marketplace_id": marketplace_id,
             "period_in_days": config.get("period_in_days", 90),
@@ -103,31 +91,6 @@ class SourceAmazonSellerPartner(AbstractSource):
             "advanced_stream_options": config.get("advanced_stream_options"),
         }
         return stream_kwargs
-
-    @staticmethod
-    def get_sts_credentials(config: Mapping[str, Any]) -> dict:
-        """
-        We can only use a IAM User arn entity or a IAM Role entity.
-        If we use an IAM user arn entity in the connector configuration we need to get the credentials directly from the boto3 sts client
-        If we use an IAM role arn entity we need to invoke the assume_role from the boto3 sts client to get the credentials related to that role
-
-        :param config:
-        """
-        boto3_client = boto3.client(
-            "sts", aws_access_key_id=config.get("aws_access_key"), aws_secret_access_key=config.get("aws_secret_key")
-        )
-
-        if config.get("role_arn") is None:
-            return boto3_client.get_session_token()
-
-        *_, arn_resource = config.get("role_arn").split(":")
-        if arn_resource.startswith("user"):
-            sts_credentials = boto3_client.get_session_token()
-        elif arn_resource.startswith("role"):
-            sts_credentials = boto3_client.assume_role(RoleArn=config.get("role_arn"), RoleSessionName="guid")
-        else:
-            raise ValueError("Invalid ARN, your ARN is not for a user or a role")
-        return sts_credentials
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """

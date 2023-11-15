@@ -3,6 +3,9 @@ java {
     compileJava {
         options.compilerArgs += "-Xlint:-deprecation,-try,-rawtypes,-overloads,-cast,-unchecked"
     }
+    compileTestJava {
+        options.compilerArgs += "-Xlint:-try,-divzero,-cast"
+    }
 }
 
 configurations.all {

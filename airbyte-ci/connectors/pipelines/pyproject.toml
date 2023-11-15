@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pipelines"
-version = "2.5.7"
+version = "2.7.0"
 description = "Packaged maintained by the connector operations team to perform CI for connectors' pipelines"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -35,7 +35,12 @@ pytest-mock = "^3.10.0"
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.2.2"
 pytest-cov = "^4.1.0"
+pyinstaller = "^6.1.0"
+poethepoet = "^0.24.2"
 
 [tool.poetry.scripts]
-airbyte-ci-internal = "pipelines.cli.airbyte_ci:airbyte_ci"
-airbyte-ci =  "pipelines.cli.dagger_run:main"
+airbyte-ci = "pipelines.cli.airbyte_ci:airbyte_ci"
+
+[tool.poe.tasks.build-release-binary]
+shell = "pyinstaller --collect-all pipelines --collect-all beartype --collect-all dagger --hidden-import strawberry --name $ARTIFACT_NAME --onefile pipelines/cli/airbyte_ci.py"
+args = [{name = "ARTIFACT_NAME", default="airbyte-ci", positional = true}]

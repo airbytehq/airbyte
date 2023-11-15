@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.53.7
+low-code: fix debug logging when using --debug flag
+
+## 0.53.6
+Increase maximum_attempts_to_acquire to avoid crashing in acquire_call
+
+## 0.53.5
+File CDK: Improve stream config appearance
+
+## 0.53.4
+Concurrent CDK: fix futures pruning
+
 ## 0.53.3
 Fix spec schema generation for File CDK and Vector DB CDK and allow skipping invalid files in document file parser
 
