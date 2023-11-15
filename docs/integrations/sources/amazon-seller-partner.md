@@ -6,9 +6,6 @@ This page guides you through the process of setting up the Amazon Seller Partner
 
 - AWS Environment
 - AWS Region
-- AWS Access Key
-- AWS Secret Key
-- Role ARN
 - LWA Client ID (LWA App ID)**
 - LWA Client Secret**
 - Refresh token**
@@ -129,6 +126,7 @@ So, for any value that exceeds the limit, the `period_in_days` will be automatic
 
 | Version  | Date       | Pull Request                                                  | Subject                                                                                                                                                                             |
 |:---------|:-----------|:--------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `1.6.2`  | 2023-11-14 | [\#32508](https://github.com/airbytehq/airbyte/pull/32508)    | Do not use AWS signature as it is no longer required by the Amazon API                                                                                                              |
 | `1.6.1`  | 2023-11-13 | [\#32457](https://github.com/airbytehq/airbyte/pull/32457)    | Fix report decompression                                                                                                                                                            |
 | `1.6.0`  | 2023-11-09 | [\#32259](https://github.com/airbytehq/airbyte/pull/32259)    | mark "aws_secret_key" and "aws_access_key" as required in specification; update schema for stream `Orders`                                                                          |
 | `1.5.1`  | 2023-08-18 | [\#29255](https://github.com/airbytehq/airbyte/pull/29255)    | role_arn is optional on UI but not really on the backend blocking connector set up using oauth                                                                                      |
