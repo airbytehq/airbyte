@@ -11,6 +11,21 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['access_key'] }}"
       password: "{{ config['access_key_secret'] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - http_codes: [400]
+          action: FAIL
+          error_message: It is a bad request, Check the dates again with format and please try again.
+        - http_codes: [403]
+          action: FAIL
+          error_message: Access denied due to lack of permission or invalid access_key/Secret.
+        - http_codes: [404]
+          action: IGNORE
+          error_message: No data collected
+        - http_codes: [504]
+          action: FAIL
+          error_message: The amount of data is large causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.
     request_parameters:
       fromDateTime: "{{ config['start_date'] }}"
   retriever:
