@@ -16,6 +16,12 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureTy
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
+import os
+import psutil
+pid = os.getpid()
+process = psutil.Process(pid)
+
+
 
 from .spec import SourceGoogleDriveSpec
 
@@ -163,6 +169,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         return mime_type in EXPORTABLE_DOCUMENTS_MIME_TYPES
 
     def open_file(self, file: GoogleDriveRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+        memory_usage = process.memory_info().rss  # in bytes
+        print(f"Memory Usage: {memory_usage / 1024**2:.2f} MB")
+
         if self._is_exportable_document(file.original_mime_type):
             if mode == FileReadMode.READ:
                 raise ValueError(
