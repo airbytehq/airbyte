@@ -4,6 +4,8 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: source_bing_ads/spec.json
+        backward_compatibility_tests_config:
+          disable_for_version: "1.11.0"
   discovery:
     tests:
       - config_path: secrets/config.json
@@ -48,12 +50,37 @@ acceptance_tests:
             bypass_reason: "Can not populate; new campaign with link to app needed; feature is not available yet"
           - name: app_install_ad_labels
             bypass_reason: "Can not populate; depends on stream app_install_ads"
-        timeout_seconds: 4800
+          ####          TODO: remove *_report_monthly after all become populated on December, 1
+          - name: account_performance_report_monthly
+            bypass_reason: "Campaign is still in progress"
+          - name: ad_group_performance_report_monthly
+            bypass_reason: "Campaign is still in progress"
+          - name: ad_group_impression_performance_report_monthly
+            bypass_reason: "Campaign is still in progress"
+          - name: ad_performance_report_monthly
+            bypass_reason: "Campaign is still in progress"
+          - name: campaign_performance_report_monthly
+            bypass_reason: "Campaign is still in progress"
+          - name: campaign_impression_performance_report_monthly
+            bypass_reason: "Campaign is still in progress"
+          - name: keyword_performance_report_monthly
+            bypass_reason: "Campaign is still in progress"
+          - name: geographic_performance_report_monthly
+            bypass_reason: "Campaign is still in progress"
+          - name: age_gender_audience_report_monthly
+            bypass_reason: "Campaign is still in progress"
+          - name: search_query_performance_report_monthly
+            bypass_reason: "Campaign is still in progress"
+          - name: user_location_performance_report_monthly
+            bypass_reason: "Campaign is still in progress"
+          - name: account_impression_performance_report_monthly
+            bypass_reason: "Campaign is still in progress"
+        timeout_seconds: 7200
   full_refresh:
     tests:
       - config_path: secrets/config.json
-        configured_catalog_path: integration_tests/configured_catalog.json
-        timeout_seconds: 4800
+        configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
+        timeout_seconds: 7200
   incremental:
     tests:
     bypass_reason: "SAT doesn't support complex nested states used in incremental report streams"
