@@ -9,6 +9,7 @@ import static java.util.Arrays.asList;
 import static org.bson.BsonType.ARRAY;
 import static org.bson.BsonType.DOCUMENT;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.SCHEMALESS_MODE_DATA_FIELD;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -20,6 +21,7 @@ import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumCon
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonBinary;
@@ -112,8 +114,10 @@ public class MongoDbCdcEventUtils {
   }
 
   public static ObjectNode normalizeObjectIdNoSchema(final ObjectNode data) {
-    normalizeObjectId((ObjectNode) data.get(Configuration.SCHEMALESS_MODE_DATA_FIELD));
     normalizeObjectId(data);
+    // normalize _id in _ab_data if key exists
+    final Optional<JsonNode> maybeDataField = Optional.ofNullable(data.get(SCHEMALESS_MODE_DATA_FIELD));
+    maybeDataField.ifPresent(d -> normalizeObjectId((ObjectNode) d));
     return data;
   }
 
@@ -161,11 +165,12 @@ public class MongoDbCdcEventUtils {
   }
 
   private static void formatDocumentNoSchema(final Document document, final ObjectNode objectNode) {
-    objectNode.put(Configuration.SCHEMALESS_MODE_DATA_FIELD, Jsons.jsonNode(Collections.emptyMap()));
+    objectNode.put(SCHEMALESS_MODE_DATA_FIELD, Jsons.jsonNode(Collections.emptyMap()));
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
-      readDocument(reader, (ObjectNode) objectNode.get(Configuration.SCHEMALESS_MODE_DATA_FIELD), Collections.emptySet(), true);
-      objectNode.set(DOCUMENT_OBJECT_ID_FIELD, objectNode.get(Configuration.SCHEMALESS_MODE_DATA_FIELD).get(DOCUMENT_OBJECT_ID_FIELD));
+      readDocument(reader, (ObjectNode) objectNode.get(SCHEMALESS_MODE_DATA_FIELD), Collections.emptySet(), true);
+      final Optional<JsonNode> maybeId = Optional.ofNullable(objectNode.get(SCHEMALESS_MODE_DATA_FIELD).get(DOCUMENT_OBJECT_ID_FIELD));
+      maybeId.ifPresent(id -> objectNode.set(DOCUMENT_OBJECT_ID_FIELD, id));
     } catch (final Exception e) {
       LOGGER.error("Exception while parsing BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
