@@ -1,82 +1,42 @@
-name: Check for formatting errors
+name: Check for formatting errors on head ref
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  # Cancel any previous runs on the same branch if they are still in progress
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.head_ref }}
 
 on:
   workflow_dispatch:
   push:
     branches:
       - master
-  pull_request:
 jobs:
-  format-fix:
+  format-check:
     runs-on: "conn-prod-xlarge-runner"
-    name: "Apply All Formatting Rules"
+    name: "Check for formatting errors on ${{ github.head_ref }}"
     timeout-minutes: 40
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
-          # Important that this is set so that CI checks are triggered again
-          # Without this we would be forever waiting on required checks to pass
           token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
 
-      # IMPORTANT! This is necessary to make sure that a status is reported on the PR
-      # even if the workflow is skipped. If we used GitHub Actions filters, the workflow
-      # would not be reported as skipped, but instead would be forever pending.
-      #
-      # I KNOW THIS SOUNDS CRAZY, BUT IT IS TRUE.
-      #
-      # Also, it gets worse
-      #
-      # IMPORTANT! DO NOT CHANGE THE QUOTES AROUND THE GLOBS. THEY ARE REQUIRED.
-      # MAKE SURE TO TEST ANY SYNTAX CHANGES BEFORE MERGING.
-      - name: Get changed files
-        uses: tj-actions/changed-files@v39
-        id: changes
-        with:
-          files_yaml: |
-            format:
-              - '**/*'
-              - '!**/*.md'
-
-      - name: Run airbyte-ci format fix
+      - name: Run airbyte-ci format check
+        id: airbyte_ci_format_check_all
         uses: ./.github/actions/run-dagger-pipeline
+        continue-on-error: true
         with:
-          context: "pull_request"
+          context: "master"
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "format fix all"
+          subcommand: "format check all"
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.
       - name: Remove any files that have been gitignored
         run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
 
-      - name: Commit Formatting Changes (PR)
-        uses: stefanzweifel/git-auto-commit-action@v5
-        # do not commit if master branch
-        if: github.ref != 'refs/heads/master'
-        with:
-          commit_message: Automated Commit - Formatting Changes
-          commit_user_name: Octavia Squidington III
-          commit_user_email: octavia-squidington-iii@users.noreply.github.com
-
-  notify-failure-slack-channel:
-    name: "Notify Slack Channel on Build Failures"
-    runs-on: ubuntu-latest
-    needs:
-      - format-fix
-    if: ${{ failure() && github.ref == 'refs/heads/master' }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
         uses: ./.github/actions/match-github-to-slack-user
@@ -84,6 +44,7 @@ jobs:
           AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
           GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Format Failure on Master Slack Channel
+        if: steps.airbyte_ci_format_check_all.outcome == 'failure'
         uses: abinoda/slack-action@master
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
