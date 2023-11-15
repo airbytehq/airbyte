@@ -23,8 +23,8 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: Brand Analytics Reports will be removed from Cloud verison. Deprecated FBA reports will be removed permanently.
-        upgradeDeadline: "2023-11-24"
+        message: "Deprecated FBA reports will be removed permanently from Cloud and Brand Analytics Reports will be removed temporarily. Updates on Brand Analytics Reports can be tracked here: [#32353](https://github.com/airbytehq/airbyte/issues/32353)"
+        upgradeDeadline: "2023-11-29"
   supportLevel: community
   tags:
     - language:python

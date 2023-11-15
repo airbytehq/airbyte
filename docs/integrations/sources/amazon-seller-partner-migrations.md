@@ -2,8 +2,8 @@
 
 ## Upgrading to 2.0.0
 
-This change removes Brand Analytics from Airbyte Cloud version of connector and permanently removes deprecated FBA reports.
-Customers who have those streams must refresh their schema OR disable next streams:
+This change removes Brand Analytics and permanently removes deprecated FBA reports (from Airbyte Cloud).
+Customers who have those streams must refresh their schema OR disable the following streams:
 * GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT
 * GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT
 * GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT
