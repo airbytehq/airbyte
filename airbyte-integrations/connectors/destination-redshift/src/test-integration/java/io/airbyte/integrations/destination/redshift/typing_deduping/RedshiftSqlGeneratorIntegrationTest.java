@@ -25,7 +25,6 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import javax.sql.DataSource;
 import org.jooq.InsertValuesStepN;
 import org.jooq.Name;
@@ -142,7 +141,8 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
         COLUMN_NAME_DATA);
   }
 
-  private void insertRecords(final Name tableName, final List<String> columnNames, final List<JsonNode> records, final String... columnsToParseJson) throws SQLException {
+  private void insertRecords(final Name tableName, final List<String> columnNames, final List<JsonNode> records, final String... columnsToParseJson)
+      throws SQLException {
     InsertValuesStepN<Record> insert = DSL.insertInto(
         DSL.table(tableName),
         columnNames.stream().map(DSL::field).toList());
@@ -167,7 +167,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
               })
               .toList());
     }
-     database.execute(insert.getSQL());
+    database.execute(insert.getSQL());
   }
 
   @Override
