@@ -83,6 +83,7 @@
     "@docusaurus/plugin-sitemap": "^2.4.3",
     "@docusaurus/preset-classic": "^2.4.3",
     "@docusaurus/theme-classic": "^2.4.3",
+    "@docusaurus/theme-mermaid": "2.4.3",
     "@docusaurus/theme-search-algolia": "^2.4.3",
     "@docusaurus/types": "^2.4.3",
     "@fortawesome/fontawesome-svg-core": "^6.4.2",

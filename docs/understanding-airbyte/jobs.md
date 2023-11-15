@@ -17,6 +17,36 @@ At a high level, a sync job is an individual invocation of the Airbyte pipeline 
 
 ### Sync Job State Machine
 
+```mermaid
+---
+title: Job Status State Machine
+---
+%%{ init: { 'flowchart': { 'curve': 'radial' } } }%%
+flowchart RL
+subgraph active [Active Statuses]
+%%direction TB
+    pending(pending)
+    running(running)
+    incomplete(incomplete)
+end
+
+
+subgraph terminal [Non Success Statuses]
+%%direction LR
+  cancelled(cancelled)
+  failed(failed)
+end
+succeeded(succeeded)
+pending --> running
+running --> incomplete
+incomplete --> running
+running --> succeeded
+active --> cancelled
+active --> failed
+
+%%linkStyle 4,5 stroke:blue;
+```
+
 Sync jobs have the following state machine.
 
 ![Job state machine](../.gitbook/assets/job-state-machine.png)
