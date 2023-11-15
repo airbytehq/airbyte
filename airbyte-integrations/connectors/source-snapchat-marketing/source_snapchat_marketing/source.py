@@ -391,6 +391,9 @@ class Stats(SnapchatMarketingStream, ABC):
 
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["granularity"] = self.granularity.value
+        params["action_report_time"] = self.action_report_time
+        params["swipe_up_attribution_window"] = self.swipe_up_attribution_window
+        params["view_attribution_window"] = self.view_attribution_window
         if self.metrics:
             params["fields"] = ",".join(self.metrics)
 
