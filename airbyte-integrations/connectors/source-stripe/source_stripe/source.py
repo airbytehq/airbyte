@@ -4,7 +4,7 @@
 
 import logging
 import os
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
@@ -17,7 +17,6 @@ from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.call_rate import (
     AbstractAPIBudget,
-    FixedWindowCallRatePolicy,
     HttpAPIBudget,
     HttpRequestMatcher,
     MovingWindowCallRatePolicy,
@@ -157,42 +156,21 @@ class SourceStripe(AbstractSource):
         else:
             call_limit = max_call_rate
 
-        if config.get("call_rate_policy") == "fixed_window":
-            policies = [
-                FixedWindowCallRatePolicy(
-                    next_reset_ts=datetime.now(),
-                    period=timedelta(seconds=1),
-                    call_limit=20,
-                    matchers=[
-                        HttpRequestMatcher(url="https://api.stripe.com/v1/files"),
-                        HttpRequestMatcher(url="https://api.stripe.com/v1/file_links"),
-                    ],
-                ),
-                FixedWindowCallRatePolicy(
-                    next_reset_ts=datetime.now(),
-                    period=timedelta(seconds=1),
-                    call_limit=call_limit,
-                    matchers=[],
-                ),
-            ]
-        elif config.get("call_rate_policy") == "moving_window":
-            policies = [
-                MovingWindowCallRatePolicy(
-                    rates=[Rate(limit=20, interval=timedelta(seconds=1))],
-                    matchers=[
-                        HttpRequestMatcher(url="https://api.stripe.com/v1/files"),
-                        HttpRequestMatcher(url="https://api.stripe.com/v1/file_links"),
-                    ],
-                ),
-                MovingWindowCallRatePolicy(
-                    rates=[Rate(limit=call_limit, interval=timedelta(seconds=1))],
-                    matchers=[],
-                ),
-            ]
-        else:
-            policies = []
+        policies = [
+            MovingWindowCallRatePolicy(
+                rates=[Rate(limit=20, interval=timedelta(seconds=1))],
+                matchers=[
+                    HttpRequestMatcher(url="https://api.stripe.com/v1/files"),
+                    HttpRequestMatcher(url="https://api.stripe.com/v1/file_links"),
+                ],
+            ),
+            MovingWindowCallRatePolicy(
+                rates=[Rate(limit=call_limit, interval=timedelta(seconds=1))],
+                matchers=[],
+            ),
+        ]
 
-        return HttpAPIBudget(policies=policies, maximum_attempts_to_acquire=10000)
+        return HttpAPIBudget(policies=policies)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self.validate_and_fill_with_defaults(config)
