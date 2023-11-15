@@ -29,6 +29,16 @@ export const StepContent = styled.div<{
   align-items: center;
   color: ${({ theme, isActive }) => (isActive ? theme.primaryColor : theme.greyColor60)};
   cursor: ${({ nonClickable }) => (nonClickable ? "default" : "pointer")};
+  @media (max-width: 768px) {
+    font-size: 14px;
+    flex-direction: column;
+  }
+  @media (max-width: 568px) {
+    font-size: 12px;
+  }
+  @media (max-width: 468px) {
+    font-size: 10px;
+  }
 `;
 
 export const CircleNumber = styled.div<{
@@ -42,6 +52,12 @@ export const CircleNumber = styled.div<{
   border: 2px solid ${({ theme, isActive }) => (isActive ? theme.primaryColor : " #d1d5db")};
   border-radius: 20px;
   margin-right: 12px;
+  @media (max-width: 768px) {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+    border-radius: 1px solid ${({ theme, isActive }) => (isActive ? theme.primaryColor : " #d1d5db")};
+  }
 `;
 
 export const StepLine = styled.div<{
@@ -50,6 +66,27 @@ export const StepLine = styled.div<{
   width: 160px;
   border: 1px solid ${({ theme, isActive }) => (isActive ? theme.primaryColor : " #d1d5db")};
   margin: 0 30px;
+  @media (max-width: 1100px) {
+    width: 80px;
+    margin: 0 10px;
+  }
+  @media (max-width: 900px) {
+    width: 60px;
+    margin: 0 5px;
+  }
+
+  @media (max-width: 830px) {
+    width: 2px;
+    height: 40px;
+    margin: 3px;
+  }
+  @media (max-width: 768px) {
+    margin-right: 10px;
+    margin-left: 10px;
+  }
+  @media (max-width: 600px) {
+    margin-left: 5px;
+  }
 `;
 
 const Image = styled.img`
