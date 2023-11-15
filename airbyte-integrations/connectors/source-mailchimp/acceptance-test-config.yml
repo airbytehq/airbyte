@@ -28,12 +28,19 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
-          bypass_reason: "Risk to disclose internal data. Need to set up a sandbox account - https://github.com/airbytehq/airbyte/issues/20726"
+          path: "integration_tests/expected_records.jsonl"
         fail_on_extra_columns: false
+        empty_streams:
+          - name: "automations"
+            bypass_reason: "Cannot seed in free sandbox account, need to upgrade to paid account."
       - config_path: "secrets/config_oauth.json"
         expect_records:
-          bypass_reason: "Risk to disclose internal data. Need to set up a sandbox account - https://github.com/airbytehq/airbyte/issues/20726"
+          path: "integration_tests/expected_records.jsonl"
+          extra_records: True
         fail_on_extra_columns: false
+        empty_streams:
+          - name: "automations"
+            bypass_reason: "Cannot seed in free sandbox account, need to upgrade to paid account."
   incremental:
     tests:
       - config_path: "secrets/config.json"
