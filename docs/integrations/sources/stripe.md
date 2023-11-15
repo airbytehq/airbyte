@@ -1,6 +1,10 @@
 # Stripe
 
-This page contains the setup guide and reference information for the Stripe source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Stripe](https://stripe.com/) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -8,9 +12,11 @@ This page contains the setup guide and reference information for the Stripe sour
 
 ## Setup Guide
 
+:::note
 To authenticate the Stripe connector, you need to use a Stripe API key. Although you may use an existing key, we recommend that you create a new restricted key specifically for Airbyte and grant it **Read** privileges only. We also recommend granting **Read** privileges to all available permissions, and configuring the specific data you would like to replicate within Airbyte.
+:::
 
-### Create a Stripe Secret Key
+### Step 1: Set up Stripe
 
 1. Log in to your [Stripe account](https://dashboard.stripe.com/login).
 2. In the top navigation bar, click **Developers**.
@@ -21,9 +27,9 @@ To authenticate the Stripe connector, you need to use a Stripe API key. Although
 
 For more information on Stripe API Keys, see the [Stripe documentation](https://stripe.com/docs/keys).
 
-### Set up the Stripe source connector in Airbyte
+### Step 2: Set up the Stripe source connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open Source account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Stripe** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
@@ -46,6 +52,8 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
    If you are unsure of which value to use, we recommend leaving this setting at its default value of 365 days.
 
 10. Click **Set up source** and wait for the tests to complete.
+
+<HideInUI>
 
 ## Supported sync modes
 
@@ -108,11 +116,33 @@ The Stripe source connector supports the following streams:
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
 - [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
 
+
+
+
+
+### Data type mapping
+
+The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
+
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Stripe connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+
+The Stripe connector should not run into Stripe API limitations under normal usage. See Stripe [Rate limits](https://stripe.com/docs/rate-limits) documentation. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+
 :::warning
 **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
 Please be aware: this also means that any change older than 30 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 30 days.
 :::
 
+### Troubleshooting
 :::note
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
 However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
@@ -158,8 +188,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Top Ups`
 - `Transactions`
 - `Transfers`
-
-  :::
+:::
 
 :::note
 The Stripe API also provides a way to implement incremental deletes for a limited number of streams:
@@ -177,16 +206,11 @@ The Stripe API also provides a way to implement incremental deletes for a limite
 - `Subscriptions`
 
 Each record is marked with `is_deleted` flag when the appropriate event happens upstream.
+:::
 
-  :::
+* Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
-### Data type mapping
-
-The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
-
-### Performance considerations
-
-The Stripe connector should not run into Stripe API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+</details>
 
 ## Changelog
 
@@ -274,3 +298,5 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 | 0.1.10  | 2021-05-28 | [3728](https://github.com/airbytehq/airbyte/pull/3728)    | Update data types to be number instead of int                                                                                                        |
 | 0.1.9   | 2021-05-13 | [3367](https://github.com/airbytehq/airbyte/pull/3367)    | Add acceptance tests for connected accounts                                                                                                          |
 | 0.1.8   | 2021-05-11 | [3566](https://github.com/airbytehq/airbyte/pull/3368)    | Bump CDK connectors                                                                                                                                  |
+
+</HideInUI>
