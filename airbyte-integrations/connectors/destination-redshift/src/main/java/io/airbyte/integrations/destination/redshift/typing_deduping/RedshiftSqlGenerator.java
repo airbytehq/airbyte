@@ -5,12 +5,14 @@
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
 import static org.jooq.impl.DSL.createSchemaIfNotExists;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.quotedName;
 
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
@@ -96,9 +98,9 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    */
 
   List<Field<?>> buildFields(final Map<String, DataType<?>> metaColumns, final StreamConfig streamConfig) {
-    List<Field<?>> fields =
+    final List<Field<?>> fields =
         metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(Collectors.toList());
-    List<Field<?>> dataFields =
+    final List<Field<?>> dataFields =
         streamConfig.columns().entrySet().stream().map(column -> field(quotedName(column.getKey().name()), toDialectType(column.getValue()))).collect(
             Collectors.toList());
     fields.addAll(dataFields);
@@ -107,16 +109,16 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
-    DSLContext dsl = getDslContext();
-    CreateSchemaFinalStep createSchemaSql = createSchemaIfNotExists(quotedName(stream.id().finalNamespace()));
+    final DSLContext dsl = getDslContext();
+    final CreateSchemaFinalStep createSchemaSql = createSchemaIfNotExists(quotedName(stream.id().finalNamespace()));
 
     // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
-    String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
-    Map<String, DataType<?>> metaColumns = new LinkedHashMap<>();
+    final String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
+    final Map<String, DataType<?>> metaColumns = new LinkedHashMap<>();
     metaColumns.put(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false));
     metaColumns.put(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
     metaColumns.put(COLUMN_NAME_AB_META, getSuperType().nullable(false));
-    CreateTableColumnStep createTableSql = dsl.createTable(quotedName(stream.id().finalNamespace(), finalTableIdentifier))
+    final CreateTableColumnStep createTableSql = dsl.createTable(quotedName(stream.id().finalNamespace(), finalTableIdentifier))
         .columns(buildFields(metaColumns, stream));
     return createSchemaSql.getSQL() + ";" + System.lineSeparator() + createTableSql.getSQL() + ";";
   }
@@ -136,7 +138,9 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   public String overwriteFinalTable(final StreamId stream, final String finalSuffix) {
-    return null;
+    return DSL.alterTable(DSL.name(stream.finalNamespace(), stream.finalName() + finalSuffix))
+        .renameTo(DSL.quotedName(stream.finalName()))
+        .getSQL();
   }
 
   @Override
@@ -146,7 +150,9 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   public String clearLoadedAt(final StreamId streamId) {
-    return null;
+    return DSL.update(DSL.table(DSL.name(streamId.rawNamespace(), streamId.rawName())))
+        .set(DSL.field(COLUMN_NAME_AB_LOADED_AT), (Object) null)
+        .getSQL();
   }
 
 }
