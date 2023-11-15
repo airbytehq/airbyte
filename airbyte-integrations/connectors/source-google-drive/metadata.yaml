@@ -19,6 +19,12 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 1Gi
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-drive
   tags:
     - language:python

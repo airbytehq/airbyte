@@ -23,6 +23,12 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 1Gi
   releases:
     breakingChanges:
       4.0.0:
