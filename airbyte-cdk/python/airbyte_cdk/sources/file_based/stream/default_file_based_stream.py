@@ -109,16 +109,16 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 )
                 break
 
-            except RecordParseError:
+            except RecordParseError as parse_error:
                 # Increment line_no because the exception was raised before we could increment it
                 line_no += 1
-                yield AirbyteMessage(
-                    type=MessageType.LOG,
-                    log=AirbyteLogMessage(
-                        level=Level.ERROR,
-                        message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
-                        stack_trace=traceback.format_exc(),
-                    ),
+                # we need to explicitly stop the sync, if we have RecordParseError raised from `parse_records()` method.
+                # reference issue: https://github.com/airbytehq/airbyte/issues/31605
+                raise AirbyteTracedException(
+                    internal_message=FileBasedSourceError.ERROR_PARSING_RECORD.value,
+                    message=f"Error while parsing the record: stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
+                    exception=parse_error,
+                    failure_type=FailureType.system_error,
                 )
 
             except Exception:

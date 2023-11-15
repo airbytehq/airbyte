@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Optional
+
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic import BaseModel, Field
 
@@ -20,4 +22,11 @@ class AvroFormat(BaseModel):
         title="Convert Double Fields to Strings",
         description="Whether to convert double fields to strings. This is recommended if you have decimal numbers with a high degree of precision because there can be a loss precision when handling floating point numbers.",
         default=False,
+    )
+
+    skip_unprocessable_file_types: Optional[bool] = Field(
+        default=True,
+        title="Skip Unprocessable File Types",
+        description="If true, skip files that cannot be parsed because of their file type and log a warning. If false, fail the sync. Corrupted files with valid file types will still result in a failed sync.",
+        always_show=True,
     )

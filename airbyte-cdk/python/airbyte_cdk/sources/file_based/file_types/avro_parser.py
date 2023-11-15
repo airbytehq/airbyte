@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterable, Mapping, Optional
 import fastavro
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -138,15 +139,23 @@ class AvroParser(FileTypeParser):
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 
-        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
-            avro_reader = fastavro.reader(fp)
-            schema = avro_reader.writer_schema
-            schema_field_name_to_type = {field["name"]: field["type"] for field in schema["fields"]}
-            for record in avro_reader:
-                yield {
-                    record_field: self._to_output_value(avro_format, schema_field_name_to_type[record_field], record[record_field])
-                    for record_field, record_value in schema_field_name_to_type.items()
-                }
+        line_no = 0
+        try:
+            with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
+                avro_reader = fastavro.reader(fp)
+                schema = avro_reader.writer_schema
+                schema_field_name_to_type = {field["name"]: field["type"] for field in schema["fields"]}
+                for record in avro_reader:
+                    line_no += 1
+                    yield {
+                        record_field: self._to_output_value(avro_format, schema_field_name_to_type[record_field], record[record_field])
+                        for record_field, record_value in schema_field_name_to_type.items()
+                    }
+        except Exception:
+            if avro_format.skip_unprocessable_file_types:
+                logger.warn(f"AvroParser: File {file.uri} cannot be parsed and will be skipped.")
+            else:
+                raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no)
 
     @property
     def file_read_mode(self) -> FileReadMode:
