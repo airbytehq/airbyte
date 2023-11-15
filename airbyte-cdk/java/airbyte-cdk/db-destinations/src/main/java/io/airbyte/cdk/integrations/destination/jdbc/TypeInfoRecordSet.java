@@ -44,25 +44,25 @@ public record TypeInfoRecordSet(
       while (rs.next()) {
         final var typeName = rs.getString("TYPE_NAME");
         types.put(typeName,
-                  new TypeInfoRecordSet(
-                      typeName,
-                      rs.getInt("DATA_TYPE"),
-                      rs.getInt("PRECISION"),
-                      rs.getString("LITERAL_PREFIX"),
-                      rs.getString("LITERAL_SUFFIX"),
-                      rs.getString("CREATE_PARAMS"),
-                      rs.getShort("NULLABLE"),
-                      rs.getBoolean("CASE_SENSITIVE"),
-                      rs.getShort("SEARCHABLE"),
-                      rs.getBoolean("UNSIGNED_ATTRIBUTE"),
-                      rs.getBoolean("FIXED_PREC_SCALE"),
-                      rs.getBoolean("AUTO_INCREMENT"),
-                      rs.getString("LOCAL_TYPE_NAME"),
-                      rs.getShort("MINIMUM_SCALE"),
-                      rs.getShort("MAXIMUM_SCALE"),
-                      rs.getInt("SQL_DATA_TYPE"),
-                      rs.getInt("SQL_DATETIME_SUB"),
-                      rs.getInt("NUM_PREC_RADIX")));
+            new TypeInfoRecordSet(
+                typeName,
+                rs.getInt("DATA_TYPE"),
+                rs.getInt("PRECISION"),
+                rs.getString("LITERAL_PREFIX"),
+                rs.getString("LITERAL_SUFFIX"),
+                rs.getString("CREATE_PARAMS"),
+                rs.getShort("NULLABLE"),
+                rs.getBoolean("CASE_SENSITIVE"),
+                rs.getShort("SEARCHABLE"),
+                rs.getBoolean("UNSIGNED_ATTRIBUTE"),
+                rs.getBoolean("FIXED_PREC_SCALE"),
+                rs.getBoolean("AUTO_INCREMENT"),
+                rs.getString("LOCAL_TYPE_NAME"),
+                rs.getShort("MINIMUM_SCALE"),
+                rs.getShort("MAXIMUM_SCALE"),
+                rs.getInt("SQL_DATA_TYPE"),
+                rs.getInt("SQL_DATETIME_SUB"),
+                rs.getInt("NUM_PREC_RADIX")));
       }
     }
     return types;
