@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -213,8 +212,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
         () -> assertEquals("timetz", existingTable.get().columns().get("time_with_timezone").type()),
         () -> assertEquals("time", existingTable.get().columns().get("time_without_timezone").type()),
         () -> assertEquals("date", existingTable.get().columns().get("date").type()),
-        () -> assertEquals("super", existingTable.get().columns().get("unknown").type())
-    );
+        () -> assertEquals("super", existingTable.get().columns().get("unknown").type()));
     // TODO assert on table clustering, etc.
   }
 
