@@ -50,19 +50,11 @@ acceptance_tests:
         fail_on_extra_columns: false
         ignored_fields:
           board_pins:
-            - name: "links"
-              bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
-            - name: "link"
-              bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
             - name: "media"
-              bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
+              bypass_reason: "urls may change"
           board_section_pins:
-            - name: "links"
-              bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
-            - name: "link"
-              bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
             - name: "media"
-              bypass_reason: "because it contains non-secure http link, which leads to failed QA tests"
+              bypass_reason: "urls may change"
           ads:
             - name: "updated_time"
               bypass_reason: "can be updated"
