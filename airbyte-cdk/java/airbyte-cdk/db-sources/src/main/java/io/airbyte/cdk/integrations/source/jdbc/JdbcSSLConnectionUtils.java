@@ -89,13 +89,13 @@ public class JdbcSSLConnectionUtils {
         retVal.putAll(Map.of(
             CLIENT_KEY_STORE_URL, sslConfig.clientKeyStoreInfo.url.toString(),
             CLIENT_KEY_STORE_PASS, sslConfig.clientKeyStoreInfo.password,
-            CLIENT_KEY_STORE_PASS, sslConfig.clientKeyStoreInfo.type));
+            CLIENT_KEY_STORE_TYPE, sslConfig.clientKeyStoreInfo.type));
       }
       if (sslConfig.caKeyStoreInfo != null) {
         retVal.putAll(Map.of(
             TRUST_KEY_STORE_URL,sslConfig.caKeyStoreInfo.url.toString(),
             TRUST_KEY_STORE_PASS,sslConfig.caKeyStoreInfo.password,
-            TRUST_KEY_STORE_PASS,sslConfig.caKeyStoreInfo.type));
+            TRUST_KEY_STORE_TYPE,sslConfig.caKeyStoreInfo.type));
       }
     }
     return retVal;
