@@ -1,6 +1,10 @@
 # Bing Ads
 
+<HideInUI>
+
 This page contains the setup guide and reference information for the Bing Ads source connector.
+
+</HideInUI>
 
 ## Prerequisites
 - Microsoft Advertising account
@@ -83,6 +87,8 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 
 10. Click **Set up source**.
 <!-- /env:oss -->
+
+<HideInUI>
 
 ## Supported sync modes
 
@@ -179,9 +185,24 @@ For example, if you select a report with daily aggregation, the report will cont
 
 A report's aggregation window is indicated in its name. For example, `account_performance_report_hourly` is the Account Performance Reported aggregated using an hourly window.
 
-## Performance considerations
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Bing Ads connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
 
 The Bing Ads API limits the number of requests for all Microsoft Advertising clients. You can find detailed info [here](https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling).
+
+### Troubleshooting
+
+* Check out common troubleshooting issues for the Bing Ads source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
 
 ## Changelog
 
@@ -234,3 +255,5 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 | 0.1.2   | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429)                                                                           | Update titles and descriptions                                                                                                               |
 | 0.1.1   | 2021-08-31 | [5750](https://github.com/airbytehq/airbyte/pull/5750)                                                                           | Added reporting streams\)                                                                                                                    |
 | 0.1.0   | 2021-07-22 | [4911](https://github.com/airbytehq/airbyte/pull/4911)                                                                           | Initial release supported core streams \(Accounts, Campaigns, Ads, AdGroups\)                                                                |
+
+</HideInUI>
