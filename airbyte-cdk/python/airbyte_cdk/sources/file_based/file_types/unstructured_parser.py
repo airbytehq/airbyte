@@ -118,6 +118,8 @@ class UnstructuredParser(FileTypeParser):
             file = BytesIO(file_handle.read())
             file_handle.seek(0)
             elements = unstructured_partition_pdf(file=file)
+            # need to close the inner file object to prevent memory leak
+            file.close()
         elif filetype == FileType.DOCX:
             elements = unstructured_partition_docx(file=file)
         elif filetype == FileType.PPTX:
