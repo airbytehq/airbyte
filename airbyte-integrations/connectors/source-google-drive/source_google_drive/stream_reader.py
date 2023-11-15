@@ -9,7 +9,6 @@ import re
 from datetime import datetime
 from io import IOBase
 from typing import Iterable, List, Optional, Set
-from source_google_drive.utils import get_folder_id
 
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -17,6 +16,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureTy
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
+from source_google_drive.utils import get_folder_id
 
 from .spec import SourceGoogleDriveSpec
 
