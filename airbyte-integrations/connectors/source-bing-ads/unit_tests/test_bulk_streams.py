@@ -100,6 +100,10 @@ def test_bulk_stream_stream_state(mocked_client, config):
     stream = AppInstallAds(mocked_client, config)
     stream.state = {"Account Id": "some_account_id", "Modified Time": "04/27/2023 18:00:14.970"}
     assert stream.state == {"some_account_id": {"Modified Time": "2023-04-27T18:00:14.970+00:00"}}
+    stream.state = {"Account Id": "some_account_id", "Modified Time": "05/27/2023 18:00:14.970"}
+    assert stream.state == {"some_account_id": {"Modified Time": "2023-05-27T18:00:14.970+00:00"}}
+    stream.state = {"Account Id": "some_account_id", "Modified Time": "05/25/2023 18:00:14.970"}
+    assert stream.state == {"some_account_id": {"Modified Time": "2023-05-27T18:00:14.970+00:00"}}
 
 
 @patch.object(source_bing_ads.source, "Client")
