@@ -70,12 +70,12 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
   @Override
   protected void createRawTable(StreamId streamId) throws Exception {
-    database.execute(DSL.createTable(DSL.name( streamId.rawNamespace(), streamId.rawName()))
-                         .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
-                         .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
-                         .column(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE)
-                         .column(COLUMN_NAME_DATA, new DefaultDataType<>(null, String.class, "super").nullable(false))
-                         .getSQL());
+    database.execute(DSL.createTable(DSL.name(streamId.rawNamespace(), streamId.rawName()))
+        .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
+        .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
+        .column(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE)
+        .column(COLUMN_NAME_DATA, new DefaultDataType<>(null, String.class, "super").nullable(false))
+        .getSQL());
   }
 
   @Override
