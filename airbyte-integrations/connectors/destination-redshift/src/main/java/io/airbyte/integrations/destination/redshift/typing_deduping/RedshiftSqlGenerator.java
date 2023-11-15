@@ -118,7 +118,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     metaColumns.put(COLUMN_NAME_AB_META, getSuperType().nullable(false));
     CreateTableColumnStep createTableSql = dsl.createTable(quotedName(stream.id().finalNamespace(), finalTableIdentifier))
         .columns(buildFields(metaColumns, stream));
-    return dsl.begin(createSchemaSql, createTableSql).getSQL();
+    return createSchemaSql.getSQL() + ";" + System.lineSeparator() + createTableSql.getSQL() + ";";
   }
 
   @Override
