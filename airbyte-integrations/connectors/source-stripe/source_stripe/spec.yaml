@@ -62,10 +62,10 @@ connectionSpecification:
       title: Number of concurrent workers
       minimum: 1
       maximum: 20
-      default: 3
+      default: 10
       examples: [1, 2, 3]
       description: >-
-        The number of worker thread to use for the sync. The bigger the value is, the faster the sync will be.
+        The number of worker thread to use for the sync.
         The performance upper boundary depends on call_rate_limit setting and type of account.
       order: 5
     call_rate_limit:

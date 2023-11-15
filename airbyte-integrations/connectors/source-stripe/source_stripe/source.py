@@ -500,7 +500,7 @@ class SourceStripe(AbstractSource):
             ),
         ]
 
-        concurrency_level = min(config.get("num_workers", 3), _MAX_CONCURRENCY)
+        concurrency_level = min(config.get("num_workers", 10), _MAX_CONCURRENCY)
         streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
 
         return [
