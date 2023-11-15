@@ -20,6 +20,7 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
 
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
     cursor_field = "Modified Time"
+    primary_key = "Id"
     _state = {}
 
     @staticmethod
@@ -132,8 +133,6 @@ class AppInstallAds(BingAdsBulkStream):
     data_scope = ["EntityData"]
     download_entities = ["AppInstallAds"]
 
-    primary_key = "Id"
-
 
 class AppInstallAdLabels(BingAdsBulkStream):
     """
@@ -142,8 +141,6 @@ class AppInstallAdLabels(BingAdsBulkStream):
 
     data_scope = ["EntityData"]
     download_entities = ["AppInstallAdLabels"]
-
-    primary_key = "Id"
 
 
 class Labels(BingAdsBulkStream):
@@ -154,8 +151,6 @@ class Labels(BingAdsBulkStream):
     data_scope = ["EntityData"]
     download_entities = ["Labels"]
 
-    primary_key = "Id"
-
 
 class KeywordLabels(BingAdsBulkStream):
     """
@@ -164,8 +159,6 @@ class KeywordLabels(BingAdsBulkStream):
 
     data_scope = ["EntityData"]
     download_entities = ["KeywordLabels"]
-
-    primary_key = "Id"
 
 
 class Keywords(BingAdsBulkStream):
@@ -176,8 +169,6 @@ class Keywords(BingAdsBulkStream):
     data_scope = ["EntityData"]
     download_entities = ["Keywords"]
 
-    primary_key = "Id"
-
 
 class CampaignLabels(BingAdsBulkStream):
     """
@@ -187,8 +178,6 @@ class CampaignLabels(BingAdsBulkStream):
     data_scope = ["EntityData"]
     download_entities = ["CampaignLabels"]
 
-    primary_key = "Id"
-
 
 class AdGroupLabels(BingAdsBulkStream):
     """
@@ -197,5 +186,3 @@ class AdGroupLabels(BingAdsBulkStream):
 
     data_scope = ["EntityData"]
     download_entities = ["AdGroupLabels"]
-
-    primary_key = "Id"
