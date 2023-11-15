@@ -142,7 +142,7 @@ public class FlushWorkers implements AutoCloseable {
     final int queueSize = threadPoolExecutor.getQueue().size();
     final int activeCount = threadPoolExecutor.getActiveCount();
 
-    workerInfo.append(String.format("  Pool queue size: %d, Active threads: %d", queueSize, activeCount));
+    workerInfo.append(String.format("Pool queue size: %d, Active threads: %d", queueSize, activeCount));
     log.info(workerInfo.toString());
 
   }
