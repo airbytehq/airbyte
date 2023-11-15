@@ -309,7 +309,6 @@ class SegmentMembers(MailChimpListSubStream):
             segment_records = Segments(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)
 
             for segment in segment_records:
-                self.logger.info(f"Reading segment {segment['id']} from list {segment['list_id']}")
                 yield {"list_id": segment["list_id"], "segment_id": segment["id"]}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -324,7 +323,7 @@ class SegmentMembers(MailChimpListSubStream):
         response = super().parse_response(response, **kwargs)
 
         for record in response:
-
+            # Add the segment_id foreign_key to each record
             record["segment_id"] = stream_slice.get("segment_id")
 
             current_cursor_value = stream_state.get(record.get("segment_id"), {}).get(self.cursor_field)
@@ -334,11 +333,8 @@ class SegmentMembers(MailChimpListSubStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
-
         segment_id = latest_record.get("segment_id")
         latest_cursor_value = latest_record.get(self.cursor_field)
-
-        self.logger.info(f"Segment_id: {segment_id}")
 
         # Get the current state value for this list, if it exists
         list_state = current_stream_state.get(segment_id, {})
@@ -347,10 +343,6 @@ class SegmentMembers(MailChimpListSubStream):
         # Update the cursor value and set it in state
         updated_cursor_value = max(current_cursor_value, latest_cursor_value)
         current_stream_state[segment_id] = {self.cursor_field: updated_cursor_value}
-
-        self.logger.info(f"Current state: {current_stream_state}")
-        self.logger.info(f"Latest record: {current_stream_state[segment_id]}")
-        self.logger.info(f"Segment_id: {segment_id}")
         return current_stream_state
 
 class Segments(MailChimpListSubStream):

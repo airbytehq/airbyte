@@ -109,6 +109,9 @@
     },
     "list_id": {
       "type": ["null", "string"]
+    },
+    "segment_id": {
+      "type": ["null", "string"]
     }
   }
 }
