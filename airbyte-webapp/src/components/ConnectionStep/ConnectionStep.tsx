@@ -46,6 +46,10 @@ export const SingleText = styled.div`
   font-weight: 700;
   font-size: 22px;
   line-height: 30px;
+  @media (max-width: 830px) {
+    font-weight: 500px;
+    font-size: 18px;
+  }
 `;
 
 const ConnectionStep: React.FC<IProps> = ({ onSelect, type, lightMode, activeStep }) => {

@@ -23,6 +23,9 @@ const Content = styled.div`
   flex-direction: row;
   justify-content: center;
   font-family: ${({ theme }) => theme.regularFont};
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 `;
 
 const StepsMenu: React.FC<IProps> = ({ data, onSelect, activeStep, lightMode }) => {

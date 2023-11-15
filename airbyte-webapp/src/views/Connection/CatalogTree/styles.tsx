@@ -6,6 +6,9 @@ export const HeaderCell = styled(Cell)`
   font-size: 10px;
   line-height: 13px;
   width: 120px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 `;
 
 export const CheckboxCell = styled(HeaderCell)`

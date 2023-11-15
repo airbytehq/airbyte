@@ -15,6 +15,7 @@
 %catalogHeader {
   min-height: 33px;
   margin-bottom: 0 !important;
+  font-size: 12px;
 
   // background-color: red;
   display: flex;
@@ -49,7 +50,7 @@
 
   padding-top: 6px;
 }
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 986px) {
   .catalogHeader,
   %catalogHeader {
     display: none;
