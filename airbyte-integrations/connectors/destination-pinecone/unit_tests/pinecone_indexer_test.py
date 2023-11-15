@@ -68,6 +68,34 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
     )
 
 
+@pytest.mark.parametrize(
+    "store_text, expected_metadata",
+    [
+        (True, {"_ab_stream": "abc", "x": "y", "text": "test"}),
+        (False, {"_ab_stream": "abc", "x": "y"}),
+    ]
+)
+def test_pinecone_index_upsert_store_text(mock_describe_index, store_text, expected_metadata):
+    indexer = create_pinecone_indexer()
+    indexer.config.store_text = store_text
+    indexer._pod_type = "p1"
+    indexer.index(
+        [
+            Mock(page_content="test", metadata={"_ab_stream": "abc", "x": "y"}, embedding=[1, 2, 3]),
+        ],
+        "ns1",
+        "some_stream",
+    )
+    indexer.pinecone_index.upsert.assert_called_with(
+        vectors=(
+            (ANY, [1, 2, 3], expected_metadata),
+        ),
+        async_req=True,
+        show_progress=False,
+        namespace="ns1",
+    )
+
+
 def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
     indexer = create_pinecone_indexer()
     indexer._pod_type = "starter"

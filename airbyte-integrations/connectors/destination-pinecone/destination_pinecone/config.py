@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Union
+from typing import Optional, Union
 
 import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
@@ -28,6 +28,7 @@ class PineconeIndexingModel(BaseModel):
         ..., title="Pinecone Environment", description="Pinecone Cloud environment to use", examples=["us-west1-gcp", "gcp-starter"]
     )
     index: str = Field(..., title="Index", description="Pinecone index in your project to load data into")
+    store_text: bool = Field(default=True, title="Store text", description="Store the text that gets embedded along with the vector and the metadata in the Pinecone index under the key `text`. If set to false, only the vector and the metadata will be stored.")
 
     class Config:
         title = "Indexing"
