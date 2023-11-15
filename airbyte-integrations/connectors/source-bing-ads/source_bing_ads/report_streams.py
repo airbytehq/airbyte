@@ -736,7 +736,7 @@ class CustomReport(BingAdsReportingServicePerformanceStream, ABC):
         """
         Parse report date field based on aggregation type
         """
-        if not self.report_aggregation:
+        if not self.report_aggregation or self.report_aggregation == "Summary":
             datestring = transform_date_format_to_rfc_3339(datestring)
         elif self.report_aggregation == "Hourly":
             datestring = transform_report_hourly_datetime_format_to_rfc_3339(datestring)

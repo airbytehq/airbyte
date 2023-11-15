@@ -455,6 +455,11 @@ def test_custom_report_send_request(mocked_client, config_with_custom_reports, l
     "aggregation, datastring, expected",
     [
         (
+            "Summary",
+            "11/13/2023",
+            "2023-11-13",
+        ),
+        (
             "Hourly",
             "2022-11-13|10",
             "2022-11-13T10:00:00+00:00",
