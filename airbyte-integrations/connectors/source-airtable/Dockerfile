@@ -1,7 +1,7 @@
 ARG AIRBYTE_TO_FLOW_TAG="dev"
 FROM ghcr.io/estuary/airbyte-to-flow:$AIRBYTE_TO_FLOW_TAG as airbyte-to-flow
 
-FROM airbyte/source-airtable:3.1.0
+FROM airbyte/source-airtable:3.0.1
 
 COPY *.json ./
 COPY streams/* ./streams/
