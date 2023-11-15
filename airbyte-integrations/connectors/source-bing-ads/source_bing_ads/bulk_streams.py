@@ -59,9 +59,10 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
     @state.setter
     def state(self, value: Mapping[str, Any]):
         current_state_value = self._state.get(str(value["Account Id"]), {}).get(self.cursor_field, "")
-        record_state_value = transform_bulk_datetime_format_to_rfc_3339(value[self.cursor_field])
-        new_state_value = max(current_state_value, record_state_value)
-        self._state.update({str(value["Account Id"]): {self.cursor_field: new_state_value}})
+        if value[self.cursor_field]:
+            record_state_value = transform_bulk_datetime_format_to_rfc_3339(value[self.cursor_field])
+            new_state_value = max(current_state_value, record_state_value)
+            self._state.update({str(value["Account Id"]): {self.cursor_field: new_state_value}})
 
     def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None) -> Optional[pendulum.DateTime]:
         """
