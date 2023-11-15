@@ -15,12 +15,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
+import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.charset.Charset;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,6 +142,18 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
                               final int index)
       throws SQLException {
     node.put(columnName, Geography.deserialize(resultSet.getBytes(index)).toString());
+  }
+
+  @Override
+  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    final DateTimeFormatter microsecondsFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss[.][SSSSSS]");
+    try {
+      node.put(columnName, getObject(resultSet, index, LocalDateTime.class).format(microsecondsFormatter));
+    } catch (final Exception e) {
+      // for backward compatibility
+      final Instant instant = resultSet.getTimestamp(index).toInstant();
+      node.put(columnName, DataTypeUtils.toISO8601StringWithMicroseconds(instant));
+    }
   }
 
   @Override
