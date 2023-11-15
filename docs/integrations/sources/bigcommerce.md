@@ -18,6 +18,7 @@ This Source is capable of syncing the following core Streams:
 - [Channels](https://developer.bigcommerce.com/api-reference/d2298071793d6-get-all-channels)
 - [Store](https://developer.bigcommerce.com/docs/rest-management/store-information#get-store-information)
 - [OrderProducts](https://developer.bigcommerce.com/api-reference/3b4dfef625708-list-order-products)
+- [OrderCoupons](https://developer.bigcommerce.com/docs/rest-management/orders/order-coupons#list-order-coupons)
 - [Brands](https://developer.bigcommerce.com/api-reference/c2610608c20c8-get-all-brands)
 - [Categories](https://developer.bigcommerce.com/api-reference/9cc3a53863922-get-all-categories)
 
@@ -55,6 +56,7 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 0.3.0   | 2023-11-16 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add Order Coupons stream                                    |
 | 0.2.0   | 2023-08-16 | [29469](https://github.com/airbytehq/airbyte/pull/29469) | Migrate Python CDK to Low Code                              |
 | 0.1.10  | 2022-12-16 | [20518](https://github.com/airbytehq/airbyte/pull/20518) | Add brands and categories streams                           |
 | 0.1.9   | 2022-12-15 | [20540](https://github.com/airbytehq/airbyte/pull/20540) | Rebuild on CDK 0.15.0                                       |
