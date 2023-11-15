@@ -1,0 +1,21 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+     "createTime": {
+       "type": "string"
+     },
+     "displayName": {
+       "type": "string"
+     },
+     "name": {
+       "type": "string"
+     },
+     "regionCode": {
+       "type": "string"
+     },
+     "updateTime": {
+       "type": "string"
+     }
+   },
+   "type": "object"
+ }

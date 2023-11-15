@@ -1,0 +1,39 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+     "account": {
+       "type": "string"
+     },
+     "createTime": {
+       "type": "string"
+     },
+     "currencyCode": {
+       "type": "string"
+     },
+     "displayName": {
+       "type": "string"
+     },
+     "industryCategory": {
+       "type": "string"
+     },
+     "name": {
+       "type": "string"
+     },
+     "parent": {
+       "type": "string"
+     },
+     "propertyType": {
+       "type": "string"
+     },
+     "serviceLevel": {
+       "type": "string"
+     },
+     "timeZone": {
+       "type": "string"
+     },
+     "updateTime": {
+       "type": "string"
+     }
+   },
+   "type": "object"
+ }
