@@ -126,7 +126,7 @@ class ConcurrentCursor(Cursor):
 
             self._state["slices"].append(
                 {
-                    "start": 0,  # FIXME this only works with int datetime
+                    "start": self._connector_state_converter.min(),
                     "end": self._extract_cursor_value(self._most_recent_record),
                 }
             )

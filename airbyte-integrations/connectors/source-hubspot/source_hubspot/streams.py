@@ -811,6 +811,7 @@ class Stream(HttpStream, ABC):
 
 class ClientSideIncrementalStream(Stream, IncrementalMixin):
     _cursor_value = ""
+    _lowest_cursor_value = 0
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -850,11 +851,10 @@ class ClientSideIncrementalStream(Stream, IncrementalMixin):
         # default state value before all futher checks
         state_value = self._start_date
         # we should check the presence of `stream_state` to overcome `availability strategy` check issues
-        if stream_state:
-            state_value = stream_state.get(self.cursor_field)
+        if self._lowest_cursor_value:
             # sometimes the state is saved as `EMPTY STRING` explicitly
             state_value = (
-                self._start_date if str(state_value) == "" else pendulum.from_format(str(state_value), self.cursor_field_datetime_format)
+                self._start_date if str(state_value) == "" else pendulum.from_format(str(self._lowest_cursor_value), self.cursor_field_datetime_format)
             )
         # compare the state with record values and get the max value between of two
         cursor_value = max(state_value, record_value)

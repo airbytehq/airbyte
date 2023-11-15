@@ -7,20 +7,31 @@ from http import HTTPStatus
 from itertools import chain
 from typing import Any, List, Mapping, Optional, Tuple
 
+from datetime import datetime, timedelta
 import requests
+from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.state_converter import AscendingValueConcurrentStreamStateConverter
 from requests import HTTPError
+
 from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     Campaigns,
+    ClientSideIncrementalStream,
     Companies,
     ContactLists,
     Contacts,
     ContactsListMemberships,
     ContactsMergedAudit,
+    CRMObjectIncrementalStream,
+    CRMSearchStream,
     CustomObject,
     DealPipelines,
     Deals,
@@ -49,8 +60,20 @@ from source_hubspot.streams import (
 )
 
 
+def _incremental_iso8601_datetime(formats: List[str], delta: timedelta):
+    def _increment(timestamp: str):
+        for format in formats:
+            try:
+                return (datetime.strptime(timestamp, format) + delta).strftime(format)
+            except Exception:
+                pass
+        raise ValueError("_incremental_iso8601_datetime")
+    return _increment
+
+
 class SourceHubspot(AbstractSource):
     logger = AirbyteLogger()
+    message_repository = InMemoryMessageRepository(entrypoint_logger.level)
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Check connection"""
@@ -129,6 +152,11 @@ class SourceHubspot(AbstractSource):
             TicketPipelines(**common_params),
             Workflows(**common_params),
         ]
+        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams},
+                                              state=self.read_state("sample_files/sample_state.json"))
+        for stream in streams:
+            if isinstance(stream, ClientSideIncrementalStream):
+                stream._lowest_cursor_value = state_manager.get_stream_state(stream.name, stream.namespace).get(stream.cursor_field)
 
         api = API(credentials=credentials)
         if api.is_oauth2():
@@ -151,7 +179,55 @@ class SourceHubspot(AbstractSource):
 
         available_streams.extend(self.get_custom_object_streams(api=api, common_params=common_params))
 
-        return available_streams
+        concurrent_streams = []
+        epoch_cursor_value_stream = {'contact_lists', 'email_events', 'workflows', 'deal_pipelines', 'subscription_changes', 'engagements', 'campaigns'}
+        iso8601_cursor_value_stream = {'engagements_tasks', 'engagements_meetings', 'owners', 'products', 'contacts', 'companies', 'forms', 'goals', 'engagements_calls', 'engagements_notes', 'deals_archived', 'tickets', 'deals', 'line_items', 'engagements_emails'}
+        for stream in available_streams:
+            if stream.name in epoch_cursor_value_stream:
+                state_converter = AscendingValueConcurrentStreamStateConverter(stream.cursor_field, 0, lambda x: x + 1)
+                state = state_converter.get_concurrent_stream_state(
+                    state_manager.get_stream_state(stream.name, stream.namespace)
+                )
+                cursor = ConcurrentCursor(
+                    stream.name,
+                    stream.namespace,
+                    state,
+                    self.message_repository,
+                    state_manager,
+                    state_converter,
+                    CursorField(stream.cursor_field[0] if type(stream.cursor_field) == list else stream.cursor_field),
+                    () if isinstance(stream, (ClientSideIncrementalStream, CRMObjectIncrementalStream, CRMSearchStream, Engagements)) else ("startTimestamp", "endTimestamp"),
+                )
+            elif stream.name in iso8601_cursor_value_stream:
+                state_converter = AscendingValueConcurrentStreamStateConverter(stream.cursor_field, "0001-01-01T00:00:00Z", _incremental_iso8601_datetime(["%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S.%fZ"], timedelta(seconds=1)))
+                state = state_converter.get_concurrent_stream_state(
+                    state_manager.get_stream_state(stream.name, stream.namespace)
+                )
+                cursor = ConcurrentCursor(
+                    stream.name,
+                    stream.namespace,
+                    state,
+                    self.message_repository,
+                    state_manager,
+                    state_converter,
+                    CursorField(stream.cursor_field[0] if type(stream.cursor_field) == list else stream.cursor_field),
+                    () if isinstance(stream, (ClientSideIncrementalStream, CRMObjectIncrementalStream, CRMSearchStream, Engagements)) else ("startTimestamp", "endTimestamp"),
+                )
+            else:
+                state = {}
+                cursor = NoopCursor()
+
+            concurrent_streams.append(
+                StreamFacade.create_from_stream(
+                    stream,
+                    self,
+                    entrypoint_logger,
+                    5,
+                    state,
+                    cursor,
+                )
+            )
+        return concurrent_streams
 
     def get_custom_object_streams(self, api: API, common_params: Mapping[str, Any]):
         for entity, fully_qualified_name, schema, custom_properties in api.get_custom_objects_metadata():

@@ -3,8 +3,9 @@
 #
 
 from abc import ABC, abstractmethod
+from datetime import datetime, timedelta, timezone
 from enum import Enum
-from typing import Any, List, MutableMapping, Optional
+from typing import Any, List, MutableMapping, Optional, Callable
 
 
 class ConcurrencyCompatibleStateType(Enum):
@@ -49,6 +50,10 @@ class ConcurrentStreamStateConverter(ABC):
         """
         ...
 
+    @abstractmethod
+    def min(self) -> Any:
+        ...
+
     def _get_latest_complete_time(self, slices: List[MutableMapping[str, Any]]) -> Optional[Any]:
         """
         Get the latest time before which all records have been processed.
@@ -67,25 +72,26 @@ class ConcurrentStreamStateConverter(ABC):
         """
         ...
 
-    @classmethod
-    def merge_intervals(cls, intervals: List[MutableMapping[str, Any]]) -> List[MutableMapping[str, Any]]:
-        sorted_intervals = sorted(intervals, key=lambda x: (x[cls.START_KEY], x[cls.END_KEY]))
+    def merge_intervals(self, intervals: List[MutableMapping[str, Any]]) -> List[MutableMapping[str, Any]]:
+        sorted_intervals = sorted(intervals, key=lambda x: (x[self.START_KEY], x[self.END_KEY]))
         if len(sorted_intervals) > 0:
             merged_intervals = [sorted_intervals[0]]
         else:
             return []
         for interval in sorted_intervals[1:]:
-            if interval[cls.START_KEY] <= cls.increment(merged_intervals[-1][cls.END_KEY]):
-                merged_intervals[-1][cls.END_KEY] = interval[cls.END_KEY]
+            if interval[self.START_KEY] <= self.increment(merged_intervals[-1][self.END_KEY]):
+                merged_intervals[-1][self.END_KEY] = interval[self.END_KEY]
             else:
                 merged_intervals.append(interval)
 
         return merged_intervals
 
 
-class EpochValueConcurrentStreamStateConverter(ConcurrentStreamStateConverter):
-    def __init__(self, cursor_field: str):
+class AscendingValueConcurrentStreamStateConverter(ConcurrentStreamStateConverter):
+    def __init__(self, cursor_field: str, min_value: Any, increment_function: Callable[[Any], Any]):
         self._cursor_field = cursor_field
+        self._min_value = min_value
+        self._increment_function = increment_function
 
     def convert_from_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
@@ -102,10 +108,10 @@ class EpochValueConcurrentStreamStateConverter(ConcurrentStreamStateConverter):
         """
         if self.is_state_message_compatible(stream_state):
             return stream_state
-        if self._cursor_field in stream_state:
+        if self._cursor_field in stream_state and stream_state[self._cursor_field]:
             slices = [
                 {
-                    self.START_KEY: 0,
+                    self.START_KEY: self.min(),
                     self.END_KEY: stream_state[self._cursor_field],
                 },
             ]
@@ -138,6 +144,8 @@ class EpochValueConcurrentStreamStateConverter(ConcurrentStreamStateConverter):
         else:
             return stream_state
 
-    @staticmethod
-    def increment(timestamp: Any) -> Any:
-        return timestamp + 1
+    def increment(self, timestamp: Any) -> Any:
+        return self._increment_function(timestamp)
+
+    def min(self) -> Any:
+        return self._min_value
