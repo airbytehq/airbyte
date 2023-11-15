@@ -61,8 +61,8 @@ connectionSpecification:
       type: integer
       title: Number of concurrent workers
       minimum: 1
-      maximum: 3
-      default: 20
+      maximum: 20
+      default: 3
       examples: [1, 2, 3]
       description: >-
         The number of worker thread to use for the sync. The bigger the value is, the faster the sync will be.

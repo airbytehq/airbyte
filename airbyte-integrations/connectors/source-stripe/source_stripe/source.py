@@ -500,9 +500,7 @@ class SourceStripe(AbstractSource):
             ),
         ]
 
-        # We cap the number of workers to avoid hitting the Stripe rate limit
-        # The limit can be removed or increased once we have proper rate limiting
-        concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
+        concurrency_level = min(config.get("num_workers", 3), _MAX_CONCURRENCY)
         streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
 
         return [
