@@ -10,7 +10,8 @@
     },
     "TimePeriod": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "CurrencyCode": {
       "type": ["null", "string"]
@@ -151,18 +152,6 @@
       "type": ["null", "integer"]
     },
     "LowQualityConversionRate": {
-      "type": ["null", "number"]
-    },
-    "HistoricalQualityScore": {
-      "type": ["null", "number"]
-    },
-    "HistoricalExpectedCtr": {
-      "type": ["null", "number"]
-    },
-    "HistoricalAdRelevance": {
-      "type": ["null", "number"]
-    },
-    "HistoricalLandingPageExperience": {
       "type": ["null", "number"]
     },
     "Revenue": {

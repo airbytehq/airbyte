@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "AccountName": {
@@ -13,7 +13,8 @@
     },
     "TimePeriod": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "CampaignName": {
       "type": ["null", "string"]
@@ -27,25 +28,19 @@
     "AdGroupId": {
       "type": ["null", "integer"]
     },
-    "AdId": {
-      "type": ["null", "integer"]
-    },
-    "AdType": {
+    "Country": {
       "type": ["null", "string"]
     },
-    "DestinationUrl": {
+    "State": {
       "type": ["null", "string"]
     },
-    "BidMatchType": {
+    "MetroArea": {
       "type": ["null", "string"]
     },
-    "DeliveredMatchType": {
+    "CurrencyCode": {
       "type": ["null", "string"]
     },
-    "CampaignStatus": {
-      "type": ["null", "string"]
-    },
-    "AdStatus": {
+    "AdDistribution": {
       "type": ["null", "string"]
     },
     "Impressions": {
@@ -66,29 +61,35 @@
     "AveragePosition": {
       "type": ["null", "number"]
     },
-    "SearchQuery": {
+    "ProximityTargetLocation": {
       "type": ["null", "string"]
     },
-    "Keyword": {
-      "type": ["null", "string"]
-    },
-    "AdGroupCriterionId": {
-      "type": ["null", "string"]
-    },
-    "Conversions": {
+    "Radius": {
       "type": ["null", "integer"]
-    },
-    "ConversionRate": {
-      "type": ["null", "number"]
-    },
-    "CostPerConversion": {
-      "type": ["null", "number"]
     },
     "Language": {
       "type": ["null", "string"]
     },
-    "KeywordId": {
-      "type": ["null", "integer"]
+    "City": {
+      "type": ["null", "string"]
+    },
+    "QueryIntentCountry": {
+      "type": ["null", "string"]
+    },
+    "QueryIntentState": {
+      "type": ["null", "string"]
+    },
+    "QueryIntentCity": {
+      "type": ["null", "string"]
+    },
+    "QueryIntentDMA": {
+      "type": ["null", "string"]
+    },
+    "BidMatchType": {
+      "type": ["null", "string"]
+    },
+    "DeliveredMatchType": {
+      "type": ["null", "string"]
     },
     "Network": {
       "type": ["null", "string"]
@@ -105,10 +106,19 @@
     "Assists": {
       "type": ["null", "integer"]
     },
+    "Conversions": {
+      "type": ["null", "integer"]
+    },
+    "ConversionRate": {
+      "type": ["null", "number"]
+    },
     "Revenue": {
       "type": ["null", "number"]
     },
     "ReturnOnAdSpend": {
+      "type": ["null", "number"]
+    },
+    "CostPerConversion": {
       "type": ["null", "number"]
     },
     "CostPerAssist": {
@@ -120,23 +130,23 @@
     "RevenuePerAssist": {
       "type": ["null", "number"]
     },
-    "AccountStatus": {
+    "County": {
       "type": ["null", "string"]
     },
-    "AdGroupStatus": {
+    "PostalCode": {
       "type": ["null", "string"]
     },
-    "KeywordStatus": {
+    "QueryIntentCounty": {
       "type": ["null", "string"]
     },
-    "CampaignType": {
+    "QueryIntentPostalCode": {
       "type": ["null", "string"]
     },
-    "CustomerId": {
+    "LocationId": {
       "type": ["null", "integer"]
     },
-    "CustomerName": {
-      "type": ["null", "string"]
+    "QueryIntentLocationId": {
+      "type": ["null", "integer"]
     },
     "AllConversions": {
       "type": ["null", "integer"]
@@ -155,6 +165,9 @@
     },
     "AllRevenuePerConversion": {
       "type": ["null", "number"]
+    },
+    "ViewThroughConversions": {
+      "type": ["null", "integer"]
     },
     "Goal": {
       "type": ["null", "string"]
@@ -176,6 +189,27 @@
     },
     "AllConversionsQualified": {
       "type": ["null", "number"]
+    },
+    "ViewThroughConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "Neighborhood": {
+      "type": ["null", "string"]
+    },
+    "QueryIntentNeighborhood": {
+      "type": ["null", "string"]
+    },
+    "ViewThroughRevenue": {
+      "type": ["null", "number"]
+    },
+    "CampaignType": {
+      "type": ["null", "string"]
+    },
+    "AssetGroupId": {
+      "type": ["null", "integer"]
+    },
+    "AssetGroupName": {
+      "type": ["null", "string"]
     }
   }
 }
