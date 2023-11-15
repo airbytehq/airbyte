@@ -5,8 +5,12 @@
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
@@ -25,6 +29,7 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import javax.sql.DataSource;
 import org.jooq.InsertValuesStepN;
 import org.jooq.Name;
@@ -184,7 +189,33 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
-    // TODO
+    final String sql = generator.createTable(incrementalDedupStream, "", false);
+    destinationHandler.execute(sql);
+
+    final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(incrementalDedupStream.id());
+
+    assertTrue(existingTable.isPresent());
+    assertAll(
+        () -> assertEquals("varchar", existingTable.get().columns().get("_airbyte_raw_id").type()),
+        () -> assertEquals("timestamptz", existingTable.get().columns().get("_airbyte_extracted_at").type()),
+        () -> assertEquals("super", existingTable.get().columns().get("_airbyte_meta").type()),
+        () -> assertEquals("int8", existingTable.get().columns().get("id1").type()),
+        () -> assertEquals("int8", existingTable.get().columns().get("id2").type()),
+        () -> assertEquals("timestamptz", existingTable.get().columns().get("updated_at").type()),
+        () -> assertEquals("super", existingTable.get().columns().get("struct").type()),
+        () -> assertEquals("super", existingTable.get().columns().get("array").type()),
+        () -> assertEquals("varchar", existingTable.get().columns().get("string").type()),
+        () -> assertEquals("float8", existingTable.get().columns().get("number").type()),
+        () -> assertEquals("int8", existingTable.get().columns().get("integer").type()),
+        () -> assertEquals("bool", existingTable.get().columns().get("boolean").type()),
+        () -> assertEquals("timestamptz", existingTable.get().columns().get("timestamp_with_timezone").type()),
+        () -> assertEquals("timestamp", existingTable.get().columns().get("timestamp_without_timezone").type()),
+        () -> assertEquals("timetz", existingTable.get().columns().get("time_with_timezone").type()),
+        () -> assertEquals("time", existingTable.get().columns().get("time_without_timezone").type()),
+        () -> assertEquals("date", existingTable.get().columns().get("date").type()),
+        () -> assertEquals("super", existingTable.get().columns().get("unknown").type())
+    );
+    // TODO assert on table clustering, etc.
   }
 
 }
