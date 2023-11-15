@@ -5,8 +5,8 @@
 import pendulum
 import pytest
 import requests
-from source_amazon_seller_partner.streams import ListFinancialEventGroups, ListFinancialEvents, RestockInventoryReports
 from airbyte_cdk.models import SyncMode
+from source_amazon_seller_partner.streams import ListFinancialEventGroups, ListFinancialEvents, RestockInventoryReports
 
 list_financial_event_groups_data = {
     "payload": {
