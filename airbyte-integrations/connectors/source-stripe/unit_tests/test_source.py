@@ -112,7 +112,7 @@ def test_call_budget_creation(mocker, input_config, default_call_limit):
 
     policy_mock = mocker.patch("source_stripe.source.MovingWindowCallRatePolicy")
     matcher_mock = mocker.patch("source_stripe.source.HttpRequestMatcher")
-    source = SourceStripe()
+    source = SourceStripe(catalog=None)
 
     source.get_api_call_budget(input_config)
 
@@ -135,7 +135,7 @@ def test_call_budget_passed_to_every_stream(mocker):
     """Test that each stream has call_budget passed and creates a proper session"""
 
     prod_config = {"account_id": 1, "client_secret": "secret"}
-    source = SourceStripe()
+    source = SourceStripe(catalog=None)
     get_api_call_budget_mock = mocker.patch.object(source, "get_api_call_budget")
 
     streams = source.streams(prod_config)
