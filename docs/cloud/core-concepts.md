@@ -20,45 +20,13 @@ An Airbyte component which pulls data from a source or pushes data to a destinat
 
 A connection is an automated data pipeline that replicates data from a source to a destination. Setting up a connection enables configuration of the following parameters:
 
-<table>
-  <tr>
-   <td><strong>Parameter</strong>
-   </td>
-   <td><strong>Description</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>Replication Frequency
-   </td>
-   <td>When should a data sync be triggered?
-   </td>
-  </tr>
-  <tr>
-   <td>Destination Namespace and Stream Prefix
-   </td>
-   <td>Where should the replicated data be written?
-   </td>
-  </tr>
-  <tr>
-   <td>Catalog Selection
-   </td>
-   <td>What data (streams and columns) should be replicated from the source to the destination?
-   </td>
-  </tr>
-  <tr>
-   <td>Sync mode
-   </td>
-   <td>How should the streams be replicated (read and written)?
-   </td>
-  </tr>
-  <tr>
-   <td>Schema Propagation
-   </td>
-   <td>How should Airbyte handle schema drift in sources?
-   </td>
-  </tr>
-</table>
-
+| Concept              | Description                                                                                                         |
+|---------------------|---------------------------------------------------------------------------------------------------------------------|
+| Replication Frequency | When should a data sync be triggered? | 
+| Destination Namespace and Stream Prefix | Where should the replicated data be written? | 
+| Catalog Selection | What data (streams and columns) should be replicated from the source to the destination? | 
+| Sync Mode | How should the streams be replicated (read and written)? | 
+| Schema Propagation | How should Airbyte handle schema drift in sources? | 
 ## Stream
 
 A stream is a group of related records.
@@ -86,32 +54,11 @@ In a source, the namespace is the location from where the data is replicated to 
 
 Airbyte supports the following configuration options for a connection:
 
-   <table>
-   <tr>
-   <td><strong>Destination Namespace</strong>
-   </td>
-   <td><strong>Description</strong>
-   </td>
-   </tr>
-   <tr>
-   <td>Destination default
-   </td>
-   <td>All streams will be replicated to the single default namespace defined by the Destination. For more details, see<a href="https://docs.airbyte.com/understanding-airbyte/namespaces#--destination-connector-settings"> ​​Destination Connector Settings</a>
-   </td>
-   </tr>
-   <tr>
-   <td>Mirror source structure
-   </td>
-   <td>Some sources (for example, databases) provide namespace information for a stream. If a source provides namespace information, the destination will mirror the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option. 
-   </td>
-   </tr>
-   <tr>
-   <td>Custom format
-   </td>
-   <td>All streams will be replicated to a single user-defined namespace. See<a href="https://docs.airbyte.com/understanding-airbyte/namespaces#--custom-format"> Custom format</a> for more details
-   </td>
-   </tr>
-   </table>
+   | Destination Namepsace | Description                |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Destination default | All streams will be replicated to the single default namespace defined by the Destination. For more details, see<a href="https://docs.airbyte.com/understanding-airbyte/namespaces#--destination-connector-settings"> ​​Destination Connector Settings</a> |
+| Mirror source structure | Some sources (for example, databases) provide namespace information for a stream. If a source provides namespace information, the destination will mirror the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option.  |
+| Custom format | All streams will be replicated to a single user-defined namespace. See<a href="https://docs.airbyte.com/understanding-airbyte/namespaces#--custom-format"> Custom format</a> for more details | 
 
 ## Connection sync modes
 
