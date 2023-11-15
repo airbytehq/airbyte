@@ -1,6 +1,10 @@
 # GitHub
 
-This page contains the setup guide and reference information for the GitHub source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [GitHub](https://www.github.com) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -9,8 +13,8 @@ This page contains the setup guide and reference information for the GitHub sour
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-- Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
 - OAuth
+- Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -33,28 +37,39 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 ### Step 2: Set up the GitHub connector in Airbyte
 
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **GitHub** from the Source type dropdown and enter a name for this connector.
-4. Click `Authenticate your GitHub account` by selecting Oauth or Personal Access Token for Authentication.
+2. In the left navigation bar, click **Sources**.
+3. On the source selection page, select **GitHub** from the list of Sources.
+4. Add a name for your GitHub connector.
 5. To authenticate:
-   <!-- env:cloud -->
--  **For Airbyte Cloud**: Click **Authenticate your account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
-   <!-- /env:cloud -->
-   <!-- env:oss -->
--  **For Airbyte Open Source**: Authenticate with **Personal Access Token**.
-   <!-- /env:oss -->
-6. **GitHub Repositories** - List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
+<!-- env:cloud -->
+
+  - **For Airbyte Cloud:** **Authenticate your GitHub account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
+<!-- /env:cloud -->
+<!-- env:oss -->
+
+   - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+<!-- /env:oss -->
+
+6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
 
 :::caution
 Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
 :::
 
-7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. If the date is not set, all data will be replicated. Using for streams: `Comments`, `Commit comment reactions`, `Commit comments`, `Commits`, `Deployments`, `Events`, `Issue comment reactions`, `Issue events`, `Issue milestones`, `Issue reactions`, `Issues`, `Project cards`, `Project columns`, `Projects`, `Pull request comment reactions`, `Pull requests`, `Pull request stats`, `Releases`, `Review comments`, `Reviews`, `Stargazers`, `Workflow runs`, `Workflows`.
-8. **Branch (Optional)** - List of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
-9. **Max requests per hour (Optional)** - The GitHub API allows for a maximum of 5000 requests per hour (15000 for Github Enterprise). You can specify a lower value to limit your use of the API quota.
+7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. For streams which support this configuration, only data generated on or after the start date will be replicated.
 
+- These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
+
+- The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`,  `tags`,  `teams`, `users`
+
+8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
+9. **Max requests per hour (Optional)** - The GitHub API allows for a maximum of 5,000 requests per hour (15,000 for Github Enterprise). You can specify a lower value to limit your use of the API quota. Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
+
+<HideInUI>
 
 ## Supported sync modes
 
@@ -146,9 +161,21 @@ This connector outputs the following incremental streams:
 - `teams`
 - `users`
 
-### Permissions and scopes
+## Limitations & Troubleshooting
 
-If you use OAuth authentication method, the oauth2.0 application requests the next list of [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **workflow**. For [personal access token](https://github.com/settings/tokens) you need to manually select needed scopes.
+<details>
+<summary>
+Expand to see details about GitHub connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+The GitHub connector should not run into GitHub API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully. Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
+
+#### Permissions and scopes
+
+If you use OAuth authentication method, the OAuth2.0 application requests the next list of [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **workflow**. For [personal access token](https://github.com/settings/tokens) you need to manually select needed scopes.
 
 Your token should have at least the `repo` scope. Depending on which streams you want to sync, the user generating the token needs more permissions:
 
@@ -156,9 +183,11 @@ Your token should have at least the `repo` scope. Depending on which streams you
 - Syncing [Teams](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/rest/orgs). [Personal user accounts](https://docs.github.com/en/get-started/learning-about-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features. In this case no records will be synced.
 - To sync the Projects stream, the repository must have the Projects feature enabled.
 
-### Performance considerations
+### Troubleshooting
 
-The GitHub connector should not run into GitHub API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+* Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
+
+</details>
 
 ## Changelog
 
@@ -270,3 +299,5 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 | 0.1.2   | 2021-07-13 | [4708](https://github.com/airbytehq/airbyte/pull/4708)                                                            | Fix bug with IssueEvents stream and add handling for rate limiting                                                                                                  |
 | 0.1.1   | 2021-07-07 | [4590](https://github.com/airbytehq/airbyte/pull/4590)                                                            | Fix schema in the `pull_request` stream                                                                                                                             |
 | 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174)                                                            | New Source: GitHub                                                                                                                                                  |
+
+</HideInUI>
