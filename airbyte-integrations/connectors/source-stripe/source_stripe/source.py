@@ -15,13 +15,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.call_rate import (
-    AbstractAPIBudget,
-    HttpAPIBudget,
-    HttpRequestMatcher,
-    MovingWindowCallRatePolicy,
-    Rate,
-)
+from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
