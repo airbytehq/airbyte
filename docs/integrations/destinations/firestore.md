@@ -1,6 +1,6 @@
 # Firestore
 
-This destination writes data to Google FIrestore.
+This destination writes data to Google Firestore.
 
 Google Firestore, officially known as Cloud Firestore, is a flexible, scalable database for mobile, web, and server development from Firebase and Google Cloud. It is commonly used for developing applications as a NoSQL database that provides real-time data syncing across user devices.
 
@@ -28,7 +28,7 @@ Each stream will be output into a BigQuery table.
 | :----------------------------- | :------------------- | :---- |
 | Full Refresh Sync              | ✅                   |       |
 | Incremental - Append Sync      | ✅                  |       |
-| Incremental - Append + Deduped | ❌                   |       |
+| Incremental - Append + Deduped | ✅                   |       |
 | Namespaces                     | ✅                  |       |
 
 ## Changelog

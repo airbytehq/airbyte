@@ -6,80 +6,24 @@ Airbyte checks for any changes in your source schema immediately before syncing,
 
 Based on your configured settings for **Detect and propagate schema changes**, Airbyte will automatically sync those changes or ignore them: 
 
-<table>
-   <tr>
-   <td><strong>Setting</strong>
-   </td>
-   <td><strong>Description</strong>
-   </td>
-   </tr>
-   <tr>
-   <td>Propagate all changes
-   </td>
-   <td>All new tables and column changes from the source will automatically be propagated and reflected in the destination. This includes stream changes (additions or deletions), column changes (additions or deletions) and data type changes</a>
-   </td>
-   </tr>
-   <tr>
-   <td>Propagate column changes only (default)
-   </td>
-   <td>Only column changes will be propagated
-   </td>
-   </tr>
-   <tr>
-   <td>Ignore
-   </td>
-   <td>Schema changes will be detected, but not propagated. Syncs will continue running with the schema you've set up. To propagate the detected schema changes, you will need to approve the changes manually
-   </td>
-   </tr>
-      <tr>
-   <td>Pause Conenction
-   </td>
-   <td>Connections will be automatically disabled as soon as any schema changes are detected
-   </td>
-   </tr>
-   </table>
+| Setting              | Description                                                                                                         |
+|---------------------|---------------------------------------------------------------------------------------------------------------------|
+| Propagate all changes | All new tables and column changes from the source will automatically be propagated and reflected in the destination. This includes stream changes (additions or deletions), column changes (additions or deletions) and data type changes
+| Propagate column changes only (default) | Only column changes will be propagated
+| Ignore | Schema changes will be detected, but not propagated. Syncs will continue running with the schema you've set up. To propagate the detected schema changes, you will need to approve the changes manually | 
+| Pause Connection | Connections will be automatically disabled as soon as any schema changes are detected |
 
 When propagation is enabled, your data in the destination will automatically shift to bring in the new changes. 
-<table>
-   <tr>
-   <td><strong>Type of Schema Change</strong>
-   </td>
-   <td><strong>Propagation Behavior</strong>
-   </td>
-   </tr>
-   <tr>
-   <td>New Column
-   </td>
-   <td>The new colummn will be created in the destination. Values for the column will be filled in for the updated rows. If you are missing values for rows not updated, a backfill can be done by completing a full resync.
-   </td>
-   </tr>
-   <tr>
-   <td>Removal of column
-   </td>
-   <td>The old column will be removed from the destination.
-   </td>
-   </tr>
-   <tr>
-   <td>New Stream
-   </td>
-   <td>The first sync will create the new stream in the destination and fill all data in as if it is a historical sync. 
-   </td>
-   </tr>
-   <tr>
-   <td>Removal of stream
-   </td>
-   <td>The stream will stop updating, and any existing data in the destination will remain.
-   </td>
-   </tr>
-   <tr>
-   <td>Column data type changes
-   </td>
-   <td>The data in the destination will remain the same. Any new or updated rows with incompatible data types will result in a row error in the raw Airbyte tables. You will need to refresh the schema and do a full resync to ensure the data types are consistent. 
-   </td>
-   </tr>
-   </table>
 
-In all cases, if a breaking schema change is detected, the connection will be paused for manual review to prevent future syncs from failing. Breaking schema changes occur when:
+| Type of Schema Change              | Propagation Behavior                                                                                                         |
+|---------------------|---------------------------------------------------------------------------------------------------------------------|
+| New Column | The new colummn will be created in the destination. Values for the column will be filled in for the updated rows. If you are missing values for rows not updated, a backfill can be done by completing a full resync.
+| Removal of column | The old column will be removed from the destination.
+| New stream | The first sync will create the new stream in the destination and fill all data in as if it is a historical sync. | 
+| Removal of stream | The stream will stop updating, and any existing data in the destination will remain. |
+| Column data type changes | The data in the destination will remain the same. Any new or updated rows with incompatible data types will result in a row error in the raw Airbyte tables. You will need to refresh the schema and do a full resync to ensure the data types are consistent. 
+
+In all cases, if a breaking schema change is detected, the connection will be paused immediately for manual review to prevent future syncs from failing. Breaking schema changes occur when:
 * An existing primary key is removed from the source
 * An existing cursor is removed from the source
 
