@@ -2,12 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import os
+import re
 import ssl
 import time
+import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
 from datetime import timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.error import URLError
+from urllib.parse import urlparse
 
 import _csv
 import pandas as pd
@@ -16,6 +19,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from bingads.service_client import ServiceClient
+from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from numpy import nan
@@ -32,7 +36,7 @@ from source_bing_ads.reports import (
     PerformanceReportsMixin,
     ReportsMixin,
 )
-from suds import sudsobject
+from suds import WebFault, sudsobject
 
 
 class BingAdsBaseStream(Stream, ABC):
@@ -190,8 +194,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
 
         yield from []
 
-    @staticmethod
-    def get_column_value(row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
+    def get_column_value(self, row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
         """
         Reads field value from row and transforms:
         1. empty values to logical None
@@ -202,7 +205,8 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
             return None
         if "%" in value:
             value = value.replace("%", "")
-
+        if value and set(self.get_json_schema()["properties"].get(column, {}).get("type")) & {"integer", "number"}:
+            value = value.replace(",", "")
         return value
 
 
@@ -1260,3 +1264,95 @@ class UserLocationPerformanceReportWeekly(UserLocationPerformanceReport):
 
 class UserLocationPerformanceReportMonthly(UserLocationPerformanceReport):
     report_aggregation = "Monthly"
+
+
+class CustomReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    custom_report_columns = []
+    report_schema_name = None
+    primary_key = None
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        # Summary aggregation doesn't include TimePeriod field
+        if self.report_aggregation != "Summary":
+            return "TimePeriod"
+
+    @property
+    def report_columns(self):
+        # adding common and default columns
+        if "AccountId" not in self.custom_report_columns:
+            self.custom_report_columns.append("AccountId")
+        if self.cursor_field and self.cursor_field not in self.custom_report_columns:
+            self.custom_report_columns.append(self.cursor_field)
+        return list(frozenset(self.custom_report_columns))
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        columns_schema = {col: {"type": ["null", "string"]} for col in self.report_columns}
+        schema: Mapping[str, Any] = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": columns_schema,
+        }
+        return schema
+
+    def validate_report_configuration(self) -> Tuple[bool, str]:
+        # gets /bingads/v13/proxies/production/reporting_service.xml
+        reporting_service_file = self.client.get_service(self.service_name)._get_service_info_dict(self.client.api_version)[
+            ("reporting", self.client.environment)
+        ]
+        tree = ET.parse(urlparse(reporting_service_file).path)
+        request_object = tree.find(f".//{{*}}complexType[@name='{self.report_name}Request']")
+
+        report_object_columns = self._get_object_columns(request_object, tree)
+        is_custom_cols_in_report_object_cols = all(x in report_object_columns for x in self.custom_report_columns)
+
+        if not is_custom_cols_in_report_object_cols:
+            return False, (
+                f"Reporting Columns are invalid. Columns that you provided don't belong to Reporting Data Object Columns:"
+                f" {self.custom_report_columns}. Please ensure it is correct in Bing Ads Docs."
+            )
+
+        return True, ""
+
+    def _clear_namespace(self, type: str) -> str:
+        return re.sub(r"^[a-z]+:", "", type)
+
+    def _get_object_columns(self, request_el: ET.Element, tree: ET.ElementTree) -> List[str]:
+        column_el = request_el.find(".//{*}element[@name='Columns']")
+        array_of_columns_name = self._clear_namespace(column_el.get("type"))
+
+        array_of_columns_elements = tree.find(f".//{{*}}complexType[@name='{array_of_columns_name}']")
+        inner_array_of_columns_elements = array_of_columns_elements.find(".//{*}element")
+        column_el_name = self._clear_namespace(inner_array_of_columns_elements.get("type"))
+
+        column_el = tree.find(f".//{{*}}simpleType[@name='{column_el_name}']")
+        column_enum_items = column_el.findall(".//{*}enumeration")
+        column_enum_items_values = [el.get("value") for el in column_enum_items]
+        return column_enum_items_values
+
+    def get_report_record_timestamp(self, datestring: str) -> int:
+        """
+        Parse report date field based on aggregation type
+        """
+        if not self.report_aggregation:
+            date = pendulum.from_format(datestring, "M/D/YYYY")
+        else:
+            if self.report_aggregation in ["DayOfWeek", "HourOfDay"]:
+                return int(datestring)
+            if self.report_aggregation == "Hourly":
+                date = pendulum.from_format(datestring, "YYYY-MM-DD|H")
+            else:
+                date = pendulum.parse(datestring)
+
+        return date.int_timestamp
+
+    def send_request(self, params: Mapping[str, Any], customer_id: str, account_id: str) -> _RowReport:
+        try:
+            return super().send_request(params, customer_id, account_id)
+        except WebFault as e:
+            self.logger.error(
+                f"Could not sync custom report {self.name}: Please validate your column and aggregation configuration. "
+                f"Error form server: [{e.fault.faultstring}]"
+            )

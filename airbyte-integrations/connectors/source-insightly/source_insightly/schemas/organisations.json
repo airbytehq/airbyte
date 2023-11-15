@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": true,
   "type": "object",
   "properties": {
     "ORGANISATION_ID": {
@@ -82,6 +83,12 @@
       "type": ["string", "null"]
     },
     "SOCIAL_TWITTER": {
+      "type": ["string", "null"]
+    },
+    "VISIBLE_TEAM_ID": {
+      "type": ["integer", "null"]
+    },
+    "VISIBLE_TO": {
       "type": ["string", "null"]
     },
     "CUSTOMFIELDS": {

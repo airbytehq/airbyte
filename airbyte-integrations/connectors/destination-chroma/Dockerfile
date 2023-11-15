@@ -41,5 +41,5 @@ COPY destination_chroma ./destination_chroma
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.0.5
+LABEL io.airbyte.version=0.0.6
 LABEL io.airbyte.name=airbyte/destination-chroma
