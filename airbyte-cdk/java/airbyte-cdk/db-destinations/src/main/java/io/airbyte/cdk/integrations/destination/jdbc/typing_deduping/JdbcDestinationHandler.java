@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 @Slf4j
 public class JdbcDestinationHandler implements DestinationHandler<TableDefinition> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcDestinationHandler.class);
 
   private final String databaseName;
