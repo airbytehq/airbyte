@@ -63,6 +63,105 @@
         "minimum": 0,
         "maximum": 90,
         "order": 6
+      },
+      "custom_reports": {
+        "title": "Custom Reports",
+        "description": "You can add your Custom Bing Ads report by creating one.",
+        "order": 7,
+        "type": "array",
+        "items": {
+          "title": "Custom Report Config",
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Report Name",
+              "description": "The name of the custom report, this name would be used as stream name",
+              "type": "string",
+              "examples": [
+                "Account Performance",
+                "AdDynamicTextPerformanceReport",
+                "custom report"
+              ]
+            },
+            "reporting_object": {
+              "title": "Reporting Data Object",
+              "description": "The name of the the object derives from the ReportRequest object. You can find it in Bing Ads Api docs - Reporting API - Reporting Data Objects.",
+              "type": "string",
+              "enum": [
+                "AccountPerformanceReportRequest",
+                "AdDynamicTextPerformanceReportRequest",
+                "AdExtensionByAdReportRequest",
+                "AdExtensionByKeywordReportRequest",
+                "AdExtensionDetailReportRequest",
+                "AdGroupPerformanceReportRequest",
+                "AdPerformanceReportRequest",
+                "AgeGenderAudienceReportRequest",
+                "AudiencePerformanceReportRequest",
+                "CallDetailReportRequest",
+                "CampaignPerformanceReportRequest",
+                "ConversionPerformanceReportRequest",
+                "DestinationUrlPerformanceReportRequest",
+                "DSAAutoTargetPerformanceReportRequest",
+                "DSACategoryPerformanceReportRequest",
+                "DSASearchQueryPerformanceReportRequest",
+                "GeographicPerformanceReportRequest",
+                "GoalsAndFunnelsReportRequest",
+                "HotelDimensionPerformanceReportRequest",
+                "HotelGroupPerformanceReportRequest",
+                "KeywordPerformanceReportRequest",
+                "NegativeKeywordConflictReportRequest",
+                "ProductDimensionPerformanceReportRequest",
+                "ProductMatchCountReportRequest",
+                "ProductNegativeKeywordConflictReportRequest",
+                "ProductPartitionPerformanceReportRequest",
+                "ProductPartitionUnitPerformanceReportRequest",
+                "ProductSearchQueryPerformanceReportRequest",
+                "ProfessionalDemographicsAudienceReportRequest",
+                "PublisherUsagePerformanceReportRequest",
+                "SearchCampaignChangeHistoryReportRequest",
+                "SearchQueryPerformanceReportRequest",
+                "ShareOfVoiceReportRequest",
+                "UserLocationPerformanceReportRequest"
+              ]
+            },
+            "report_columns": {
+              "title": "Columns",
+              "description": "A list of available report object columns. You can find it in description of reporting object that you want to add to custom report.",
+              "type": "array",
+              "items": {
+                "description": "Name of report column.",
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "report_aggregation": {
+              "title": "Aggregation",
+              "description": "A list of available aggregations.",
+              "type": "string",
+              "items": {
+                "title": "ValidEnums",
+                "description": "An enumeration of aggregations.",
+                "enum": [
+                  "Hourly",
+                  "Daily",
+                  "Weekly",
+                  "Monthly",
+                  "DayOfWeek",
+                  "HourOfDay",
+                  "WeeklyStartingMonday",
+                  "Summary"
+                ]
+              },
+              "default": ["Hourly"]
+            }
+          },
+          "required": [
+            "name",
+            "reporting_object",
+            "report_columns",
+            "report_aggregation"
+          ]
+        }
       }
     }
   },
