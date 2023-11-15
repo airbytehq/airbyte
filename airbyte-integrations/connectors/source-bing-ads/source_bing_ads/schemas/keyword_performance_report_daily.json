@@ -22,8 +22,7 @@
     },
     "TimePeriod": {
       "type": ["null", "string"],
-      "format": "date-time",
-      "airbyte_type": "timestamp_with_timezone"
+      "format": "date"
     },
     "CurrencyCode": {
       "type": ["null", "string"]
