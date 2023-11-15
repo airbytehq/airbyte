@@ -11,6 +11,9 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CON
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISCOVER_SAMPLE_SIZE;
 import static io.airbyte.integrations.source.mongodb.MongoUtil.MAX_QUEUE_SIZE;
 import static io.airbyte.integrations.source.mongodb.MongoUtil.MIN_QUEUE_SIZE;
+import static io.airbyte.integrations.source.mongodb.MongoUtil.checkSchemaModeMismatch;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -33,17 +36,20 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
@@ -121,6 +127,19 @@ public class MongoUtilTest {
     assertEquals(1, streams.size());
     // In schemaless mode, only the 3 CDC fields + id and data fields should exist.
     assertEquals(5, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
+
+    // Test the schema mismatch logic
+    final List<ConfiguredAirbyteStream> configuredAirbyteStreams =
+        streams.stream()
+            .map(stream -> new ConfiguredAirbyteStream().withStream(stream))
+            .collect(Collectors.toList());
+    final ConfiguredAirbyteCatalog schemaLessCatalog =
+        new ConfiguredAirbyteCatalog().withStreams(configuredAirbyteStreams);
+    Throwable throwable = catchThrowable(() -> checkSchemaModeMismatch(true, schemaLessCatalog));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class).hasMessageContaining("Sync is set to schema enforced mode, but this isn't "
+        + "reflected in the catalog. Please re-discover schema and reset streams");
+    throwable = catchThrowable(() -> checkSchemaModeMismatch(false, schemaLessCatalog));
+    assertThat(throwable).isNull();
   }
 
   @Test
@@ -181,6 +200,19 @@ public class MongoUtilTest {
     assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
         streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get(MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR)
             .get(JSON_TYPE_PROPERTY_NAME).asText());
+
+    // Test the schema mismatch logic
+    final List<ConfiguredAirbyteStream> configuredAirbyteStreams =
+        streams.stream()
+            .map(stream -> new ConfiguredAirbyteStream().withStream(stream))
+            .collect(Collectors.toList());
+    final ConfiguredAirbyteCatalog schemaEnforcedCatalog =
+        new ConfiguredAirbyteCatalog().withStreams(configuredAirbyteStreams);
+    Throwable throwable = catchThrowable(() -> checkSchemaModeMismatch(false, schemaEnforcedCatalog));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class).hasMessageContaining("Sync is set to schemaless mode, but this isn't "
+        + "reflected in the catalog. Please re-discover schema and reset streams");
+    throwable = catchThrowable(() -> checkSchemaModeMismatch(true, schemaEnforcedCatalog));
+    assertThat(throwable).isNull();
   }
 
   @Test

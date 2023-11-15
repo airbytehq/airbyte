@@ -4,6 +4,14 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.AIRBYTE_STREAM_PROPERTIES;
+import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
+import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_PRIMARY_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMALESS_MODE_DATA_FIELD;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
@@ -13,9 +21,11 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Projections;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +66,9 @@ public class MongoUtil {
    */
   @VisibleForTesting
   static final int MAX_QUEUE_SIZE = 10000;
+
+  static final Set<String> SCHEMALESS_FIELDS =
+      Set.of(CDC_UPDATED_AT, CDC_DELETED_AT, DEFAULT_CURSOR_FIELD, DEFAULT_PRIMARY_KEY, SCHEMALESS_MODE_DATA_FIELD);
 
   /**
    * Tests whether the database exists in target MongoDB instance.
@@ -190,6 +203,34 @@ public class MongoUtil {
 
     return Optional.empty();
   }
+
+  /**
+   * Checks whether the user's config + catalog does not match. This can happen in the following cases :
+   * 1. User is in schemaless mode + catalog corresponds to schema enabled mode.
+   * 2. User is in schema enabled mode + catalog corresponds to schemaless mode
+   *
+   * @param isSchemaEnforced true if schema is enforced, false if in schemaless mode.
+   * @param catalog User's configured catalog.
+   */
+  public static void checkSchemaModeMismatch(final boolean isSchemaEnforced, final ConfiguredAirbyteCatalog catalog) {
+    final boolean isCatalogSchemaless = catalog.getStreams().stream()
+        .allMatch(stream -> verifySchemaless(stream.getStream().getJsonSchema()));
+
+    if (isSchemaEnforced && isCatalogSchemaless) {
+      throw new ConfigErrorException("Sync is set to schema enforced mode, but this isn't reflected in the catalog. "
+          + "Please re-discover schema and reset streams");
+    } else if (!isSchemaEnforced && !isCatalogSchemaless) {
+      throw new ConfigErrorException("Sync is set to schemaless mode, but this isn't reflected in the catalog. "
+          + "Please re-discover schema and reset streams");
+    }
+  }
+
+  private static boolean verifySchemaless(final JsonNode jsonSchema) {
+    final JsonNode airbyteStreamProperties = jsonSchema.get(AIRBYTE_STREAM_PROPERTIES);
+    return airbyteStreamProperties.size() == SCHEMALESS_FIELDS.size() &&
+        SCHEMALESS_FIELDS.stream().allMatch(field -> airbyteStreamProperties.get(field) != null);
+  }
+
 
   /**
    * Creates an {@link AirbyteStream} from the provided data.
