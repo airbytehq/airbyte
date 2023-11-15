@@ -18,10 +18,14 @@ import java.sql.SQLType;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Slf4j
 public class JdbcDestinationHandler implements DestinationHandler<TableDefinition> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcDestinationHandler.class);
 
   private final String databaseName;
   private final JdbcDatabase jdbcDatabase;
@@ -49,7 +53,21 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
 
   @Override
   public void execute(final String sql) throws Exception {
+    if ("".equals(sql)) {
+      return;
+    }
+    final UUID queryId = UUID.randomUUID();
+    LOGGER.info("Executing sql {}: {}", queryId, sql);
+    final long startTime = System.currentTimeMillis();
 
+    try {
+      jdbcDatabase.execute(sql);
+    } catch (final SQLException e) {
+      LOGGER.error("Sql {} failed", queryId, e);
+      throw e;
+    }
+
+    LOGGER.info("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
   }
 
   public static Optional<TableDefinition> findExistingTable(
