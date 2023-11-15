@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple, Optional
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -66,6 +66,7 @@ from source_amazon_seller_partner.streams import (
     VendorSalesReports,
     XmlAllOrdersDataByOrderDataGeneral,
 )
+from source_amazon_seller_partner.utils import AmazonConfigException
 
 
 class SourceAmazonSellerPartner(AbstractSource):
@@ -102,6 +103,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         Show error message in case of request exception or unexpected response.
         """
         try:
+            self.validate_stream_report_options(config)
             stream_kwargs = self._get_stream_kwargs(config)
             orders_stream = Orders(**stream_kwargs)
             next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
@@ -125,60 +127,82 @@ class SourceAmazonSellerPartner(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
+        streams = []
         stream_kwargs = self._get_stream_kwargs(config)
-        return [
-            FbaCustomerReturnsReports(**stream_kwargs),
-            FbaAfnInventoryReports(**stream_kwargs),
-            FbaAfnInventoryByCountryReports(**stream_kwargs),
-            FbaOrdersReports(**stream_kwargs),
-            FbaShipmentsReports(**stream_kwargs),
-            FbaReplacementsReports(**stream_kwargs),
-            FbaStorageFeesReports(**stream_kwargs),
-            RestockInventoryReports(**stream_kwargs),
-            FlatFileActionableOrderDataShipping(**stream_kwargs),
-            FlatFileOpenListingsReports(**stream_kwargs),
-            FlatFileOrdersReports(**stream_kwargs),
-            FlatFileOrdersReportsByLastUpdate(**stream_kwargs),
-            FlatFileSettlementV2Reports(**stream_kwargs),
-            FulfilledShipmentsReports(**stream_kwargs),
-            MerchantListingsReports(**stream_kwargs),
-            VendorDirectFulfillmentShipping(**stream_kwargs),
-            VendorInventoryReports(**stream_kwargs),
-            VendorSalesReports(**stream_kwargs),
-            Orders(**stream_kwargs),
-            OrderItems(**stream_kwargs),
-            OrderReportDataShipping(**stream_kwargs),
-            SellerAnalyticsSalesAndTrafficReports(**stream_kwargs),
-            SellerFeedbackReports(**stream_kwargs),
-            BrandAnalyticsMarketBasketReports(**stream_kwargs),
-            BrandAnalyticsSearchTermsReports(**stream_kwargs),
-            BrandAnalyticsRepeatPurchaseReports(**stream_kwargs),
-            BrandAnalyticsAlternatePurchaseReports(**stream_kwargs),
-            BrandAnalyticsItemComparisonReports(**stream_kwargs),
-            GetXmlBrowseTreeData(**stream_kwargs),
-            ListFinancialEventGroups(**stream_kwargs),
-            ListFinancialEvents(**stream_kwargs),
-            LedgerDetailedViewReports(**stream_kwargs),
-            FbaEstimatedFbaFeesTxtReport(**stream_kwargs),
-            FbaFulfillmentCurrentInventoryReport(**stream_kwargs),
-            FbaFulfillmentCustomerShipmentPromotionReport(**stream_kwargs),
-            FbaFulfillmentInventoryAdjustReport(**stream_kwargs),
-            FbaFulfillmentInventoryReceiptsReport(**stream_kwargs),
-            FbaFulfillmentInventorySummaryReport(**stream_kwargs),
-            FbaMyiUnsuppressedInventoryReport(**stream_kwargs),
-            MerchantCancelledListingsReport(**stream_kwargs),
-            MerchantListingsReport(**stream_kwargs),
-            MerchantListingsReportBackCompat(**stream_kwargs),
-            MerchantListingsInactiveData(**stream_kwargs),
-            StrandedInventoryUiReport(**stream_kwargs),
-            XmlAllOrdersDataByOrderDataGeneral(**stream_kwargs),
-            FbaFulfillmentMonthlyInventoryReport(**stream_kwargs),
-            MerchantListingsFypReport(**stream_kwargs),
-            FbaSnsForecastReport(**stream_kwargs),
-            FbaSnsPerformanceReport(**stream_kwargs),
-            FlatFileArchivedOrdersDataByOrderDate(**stream_kwargs),
-            FlatFileReturnsDataByReturnDate(**stream_kwargs),
-            FbaInventoryPlaningReport(**stream_kwargs),
-            LedgerSummaryViewReport(**stream_kwargs),
-            FbaReimbursementsReports(**stream_kwargs),
+        stream_list = [
+            FbaCustomerReturnsReports,
+            FbaAfnInventoryReports,
+            FbaAfnInventoryByCountryReports,
+            FbaOrdersReports,
+            FbaShipmentsReports,
+            FbaReplacementsReports,
+            FbaStorageFeesReports,
+            RestockInventoryReports,
+            FlatFileActionableOrderDataShipping,
+            FlatFileOpenListingsReports,
+            FlatFileOrdersReports,
+            FlatFileOrdersReportsByLastUpdate,
+            FlatFileSettlementV2Reports,
+            FulfilledShipmentsReports,
+            MerchantListingsReports,
+            VendorDirectFulfillmentShipping,
+            VendorInventoryReports,
+            VendorSalesReports,
+            Orders,
+            OrderItems,
+            OrderReportDataShipping,
+            SellerAnalyticsSalesAndTrafficReports,
+            SellerFeedbackReports,
+            BrandAnalyticsMarketBasketReports,
+            BrandAnalyticsSearchTermsReports,
+            BrandAnalyticsRepeatPurchaseReports,
+            BrandAnalyticsAlternatePurchaseReports,
+            BrandAnalyticsItemComparisonReports,
+            GetXmlBrowseTreeData,
+            ListFinancialEventGroups,
+            ListFinancialEvents,
+            LedgerDetailedViewReports,
+            FbaEstimatedFbaFeesTxtReport,
+            FbaFulfillmentCurrentInventoryReport,
+            FbaFulfillmentCustomerShipmentPromotionReport,
+            FbaFulfillmentInventoryAdjustReport,
+            FbaFulfillmentInventoryReceiptsReport,
+            FbaFulfillmentInventorySummaryReport,
+            FbaMyiUnsuppressedInventoryReport,
+            MerchantCancelledListingsReport,
+            MerchantListingsReport,
+            MerchantListingsReportBackCompat,
+            MerchantListingsInactiveData,
+            StrandedInventoryUiReport,
+            XmlAllOrdersDataByOrderDataGeneral,
+            FbaFulfillmentMonthlyInventoryReport,
+            MerchantListingsFypReport,
+            FbaSnsForecastReport,
+            FbaSnsPerformanceReport,
+            FlatFileArchivedOrdersDataByOrderDate,
+            FlatFileReturnsDataByReturnDate,
+            FbaInventoryPlaningReport,
+            LedgerSummaryViewReport,
+            FbaReimbursementsReports,
         ]
+        for stream in stream_list:
+            streams.append(stream(**stream_kwargs , report_options=self.get_stream_report_options(stream.name, config)))
+        return streams
+
+    def validate_stream_report_options(self, config: Mapping[str, Any]):
+        if len([x.get("stream_name") for x in config.get("report_options_list", [])]) != len(
+            set(x.get("stream_name") for x in config.get("report_options_list", []))
+        ):
+            raise AmazonConfigException(message="Stream name shuould be unique among all Report options list")
+        for stream_report_option in config.get("report_options_list"):
+            if len([x.get("option_name") for x in stream_report_option.get("options_list")]) != len(
+                set(x.get("option_name") for x in stream_report_option.get("options_list"))
+            ):
+                raise AmazonConfigException(
+                    message=f"Option names should be unique for `{stream_report_option.get('stream_name')}` report options"
+                )
+
+    def get_stream_report_options(self, report_name: str, config: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
+        if any(x for x in config.get("report_options_list", []) if x.get('stream_name') == report_name):
+            return [x.get('option_list') for x in self._report_options if x.get('stream_name') == self.name][0]
+        return {}

@@ -173,7 +173,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self._replication_end_date = replication_end_date
         self.marketplace_id = marketplace_id
         self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work as well
-        self._report_options = report_options or "{}"
+        self._report_options = report_options or []
         self.max_wait_seconds = max_wait_seconds
         self._http_method = "GET"
 
@@ -269,8 +269,8 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         return csv.DictReader(StringIO(document), delimiter="\t")
 
     def report_options(self) -> Mapping[str, Any]:
-        if self._report_options is not None:
-            return json_lib.loads(self._report_options).get(self.name)
+        if self._report_options is not None and any(x for x in self._report_options if x.get('stream_name') == self.name):
+            return [x.get('option_list') for x in self._report_options if x.get('stream_name')== self.name][0]
         else:
             return {}
 
