@@ -60,4 +60,3 @@ def config_with_custom_reports_fixture():
 @pytest.fixture(name="logger_mock")
 def logger_mock_fixture():
     return patch("source_bing_ads.source.AirbyteLogger")
-

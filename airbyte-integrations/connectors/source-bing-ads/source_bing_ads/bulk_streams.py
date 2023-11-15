@@ -62,15 +62,15 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
             {str(value["Account Id"]): {self.cursor_field: transform_bulk_datetime_format_to_rfc_3339(value[self.cursor_field])}}
         )
 
-    def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
+    def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None) -> Optional[pendulum.DateTime]:
         """
-        Start_date in request can be provided only if it is sooner than 30 days from now
+        The start_date in the query can only be specified if it is within a period of up to 30 days from today.
         """
         min_available_date = pendulum.now().subtract(days=30).astimezone(tz=timezone.utc)
         start_date = self.client.reports_start_date
         if stream_state.get(account_id, {}).get(self.cursor_field):
             start_date = pendulum.parse(stream_state[account_id][self.cursor_field])
-        return None if start_date < min_available_date else min_available_date
+        return start_date if start_date and start_date > min_available_date else None
 
     def read_records(
         self,

@@ -5,7 +5,11 @@
 from pathlib import Path
 from unittest.mock import patch
 
+import pendulum
+import pytest
 import source_bing_ads
+from freezegun import freeze_time
+from pendulum import UTC, DateTime
 from source_bing_ads.base_streams import Accounts
 from source_bing_ads.bulk_streams import AppInstallAds
 
@@ -72,3 +76,33 @@ def test_bulk_stream_read_with_chunks(mocked_client, config):
         "Type": "App Install Ad",
     }
 
+
+@patch.object(source_bing_ads.source, "Client")
+@freeze_time("2023-11-01T12:00:00.000+00:00")
+@pytest.mark.parametrize(
+    "stream_state, config_start_date, expected_start_date",
+    [
+        ({"some_account_id": {"Modified Time": "2023-10-15T12:00:00.000+00:00"}}, "2020-01-01", DateTime(2023, 10, 15, 12, 0, 0, tzinfo=UTC)),
+        ({"another_account_id": {"Modified Time": "2023-10-15T12:00:00.000+00:00"}}, "2020-01-01", None),
+        ({}, "2020-01-01", None),
+        ({}, "2023-10-21", DateTime(2023, 10, 21, 0, 0, 0, tzinfo=UTC)),
+    ],
+    ids=["state_within_30_days", "state_within_30_days_another_account_id", "empty_state", "empty_state_start_date_within_30"]
+)
+def test_bulk_stream_start_date(mocked_client, config, stream_state, config_start_date, expected_start_date):
+    mocked_client.reports_start_date = pendulum.parse(config_start_date) if config_start_date else None
+    stream = AppInstallAds(mocked_client, config)
+    assert expected_start_date == stream.get_start_date(stream_state, 'some_account_id')
+
+
+@patch.object(source_bing_ads.source, "Client")
+def test_bulk_stream_stream_state(mocked_client, config):
+    stream = AppInstallAds(mocked_client, config)
+    stream.state = {"Account Id": "some_account_id", "Modified Time": "04/27/2023 18:00:14.970"}
+    assert stream.state == {"some_account_id": {"Modified Time": "2023-04-27T18:00:14.970+00:00"}}
+
+
+@patch.object(source_bing_ads.source, "Client")
+def test_bulk_stream_custom_transform_date_rfc3339(mocked_client, config):
+    stream = AppInstallAds(mocked_client, config)
+    assert "2023-04-27T18:00:14.970+00:00" == stream.custom_transform_date_rfc3339("04/27/2023 18:00:14.970", stream.get_json_schema()["properties"][stream.cursor_field])
