@@ -58,8 +58,8 @@ OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 METADATA_FILE_NAME = "metadata.yaml"
 ICON_FILE_NAME = "icon.svg"
 
-IMPORTANT_CONNECTOR_THRESHOLDS = {
-    "sl": 300,
+STRATEGIC_CONNECTOR_THRESHOLDS = {
+    "sl": 200,
     "ql": 400,
 }
 
@@ -484,16 +484,16 @@ class Connector:
         return ql_value
 
     @property
-    def is_important_connector(self) -> bool:
-        """Check if a connector qualifies as an important connector.
+    def is_strategic_connector(self) -> bool:
+        """Check if a connector qualifies as a strategic connector.
 
         Returns:
             bool: True if the connector is a high value connector, False otherwise.
         """
-        if self.ab_internal_sl >= IMPORTANT_CONNECTOR_THRESHOLDS["sl"]:
+        if self.ab_internal_sl >= STRATEGIC_CONNECTOR_THRESHOLDS["sl"]:
             return True
 
-        if self.ab_internal_ql >= IMPORTANT_CONNECTOR_THRESHOLDS["ql"]:
+        if self.ab_internal_ql >= STRATEGIC_CONNECTOR_THRESHOLDS["ql"]:
             return True
 
         return False
@@ -505,7 +505,7 @@ class Connector:
         Returns:
             bool: True if the connector requires high test strictness level, False otherwise.
         """
-        return self.ab_internal_ql >= IMPORTANT_CONNECTOR_THRESHOLDS["ql"]
+        return self.ab_internal_ql >= STRATEGIC_CONNECTOR_THRESHOLDS["ql"]
 
     @property
     def requires_allowed_hosts_check(self) -> bool:

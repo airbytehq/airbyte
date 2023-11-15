@@ -2,9 +2,15 @@
 
 This page contains the setup guide and reference information for the Bing Ads source connector.
 
+## Prerequisites
+- Microsoft Advertising account
+- Microsoft Developer Token
+
 ## Setup guide
 
-### Step 1: Set up Bing Ads
+<!-- env:oss -->
+
+For Airbyte Open Source set up your application to get **Client ID**, **Client Secret**, **Refresh Token** 
 
 1. [Register your application](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-register?view=bingads-13) in the Azure portal.
 2. [Request user consent](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13l) to get the authorization code.
@@ -16,8 +22,16 @@ The refresh token expires in 90 days. Repeat the authorization process to get a 
 Please be sure to authenticate with the email (personal or work) that you used to sign in to the Bing ads/Microsoft ads platform.
 :::
 
-4. Get your [Microsoft developer token](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token).
-5. If your OAuth app has a custom tenant and you cannot use Microsoft’s recommended common tenant, use the custom tenant in the **Tenant ID** field when you set up the connector.
+<!-- /env:oss -->
+
+### Step 1: Set up Bing Ads
+
+1. Get your [Microsoft developer token](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token). To use Bing Ads APIs, you must have a developer token and valid user credentials. See [Microsoft Advertising docs](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token) for more info.
+   1. Sign in with [Super Admin](https://learn.microsoft.com/en-us/advertising/guides/account-hierarchy-permissions?view=bingads-13#user-roles-permissions) credentials at the [Microsoft Advertising Developer Portal](https://developers.ads.microsoft.com/Account) account tab. 
+   2. Choose the user that you want associated with the developer token. Typically an application only needs one universal token regardless how many users will be supported. 
+   3. Click on the Request Token button.
+
+2. If your OAuth app has a custom tenant, and you cannot use Microsoft’s recommended common tenant, use the custom tenant in the **Tenant ID** field when you set up the connector.
 
 :::info
 
@@ -37,11 +51,16 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 4. Enter a name for your source.
 5. For **Tenant ID**, enter the custom tenant or use the common tenant.
 6. Add the developer token from [Step 1](#step-1-set-up-bing-ads).
-7. For **Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-8. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode, let it with 0 default value.
-9. Click **Authenticate your Bing Ads account**.
-10. Log in and authorize the Bing Ads account.
-11. Click **Set up source**.
+7. For **Reports Replication Start Date**,  enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
+8. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
+9. For *Custom Reports* - see [custom reports](#custom-reports) section, list of custom reports object:
+   1. For *Report Name* enter the name that you want for your custom report.
+   2. For *Reporting Data Object* add the Bing Ads Reporting Object that you want to sync in the custom report.
+   3. For *Columns* add list columns of Reporting Data Object that you want to see in the custom report.
+   4. For *Aggregation* add time aggregation. See [report aggregation](#report-aggregation) section.
+10. Click **Authenticate your Bing Ads account**.
+11. Log in and authorize the Bing Ads account.
+12. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -54,9 +73,15 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 4. Enter a name for your source.
 5. For **Tenant ID**, enter the custom tenant or use the common tenant.
 6. Enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Developer Token** from [Step 1](#step-1-set-up-bing-ads).
-7. For **Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-8. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode, let it with 0 default value.
-9. Click **Set up source**.
+7. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
+8. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
+9. For *Custom Reports* - see [custom reports](#custom-reports) section:
+   1. For *Report Name* enter the name that you want for your custom report.
+   2. For *Reporting Data Object* add the Bing Ads Reporting Object that you want to sync in the custom report.
+   3. For *Columns* add columns of Reporting Data Object that you want to see in the custom report.
+   4. For *Aggregation* select time aggregation. See [report aggregation](#report-aggregation) section.
+
+10. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -88,51 +113,63 @@ The Bing Ads source connector supports the following streams. For more informati
 
 ### Report Streams
 
-- [account_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [account_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [account_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [account_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [account_impression_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [account_impression_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [account_impression_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [account_impression_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [ad_group_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [ad_group_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [ad_group_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [ad_group_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [ad_group_impression_performance_report_hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [ad_group_impression_performance_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [ad_group_impression_performance_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [ad_group_impression_performance_report_monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [ad_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
-- [ad_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
-- [ad_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
-- [ad_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
-- [age_gender_audience_report_hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
-- [age_gender_audience_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
-- [age_gender_audience_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
-- [age_gender_audience_report_monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
-- [geographic_performance_report_hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
-- [geographic_performance_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
-- [geographic_performance_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
-- [geographic_performance_report_monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
-- [budget_summary_report](https://docs.microsoft.com/en-us/advertising/reporting-service/budgetsummaryreportrequest?view=bingads-13)
-- [campaign_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [campaign_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [campaign_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [campaign_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [campaign_impression_performance_report_hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [campaign_impression_performance_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [campaign_impression_performance_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [campaign_impression_performance_report_monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [keyword_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
-- [keyword_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
-- [keyword_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
-- [keyword_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
-- [user_location_performance_report_hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
-- [user_location_performance_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
-- [user_location_performance_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
-- [user_location_performance_report_monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
+- [Account Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Impression Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Impression Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Impression Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Impression Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Ad Group Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Impression Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Impression Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Impression Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Impression Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [Ad Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [Ad Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [Ad Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [Age Gender Audience Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
+- [Age Gender Audience Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
+- [Age Gender Audience Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
+- [Age Gender Audience Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
+- [Geographic Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [Geographic Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [Geographic Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [Geographic Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [Budget Summary Report](https://docs.microsoft.com/en-us/advertising/reporting-service/budgetsummaryreportrequest?view=bingads-13)
+- [Campaign Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Impression Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Impression Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Impression Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Impression Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Keyword Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [Keyword Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [Keyword Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [Keyword Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [User Location Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
+- [User Location Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
+- [User Location Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
+- [User Location Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
+- [Search Query Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
+- [Search Query Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
+- [Search Query Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
+- [Search Query Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
+
+### Custom Reports
+You can build your own report by providing:
+- *Report Name* - name of the stream
+- *Reporting Data Object* - Bing Ads reporting data object that you can find [here](https://learn.microsoft.com/en-us/advertising/reporting-service/reporting-data-objects?view=bingads-13). All data object with ending ReportRequest can be used as data object in custom reports.
+- *Columns* - Reporting object columns that you want to sync. You can find it on ReportRequest data object page by clicking the ...ReportColumn link in [Bing Ads docs](https://learn.microsoft.com/en-us/advertising/reporting-service/reporting-value-sets?view=bingads-13). 
+The report must include the Required Columns (you can find it under list of all columns of reporting object) at a minimum. As a general rule, each report must include at least one attribute column and at least one non-impression share performance statistics column. Be careful you can't add extra columns that not specified in Bing Ads docs and not all fields can be skipped.
+- *Aggregation* - Hourly, Daily, Weekly, Monthly, DayOfWeek, HourOfDay, WeeklyStartingMonday, Summary. See [report aggregation](#report-aggregation).
 
 ### Report aggregation
 
@@ -150,6 +187,10 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.13.0  | 2023-11-13 | [32306](https://github.com/airbytehq/airbyte/pull/32306)                                                                         | Add Custom reports and decrease backoff max tries number                                                                                     |
+| 1.12.1  | 2023-11-10 | [32422](https://github.com/airbytehq/airbyte/pull/32422)                                                                         | Normalize numeric values in reports                                                                                                          |
+| 1.12.0  | 2023-11-09 | [32340](https://github.com/airbytehq/airbyte/pull/32340)                                                                         | Remove default start date in favor of Time Period - Last Year and This Year, if start date is not provided                                   |
+| 1.11.0  | 2023-11-06 | [32201](https://github.com/airbytehq/airbyte/pull/32201)                                                                         | Skip broken CSV report files                                                                                                                 |
 | 1.10.0  | 2023-11-06 | [32148](https://github.com/airbytehq/airbyte/pull/32148)                                                                         | Add new fields to stream Ads: "BusinessName", "CallToAction", "Headline", "Images", "Videos", "Text"                                         |
 | 1.9.0   | 2023-11-03 | [32131](https://github.com/airbytehq/airbyte/pull/32131)                                                                         | Add  "CampaignId", "AccountId", "CustomerId" fields to Ad Groups, Ads and Campaigns streams.                                                 |
 | 1.8.0   | 2023-11-02 | [32059](https://github.com/airbytehq/airbyte/pull/32059)                                                                         | Add new streams `CampaignImpressionPerformanceReport` (daily, hourly, weekly, monthly)                                                       |

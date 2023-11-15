@@ -18,3 +18,9 @@ dependencies {
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter-params'
     testFixturesImplementation 'org.mockito:mockito-core:4.6.1'
 }
+
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}

@@ -52,6 +52,8 @@ acceptance_tests:
           media:
             - name: media_url
               bypass_reason: Contains auto generated hash
+            - name: thumbnail_url
+              bypass_reason: Contains auto generated hash
           media_insights:
             - name: id
               bypass_reason: For statistic anonymization
