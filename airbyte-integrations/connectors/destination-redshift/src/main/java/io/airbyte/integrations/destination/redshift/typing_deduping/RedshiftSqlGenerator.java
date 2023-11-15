@@ -12,7 +12,6 @@ import static org.jooq.impl.DSL.createSchemaIfNotExists;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.quotedName;
 
-import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
