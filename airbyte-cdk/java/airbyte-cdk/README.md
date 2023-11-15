@@ -2,21 +2,21 @@
 
 This page will walk through the process of developing with the Java CDK.
 
-* [Developing with the Java CDK](#developing-with-the-java-cdk)
-   * [Intro to the Java CDK](#intro-to-the-java-cdk)
-      * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-      * [How is the CDK published?](#how-is-the-cdk-published)
-   * [Using the Java CDK](#using-the-java-cdk)
-      * [Building the CDK](#building-the-cdk)
-      * [Bumping the CDK version](#bumping-the-cdk-version)
-      * [Publishing the CDK](#publishing-the-cdk)
-   * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-      * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-      * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-      * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-   * [Common Debugging Tips](#common-debugging-tips)
-   * [Changelog](#changelog)
-      * [Java CDK](#java-cdk)
+- [Developing with the Java CDK](#developing-with-the-java-cdk)
+  - [Intro to the Java CDK](#intro-to-the-java-cdk)
+    - [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+    - [How is the CDK published?](#how-is-the-cdk-published)
+  - [Using the Java CDK](#using-the-java-cdk)
+    - [Building the CDK](#building-the-cdk)
+    - [Bumping the CDK version](#bumping-the-cdk-version)
+    - [Publishing the CDK](#publishing-the-cdk)
+  - [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+    - [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+    - [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+    - [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+  - [Common Debugging Tips](#common-debugging-tips)
+  - [Changelog](#changelog)
+    - [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -127,7 +127,7 @@ Once you are done developing and testing your CDK changes:
 2. After publishing the CDK, update the `useLocalCdk` setting by running `./gradlew :airbyte-integrations:connectors:<connector-name>:disableLocalCdkRefs`. to automatically revert `useLocalCdk` to `false`.
 3. You can optionally run `./gradlew :airbyte-integrations:connectors:<connector-name>:assertNotUsingLocalCdk` to ensure that the project is not using a local CDK reference.
 
-_Note: You can also use  `./gradlew assertNotUsingLocalCdk` or `./gradlew disableLocalCdkRefs` to run these tasks on **all** connectors simultaneously._
+_Note: You can also use `./gradlew assertNotUsingLocalCdk` or `./gradlew disableLocalCdkRefs` to run these tasks on **all** connectors simultaneously._
 
 ### Developing a connector against a pinned CDK version
 
@@ -154,31 +154,32 @@ MavenLocal debugging steps:
 
 ### Java CDK
 
-| Version | Date       | Pull Request                                                   | Subject                                                                                                                                                        |
-|:--------|:-----------|:---------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.10  | 2023-11-13 | [\#32285](https://github.com/airbytehq/airbyte/pull/32285)     | Fix UUID codec ordering for MongoDB connector                                                                                                                  |
-| 0.4.9   | 2023-11-13 | [\#32468](https://github.com/airbytehq/airbyte/pull/32468)     | Further error grouping improvements for DV2 connectors                                                                                                         |
-| 0.4.8   | 2023-11-09 | [\#32377](https://github.com/airbytehq/airbyte/pull/32377)     | source-postgres tests: skip dropping database                                                                                                                  |
-| 0.4.7   | 2023-11-08 | [\#31856](https://github.com/airbytehq/airbyte/pull/31856)     | source-postgres: support for inifinty date and timestamps                                                                                                      |
-| 0.4.5   | 2023-11-07 | [\#32112](https://github.com/airbytehq/airbyte/pull/32112)     | Async destinations framework: Allow configuring the queue flush threshold                                                                                      |
-| 0.4.4   | 2023-11-06 | [\#32119](https://github.com/airbytehq/airbyte/pull/32119)     | Add STANDARD UUID codec to MongoDB debezium handler                                                                                                            |
-| 0.4.2   | 2023-11-06 | [\#32190](https://github.com/airbytehq/airbyte/pull/32190)     | Improve error deinterpolation                                                                                                                                  |
-| 0.4.1   | 2023-11-02 | [\#32192](https://github.com/airbytehq/airbyte/pull/32192)     | Add 's3-destinations' CDK module.                                                                                                                              |
-| 0.4.0   | 2023-11-02 | [\#32050](https://github.com/airbytehq/airbyte/pull/32050)     | Fix compiler warnings.                                                                                                                                         |
-| 0.3.0   | 2023-11-02 | [\#31983](https://github.com/airbytehq/airbyte/pull/31983)     | Add deinterpolation feature to AirbyteExceptionHandler.                                                                                                        |
-| 0.2.4   | 2023-10-31 | [\#31807](https://github.com/airbytehq/airbyte/pull/31807)     | Handle case of debezium update and delete of records in mongodb.                                                                                               |
-| 0.2.3   | 2023-10-31 | [\#32022](https://github.com/airbytehq/airbyte/pull/32022)     | Update Debezium version from 2.20 -> 2.4.0.                                                                                                                    |
-| 0.2.2   | 2023-10-31 | [\#31976](https://github.com/airbytehq/airbyte/pull/31976)     | Debezium tweaks to make tests run faster.                                                                                                                      |
-| 0.2.0   | 2023-10-30 | [\#31960](https://github.com/airbytehq/airbyte/pull/31960)     | Hoist top-level gradle subprojects into CDK.                                                                                                                   |
-| 0.1.12  | 2023-10-24 | [\#31674](https://github.com/airbytehq/airbyte/pull/31674)     | Fail sync when Debezium does not shut down properly.                                                                                                           |
-| 0.1.11  | 2023-10-18 | [\#31486](https://github.com/airbytehq/airbyte/pull/31486)     | Update constants in AdaptiveSourceRunner.                                                                                                                      |
-| 0.1.9   | 2023-10-12 | [\#31309](https://github.com/airbytehq/airbyte/pull/31309)     | Use toPlainString() when handling BigDecimals in PostgresConverter                                                                                             |
-| 0.1.8   | 2023-10-11 | [\#31322](https://github.com/airbytehq/airbyte/pull/31322)     | Cap log line length to 32KB to prevent loss of records                                                                                                         |
-| 0.1.7   | 2023-10-10 | [\#31194](https://github.com/airbytehq/airbyte/pull/31194)     | Deallocate unused per stream buffer memory when empty                                                                                                          |
-| 0.1.6   | 2023-10-10 | [\#31083](https://github.com/airbytehq/airbyte/pull/31083)     | Fix precision of numeric values in async destinations                                                                                                          |
-| 0.1.5   | 2023-10-09 | [\#31196](https://github.com/airbytehq/airbyte/pull/31196)     | Update typo in CDK (CDN_LSN -> CDC_LSN)                                                                                                                        |
-| 0.1.4   | 2023-10-06 | [\#31139](https://github.com/airbytehq/airbyte/pull/31139)     | Reduce async buffer                                                                                                                                            |
-| 0.1.1   | 2023-09-28 | [\#30835](https://github.com/airbytehq/airbyte/pull/30835)     | JDBC destinations now avoid staging area name collisions by using the raw table name as the stage name. (previously we used the stream name as the stage name) |
-| 0.1.0   | 2023-09-27 | [\#30445](https://github.com/airbytehq/airbyte/pull/30445)     | First launch, including shared classes for all connectors.                                                                                                     |
-| 0.0.2   | 2023-08-21 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687)     | Version bump only (no other changes).                                                                                                                          |
-| 0.0.1   | 2023-08-08 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687)     | Initial release for testing.                                                                                                                                   |
+| Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
+| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.4.11  | 2023-11-14 | [\#32526](https://github.com/airbytehq/airbyte/pull/32526) | Clean up memory manager logs.                                                                                                                                  |
+| 0.4.10  | 2023-11-13 | [\#32285](https://github.com/airbytehq/airbyte/pull/32285) | Fix UUID codec ordering for MongoDB connector                                                                                                                  |
+| 0.4.9   | 2023-11-13 | [\#32468](https://github.com/airbytehq/airbyte/pull/32468) | Further error grouping improvements for DV2 connectors                                                                                                         |
+| 0.4.8   | 2023-11-09 | [\#32377](https://github.com/airbytehq/airbyte/pull/32377) | source-postgres tests: skip dropping database                                                                                                                  |
+| 0.4.7   | 2023-11-08 | [\#31856](https://github.com/airbytehq/airbyte/pull/31856) | source-postgres: support for inifinty date and timestamps                                                                                                      |
+| 0.4.5   | 2023-11-07 | [\#32112](https://github.com/airbytehq/airbyte/pull/32112) | Async destinations framework: Allow configuring the queue flush threshold                                                                                      |
+| 0.4.4   | 2023-11-06 | [\#32119](https://github.com/airbytehq/airbyte/pull/32119) | Add STANDARD UUID codec to MongoDB debezium handler                                                                                                            |
+| 0.4.2   | 2023-11-06 | [\#32190](https://github.com/airbytehq/airbyte/pull/32190) | Improve error deinterpolation                                                                                                                                  |
+| 0.4.1   | 2023-11-02 | [\#32192](https://github.com/airbytehq/airbyte/pull/32192) | Add 's3-destinations' CDK module.                                                                                                                              |
+| 0.4.0   | 2023-11-02 | [\#32050](https://github.com/airbytehq/airbyte/pull/32050) | Fix compiler warnings.                                                                                                                                         |
+| 0.3.0   | 2023-11-02 | [\#31983](https://github.com/airbytehq/airbyte/pull/31983) | Add deinterpolation feature to AirbyteExceptionHandler.                                                                                                        |
+| 0.2.4   | 2023-10-31 | [\#31807](https://github.com/airbytehq/airbyte/pull/31807) | Handle case of debezium update and delete of records in mongodb.                                                                                               |
+| 0.2.3   | 2023-10-31 | [\#32022](https://github.com/airbytehq/airbyte/pull/32022) | Update Debezium version from 2.20 -> 2.4.0.                                                                                                                    |
+| 0.2.2   | 2023-10-31 | [\#31976](https://github.com/airbytehq/airbyte/pull/31976) | Debezium tweaks to make tests run faster.                                                                                                                      |
+| 0.2.0   | 2023-10-30 | [\#31960](https://github.com/airbytehq/airbyte/pull/31960) | Hoist top-level gradle subprojects into CDK.                                                                                                                   |
+| 0.1.12  | 2023-10-24 | [\#31674](https://github.com/airbytehq/airbyte/pull/31674) | Fail sync when Debezium does not shut down properly.                                                                                                           |
+| 0.1.11  | 2023-10-18 | [\#31486](https://github.com/airbytehq/airbyte/pull/31486) | Update constants in AdaptiveSourceRunner.                                                                                                                      |
+| 0.1.9   | 2023-10-12 | [\#31309](https://github.com/airbytehq/airbyte/pull/31309) | Use toPlainString() when handling BigDecimals in PostgresConverter                                                                                             |
+| 0.1.8   | 2023-10-11 | [\#31322](https://github.com/airbytehq/airbyte/pull/31322) | Cap log line length to 32KB to prevent loss of records                                                                                                         |
+| 0.1.7   | 2023-10-10 | [\#31194](https://github.com/airbytehq/airbyte/pull/31194) | Deallocate unused per stream buffer memory when empty                                                                                                          |
+| 0.1.6   | 2023-10-10 | [\#31083](https://github.com/airbytehq/airbyte/pull/31083) | Fix precision of numeric values in async destinations                                                                                                          |
+| 0.1.5   | 2023-10-09 | [\#31196](https://github.com/airbytehq/airbyte/pull/31196) | Update typo in CDK (CDN_LSN -> CDC_LSN)                                                                                                                        |
+| 0.1.4   | 2023-10-06 | [\#31139](https://github.com/airbytehq/airbyte/pull/31139) | Reduce async buffer                                                                                                                                            |
+| 0.1.1   | 2023-09-28 | [\#30835](https://github.com/airbytehq/airbyte/pull/30835) | JDBC destinations now avoid staging area name collisions by using the raw table name as the stage name. (previously we used the stream name as the stage name) |
+| 0.1.0   | 2023-09-27 | [\#30445](https://github.com/airbytehq/airbyte/pull/30445) | First launch, including shared classes for all connectors.                                                                                                     |
+| 0.0.2   | 2023-08-21 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Version bump only (no other changes).                                                                                                                          |
+| 0.0.1   | 2023-08-08 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Initial release for testing.                                                                                                                                   |
