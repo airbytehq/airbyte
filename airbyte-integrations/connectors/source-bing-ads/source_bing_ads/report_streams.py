@@ -25,7 +25,6 @@ from suds import WebFault, sudsobject
 
 
 class HourlyReportTransformerMixin:
-
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     @staticmethod
@@ -44,8 +43,6 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
     # timeout for reporting download operations in milliseconds
     timeout: int = 300000
     report_file_format: str = "Csv"
-    # used when reports start date is not provided
-    default_time_period = "ThisYear"
 
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key: List[str] = ["TimePeriod", "Network", "DeviceType"]
@@ -78,6 +75,11 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         """
         Specifies file name with schema
         """
+
+    @property
+    def default_time_periods(self):
+        # used when reports start date is not provided
+        return ["LastYear", "ThisYear"] if self.report_aggregation not in ("DayOfWeek", "HourOfDay") else ["ThisYear"]
 
     @property
     def report_columns(self) -> Iterable[str]:
@@ -229,7 +231,8 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": self.default_time_period}
+            for period in self.default_time_periods:
+                yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
 
 
 class BingAdsReportingServicePerformanceStream(BingAdsReportingServiceStream, ABC):
@@ -245,7 +248,6 @@ class BingAdsReportingServicePerformanceStream(BingAdsReportingServiceStream, AB
 
 
 class BudgetSummaryReport(BingAdsReportingServiceStream):
-
     report_name: str = "BudgetSummaryReport"
     report_aggregation = None
     cursor_field = "Date"
@@ -333,7 +335,6 @@ class CampaignImpressionPerformanceReportMonthly(CampaignImpressionPerformanceRe
 
 
 class AdPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-
     report_name: str = "AdPerformanceReport"
 
     report_schema_name = "ad_performance_report"
@@ -439,7 +440,6 @@ class AdGroupImpressionPerformanceReportMonthly(AdGroupImpressionPerformanceRepo
 
 
 class KeywordPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-
     report_name: str = "KeywordPerformanceReport"
     report_schema_name = "keyword_performance_report"
     primary_key = [
@@ -480,7 +480,6 @@ class KeywordPerformanceReportMonthly(KeywordPerformanceReport):
 
 
 class GeographicPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-
     report_name: str = "GeographicPerformanceReport"
     report_schema_name = "geographic_performance_report"
 
@@ -507,7 +506,6 @@ class GeographicPerformanceReportMonthly(GeographicPerformanceReport):
 
 
 class AccountPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-
     report_name: str = "AccountPerformanceReport"
     report_schema_name = "account_performance_report"
     primary_key = [
@@ -571,7 +569,6 @@ class AccountImpressionPerformanceReportMonthly(AccountImpressionPerformanceRepo
 
 
 class AgeGenderAudienceReport(BingAdsReportingServicePerformanceStream, ABC):
-
     report_name: str = "AgeGenderAudienceReport"
 
     report_schema_name = "age_gender_audience_report"
@@ -631,7 +628,6 @@ class SearchQueryPerformanceReportMonthly(SearchQueryPerformanceReport):
 
 
 class UserLocationPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-
     report_name: str = "UserLocationPerformanceReport"
     report_schema_name = "user_location_performance_report"
     primary_key = [
