@@ -304,3 +304,11 @@ class Collectors(SurveymonkeyStream):
         for slice in survey_ids:
             for collector in survey_collectors.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=slice):
                 yield {"collector_id": collector["id"]}
+
+class Contacts(SurveymonkeyStream):
+    """
+    API Docs: https://developer.surveymonkey.com/api/v3/#api-endpoints-get-contacts
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"contacts"
