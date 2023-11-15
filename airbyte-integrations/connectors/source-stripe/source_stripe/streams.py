@@ -770,7 +770,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
 class ParentIncrementalStipeSubStream(StripeSubStream):
     """
     This stream differs from others in that it runs parent stream in exactly same sync mode it is run itself to generate stream slices.
-    It also uses regular `/v1` API endpoints to sync data no matter what the sync mode is. This means that the event-based API *may* only
+    It also uses regular /v1 API endpoints to sync data no matter what the sync mode is. This means that the event-based API can only
     be utilized by the parent stream.
     """
 

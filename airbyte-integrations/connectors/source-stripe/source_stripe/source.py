@@ -227,8 +227,8 @@ class SourceStripe(AbstractSource):
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="file_links", path="file_links", **incremental_args),
-            # The refunds stream does not utilize the Events API as we faced issues with data loss during the incremental syncs.
-            # Therefore, we're using regular API with the `created` cursor field. A complaint to Stripe has been filed.
+            # The Refunds stream does not utilize the Events API as it created issues with data loss during the incremental syncs.
+            # Therefore, we're using the regular API with the `created` cursor field. A bug has been filed with Stripe.
             # See more at https://github.com/airbytehq/oncall/issues/3090, https://github.com/airbytehq/oncall/issues/3428
             CreatedCursorIncrementalStripeStream(name="refunds", path="refunds", **incremental_args),
             UpdatedCursorIncrementalStripeStream(
