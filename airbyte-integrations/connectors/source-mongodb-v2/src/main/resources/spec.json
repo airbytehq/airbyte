@@ -25,7 +25,8 @@
               "database",
               "username",
               "password",
-              "auth_source"
+              "auth_source",
+              "schema_enforced"
             ],
             "additionalProperties": true,
             "properties": {
@@ -67,13 +68,20 @@
                 "default": "admin",
                 "examples": ["admin"],
                 "order": 6
+              },
+              "schema_enforced": {
+                "title": "Schema Enforced",
+                "description": "When enabled, syncs will validate and structure records against the stream's schema.",
+                "default": false,
+                "type": "boolean",
+                "order": 7
               }
             }
           },
           {
             "title": "Self-Managed Replica Set",
             "description": "MongoDB self-hosted cluster configured as a replica set",
-            "required": ["cluster_type", "connection_string", "database"],
+            "required": ["cluster_type", "connection_string", "database", "schema_enforced"],
             "additionalProperties": true,
             "properties": {
               "cluster_type": {
@@ -117,18 +125,17 @@
                 "default": "admin",
                 "examples": ["admin"],
                 "order": 6
+              },
+              "schema_enforced": {
+                "title": "Schema Enforced",
+                "description": "When enabled, syncs will validate and structure records against the stream's schema.",
+                "default": false,
+                "type": "boolean",
+                "order": 7
               }
             }
           }
         ]
-      },
-      "schema_enforced": {
-        "title": "Schema Enforced",
-        "description": "When enabled, syncs will validate and structure records against the stream's schema.",
-        "default": false,
-        "type": "boolean",
-        "order": 7,
-        "group": "advanced"
       },
       "initial_waiting_seconds": {
         "type": "integer",
