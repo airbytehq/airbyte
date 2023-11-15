@@ -35,6 +35,7 @@
     "SafeT claim state": { "type": ["null", "string"] },
     "SafeT claim creation time": { "type": ["null", "string"] },
     "SafeT claim reimbursement amount": { "type": ["null", "string"] },
-    "Refunded Amount": { "type": ["null", "string"] }
+    "Refunded Amount": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

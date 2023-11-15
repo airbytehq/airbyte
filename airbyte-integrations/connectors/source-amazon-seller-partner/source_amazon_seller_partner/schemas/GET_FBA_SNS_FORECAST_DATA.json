@@ -21,6 +21,7 @@
     "scheduled-sns-units-week-5": { "type": ["null", "string"] },
     "scheduled-sns-units-week-6": { "type": ["null", "string"] },
     "scheduled-sns-units-week-7": { "type": ["null", "string"] },
-    "scheduled-sns-units-week-8": { "type": ["null", "string"] }
+    "scheduled-sns-units-week-8": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

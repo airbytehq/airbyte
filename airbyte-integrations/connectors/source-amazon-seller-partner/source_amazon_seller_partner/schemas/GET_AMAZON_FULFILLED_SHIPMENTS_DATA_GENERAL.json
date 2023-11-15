@@ -51,6 +51,7 @@
     "estimated-arrival-date": { "type": ["null", "string"] },
     "fulfillment-center-id": { "type": ["null", "string"] },
     "fulfillment-channel": { "type": ["null", "string"] },
-    "sales-channel": { "type": ["null", "string"] }
+    "sales-channel": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

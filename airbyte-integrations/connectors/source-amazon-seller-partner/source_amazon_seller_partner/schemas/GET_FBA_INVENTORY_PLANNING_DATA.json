@@ -68,6 +68,7 @@
     "inbound-received": { "type": ["null", "string"] },
     "no-sale-last-6-months": { "type": ["null", "string"] },
     "reserved-quantity": { "type": ["null", "string"] },
-    "unfulfillable-quantity": { "type": ["null", "string"] }
+    "unfulfillable-quantity": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

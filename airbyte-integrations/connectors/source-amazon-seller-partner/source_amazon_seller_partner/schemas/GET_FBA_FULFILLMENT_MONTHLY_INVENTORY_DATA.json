@@ -12,6 +12,7 @@
     "end-quantity": { "type": ["null", "string"] },
     "fulfillment-center-id": { "type": ["null", "string"] },
     "detailed-disposition": { "type": ["null", "string"] },
-    "country": { "type": ["null", "string"] }
+    "country": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

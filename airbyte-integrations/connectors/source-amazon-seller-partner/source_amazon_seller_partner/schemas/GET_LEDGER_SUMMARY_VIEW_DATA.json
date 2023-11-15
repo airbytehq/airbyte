@@ -24,6 +24,7 @@
     "Other Events": { "type": ["null", "string"] },
     "Ending Warehouse Balance": { "type": ["null", "string"] },
     "Unknown Events": { "type": ["null", "string"] },
-    "Location": { "type": ["null", "string"] }
+    "Location": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

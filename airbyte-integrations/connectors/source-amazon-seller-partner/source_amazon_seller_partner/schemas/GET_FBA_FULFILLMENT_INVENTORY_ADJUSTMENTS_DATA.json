@@ -14,6 +14,7 @@
     "reason": { "type": ["null", "string"] },
     "disposition": { "type": ["null", "string"] },
     "reconciled": { "type": ["null", "string"] },
-    "unreconciled": { "type": ["null", "string"] }
+    "unreconciled": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

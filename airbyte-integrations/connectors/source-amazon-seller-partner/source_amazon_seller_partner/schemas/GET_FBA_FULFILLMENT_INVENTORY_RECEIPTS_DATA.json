@@ -10,6 +10,7 @@
     "product-name": { "type": ["null", "string"] },
     "quantity": { "type": ["null", "string"] },
     "fba-shipment-id": { "type": ["null", "string"] },
-    "fulfillment-center-id": { "type": ["null", "string"] }
+    "fulfillment-center-id": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

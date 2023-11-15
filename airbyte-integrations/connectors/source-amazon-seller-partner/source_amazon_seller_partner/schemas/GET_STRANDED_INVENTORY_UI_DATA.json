@@ -21,6 +21,7 @@
     "your-price": { "type": ["null", "string"] },
     "unfulfillable-qty": { "type": ["null", "string"] },
     "reserved-quantity": { "type": ["null", "string"] },
-    "inbound-shipped-qty": { "type": ["null", "string"] }
+    "inbound-shipped-qty": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

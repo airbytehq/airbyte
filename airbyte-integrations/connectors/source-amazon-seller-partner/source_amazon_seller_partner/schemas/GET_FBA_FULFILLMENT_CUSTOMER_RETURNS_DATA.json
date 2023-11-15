@@ -16,6 +16,7 @@
     "reason": { "type": ["null", "string"] },
     "status": { "type": ["null", "string"] },
     "license-plate-number": { "type": ["null", "string"] },
-    "customer-comments": { "type": ["null", "string"] }
+    "customer-comments": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

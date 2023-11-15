@@ -57,6 +57,7 @@
       }
     },
     "IsBusinessOrder": { "type": ["null", "string"] },
-    "MerchantOrderID": { "type": ["null", "string"] }
+    "MerchantOrderID": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

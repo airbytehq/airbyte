@@ -11,6 +11,7 @@
     "product-name": { "type": ["null", "string"] },
     "fulfillment-center-id": { "type": ["null", "string"] },
     "quantity": { "type": ["null", "string"] },
-    "disposition": { "type": ["null", "string"] }
+    "disposition": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

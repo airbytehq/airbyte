@@ -90,6 +90,10 @@
     },
     "Recommended action": {
       "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

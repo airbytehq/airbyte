@@ -58,6 +58,10 @@
     },
     "original-reimbursement-type": {
       "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

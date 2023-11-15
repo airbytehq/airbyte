@@ -27,6 +27,7 @@
     "sns-units-shipped-week-4": { "type": ["null", "string"] },
     "oos-rate-week-4": { "type": ["null", "string"] },
     "sns-sale-price-week-4": { "type": ["null", "string"] },
-    "sns-discount-week-4": { "type": ["null", "string"] }
+    "sns-discount-week-4": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

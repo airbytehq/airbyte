@@ -31,6 +31,7 @@
     "add-delete": { "type": ["null", "string"] },
     "pending-quantity": { "type": ["null", "string"] },
     "fulfillment-channel": { "type": ["null", "string"] },
-    "merchant-shipping-group": { "type": ["null", "string"] }
+    "merchant-shipping-group": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }
