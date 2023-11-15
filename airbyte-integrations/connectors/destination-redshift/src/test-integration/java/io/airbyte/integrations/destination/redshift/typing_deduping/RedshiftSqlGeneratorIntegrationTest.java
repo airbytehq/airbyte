@@ -101,7 +101,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
   @Override
   protected List<JsonNode> dumpFinalTableRecords(final StreamId streamId, final String suffix) throws Exception {
-    return database.queryJsons(DSL.selectFrom(DSL.name(streamId.finalNamespace(), streamId.finalName())).getSQL());
+    return database.queryJsons(DSL.selectFrom(DSL.name(streamId.finalNamespace(), streamId.finalName() + suffix)).getSQL());
   }
 
   @Override
@@ -117,7 +117,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
       throws Exception {
     final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
     insertRecords(
-        DSL.name(streamId.finalNamespace(), streamId.finalName()),
+        DSL.name(streamId.finalNamespace(), streamId.finalName() + suffix),
         columnNames,
         records,
         "struct", "array", "unknown");
