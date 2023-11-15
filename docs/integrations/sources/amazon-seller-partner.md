@@ -102,6 +102,8 @@ This source is capable of syncing the following tables and their data:
 - [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [FBA Reimbursements Report](https://sellercentral.amazon.com/help/hub/reference/G200732720)
 - [Order Data Shipping Report](https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_order_report_data_shipping)
+- [FBA Amazon Fulfilled Inventory Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(incremental\)
+- [FBA Multi-Country Inventory Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(incremental\)
 
 ## Report options
 
@@ -126,6 +128,7 @@ So, for any value that exceeds the limit, the `period_in_days` will be automatic
 
 | Version  | Date       | Pull Request                                                  | Subject                                                                                                                                                                             |
 |:---------|:-----------|:--------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `1.7.0`  | 2023-11-15 | [\#32541](https://github.com/airbytehq/airbyte/pull/32541)    | Make `GET_AFN_INVENTORY_DATA` and `GET_AFN_INVENTORY_DATA_BY_COUNTRY` streams incremental                                                                                           |
 | `1.6.2`  | 2023-11-14 | [\#32508](https://github.com/airbytehq/airbyte/pull/32508)    | Do not use AWS signature as it is no longer required by the Amazon API                                                                                                              |
 | `1.6.1`  | 2023-11-13 | [\#32457](https://github.com/airbytehq/airbyte/pull/32457)    | Fix report decompression                                                                                                                                                            |
 | `1.6.0`  | 2023-11-09 | [\#32259](https://github.com/airbytehq/airbyte/pull/32259)    | mark "aws_secret_key" and "aws_access_key" as required in specification; update schema for stream `Orders`                                                                          |
