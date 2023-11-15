@@ -107,7 +107,11 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   }
 
   @Override
-  protected void insertFinalTableRecords(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix, final List<JsonNode> records) throws Exception {
+  protected void insertFinalTableRecords(final boolean includeCdcDeletedAt,
+                                         final StreamId streamId,
+                                         final String suffix,
+                                         final List<JsonNode> records)
+      throws Exception {
     final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
     insertRecords(
         DSL.name(streamId.finalNamespace(), streamId.finalName()),
@@ -134,12 +138,13 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   private void insertRecords(final Name tableName, final List<String> columnNames, final List<JsonNode> records) throws SQLException {
     database.execute(DSL.insertInto(
         DSL.table(tableName),
-        columnNames.stream().map(DSL::field).toList()
-    ).values(records.stream().map(record -> DSL.row(
-        columnNames.stream()
-            .map(fieldName -> record.get(fieldName) != null ? record.get(fieldName).asText() : null)
-            .toList()
-    )).toList()).getSQL());
+        columnNames.stream().map(DSL::field).toList()).values(
+            records.stream().map(record -> DSL.row(
+                columnNames.stream()
+                    .map(fieldName -> record.get(fieldName) != null ? record.get(fieldName).asText() : null)
+                    .toList()))
+                .toList())
+        .getSQL());
   }
 
   @Override
