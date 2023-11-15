@@ -23,9 +23,13 @@ import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import javax.sql.DataSource;
+import org.jooq.InsertValuesStepN;
 import org.jooq.Name;
+import org.jooq.Record;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
@@ -116,7 +120,8 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     insertRecords(
         DSL.name(streamId.finalNamespace(), streamId.finalName()),
         columnNames,
-        records);
+        records,
+        "struct", "array", "unknown");
   }
 
   @Override
@@ -124,7 +129,8 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     insertRecords(
         DSL.name(streamId.rawNamespace(), streamId.rawName()),
         LEGACY_RAW_TABLE_COLUMNS,
-        records);
+        records,
+        COLUMN_NAME_DATA);
   }
 
   @Override
@@ -132,19 +138,36 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     insertRecords(
         DSL.name(streamId.rawNamespace(), streamId.rawName()),
         JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES,
-        records);
+        records,
+        COLUMN_NAME_DATA);
   }
 
-  private void insertRecords(final Name tableName, final List<String> columnNames, final List<JsonNode> records) throws SQLException {
-    database.execute(DSL.insertInto(
+  private void insertRecords(final Name tableName, final List<String> columnNames, final List<JsonNode> records, final String... columnsToParseJson) throws SQLException {
+    InsertValuesStepN<Record> insert = DSL.insertInto(
         DSL.table(tableName),
-        columnNames.stream().map(DSL::field).toList()).values(
-            records.stream().map(record -> DSL.row(
-                columnNames.stream()
-                    .map(fieldName -> record.get(fieldName) != null ? record.get(fieldName).asText() : null)
-                    .toList()))
-                .toList())
-        .getSQL());
+        columnNames.stream().map(DSL::field).toList());
+    for (final JsonNode record : records) {
+      insert = insert.values(
+          columnNames.stream()
+              .map(fieldName -> {
+                final JsonNode column = record.get(fieldName);
+                final String columnAsString;
+                if (column == null) {
+                  columnAsString = null;
+                } else if (column.isTextual()) {
+                  columnAsString = column.asText();
+                } else {
+                  columnAsString = column.toString();
+                }
+                if (Arrays.asList(columnsToParseJson).contains(fieldName)) {
+                  return DSL.function("JSON_PARSE", String.class, DSL.inline(columnAsString));
+                } else {
+                  return DSL.inline(columnAsString);
+                }
+              })
+              .toList());
+    }
+     database.execute(insert.getSQL());
   }
 
   @Override
