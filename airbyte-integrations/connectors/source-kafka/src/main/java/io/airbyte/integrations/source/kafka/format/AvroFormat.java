@@ -205,7 +205,7 @@ public class AvroFormat extends AbstractFormat {
               .withRecord(new AirbyteRecordMessage()
                   .withStream(record.topic())
                   .withEmittedAt(Instant.now().toEpochMilli())
-                  .withData(output));
+                  .withData(Jsons.jsonNode(ImmutableMap.builder().put("value", output).build())));
         }
 
         return endOfData();
