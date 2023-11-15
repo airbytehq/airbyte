@@ -91,7 +91,7 @@
           "null"
         ],
         "items": {
-          "type": "object",
+          "type": ["object", "null"],
           "properties": {
             "created_at": {
               "type": "string",
