@@ -16,43 +16,23 @@ import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
-import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
-import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.sql.SQLType;
 import java.sql.Statement;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
-import javax.sql.DataSource;
-import lombok.SneakyThrows;
-import org.apache.commons.text.StringSubstitutor;
 
-public class JdbcSqlGenerator implements SqlGenerator<TableDefinition> {
+public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> {
 
   private final NamingConventionTransformer namingTransformer;
 
-  private final DataSource dataSource;
-
-  public JdbcSqlGenerator(final NamingConventionTransformer namingTransformer,
-                          final DataSource datasource) {
+  public JdbcSqlGenerator(final NamingConventionTransformer namingTransformer) {
     this.namingTransformer = namingTransformer;
-    this.dataSource = datasource;
-  }
-
-  /**
-   * Many JDBC destinations use double quotes to escape identifiers. Override this method if your
-   * destination does not. For example, mysql uses backticks.
-   */
-  protected String getQuote() {
-    return "\"";
   }
 
   @Override
@@ -67,10 +47,14 @@ public class JdbcSqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   public ColumnId buildColumnId(final String name, final String suffix) {
-    return null;
+    final String nameWithSuffix = name + suffix;
+    return new ColumnId(
+        namingTransformer.getIdentifier(nameWithSuffix),
+        name,
+        namingTransformer.getIdentifier(nameWithSuffix));
   }
 
-  private String columnsAndTypes(final Statement statement, final StreamConfig stream, final SQLType structType) throws SQLException {
+  protected String columnsAndTypes(final Statement statement, final StreamConfig stream, final SQLType structType) throws SQLException {
     final List<String> typeColumns = new ArrayList<>();
     for (final Entry<ColumnId, AirbyteType> entry : stream.columns().entrySet()) {
       typeColumns.add(
@@ -132,68 +116,6 @@ public class JdbcSqlGenerator implements SqlGenerator<TableDefinition> {
       case DATE -> JDBCType.DATE;
       case UNKNOWN -> widestType();
     };
-  }
-
-  @SneakyThrows
-  @Override
-  public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
-    final Connection connection = dataSource.getConnection();
-
-    final Statement statement = connection.createStatement();
-    final SQLType structType = preferredStructType(TypeInfoRecordSet.getTypeInfoList(connection.getMetaData()));
-
-    final String columnDeclarations = columnsAndTypes(statement, stream, structType);
-
-    return new StringSubstitutor(Map.of(
-        "final_namespace", statement.enquoteIdentifier(stream.id().finalNamespace(), false),
-        "final_table_id", statement.enquoteIdentifier(stream.id().finalTableId("", suffix), false),
-        "column_declarations", columnDeclarations,
-        "json_type", structType.getName())).replace(
-            """
-            CREATE SCHEMA IF NOT EXISTS ${final_namespace};
-
-            CREATE OR REPLACE TABLE ${final_table_id} (
-              _airbyte_raw_id VARCHAR PRIMARY KEY NOT NULL,
-              _airbyte_extracted_at TIMESTAMP NOT NULL,
-              _airbyte_meta ${json_type} NOT NULL,
-            ${column_declarations}
-            );
-            """);
-  }
-
-  @SneakyThrows
-  @Override
-  public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) throws TableNotMigratedException {
-    return false;
-  }
-
-  @SneakyThrows
-  @Override
-  public String clearLoadedAt(final StreamId streamId) {
-    final Connection connection = dataSource.getConnection();
-    final Statement statement = connection.createStatement();
-    return new StringSubstitutor(Map.of("raw_table_id", statement.enquoteIdentifier(streamId.rawTableId(""), false)))
-        .replace("""
-                 UPDATE ${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
-                 """);
-  }
-
-  @Override
-  public String updateTable(final StreamConfig stream,
-                            final String finalSuffix,
-                            final Optional<Instant> minRawTimestamp,
-                            final boolean useExpensiveSaferCasting) {
-    return "";
-  }
-
-  @Override
-  public String overwriteFinalTable(final StreamId stream, final String finalSuffix) {
-    return null;
-  }
-
-  @Override
-  public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
-    return null;
   }
 
 }
