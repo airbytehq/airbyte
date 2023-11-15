@@ -53,7 +53,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
 
   @Override
   public void execute(final String sql) throws Exception {
-    if ("".equals(sql)) {
+    if (sql == null || sql.isEmpty()) {
       return;
     }
     final UUID queryId = UUID.randomUUID();
