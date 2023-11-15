@@ -4,7 +4,7 @@ The license for a particular work is defined with following prioritized rules:
 
 1. License directly present in the file
 2. LICENSE file in the same directory as the work
-3. A `license` property defined in the `metadata.yaml` configuration file found when exploring parent directories up to the project top level directory (most connectors)
+3. A `license` property defined in the `metadata.yaml` configuration file found when exploring parent directories (most connectors)
 4. First LICENSE found when exploring parent directories up to the project top level directory
 5. Defaults to Elastic License 2.0
 
