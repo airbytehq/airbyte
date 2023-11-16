@@ -16,13 +16,11 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
-import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
-import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator;
-import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV2TableMigrator;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeTableDefinition;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -32,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -60,7 +59,6 @@ public class BulkConsumer implements AirbyteMessageConsumer {
   private final SnowflakeSqlGenerator sqlGenerator;
   private final String defaultNamespace;
 
-  private DefaultTyperDeduper typerDeduper;
   private ParsedCatalog parsedCatalog;
   private SnowflakeDestinationHandler snowflakeDestinationHandler;
 
@@ -89,11 +87,11 @@ public class BulkConsumer implements AirbyteMessageConsumer {
 
     this.defaultNamespace = this.config.get("schema").asText();
     // set up other instance variables using the above
-    this.setTyperDeduperAndCatalogAndHandler();
+    this.setCatalogAndHandler();
   }
 
   // from SnowflakeInternalStagingDestination.getSerializedMessageConsumer
-  private void setTyperDeduperAndCatalogAndHandler() {
+  private void setCatalogAndHandler() {
     for (final ConfiguredAirbyteStream stream : this.catalog.getStreams()) {
       if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
         stream.getStream().setNamespace(this.defaultNamespace);
@@ -109,19 +107,25 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     final String databaseName = this.config.get(JdbcUtils.DATABASE_KEY).asText();
     final SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
     this.snowflakeDestinationHandler = snowflakeDestinationHandler;
-
-    final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(this.namingResolver, database, databaseName);
-    final SnowflakeV2TableMigrator v2TableMigrator = new SnowflakeV2TableMigrator(database, databaseName, this.sqlGenerator, this.snowflakeDestinationHandler);
-    final DefaultTyperDeduper typerDeduper = new DefaultTyperDeduper<>(this.sqlGenerator, this.snowflakeDestinationHandler, this.parsedCatalog, migrator, v2TableMigrator, 8);
-    this.typerDeduper = typerDeduper;
-
   }
 
   @Override
   public void start() throws Exception {
     LOGGER.info("start staging:{} format:{}", this.configStaging, this.configFormat);
-    typerDeduper.prepareTables();
+    for (final StreamConfig stream : parsedCatalog.streams()) {
+      ensureTable(stream);
+    }
     LOGGER.info("tables created");
+  }
+
+  private void ensureTable(final StreamConfig stream) throws Exception {
+    final Optional<SnowflakeTableDefinition> existingTable = this.snowflakeDestinationHandler.findExistingTable(stream.id());
+    if (existingTable.isPresent()) {
+      return;
+    }
+    LOGGER.info("Final Table does not exist for stream {}, creating.", stream.id().finalName());
+    // The table doesn't exist. Create it. Don't force.
+    this.snowflakeDestinationHandler.execute(sqlGenerator.createTable(stream, "", false));
   }
 
   @Override
@@ -139,7 +143,7 @@ public class BulkConsumer implements AirbyteMessageConsumer {
       recordMessage.setNamespace(this.defaultNamespace);
     }
 
-    LOGGER.info("record: {}", recordMessage);
+    // LOGGER.info("record: {}", recordMessage);
     final String streamName = recordMessage.getStream();
     final String namespace = recordMessage.getNamespace();
 
@@ -179,9 +183,6 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     for(final Map.Entry<StreamConfig, List<AirbyteRecordMessage>> entry : this.streamMessages.entrySet()) {
       this.flush(entry.getKey(), entry.getValue());
     }
-
-    this.typerDeduper.commitFinalTables();
-    this.typerDeduper.cleanup();
     LOGGER.info("sync complete");
   }
 
