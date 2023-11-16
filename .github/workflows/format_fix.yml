@@ -10,7 +10,7 @@ on:
   pull_request:
 jobs:
   format-fix:
-    runs-on: "conn-prod-xlarge-runner"
+    runs-on: "ci-runner-connector-format-medium-dagger-0-6-4"
     name: "Apply All Formatting Rules"
     timeout-minutes: 40
     steps:

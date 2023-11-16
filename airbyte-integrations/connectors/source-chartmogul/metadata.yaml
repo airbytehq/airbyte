@@ -12,11 +12,8 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: >
-          Refactor and break `customer_count` stream 
-          into multiple streams (daily, weekly, monthly, quarterly).
-          You need to update your schema and use the new streams.
-        upgradeDeadline: "2023-11-21"
+        message: "This version separates the `customer_count` stream into multiple streams (daily, weekly, monthly, quarterly). Users previously using the `customer_count` stream will need to run a reset to enable the new streams and continue syncing."
+        upgradeDeadline: "2023-11-29"
   dockerRepository: airbyte/source-chartmogul
   documentationUrl: https://docs.airbyte.com/integrations/sources/chartmogul
   githubIssueLabel: source-chartmogul

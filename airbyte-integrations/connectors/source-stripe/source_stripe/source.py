@@ -2,7 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import os
+from datetime import timedelta
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
@@ -13,6 +15,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -33,9 +36,12 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeStream,
 )
 
-_MAX_CONCURRENCY = 3
+logger = logging.getLogger("airbyte")
+
+_MAX_CONCURRENCY = 20
 _CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
 USE_CACHE = not _CACHE_DISABLED
+STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
 class SourceStripe(AbstractSource):
@@ -114,6 +120,52 @@ class SourceStripe(AbstractSource):
             **args,
         )
 
+    @staticmethod
+    def is_test_account(config: Mapping[str, Any]) -> bool:
+        """Check if configuration uses Stripe test account (https://stripe.com/docs/keys#obtain-api-keys)
+
+        :param config:
+        :return: True if configured to use a test account, False - otherwise
+        """
+
+        return str(config["client_secret"]).startswith(STRIPE_TEST_ACCOUNT_PREFIX)
+
+    def get_api_call_budget(self, config: Mapping[str, Any]) -> AbstractAPIBudget:
+        """Get API call budget which connector is allowed to use.
+
+        :param config:
+        :return:
+        """
+
+        max_call_rate = 25 if self.is_test_account(config) else 100
+        if config.get("call_rate_limit"):
+            call_limit = config["call_rate_limit"]
+            if call_limit > max_call_rate:
+                logger.warning(
+                    "call_rate_limit is larger than maximum allowed %s, fallback to default %s.",
+                    max_call_rate,
+                    max_call_rate,
+                )
+                call_limit = max_call_rate
+        else:
+            call_limit = max_call_rate
+
+        policies = [
+            MovingWindowCallRatePolicy(
+                rates=[Rate(limit=20, interval=timedelta(seconds=1))],
+                matchers=[
+                    HttpRequestMatcher(url="https://api.stripe.com/v1/files"),
+                    HttpRequestMatcher(url="https://api.stripe.com/v1/file_links"),
+                ],
+            ),
+            MovingWindowCallRatePolicy(
+                rates=[Rate(limit=call_limit, interval=timedelta(seconds=1))],
+                matchers=[],
+            ),
+        ]
+
+        return HttpAPIBudget(policies=policies)
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self.validate_and_fill_with_defaults(config)
         authenticator = TokenAuthenticator(config["client_secret"])
@@ -122,6 +174,7 @@ class SourceStripe(AbstractSource):
             "account_id": config["account_id"],
             "start_date": config["start_date"],
             "slice_range": config["slice_range"],
+            "api_budget": self.get_api_call_budget(config),
         }
         incremental_args = {**args, "lookback_window_days": config["lookback_window_days"]}
         subscriptions = IncrementalStripeStream(
@@ -441,9 +494,7 @@ class SourceStripe(AbstractSource):
             ),
         ]
 
-        # We cap the number of workers to avoid hitting the Stripe rate limit
-        # The limit can be removed or increased once we have proper rate limiting
-        concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
+        concurrency_level = min(config.get("num_workers", 10), _MAX_CONCURRENCY)
         streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
 
         return [
