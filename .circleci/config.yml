@@ -1,0 +1,162 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@1.3.0
+  aws-ecr: circleci/aws-ecr@8.1.2
+  github-ops: voodooteam/github-ops@2
+  docker: circleci/docker@2
+
+jobs:
+  dependencies_facebook:
+    working_directory: ~/airbyte/airbyte-integrations/connectors/source-facebook-marketing
+    machine:
+      image: ubuntu-2004:202201-02
+    steps:
+      - checkout
+
+  dependencies_applovin:
+    working_directory: ~/airbyte/airbyte-integrations/connectors/source-applovin
+    machine:
+      image: ubuntu-2004:202201-02
+    steps:
+      - checkout
+
+  dependencies_tiktok:
+    working_directory: ~/airbyte/airbyte-integrations/connectors/source-tiktok-marketing
+    machine:
+      image: ubuntu-2004:202201-02
+    steps:
+      - checkout
+
+  dependencies_googleads:
+    working_directory: ~/airbyte/airbyte-integrations/connectors/source-google-ads
+    machine:
+      image: ubuntu-2004:202201-02
+    steps:
+      - checkout
+
+  dependencies_ironsource:
+    working_directory: ~/airbyte/airbyte-integrations/connectors/source-ironsource
+    machine:
+      image: ubuntu-2004:202201-02
+    steps:
+      - checkout
+
+workflows:
+  version: 2
+  deployment:
+    jobs:
+      - dependencies_facebook:
+          context:
+            - github-voodoo-bender
+            - VOODOO_INFRA_TOOLS
+
+      - dependencies_applovin:
+          context:
+            - github-voodoo-bender
+            - VOODOO_INFRA_TOOLS
+
+      - dependencies_tiktok:
+          context:
+            - github-voodoo-bender
+            - VOODOO_INFRA_TOOLS
+
+      - dependencies_googleads:
+          context:
+            - github-voodoo-bender
+            - VOODOO_INFRA_TOOLS
+
+      - dependencies_ironsource:
+          context:
+            - github-voodoo-bender
+            - VOODOO_INFRA_TOOLS
+
+      - aws-ecr/build-and-push-image:
+          path: airbyte-integrations/connectors/source-facebook-marketing/
+          executor:
+            name: aws-ecr/default
+            use-docker-layer-caching: true
+          context: VOODOO_INFRA_TOOLS
+          create-repo: false
+          no-output-timeout: 20m
+          repo: "data-core/vgp-data-airbyte-facebook"
+          tag: << pipeline.git.revision >>
+          skip-when-tags-exist: true
+          requires:
+            - dependencies_facebook
+          filters:
+            branches:
+              only:
+                - voodoo_master
+
+      - aws-ecr/build-and-push-image:
+          path: airbyte-integrations/connectors/source-applovin/
+          executor:
+            name: aws-ecr/default
+            use-docker-layer-caching: true
+          context: VOODOO_INFRA_TOOLS
+          create-repo: false
+          no-output-timeout: 20m
+          repo: "data-core/vgp-data-airbyte-applovin"
+          tag: << pipeline.git.revision >>
+          skip-when-tags-exist: true
+          requires:
+            - dependencies_applovin
+          filters:
+            branches:
+              only:
+                - voodoo_master
+
+      - aws-ecr/build-and-push-image:
+          path: airbyte-integrations/connectors/source-tiktok-marketing/
+          executor:
+            name: aws-ecr/default
+            use-docker-layer-caching: true
+          context: VOODOO_INFRA_TOOLS
+          create-repo: false
+          no-output-timeout: 20m
+          repo: "data-core/vgp-data-airbyte-tiktok"
+          tag: << pipeline.git.revision >>
+          skip-when-tags-exist: true
+          requires:
+            - dependencies_tiktok
+          filters:
+            branches:
+              only:
+                - voodoo_master
+
+      - aws-ecr/build-and-push-image:
+          path: airbyte-integrations/connectors/source-google-ads/
+          executor:
+            name: aws-ecr/default
+            use-docker-layer-caching: true
+          context: VOODOO_INFRA_TOOLS
+          create-repo: false
+          no-output-timeout: 20m
+          repo: "data-core/vgp-data-airbyte-google-ads"
+          tag: << pipeline.git.revision >>
+          skip-when-tags-exist: true
+          requires:
+            - dependencies_googleads
+          filters:
+            branches:
+              only:
+                - voodoo_master
+
+      - aws-ecr/build-and-push-image:
+          path: airbyte-integrations/connectors/source-ironsource/
+          executor:
+            name: aws-ecr/default
+            use-docker-layer-caching: true
+          context: VOODOO_INFRA_TOOLS
+          create-repo: false
+          no-output-timeout: 20m
+          repo: "data-core/vgp-data-airbyte-ironsource"
+          tag: << pipeline.git.revision >>
+          skip-when-tags-exist: true
+          requires:
+            - dependencies_ironsource
+          filters:
+            branches:
+              only:
+                - voodoo_master
