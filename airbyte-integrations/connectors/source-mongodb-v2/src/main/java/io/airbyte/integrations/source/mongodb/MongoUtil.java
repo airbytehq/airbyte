@@ -37,6 +37,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -212,16 +213,16 @@ public class MongoUtil {
    * @param isSchemaEnforced true if schema is enforced, false if in schemaless mode.
    * @param catalog User's configured catalog.
    */
-  public static void checkSchemaModeMismatch(final boolean isSchemaEnforced, final ConfiguredAirbyteCatalog catalog) {
+  public static void checkSchemaModeMismatch(final boolean isConfigSchemaEnforced, final boolean isStateSchemaEnforced, final ConfiguredAirbyteCatalog catalog) {
     final boolean isCatalogSchemaless = catalog.getStreams().stream()
         .allMatch(stream -> verifySchemaless(stream.getStream().getJsonSchema()));
 
-    if (isSchemaEnforced && isCatalogSchemaless) {
-      throw new ConfigErrorException("Sync is set to schema enforced mode, but this isn't reflected in the catalog. "
-          + "Please re-discover schema and reset streams");
-    } else if (!isSchemaEnforced && !isCatalogSchemaless) {
-      throw new ConfigErrorException("Sync is set to schemaless mode, but this isn't reflected in the catalog. "
-          + "Please re-discover schema and reset streams");
+    final boolean isCatalogSchemaEnforcing = !isCatalogSchemaless;
+    boolean allTrue = Stream.of(isConfigSchemaEnforced, isStateSchemaEnforced, isCatalogSchemaEnforcing).allMatch(val -> val == true);
+    boolean allFalse = Stream.of(isConfigSchemaEnforced, isStateSchemaEnforced, isCatalogSchemaEnforcing).allMatch(val -> val == false);
+    if (!allTrue && !allFalse) {
+      throw new ConfigErrorException("Mismatch between schema enforcing mode in sync config(%b), catalog(%b) and saved state(%b) ".formatted(isConfigSchemaEnforced, isCatalogSchemaEnforcing, isStateSchemaEnforced)
+          + "Please refresh source schema and reset streams");
     }
   }
 

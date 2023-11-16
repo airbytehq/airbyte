@@ -135,10 +135,10 @@ public class MongoUtilTest {
             .collect(Collectors.toList());
     final ConfiguredAirbyteCatalog schemaLessCatalog =
         new ConfiguredAirbyteCatalog().withStreams(configuredAirbyteStreams);
-    Throwable throwable = catchThrowable(() -> checkSchemaModeMismatch(true, schemaLessCatalog));
+    Throwable throwable = catchThrowable(() -> checkSchemaModeMismatch(true, true, schemaLessCatalog));
     assertThat(throwable).isInstanceOf(ConfigErrorException.class).hasMessageContaining("Sync is set to schema enforced mode, but this isn't "
         + "reflected in the catalog. Please re-discover schema and reset streams");
-    throwable = catchThrowable(() -> checkSchemaModeMismatch(false, schemaLessCatalog));
+    throwable = catchThrowable(() -> checkSchemaModeMismatch(false, false, schemaLessCatalog));
     assertThat(throwable).isNull();
   }
 
@@ -208,10 +208,10 @@ public class MongoUtilTest {
             .collect(Collectors.toList());
     final ConfiguredAirbyteCatalog schemaEnforcedCatalog =
         new ConfiguredAirbyteCatalog().withStreams(configuredAirbyteStreams);
-    Throwable throwable = catchThrowable(() -> checkSchemaModeMismatch(false, schemaEnforcedCatalog));
+    Throwable throwable = catchThrowable(() -> checkSchemaModeMismatch(false, false, schemaEnforcedCatalog));
     assertThat(throwable).isInstanceOf(ConfigErrorException.class).hasMessageContaining("Sync is set to schemaless mode, but this isn't "
         + "reflected in the catalog. Please re-discover schema and reset streams");
-    throwable = catchThrowable(() -> checkSchemaModeMismatch(true, schemaEnforcedCatalog));
+    throwable = catchThrowable(() -> checkSchemaModeMismatch(true, true, schemaEnforcedCatalog));
     assertThat(throwable).isNull();
   }
 

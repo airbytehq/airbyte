@@ -122,7 +122,8 @@ public class MongoDbSource extends BaseConnector implements Source {
     final var stateManager = MongoDbStateManager.createStateManager(state);
     final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
     if (catalog != null) {
-      MongoUtil.checkSchemaModeMismatch(sourceConfig.getEnforceSchema(), catalog);
+      MongoUtil.checkSchemaModeMismatch(sourceConfig.getEnforceSchema(),
+          stateManager.getCdcState() != null ? stateManager.getCdcState().schema_enforced() : sourceConfig.getEnforceSchema(), catalog);
     }
 
     try {
