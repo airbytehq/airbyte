@@ -81,7 +81,7 @@ class InstagramIncrementalStream(InstagramStream, IncrementalMixin):
 
     def __init__(self, start_date: datetime, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = pendulum.instance(start_date)
+        self._start_date = pendulum.parse(start_date)
         self._state = {}
 
     @property
