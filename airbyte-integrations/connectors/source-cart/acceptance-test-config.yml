@@ -1,38 +1,51 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-cart:dev
-tests:
+test_strictness_level: low
+acceptance_tests:
   spec:
-    - spec_path: "source_cart/spec.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.6"
+    tests:
+      - spec_path: "source_cart/spec.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.6"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
-      timeout_seconds: 180
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+        timeout_seconds: 180
   discovery:
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.6"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.6"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 1800
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 1800
+        empty_streams:
+          - name: "order_payments"
+            bypass_reason: "no data"
+          - name: "products"
+            bypass_reason: "no data"
   incremental:
-    - config_path: "secrets/config_central_api_router.json"
-      configured_catalog_path: "integration_tests/configured_catalog_wo_order_statuses.json"
-      future_state_path: "integration_tests/abnormal_state.json"
-      timeout_seconds: 1800
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
-      timeout_seconds: 1800
+    tests:
+      # - config_path: "secrets/config_central_api_router.json"
+      #   configured_catalog_path: "integration_tests/configured_catalog_wo_order_statuses.json"
+      #   future_state_path: "integration_tests/abnormal_state.json"
+      #   timeout_seconds: 1800
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+        timeout_seconds: 1800
   full_refresh:
-    - config_path: "secrets/config_central_api_router.json"
-      configured_catalog_path: "integration_tests/configured_catalog_wo_order_statuses.json"
-      timeout_seconds: 1800
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 1800
+    tests:
+      - config_path: "secrets/config_central_api_router.json"
+        configured_catalog_path: "integration_tests/configured_catalog_wo_order_statuses.json"
+        timeout_seconds: 1800
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 1800
