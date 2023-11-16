@@ -68,7 +68,6 @@ class ConcurrentReadProcessor:
         ret = []
 
         if not sentinel.stream_availability.is_available():
-            # The stream is not available
             self._logger.warning(
                 f"Skipped syncing stream '{sentinel.stream.name}' because it was unavailable. {sentinel.stream_availability.message()}"
             )
