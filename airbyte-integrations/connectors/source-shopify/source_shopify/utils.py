@@ -9,6 +9,8 @@ from time import sleep
 from typing import Any, Dict, List, Mapping, Optional
 
 import requests
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 SCOPES_MAPPING = {
     "read_customers": [
@@ -88,38 +90,38 @@ class ShopifyNonRetryableErrors:
         }
 
 
-class ShopifyAccessScopesError(Exception):
+class ShopifyAccessScopesError(AirbyteTracedException):
     """Raises the error if authenticated user doesn't have access to verify the grantted scopes."""
 
     help_url = "https://shopify.dev/docs/api/usage/access-scopes#authenticated-access-scopes"
 
-    def __init__(self, response):
-        super().__init__(
-            f"Reason: Scopes are not available, make sure you're using the correct `Shopify Store` name. Actual response: {response}. More info about: {self.help_url}"
-        )
+    def __init__(self, response, **kwargs):
+        self.message = f"Reason: Scopes are not available, make sure you're using the correct `Shopify Store` name. Actual response: {response}. More info about: {self.help_url}"
+        super().__init__(message=self.message, failure_type=FailureType.config_error, **kwargs)
 
 
-class ShopifyBadJsonError(ShopifyAccessScopesError):
+class ShopifyBadJsonError(AirbyteTracedException):
     """Raises the error when Shopify replies with broken json for `access_scopes` request"""
 
-    def __init__(self, message):
-        super().__init__(f"Reason: Bad JSON Response from the Shopify server. Details: {message}.")
+    def __init__(self, message, **kwargs):
+        self.message = f"Reason: Bad JSON Response from the Shopify server. Details: {message}."
+        super().__init__(message=self.message, failure_type=FailureType.config_error, **kwargs)
 
 
-class ShopifyConnectionError(ShopifyAccessScopesError):
-    """Raises the error when Shopify replies with broken connection error for `access_scopes` request"""
+class ShopifyConnectionError(AirbyteTracedException):
+    """Raises the error when Shopify resources couldn't be accessed because of the ConnectionError occured (100-x)"""
 
-    def __init__(self, details):
-        super().__init__(f"Invalid `Shopify Store` name used or `host` couldn't be verified by Shopify. Details: {details}")
+    def __init__(self, details, **kwargs):
+        self.message = f"Invalid `Shopify Store` name used or `host` couldn't be verified by Shopify. Details: {details}"
+        super().__init__(self.message, failure_type=FailureType.config_error, **kwargs)
 
 
-class ShopifyWrongShopNameError(Exception):
+class ShopifyWrongShopNameError(AirbyteTracedException):
     """Raises the error when `Shopify Store` name is incorrect or couldn't be verified by the Shopify"""
 
-    def __init__(self, url):
-        super().__init__(
-            f"Reason: The `Shopify Store` name is invalid or missing for `input configuration`, make sure it's valid. Details: {url}"
-        )
+    def __init__(self, url, **kwargs):
+        self.message = f"The `Shopify Store` name is invalid or missing for `input configuration`, make sure it's valid. Details: {url}"
+        super().__init__(message=self.message, failure_type=FailureType.config_error, **kwargs)
 
 
 class UnrecognisedApiType(Exception):
