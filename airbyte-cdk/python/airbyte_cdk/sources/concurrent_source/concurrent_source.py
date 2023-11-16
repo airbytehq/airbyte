@@ -7,7 +7,7 @@ from queue import Queue
 from typing import Any, Iterable, Iterator, List
 
 from airbyte_cdk.models import AirbyteMessage
-from airbyte_cdk.sources.concurrent_source.concurrent_stream_processor import ConcurrentStreamProcessor
+from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
@@ -86,7 +86,7 @@ class ConcurrentSource:
             return
 
         queue: Queue[QueueItem] = Queue()
-        concurrent_stream_processor = ConcurrentStreamProcessor(
+        concurrent_stream_processor = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             PartitionEnqueuer(queue),
             self._threadpool,
@@ -107,7 +107,7 @@ class ConcurrentSource:
         self._threadpool.check_for_errors_and_shutdown()
         self._logger.info("Finished syncing")
 
-    def _submit_initial_partition_generators(self, concurrent_stream_processor: ConcurrentStreamProcessor) -> Iterable[AirbyteMessage]:
+    def _submit_initial_partition_generators(self, concurrent_stream_processor: ConcurrentReadProcessor) -> Iterable[AirbyteMessage]:
         for _ in range(self._initial_number_partitions_to_generate):
             status_message = concurrent_stream_processor.start_next_partition_generator()
             if status_message:
@@ -116,7 +116,7 @@ class ConcurrentSource:
     def _consume_from_queue(
         self,
         queue: Queue[QueueItem],
-        concurrent_stream_processor: ConcurrentStreamProcessor,
+        concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
             yield from self._handle_item(
@@ -130,7 +130,7 @@ class ConcurrentSource:
     def _handle_item(
         self,
         queue_item: QueueItem,
-        concurrent_stream_processor: ConcurrentStreamProcessor,
+        concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
         # handle queue item and call the appropriate handler depending on the type of the queue item
         if isinstance(queue_item, Exception):

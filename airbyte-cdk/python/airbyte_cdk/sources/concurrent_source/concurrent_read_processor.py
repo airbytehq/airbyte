@@ -20,7 +20,7 @@ from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 
 
-class ConcurrentStreamProcessor:
+class ConcurrentReadProcessor:
     def __init__(
         self,
         stream_instances_to_read_from: List[AbstractStream],

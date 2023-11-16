@@ -18,7 +18,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import StreamDescriptor, SyncMode, TraceType
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.concurrent_source.concurrent_stream_processor import ConcurrentStreamProcessor
+from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import LogMessage, MessageRepository
@@ -34,7 +34,7 @@ _STREAM_NAME = "stream"
 _ANOTHER_STREAM_NAME = "stream2"
 
 
-class TestConcurrentStreamProcessor(unittest.TestCase):
+class TestConcurrentReadProcessor(unittest.TestCase):
     def setUp(self):
         self._partition_enqueuer = Mock(spec=PartitionEnqueuer)
         self._thread_pool_manager = Mock(spec=ThreadPoolManager)
@@ -79,7 +79,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
     def test_handle_partition_done_no_other_streams_to_generate_partitions_for(self):
         stream_instances_to_read_from = [self._stream]
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -101,7 +101,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
     def test_handle_last_stream_partition_done(self):
         stream_instances_to_read_from = [self._another_stream]
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -134,7 +134,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
     def test_handle_partition(self):
         stream_instances_to_read_from = [self._another_stream]
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -155,7 +155,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
         self._slice_logger.should_log_slice_message.return_value = True
         self._slice_logger.create_slice_log_message.return_value = self._log_message
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -179,7 +179,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
         partition.stream_name.return_value = _STREAM_NAME
         partition.is_closed.return_value = True
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -213,7 +213,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
         self._a_closed_partition.to_slice.return_value = log_message
         self._message_repository.consume_queue.return_value = []
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -256,7 +256,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
         partition.stream_name.return_value = _STREAM_NAME
         partition.is_closed.return_value = True
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -285,7 +285,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
         partition.is_closed.return_value = True
         self._message_repository.consume_queue.return_value = []
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -327,7 +327,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
         ]
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -372,7 +372,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
         partition.stream_name.return_value = _STREAM_NAME
         partition.is_closed.return_value = True
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -418,7 +418,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
             AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=LogLevel.INFO, message="message emitted from the repository"))
         ]
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -465,7 +465,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
     def test_on_exception_stops_streams_and_raises_an_exception(self):
         stream_instances_to_read_from = [self._stream, self._another_stream]
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -511,7 +511,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
     def test_is_done_is_false_if_there_are_any_instances_to_read_from(self):
         stream_instances_to_read_from = [self._stream]
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -526,7 +526,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
     def test_is_done_is_false_if_there_are_streams_still_generating_partitions(self):
         stream_instances_to_read_from = [self._stream]
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -543,7 +543,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
     def test_is_done_is_false_if_all_partitions_are_not_closed(self):
         stream_instances_to_read_from = [self._stream]
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -562,7 +562,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
     def test_is_done_is_true_if_all_partitions_are_closed_and_no_streams_are_generating_partitions_and_none_are_still_to_run(self):
         stream_instances_to_read_from = []
 
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
@@ -577,7 +577,7 @@ class TestConcurrentStreamProcessor(unittest.TestCase):
     @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_start_next_partition_generator(self):
         stream_instances_to_read_from = [self._stream]
-        handler = ConcurrentStreamProcessor(
+        handler = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             self._partition_enqueuer,
             self._thread_pool_manager,
