@@ -197,7 +197,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   @Override
   public String clearLoadedAt(final StreamId streamId) {
     return DSL.update(DSL.table(DSL.name(streamId.rawNamespace(), streamId.rawName())))
-        .set(DSL.field(COLUMN_NAME_AB_LOADED_AT), (Object) null)
+        .set(DSL.field(COLUMN_NAME_AB_LOADED_AT), DSL.inline((String) null))
         .getSQL();
   }
 
