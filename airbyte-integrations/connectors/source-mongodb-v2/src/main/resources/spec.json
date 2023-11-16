@@ -25,8 +25,7 @@
               "database",
               "username",
               "password",
-              "auth_source",
-              "schema_enforced"
+              "auth_source"
             ],
             "additionalProperties": true,
             "properties": {
@@ -81,7 +80,7 @@
           {
             "title": "Self-Managed Replica Set",
             "description": "MongoDB self-hosted cluster configured as a replica set",
-            "required": ["cluster_type", "connection_string", "database", "schema_enforced"],
+            "required": ["cluster_type", "connection_string", "database"],
             "additionalProperties": true,
             "properties": {
               "cluster_type": {

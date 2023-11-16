@@ -91,19 +91,19 @@ public class MongoDbCdcInitializer {
     final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
     final JsonNode initialDebeziumState =
         mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeToken, mongoClient, databaseName);
-    final JsonNode cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null) ? initialDebeziumState
-        : Jsons.clone(stateManager.getCdcState().state());
+    final MongoDbCdcState cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null) ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
+        : new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
     final Optional<BsonDocument> optSavedOffset = mongoDbDebeziumStateUtil.savedOffset(
         Jsons.clone(defaultDebeziumProperties),
         catalog,
-        cdcState,
+        cdcState.state(),
         config.rawConfig(),
         mongoClient);
 
     // We should always be able to extract offset out of state if it's not null
-    if (cdcState != null && optSavedOffset.isEmpty()) {
+    if (cdcState.state() != null && optSavedOffset.isEmpty()) {
       throw new RuntimeException(
-          "Unable extract the offset out of state, State mutation might not be working. " + cdcState);
+          "Unable extract the offset out of state, State mutation might not be working. " + cdcState.state());
     }
 
     final boolean savedOffsetIsValid =
@@ -112,15 +112,15 @@ public class MongoDbCdcInitializer {
     if (!savedOffsetIsValid) {
       LOGGER.debug("Saved offset is not valid. Airbyte will trigger a full refresh.");
       // If the offset in the state is invalid, reset the state to the initial STATE
-      stateManager.resetState(new MongoDbCdcState(initialDebeziumState));
+      stateManager.resetState(new MongoDbCdcState(initialDebeziumState, config.getEnforceSchema()));
     } else {
-      LOGGER.debug("Valid offset state discovered.  Updating state manager with retrieved CDC state {}...", cdcState);
-      stateManager.updateCdcState(new MongoDbCdcState(cdcState));
+      LOGGER.debug("Valid offset state discovered.  Updating state manager with retrieved CDC state {} {}...", cdcState.state(), cdcState.schema_enforced());
+      stateManager.updateCdcState(new MongoDbCdcState(cdcState.state(), cdcState.schema_enforced()));
     }
 
     final MongoDbCdcState stateToBeUsed =
         (!savedOffsetIsValid || stateManager.getCdcState() == null || stateManager.getCdcState().state() == null)
-            ? new MongoDbCdcState(initialDebeziumState)
+            ? new MongoDbCdcState(initialDebeziumState, config.getEnforceSchema())
             : stateManager.getCdcState();
 
     final List<ConfiguredAirbyteStream> initialSnapshotStreams =
