@@ -15,7 +15,6 @@ import static org.jooq.impl.DSL.createSchemaIfNotExists;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.quotedName;
 
-import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
@@ -153,23 +152,20 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     final Name rawTableName = DSL.name(streamId.rawNamespace(), streamId.rawName());
     return Strings.join(
         List.of(
-          DSL.createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
-          DSL.dropTableIfExists(rawTableName).getSQL(),
-          DSL.createTable(rawTableName)
-              .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
-              .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
-              .column(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
-              .column(COLUMN_NAME_DATA, getSuperType().nullable(false))
-              .as(DSL.select(
-                  DSL.field(COLUMN_NAME_AB_ID).as(COLUMN_NAME_AB_RAW_ID),
-                  DSL.field(COLUMN_NAME_EMITTED_AT).as(COLUMN_NAME_AB_EXTRACTED_AT),
-                  DSL.inline(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
-                  DSL.field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)
-              ).from(DSL.table(DSL.name(namespace, tableName))))
-              .getSQL()
-        ),
-        ";\n"
-    );
+            DSL.createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
+            DSL.dropTableIfExists(rawTableName).getSQL(),
+            DSL.createTable(rawTableName)
+                .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
+                .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
+                .column(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
+                .column(COLUMN_NAME_DATA, getSuperType().nullable(false))
+                .as(DSL.select(
+                    DSL.field(COLUMN_NAME_AB_ID).as(COLUMN_NAME_AB_RAW_ID),
+                    DSL.field(COLUMN_NAME_EMITTED_AT).as(COLUMN_NAME_AB_EXTRACTED_AT),
+                    DSL.inline(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
+                    DSL.field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(DSL.table(DSL.name(namespace, tableName))))
+                .getSQL()),
+        ";\n");
   }
 
   @Override
