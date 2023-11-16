@@ -8,29 +8,196 @@
     "change_status.last_change_date_time": {
       "type": ["null", "string"]
     },
-    "campaign.id": {
-      "type": ["null", "integer"]
-    },
     "campaign_criterion.resource_name": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.display_name": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.type": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.status": {
       "type": ["null", "string"]
     },
     "campaign_criterion.campaign": {
       "type": ["null", "string"]
     },
-    "campaign_criterion.age_range.type": {
-      "type": ["null", "string"]
+    "campaign_criterion.criterion_id": {
+      "type": ["null", "number"]
     },
-    "campaign_criterion.mobile_application.name": {
+    "campaign_criterion.bid_modifier": {
       "type": ["null", "string"]
     },
     "campaign_criterion.negative": {
       "type": ["null", "boolean"]
     },
-    "campaign_criterion.youtube_channel.channel_id": {
+    "campaign_criterion.keyword.text": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.keyword.match_type": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.placement.url": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.mobile_app_category.mobile_app_category_constant": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.mobile_application.app_id": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.mobile_application.name": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.location.geo_target_constant": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.device.type": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.ad_schedule.start_minute": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.ad_schedule.end_minute": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.ad_schedule.day_of_week": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.ad_schedule.start_hour": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.ad_schedule.end_hour": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.age_range.type": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.gender.type": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.income_range.type": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.parental_status.type": {
+      "type": ["null", "string"]
+    },
+    "user_list.id": {
+      "type": ["null", "number"]
+    },
+    "user_list.name": {
+      "type": ["null", "string"]
+    },
+    "user_list.membership_status": {
+      "type": ["null", "string"]
+    },
+    "user_list.description": {
       "type": ["null", "string"]
     },
     "campaign_criterion.youtube_video.video_id": {
       "type": ["null", "string"]
+    },
+    "campaign_criterion.youtube_channel.channel_id": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.proximity.geo_point.longitude_in_micro_degrees": {
+      "type": ["null", "number"]
+    },
+    "campaign_criterion.proximity.geo_point.latitude_in_micro_degrees": {
+      "type": ["null", "number"]
+    },
+    "campaign_criterion.proximity.radius_units": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.proximity.address.postal_code": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.proximity.address.province_code": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.proximity.address.country_code": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.proximity.address.province_name": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.proximity.address.street_address": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.proximity.address.city_name": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.proximity.radius": {
+      "type": ["null", "number"]
+    },
+    "campaign_criterion.topic.path": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.topic.topic_constant": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.listing_scope.dimensions": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.language.language_constant": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.ip_block.ip_address": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.content_label.type": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.carrier.carrier_constant": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.user_interest.user_interest_category": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.webpage.conditions": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.webpage.coverage_percentage": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.webpage.sample.sample_urls": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.webpage.criterion_name": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.operating_system_version.operating_system_version_constant": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.mobile_device.mobile_device_constant": {
+      "type": ["null", "string"]
+    },
+
+    "campaign_criterion.location_group.enable_customer_level_location_asset_set": {
+      "type": ["null", "boolean"]
+    },
+    "campaign_criterion.custom_affinity.custom_affinity": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.custom_audience.custom_audience": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.combined_audience.combined_audience": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.keyword_theme.keyword_theme_constant": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.keyword_theme.free_form_keyword_theme": {
+      "type": ["null", "string"]
+    },
+    "campaign_criterion.local_service_id.service_id": {
+      "type": ["null", "string"]
+    },
+    "campaign.id": {
+      "type": ["null", "string"]
     }
+
   }
 }

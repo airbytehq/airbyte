@@ -9,9 +9,9 @@ from typing import Any
 
 import backoff
 import pendulum
+from facebook_business.exceptions import FacebookRequestError
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from facebook_business.exceptions import FacebookRequestError
 
 # The Facebook API error codes indicating rate-limiting are listed at
 # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
@@ -159,3 +159,4 @@ def traced_exception(fb_exception: FacebookRequestError):
         friendly_msg = f"Error: {fb_exception.api_error_code()}, {fb_exception.api_error_message()}."
 
     return AirbyteTracedException(message=friendly_msg or msg, internal_message=msg, failure_type=failure_type, exception=fb_exception)
+

@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional
 
@@ -16,6 +15,7 @@ from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v13.services.services.google_ads_service.pagers import SearchPager
 from google.ads.googleads.v13.services.types.google_ads_service import SearchGoogleAdsResponse
 from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests
+from grpc import StatusCode
 
 from .google_ads import GoogleAds, logger
 from .models import CustomerModel
@@ -50,10 +50,13 @@ class GoogleAdsStream(Stream, ABC):
         customer_id = stream_slice["customer_id"]
         try:
             response_records = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=customer_id)
-
-            yield from self.parse_records_with_backoff(response_records, stream_slice)
+            for response in response_records:
+                yield from self.parse_records_with_backoff(response, stream_slice)
         except GoogleAdsException as exception:
-            traced_exception(exception, customer_id, self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
+            if exception.error.args[0].code == StatusCode.PERMISSION_DENIED:
+                logger.warning(f"GOOGLE ADS EXCEPTION: customer {customer_id} is not activated or is disabled")
+            else:
+                traced_exception(exception, customer_id, self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
 
     @generator_backoff(
         wait_gen=backoff.expo,
@@ -110,14 +113,23 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         for customer in self.customers:
             stream_state = stream_state or {}
+            logger.info("Start date: " + str(self._start_date))
+            logger.info("Stream state: " + str(stream_state))
+            logger.info("Customer id: " + str(customer.id))
+            logger.info("Cursor field: " + str(self.cursor_field))
+            logger.info("Customers: " + str(self.customers))
+            logger.info("Value: " + str(stream_state.get(self.cursor_field)))
             if stream_state.get(customer.id):
                 start_date = stream_state[customer.id].get(self.cursor_field) or self._start_date
+                logger.info("DEBUG 1 " + str(start_date))
 
             # We should keep backward compatibility with the previous version
-            elif stream_state.get(self.cursor_field) and len(self.customers) == 1:
+            elif stream_state.get(self.cursor_field) and len(self.customers) > 0:
                 start_date = stream_state.get(self.cursor_field) or self._start_date
+                logger.info("DEBUG 2 " + str(start_date))
             else:
                 start_date = self._start_date
+                logger.info("DEBUG 3 " + str(start_date))
 
             end_date = self._end_date
 
