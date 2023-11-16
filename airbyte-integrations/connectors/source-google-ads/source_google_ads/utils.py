@@ -3,9 +3,12 @@
 #
 
 import re
+import time
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from datetime import datetime
+from typing import Any, Callable, Generator, Iterable, MutableMapping, Optional, Tuple, Type, Union
 
+import pendulum
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
@@ -115,6 +118,129 @@ def traced_exception(ga_exception: GoogleAdsException, customer_id: str, catch_d
     if messages:
         message = "\n".join(messages)
         raise raise_exception.from_exception(failure_type=failure_type, exc=ga_exception, message=message) from ga_exception
+
+
+def generator_backoff(
+    wait_gen: Callable,
+    exception: Union[Type[Exception], tuple],
+    max_tries: Optional[int] = None,
+    max_time: Optional[float] = None,
+    on_backoff: Optional[Callable] = None,
+    **wait_gen_kwargs: Any,
+):
+    def decorator(func: Callable) -> Callable:
+        def wrapper(*args, **kwargs) -> Generator:
+            tries = 0
+            start_time = datetime.now()
+            wait_times = wait_gen(**wait_gen_kwargs)
+            next(wait_times)  # Skip the first yield which is None
+
+            while True:
+                try:
+                    yield from func(*args, **kwargs)
+                    return  # If the generator completes without error, return
+                except exception as e:
+                    tries += 1
+                    elapsed_time = (datetime.now() - start_time).total_seconds()
+
+                    if max_time is not None and elapsed_time >= max_time:
+                        print(f"Maximum time of {max_time} seconds exceeded.")
+                        raise
+
+                    if max_tries is not None and tries >= max_tries:
+                        print(f"Maximum tries of {max_tries} exceeded.")
+                        raise
+
+                    # Get the next wait time from the exponential decay generator
+                    sleep_time = next(wait_times)
+
+                    # Adjust sleep time if it exceeds the remaining max_time
+                    if max_time is not None:
+                        time_remaining = max_time - elapsed_time
+                        sleep_time = min(sleep_time, time_remaining)
+
+                    if on_backoff:
+                        on_backoff(
+                            {
+                                "target": func,
+                                "args": args,
+                                "kwargs": kwargs,
+                                "tries": tries,
+                                "elapsed": elapsed_time,
+                                "wait": sleep_time,
+                                "exception": e,
+                            }
+                        )
+
+                    time.sleep(sleep_time)
+
+        return wrapper
+
+    return decorator
+
+
+def parse_dates(stream_slice):
+    start_date = pendulum.parse(stream_slice["start_date"])
+    end_date = pendulum.parse(stream_slice["end_date"])
+    return start_date, end_date
+
+
+def chunk_date_range(
+    start_date: str,
+    end_date: str = None,
+    conversion_window: int = 0,
+    days_of_data_storage: int = None,
+    time_zone=None,
+    time_format="YYYY-MM-DD",
+    slice_duration: pendulum.Duration = pendulum.duration(days=14),
+    slice_step: pendulum.Duration = pendulum.duration(days=1),
+) -> Iterable[Optional[MutableMapping[str, any]]]:
+    """
+    Splits a date range into smaller chunks based on the provided parameters.
+
+    Args:
+        start_date (str): The beginning date of the range.
+        end_date (str, optional): The ending date of the range. Defaults to today's date.
+        conversion_window (int): Number of days to subtract from the start date. Defaults to 0.
+        days_of_data_storage (int, optional): Maximum age of data that can be retrieved. Used to adjust the start date.
+        time_zone: Time zone to be used for date parsing and today's date calculation. If not provided, the default time zone is used.
+        time_format (str): Format to be used when returning dates. Defaults to 'YYYY-MM-DD'.
+        slice_duration (pendulum.Duration): Duration of each chunk. Defaults to 14 days.
+        slice_step (pendulum.Duration): Step size to move to the next chunk. Defaults to 1 day.
+
+    Returns:
+        Iterable[Optional[MutableMapping[str, any]]]: An iterable of dictionaries containing start and end dates for each chunk.
+        If the adjusted start date is greater than the end date, returns a list with a None value.
+
+    Notes:
+        - If the difference between `end_date` and `start_date` is large (e.g., >= 1 month), processing all records might take a long time.
+        - Tokens for fetching subsequent pages of data might expire after 2 hours, leading to potential errors.
+        - The function adjusts the start date based on `days_of_data_storage` and `conversion_window` to adhere to certain data retrieval policies, such as Google Ads' policy of only retrieving data not older than a certain number of days.
+        - The method returns `start_date` and `end_date` with a difference typically spanning 15 days to avoid token expiration issues.
+    """
+    start_date = pendulum.parse(start_date, tz=time_zone)
+    today = pendulum.today(tz=time_zone)
+    end_date = pendulum.parse(end_date, tz=time_zone) if end_date else today
+
+    # For some metrics we can only get data not older than N days, it is Google Ads policy
+    if days_of_data_storage:
+        start_date = max(start_date, pendulum.now(tz=time_zone).subtract(days=days_of_data_storage - conversion_window))
+
+    # As in to return some state when state in abnormal
+    if start_date > end_date:
+        return [None]
+
+    # applying conversion window
+    start_date = start_date.subtract(days=conversion_window)
+    slice_start = start_date
+
+    while slice_start <= end_date:
+        slice_end = min(end_date, slice_start + slice_duration)
+        yield {
+            "start_date": slice_start.format(time_format),
+            "end_date": slice_end.format(time_format),
+        }
+        slice_start = slice_end + slice_step
 
 
 @dataclass(repr=False, eq=False, frozen=True)
