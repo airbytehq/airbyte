@@ -82,8 +82,7 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
         databaseName,
         id.rawNamespace(),
         id.rawName(),
-        null
-    );
+        null);
     if (!tables.next()) {
       return Optional.empty();
     }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -31,8 +35,7 @@ public class RedshiftDestinationHandler extends JdbcDestinationHandler {
         databaseName,
         id.rawNamespace(),
         id.rawName(),
-        null
-    );
+        null);
     if (!tables.next()) {
       return Optional.empty();
     }
@@ -65,4 +68,5 @@ public class RedshiftDestinationHandler extends JdbcDestinationHandler {
   private static Instant parseInstant(String ts) {
     return TIMESTAMPTZ_FORMAT.parse(ts, Instant::from);
   }
+
 }
