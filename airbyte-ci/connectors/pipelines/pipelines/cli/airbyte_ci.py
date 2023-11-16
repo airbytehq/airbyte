@@ -279,7 +279,7 @@ async def get_modified_files_str(ctx: click.Context):
 )
 @click.version_option(__installed_version__)
 @click.option("--enable-dagger-run/--disable-dagger-run", default=is_dagger_run_enabled_by_default)
-@click.option("--enable-auto-update/--disable-auto-update", default=False)
+@click.option("--enable-auto-update/--disable-auto-update", default=True)
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
@@ -331,7 +331,7 @@ async def airbyte_ci(ctx: click.Context):  # noqa D103
 
     check_for_upgrade(
         require_update=ctx.obj["is_local"],
-        enable_auto_update=ctx.obj["is_local"],
+        enable_auto_update=ctx.obj["is_local"] and ctx.obj["enable_auto_update"],
     )
 
 
