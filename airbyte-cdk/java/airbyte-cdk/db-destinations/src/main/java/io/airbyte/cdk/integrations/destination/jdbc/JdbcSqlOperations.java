@@ -79,13 +79,13 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     if (TypingAndDedupingFlag.isDestinationV2()) {
-      return createTableQueryV2(database, schemaName, tableName);
+      return createTableQueryV2(schemaName, tableName);
     } else {
-      return createTableQueryV1(database, schemaName, tableName);
+      return createTableQueryV1(schemaName, tableName);
     }
   }
 
-  private String createTableQueryV1(final JdbcDatabase database, final String schemaName, final String tableName) {
+  private String createTableQueryV1(final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -95,7 +95,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
-  private String createTableQueryV2(final JdbcDatabase database, final String schemaName, final String tableName) {
+  private String createTableQueryV2(final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
