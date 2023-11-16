@@ -22,7 +22,6 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
-import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImageLayer;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;

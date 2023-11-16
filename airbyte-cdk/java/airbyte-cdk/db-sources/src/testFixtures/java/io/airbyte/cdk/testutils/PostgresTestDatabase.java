@@ -14,8 +14,6 @@ import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.string.Strings;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,19 +40,24 @@ public class PostgresTestDatabase implements AutoCloseable {
   static private final Logger LOGGER = LoggerFactory.getLogger(PostgresTestDatabase.class);
 
   public enum PostgresImage {
+
     POSTGRES_12_BULLSEYE("postgres:12-bullseye"),
     POSTGRES_16_BULLSEYE("postgres:16-bullseye"),
     POSTGRES_16_ALPINE("postgres:16-alpine"),
     POSTGRES_9_ALPINE("postgres:9-alpine"),
     POSTGRES_SSL_DEV("marcosmarxm/postgres-ssl:dev"),
     ;
+
     private final String imageName;
-    PostgresImage (String imageName) {
+
+    PostgresImage(String imageName) {
       this.imageName = imageName;
     }
+
   }
 
   public enum PostgresImageLayer {
+
     SSL(ContainerFactory::withSSL),
     ASCII(ContainerFactory::withASCII),
     CONF(ContainerFactory::withConf),
@@ -64,9 +67,11 @@ public class PostgresTestDatabase implements AutoCloseable {
     ;
 
     final Consumer<ContainerFactory> method;
+
     PostgresImageLayer(Consumer<ContainerFactory> method) {
       this.method = method;
     }
+
   }
 
   /**
@@ -208,7 +213,8 @@ public class PostgresTestDatabase implements AutoCloseable {
       if (sharedContainer == null) {
         if (containerCreationError != null) {
           throw new RuntimeException(
-              "Error during container creation for imageName=" + imageName + ", methods=" + imageLayers.stream().map(PostgresImageLayer::name).toList(),
+              "Error during container creation for imageName=" + imageName + ", methods="
+                  + imageLayers.stream().map(PostgresImageLayer::name).toList(),
               containerCreationError);
         }
         LOGGER.info("Creating new shared container based on {} with {}.", imageName, imageLayers.stream().map(PostgresImageLayer::name).toList());
