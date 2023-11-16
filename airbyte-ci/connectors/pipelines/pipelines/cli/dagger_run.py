@@ -14,7 +14,7 @@ from typing import Optional
 
 import pkg_resources
 import requests
-from pipelines.cli.airbyte_ci import set_working_directory_to_root
+from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME
 
 LOGGER = logging.getLogger(__name__)
 BIN_DIR = Path.home() / "bin"
@@ -72,6 +72,10 @@ def get_dagger_cli_version(dagger_path: Optional[str]) -> Optional[str]:
 
 
 def check_dagger_cli_install() -> str:
+    """
+    If the dagger CLI is not installed, install it.
+    """
+
     expected_dagger_cli_version = get_current_dagger_sdk_version()
     dagger_path = get_dagger_path()
     if dagger_path is None:
@@ -89,15 +93,21 @@ def check_dagger_cli_install() -> str:
     return dagger_path
 
 
-def main():
-    set_working_directory_to_root()
-    os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]
+def mark_dagger_wrap():
+    """
+    Mark that the dagger wrap has been applied.
+    """
+    os.environ[DAGGER_WRAP_ENV_VAR_NAME] = "true"
+
+
+def call_current_command_with_dagger_run():
+    mark_dagger_wrap()
+    if (os.environ.get("AIRBYTE_ROLE") == "airbyter") or (os.environ.get("CI") == "True"):
+        os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]
+
     exit_code = 0
-    if len(sys.argv) > 1 and any([arg in ARGS_DISABLING_TUI for arg in sys.argv]):
-        command = ["airbyte-ci-internal"] + [arg for arg in sys.argv[1:] if arg != "--no-tui"]
-    else:
-        dagger_path = check_dagger_cli_install()
-        command = [dagger_path, "run", "airbyte-ci-internal"] + sys.argv[1:]
+    dagger_path = check_dagger_cli_install()
+    command = [dagger_path, "run"] + sys.argv
     try:
         try:
             LOGGER.info(f"Running command: {command}")
@@ -108,7 +118,3 @@ def main():
     except subprocess.CalledProcessError as e:
         exit_code = e.returncode
     sys.exit(exit_code)
-
-
-if __name__ == "__main__":
-    main()

@@ -8,6 +8,7 @@ import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
@@ -15,16 +16,15 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
-import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
@@ -236,6 +236,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final BigQuery bigquery = getBigQuery(config);
     final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
 
+    AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config);
+    final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
+    if (serviceAccountKey.isTextual()) {
+      // There are cases where we fail to deserialize the service account key. In these cases, we
+      // shouldn't do anything.
+      // Google's creds library is more lenient with JSON-parsing than Jackson, and I'd rather just let it
+      // go.
+      Jsons.tryDeserialize(serviceAccountKey.asText())
+          .ifPresent(AirbyteExceptionHandler::addAllStringsInConfigForDeinterpolation);
+    } else {
+      AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(serviceAccountKey);
+    }
+
     if (uploadingMethod == UploadingMethod.STANDARD) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
           "Please use the GCS upload mode if you are syncing a large amount of data.");
@@ -283,7 +296,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
         randomSuffixMap.putIfAbsent(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream), RandomStringUtils.randomAlphabetic(3).toLowerCase());
 
-        String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
+        final String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
         final String streamName = stream.getName();
         final String targetTableName;
 
@@ -305,7 +318,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
         try {
           putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
-        } catch (IOException e) {
+        } catch (final IOException e) {
           throw new RuntimeException(e);
         }
       }
@@ -337,10 +350,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return Map.of(
         UploaderType.STANDARD, new DefaultBigQueryRecordFormatter(jsonSchema, namingResolver),
         UploaderType.CSV, new GcsCsvBigQueryRecordFormatter(jsonSchema, namingResolver));
-  }
-
-  protected String getTargetTableName(final String streamName) {
-    return namingResolver.getRawTableName(streamName);
   }
 
   private SerializedAirbyteMessageConsumer getStandardRecordConsumer(final BigQuery bigquery,
@@ -387,7 +396,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             typerDeduper.typeAndDedupe();
             typerDeduper.commitFinalTables();
             typerDeduper.cleanup();
-          } catch (Exception e) {
+          } catch (final Exception e) {
             throw new RuntimeException(e);
           }
         },
@@ -447,36 +456,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   }
 
-  /**
-   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number of
-   * file buffers and sets the minimum number to the default
-   * <p>
-   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit has
-   * not been thoroughly load tested across all instance sizes
-   *
-   * @param config user configurations
-   * @return number of file buffers if configured otherwise default
-   */
-  @VisibleForTesting
-  public int getNumberOfFileBuffers(final JsonNode config) {
-    // This null check is probably redundant, but I don't want to gamble on that right now
-    if (config.hasNonNull(BigQueryConsts.LOADING_METHOD)) {
-      final JsonNode loadingMethodConfig = config.get(BigQueryConsts.LOADING_METHOD);
-      final int numOfFileBuffers;
-      if (loadingMethodConfig.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
-        numOfFileBuffers = Math.min(loadingMethodConfig.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
-      } else {
-        numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
-      }
-      // Only allows for values 10 <= numOfFileBuffers <= 50
-      return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
-    }
-
-    // Return the default if we fail to parse the config
-    return FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
-  }
-
   public static void main(final String[] args) throws Exception {
+    AirbyteExceptionHandler.addThrowableForDeinterpolation(BigQueryException.class);
     final Destination destination = new BigQueryDestination();
     new IntegrationRunner(destination).run(args);
   }
