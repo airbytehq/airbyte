@@ -216,6 +216,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                              |
 |:--------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.5.4   | 2023-11-16 | [32284](https://github.com/airbytehq/airbyte/pull/32284/) | Enable client-side rate limiting                                                                                                                     |
 | 4.5.3   | 2023-11-14 | [32473](https://github.com/airbytehq/airbyte/pull/32473/) | Have all full_refresh stream syncs be concurrent                                                                                                     |
 | 4.5.2   | 2023-11-03 | [32146](https://github.com/airbytehq/airbyte/pull/32146/) | Fix multiple BankAccount issues                                                                                                                      |
 | 4.5.1   | 2023-11-01 | [32056](https://github.com/airbytehq/airbyte/pull/32056/) | Use CDK version 0.52.8                                                                                                                               |
