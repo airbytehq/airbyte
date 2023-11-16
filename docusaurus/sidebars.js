@@ -418,6 +418,19 @@ const deployAirbyte = {
   ],
 };
 
+const airbyteSelfManaged = {
+  type: "category",
+  label: "Airbyte Self Managed",
+  link: {
+    type: "doc",
+    id: "enterprise-setup/self-managed/README",
+  },
+  items: [
+    "enterprise-setup/self-managed/implementation-guide",
+    "enterprise-setup/self-managed/sso",
+  ]
+}
+
 const operatorGuide = {
   type: "category",
   label: "Manage Airbyte",
@@ -518,10 +531,8 @@ module.exports = {
       type: "doc",
       id: "troubleshooting",
     },
-    {
-      type: "doc",
-      id: "airbyte-enterprise",
-    },
+    sectionHeader("Enterprise Setup"),
+    airbyteSelfManaged,
     sectionHeader("Developer Guides"),
     {
       type: "doc",
