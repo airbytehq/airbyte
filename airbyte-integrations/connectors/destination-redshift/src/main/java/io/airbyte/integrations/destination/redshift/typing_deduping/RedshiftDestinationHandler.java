@@ -12,6 +12,8 @@ import org.jooq.impl.DSL;
 
 public class RedshiftDestinationHandler extends JdbcDestinationHandler {
 
+  // Redshift doesn't seem to let you actually specify HH:MM TZ offsets, so we have
+  // build our own formatter rather than just use Instant.parse
   private static final DateTimeFormatter TIMESTAMPTZ_FORMAT = new DateTimeFormatterBuilder()
       .append(DateTimeFormatter.ISO_LOCAL_DATE)
       .appendLiteral(' ')
