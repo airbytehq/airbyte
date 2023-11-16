@@ -13,6 +13,8 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.cdk.testutils.PostgresTestDatabase;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImageLayer;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
@@ -53,7 +55,7 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.make(getServerImageName(), "withConf");
+    testdb = PostgresTestDatabase.make(getServerImage(), PostgresImageLayer.CONF);
     slotName = testdb.withSuffix("debezium_slot");
     publication = testdb.withSuffix("publication");
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
@@ -194,8 +196,8 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
         .isEmpty(), "Records contain unselected columns [%s:%s]".formatted(stream, field));
   }
 
-  protected String getServerImageName() {
-    return "postgres:16-bullseye";
+  protected PostgresImage getServerImage() {
+    return PostgresImage.POSTGRES_16_BULLSEYE;
   }
 
 }

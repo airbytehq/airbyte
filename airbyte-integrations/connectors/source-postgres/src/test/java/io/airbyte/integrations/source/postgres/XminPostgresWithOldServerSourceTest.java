@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -25,8 +26,8 @@ import org.junit.jupiter.api.Test;
 public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest {
 
   @Override
-  protected String getDatabaseImageName() {
-    return "postgres:9-alpine";
+  protected PostgresImage getDatabaseImage() {
+    return PostgresImage.POSTGRES_9_ALPINE;
   }
 
   @Test

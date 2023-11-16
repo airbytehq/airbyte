@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.cdk.testutils.PostgresTestDatabase;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
@@ -46,7 +47,7 @@ public class XminPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcce
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.make("postgres:12-bullseye");
+    testdb = PostgresTestDatabase.make(PostgresImage.POSTGRES_12_BULLSEYE);
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Xmin")
         .build());

@@ -38,6 +38,8 @@ import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresCdcTarget
 import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresReplicationConnection;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.cdk.testutils.PostgresTestDatabase;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImageLayer;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
@@ -93,7 +95,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   protected void setup() throws SQLException {
     source = new PostgresSource();
     source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    testdb = PostgresTestDatabase.make(getServerImageName(), "withConf");
+    testdb = PostgresTestDatabase.make(getServerImage(), PostgresImageLayer.CONF);
     fullReplicationSlot = testdb.withSuffix("debezium_slot");
     publication = testdb.withSuffix("publication");
     config = getConfig(testdb.dbName, testdb.userName, testdb.password);
@@ -945,8 +947,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertTrue(extractPosition(record.getData()).targetLsn.compareTo(((PostgresCdcTargetPosition) targetPosition).targetLsn) >= 0);
   }
 
-  protected static String getServerImageName() {
-    return "postgres:16-bullseye";
+  protected static PostgresImage getServerImage() {
+    return PostgresImage.POSTGRES_16_BULLSEYE;
   }
 
 }

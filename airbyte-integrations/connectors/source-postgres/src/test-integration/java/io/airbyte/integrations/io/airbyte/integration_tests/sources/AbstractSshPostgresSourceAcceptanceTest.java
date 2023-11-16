@@ -14,6 +14,8 @@ import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.cdk.testutils.PostgresTestDatabase;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImageLayer;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.functional.CheckedFunction;
@@ -82,7 +84,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPo
   // requiring data to already be in place.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.make("postgres:16-bullseye", "withNetwork");
+    testdb = PostgresTestDatabase.make(PostgresImage.POSTGRES_16_BULLSEYE, PostgresImageLayer.NETWORK);
     bastion.initAndStartBastion(testdb.container.getNetwork());
     final var builder = testdb.makeConfigBuilder()
         .put("schemas", List.of("public"))

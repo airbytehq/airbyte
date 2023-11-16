@@ -21,6 +21,8 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.testutils.PostgresTestDatabase;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImageLayer;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
@@ -94,13 +96,13 @@ class XminPostgresSourceTest {
 
   protected PostgresTestDatabase testdb;
 
-  protected String getDatabaseImageName() {
-    return "postgres:12-bullseye";
+  protected PostgresImage getDatabaseImage() {
+    return PostgresImage.POSTGRES_12_BULLSEYE;
   }
 
   @BeforeEach
   protected void setup() throws SQLException {
-    testdb = PostgresTestDatabase.make(getDatabaseImageName());
+    testdb = PostgresTestDatabase.make(getDatabaseImage());
     testdb.database.query(ctx -> {
       ctx.fetch(
           "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");

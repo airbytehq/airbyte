@@ -4,11 +4,13 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
+
 public class CdcPostgresSourceAcceptanceLegacyCtidTest extends CdcPostgresSourceAcceptanceTest {
 
   @Override
-  protected String getServerImageName() {
-    return "postgres:12-bullseye";
+  protected PostgresImage getServerImage() {
+    return PostgresImage.POSTGRES_12_BULLSEYE;
   }
 
 }

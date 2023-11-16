@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.DSLContext;
@@ -40,18 +41,46 @@ public class PostgresTestDatabase implements AutoCloseable {
 
   static private final Logger LOGGER = LoggerFactory.getLogger(PostgresTestDatabase.class);
 
+  public enum PostgresImage {
+    POSTGRES_12_BULLSEYE("postgres:12-bullseye"),
+    POSTGRES_16_BULLSEYE("postgres:16-bullseye"),
+    POSTGRES_16_ALPINE("postgres:16-alpine"),
+    POSTGRES_9_ALPINE("postgres:9-alpine"),
+    POSTGRES_SSL_DEV("marcosmarxm/postgres-ssl:dev"),
+    ;
+    private final String imageName;
+    PostgresImage (String imageName) {
+      this.imageName = imageName;
+    }
+  }
+
+  public enum PostgresImageLayer {
+    SSL(ContainerFactory::withSSL),
+    ASCII(ContainerFactory::withASCII),
+    CONF(ContainerFactory::withConf),
+    NETWORK(ContainerFactory::withNetwork),
+    CERT(ContainerFactory::withCert),
+    WAL_LEVEL_LOGICAL(ContainerFactory::withWalLevelLogical),
+    ;
+
+    final Consumer<ContainerFactory> method;
+    PostgresImageLayer(Consumer<ContainerFactory> method) {
+      this.method = method;
+    }
+  }
+
   /**
    * Create a new {@link PostgresTestDatabase} instance.
    *
-   * @param imageName base image to use for the underlying {@link PostgreSQLContainer}.
+   * @param postgresImage base image to use for the underlying {@link PostgreSQLContainer}.
    * @param methods {@link ContainerFactory} methods that need to be called.
    * @return a new {@link PostgresTestDatabase} instance which may reuse a shared
    *         {@link PostgreSQLContainer}.
    */
-  static public PostgresTestDatabase make(String imageName, String... methods) {
+  static public PostgresTestDatabase make(PostgresImage postgresImage, PostgresImageLayer... methods) {
     final String imageNamePlusMethods = Stream.concat(
-        Stream.of(imageName),
-        Stream.of(methods))
+        Stream.of(postgresImage.imageName),
+        Stream.of(methods).map(PostgresImageLayer::name))
         .collect(Collectors.joining("+"));
     final ContainerFactory factory = ContainerFactory.LAZY.computeIfAbsent(imageNamePlusMethods, ContainerFactory::new);
     return new PostgresTestDatabase(factory.getOrCreateSharedContainer());
@@ -165,43 +194,33 @@ public class PostgresTestDatabase implements AutoCloseable {
     static private final ConcurrentHashMap<String, ContainerFactory> LAZY = new ConcurrentHashMap<>();
 
     final private String imageName;
-    final private List<Method> methods;
+    final private List<PostgresImageLayer> imageLayers;
     private PostgreSQLContainer<?> sharedContainer;
     private RuntimeException containerCreationError;
 
     private ContainerFactory(String imageNamePlusMethods) {
       final String[] parts = imageNamePlusMethods.split("\\+");
       this.imageName = parts[0];
-      this.methods = Arrays.stream(parts).skip(1).map(methodName -> {
-        try {
-          return ContainerFactory.class.getMethod(methodName);
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
-        }
-      }).toList();
+      this.imageLayers = Arrays.stream(parts).skip(1).map(PostgresImageLayer::valueOf).toList();
     }
 
     private synchronized PostgreSQLContainer<?> getOrCreateSharedContainer() {
       if (sharedContainer == null) {
         if (containerCreationError != null) {
           throw new RuntimeException(
-              "Error during container creation for imageName=" + imageName + ", methods=" + methods.stream().map(Method::getName).toList(),
+              "Error during container creation for imageName=" + imageName + ", methods=" + imageLayers.stream().map(PostgresImageLayer::name).toList(),
               containerCreationError);
         }
-        LOGGER.info("Creating new shared container based on {} with {}.", imageName, methods.stream().map(Method::getName).toList());
+        LOGGER.info("Creating new shared container based on {} with {}.", imageName, imageLayers.stream().map(PostgresImageLayer::name).toList());
         try {
           final var parsed = DockerImageName.parse(imageName).asCompatibleSubstituteFor("postgres");
           sharedContainer = new PostgreSQLContainer<>(parsed);
-          for (Method method : methods) {
-            LOGGER.info("Calling {} on new shared container based on {}.", method.getName(),
+          for (PostgresImageLayer imageLayer : imageLayers) {
+            LOGGER.info("Calling {} on new shared container based on {}.", imageLayer.name(),
                 imageName);
-            method.invoke(this);
+            imageLayer.method.accept(this);
           }
           sharedContainer.start();
-        } catch (IllegalAccessException | InvocationTargetException e) {
-          containerCreationError = new RuntimeException(e);
-          this.sharedContainer = null;
-          throw containerCreationError;
         } catch (RuntimeException e) {
           this.sharedContainer = null;
           containerCreationError = e;

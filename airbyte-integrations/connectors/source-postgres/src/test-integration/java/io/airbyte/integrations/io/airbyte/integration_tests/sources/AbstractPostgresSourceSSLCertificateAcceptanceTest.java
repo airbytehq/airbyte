@@ -10,6 +10,8 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.PostgresUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.cdk.testutils.PostgresTestDatabase;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImageLayer;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
@@ -42,7 +44,7 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.make("postgres:16-bullseye", "withCert");
+    testdb = PostgresTestDatabase.make(PostgresImage.POSTGRES_16_BULLSEYE, PostgresImageLayer.CERT);
     certs = testdb.getCertificate();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
