@@ -3,7 +3,7 @@ import TabItem from '@theme/TabItem';
 
 # Implementation Guide
 
-[Airbyte Self Managed](/airbyte-enterprise) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Self Managed license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
+[Airbyte Self Managed](./README.md) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Self Managed license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
 
 Airbyte Self Managed must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
 
