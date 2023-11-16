@@ -2,8 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import copy
+from unittest.mock import MagicMock
+
+import pytest
 import responses
 from source_pinterest import SourcePinterest
+from source_pinterest.reports import CampaignAnalyticsReport
+from source_pinterest.reports.reports import CampaignTargetingReport, AdvertizerReport, AdvertizerTargetingReport, AdGroupReport, \
+    AdGroupTargetingReport, PinPromotionReport, PinPromotionTargetingReport, ProductGroupReport, ProductGroupTargetingReport, \
+    ProductItemReport, KeywordReport
 from source_pinterest.utils import get_analytics_columns
 from unit_tests.test_source import setup_responses
 
@@ -85,3 +92,24 @@ def test_custom_streams(test_config):
     streams = source.streams(config)
     expected_streams_number = 33
     assert len(streams) == expected_streams_number
+
+@pytest.mark.parametrize(
+    "report_name, expected_level",
+    [
+        [CampaignAnalyticsReport, 'CAMPAIGN'],
+        [CampaignTargetingReport, 'CAMPAIGN_TARGETING'],
+        [AdvertizerReport, 'ADVERTISER'],
+        [AdvertizerTargetingReport, 'ADVERTISER_TARGETING'],
+        [AdGroupReport, 'AD_GROUP'],
+        [AdGroupTargetingReport, 'AD_GROUP_TARGETING'],
+        [PinPromotionReport, 'PIN_PROMOTION'],
+        [PinPromotionTargetingReport, 'PIN_PROMOTION_TARGETING'],
+        [ProductGroupReport, 'PRODUCT_GROUP'],
+        [ProductGroupTargetingReport, 'PRODUCT_GROUP_TARGETING'],
+        [ProductItemReport, 'PRODUCT_ITEM'],
+        [KeywordReport, 'KEYWORD']
+    ],
+)
+def test_level(test_config, report_name, expected_level):
+    assert report_name(parent=None, config=MagicMock()).level == expected_level
+

@@ -65,7 +65,6 @@
       "custom_reports": {
         "title": "Custom Reports",
         "description": "A list which contains ad statistics entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns. Click on \"add\" to fill this field.",
-        "order": 6,
         "type": "array",
         "items": {
           "title": "ReportConfig",
@@ -255,7 +254,6 @@
                 ]
               }
             },
-
             "start_date": {
               "type": "string",
               "title": "Start Date",
