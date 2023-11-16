@@ -3,13 +3,13 @@
 connector_image: airbyte/source-mongodb-v2:dev
 acceptance_tests:
   spec:
-    tests:
+#    tests:
       #      - spec_path: "integration_tests/expected_spec.json"
       #        backward_compatibility_tests_config:
       #          disable_for_version: "0.2.5"
       #        config_path: "secrets/credentials.json"
       #        timeout_seconds: 60
-      bypass_reason: "TEMP TEMP."
+    bypass_reason: "TEMP TEMP."
   connection:
     tests:
       - config_path: "secrets/credentials.json"
