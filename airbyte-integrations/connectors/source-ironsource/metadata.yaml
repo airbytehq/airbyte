@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e40c91f9-8130-4c26-aef3-a8bfc8adc3da
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-ironsource
+  githubIssueLabel: source-ironsource
+  icon: ironsource.svg
+  license: MIT
+  name: Ironsource
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/ironsource
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
