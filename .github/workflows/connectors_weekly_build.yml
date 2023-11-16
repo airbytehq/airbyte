@@ -8,19 +8,19 @@ on:
     inputs:
       runs-on:
         type: string
-        default: conn-nightly-xlarge-runner
+        default: ci-runner-connector-nightly-xlarge-dagger-0-6-4
         required: true
       test-connectors-options:
         default: --concurrency=3 --support-level=community
         required: true
 
-run-name: "Test connectors: ${{ inputs.test-connectors-options || 'weekly build for Community connectors' }} - on ${{ inputs.runs-on || 'conn-nightly-xlarge-runner' }}"
+run-name: "Test connectors: ${{ inputs.test-connectors-options || 'weekly build for Community connectors' }} - on ${{ inputs.runs-on || 'ci-runner-connector-nightly-xlarge-dagger-0-6-4' }}"
 
 jobs:
   test_connectors:
-    name: "Test connectors: ${{ inputs.test-connectors-options || 'weekly build for Community connectors' }} - on ${{ inputs.runs-on || 'conn-nightly-xlarge-runner' }}"
+    name: "Test connectors: ${{ inputs.test-connectors-options || 'weekly build for Community connectors' }} - on ${{ inputs.runs-on || 'ci-runner-connector-nightly-xlarge-dagger-0-6-4' }}"
     timeout-minutes: 8640 # 6 days
-    runs-on: ${{ inputs.runs-on || 'conn-nightly-xlarge-runner' }}
+    runs-on: ${{ inputs.runs-on || 'ci-runner-connector-nightly-xlarge-dagger-0-6-4' }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
