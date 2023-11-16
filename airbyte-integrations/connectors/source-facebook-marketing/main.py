@@ -5,8 +5,12 @@
 
 import sys
 
+from gevent import monkey
+monkey.patch_all()
+
 from airbyte_cdk.entrypoint import launch
 from source_facebook_marketing import SourceFacebookMarketing
+
 
 if __name__ == "__main__":
     source = SourceFacebookMarketing()

@@ -1,12 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import itertools
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
 
+import gevent
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -52,7 +53,7 @@ class FBMarketingStream(Stream, ABC):
     @cached_property
     def fields(self) -> List[str]:
         """List of fields that we want to query, for now just all properties from stream's schema"""
-        return list(self.get_json_schema().get("properties", {}).keys())
+        return list([f for f in self.get_json_schema().get("properties", {}).keys() if (f not in self.fields_exceptions)])
 
     @classmethod
     def fix_date_time(cls, record):
@@ -87,7 +88,7 @@ class FBMarketingStream(Stream, ABC):
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
         try:
-            for record in self.list_objects(params=self.request_params(stream_state=stream_state)):
+            for record in self.list_objects(params=self.request_params(stream_state=stream_state), fields=self.fields):
                 if isinstance(record, AbstractObject):
                     record = record.export_all_data()  # convert FB object to dict
                 self.fix_date_time(record)
@@ -95,11 +96,21 @@ class FBMarketingStream(Stream, ABC):
         except FacebookRequestError as exc:
             raise traced_exception(exc)
 
+    def _get_object_list_parallel(self, api_call_wrapper, **kwargs):
+        jobs = [gevent.spawn(api_call_wrapper, account=account, **kwargs) for account in self._api.accounts]
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                if job.exception:
+                    raise job.exception
+                for value in job.value:
+                    yield value
+
     @abstractmethod
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
         """List FB objects, these objects will be loaded in read_records later with their details.
 
         :param params: params to make request
+        :param fields: list of fields to retrieve
         :return: list of FB objects to load
         """
 
@@ -251,8 +262,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         - stop reading when we reached the end
         """
         try:
-            records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
-            for record in records_iter:
+            for record in self.list_objects(params=self.request_params(stream_state=stream_state), fields=self.fields):
                 record_cursor_value = pendulum.parse(record[self.cursor_field])
                 if self._cursor_value and record_cursor_value < self._cursor_value:
                     break
@@ -263,7 +273,6 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
                 record = record.export_all_data()
                 self.fix_date_time(record)
                 yield record
-
-            self._cursor_value = self._max_cursor_value
+                self._cursor_value = self._max_cursor_value
         except FacebookRequestError as exc:
             raise traced_exception(exc)

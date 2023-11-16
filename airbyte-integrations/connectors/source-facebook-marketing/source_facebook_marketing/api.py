@@ -10,6 +10,7 @@ from typing import List
 
 import backoff
 import pendulum
+import requests
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
@@ -25,7 +26,7 @@ class FacebookAPIException(Exception):
     """General class for all API errors"""
 
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=15, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
@@ -154,14 +155,14 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
     @backoff_policy
     def call(
-        self,
-        method,
-        path,
-        params=None,
-        headers=None,
-        files=None,
-        url_override=None,
-        api_version=None,
+            self,
+            method,
+            path,
+            params=None,
+            headers=None,
+            files=None,
+            url_override=None,
+            api_version=None,
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
         if self._should_restore_default_page_size(params):
@@ -175,7 +176,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_ids: List[str], access_token: str, page_size: int = 100):
+    def __init__(self, account_ids: List[str], access_token: str, page_size: int = 100, parallelism: int = 1):
         self._account_ids = account_ids
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
@@ -183,6 +184,8 @@ class API:
         # reference issue: https://github.com/airbytehq/airbyte/issues/25383
         setattr(self.api, "default_page_size", page_size)
         # set the default API client to Facebook lib.
+        adapter = requests.adapters.HTTPAdapter(pool_connections=parallelism, pool_maxsize=parallelism, pool_block=True)
+        MyFacebookAdsApi.get_default_api()._session.requests.mount('https://graph.facebook.com', adapter)
         FacebookAdsApi.set_default_api(self.api)
         self.me = User(fbid='me')
 
@@ -196,4 +199,4 @@ class API:
     @staticmethod
     def _find_account(account_id: str) -> AdAccount:
         """Actual implementation of find account"""
-        return AdAccount(f"act_{account_id}").api_get()
+        return AdAccount(f"act_{account_id}")

@@ -11,9 +11,9 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
-from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
+from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.exceptions import FacebookRequestError
 
 from .base_insight_streams import AdsInsights
@@ -38,7 +38,7 @@ def fetch_thumbnail_data_url(url: str) -> Optional[str]:
 
 
 class AdCreatives(FBMarketingStream):
-    """AdCreative is append only stream
+    """AdCreative is an append only stream
     doc: https://developers.facebook.com/docs/marketing-api/reference/ad-creative
     """
 
@@ -51,15 +51,15 @@ class AdCreatives(FBMarketingStream):
 
     @cached_property
     def fields(self) -> List[str]:
-        """Remove "thumbnail_data_url" field because it is computed field and it's not a field that we can request from Facebook"""
+        """Remove "thumbnail_data_url" field because it is computed field and not a field that we can request from Facebook"""
         return [f for f in super().fields if f != "thumbnail_data_url"]
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Read with super method and append thumbnail_data_url if enabled"""
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
@@ -69,9 +69,12 @@ class AdCreatives(FBMarketingStream):
                     record["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
             yield record
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        ad_creatives = [account.get_ad_creatives(params=params, fields=self.fields) for account in self._api.accounts]
-        return list(itertools.chain(*ad_creatives))
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
+        return self._get_object_list_parallel(api_call_wrapper=AdCreatives.get_ad_creatives, params=params, fields=fields)
+
+    @staticmethod
+    def get_ad_creatives(account: FBAdAccount, **kwargs):
+        return account.get_ad_creatives(**kwargs)
 
 
 class CustomConversions(FBMarketingStream):
@@ -80,9 +83,12 @@ class CustomConversions(FBMarketingStream):
     entity_prefix = "customconversion"
     enable_deleted = False
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        custom_conversions = [account.get_custom_conversions(params=params, fields=self.fields) for account in self._api.accounts]
-        return list(itertools.chain(*custom_conversions))
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
+        return self._get_object_list_parallel(api_call_wrapper=CustomConversions.get_custom_conversions, params=params, fields=fields)
+
+    @staticmethod
+    def get_custom_conversions(account: FBAdAccount, **kwargs):
+        return account.get_custom_conversions(**kwargs)
 
 
 class CustomAudiences(FBMarketingStream):
@@ -90,13 +96,17 @@ class CustomAudiences(FBMarketingStream):
 
     entity_prefix = "customaudience"
     enable_deleted = False
-    # The `rule` field is excluded from the list because it caused the error message "Please reduce the amount of data" for certain connections.
+    # The `rule` field is excluded from the list because it caused the error message
+    # "Please reduce the amount of data" for certain connections.
     # https://github.com/airbytehq/oncall/issues/2765
     fields_exceptions = ["rule"]
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        custom_audiences = [account.get_custom_audiences(params=params, fields=self.fields) for account in self._api.accounts]
-        return list(itertools.chain(*custom_audiences))
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
+        return self._get_object_list_parallel(api_call_wrapper=CustomAudiences.get_custom_audiences, fields=fields, params=params)
+
+    @staticmethod
+    def get_custom_audiences(account: FBAdAccount, **kwargs):
+        return account.get_custom_audiences(**kwargs)
 
 
 class Ads(FBMarketingIncrementalStream):
@@ -104,9 +114,12 @@ class Ads(FBMarketingIncrementalStream):
 
     entity_prefix = "ad"
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        ads = [account.get_ads(params=params, fields=self.fields) for account in self._api.accounts]
-        return list(itertools.chain(*ads))
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
+        return self._get_object_list_parallel(api_call_wrapper=Ads.get_ads, fields=fields, params=params)
+
+    @staticmethod
+    def get_ads(account: FBAdAccount, **kwargs):
+        return account.get_ads(**kwargs)
 
 
 class AdRuleLibraries(FBMarketingIncrementalStream):
@@ -123,9 +136,12 @@ class AdSets(FBMarketingIncrementalStream):
 
     entity_prefix = "adset"
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        ad_sets = [account.get_ad_sets(params=params, fields=self.fields) for account in self._api.accounts]
-        return list(itertools.chain(*ad_sets))
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
+        return self._get_object_list_parallel(api_call_wrapper=AdSets.get_ad_sets, fields=fields, params=params)
+
+    @staticmethod
+    def get_ad_sets(account: FBAdAccount, **kwargs):
+        return account.get_ad_sets(**kwargs)
 
 
 class Campaigns(FBMarketingIncrementalStream):
@@ -133,9 +149,12 @@ class Campaigns(FBMarketingIncrementalStream):
 
     entity_prefix = "campaign"
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        campaigns = [account.get_campaigns(params=params, fields=self.fields) for account in self._api.accounts]
-        return list(itertools.chain(*campaigns))
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
+        return self._get_object_list_parallel(api_call_wrapper=Campaigns.get_campaigns, fields=fields, params=params)
+
+    @staticmethod
+    def get_campaigns(account: FBAdAccount, **kwargs):
+        return account.get_campaigns(**kwargs)
 
 
 class Activities(FBMarketingIncrementalStream):
@@ -145,9 +164,12 @@ class Activities(FBMarketingIncrementalStream):
     cursor_field = "event_time"
     primary_key = None
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        activities = [account.get_activities(fields=self.fields, params=params) for account in self._api.accounts]
-        return list(itertools.chain(*activities))
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
+        return self._get_object_list_parallel(api_call_wrapper=Activities.get_activities, fields=fields, params=params)
+
+    @staticmethod
+    def get_activities(account: FBAdAccount, **kwargs):
+        return account.get_activities(**kwargs)
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
@@ -177,17 +199,37 @@ class Videos(FBMarketingReversedIncrementalStream):
 
     entity_prefix = "video"
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        # Remove filtering as it is not working for this stream since 2023-01-13
-        videos = [account.get_ad_videos(params=params, fields=self.fields) for account in self._api.accounts]
-        return list(itertools.chain(*videos))
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
+        return self._get_object_list_parallel(api_call_wrapper=Videos.get_videos, params=params, fields=fields)
+
+    @staticmethod
+    def get_videos(account: FBAdAccount, **kwargs):
+        return account.get_ad_videos(**kwargs)
 
 
 class AdAccounts(FBMarketingStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-account"""
 
-    use_batch = False
     enable_deleted = False
+    fields_exceptions = [
+        "capabilities",
+        "failed_delivery_checks",
+        "funding_source",
+        "has_migrated_permissions",
+        "business_street",
+        "business_street2",
+        "tax_id",
+        "tax_id_status",
+        "tax_id_type",
+        "failed_delivery_checks",
+        "extended_credit_invoice_group",
+        "funding_source_details",
+        "offsite_pixels_tos_accepted",
+        "rf_spec",
+        "tos_accepted",
+        "user_tasks",
+        "user_tos_accepted",
+    ]
 
     def get_task_permissions(self) -> Set[str]:
         """https://developers.facebook.com/docs/marketing-api/reference/ad-account/assigned_users/"""
@@ -214,32 +256,37 @@ class AdAccounts(FBMarketingStream):
             properties.remove("is_prepay_account")
         return properties
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
         """noop in case of AdAccount"""
-        fields = self.fields
         try:
-            return [FBAdAccount(account.get_id()).api_get(fields=fields) for account in self._api.accounts]
+            return self._get_object_list_parallel(AdAccounts.get_account, fields=fields)
         except FacebookRequestError as e:
-            # This is a workaround for cases when account seem to have all the required permissions
-            # but despite of that is not allowed to get `owner` field. See (https://github.com/airbytehq/oncall/issues/3167)
+            # This is a workaround for cases when the account seems to have all the required permissions
+            # but in spite of that is not allowed to get `owner` field. See (https://github.com/airbytehq/oncall/issues/3167)
             if e.api_error_code() == 200 and e.api_error_message() == "(#200) Requires business_management permission to manage the object":
                 fields.remove("owner")
-                return [FBAdAccount(account.get_id()).api_get(fields=fields) for account in self._api.accounts]
+                return self._get_object_list_parallel(AdAccounts.get_account, fields=fields)
             # FB api returns a non-obvious error when accessing the `funding_source_details` field
             # even though user is granted all the required permissions (`MANAGE`)
             # https://github.com/airbytehq/oncall/issues/3031
             if e.api_error_code() == 100 and e.api_error_message() == "Unsupported request - method type: get":
                 fields.remove("funding_source_details")
-                return [FBAdAccount(account.get_id()).api_get(fields=fields) for account in self._api.accounts]
+                return self._get_object_list_parallel(AdAccounts.get_account, fields=fields)
             raise e
+
+    @staticmethod
+    def get_account(account: FBAdAccount, **kwargs):
+        return [account.api_get(**kwargs)]
 
 
 class Images(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-image"""
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
+        return self._get_object_list_parallel(api_call_wrapper=Images.get_images, params=params, fields=fields)
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        images = [account.get_ad_images(params=params, fields=self.fields) for account in self._api.accounts]
-        return list(itertools.chain(*images))
+    @staticmethod
+    def get_images(account: FBAdAccount, **kwargs):
+        return account.get_ad_images(**kwargs)
 
     def get_record_deleted_status(self, record) -> bool:
         return record[AdImage.Field.status] == AdImage.Status.deleted

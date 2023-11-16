@@ -110,7 +110,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
         return pendulum.duration(days=self._insights_lookback_window)
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
         """Because insights has very different read_records we don't need this method anymore"""
 
     def read_records(
