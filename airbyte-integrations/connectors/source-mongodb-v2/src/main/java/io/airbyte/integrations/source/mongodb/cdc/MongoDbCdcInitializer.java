@@ -91,7 +91,8 @@ public class MongoDbCdcInitializer {
     final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
     final JsonNode initialDebeziumState =
         mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeToken, mongoClient, databaseName);
-    final MongoDbCdcState cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null) ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
+    final MongoDbCdcState cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null)
+        ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
         : new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
     final Optional<BsonDocument> optSavedOffset = mongoDbDebeziumStateUtil.savedOffset(
         Jsons.clone(defaultDebeziumProperties),
@@ -114,7 +115,8 @@ public class MongoDbCdcInitializer {
       // If the offset in the state is invalid, reset the state to the initial STATE
       stateManager.resetState(new MongoDbCdcState(initialDebeziumState, config.getEnforceSchema()));
     } else {
-      LOGGER.debug("Valid offset state discovered.  Updating state manager with retrieved CDC state {} {}...", cdcState.state(), cdcState.schema_enforced());
+      LOGGER.debug("Valid offset state discovered.  Updating state manager with retrieved CDC state {} {}...", cdcState.state(),
+          cdcState.schema_enforced());
       stateManager.updateCdcState(new MongoDbCdcState(cdcState.state(), cdcState.schema_enforced()));
     }
 

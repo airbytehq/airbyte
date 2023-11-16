@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  * @param state The Debezium offset state as a {@link JsonNode}.
  */
 public record MongoDbCdcState(JsonNode state, Boolean schema_enforced) {
+
   public MongoDbCdcState {
     // Ensure that previously saved state with no schema_enforced will migrate to schema_enforced = true
     schema_enforced = schema_enforced == null || schema_enforced;
@@ -20,4 +21,5 @@ public record MongoDbCdcState(JsonNode state, Boolean schema_enforced) {
   public MongoDbCdcState(final JsonNode state) {
     this(state, true);
   }
+
 }

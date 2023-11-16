@@ -4,12 +4,12 @@
 
 package io.airbyte.cdk.integrations.debezium.internals.mongodb;
 
+import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.SCHEMALESS_MODE_DATA_FIELD;
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.SCHEMA_ENFORCED_CONFIGURATION_KEY;
 import static java.util.Arrays.asList;
 import static org.bson.BsonType.ARRAY;
 import static org.bson.BsonType.DOCUMENT;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
-import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.SCHEMALESS_MODE_DATA_FIELD;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -17,7 +17,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mongodb.DBRefCodecProvider;
 import io.airbyte.cdk.db.DataTypeUtils;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import java.util.Collections;
@@ -335,13 +334,14 @@ public class MongoDbCdcEventUtils {
 
   /**
    * Parses source-mongodbv2 configuration json for the value of schema_enforced.
+   *
    * @param config config json
    * @return true unless a schema_enforced configured to false
    */
   public static boolean isEnforceSchema(final JsonNode config) {
     return config == null || !config.has(SCHEMA_ENFORCED_CONFIGURATION_KEY)
         || (config.has(SCHEMA_ENFORCED_CONFIGURATION_KEY) && config.get(
-        SCHEMA_ENFORCED_CONFIGURATION_KEY).asBoolean(true));
+            SCHEMA_ENFORCED_CONFIGURATION_KEY).asBoolean(true));
 
   }
 

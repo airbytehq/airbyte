@@ -86,7 +86,7 @@ class DebeziumEventUtilsTest {
 
     final AirbyteMessage actualInsert =
         DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, cdcMetadataInjector, insertConfiguredAirbyteCatalog, emittedAt,
-            DebeziumConnectorType.MONGODB, Jsons.emptyObject()  );
+            DebeziumConnectorType.MONGODB, Jsons.emptyObject());
     final AirbyteMessage actualUpdate =
         DebeziumEventUtils.toAirbyteMessage(updateChangeEvent, cdcMetadataInjector, updateConfiguredAirbyteCatalog, emittedAt,
             DebeziumConnectorType.MONGODB, Jsons.emptyObject());
@@ -125,7 +125,8 @@ class DebeziumEventUtilsTest {
     final ConfiguredAirbyteCatalog deleteConfiguredAirbyteCatalog = buildFromAirbyteMessage(expectedDelete);
     final ConfiguredAirbyteCatalog deleteNoBeforeConfiguredAirbyteCatalog = buildFromAirbyteMessage(expectedDeleteNoBefore);
 
-    final JsonNode noSchemaConfig = Jsons.jsonNode(ImmutableMap.builder().put(MongoDbDebeziumConstants.Configuration.SCHEMA_ENFORCED_CONFIGURATION_KEY, false).build());
+    final JsonNode noSchemaConfig =
+        Jsons.jsonNode(ImmutableMap.builder().put(MongoDbDebeziumConstants.Configuration.SCHEMA_ENFORCED_CONFIGURATION_KEY, false).build());
     final AirbyteMessage actualInsert =
         DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, cdcMetadataInjector, insertConfiguredAirbyteCatalog, emittedAt,
             DebeziumConnectorType.MONGODB, noSchemaConfig);

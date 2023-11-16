@@ -9,7 +9,6 @@ import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcE
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.OBJECT_ID_FIELD;
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.OBJECT_ID_FIELD_PATTERN;
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.SCHEMALESS_MODE_DATA_FIELD;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -20,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.DataTypeUtils;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration;
 import io.airbyte.commons.json.Jsons;
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -250,4 +248,5 @@ class MongoDbCdcEventUtilsTest {
     assertFalse(abDataNode.has("field15"));
     assertTrue(abDataNode.has("field16"));
   }
+
 }

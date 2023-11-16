@@ -206,14 +206,16 @@ public class MongoUtil {
   }
 
   /**
-   * Checks whether the user's config + catalog does not match. This can happen in the following cases :
-   * 1. User is in schemaless mode + catalog corresponds to schema enabled mode.
-   * 2. User is in schema enabled mode + catalog corresponds to schemaless mode
+   * Checks whether the user's config + catalog does not match. This can happen in the following cases
+   * : 1. User is in schemaless mode + catalog corresponds to schema enabled mode. 2. User is in
+   * schema enabled mode + catalog corresponds to schemaless mode
    *
    * @param isSchemaEnforced true if schema is enforced, false if in schemaless mode.
    * @param catalog User's configured catalog.
    */
-  public static void checkSchemaModeMismatch(final boolean isConfigSchemaEnforced, final boolean isStateSchemaEnforced, final ConfiguredAirbyteCatalog catalog) {
+  public static void checkSchemaModeMismatch(final boolean isConfigSchemaEnforced,
+                                             final boolean isStateSchemaEnforced,
+                                             final ConfiguredAirbyteCatalog catalog) {
     final boolean isCatalogSchemaless = catalog.getStreams().stream()
         .allMatch(stream -> verifySchemaless(stream.getStream().getJsonSchema()));
 
@@ -221,7 +223,8 @@ public class MongoUtil {
     boolean allTrue = Stream.of(isConfigSchemaEnforced, isStateSchemaEnforced, isCatalogSchemaEnforcing).allMatch(val -> val == true);
     boolean allFalse = Stream.of(isConfigSchemaEnforced, isStateSchemaEnforced, isCatalogSchemaEnforcing).allMatch(val -> val == false);
     if (!allTrue && !allFalse) {
-      throw new ConfigErrorException("Mismatch between schema enforcing mode in sync config(%b), catalog(%b) and saved state(%b) ".formatted(isConfigSchemaEnforced, isCatalogSchemaEnforcing, isStateSchemaEnforced)
+      throw new ConfigErrorException("Mismatch between schema enforcing mode in sync config(%b), catalog(%b) and saved state(%b) "
+          .formatted(isConfigSchemaEnforced, isCatalogSchemaEnforcing, isStateSchemaEnforced)
           + "Please refresh source schema and reset streams");
     }
   }
@@ -231,7 +234,6 @@ public class MongoUtil {
     return airbyteStreamProperties.size() == SCHEMALESS_FIELDS.size() &&
         SCHEMALESS_FIELDS.stream().allMatch(field -> airbyteStreamProperties.get(field) != null);
   }
-
 
   /**
    * Creates an {@link AirbyteStream} from the provided data.

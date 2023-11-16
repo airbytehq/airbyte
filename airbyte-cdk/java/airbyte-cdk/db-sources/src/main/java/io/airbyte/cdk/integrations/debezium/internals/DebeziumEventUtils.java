@@ -78,14 +78,14 @@ public class DebeziumEventUtils {
     final Set<String> configuredFields = isEnforceSchema ? getConfiguredMongoDbCollectionFields(source, configuredAirbyteCatalog, cdcMetadataInjector)
         : null;
 
-
     /*
      * Delete events need to be handled separately from other CrUD events, as depending on the version
      * of the MongoDB server, the contents Debezium event data will be different. See
      * #formatMongoDbDeleteDebeziumData() for more details.
      */
     final JsonNode data = switch (operation) {
-      case "c", "i", "u" -> formatMongoDbDebeziumData(before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields, isEnforceSchema);
+      case "c", "i", "u" -> formatMongoDbDebeziumData(before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields,
+          isEnforceSchema);
       case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields, isEnforceSchema);
       default -> throw new IllegalArgumentException("Unsupported MongoDB change event operation '" + operation + "'.");
     };
@@ -154,7 +154,8 @@ public class DebeziumEventUtils {
     }
 
     return addCdcMetadata(
-        isEnforceSchema ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields) : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson),
+        isEnforceSchema ? MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields)
+            : MongoDbCdcEventUtils.transformDataTypesNoSchema(eventJson),
         source, cdcMetadataInjector, true);
   }
 

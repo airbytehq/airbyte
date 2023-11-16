@@ -47,8 +47,7 @@ class MongoDbSourceConfigTest {
             PASSWORD_CONFIGURATION_KEY, password,
             QUEUE_SIZE_CONFIGURATION_KEY, queueSize,
             USERNAME_CONFIGURATION_KEY, username,
-            SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced
-            )));
+            SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced)));
     final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(rawConfig);
     assertNotNull(sourceConfig);
     assertEquals(authSource, sourceConfig.getAuthSource());
