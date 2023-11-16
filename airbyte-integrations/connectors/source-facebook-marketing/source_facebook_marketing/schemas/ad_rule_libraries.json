@@ -1,0 +1,52 @@
+{
+  "properties" : {
+    "id" : {
+      "type": ["null", "string"]
+    },
+    "account_id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "evaluation_spec": {
+      "type": ["null", "object"]
+    },
+    "execution_spec" : {
+      "type": ["null", "object"],
+      "properties": {
+        "execution_type" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "execution_options" : {
+          "type" : [
+            "null",
+            "array"
+          ],
+          "items" : {
+            "type" : [
+              "null",
+              "object"
+            ],
+            "additionalProperties" : true
+          }
+        }
+      }
+    },
+    "schedule_spec": {
+      "type": ["null", "object"],
+      "properties": {
+        "schedule_type" : {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "updated_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}
