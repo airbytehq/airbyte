@@ -24,6 +24,7 @@ from source_twilio.streams import (
     TwilioNestedStream,
     UsageRecords,
     UsageTriggers,
+    TwilioStream
 )
 
 TEST_CONFIG = {
@@ -101,16 +102,21 @@ class TestTwilioStream:
     @pytest.mark.parametrize(
         "stream_cls, test_response, expected",
         [
-            (Accounts, {"accounts": {"id": "123"}}, ["id"]),
+            (Accounts, {"accounts": [{"id": "123"}]}, [{"id": "123"}]),
+            (Accounts, {"accounts": [{"id": "123", "name": "test"}]}, [{"id": "123"}]),
         ],
     )
+    # @patch.object(TwilioStream, 'changeable_fields', ["name"])
     def test_parse_response(self, requests_mock, stream_cls, test_response, expected):
-        stream = stream_cls(**self.CONFIG)
-        url = f"{stream.url_base}{stream.path()}"
-        requests_mock.get(url, json=test_response)
-        response = requests.get(url)
-        result = stream.parse_response(response)
-        assert list(result) == expected
+        with patch.object(TwilioStream, "changeable_fields", ["name"]):
+          stream = stream_cls(**self.CONFIG)
+          url = f"{stream.url_base}{stream.path()}"
+          requests_mock.get(url, json=test_response)
+          response = requests.get(url)
+          print(response)
+          result = stream.parse_response(response)
+          print(result)
+          assert list(result) == expected
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
