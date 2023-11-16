@@ -134,7 +134,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final Set<String> pks = getPks(stream);
 
     // Check that the columns match, with special handling for the metadata columns.
-    final LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
+    final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue())),
             LinkedHashMap::putAll);
