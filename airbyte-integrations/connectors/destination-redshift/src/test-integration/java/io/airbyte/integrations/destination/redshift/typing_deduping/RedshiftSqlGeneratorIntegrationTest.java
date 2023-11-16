@@ -4,7 +4,14 @@
 
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
-import static io.airbyte.cdk.integrations.base.JavaBaseConstants.*;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_ID;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -174,9 +181,9 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
                 if (Arrays.asList(columnsToParseJson).contains(fieldName)) {
                   // TODO this is redshift-specific. If we try and genericize this class, we need to handle this
                   // specifically
-                  return DSL.function("JSON_PARSE", String.class, DSL.inline(columnAsString));
+                  return DSL.function("JSON_PARSE", String.class, DSL.inline(escapeStringLiteral(columnAsString)));
                 } else {
-                  return DSL.inline(columnAsString);
+                  return DSL.inline(escapeStringLiteral(columnAsString));
                 }
               })
               .toList());
@@ -213,6 +220,16 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
         () -> assertEquals("date", existingTable.get().columns().get("date").type()),
         () -> assertEquals("super", existingTable.get().columns().get("unknown").type()));
     // TODO assert on table clustering, etc.
+  }
+
+  private static String escapeStringLiteral(final String str) {
+    if (str == null) {
+      return null;
+    } else {
+      // jooq handles most things
+      // but we need to manually escape backslashes for some reason
+      return str.replace("\\", "\\\\");
+    }
   }
 
 }
