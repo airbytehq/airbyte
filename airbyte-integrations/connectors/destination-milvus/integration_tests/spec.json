@@ -11,6 +11,7 @@
           "chunk_size": {
             "title": "Chunk size",
             "description": "Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)",
+            "minimum": 1,
             "maximum": 8191,
             "type": "integer"
           },
@@ -91,6 +92,7 @@
                     "type": "boolean"
                   }
                 },
+                "required": ["mode"],
                 "description": "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc."
               },
               {
@@ -113,6 +115,7 @@
                     "type": "integer"
                   }
                 },
+                "required": ["mode"],
                 "description": "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk."
               },
               {
@@ -150,7 +153,7 @@
                     "type": "string"
                   }
                 },
-                "required": ["language"],
+                "required": ["language", "mode"],
                 "description": "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
               }
             ]
@@ -182,7 +185,7 @@
                 "type": "string"
               }
             },
-            "required": ["openai_key"],
+            "required": ["openai_key", "mode"],
             "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
           },
           {
@@ -202,7 +205,7 @@
                 "type": "string"
               }
             },
-            "required": ["cohere_key"],
+            "required": ["cohere_key", "mode"],
             "description": "Use the Cohere API to embed text."
           },
           {
@@ -217,6 +220,7 @@
                 "type": "string"
               }
             },
+            "required": ["mode"],
             "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
           },
           {
@@ -243,7 +247,7 @@
                 "type": "integer"
               }
             },
-            "required": ["field_name", "dimensions"],
+            "required": ["field_name", "dimensions", "mode"],
             "description": "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
           },
           {
@@ -276,7 +280,7 @@
                 "type": "string"
               }
             },
-            "required": ["openai_key", "api_base", "deployment"],
+            "required": ["openai_key", "api_base", "deployment", "mode"],
             "description": "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
           },
           {
@@ -316,7 +320,7 @@
                 "type": "integer"
               }
             },
-            "required": ["base_url", "dimensions"],
+            "required": ["base_url", "dimensions", "mode"],
             "description": "Use a service that's compatible with the OpenAI API to embed text."
           }
         ]
@@ -372,7 +376,7 @@
                     "type": "string"
                   }
                 },
-                "required": ["token"],
+                "required": ["token", "mode"],
                 "description": "Authenticate using an API token (suitable for Zilliz Cloud)"
               },
               {
@@ -400,7 +404,7 @@
                     "type": "string"
                   }
                 },
-                "required": ["username", "password"],
+                "required": ["username", "password", "mode"],
                 "description": "Authenticate using username and password (suitable for self-managed Milvus clusters)"
               },
               {
@@ -415,7 +419,8 @@
                     "type": "string"
                   }
                 },
-                "description": "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)"
+                "description": "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)",
+                "required": ["mode"]
               }
             ]
           },

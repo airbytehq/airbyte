@@ -5,26 +5,25 @@
 from __future__ import annotations
 
 import logging
-import typing
 from abc import abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
 
 import anyio
 import asyncer
+import click
 from dagger import Container, DaggerError
 from pipelines import main_logger
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.utils import format_duration, get_exec_result
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from pipelines.models.contexts.pipeline_context import PipelineContext
 
 from abc import ABC
-from typing import ClassVar
 
 from rich.style import Style
 
@@ -62,7 +61,7 @@ class MountPath:
 class StepResult:
     """A dataclass to capture the result of a step."""
 
-    step: Step
+    step: Union[Step, click.command]
     status: StepStatus
     created_at: datetime = field(default_factory=datetime.utcnow)
     stderr: Optional[str] = None
@@ -86,6 +85,24 @@ class StepResult:
         for secret in self.step.context.secrets_to_mask:
             value = value.replace(secret, "********")
         return value
+
+
+@dataclass(frozen=True)
+class CommandResult:
+    """A dataclass to capture the result of a command."""
+
+    command: click.command
+    status: StepStatus
+    created_at: datetime = field(default_factory=datetime.utcnow)
+    stderr: Optional[str] = None
+    stdout: Optional[str] = None
+    exc_info: Optional[Exception] = None
+
+    def __repr__(self) -> str:  # noqa D105
+        return f"{self.command.name}: {self.status.value}"
+
+    def __str__(self) -> str:  # noqa D105
+        return f"{self.command.name}: {self.status.value}\n\nSTDOUT:\n{self.stdout}\n\nSTDERR:\n{self.stderr}"
 
 
 class StepStatus(Enum):

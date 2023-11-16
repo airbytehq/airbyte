@@ -30,7 +30,9 @@
       "type": ["null", "string"]
     },
     "Modified Time": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "Editorial Appeal Status": {
       "type": ["null", "string"]
