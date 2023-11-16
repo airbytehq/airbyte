@@ -168,9 +168,15 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   public String overwriteFinalTable(final StreamId stream, final String finalSuffix) {
-    return DSL.alterTable(DSL.name(stream.finalNamespace(), stream.finalName() + finalSuffix))
-        .renameTo(DSL.name(stream.finalName()))
-        .getSQL();
+    return Strings.join(
+        List.of(
+            DSL.dropTableIfExists(DSL.name(stream.finalNamespace(), stream.finalName())),
+            DSL.alterTable(DSL.name(stream.finalNamespace(), stream.finalName() + finalSuffix))
+                .renameTo(DSL.name(stream.finalName()))
+                .getSQL()
+        ),
+        ";\n"
+    );
   }
 
   @Override
