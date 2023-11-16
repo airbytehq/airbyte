@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.53.7
+File CDK: Add `format.skip_unprocessable_file_types` with default value `True`, to `config.avro_format`, `config.csv_parser`, `config.parquet_format`.
+Added logic to raise the `RecordParseError` if `format.skip_unprocessable_file_types = false` to `stream.default_file_based_stream`
+
 ## 0.53.6
 Increase maximum_attempts_to_acquire to avoid crashing in acquire_call
 
