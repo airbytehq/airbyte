@@ -12,8 +12,8 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: "Large update in schema data types. Need refresh data"
-        upgradeDeadline: "2023-11-23"
+        message: "This version migrates the Freshsales connector to our low-code framework for greater maintainability. It also introduces changes to data types across most streams. You will need to run a reset after upgrading to continue syncing data with the connector."
+        upgradeDeadline: "2023-11-29"
   dockerRepository: airbyte/source-freshsales
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshsales
   githubIssueLabel: source-freshsales
