@@ -1195,7 +1195,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
           () -> assertEquals(v1id, v2RecordMap.get(v1id).get("_airbyte_raw_id").asText()),
           () -> assertEquals(v1Record.get("_airbyte_emitted_at").asText(), v2RecordMap.get(v1id).get("_airbyte_extracted_at").asText()),
           () -> assertNull(v2RecordMap.get(v1id).get("_airbyte_loaded_at")));
-      final JsonNode originalData = v1Record.get("_airbyte_data");
+      JsonNode originalData = v1Record.get("_airbyte_data");
+      if (originalData.isTextual()) {
+        originalData = Jsons.deserializeExact(originalData.asText());
+      }
       JsonNode migratedData = v2RecordMap.get(v1id).get("_airbyte_data");
       if (migratedData.isTextual()) {
         migratedData = Jsons.deserializeExact(migratedData.asText());
