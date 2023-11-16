@@ -7,6 +7,7 @@
     "required": [
       "aws_environment",
       "region",
+      "account_type",
       "lwa_app_id",
       "lwa_client_secret",
       "refresh_token",
