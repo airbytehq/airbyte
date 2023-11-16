@@ -199,7 +199,7 @@ def test_user_lifetime_insights_read(api, config, user_insight_data, requests_mo
             "page_id": "act_unknown_account",
             "business_account_id": "test_id",
             "metric": "impressions",
-            "date": "2020-05-04T07:00:00+00:00",
+            "date": "2020-05-04T07:00:00+0000",
             "value": 4,
         }
     ]
@@ -208,9 +208,9 @@ def test_user_lifetime_insights_read(api, config, user_insight_data, requests_mo
 @pytest.mark.parametrize(
     "values,expected",
     [
-        ({"end_time": "2020-05-04T07:00:00+0000", "value": "test_value"}, {"date": "2020-05-04T07:00:00+00:00", "value": "test_value"}),
+        ({"end_time": "2020-05-04T07:00:00+0000", "value": "test_value"}, {"date": "2020-05-04T07:00:00+0000", "value": "test_value"}),
         ({"value": "test_value"}, {"date": None, "value": "test_value"}),
-        ({"end_time": "2020-05-04T07:00:00+0000"}, {"date": "2020-05-04T07:00:00+00:00", "value": None}),
+        ({"end_time": "2020-05-04T07:00:00+0000"}, {"date": "2020-05-04T07:00:00+0000", "value": None}),
         ({}, {"date": None, "value": None}),
     ],
     ids=[

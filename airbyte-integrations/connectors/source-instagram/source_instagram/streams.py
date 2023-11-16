@@ -11,12 +11,36 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.igmedia import IGMedia
 from facebook_business.exceptions import FacebookRequestError
 from source_instagram.api import InstagramAPI
 
-from .common import fix_nested_timestamp, remove_params_from_url
+from .common import remove_params_from_url
+
+
+class DatetimeTransformerMixin:
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.CustomSchemaNormalization)
+
+    @staticmethod
+    @transformer.registerCustomTransform
+    def custom_transform_datetime_rfc3339(original_value, field_schema):
+        """
+        Transform datetime string to RFC 3339 format
+        """
+        if (
+            original_value
+            and "format" in field_schema
+            and field_schema["format"] == "date-time"
+            and field_schema["airbyte_type"] == "timestamp_with_timezone"
+        ):
+            # Parse the ISO format timestamp
+            dt = pendulum.parse(original_value)
+
+            # Convert to RFC 3339 format
+            return dt.to_rfc3339_string()
+        return original_value
 
 
 class InstagramStream(Stream, ABC):
@@ -24,8 +48,6 @@ class InstagramStream(Stream, ABC):
 
     page_size = 100
     primary_key = "id"
-    # Define fields to fix as tuples representing the path to the field
-    fix_timestamp_fields = []
 
     def __init__(self, api: InstagramAPI, **kwargs):
         super().__init__(**kwargs)
@@ -61,14 +83,7 @@ class InstagramStream(Stream, ABC):
             yield {"account": account}
 
     def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        record = self.fix_timestamp_with_timezone(record)
-        record = self._clear_url(record)
-        return record
-
-    def fix_timestamp_with_timezone(self, record):
-        for path in self.fix_timestamp_fields:
-            fix_nested_timestamp(record, path)
-        return record
+        return self._clear_url(record)
 
     @staticmethod
     def _clear_url(record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
@@ -130,14 +145,12 @@ class Users(InstagramStream):
         yield self.transform(record)
 
 
-class UserLifetimeInsights(InstagramStream):
+class UserLifetimeInsights(DatetimeTransformerMixin, InstagramStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights"""
 
     primary_key = ["business_account_id", "metric", "date"]
     LIFETIME_METRICS = ["audience_city", "audience_country", "audience_gender_age", "audience_locale"]
     period = "lifetime"
-
-    fix_timestamp_fields = [("date",)]
 
     def read_records(
         self,
@@ -149,15 +162,13 @@ class UserLifetimeInsights(InstagramStream):
         account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
         for insight in ig_account.get_insights(params=self.request_params()):
-            record = {
+            yield {
                 "page_id": account["page_id"],
                 "business_account_id": ig_account.get("id"),
                 "metric": insight["name"],
                 "date": insight["values"][0].get("end_time"),
                 "value": insight["values"][0].get("value"),
             }
-            record = self.transform(record)
-            yield record
 
     def request_params(
         self,
@@ -169,7 +180,7 @@ class UserLifetimeInsights(InstagramStream):
         return params
 
 
-class UserInsights(InstagramIncrementalStream):
+class UserInsights(DatetimeTransformerMixin, InstagramIncrementalStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights"""
 
     METRICS_BY_PERIOD = {
@@ -188,7 +199,6 @@ class UserInsights(InstagramIncrementalStream):
         "days_28": ["impressions", "reach"],
         "lifetime": ["online_followers"],
     }
-    fix_timestamp_fields = [("date",)]
 
     primary_key = ["business_account_id", "date"]
     cursor_field = "date"
@@ -311,14 +321,13 @@ class UserInsights(InstagramIncrementalStream):
         return False
 
 
-class Media(InstagramStream):
+class Media(DatetimeTransformerMixin, InstagramStream):
     """Children objects can only be of the media_type == "CAROUSEL_ALBUM".
     And children object does not support INVALID_CHILDREN_FIELDS fields,
     so they are excluded when trying to get child objects to avoid the error
     """
 
     INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children", "media_product_type"]
-    fix_timestamp_fields = [("timestamp",), ("children", "timestamp")]
 
     def read_records(
         self,
@@ -420,9 +429,8 @@ class MediaInsights(Media):
             raise error
 
 
-class Stories(InstagramStream):
+class Stories(DatetimeTransformerMixin, InstagramStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories"""
-    fix_timestamp_fields = [("timestamp",),]
 
     def read_records(
         self,
