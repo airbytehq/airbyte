@@ -1,6 +1,10 @@
 # Instagram
 
+<HideInUI>
+
 This page contains the setup guide and reference information for the Instagram source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -41,6 +45,8 @@ This page contains the setup guide and reference information for the Instagram s
 7. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 8. Click **Set up source**.
 <!-- /env:oss -->
+
+<HideInUI>
 
 ## Supported sync modes
 
@@ -86,7 +92,11 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 1.0.15  | 2023-11-14 | [32494](https://github.com/airbytehq/airbyte/pull/32494) | Marked start_date as optional; set max retry time to 10 minutes; add suggested streams                                    |
+| 1.0.14  | 2023-11-13 | [32423](https://github.com/airbytehq/airbyte/pull/32423) | Capture media_product_type column in media and stories stream                                                             |
+| 1.0.13  | 2023-11-10 | [32245](https://github.com/airbytehq/airbyte/pull/32245) | Add skipping reading MediaInsights stream if an error code 10 is received                                                 |
+| 1.0.12  | 2023-11-07 | [32200](https://github.com/airbytehq/airbyte/pull/32200) | The backoff strategy has been updated to make some errors retriable                                                       |
 | 1.0.11  | 2023-08-03 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes                                                                                      |
 | 1.0.10  | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910) | Updated `advancedAuth` broken references                                                                                  |
 | 1.0.9   | 2023-07-01 | [27908](https://github.com/airbytehq/airbyte/pull/27908) | Fix bug when `user_lifetime_insights` stream returns `Key Error (end_time)`, refactored `state` to use `IncrementalMixin` |
@@ -101,7 +111,9 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 | 1.0.0   | 2022-09-23 | [17110](https://github.com/airbytehq/airbyte/pull/17110) | Remove custom read function and migrate to per-stream state                                                               |
 | 0.1.11  | 2022-09-08 | [16428](https://github.com/airbytehq/airbyte/pull/16428) | Fix requests metrics for Reels media product type                                                                         |
 | 0.1.10  | 2022-09-05 | [16340](https://github.com/airbytehq/airbyte/pull/16340) | Update to latest version of the CDK (v0.1.81)                                                                             |
-| 0.1.9   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)   | Annotate Oauth2 flow initialization parameters in connector specification                                                 |
-| 0.1.8   | 2021-08-11 | [5354](https://github.com/airbytehq/airbyte/pull/5354)   | Added check for empty state and fixed tests                                                                               |
-| 0.1.7   | 2021-07-19 | [4805](https://github.com/airbytehq/airbyte/pull/4805)   | Add support for previous `STATE` format                                                                                   |
-| 0.1.6   | 2021-07-07 | [4210](https://github.com/airbytehq/airbyte/pull/4210)   | Refactor connector to use CDK: - improve error handling - fix sync fail with HTTP status 400 - integrate SAT              |
+| 0.1.9   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)  | Annotate Oauth2 flow initialization parameters in connector specification                                                 |
+| 0.1.8   | 2021-08-11 | [5354](https://github.com/airbytehq/airbyte/pull/5354)  | Added check for empty state and fixed tests                                                                               |
+| 0.1.7   | 2021-07-19 | [4805](https://github.com/airbytehq/airbyte/pull/4805)  | Add support for previous `STATE` format                                                                                   |
+| 0.1.6   | 2021-07-07 | [4210](https://github.com/airbytehq/airbyte/pull/4210)  | Refactor connector to use CDK: - improve error handling - fix sync fail with HTTP status 400 - integrate SAT              |
+
+</HideInUI>

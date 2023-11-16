@@ -49,6 +49,9 @@
     },
     "online_followers": {
       "type": ["null", "object"]
+    },
+    "email_contacts": {
+      "type": ["null", "integer"]
     }
   }
 }

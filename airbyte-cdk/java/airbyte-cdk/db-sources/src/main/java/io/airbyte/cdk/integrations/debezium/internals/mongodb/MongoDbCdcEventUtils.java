@@ -220,6 +220,7 @@ public class MongoDbCdcEventUtils {
     try {
       final CodecRegistry customCodecRegistry =
           fromProviders(asList(
+              new UuidCodecProvider(UuidRepresentation.STANDARD),
               new ValueCodecProvider(),
               new BsonValueCodecProvider(),
               new DocumentCodecProvider(),
@@ -228,8 +229,7 @@ public class MongoDbCdcEventUtils {
               new Jsr310CodecProvider(),
               new JsonObjectCodecProvider(),
               new BsonCodecProvider(),
-              new DBRefCodecProvider(),
-              new UuidCodecProvider(UuidRepresentation.STANDARD)));
+              new DBRefCodecProvider()));
 
       // Override the default codec registry
       return document.toBsonDocument(BsonDocument.class, customCodecRegistry);
