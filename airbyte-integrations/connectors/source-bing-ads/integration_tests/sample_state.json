@@ -1,0 +1,46 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "180278106": {
+          "TimePeriod": "2021-08-01T14:00:00+00:00"
+        }
+      },
+      "stream_descriptor": { "name": "keyword_performance_report_hourly" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "180278106": {
+          "Date": "2021-08-01"
+        }
+      },
+      "stream_descriptor": { "name": "budget_summary_report" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "180278106": {
+          "TimePeriod": "2021-08-01"
+        }
+      },
+      "stream_descriptor": { "name": "ad_performance_report_weekly" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "180278106": {
+          "TimePeriod": "2023-04-27T15:16:49.170+00:00"
+        }
+      },
+      "stream_descriptor": { "name": "labels" }
+    }
+  }
+]

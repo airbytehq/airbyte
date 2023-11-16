@@ -5,7 +5,6 @@
 import pendulum
 import pytest
 import requests
-from source_amazon_seller_partner.auth import AWSSignature
 from source_amazon_seller_partner.streams import ListFinancialEventGroups, ListFinancialEvents
 
 list_financial_event_groups_data = {
@@ -96,16 +95,8 @@ END_DATE_2 = "2022-07-31T00:00:00Z"
 @pytest.fixture
 def list_financial_event_groups_stream():
     def _internal(start_date: str = START_DATE_1, end_date: str = END_DATE_1):
-        aws_signature = AWSSignature(
-            service="execute-api",
-            aws_access_key_id="AccessKeyId",
-            aws_secret_access_key="SecretAccessKey",
-            aws_session_token="SessionToken",
-            region="US",
-        )
         stream = ListFinancialEventGroups(
             url_base="https://test.url",
-            aws_signature=aws_signature,
             replication_start_date=start_date,
             replication_end_date=end_date,
             marketplace_id="id",
@@ -123,16 +114,8 @@ def list_financial_event_groups_stream():
 @pytest.fixture
 def list_financial_events_stream():
     def _internal(start_date: str = START_DATE_1, end_date: str = END_DATE_1):
-        aws_signature = AWSSignature(
-            service="execute-api",
-            aws_access_key_id="AccessKeyId",
-            aws_secret_access_key="SecretAccessKey",
-            aws_session_token="SessionToken",
-            region="US",
-        )
         stream = ListFinancialEvents(
             url_base="https://test.url",
-            aws_signature=aws_signature,
             replication_start_date=start_date,
             replication_end_date=end_date,
             marketplace_id="id",
