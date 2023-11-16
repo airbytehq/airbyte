@@ -23,6 +23,7 @@ from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentin
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import LogMessage, MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailable, StreamUnavailable
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -91,7 +92,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         handler.start_next_partition_generator()
         handler.on_partition(self._an_open_partition)
 
-        sentinel = PartitionGenerationCompletedSentinel(self._stream)
+        sentinel = PartitionGenerationCompletedSentinel(self._stream, StreamAvailable())
         messages = list(handler.on_partition_generation_completed(sentinel))
 
         expected_messages = []
@@ -113,7 +114,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         handler.start_next_partition_generator()
         handler.on_partition(self._a_closed_partition)
 
-        sentinel = PartitionGenerationCompletedSentinel(self._another_stream)
+        sentinel = PartitionGenerationCompletedSentinel(self._another_stream, StreamAvailable())
         messages = handler.on_partition_generation_completed(sentinel)
 
         expected_messages = [
@@ -128,6 +129,49 @@ class TestConcurrentReadProcessor(unittest.TestCase):
                     ),
                 ),
             )
+        ]
+        assert expected_messages == messages
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_handle_stream_is_unavailable(self):
+        stream_instances_to_read_from = [self._stream, self._another_stream]
+
+        handler = ConcurrentReadProcessor(
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+        handler.start_next_partition_generator()
+
+        sentinel = PartitionGenerationCompletedSentinel(self._stream, StreamUnavailable("stream in unavailable"))
+        messages = handler.on_partition_generation_completed(sentinel)
+
+        expected_messages = [
+            AirbyteMessage(
+                type=MessageType.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.STREAM_STATUS,
+                    emitted_at=1577836800000.0,
+                    stream_status=AirbyteStreamStatusTraceMessage(
+                        stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
+                    ),
+                ),
+            ),
+            AirbyteMessage(
+                type=MessageType.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.STREAM_STATUS,
+                    emitted_at=1577836800000.0,
+                    stream_status=AirbyteStreamStatusTraceMessage(
+                        stream_descriptor=StreamDescriptor(name=_ANOTHER_STREAM_NAME),
+                        status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED),
+                    ),
+                ),
+            ),
         ]
         assert expected_messages == messages
 
@@ -223,7 +267,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             self._partition_reader,
         )
         handler.start_next_partition_generator()
-        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream))
+        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream, StreamAvailable()))
 
         sentinel = PartitionCompleteSentinel(self._a_closed_partition)
 
@@ -555,7 +599,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
 
         handler.start_next_partition_generator()
         handler.on_partition(self._an_open_partition)
-        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream))
+        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream, StreamAvailable()))
 
         assert not handler.is_done()
 

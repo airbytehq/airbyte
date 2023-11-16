@@ -33,8 +33,10 @@ class PartitionEnqueuer:
         :return:
         """
         try:
-            for partition in stream.generate_partitions():
-                self._queue.put(partition)
-            self._queue.put(PartitionGenerationCompletedSentinel(stream))
+            stream_availability = stream.check_availability()
+            if stream_availability.is_available():
+                for partition in stream.generate_partitions():
+                    self._queue.put(partition)
+            self._queue.put(PartitionGenerationCompletedSentinel(stream, stream_availability))
         except Exception as e:
             self._queue.put(e)

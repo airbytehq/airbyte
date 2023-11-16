@@ -66,6 +66,12 @@ class ConcurrentReadProcessor:
         stream_name = sentinel.stream.name
         self._streams_currently_generating_partitions.remove(sentinel.stream.name)
         ret = []
+
+        if not sentinel.stream_availability.is_available():
+            # The stream is not available
+            self._logger.warning(
+                f"Skipped syncing stream '{sentinel.stream.name}' because it was unavailable. {sentinel.stream_availability.message()}"
+            )
         # It is possible for the stream to already be done if no partitions were generated
         if self._is_stream_done(stream_name):
             ret.append(self._on_stream_is_done(stream_name))

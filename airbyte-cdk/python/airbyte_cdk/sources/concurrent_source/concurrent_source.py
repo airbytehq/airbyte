@@ -78,16 +78,15 @@ class ConcurrentSource:
         streams: List[AbstractStream],
     ) -> Iterator[AirbyteMessage]:
         self._logger.info("Starting syncing")
-        stream_instances_to_read_from = self._get_streams_to_read_from(streams)
 
         # Return early if there are no streams to read from
-        if not stream_instances_to_read_from:
+        if not streams:
             yield from []
             return
 
         queue: Queue[QueueItem] = Queue()
         concurrent_stream_processor = ConcurrentReadProcessor(
-            stream_instances_to_read_from,
+            streams,
             PartitionEnqueuer(queue),
             self._threadpool,
             self._logger,
@@ -147,19 +146,3 @@ class ConcurrentSource:
             yield from concurrent_stream_processor.on_record(queue_item)
         else:
             raise ValueError(f"Unknown queue item type: {type(queue_item)}")
-
-    def _get_streams_to_read_from(self, streams: List[AbstractStream]) -> List[AbstractStream]:
-        """
-        Iterate over the configured streams and return a list of streams to read from.
-        If a stream is not configured, it will be skipped.
-        If a stream is configured but does not exist in the source and self.raise_exception_on_missing_stream is True, an exception will be raised
-        If a stream is not available, it will be skipped
-        """
-        stream_instances_to_read_from = []
-        for stream in streams:
-            stream_availability = stream.check_availability()
-            if not stream_availability.is_available():
-                self._logger.warning(f"Skipped syncing stream '{stream.name}' because it was unavailable. {stream_availability.message()}")
-                continue
-            stream_instances_to_read_from.append(stream)
-        return stream_instances_to_read_from
