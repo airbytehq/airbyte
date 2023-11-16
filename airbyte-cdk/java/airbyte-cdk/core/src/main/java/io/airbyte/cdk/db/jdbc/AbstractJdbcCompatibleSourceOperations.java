@@ -35,7 +35,7 @@ import javax.xml.bind.DatatypeConverter;
  * Source operation skeleton for JDBC compatible databases.
  */
 public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implements JdbcCompatibleSourceOperations<Datatype> {
-  
+
   /**
    * A Date representing the earliest date in CE. Any date before this is in BCE.
    */
