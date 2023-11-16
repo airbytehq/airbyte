@@ -173,10 +173,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
             DSL.dropTableIfExists(DSL.name(stream.finalNamespace(), stream.finalName())),
             DSL.alterTable(DSL.name(stream.finalNamespace(), stream.finalName() + finalSuffix))
                 .renameTo(DSL.name(stream.finalName()))
-                .getSQL()
-        ),
-        ";\n"
-    );
+                .getSQL()),
+        ";\n");
   }
 
   @Override
