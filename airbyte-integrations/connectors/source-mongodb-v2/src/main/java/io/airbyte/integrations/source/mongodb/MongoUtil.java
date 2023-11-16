@@ -210,7 +210,7 @@ public class MongoUtil {
    * : 1. User is in schemaless mode + catalog corresponds to schema enabled mode. 2. User is in
    * schema enabled mode + catalog corresponds to schemaless mode
    *
-   * @param isSchemaEnforced true if schema is enforced, false if in schemaless mode.
+   * @param isConfigSchemaEnforced true if schema is enforced, false if in schemaless mode.
    * @param catalog User's configured catalog.
    */
   public static void checkSchemaModeMismatch(final boolean isConfigSchemaEnforced,
@@ -225,7 +225,7 @@ public class MongoUtil {
     if (!allTrue && !allFalse) {
       throw new ConfigErrorException("Mismatch between schema enforcing mode in sync config(%b), catalog(%b) and saved state(%b) "
           .formatted(isConfigSchemaEnforced, isCatalogSchemaEnforcing, isStateSchemaEnforced)
-          + "Please refresh source schema and reset streams");
+          + "Please refresh source schema and reset streams.");
     }
   }
 

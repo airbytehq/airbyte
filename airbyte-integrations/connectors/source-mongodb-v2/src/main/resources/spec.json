@@ -71,7 +71,7 @@
               "schema_enforced": {
                 "title": "Schema Enforced",
                 "description": "When enabled, syncs will validate and structure records against the stream's schema.",
-                "default": false,
+                "default": true,
                 "type": "boolean",
                 "order": 7
               }
@@ -128,7 +128,7 @@
               "schema_enforced": {
                 "title": "Schema Enforced",
                 "description": "When enabled, syncs will validate and structure records against the stream's schema.",
-                "default": false,
+                "default": true,
                 "type": "boolean",
                 "order": 7
               }

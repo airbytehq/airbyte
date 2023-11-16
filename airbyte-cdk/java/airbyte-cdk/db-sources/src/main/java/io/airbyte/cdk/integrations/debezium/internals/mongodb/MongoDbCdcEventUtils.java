@@ -164,7 +164,7 @@ public class MongoDbCdcEventUtils {
   }
 
   private static void formatDocumentNoSchema(final Document document, final ObjectNode objectNode) {
-    objectNode.put(SCHEMALESS_MODE_DATA_FIELD, Jsons.jsonNode(Collections.emptyMap()));
+    objectNode.set(SCHEMALESS_MODE_DATA_FIELD, Jsons.jsonNode(Collections.emptyMap()));
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       readDocument(reader, (ObjectNode) objectNode.get(SCHEMALESS_MODE_DATA_FIELD), Collections.emptySet(), true);

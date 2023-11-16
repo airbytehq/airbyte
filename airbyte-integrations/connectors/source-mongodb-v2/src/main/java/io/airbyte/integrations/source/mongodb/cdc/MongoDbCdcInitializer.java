@@ -115,7 +115,7 @@ public class MongoDbCdcInitializer {
       // If the offset in the state is invalid, reset the state to the initial STATE
       stateManager.resetState(new MongoDbCdcState(initialDebeziumState, config.getEnforceSchema()));
     } else {
-      LOGGER.debug("Valid offset state discovered.  Updating state manager with retrieved CDC state {} {}...", cdcState.state(),
+      LOGGER.debug("Valid offset state discovered. Updating state manager with retrieved CDC state {} {}...", cdcState.state(),
           cdcState.schema_enforced());
       stateManager.updateCdcState(new MongoDbCdcState(cdcState.state(), cdcState.schema_enforced()));
     }
