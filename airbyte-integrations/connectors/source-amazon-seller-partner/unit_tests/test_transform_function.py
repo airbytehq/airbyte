@@ -3,21 +3,12 @@
 #
 
 import pytest
-from source_amazon_seller_partner.auth import AWSSignature
 from source_amazon_seller_partner.streams import SellerFeedbackReports
 
 
 def reports_stream(marketplace_id):
-    aws_signature = AWSSignature(
-        service="execute-api",
-        aws_access_key_id="AccessKeyId",
-        aws_secret_access_key="SecretAccessKey",
-        aws_session_token="SessionToken",
-        region="Mars",
-    )
     stream = SellerFeedbackReports(
         url_base="https://test.url",
-        aws_signature=aws_signature,
         replication_start_date="2010-01-25T00:00:00Z",
         replication_end_date="2017-02-25T00:00:00Z",
         marketplace_id=marketplace_id,
