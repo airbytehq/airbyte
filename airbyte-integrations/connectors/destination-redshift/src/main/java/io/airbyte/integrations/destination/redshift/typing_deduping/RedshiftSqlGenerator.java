@@ -49,8 +49,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
       "int8", "bigint",
       "bool", "boolean",
       "timestamptz", "timestamp with time zone",
-      "timetz", "time with time zone"
-  );
+      "timetz", "time with time zone");
 
   public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
