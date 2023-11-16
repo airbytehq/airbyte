@@ -4,7 +4,7 @@
 
 import copy
 from base64 import standard_b64encode
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Tuple, Type
 
 import pendulum
 import requests
@@ -27,6 +27,7 @@ from .reports.reports import (
     ProductGroupReport,
     ProductGroupTargetingReport,
     ProductItemReport,
+    CustomReport,
 )
 from .streams import (
     AdAccountAnalytics,
@@ -154,4 +155,20 @@ class SourcePinterest(AbstractSource):
             ProductGroupTargetingReport(ad_accounts, config=report_config),
             KeywordReport(ad_accounts, config=report_config),
             ProductItemReport(ad_accounts, config=report_config),
-        ]
+        ] + self.get_custom_report_streams(ad_accounts, config=report_config)
+
+    def get_custom_report_streams(self, parent, config: dict) -> List[Type[Stream]]:
+        """return custom report streams"""
+        custom_streams = []
+        for report_config in config.get('custom_reports', []):
+            report_config['authenticator'] = config['authenticator']
+            start_date = report_config.get('start_date')
+            if not start_date:
+                report_config['start_date'] = config.get('start_date')
+            report_config = self._validate_and_transform(report_config)
+            stream = CustomReport(
+                parent=parent,
+                config=report_config,
+            )
+            custom_streams.append(stream)
+        return custom_streams

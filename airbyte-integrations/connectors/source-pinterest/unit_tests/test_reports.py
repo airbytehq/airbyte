@@ -1,12 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import copy
 import responses
 from source_pinterest import SourcePinterest
 from source_pinterest.utils import get_analytics_columns
 from unit_tests.test_source import setup_responses
 
+import os
+os.environ["REQUEST_CACHE_PATH"] = '/tmp'
 
 @responses.activate
 def test_request_body_json(analytics_report_stream, date_range):
@@ -61,4 +63,25 @@ def test_streams(test_config):
     source = SourcePinterest()
     streams = source.streams(test_config)
     expected_streams_number = 32
+    assert len(streams) == expected_streams_number
+
+@responses.activate
+def test_custom_streams(test_config):
+    config = copy.deepcopy(test_config)
+    config['custom_reports'] = [{
+        "name": "vadim_report",
+        "level": "AD_GROUP",
+        "granularity": "MONTH",
+        "click_window_days": 30,
+        "engagement_window_days": 30,
+        "view_window_days": 30,
+        "conversion_report_time": "TIME_OF_CONVERSION",
+        "attribution_types": ["INDIVIDUAL", "HOUSEHOLD"],
+        "columns": ["ADVERTISER_ID", "AD_ACCOUNT_ID", "AD_GROUP_ID", "CTR", "IMPRESSION_2"],
+        "start_date": "2023-01-08"
+    }]
+    setup_responses()
+    source = SourcePinterest()
+    streams = source.streams(config)
+    expected_streams_number = 33
     assert len(streams) == expected_streams_number

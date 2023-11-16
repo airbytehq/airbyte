@@ -13,6 +13,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+import airbyte_cdk.sources.utils.casing as casing
 from source_pinterest.streams import PinterestAnalyticsStream
 from source_pinterest.utils import get_analytics_columns
 
@@ -260,3 +261,44 @@ class KeywordReport(PinterestAnalyticsTargetingReportStream):
     @property
     def level(self):
         return "KEYWORD"
+
+class CustomReport(PinterestAnalyticsTargetingReportStream):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self._custom_class_name = f"Custom_{self.config['name']}"
+        self._level = self.config['level']
+        self.granularity = self.config['granularity']
+        self.click_window_days = self.config['click_window_days']
+        self.engagement_window_days = self.config['engagement_window_days']
+        self.view_window_days = self.config['view_window_days']
+        self.conversion_report_time = self.config['conversion_report_time']
+        self.attribution_types = self.config['attribution_types']
+        self.columns = self.config['columns']
+
+    @property
+    def level(self):
+        return self._level
+    @property
+    def name(self) -> str:
+        """We override stream name to let the user change it via configuration."""
+        name = self._custom_class_name or self.__class__.__name__
+        return casing.camel_to_snake(name)
+
+    def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
+        """Return the body of the API request in JSON format."""
+        return {
+            "start_date": stream_slice["start_date"],
+            "end_date": stream_slice["end_date"],
+            "level": self.level,
+            "granularity": self.granularity,
+            "click_window_days": self.click_window_days,
+            "engagement_window_days": self.engagement_window_days,
+            "view_window_days": self.view_window_days,
+            "conversion_report_time": self.conversion_report_time,
+            "attribution_types": self.attribution_types,
+            "columns": self.columns,
+        }
+
+
