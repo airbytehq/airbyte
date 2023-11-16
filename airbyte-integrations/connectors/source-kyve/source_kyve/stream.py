@@ -10,8 +10,29 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import requests
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
+from source_kyve.utils import query_endpoint
 
 logger = logging.getLogger("airbyte")
+
+# 1: Arweave
+# 2: Irys
+# 3: KYVE Storage-Provider
+storage_provider_gateways = {
+    "1": [
+        "arweave.net/",
+        "arweave.dev/",
+        "c7fqu7cwmsb7dsibz2pqicn2gjwn35amtazqg642ettzftl3dk2a.arweave.net/",
+        "hkz3zh4oo432n4pxnvylnqjm7nbyeitajmeiwtkttijgyuvfc3sq.arweave.net/",
+    ],
+    "2": [
+        "arweave.net/",
+        "https://gateway.irys.xyz/",
+        "arweave.dev/",
+        "c7fqu7cwmsb7dsibz2pqicn2gjwn35amtazqg642ettzftl3dk2a.arweave.net/",
+        "hkz3zh4oo432n4pxnvylnqjm7nbyeitajmeiwtkttijgyuvfc3sq.arweave.net/",
+    ],
+    "3": ["https://storage.kyve.network/"],
+}
 
 
 class KYVEStream(HttpStream, IncrementalMixin):
@@ -98,13 +119,23 @@ class KYVEStream(HttpStream, IncrementalMixin):
             storage_id = bundle.get("storage_id")
             storage_provider_id = bundle.get("storage_provider_id")
 
-            # 1: Arweave, 2: Bundlr -> both are using arweave.net
-            # 3: KYVE-Storage-Provider -> storage.kyve.network
-            if storage_provider_id != "3":
-                # retrieve file from Arweave
-                response_from_storage_provider = requests.get(f"https://arweave.net/{storage_id}")
+            # Load endpoints for each storage_provider
+            gateway_endpoints = storage_provider_gateways.get(storage_provider_id)
+
+            # If storage_provider provides gateway_endpoints, query endpoint - otherwise stop syncing.
+            if gateway_endpoints is not None:
+                # Try to query each endpoint in the given order and break loop if query was successful
+                # If no endpoint is successful, skip the bundle
+                for endpoint in gateway_endpoints:
+                    response_from_storage_provider = query_endpoint(f"{endpoint}{storage_id}")
+                    if response_from_storage_provider is not None:
+                        break
+                else:
+                    logger.error(f"couldn't query any endpoint successfully with storage_id {storage_id}; skipping bundle...")
+                    continue
             else:
-                response_from_storage_provider = requests.get(f"https://storage.kyve.network/{storage_id}")
+                logger.error(f"storage provider with id {storage_provider_id} is not supported ")
+                raise Exception("unsupported storage provider")
 
             if not response_from_storage_provider.ok:
                 # TODO: add fallback to different storage provider in case resource is unavailable
