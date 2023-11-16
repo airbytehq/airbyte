@@ -34,6 +34,7 @@ instructions.
 To reinstall airbyte-ci, run the following command again:
 
 ```sh
+# from the root of the airbyte repository
 make tools.airbyte-ci.install
 ```
 
