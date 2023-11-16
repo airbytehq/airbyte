@@ -263,8 +263,6 @@ class UserInsights(DatetimeTransformerMixin, InstagramIncrementalStream):
             )
             self.should_exit_gracefully = True
 
-        complete_records = [self.transform(record) for record in complete_records]
-
         yield from complete_records
 
         # update state using IncrementalMixin
