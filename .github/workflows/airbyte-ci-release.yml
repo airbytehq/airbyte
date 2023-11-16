@@ -6,6 +6,8 @@ concurrency:
 
 on:
   push:
+    branches:
+      - "*"
     paths:
       - "airbyte-ci/connectors/pipelines/**"
   workflow_dispatch:
