@@ -30,7 +30,7 @@ You'll need the following information to configure the destination:
 | :----------------------------- | :------------------- | :---- |
 | Full Refresh Sync              | Yes                   |       |
 | Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                   | Deleting records via CDC is not supported (see issue [#29827](https://github.com/airbytehq/airbyte/issues/29827))  |
+| Incremental - Append + Deduped | Yes                   |  |
 | Namespaces                     | No                   |       |
 | Provide vector                 | Yes                  | Either from field are calculated during the load process |
 
@@ -83,6 +83,7 @@ As properties have to start will a lowercase letter in Weaviate, field names mig
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.10 | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Support deleting records for CDC sources |
 | 0.2.9 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
 | 0.2.8   | 2023-11-03 | [#32134](https://github.com/airbytehq/airbyte/pull/32134) | Improve test coverage |
 | 0.2.7   | 2023-11-03 | [#32134](https://github.com/airbytehq/airbyte/pull/32134) | Upgrade weaviate client library |
