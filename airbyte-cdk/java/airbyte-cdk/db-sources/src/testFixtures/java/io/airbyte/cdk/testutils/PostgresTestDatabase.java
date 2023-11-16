@@ -11,20 +11,16 @@ import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.string.Strings;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.io.FileUtils;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -41,6 +37,8 @@ import org.testcontainers.utility.MountableFile;
  * {@link PostgresTestDatabase} instance. These are dropped when the instance is closed.
  */
 public class PostgresTestDatabase implements AutoCloseable {
+
+  static private final Logger LOGGER = LoggerFactory.getLogger(PostgresTestDatabase.class);
 
   /**
    * Create a new {@link PostgresTestDatabase} instance.
@@ -61,32 +59,15 @@ public class PostgresTestDatabase implements AutoCloseable {
 
   private PostgresTestDatabase(PostgreSQLContainer<?> sharedContainer) {
     this.container = sharedContainer;
-
     this.suffix = Strings.addRandomSuffix("", "_", 10);
-    try {
-      this.tmpDir = Files.createTempDirectory("dir" + suffix);
-    } catch (final IOException e) {
-      throw new UncheckedIOException(e);
-    }
-    final var dir = this.tmpDir.toFile();
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> FileUtils.deleteQuietly(dir)));
-
     this.dbName = "db" + suffix;
     this.userName = "test_user" + suffix;
     this.password = "test_password" + suffix;
-
-    final Path script = this.tmpDir.resolve("create" + suffix + ".sql");
-    IOs.writeFile(script, String.format("""
-                                        CREATE DATABASE %s;
-                                        CREATE USER %s PASSWORD '%s';
-                                        GRANT ALL PRIVILEGES ON DATABASE %s TO %s;
-                                        ALTER USER %s WITH SUPERUSER;
-                                        """,
-        dbName,
-        userName, password,
-        dbName, userName,
-        userName));
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(script), sharedContainer);
+    execSQL(
+        String.format("CREATE DATABASE %s", dbName),
+        String.format("CREATE USER %s PASSWORD '%s'", userName, password),
+        String.format("GRANT ALL PRIVILEGES ON DATABASE %s TO %s", dbName, userName),
+        String.format("ALTER USER %s WITH SUPERUSER", userName));
 
     this.jdbcUrl = String.format(
         DatabaseDriver.POSTGRESQL.getUrlFormatString(),
@@ -103,12 +84,9 @@ public class PostgresTestDatabase implements AutoCloseable {
   }
 
   public final PostgreSQLContainer<?> container;
-  public final String dbName, userName, password, jdbcUrl;
+  public final String suffix, dbName, userName, password, jdbcUrl;
   public final DSLContext dslContext;
   public final Database database;
-
-  private final Path tmpDir;
-  private final String suffix;
 
   /**
    * Convenience method for building identifiers which are unique to this instance.
@@ -147,17 +125,38 @@ public class PostgresTestDatabase implements AutoCloseable {
     return new PostgresUtils.Certificate(caCert, clientCert, clientKey);
   }
 
+  private void execSQL(String... stmts) {
+    final List<String> cmd = Stream.concat(
+        Stream.of("psql", "-a", "-d", container.getDatabaseName(), "-U", container.getUsername()),
+        Stream.of(stmts).flatMap(stmt -> Stream.of("-c", stmt)))
+        .toList();
+    try {
+      LOGGER.debug("executing {}", Strings.join(cmd, " "));
+      final var exec = container.execInContainer(cmd.toArray(new String[0]));
+      LOGGER.debug("exit code: {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Drop the database owned by this instance.
+   */
+  public void dropDatabase() {
+    execSQL(String.format("DROP DATABASE %s", dbName));
+  }
+
+  /**
+   * Close resources held by this instance. This deliberately avoids dropping the database, which is
+   * really expensive in Postgres. This is because a DROP DATABASE in Postgres triggers a CHECKPOINT.
+   * Call {@link #dropDatabase} to explicitly drop the database.
+   */
   @Override
   public void close() {
     dslContext.close();
-    final Path script = this.tmpDir.resolve("drop" + suffix + ".sql");
-    IOs.writeFile(script, String.format("""
-                                        DROP USER %s;
-                                        DROP DATABASE %s;
-                                        """,
-        userName,
-        dbName));
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(script), container);
+    execSQL(String.format("DROP USER %s", userName));
   }
 
   static private class ContainerFactory {

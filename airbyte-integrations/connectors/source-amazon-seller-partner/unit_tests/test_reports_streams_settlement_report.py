@@ -5,7 +5,6 @@
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
-from source_amazon_seller_partner.auth import AWSSignature
 from source_amazon_seller_partner.streams import FlatFileSettlementV2Reports
 
 START_DATE_1 = "2022-05-25T00:00:00Z"
@@ -78,16 +77,8 @@ generated_reports_from_amazon = {
 @pytest.fixture
 def settlement_reports_stream():
     def _internal(start_date: str = START_DATE_1, end_date: str = END_DATE_1):
-        aws_signature = AWSSignature(
-            service="execute-api",
-            aws_access_key_id="AccessKeyId",
-            aws_secret_access_key="SecretAccessKey",
-            aws_session_token="SessionToken",
-            region="US",
-        )
         stream = FlatFileSettlementV2Reports(
             url_base="https://test.url",
-            aws_signature=aws_signature,
             replication_start_date=start_date,
             replication_end_date=end_date,
             marketplace_id="id",

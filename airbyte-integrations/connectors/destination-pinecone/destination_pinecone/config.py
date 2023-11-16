@@ -62,7 +62,7 @@ class ConfigModel(BaseModel):
     @staticmethod
     def remove_discriminator(schema: dict) -> None:
         """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
-        dpath.util.delete(schema, "properties/*/discriminator")
+        dpath.util.delete(schema, "properties/**/discriminator")
 
     @classmethod
     def schema(cls):
