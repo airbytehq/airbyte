@@ -1193,7 +1193,8 @@
               "value": {
                 "type": [
                   "integer",
-                  "string"
+                  "string",
+                  "boolean"
                 ]
               },
               "$valid": {

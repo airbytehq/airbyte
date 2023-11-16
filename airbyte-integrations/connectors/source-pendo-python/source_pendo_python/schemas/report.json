@@ -48,10 +48,13 @@
           "type": "object",
           "properties": {
             "appId": {
-              "type": [
-                "integer",
-                "string"
-              ]
+              "type": "array",
+              "items": {
+                "type": [
+                  "integer",
+                  "string"
+                ]
+              }
             },
             "pageId": {
               "type": "string"
