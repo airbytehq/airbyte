@@ -463,8 +463,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalAppendStream, Optional.empty(), "");
 
     assertEquals(
-        destinationHandler.getMinTimestampForSync(streamId).get(),
         Instant.parse("2023-01-02T00:00:00Z"),
+        destinationHandler.getMinTimestampForSync(streamId).get(),
         "When all raw records have non-null loaded_at, the min timestamp should be equal to the latest extracted_at");
 
     // If we insert another raw record with older extracted_at than the typed records, we should fetch a

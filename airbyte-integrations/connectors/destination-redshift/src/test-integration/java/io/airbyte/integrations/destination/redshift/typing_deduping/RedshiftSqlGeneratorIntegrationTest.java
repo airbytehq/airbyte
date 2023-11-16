@@ -44,7 +44,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
   private static DataSource dataSource;
   private static JdbcDatabase database;
-  private static String databaseName = "integrationtests";
+  private static String databaseName;
 
   @BeforeAll
   public static void setupJdbcDatasource() throws Exception {
@@ -71,7 +71,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
   @Override
   protected DestinationHandler<TableDefinition> getDestinationHandler() {
-    return new JdbcDestinationHandler(databaseName, database);
+    return new RedshiftDestinationHandler(databaseName, database);
   }
 
   @Override

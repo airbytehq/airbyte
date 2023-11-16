@@ -28,8 +28,8 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcDestinationHandler.class);
 
-  private final String databaseName;
-  private final JdbcDatabase jdbcDatabase;
+  protected final String databaseName;
+  protected final JdbcDatabase jdbcDatabase;
 
   public JdbcDestinationHandler(final String databaseName,
                                 final JdbcDatabase jdbcDatabase) {
