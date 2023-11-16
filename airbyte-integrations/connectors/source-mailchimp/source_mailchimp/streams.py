@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
+import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -80,6 +81,9 @@ class MailChimpStream(HttpStream, ABC):
 class IncrementalMailChimpStream(MailChimpStream, ABC):
     state_checkpoint_interval = math.inf
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     @property
     @abstractmethod
     def cursor_field(self) -> str:
@@ -123,6 +127,26 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         default_params = {"sort_field": self.sort_field, "sort_dir": "ASC", **stream_slice}
         params.update(default_params)
         return params
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        
+        response = super().parse_response(response, **kwargs)
+        start_date = kwargs.get("start_date")
+
+        if start_date:
+        # Filter out records that are older than the start date
+        # Mailchimp endpoints do not always support filtering by date,
+        # so we should filter out records manually as a fallback
+            for record in response:
+                parsed_date = pendulum.parse(record.get(self.cursor_field))
+                if parsed_date >= start_date:
+                    yield record
+        # If no start date is provided, return all records
+        else:
+            for record in response:
+                yield record
+        
+        
 
 
 class MailChimpListSubStream(IncrementalMailChimpStream):
