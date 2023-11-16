@@ -5,6 +5,6 @@ tests:
   spec:
     - spec_path: "src/test-integration/resources/expected_spec.json"
       config_path: "src/test-integration/resources/dummy_config.json"
-    - spec_path: "src/test-integration/resources/expected_strict_encrypt_spec.json"
+    - spec_path: "src/test-integration/resources/expected_cloud_deployment_spec.json"
       config_path: "src/test-integration/resources/dummy_config.json"
       deployment_mode: cloud
