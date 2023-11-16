@@ -169,6 +169,8 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
                 quotedCursorField, quotedCursorField);
           }
         }
+        LOGGER.info("Sql to query is: " + sql);
+        LOGGER.info("xiaohan test: pkinfo is: " + pkInfo);
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         final MysqlType cursorFieldType = pkInfo.fieldType();
         sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, pkLoadStatus.getPkVal());

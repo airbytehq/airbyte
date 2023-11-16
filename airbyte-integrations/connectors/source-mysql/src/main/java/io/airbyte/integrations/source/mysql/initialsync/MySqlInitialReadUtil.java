@@ -124,6 +124,7 @@ public class MySqlInitialReadUtil {
     if (!initialLoadStreams.streamsForInitialLoad().isEmpty()) {
       LOGGER.info("Streams to be synced via primary key : {}", initialLoadStreams.streamsForInitialLoad().size());
       LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(initialLoadStreams.streamsForInitialLoad()));
+      LOGGER.info("xiaohan: initialLoadStreams: " + initialLoadStreams);
       final MySqlInitialLoadStateManager initialLoadStateManager =
           new MySqlInitialLoadGlobalStateManager(initialLoadStreams,
               initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
@@ -197,8 +198,10 @@ public class MySqlInitialReadUtil {
     // key load in progress.
     final Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToInitialLoadStatus = new HashMap<>();
     if (airbyteStateMessage != null && airbyteStateMessage.getGlobal() != null && airbyteStateMessage.getGlobal().getStreamStates() != null) {
+      LOGGER.info("airbyteStateMessage: " + airbyteStateMessage);
       airbyteStateMessage.getGlobal().getStreamStates().forEach(stateMessage -> {
         final JsonNode streamState = stateMessage.getStreamState();
+        LOGGER.info("streamState: " + streamState);
         final StreamDescriptor streamDescriptor = stateMessage.getStreamDescriptor();
         if (streamState == null || streamDescriptor == null) {
           return;
