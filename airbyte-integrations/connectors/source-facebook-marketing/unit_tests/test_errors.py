@@ -10,12 +10,12 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_facebook_marketing.api import API
-from source_facebook_marketing.streams import AdAccount, AdCreatives, AdsInsights
+from source_facebook_marketing.streams import AdAccounts, AdCreatives, AdsInsights
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 account_id = "unknown_account"
-some_config = {"start_date": "2021-01-23T00:00:00Z", "account_id": account_id, "access_token": "unknown_token"}
+some_config = {"start_date": "2021-01-23T00:00:00Z", "account_ids": f"{account_id}", "access_token": "unknown_token"}
 base_url = f"{FacebookSession.GRAPH}/{FB_API_VERSION}/"
 act_url = f"{base_url}act_{account_id}/"
 
@@ -282,13 +282,14 @@ class TestRealErrors:
             ),
         ],
     )
-    def test_retryable_error(self, some_config, requests_mock, name, retryable_error_response):
+    def test_retryable_error(self, requests_mock, name, retryable_error_response):
         """Error once, check that we retry and not fail"""
         requests_mock.reset_mock()
         requests_mock.register_uri("GET", f"{act_url}", [retryable_error_response, ad_account_response])
         requests_mock.register_uri("GET", f"{act_url}adcreatives", [retryable_error_response, ad_creative_response])
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
+        accounts = some_config["account_ids"].split(",")
+        api = API(account_ids=accounts, access_token=some_config["access_token"], page_size=100)
         stream = AdCreatives(api=api, include_deleted=False)
         ad_creative_records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
@@ -301,7 +302,8 @@ class TestRealErrors:
     def test_config_error_during_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during account info read"""
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
+        accounts = some_config["account_ids"].split(",")
+        api = API(account_ids=accounts, access_token=some_config["access_token"], page_size=100)
         stream = AdCreatives(api=api, include_deleted=False)
 
         requests_mock.register_uri("GET", f"{act_url}", [config_error_response, ad_account_response])
@@ -318,7 +320,8 @@ class TestRealErrors:
     def test_config_error_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
+        accounts = some_config["account_ids"].split(",")
+        api = API(account_ids=accounts, access_token=some_config["access_token"], page_size=100)
         stream = AdCreatives(api=api, include_deleted=False)
 
         requests_mock.register_uri("GET", f"{act_url}", [ad_account_response])
@@ -335,7 +338,8 @@ class TestRealErrors:
     def test_config_error_insights_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
+        accounts = some_config["account_ids"].split(",")
+        api = API(account_ids=accounts, access_token=some_config["access_token"], page_size=100)
         stream = AdsInsights(
             api=api,
             start_date=datetime(2010, 1, 1),
@@ -357,7 +361,8 @@ class TestRealErrors:
     def test_config_error_insights_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
 
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
+        accounts = some_config["account_ids"].split(",")
+        api = API(account_ids=accounts, access_token=some_config["access_token"], page_size=100)
         stream = AdsInsights(
             api=api,
             start_date=datetime(2010, 1, 1),
@@ -411,14 +416,15 @@ class TestRealErrors:
             ]
         As a workaround for this case we can retry the API call excluding `owner` from `?fields=` GET query param.
         """
-        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
-        stream = AdAccount(api=api)
+        accounts = some_config["account_ids"].split(",")
+        api = API(account_ids=accounts, access_token=some_config["access_token"], page_size=100)
+        stream = AdAccounts(api=api)
 
         business_user = {"account_id": account_id, "business": {"id": "1", "name": "TEST"}}
         requests_mock.register_uri("GET", f"{base_url}me/business_users", status_code=200, json=business_user)
 
-        assigend_users = {"account_id": account_id, "tasks": ["TASK"]}
-        requests_mock.register_uri("GET", f"{act_url}assigned_users", status_code=200, json=assigend_users)
+        assigned_users = {"account_id": account_id, "tasks": ["TASK"]}
+        requests_mock.register_uri("GET", f"{act_url}assigned_users", status_code=200, json=assigned_users)
 
         success_response = {"status_code": 200, "json": {"account_id": account_id}}
         requests_mock.register_uri("GET", f"{act_url}", [failure_response, success_response])

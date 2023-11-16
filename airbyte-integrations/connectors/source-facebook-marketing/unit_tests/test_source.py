@@ -26,7 +26,7 @@ from .utils import command_check
 @pytest.fixture(name="config")
 def config_fixture(requests_mock):
     config = {
-        "account_id": "123",
+        "account_ids": "123",
         "access_token": "TOKEN",
         "start_date": "2019-10-10T00:00:00Z",
         "end_date": "2020-10-10T00:00:00Z",

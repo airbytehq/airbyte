@@ -23,7 +23,7 @@ from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
     Activities,
-    AdAccount,
+    AdAccounts,
     AdCreatives,
     Ads,
     AdSets,
@@ -94,18 +94,17 @@ class SourceFacebookMarketing(AbstractSource):
             if config.start_date and config.end_date < config.start_date:
                 return False, "End date must be equal or after start date."
 
-            api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
+            account_id_list = config.account_ids.split(',') if config.account_ids else []
+            api = API(account_ids=account_id_list, access_token=config.access_token, page_size=config.page_size)
 
-            record_iterator = AdAccount(api=api).read_records(sync_mode=SyncMode.full_refresh, stream_state={})
-            account_info = list(record_iterator)[0]
-
-            if account_info.get("is_personal"):
-                message = (
-                    "The personal ad account you're currently using is not eligible "
-                    "for this operation. Please switch to a business ad account."
-                )
-                return False, message
-
+            record_iterator = AdAccounts(api=api).read_records(sync_mode=SyncMode.full_refresh, stream_state={})
+            for account_info in list(record_iterator):
+                if account_info.get("is_personal"):
+                    message = (
+                        "The personal ad account you're currently using is not eligible "
+                        "for this operation. Please switch to a business ad account."
+                    )
+                    return False, message
         except AirbyteTracedException as e:
             return False, f"{e.message}. Full error: {e.internal_message}"
 
@@ -131,7 +130,8 @@ class SourceFacebookMarketing(AbstractSource):
             config.start_date = validate_start_date(config.start_date)
             config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
+        account_id_list = config.account_ids.split(',') if config.account_ids else []
+        api = API(account_ids=account_id_list, access_token=config.access_token, page_size=config.page_size)
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
         report_start_date = config.start_date or pendulum.now().add(years=-2)
@@ -140,7 +140,7 @@ class SourceFacebookMarketing(AbstractSource):
             api=api, start_date=report_start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
         )
         streams = [
-            AdAccount(api=api),
+            AdAccounts(api=api),
             AdSets(
                 api=api,
                 start_date=config.start_date,

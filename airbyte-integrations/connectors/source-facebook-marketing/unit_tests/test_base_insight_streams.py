@@ -13,8 +13,9 @@ from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJo
 
 
 @pytest.fixture(name="api")
-def api_fixture(mocker):
+def api_fixture(mocker, account_id):
     api = mocker.Mock()
+    api.accounts = [mocker.Mock(account_id=account_id)]
     api.api.ads_insights_throttle = (0, 0)
     return api
 
@@ -153,7 +154,7 @@ class TestBaseInsightsStream:
         assert actual_state == state
 
     def test_stream_slices_no_state(self, api, async_manager_mock, start_date):
-        """Stream will use start_date when there is not state"""
+        """Stream will use start_date when there is no state"""
         end_date = start_date + duration(weeks=2)
         stream = AdsInsights(api=api, start_date=start_date, end_date=end_date, insights_lookback_window=28)
         async_manager_mock.completed_jobs.return_value = [1, 2, 3]
@@ -164,7 +165,7 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - start_date).days + 1
+        assert len(generated_jobs) == len(api.accounts) * ((end_date - start_date).days + 1)
         assert generated_jobs[0].interval.start == start_date.date()
         assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
 
@@ -181,7 +182,7 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - start_date).days + 1
+        assert len(generated_jobs) == len(api.accounts) * ((end_date - start_date).days + 1)
         assert generated_jobs[0].interval.start == start_date.date()
         assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
 
@@ -199,7 +200,7 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - cursor_value).days
+        assert len(generated_jobs) == len(api.accounts) * (end_date - cursor_value).days
         assert generated_jobs[0].interval.start == cursor_value.date() + duration(days=1)
         assert generated_jobs[1].interval.start == cursor_value.date() + duration(days=2)
 
@@ -218,7 +219,7 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - start_date).days + 1
+        assert len(generated_jobs) == len(api.accounts) * ((end_date - start_date).days + 1)
         assert generated_jobs[0].interval.start == start_date.date()
         assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
 
@@ -239,7 +240,7 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - cursor_value).days - 2, "should be 2 slices short because of state"
+        assert len(generated_jobs) == len(api.accounts) * ((end_date - cursor_value).days - 2), "should be 2 slices short because of state"
         assert generated_jobs[0].interval.start == cursor_value.date() + duration(days=2)
         assert generated_jobs[1].interval.start == cursor_value.date() + duration(days=4)
 

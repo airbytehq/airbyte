@@ -6,12 +6,14 @@ import json
 import logging
 from dataclasses import dataclass
 from time import sleep
+from typing import List
 
 import backoff
 import pendulum
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
+from facebook_business.adobjects.user import User
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.common import retry_pattern
@@ -173,8 +175,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_id: str, access_token: str, page_size: int = 100):
-        self._account_id = account_id
+    def __init__(self, account_ids: List[str], access_token: str, page_size: int = 100):
+        self._account_ids = account_ids
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         # adding the default page size from config to the api base class
@@ -182,11 +184,14 @@ class API:
         setattr(self.api, "default_page_size", page_size)
         # set the default API client to Facebook lib.
         FacebookAdsApi.set_default_api(self.api)
+        self.me = User(fbid='me')
 
     @cached_property
-    def account(self) -> AdAccount:
+    def accounts(self) -> List[AdAccount]:
         """Find current account"""
-        return self._find_account(self._account_id)
+        if not self._account_ids:
+            return list(self.me.get_ad_accounts())
+        return [self._find_account(account_id) for account_id in self._account_ids]
 
     @staticmethod
     def _find_account(account_id: str) -> AdAccount:
