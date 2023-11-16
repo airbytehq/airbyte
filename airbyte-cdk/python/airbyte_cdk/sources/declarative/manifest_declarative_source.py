@@ -98,10 +98,6 @@ class ManifestDeclarativeSource(DeclarativeSource):
             )
             for stream_config in self._stream_configs(self._source_config)
         ]
-
-        for stream in source_streams:
-            # make sure the log level is always applied to the stream's logger
-            self._apply_log_level_to_stream_logger(self.logger, stream)
         return source_streams
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:

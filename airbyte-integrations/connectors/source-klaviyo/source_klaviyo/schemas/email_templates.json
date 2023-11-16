@@ -2,28 +2,25 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "object": {
-      "type": "string"
+    "type": { "type": "string" },
+    "id": { "type": "string" },
+    "updated": { "type": ["null", "string"], "format": "date-time" },
+    "attributes": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string" },
+        "editor_type": { "type": ["null", "string"] },
+        "html": { "type": "string" },
+        "text": { "type": ["null", "string"] },
+        "created": { "type": ["null", "string"], "format": "date-time" },
+        "updated": { "type": ["null", "string"], "format": "date-time" },
+        "company_id": { "type": ["null", "string"] }
+      }
     },
-    "id": {
-      "type": "string"
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "html": {
-      "type": ["null", "string"]
-    },
-    "is_writeable": {
-      "type": ["null", "boolean"]
-    },
-    "created": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "updated": {
-      "type": "string",
-      "format": "date-time"
+    "links": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     }
   }
 }

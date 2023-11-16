@@ -10,37 +10,6 @@ from pydantic import BaseModel, Extra, Field
 from typing_extensions import Literal
 
 
-class AddedFieldDefinition(BaseModel):
-    type: Literal['AddedFieldDefinition']
-    path: List[str] = Field(
-        ...,
-        description='List of strings defining the path where to add the value on the record.',
-        examples=[['segment_id'], ['metadata', 'segment_id']],
-        title='Path',
-    )
-    value: str = Field(
-        ...,
-        description="Value of the new field. Use {{ record['existing_field'] }} syntax to refer to other fields in the record.",
-        examples=[
-            "{{ record['updates'] }}",
-            "{{ record['MetaData']['LastUpdatedTime'] }}",
-            "{{ stream_partition['segment_id'] }}",
-        ],
-        title='Value',
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
-
-
-class AddFields(BaseModel):
-    type: Literal['AddFields']
-    fields: List[AddedFieldDefinition] = Field(
-        ...,
-        description='List of transformations (path and corresponding value) that will be added to the record.',
-        title='Fields',
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
-
-
 class AuthFlowType(Enum):
     oauth2_0 = 'oauth2.0'
     oauth1_0 = 'oauth1.0'
@@ -551,6 +520,11 @@ class OffsetIncrement(BaseModel):
         examples=[100, "{{ config['page_size'] }}"],
         title='Limit',
     )
+    inject_on_first_request: Optional[bool] = Field(
+        False,
+        description='Using the `offset` with value `0` during the first request',
+        title='Inject Offset',
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -567,6 +541,11 @@ class PageIncrement(BaseModel):
         description='Index of the first page to request.',
         examples=[0, 1],
         title='Start From Page',
+    )
+    inject_on_first_request: Optional[bool] = Field(
+        False,
+        description='Using the `page number` with value defined by `start_from_page` during the first request',
+        title='Inject Page Number',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -684,6 +663,13 @@ class LegacySessionTokenAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class ValueType(Enum):
+    string = 'string'
+    number = 'number'
+    integer = 'integer'
+    boolean = 'boolean'
+
+
 class WaitTimeFromHeader(BaseModel):
     type: Literal['WaitTimeFromHeader']
     header: str = Field(
@@ -720,6 +706,42 @@ class WaitUntilTimeFromHeader(BaseModel):
         description='Optional regex to apply on the header to extract its value. The regex should define a capture group defining the wait time.',
         examples=['([-+]?\\d+)'],
         title='Extraction Regex',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
+class AddedFieldDefinition(BaseModel):
+    type: Literal['AddedFieldDefinition']
+    path: List[str] = Field(
+        ...,
+        description='List of strings defining the path where to add the value on the record.',
+        examples=[['segment_id'], ['metadata', 'segment_id']],
+        title='Path',
+    )
+    value: str = Field(
+        ...,
+        description="Value of the new field. Use {{ record['existing_field'] }} syntax to refer to other fields in the record.",
+        examples=[
+            "{{ record['updates'] }}",
+            "{{ record['MetaData']['LastUpdatedTime'] }}",
+            "{{ stream_partition['segment_id'] }}",
+        ],
+        title='Value',
+    )
+    value_type: Optional[ValueType] = Field(
+        None,
+        description='Type of the value. If not specified, the type will be inferred from the value.',
+        title='Value Type',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
+class AddFields(BaseModel):
+    type: Literal['AddFields']
+    fields: List[AddedFieldDefinition] = Field(
+        ...,
+        description='List of transformations (path and corresponding value) that will be added to the record.',
+        title='Fields',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 

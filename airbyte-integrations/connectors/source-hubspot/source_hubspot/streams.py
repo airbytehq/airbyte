@@ -1574,6 +1574,8 @@ class Engagements(EngagementsABC, IncrementalStream):
     - EngagementsAll which extracts all records, but supports filter on connector side
     """
 
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
     @property
     def url(self):
         return "/engagements/v1/engagements/paged"

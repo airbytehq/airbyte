@@ -6,10 +6,6 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
 import ru.vyarus.gradle.plugin.python.task.PythonTask
 
-abstract class AirbytePythonExtension {
-    abstract String moduleDirectory
-}
-
 class Helpers {
     static addTestTaskIfTestFilesFound(Project project, String testFilesDirectory, String taskName, taskDependencies) {
         """
@@ -32,8 +28,8 @@ class Helpers {
 
         boolean requiresTasks = false
         if (project.file(testFilesDirectory).exists()) {
-            project.projectDir.toPath().resolve(testFilesDirectory).traverse(type: FileType.FILES,
-                    nameFilter: ~/(^test_.*|.*_test)\.py$/) {file ->
+            def testDir = project.projectDir.toPath().resolve(testFilesDirectory)
+            testDir.traverse(type: FileType.FILES, nameFilter: ~/(^test_.*|.*_test)\.py$/) {file ->
                 requiresTasks = true
                 // If a file is found, terminate the traversal, thus causing this task to be declared at most once
                 return FileVisitResult.TERMINATE
@@ -43,7 +39,7 @@ class Helpers {
             return
         }
 
-        def coverageTask = project.tasks.register("_${taskName}Coverage", PythonTask) {
+        def coverageTask = project.tasks.register(taskName, PythonTask) {
             def dataFile = "${testFilesDirectory}/.coverage.${taskName}"
             def rcFile = project.rootProject.file('pyproject.toml').absolutePath
             def testConfig = project.file('pytest.ini').exists() ? 'pytest.ini' : project.rootProject.file('pyproject.toml').absolutePath
@@ -54,57 +50,19 @@ class Helpers {
         coverageTask.configure {
             dependsOn taskDependencies
         }
-        // generation of coverage report is optional and we should skip it if tests are empty
-
-        def testTask = project.tasks.register(taskName, Exec){
-            def dataFile = "${testFilesDirectory}/.coverage.${taskName}"
-            def rcFile = project.rootProject.file('pyproject.toml').absolutePath
-            def coverageFormat = project.hasProperty('reports_folder') ? 'xml' : 'report'
-            def outputArg = project.hasProperty('reports_folder') ? "-otemp_coverage.xml" : "--skip-empty"
-
-            commandLine = ".venv/bin/python"
-            args "-m", "coverage", coverageFormat, "--data-file=${dataFile}", "--rcfile=${rcFile}", outputArg
-            setIgnoreExitValue true
-
-            doLast {
-                // try to move a generated report to custom report folder if needed
-                if (project.file('temp_coverage.xml').exists() && project.hasProperty('reports_folder')) {
-                    project.file('temp_coverage.xml').renameTo(project.file("${project.reports_folder}/coverage.xml"))
-                }
-            }
-        }
-        testTask.configure {
-            dependsOn coverageTask
-        }
-    }
-
-    static boolean isPyenvInPath() {
-        String path = System.getenv('PATH')
-        if (path == null || path.empty) {
-            return false
-        }
-        for (final String p : path.split(File.pathSeparator)) {
-            for (final String d : p.split(File.separator)) {
-                if (".pyenv" == d) {
-                    return true
-                }
-            }
-        }
-        return false
     }
 }
 
 class AirbytePythonPlugin implements Plugin<Project> {
 
     void apply(Project project) {
-        def extension = project.extensions.create('airbytePython', AirbytePythonExtension)
 
         def venvDirectoryName = '.venv'
 
         // Add a task that allows cleaning up venvs to every python project
         def cleanPythonVenv = project.tasks.register('cleanPythonVenv', Exec) {
             commandLine 'rm'
-            args '-rf', "${project.projectDir.absolutePath}/${venvDirectoryName}", "${project.projectDir.absolutePath}/.pytest_cache"
+            args '-rf', "${project.projectDir.absolutePath}/${venvDirectoryName}"
         }
         project.tasks.named('clean').configure {
             dependsOn cleanPythonVenv
@@ -115,54 +73,44 @@ class AirbytePythonPlugin implements Plugin<Project> {
         // Configure gradle python plugin.
         project.python {
             envPath = venvDirectoryName
-            if (Helpers.isPyenvInPath()) {
-                // When using pyenv, prefer 'python' instead of 'python3'.
-                pythonBinary = 'python'
+            minPythonVersion '3.10'
+
+            // Amazon Linux support.
+            // The airbyte-ci tool runs gradle tasks in AL2023-based containers.
+            // In AL2023, `python3` is necessarily v3.9, and later pythons need to be installed and named explicitly.
+            // See https://github.com/amazonlinux/amazon-linux-2023/issues/459 for details.
+            try {
+                if ("python3.11 --version".execute().waitFor() == 0) {
+                    // python3.11 definitely exists at this point, use it instead of 'python3'.
+                    pythonBinary "python3.11"
+                }
+            } catch (IOException _) {
+                // Swallow exception if python3.11 is not installed.
             }
-            minPythonVersion = '3.9'
-            scope = 'VIRTUALENV'
+            // Pyenv support.
+            try {
+                def pyenvRoot = "pyenv root".execute()
+                def pyenvLatest = "pyenv latest ${minPythonVersion}".execute()
+                // Pyenv definitely exists at this point: use 'python' instead of 'python3' in all cases.
+                pythonBinary "python"
+                if (pyenvRoot.waitFor() == 0 && pyenvLatest.waitFor() == 0) {
+                    pythonPath "${pyenvRoot.text.trim()}/versions/${pyenvLatest.text.trim()}/bin"
+                }
+            } catch (IOException _) {
+                // Swallow exception if pyenv is not installed.
+            }
+
+            scope 'VIRTUALENV'
             installVirtualenv = true
-            pip 'pip:21.3.1'
+            pip 'pip:23.2.1'
             pip 'mccabe:0.6.1'
             // https://github.com/csachs/pyproject-flake8/issues/13
             pip 'flake8:4.0.1'
             // flake8 doesn't support pyproject.toml files
             // and thus there is the wrapper "pyproject-flake8" for this
             pip 'pyproject-flake8:0.0.1a2'
-            pip 'black:22.3.0'
-            pip 'mypy:1.4.1'
-            pip 'isort:5.6.4'
             pip 'pytest:6.2.5'
             pip 'coverage[toml]:6.3.1'
-        }
-
-        def isortReport = project.tasks.register('isortReport', PythonTask) {
-            module = "isort"
-            command = "--settings-file=${project.rootProject.file('pyproject.toml').absolutePath} --diff --quiet ./"
-            outputPrefix = ''
-        }
-
-        def blackReport = project.tasks.register('blackReport', PythonTask) {
-            module = "black"
-            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} --diff --quiet ./"
-            outputPrefix = ''
-        }
-
-        def flakeCheck = project.tasks.register('flakeCheck', PythonTask) {
-            module = "pflake8"
-            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
-        }
-
-        def flakeReport = project.tasks.register('flakeReport', PythonTask) {
-            module = "pflake8"
-            command = "--exit-zero --config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
-            outputPrefix = ''
-        }
-
-        def mypyReport = project.tasks.register("mypyReport", Exec){
-            commandLine = ".venv/bin/python"
-            args "-m", "mypy", "--config-file", "${project.rootProject.file('pyproject.toml').absolutePath}", "./"
-            setIgnoreExitValue true
         }
 
         // Attempt to install anything in requirements.txt.
@@ -180,11 +128,19 @@ class AirbytePythonPlugin implements Plugin<Project> {
             project.tasks.register('installLocalReqs', PythonTask) {
                 module = "pip"
                 command = "install .[dev,tests]"
+                inputs.file('setup.py')
+                outputs.file('build/installedlocalreqs.txt')
             }
         } else {
-            throw new GradleException('Error: Python module lacks requirement.txt and setup.py')
+            return
         }
+
         def installLocalReqs = project.tasks.named('installLocalReqs')
+
+        def flakeCheck = project.tasks.register('flakeCheck', PythonTask) {
+            module = "pflake8"
+            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
+        }
 
         def installReqs = project.tasks.register('installReqs', PythonTask) {
             module = "pip"
@@ -211,102 +167,19 @@ class AirbytePythonPlugin implements Plugin<Project> {
             dependsOn installReqs
         }
 
-        if (extension.hasProperty('moduleDirectory') && extension.moduleDirectory != null) {
-            def mypyCheck = project.tasks.register('mypyCheck', PythonTask) {
-                module = "mypy"
-                command = "-m ${extension.moduleDirectory} --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
-            }
-            mypyCheck.configure {
-                dependsOn installTestReqs
-            }
-            project.tasks.named('check').configure {
-                dependsOn mypyCheck
-            }
-        }
-
-        Helpers.addTestTaskIfTestFilesFound(project, 'unit_tests', 'unitTest', installTestReqs)
+        Helpers.addTestTaskIfTestFilesFound(project, 'unit_tests', 'testPython', installTestReqs)
         project.tasks.named('check').configure {
-            dependsOn project.tasks.matching { it.name == 'unitTest' }
+            dependsOn project.tasks.matching { it.name == 'testPython' }
         }
 
-        Helpers.addTestTaskIfTestFilesFound(project, 'integration_tests', 'customIntegrationTests', installTestReqs)
-
-        def airbytePythonReport = project.tasks.register('airbytePythonReport') {
-            doLast {
-               if (project.hasProperty('reports_folder')) {
-                      // Gradles adds some log messages to files and we must remote them
-                      // examples of these lines:
-                      // :airbyte-integrations:connectors: ...
-                      // [python] .venv/bin/python -m black  ...
-                      project.fileTree(project.reports_folder).visit { FileVisitDetails details ->
-                          project.println "Found the report file: " + details.file.path
-                          def tempFile = project.file(details.file.path + ".1")
-                          details.file.eachLine { line ->
-                                if ( !line.startsWith(":airbyte") && !line.startsWith("[python]") ) {
-                                    tempFile << line + "\n"
-                                }
-                          }
-                          if (!tempFile.exists()) {
-                                // generate empty file
-                                tempFile << "\n"
-                          }
-                          tempFile.renameTo(details.file)
-
-                      }
-               }
-            }
+        Helpers.addTestTaskIfTestFilesFound(project, 'integration_tests', 'integrationTestPython', installTestReqs)
+        def integrationTestTasks = project.tasks.matching { it.name == 'integrationTestPython' }
+        integrationTestTasks.configureEach {
+            dependsOn project.tasks.named('assemble')
+            mustRunAfter project.tasks.named('check')
         }
-        airbytePythonReport.configure {
-            dependsOn blackReport
-            dependsOn isortReport
-            dependsOn flakeReport
-            dependsOn mypyReport
-        }
-
-        // saves tools reports to a custom folder
-        def reportsFolder = project.hasProperty('reports_folder') ? project.reports_folder : ''
-        if ( reportsFolder != '' ) {
-
-            // clean reports folders
-            project.file(reportsFolder).deleteDir()
-            project.file(reportsFolder).mkdirs()
-
-            blackReport.configure {
-                it.logging.addStandardOutputListener(new StandardOutputListener() {
-                    @Override
-                    void onOutput(CharSequence charSequence) {
-                        project.file("$reportsFolder/black.diff") << charSequence
-                    }
-                })
-            }
-            isortReport.configure {
-                it.logging.addStandardOutputListener(new StandardOutputListener() {
-                    @Override
-                    void onOutput(CharSequence charSequence) {
-                        project.file("$reportsFolder/isort.diff") << charSequence
-                    }
-                })
-            }
-
-            flakeReport.configure {
-                it.logging.addStandardOutputListener(new StandardOutputListener() {
-                    @Override
-                    void onOutput(CharSequence charSequence) {
-                        project.file("$reportsFolder/flake.txt") << charSequence
-                    }
-                })
-            }
-
-            mypyReport.configure {
-                dependsOn installReqs
-                it.logging.addStandardOutputListener(new StandardOutputListener() {
-                    @Override
-                    void onOutput(CharSequence charSequence) {
-                        project.file("$reportsFolder/mypy.log") << charSequence
-                    }
-                })
-            }
-
+        project.tasks.named('build').configure {
+            dependsOn integrationTestTasks
         }
     }
 }

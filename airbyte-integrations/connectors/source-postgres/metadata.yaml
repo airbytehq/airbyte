@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 300
   allowedHosts:
     hosts:
       - ${host}
@@ -6,26 +9,22 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
-  dockerImageTag: 3.1.9
-  maxSecondsBetweenMessages: 7200
+  dockerImageTag: 3.2.21
   dockerRepository: airbyte/source-postgres
+  documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   githubIssueLabel: source-postgres
   icon: postgresql.svg
   license: ELv2
+  maxSecondsBetweenMessages: 7200
   name: Postgres
   registries:
     cloud:
-      dockerRepository: airbyte/source-postgres-strict-encrypt
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
+  supportLevel: certified
   tags:
     - language:java
     - language:python
-  ab_internal:
-    sl: 300
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

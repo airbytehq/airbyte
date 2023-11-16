@@ -1,12 +1,18 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 300
   allowedHosts:
     hosts:
       - "*.s3.amazonaws.com"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: file
   connectorType: source
   definitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
-  dockerImageTag: 4.0.4
+  dockerImageTag: 4.2.1
   dockerRepository: airbyte/source-s3
+  documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   githubIssueLabel: source-s3
   icon: s3.svg
   license: ELv2
@@ -17,19 +23,19 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/s3
-  tags:
-    - language:python
   releases:
     breakingChanges:
       4.0.0:
-        message: "UX improvement, multi-stream support and deprecation of some parsing features"
+        message:
+          UX improvement, multi-stream support and deprecation of some parsing
+          features
         upgradeDeadline: "2023-10-05"
       4.0.4:
-        message: "Following 4.0.0 config change, we are eliminating the `streams.*.file_type` field which was redundant with `streams.*.format`"
+        message:
+          Following 4.0.0 config change, we are eliminating the `streams.*.file_type`
+          field which was redundant with `streams.*.format`
         upgradeDeadline: "2023-10-18"
-  ab_internal:
-    sl: 300
-    ql: 400
   supportLevel: certified
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

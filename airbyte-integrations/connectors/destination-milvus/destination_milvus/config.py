@@ -10,9 +10,11 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
     FromFieldEmbeddingConfigModel,
+    OpenAICompatibleEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
 )
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from pydantic import BaseModel, Field
 
@@ -22,28 +24,29 @@ class UsernamePasswordAuth(BaseModel):
     username: str = Field(..., title="Username", description="Username for the Milvus instance", order=1)
     password: str = Field(..., title="Password", description="Password for the Milvus instance", airbyte_secret=True, order=2)
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "Username/Password"
-        schema_extra = {"description": "Authenticate using username and password (suitable for self-managed Milvus clusters)"}
+        description = "Authenticate using username and password (suitable for self-managed Milvus clusters)"
+        discriminator = "mode"
 
 
 class NoAuth(BaseModel):
     mode: Literal["no_auth"] = Field("no_auth", const=True)
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "No auth"
-        schema_extra = {
-            "description": "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)"
-        }
+        description = "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)"
+        discriminator = "mode"
 
 
 class TokenAuth(BaseModel):
     mode: Literal["token"] = Field("token", const=True)
     token: str = Field(..., title="API Token", description="API Token for the Milvus instance", airbyte_secret=True)
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "API Token"
-        schema_extra = {"description": "Authenticate using an API token (suitable for Zilliz Cloud)"}
+        description = "Authenticate using an API token (suitable for Zilliz Cloud)"
+        discriminator = "mode"
 
 
 class MilvusIndexingConfigModel(BaseModel):
@@ -78,6 +81,7 @@ class ConfigModel(BaseModel):
         FakeEmbeddingConfigModel,
         FromFieldEmbeddingConfigModel,
         AzureOpenAIEmbeddingConfigModel,
+        OpenAICompatibleEmbeddingConfigModel,
     ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
     indexing: MilvusIndexingConfigModel
 

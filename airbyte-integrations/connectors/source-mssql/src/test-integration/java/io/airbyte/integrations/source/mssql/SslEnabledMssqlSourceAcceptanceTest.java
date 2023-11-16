@@ -12,6 +12,7 @@ import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
 import java.sql.SQLException;
 import java.util.Map;
@@ -19,7 +20,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterAll;
 import org.testcontainers.containers.MSSQLServerContainer;
-import org.testcontainers.utility.DockerImageName;
 
 public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
@@ -34,16 +34,13 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     if (db == null) {
-      db = new MSSQLServerContainer<>(DockerImageName
-          .parse("airbyte/mssql_ssltest:dev")
-          .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-              .acceptLicense();
+      db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04").acceptLicense();
       db.start();
     }
 
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .build());
@@ -69,14 +66,14 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
     ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "encrypted_trust_server_certificate")));
   }
 
-  private static DSLContext getDslContext(final JsonNode baseConfig) {
+  private DSLContext getDslContext(final JsonNode baseConfig) {
     return DSLContextFactory.create(
         baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;encrypt=true;trustServerCertificate=true;",
-            baseConfig.get(JdbcUtils.HOST_KEY).asText(),
-            baseConfig.get(JdbcUtils.PORT_KEY).asInt()),
+            db.getHost(),
+            db.getFirstMappedPort()),
         null);
   }
 

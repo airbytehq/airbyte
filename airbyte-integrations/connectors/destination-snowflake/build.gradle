@@ -4,8 +4,8 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.1'
-    features = ['db-destinations']
+    cdkVersionRequired = '0.4.11'
+    features = ['db-destinations', 's3-destinations']
     useLocalCdk = false
 }
 
@@ -17,6 +17,9 @@ application {
     applicationDefaultJvmArgs = [
             '-XX:+ExitOnOutOfMemoryError',
             '-XX:MaxRAMPercentage=75.0',
+            '-XX:NativeMemoryTracking=detail',
+            '-XX:+UnlockDiagnosticVMOptions',
+            '-XX:GCLockerRetryAllocationCount=100',
 //            '-XX:NativeMemoryTracking=detail',
 //            '-Djava.rmi.server.hostname=localhost',
 //            '-Dcom.sun.management.jmxremote=true',
@@ -37,30 +40,22 @@ integrationTestJava {
 dependencies {
     implementation 'com.google.cloud:google-cloud-storage:1.113.16'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
-    // Updating to any newer version (e.g. 3.13.22) is causing a regression with normalization.
-    // See: https://github.com/airbytehq/airbyte/actions/runs/3078146312
-    // implementation 'net.snowflake:snowflake-jdbc:3.13.19'
-    // Temporarily switch to a forked version of snowflake-jdbc to prevent infinitely-retried http requests
-    // the diff is to replace this while(true) with while(retryCount < 100) https://github.com/snowflakedb/snowflake-jdbc/blob/v3.13.19/src/main/java/net/snowflake/client/jdbc/RestRequest.java#L121
-    // TODO (edgao) explain how you built this jar
-    implementation files('lib/snowflake-jdbc.jar')
+    implementation 'net.snowflake:snowflake-jdbc:3.14.1'
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'org.apache.commons:commons-text:1.10.0'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
     implementation "io.aesy:datasize:1.0.0"
     implementation 'com.zaxxer:HikariCP:5.0.1'
 
-    implementation project(':airbyte-integrations:bases:base-typing-deduping')
-    testImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
-
-    implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
-    implementation libs.airbyte.protocol
 
 //    this is a configuration to make mockito work with final classes
     testImplementation 'org.mockito:mockito-inline:2.13.0'
 
-    integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
+
+    // TODO: declare typing-deduping as a CDK feature instead of importing from source.
+    implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
+    testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
+    integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
 }

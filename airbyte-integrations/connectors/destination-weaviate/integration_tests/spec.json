@@ -11,6 +11,7 @@
           "chunk_size": {
             "title": "Chunk size",
             "description": "Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)",
+            "minimum": 1,
             "maximum": 8191,
             "type": "integer"
           },
@@ -37,6 +38,29 @@
             "examples": ["age", "user", "user.name"],
             "type": "array",
             "items": { "type": "string" }
+          },
+          "field_name_mappings": {
+            "title": "Field name mappings",
+            "description": "List of fields to rename. Not applicable for nested fields, but can be used to rename fields already flattened via dot notation.",
+            "default": [],
+            "type": "array",
+            "items": {
+              "title": "FieldNameMappingConfigModel",
+              "type": "object",
+              "properties": {
+                "from_field": {
+                  "title": "From field name",
+                  "description": "The field name in the source",
+                  "type": "string"
+                },
+                "to_field": {
+                  "title": "To field name",
+                  "description": "The field name to use in the destination",
+                  "type": "string"
+                }
+              },
+              "required": ["from_field", "to_field"]
+            }
           },
           "text_splitter": {
             "title": "Text splitter",
@@ -68,6 +92,7 @@
                     "type": "boolean"
                   }
                 },
+                "required": ["mode"],
                 "description": "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc."
               },
               {
@@ -90,6 +115,7 @@
                     "type": "integer"
                   }
                 },
+                "required": ["mode"],
                 "description": "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk."
               },
               {
@@ -127,7 +153,7 @@
                     "type": "string"
                   }
                 },
-                "required": ["language"],
+                "required": ["language", "mode"],
                 "description": "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
               }
             ]
@@ -154,6 +180,7 @@
                 "type": "string"
               }
             },
+            "required": ["mode"],
             "description": "Do not calculate and pass embeddings to Weaviate. Suitable for clusters with configured vectorizers to calculate embeddings within Weaviate or for classes that should only support regular text search."
           },
           {
@@ -186,7 +213,7 @@
                 "type": "string"
               }
             },
-            "required": ["openai_key", "api_base", "deployment"],
+            "required": ["openai_key", "api_base", "deployment", "mode"],
             "description": "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
           },
           {
@@ -206,7 +233,7 @@
                 "type": "string"
               }
             },
-            "required": ["openai_key"],
+            "required": ["openai_key", "mode"],
             "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
           },
           {
@@ -226,7 +253,7 @@
                 "type": "string"
               }
             },
-            "required": ["cohere_key"],
+            "required": ["cohere_key", "mode"],
             "description": "Use the Cohere API to embed text."
           },
           {
@@ -253,7 +280,7 @@
                 "type": "integer"
               }
             },
-            "required": ["field_name", "dimensions"],
+            "required": ["field_name", "dimensions", "mode"],
             "description": "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
           },
           {
@@ -268,7 +295,48 @@
                 "type": "string"
               }
             },
+            "required": ["mode"],
             "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
+          },
+          {
+            "title": "OpenAI-compatible",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "openai_compatible",
+                "const": "openai_compatible",
+                "enum": ["openai_compatible"],
+                "type": "string"
+              },
+              "api_key": {
+                "title": "API key",
+                "default": "",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "base_url": {
+                "title": "Base URL",
+                "description": "The base URL for your OpenAI-compatible service",
+                "examples": ["https://your-service-name.com"],
+                "type": "string"
+              },
+              "model_name": {
+                "title": "Model name",
+                "description": "The name of the model to use for embedding",
+                "default": "text-embedding-ada-002",
+                "examples": ["text-embedding-ada-002"],
+                "type": "string"
+              },
+              "dimensions": {
+                "title": "Embedding dimensions",
+                "description": "The number of dimensions the embedding model is generating",
+                "examples": [1536, 384],
+                "type": "integer"
+              }
+            },
+            "required": ["base_url", "dimensions", "mode"],
+            "description": "Use a service that's compatible with the OpenAI API to embed text."
           }
         ]
       },
@@ -307,7 +375,7 @@
                     "type": "string"
                   }
                 },
-                "required": ["token"],
+                "required": ["token", "mode"],
                 "description": "Authenticate using an API token (suitable for Weaviate Cloud)"
               },
               {
@@ -335,7 +403,7 @@
                     "type": "string"
                   }
                 },
-                "required": ["username", "password"],
+                "required": ["username", "password", "mode"],
                 "description": "Authenticate using username and password (suitable for self-managed Weaviate clusters)"
               },
               {
@@ -350,6 +418,7 @@
                     "type": "string"
                   }
                 },
+                "required": ["mode"],
                 "description": "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)"
               }
             ]

@@ -5,7 +5,12 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.2", "google-cloud-storage==2.5.0", "pandas==1.5.3"]
+MAIN_REQUIREMENTS = [
+    "airbyte-cdk[file-based]>=0.53.5",
+    "google-cloud-storage==2.12.0",
+    "smart-open[s3]==5.1.0",
+    "pandas==1.5.3",
+]
 
 TEST_REQUIREMENTS = [
     "requests-mock~=1.9.3",

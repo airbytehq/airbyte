@@ -7,7 +7,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.4.1'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -26,7 +26,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation libs.jooq
 
     implementation 'mysql:mysql-connector-java:8.0.30'

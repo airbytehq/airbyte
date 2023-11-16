@@ -1,1 +1,0 @@
-NOTE: This directory and the contained `version.properties` file can be deleted after the CDK v0.1.0 is merged to `master`. It is needed temporarily because previous versions of the GitHub workflow looked for the version file in this location.

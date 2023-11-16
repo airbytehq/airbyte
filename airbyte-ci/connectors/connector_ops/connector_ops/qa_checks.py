@@ -5,29 +5,30 @@
 
 import sys
 from pathlib import Path
-from typing import Iterable, Optional, Set, Tuple
+from typing import Callable, Iterable, Optional, Set, Tuple
 
-from connector_ops.utils import Connector
+from connector_ops.utils import Connector, ConnectorLanguage
 from pydash.objects import get
 
 
 def check_migration_guide(connector: Connector) -> bool:
     """Check if a migration guide is available for the connector if a breaking change was introduced."""
 
-    breaking_changes = get(connector.metadata, f"releases.breakingChanges")
+    breaking_changes = get(connector.metadata, "releases.breakingChanges")
     if not breaking_changes:
         return True
 
     migration_guide_file_path = connector.migration_guide_file_path
-    if not migration_guide_file_path.exists():
+    migration_guide_exists = migration_guide_file_path is not None and migration_guide_file_path.exists()
+    if not migration_guide_exists:
         print(
-            f"Migration guide file is missing for {connector.name}. Please create a {connector.migration_guide_file_name} file in the docs folder."
+            f"Migration guide file is missing for {connector.name}. Please create a migration guide at {connector.migration_guide_file_path}"
         )
         return False
 
     # Check that the migration guide begins with # {connector name} Migration Guide
     expected_title = f"# {connector.name_from_metadata} Migration Guide"
-    expected_version_header_start = f"## Upgrading to "
+    expected_version_header_start = "## Upgrading to "
     with open(migration_guide_file_path) as f:
         first_line = f.readline().strip()
         if not first_line == expected_title:
@@ -55,7 +56,7 @@ def check_migration_guide(connector: Connector) -> bool:
 
         if ordered_breaking_changes != ordered_heading_versions:
             print(f"Migration guide file for {connector.name} has incorrect version headings.")
-            print(f"Check for missing, extra, or misordered headings, or headers with typos.")
+            print("Check for missing, extra, or misordered headings, or headers with typos.")
             print(f"Expected headings: {ordered_expected_headings}")
             return False
 
@@ -72,8 +73,9 @@ def check_documentation_file_exists(connector: Connector) -> bool:
     Returns:
         bool: Wether a documentation file was found.
     """
+    file_path = connector.documentation_file_path
 
-    return connector.documentation_file_path.exists()
+    return file_path is not None and file_path.exists()
 
 
 def check_documentation_follows_guidelines(connector: Connector) -> bool:
@@ -168,7 +170,15 @@ IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = {
     ".hypothesis",
 }
 
-IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {"*Test.java", "*.jar", "*.pyc", "*.gz", "*.svg"}
+IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {
+    "*Test.java",
+    "*.jar",
+    "*.pyc",
+    "*.gz",
+    "*.svg",
+    "expected_records.jsonl",
+    "expected_records.json",
+}
 IGNORED_URLS_PREFIX = {
     "http://json-schema.org",
     "http://localhost",
@@ -202,11 +212,15 @@ def check_connector_https_url_only(connector: Connector) -> bool:
         bool: Wether the connector code contains only https url.
     """
     files_with_http_url = set()
+    ignore_comment = "# ignore-https-check"  # Define the ignore comment pattern
+
     for filename, line in read_all_files_in_directory(
         connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS, IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS
     ):
         line = line.lower()
         if is_comment(line, filename):
+            continue
+        if ignore_comment in line:
             continue
         for prefix in IGNORED_URLS_PREFIX:
             line = line.replace(prefix, "")
@@ -235,10 +249,14 @@ def check_connector_has_no_critical_vulnerabilities(connector: Connector) -> boo
 
 
 def check_metadata_version_matches_dockerfile_label(connector: Connector) -> bool:
-    return connector.version_in_dockerfile_label == connector.version
+    version_in_dockerfile = connector.version_in_dockerfile_label
+    if version_in_dockerfile is None:
+        # Java connectors don't have Dockerfiles.
+        return connector.language == ConnectorLanguage.JAVA
+    return version_in_dockerfile == connector.version
 
 
-QA_CHECKS = [
+DEFAULT_QA_CHECKS = (
     check_documentation_file_exists,
     check_migration_guide,
     # Disabling the following check because it's likely to not pass on a lot of connectors.
@@ -250,8 +268,13 @@ QA_CHECKS = [
     # https://github.com/airbytehq/airbyte/issues/21606
     check_connector_https_url_only,
     check_connector_has_no_critical_vulnerabilities,
-    check_metadata_version_matches_dockerfile_label,
-]
+)
+
+
+def get_qa_checks_to_run(connector: Connector) -> Tuple[Callable]:
+    if connector.has_dockerfile:
+        return DEFAULT_QA_CHECKS + (check_metadata_version_matches_dockerfile_label,)
+    return DEFAULT_QA_CHECKS
 
 
 def remove_strict_encrypt_suffix(connector_technical_name: str) -> str:
@@ -285,7 +308,7 @@ def run_qa_checks():
     connector_technical_name = remove_strict_encrypt_suffix(connector_technical_name)
     connector = Connector(connector_technical_name)
     print(f"Running QA checks for {connector_technical_name}:{connector.version}")
-    qa_check_results = {qa_check.__name__: qa_check(connector) for qa_check in QA_CHECKS}
+    qa_check_results = {qa_check.__name__: qa_check(connector) for qa_check in get_qa_checks_to_run(connector)}
     if not all(qa_check_results.values()):
         print(f"QA checks failed for {connector_technical_name}:{connector.version}:")
         for check_name, check_result in qa_check_results.items():

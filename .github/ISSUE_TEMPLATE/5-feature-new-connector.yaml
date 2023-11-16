@@ -20,7 +20,7 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: Revelant Information
+      label: Relevant Information
       description: >-
         Why do you need this integration? How does your team intend to use the data? This helps us understand the use case.
         How often do you want to run syncs?

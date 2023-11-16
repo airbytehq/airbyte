@@ -1,12 +1,18 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - api.notion.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
   connectorType: source
   definitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
-  dockerImageTag: 1.1.2
+  dockerImageTag: 2.0.8
   dockerRepository: airbyte/source-notion
+  documentationUrl: https://docs.airbyte.com/integrations/sources/notion
   githubIssueLabel: source-notion
   icon: notion.svg
   license: MIT
@@ -17,11 +23,22 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/notion
+  releases:
+    breakingChanges:
+      2.0.0:
+        message:
+          Version 2.0.0 introduces schema changes to multiple properties shared
+          by the blocks, databases and pages streams. These changes were introduced
+          to reflect updates to the Notion API. A full schema refresh and data reset
+          are required to upgrade to this version.
+        upgradeDeadline: "2023-11-09"
+  suggestedStreams:
+    streams:
+      - blocks
+      - databases
+      - pages
+      - users
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

@@ -27,7 +27,7 @@
         "received_events_url": { "type": "string" },
         "type": { "type": "string" },
         "site_admin": { "type": "boolean" },
-        "starred_at": { "type": "string" }
+        "starred_at": { "type": "string", "format": "date-time" }
       }
     },
     "created_at": { "type": "string", "format": "date-time" },
@@ -84,7 +84,7 @@
                     "received_events_url": { "type": "string" },
                     "type": { "type": "string" },
                     "site_admin": { "type": "boolean" },
-                    "starred_at": { "type": "string" }
+                    "starred_at": { "type": "string", "format": "date-time" }
                   }
                 }
               ]
@@ -139,7 +139,7 @@
                     "received_events_url": { "type": "string" },
                     "type": { "type": "string" },
                     "site_admin": { "type": "boolean" },
-                    "starred_at": { "type": "string" }
+                    "starred_at": { "type": "string", "format": "date-time" }
                   }
                 }
               ]
@@ -171,7 +171,7 @@
                   "site_admin": {
                     "type": "boolean"
                   },
-                  "starred_at": { "type": "string" }
+                  "starred_at": { "type": "string", "format": "date-time" }
                 }
               }
             },
@@ -220,7 +220,10 @@
                             "received_events_url": { "type": "string" },
                             "type": { "type": "string" },
                             "site_admin": { "type": "boolean" },
-                            "starred_at": { "type": "string" }
+                            "starred_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
                           }
                         }
                       ]
@@ -289,7 +292,7 @@
                     "received_events_url": { "type": "string" },
                     "type": { "type": "string" },
                     "site_admin": { "type": "boolean" },
-                    "starred_at": { "type": "string" }
+                    "starred_at": { "type": "string", "format": "date-time" }
                   }
                 }
               ]
@@ -350,7 +353,10 @@
                         "received_events_url": { "type": "string" },
                         "type": { "type": "string" },
                         "site_admin": { "type": "boolean" },
-                        "starred_at": { "type": "string" }
+                        "starred_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
                       }
                     }
                   ]
@@ -389,7 +395,7 @@
                     "received_events_url": { "type": "string" },
                     "type": { "type": "string" },
                     "site_admin": { "type": "boolean" },
-                    "starred_at": { "type": "string" }
+                    "starred_at": { "type": "string", "format": "date-time" }
                   }
                 },
                 "private": { "type": "boolean" },
@@ -570,9 +576,9 @@
                     "archived": { "type": "boolean" },
                     "disabled": { "type": "boolean" },
                     "visibility": { "type": "string" },
-                    "pushed_at": { "type": "string" },
-                    "created_at": { "type": "string" },
-                    "updated_at": { "type": "string" },
+                    "pushed_at": { "type": "string", "format": "date-time" },
+                    "created_at": { "type": "string", "format": "date-time" },
+                    "updated_at": { "type": "string", "format": "date-time" },
                     "permissions": {
                       "type": "object",
                       "properties": {
@@ -617,7 +623,7 @@
                 "open_issues": { "type": "integer" },
                 "watchers": { "type": "integer" },
                 "master_branch": { "type": "string" },
-                "starred_at": { "type": "string" },
+                "starred_at": { "type": "string", "format": "date-time" },
                 "anonymous_access_enabled": { "type": "boolean" }
               },
               "performed_via_github_app": {
@@ -659,7 +665,10 @@
                               "received_events_url": { "type": "string" },
                               "type": { "type": "string" },
                               "site_admin": { "type": "boolean" },
-                              "starred_at": { "type": "string" }
+                              "starred_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              }
                             }
                           }
                         ]

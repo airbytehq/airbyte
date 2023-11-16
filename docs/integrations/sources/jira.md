@@ -124,6 +124,9 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.10.2  | 2023-10-26 | [31896](https://github.com/airbytehq/airbyte/pull/31896)   | Provide better guidance when configuring the connector with an invalid domain                                           |
+| 0.10.1  | 2023-10-23 | [31702](https://github.com/airbytehq/airbyte/pull/31702)   | Base image migration: remove Dockerfile and use the python-connector-base image                                         |
+| 0.10.0  | 2023-10-13 | [\#31385](https://github.com/airbytehq/airbyte/pull/31385) | Fixed `aggregatetimeoriginalestimate, timeoriginalestimate` field types for the `Issues` stream schema                  |
 | 0.9.0   | 2023-09-26 | [\#30688](https://github.com/airbytehq/airbyte/pull/30688) | Added `createdDate` field to sprints schema, Removed `Expand Issues stream` from spec                                   |
 | 0.8.0   | 2023-09-26 | [\#30755](https://github.com/airbytehq/airbyte/pull/30755) | Add new streams: `Issue custom field options`, `IssueTypes`, `Project Roles`                                            |
 | 0.7.2   | 2023-09-19 | [\#30675](https://github.com/airbytehq/airbyte/pull/30675) | Ensure invalid URL does not trigger Sentry alert                                                                        |

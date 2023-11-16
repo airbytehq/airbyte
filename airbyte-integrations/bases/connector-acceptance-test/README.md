@@ -37,7 +37,7 @@ To learn how to set up `ci_credentials` and your GSM Service account see [here](
 export GCP_GSM_CREDENTIALS=`cat <path-to-gsm-service-account-key-file>`
 
 # Install the credentials tool
-pipx install airbyte-ci/connectors/ci_credentials/
+pipx install airbyte-ci/connectors/ci_credentials/ --force --editable
 ```
 
 **Retrieve a connectors sandbox secrets**
@@ -66,28 +66,11 @@ poetry install
 poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-faker --pdb
 ```
 
-### Running CAT via the production docker image (deprecated)
-This is the old method and is not useful outside of helping third party connector developers run their tests.
-
-Ideally you should use `airbyte-ci` as described above.
-
-_Note: To use `FETCH_SECRETS=1` you must have `ci_credentials` and your GSM Service account setup see [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md)_
-
-
-```bash
-# Navigate to the connectors folder
-cd airbyte-integrations/connectors/source-faker
-
-# Run the tests
-FETCH_SECRETS=1 ./acceptance-test-docker.sh
-```
-
-Note you can also use `LOCAL_CDK=1` to run tests against the local python CDK, if relevant. If not set, tests against the latest package published to pypi, or the version specified in the connector's setup.py.
 
 ### Manually
 1. `cd` into your connector project (e.g. `airbyte-integrations/connectors/source-pokeapi`)
 2. Edit `acceptance-test-config.yml` according to your need. Please refer to our [Connector Acceptance Test Reference](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/) if you need details about the available options.
-3. Build the connector docker image ( e.g.: `docker build . -t airbyte/source-pokeapi:dev`)
+3. Build the connector docker image ( e.g.: `airbyte-ci connectors --name=source-pokeapi build`)
 4. Use one of the following ways to run tests (**from your connector project directory**)
 
 
@@ -105,15 +88,14 @@ These iterations are more conveniently achieved by remaining in the current dire
 5. Unit test your changes by adding tests to `./unit_tests`
 6. Run the unit tests on the acceptance tests again: `poetry run pytest unit_tests`, make sure the coverage did not decrease. You can bypass slow tests by using the `slow` marker: `poetry run pytest unit_tests -m "not slow"`.
 7. Manually test the changes you made by running acceptance tests on a specific connector:
-    * First build the connector to ensure your local image is up-to-date: `./gradlew :airbyte-integrations:connectors:source-pokeapi:airbyteDocker`
+    * First build the connector to ensure your local image is up-to-date: `airbyte-ci connectors --name=source-pokeapi build`
     * Then run the acceptance tests on the connector: `poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-pokeapi`
 8. Make sure you updated `docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md` according to your changes
-9. Bump the acceptance test docker image version in `airbyte-integrations/bases/connector-acceptance-test/Dockerfile`
-10. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`
-11. Open a PR on our GitHub repository
-12. This [Github action workflow](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/cat-tests.yml) will be triggered an run the unit tests on your branch.
-13. Publish the new acceptance test version if your PR is approved by running `/legacy-publish connector=bases/connector-acceptance-test run-tests=false` in a GitHub comment
-14. Merge your PR
+9. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`
+10. Open a PR on our GitHub repository
+11. This [Github action workflow](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/cat-tests.yml) will be triggered an run the unit tests on your branch.
+12. Publish the new acceptance test version if your PR is approved by running `/legacy-publish connector=bases/connector-acceptance-test run-tests=false` in a GitHub comment
+13. Merge your PR
 
 ## Migrating `acceptance-test-config.yml` to latest configuration format
 We introduced changes in the structure of `acceptance-test-config.yml` files in version 0.2.12.

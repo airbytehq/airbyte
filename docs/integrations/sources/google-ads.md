@@ -121,37 +121,85 @@ The Google Ads source connector can sync the following tables. It can also sync 
 
 ### Main Tables
 
-- [accounts](https://developers.google.com/google-ads/api/fields/v11/customer)
-- [ad_group_ads](https://developers.google.com/google-ads/api/fields/v11/ad_group_ad)
-- [ad_group_ad_labels](https://developers.google.com/google-ads/api/fields/v11/ad_group_ad_label)
-- [ad_groups](https://developers.google.com/google-ads/api/fields/v11/ad_group)
-- [ad_group_labels](https://developers.google.com/google-ads/api/fields/v11/ad_group_label)
-- [campaign_labels](https://developers.google.com/google-ads/api/fields/v11/campaign_label)
-- [click_view](https://developers.google.com/google-ads/api/reference/rpc/v11/ClickView)
-- [geographic](https://developers.google.com/google-ads/api/fields/v11/geographic_view)
-- [keyword](https://developers.google.com/google-ads/api/fields/v11/keyword_view)
+- [customer](https://developers.google.com/google-ads/api/fields/v14/customer)
 
-Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field, which should be joined against their respective `*_labels` streams if you want to view the actual labels. For example, the `ad_groups` stream contains an `ad_group.labels` field, which you would join against the `ad_group_labels` stream's `label.resource_name` field.
+Highlights the setup and configurations of a Google Ads account. It encompasses features like call reporting and conversion tracking, giving a clear picture of the account's operational settings and features.
+- [customer_label](https://developers.google.com/google-ads/api/fields/v14/customer_label)
+- [campaign_criterion](https://developers.google.com/google-ads/api/fields/v14/campaign_criterion)
 
+Targeting option for a campaign, such as a keyword, placement, or audience.
+- [campaign_bidding_strategy](https://developers.google.com/google-ads/api/fields/v14/campaign)
+
+Represents the bidding strategy at the campaign level.
+- [campaign_label](https://developers.google.com/google-ads/api/fields/v14/campaign_label)
+- [label](https://developers.google.com/google-ads/api/fields/v14/label)
+
+Represents labels that can be attached to different entities such as campaigns or ads.
+- [ad_group_ad](https://developers.google.com/google-ads/api/fields/v14/ad_group_ad)
+
+Different attributtes of ads from ag groups segmented by date.
+- [ad_group_ad_label](https://developers.google.com/google-ads/api/fields/v14/ad_group_ad_label)
+- [ad_group](https://developers.google.com/google-ads/api/fields/v14/ad_group)
+
+Represents an ad group within a campaign. Ad groups contain one or more ads which target a shared set of keywords.
+- [ad_group_label](https://developers.google.com/google-ads/api/fields/v14/ad_group_label)
+- [ad_group_bidding_strategy](https://developers.google.com/google-ads/api/fields/v14/ad_group)
+
+Represents the bidding strategy at the ad group level.
+- [ad_group_criterion](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion)
+
+Represents criteria in an ad group, such as keywords or placements.
+- [ad_listing_group_criterion](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion)
+
+Represents criteria for listing group ads.
+- [ad_group_criterion_label](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion_label)
+- [audience](https://developers.google.com/google-ads/api/fields/v14/audience)
+
+Represents user lists that are defined by the advertiser to target specific users.
+- [user_interest](https://developers.google.com/google-ads/api/fields/v14/user_interest)
+
+A particular interest-based vertical to be targeted.
+- [click_view](https://developers.google.com/google-ads/api/reference/rpc/v14/ClickView)
+
+A click view with metrics aggregated at each click level, including both valid and invalid clicks.
+
+Note that `ad_group`, `ad_group_ad`, and `campaign` contain a `labels` field, which should be joined against their respective `*_label` streams if you want to view the actual labels. For example, the `ad_group` stream contains an `ad_group.labels` field, which you would join against the `ad_group_label` stream's `label.resource_name` field.
 
 ### Report Tables
 
 - [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
-- [ad_groups](https://developers.google.com/google-ads/api/fields/v14/ad_group)
-- [ad_group_ad_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
-- [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion)
-- [ad_group_criterion_labels](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion_label)
-- [campaigns](https://developers.google.com/google-ads/api/fields/v11/campaign)
+
+Provides in-depth metrics related to ads interactions, including viewability, click-through rates, and conversions. Segments data by various factors, offering a granular look into how ads perform across different contexts.
+- [campaign](https://developers.google.com/google-ads/api/fields/v14/campaign)
+
+Represents a campaign in Google Ads.
 - [campaign_budget](https://developers.google.com/google-ads/api/fields/v13/campaign_budget)
-- [customer_labels](https://developers.google.com/google-ads/api/fields/v14/customer_label)
-- [display_keyword_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance)
-- [display_topics_report](https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance)
-- [labels](https://developers.google.com/google-ads/api/fields/v14/label)
-- [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
-- [user_location_report](https://developers.google.com/google-ads/api/fields/v11/user_location_view)
+
+Represents the budget settings of a campaign.
+- [geographic_view](https://developers.google.com/google-ads/api/fields/v14/geographic_view)
+
+Geographic View includes all metrics aggregated at the country level. It reports metrics at either actual physical location of the user or an area of interest.
+- [user_location_view](https://developers.google.com/google-ads/api/fields/v14/user_location_view)
+
+User Location View includes all metrics aggregated at the country level. It reports metrics at the actual physical location of the user by targeted or not targeted location.
+- [display_keyword_view](https://developers.google.com/google-ads/api/fields/v14/display_keyword_view)
+
+Metrics for display keywords, which are keywords that are targeted in display campaigns.
+- [topic_view](https://developers.google.com/google-ads/api/fields/v14/topic_view)
+
+Reporting view that shows metrics aggregated by topic, which are broad categories of interests that users have.
+- [shopping_performance_view](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
+
+Provides Shopping campaign statistics aggregated at several product dimension levels. Product dimension values from Merchant Center such as brand, category, custom attributes, product condition and product type will reflect the state of each dimension as of the date and time when the corresponding event was recorded.
+- [keyword_view](https://developers.google.com/google-ads/api/fields/v14/keyword_view)
+
+Provides metrics related to the performance of keywords in the campaign.
+- [ad_group_ad_legacy](https://developers.google.com/google-ads/api/fields/v14/ad_group_ad)
+
+Metrics and attributes of legacy ads from ad groups.
 
 :::note
-Due to Google Ads API constraints, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago. Also, [metrics](https://developers.google.com/google-ads/api/fields/v11/metrics) cannot be requested for a Google Ads Manager account. Report streams are only available when pulling data from a non-manager account.
+Due to Google Ads API constraints, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago. Also, [metrics](https://developers.google.com/google-ads/api/fields/v14/metrics) cannot be requested for a Google Ads Manager account. Report streams are only available when pulling data from a non-manager account.
 :::
 
 :::warning
@@ -160,7 +208,7 @@ If you have this type of campaign Google will remove them from the results for t
 More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discussions](https://groups.google.com/g/adwords-api/c/_mxbgNckaLQ).
 :::
 
-For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v11/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v14/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
 ### Reasoning Behind Primary Key Selection 
 
@@ -230,7 +278,12 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| `1.0.0`  | 2023-09-28  | [30705](https://github.com/airbytehq/airbyte/pull/30705) | Fix schemas for custom queries                                                                                                       |
+| `2.0.4`  | 2023-11-10 | [32414](https://github.com/airbytehq/airbyte/pull/32414) | Add backoff strategy for read_records method                                                                                                         |
+| `2.0.3`  | 2023-11-02 | [32102](https://github.com/airbytehq/airbyte/pull/32102) | Fix incremental events streams                                                                                                       |
+| `2.0.2`  | 2023-10-31 | [32001](https://github.com/airbytehq/airbyte/pull/32001) | Added handling (retry) for `InternalServerError` while reading the streams                                                           |
+| `2.0.1`  | 2023-10-27 | [31908](https://github.com/airbytehq/airbyte/pull/31908) | Base image migration: remove Dockerfile and use the python-connector-base image                                                      |
+| `2.0.0`  | 2023-10-04 | [31048](https://github.com/airbytehq/airbyte/pull/31048) | Fix schem default streams, change names of streams.                                                                                  |
+| `1.0.0`  | 2023-09-28 | [30705](https://github.com/airbytehq/airbyte/pull/30705) | Fix schemas for custom queries                                                                                                       |
 | `0.11.1` | 2023-09-26 | [30758](https://github.com/airbytehq/airbyte/pull/30758) | Exception should not be raises if a stream is not found                                                                              |
 | `0.11.0` | 2023-09-23 | [30704](https://github.com/airbytehq/airbyte/pull/30704) | Update error handling                                                                                                                |
 | `0.10.0` | 2023-09-19 | [30091](https://github.com/airbytehq/airbyte/pull/30091) | Fix schemas for correct primary and foreign keys                                                                                     |

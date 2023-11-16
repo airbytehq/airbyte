@@ -22,6 +22,7 @@ from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification  # type: ignore [attr-defined]
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
+from airbyte_cdk.utils import is_cloud_environment
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -37,10 +38,8 @@ class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         init_uncaught_exception_handler(logger)
 
-        # DEPLOYMENT_MODE is read when instantiating the entrypoint because it is the common path shared by syncs and connector
-        # builder test requests
-        deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
-        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE:
+        # deployment mode is read when instantiating the entrypoint because it is the common path shared by syncs and connector builder test requests
+        if is_cloud_environment():
             _init_internal_request_filter()
 
         self.source = source
@@ -88,6 +87,7 @@ class AirbyteEntrypoint(object):
 
         if hasattr(parsed_args, "debug") and parsed_args.debug:
             self.logger.setLevel(logging.DEBUG)
+            logger.setLevel(logging.DEBUG)
             self.logger.debug("Debug logs enabled")
         else:
             self.logger.setLevel(logging.INFO)
@@ -176,6 +176,13 @@ class AirbyteEntrypoint(object):
     @staticmethod
     def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> Any:
         return airbyte_message.json(exclude_unset=True)
+
+    @classmethod
+    def extract_state(cls, args: List[str]) -> Optional[Any]:
+        parsed_args = cls.parse_args(args)
+        if hasattr(parsed_args, "state"):
+            return parsed_args.state
+        return None
 
     @classmethod
     def extract_catalog(cls, args: List[str]) -> Optional[Any]:

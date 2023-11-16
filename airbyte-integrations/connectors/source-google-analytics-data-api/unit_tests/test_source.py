@@ -8,6 +8,7 @@ import pytest
 from airbyte_cdk.models import AirbyteConnectionStatus, FailureType, Status
 from airbyte_cdk.utils import AirbyteTracedException
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
+from source_google_analytics_data_api.source import MetadataDescriptor
 from source_google_analytics_data_api.utils import NO_DIMENSIONS, NO_METRICS, NO_NAME, WRONG_JSON_SYNTAX
 
 
@@ -84,25 +85,57 @@ def test_check(requests_mock, config_gen, config_values, is_successful, message)
             "rows": [],
         },
     )
-    requests_mock.register_uri(
-        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata", json={}, status_code=403
-    )
 
     source = SourceGoogleAnalyticsDataApi()
     logger = MagicMock()
     assert source.check(logger, config_gen(**config_values)) == AirbyteConnectionStatus(status=is_successful, message=message)
-    if not is_successful:
-        with pytest.raises(AirbyteTracedException) as e:
-            source.check(logger, config_gen(property_ids=["UA-11111111"]))
-        assert e.value.failure_type == FailureType.config_error
 
 
-def test_streams(mocker, patch_base_class):
+def test_check_failure(requests_mock, config_gen):
+    requests_mock.register_uri(
+        "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
+    )
+    requests_mock.register_uri(
+        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata", json={}, status_code=403
+    )
     source = SourceGoogleAnalyticsDataApi()
+    logger = MagicMock()
+    with pytest.raises(AirbyteTracedException) as e:
+        source.check(logger, config_gen(property_ids=["UA-11111111"]))
+    assert e.value.failure_type == FailureType.config_error
+    assert "Access was denied to the property ID entered." in e.value.message
 
-    config_mock = MagicMock()
-    config_mock.__getitem__.side_effect = patch_base_class["config"].__getitem__
 
-    streams = source.streams(patch_base_class["config"])
-    expected_streams_number = 57
+@pytest.mark.parametrize(
+    "status_code",
+    [
+        (403),
+        (401),
+    ],
+)
+def test_missing_metadata(requests_mock, status_code):
+    # required for MetadataDescriptor $instance input
+    class TestConfig:
+        config = {
+            "authenticator": None,
+            "property_id": 123,
+        }
+
+    # mocking the url for metadata
+    requests_mock.register_uri(
+        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/123/metadata", json={}, status_code=status_code
+    )
+
+    metadata_descriptor = MetadataDescriptor()
+    with pytest.raises(AirbyteTracedException) as e:
+        metadata_descriptor.__get__(TestConfig(), None)
+    assert e.value.failure_type == FailureType.config_error
+
+
+def test_streams(patch_base_class, config_gen):
+    config = config_gen(property_ids=["Prop1", "PropN"])
+    source = SourceGoogleAnalyticsDataApi()
+    streams = source.streams(config)
+    expected_streams_number = 57 * 2
+    assert len([stream for stream in streams if "_property_" in stream.name]) == 57
     assert len(set(streams)) == expected_streams_number

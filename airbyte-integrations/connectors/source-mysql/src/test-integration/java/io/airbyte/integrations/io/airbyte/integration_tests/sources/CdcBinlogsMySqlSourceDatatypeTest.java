@@ -181,4 +181,16 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
             .build());
   }
 
+  @Override
+  protected void addDecimalValuesTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("decimal")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .fullSourceDataType("decimal(19,2)")
+            .addInsertValues("1700000.01", "'123'")
+            .addExpectedValues("1700000.01", "123.00")
+            .build());
+  }
+
 }

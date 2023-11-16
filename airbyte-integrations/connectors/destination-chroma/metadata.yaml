@@ -4,10 +4,10 @@ data:
       enabled: true
     cloud:
       enabled: false
-  connectorSubtype: database
+  connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 0b75218b-f702-4a28-85ac-34d3d84c0fc2
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.6
   dockerRepository: airbyte/destination-chroma
   githubIssueLabel: destination-chroma
   icon: chroma.svg

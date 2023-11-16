@@ -8,8 +8,10 @@ import com.google.common.collect.AbstractIterator;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.cdk.integrations.debezium.CdcStateHandler;
 import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager.DebeziumConnectorType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -74,6 +76,8 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
    * an unneeded usage of networking and processing.
    */
   private final HashMap<String, String> previousCheckpointOffset;
+  private final DebeziumConnectorType debeziumConnectorType;
+  private final ConfiguredAirbyteCatalog configuredAirbyteCatalog;
 
   /**
    * @param changeEventIterator Base iterator that we want to enrich with checkpoint messages
@@ -84,6 +88,8 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
    *        trackSchemaHistory is set to true
    * @param checkpointDuration Duration object with time between syncs
    * @param checkpointRecords Number of records between syncs
+   * @param configuredAirbyteCatalog The {@link ConfiguredAirbyteCatalog} that contains the stream
+   * @param debeziumConnectorType type of connector that debezium will be capturing changes from
    */
   public DebeziumStateDecoratingIterator(final Iterator<ChangeEventWithMetadata> changeEventIterator,
                                          final CdcStateHandler cdcStateHandler,
@@ -94,7 +100,9 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
                                          final boolean trackSchemaHistory,
                                          final AirbyteSchemaHistoryStorage schemaHistoryManager,
                                          final Duration checkpointDuration,
-                                         final Long checkpointRecords) {
+                                         final Long checkpointRecords,
+                                         final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
+                                         final DebeziumConnectorType debeziumConnectorType) {
     this.changeEventIterator = changeEventIterator;
     this.cdcStateHandler = cdcStateHandler;
     this.targetPosition = targetPosition;
@@ -103,10 +111,12 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
     this.offsetManager = offsetManager;
     this.trackSchemaHistory = trackSchemaHistory;
     this.schemaHistoryManager = schemaHistoryManager;
+    this.configuredAirbyteCatalog = configuredAirbyteCatalog;
 
     this.syncCheckpointDuration = checkpointDuration;
     this.syncCheckpointRecords = checkpointRecords;
     this.previousCheckpointOffset = (HashMap<String, String>) offsetManager.read();
+    this.debeziumConnectorType = debeziumConnectorType;
     resetCheckpointValues();
   }
 
@@ -164,7 +174,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
         }
       }
       recordsLastSync++;
-      return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt);
+      return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt, debeziumConnectorType);
     }
 
     isSyncFinished = true;

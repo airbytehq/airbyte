@@ -1,24 +1,25 @@
 data:
-  ab_internal:
-    ql: 200
-    sl: 100
+  allowedHosts:
+    hosts:
+      - "*" # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
   connectorSubtype: api
   connectorType: source
-  definitionId: b08e4776-d1de-4e80-ab5c-1e51dad934a2
-  dockerImageTag: 0.2.0
+  definitionId: eb655362-28a8-4311-8806-4fcc612734a7
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-qualaroo
-  documentationUrl: https://docs.airbyte.com/integrations/sources/qualaroo
   githubIssueLabel: source-qualaroo
   icon: qualaroo.svg
   license: MIT
   name: Qualaroo
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  releaseDate: "2021-08-18"
   releaseStage: alpha
   supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/qualaroo
   tags:
-    - language:python
+    - language:lowcode
 metadataSpecVersion: "1.0"

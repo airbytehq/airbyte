@@ -10,20 +10,20 @@ hikaricp = "5.0.1"
 jmh = "1.36"
 jooq = "3.13.4"
 junit-jupiter = "5.9.1"
-log4j = "2.17.2"
+kotlin = "1.9.0"
+log4j = "2.21.1"
 lombok = "1.18.24"
 micronaut = "3.8.3"
 micronaut-data = "3.9.4"
 micronaut-jaxrs = "3.4.0"
 micronaut-security = "3.9.2"
 micronaut-test = "3.8.0"
-platform-testcontainers = "1.17.3"
-postgresql = "42.3.5"
+postgresql = "42.6.0"
 reactor = "3.5.2"
 segment = "2.1.1"
-slf4j = "1.7.36"
+slf4j = "2.0.9"
 temporal = "1.17.0"
-debezium = "2.2.0.Final"
+debezium = "2.4.0.Final"
 
 [libraries]
 airbyte-protocol = { module = "io.airbyte.airbyte-protocol:protocol-models", version.ref = "airbyte-protocol" }
@@ -65,6 +65,7 @@ jackson-dataformat = { module = "com.fasterxml.jackson.dataformat:jackson-datafo
 jackson-datatype = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "fasterxml_version" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "fasterxml_version" }
 java-dogstatsd-client = { module = "com.datadoghq:java-dogstatsd-client", version = "4.1.0" }
+java-faker = { module = "com.github.javafaker:javafaker", version = "1.0.2" }
 javax-databind = { module = "javax.xml.bind:jaxb-api", version = "2.4.0-b180830.0359" }
 jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j" }
 jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
@@ -78,16 +79,20 @@ junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", vers
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
 junit-jupiter-system-stubs = { module = "uk.org.webcompere:system-stubs-jupiter", version = "2.0.1" }
 junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.7.1" }
+kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version = "5.1.0" }
+kotlinx-cli = { module = "org.jetbrains.kotlinx:kotlinx-cli", version = "0.3.5" }
+kotlinx-cli-jvm = { module = "org.jetbrains.kotlinx:kotlinx-cli-jvm", version = "0.3.5" }
 launchdarkly = { module = "com.launchdarkly:launchdarkly-java-server-sdk", version = "6.0.1" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
-log4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
+log4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
 log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j" }
 log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4j" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 micrometer-statsd = { module = "io.micrometer:micrometer-registry-statsd", version = "1.9.3" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "4.6.1" }
 mockk = { module = "io.mockk:mockk", version = "1.13.3" }
+mongo-driver-sync = { module = "org.mongodb:mongodb-driver-sync", version = "4.10.2" }
 otel-bom = { module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0" }
 otel-sdk = { module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0" }
 otel-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-metrics-testing", version = "1.13.0-alpha" }
@@ -99,6 +104,7 @@ reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "react
 s3 = { module = "software.amazon.awssdk:s3", version = "2.20.20" }
 segment-java-analytics = { module = "com.segment.analytics.java:analytics", version.ref = "segment" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version = "4.7.3" }
 temporal-sdk = { module = "io.temporal:temporal-sdk", version.ref = "temporal" }
 temporal-serviceclient = { module = "io.temporal:temporal-serviceclient", version.ref = "temporal" }
@@ -152,3 +158,7 @@ micronaut-test-annotation-processor = ["micronaut-inject-java"]
 slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 temporal = ["temporal-sdk", "temporal-serviceclient"]
 debezium-bundle = ["debezium-api", "debezium-embedded", "debezium-sqlserver", "debezium-mysql", "debezium-postgres", "debezium-mongodb"]
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }

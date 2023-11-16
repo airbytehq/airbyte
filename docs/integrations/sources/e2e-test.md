@@ -70,15 +70,16 @@ This mode is also excluded from the Cloud variant of this connector.
 
 The OSS and Cloud variants have the same version number. The Cloud variant was initially released at version `1.0.0`.
 
-| Version | Date       | Pull request                                                                                                      | Notes                                                                                                 |
-|---------|------------| ----------------------------------------------------------------------------------------------------------------- |-------------------------------------------------------------------------------------------------------|
-| 2.1.4   | 2023-03-01 | [23656](https://github.com/airbytehq/airbyte/pull/23656)                                                          | Add speed benchmark mode to e2e test                                                                  |
-| 2.1.3   | 2022-08-25 | [15591](https://github.com/airbytehq/airbyte/pull/15591)                                                          | Declare supported sync modes in catalogs                                                              |
-| 2.1.1   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864)                                                          | Updated stacktrace format for any trace message errors                                                |
-| 2.1.0   | 2021-02-12 | [\#10298](https://github.com/airbytehq/airbyte/pull/10298)                                                        | Support stream duplication to quickly create a multi-stream catalog.                                  |
-| 2.0.0   | 2021-02-01 | [\#9954](https://github.com/airbytehq/airbyte/pull/9954)                                                          | Remove legacy modes. Use more efficient Json generator.                                               |
-| 1.0.1   | 2021-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745)                                                          | Integrate with Sentry.                                                                                |
-| 1.0.0   | 2021-01-23 | [\#9720](https://github.com/airbytehq/airbyte/pull/9720)                                                          | Add new continuous feed mode that supports arbitrary catalog specification. Initial release to cloud. |
-| 0.1.2   | 2022-10-18 | [\#18100](https://github.com/airbytehq/airbyte/pull/18100)                                                        | Set supported sync mode on streams                                                                    |
-| 0.1.1   | 2021-12-16 | [\#8217](https://github.com/airbytehq/airbyte/pull/8217)                                                          | Fix sleep time in infinite feed mode.                                                                 |
+| Version | Date       | Pull request                                                       | Notes                                                                                                 |
+|---------|------------| ------------------------------------------------------------------ |-------------------------------------------------------------------------------------------------------|
+| 2.1.5   | 2023-10-04 | [31092](https://github.com/airbytehq/airbyte/pull/31092)           | Bump jsonschemafriend dependency version to fix bug                                                   |
+| 2.1.4   | 2023-03-01 | [23656](https://github.com/airbytehq/airbyte/pull/23656)           | Add speed benchmark mode to e2e test                                                                  |
+| 2.1.3   | 2022-08-25 | [15591](https://github.com/airbytehq/airbyte/pull/15591)           | Declare supported sync modes in catalogs                                                              |
+| 2.1.1   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864)           | Updated stacktrace format for any trace message errors                                                |
+| 2.1.0   | 2021-02-12 | [\#10298](https://github.com/airbytehq/airbyte/pull/10298)         | Support stream duplication to quickly create a multi-stream catalog.                                  |
+| 2.0.0   | 2021-02-01 | [\#9954](https://github.com/airbytehq/airbyte/pull/9954)           | Remove legacy modes. Use more efficient Json generator.                                               |
+| 1.0.1   | 2021-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745)           | Integrate with Sentry.                                                                                |
+| 1.0.0   | 2021-01-23 | [\#9720](https://github.com/airbytehq/airbyte/pull/9720)           | Add new continuous feed mode that supports arbitrary catalog specification. Initial release to cloud. |
+| 0.1.2   | 2022-10-18 | [\#18100](https://github.com/airbytehq/airbyte/pull/18100)         | Set supported sync mode on streams                                                                    |
+| 0.1.1   | 2021-12-16 | [\#8217](https://github.com/airbytehq/airbyte/pull/8217)           | Fix sleep time in infinite feed mode.                                                                 |
 | 0.1.0   | 2021-07-23 | [\#3290](https://github.com/airbytehq/airbyte/pull/3290) [\#4939](https://github.com/airbytehq/airbyte/pull/4939) | Initial release.                                                                                      |

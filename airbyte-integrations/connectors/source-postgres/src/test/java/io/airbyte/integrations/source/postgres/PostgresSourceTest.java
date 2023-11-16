@@ -26,12 +26,11 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
-import io.airbyte.cdk.testutils.PostgreSQLContainerHelper;
+import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
@@ -59,22 +58,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@ExtendWith(SystemStubsExtension.class)
 class PostgresSourceTest {
-
-  @SystemStub
-  private EnvironmentVariables environmentVariables;
 
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
@@ -143,47 +132,37 @@ class PostgresSourceTest {
       createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "Jack")),
       createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", 3, "name", "Antuan")));
 
-  private static PostgreSQLContainer<?> PSQL_DB;
-
-  private String dbName;
-
-  @BeforeAll
-  static void init() {
-    PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
-    PSQL_DB.start();
-  }
+  private PostgresTestDatabase testdb;
 
   @BeforeEach
   void setup() throws Exception {
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    testdb = PostgresTestDatabase.make("postgres:16-bullseye");
+    testdb.database.query(ctx -> {
+      ctx.fetch(
+          "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
+      ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'), (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
+      ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
+      ctx.fetch("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-    final JsonNode config = getConfig(PSQL_DB, dbName);
+      ctx.fetch(
+          "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));");
+      ctx.fetch(
+          "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
+      return null;
+    });
+  }
 
-    try (final DSLContext dslContext = getDslContext(config)) {
-      final Database database = getDatabase(dslContext);
-      database.query(ctx -> {
-        ctx.fetch(
-            "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
-        ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
-        ctx.fetch(
-            "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'), (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
+  @AfterEach
+  void tearDown() throws SQLException {
+    testdb.close();
+  }
 
-        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
-        ctx.fetch(
-            "INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
-
-        ctx.fetch(
-            "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));");
-        ctx.fetch(
-            "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
-        return null;
-      });
-    }
+  public PostgresSource source() {
+    var source = new PostgresSource();
+    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
+    return source;
   }
 
   private static DSLContext getDslContextWithSpecifiedUser(final JsonNode config, final String username, final String password) {
@@ -202,34 +181,18 @@ class PostgresSourceTest {
     return new Database(dslContext);
   }
 
-  private static DSLContext getDslContext(final JsonNode config) {
-    return DSLContextFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()),
-        SQLDialect.POSTGRES);
+  private JsonNode getConfig() {
+    return getConfig(testdb.userName, testdb.password);
   }
 
-  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
-        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
-        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
-        .put(JdbcUtils.SSL_KEY, false)
-        .build());
+  private JsonNode getConfig(final String user, final String password) {
+    return getConfig(testdb.dbName, user, password);
   }
 
-  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName, final String user, final String password) {
+  private JsonNode getConfig(final String dbName, final String user, final String password) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
-        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, testdb.container.getHost())
+        .put(JdbcUtils.PORT_KEY, testdb.container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
         .put(JdbcUtils.USERNAME_KEY, user)
@@ -238,118 +201,103 @@ class PostgresSourceTest {
         .build());
   }
 
-  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String user, final String password) {
-    return getConfig(psqlDb, psqlDb.getDatabaseName(), user, password);
-  }
-
-  private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb) {
-    return getConfig(psqlDb, psqlDb.getDatabaseName());
-  }
-
-  @AfterAll
-  static void cleanUp() {
-    PSQL_DB.close();
+  private JsonNode getConfig(PostgresTestDatabase db) {
+    return Jsons.jsonNode(db.makeConfigBuilder()
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
+        .put(JdbcUtils.SSL_KEY, false)
+        .build());
   }
 
   @Test
   public void testCanReadTablesAndColumnsWithDoubleQuotes() throws Exception {
-    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
-      db.start();
-
-      final AirbyteCatalog airbyteCatalog = new AirbyteCatalog().withStreams(List.of(
-          CatalogHelpers.createAirbyteStream(
-              STREAM_NAME_WITH_QUOTES,
-              SCHEMA_NAME,
-              Field.of("id", JsonSchemaType.NUMBER),
-              Field.of("\"test_column\"", JsonSchemaType.STRING))
-              .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-              .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
-
-      final JsonNode config = getConfig(db);
-      try (final DSLContext dslContext = getDslContext(config)) {
-        final Database database = getDatabase(dslContext);
-
-        database.query(ctx -> {
-          ctx.fetch("CREATE TABLE \"\"\"test_dq_table\"\"\"(id INTEGER PRIMARY KEY,  \"\"\"test_column\"\"\" varchar);");
-          ctx.fetch("INSERT INTO \"\"\"test_dq_table\"\"\" (id, \"\"\"test_column\"\"\") VALUES (1,'test1'),  (2, 'test2');");
-          return null;
-        });
-      }
-      final Set<AirbyteMessage> actualMessages =
-          MoreIterators.toSet(new PostgresSource().read(config, CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog), null));
-      setEmittedAtToNull(actualMessages);
-
-      assertEquals(DOUBLE_QUOTED_MESSAGES, actualMessages);
-      db.stop();
-    }
+    final AirbyteCatalog airbyteCatalog = new AirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createAirbyteStream(
+            STREAM_NAME_WITH_QUOTES,
+            SCHEMA_NAME,
+            Field.of("id", JsonSchemaType.NUMBER),
+            Field.of("\"test_column\"", JsonSchemaType.STRING))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+    testdb.database.query(ctx -> {
+      ctx.fetch("CREATE TABLE \"\"\"test_dq_table\"\"\"(id INTEGER PRIMARY KEY,  \"\"\"test_column\"\"\" varchar);");
+      ctx.fetch("INSERT INTO \"\"\"test_dq_table\"\"\" (id, \"\"\"test_column\"\"\") VALUES (1,'test1'),  (2, 'test2');");
+      return null;
+    });
+    final Set<AirbyteMessage> actualMessages =
+        MoreIterators.toSet(source().read(
+            getConfig(),
+            CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog),
+            null));
+    setEmittedAtToNull(actualMessages);
+    assertEquals(DOUBLE_QUOTED_MESSAGES, actualMessages);
+    testdb.database.query(ctx -> ctx.execute("DROP TABLE \"\"\"test_dq_table\"\"\";"));
   }
 
   @Test
   public void testCanReadUtf8() throws Exception {
     // force the db server to start with sql_ascii encoding to verify the source can read UTF8 even when
     // default settings are in another encoding
-    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine").withCommand("postgres -c client_encoding=sql_ascii")) {
-      db.start();
-      final JsonNode config = getConfig(db);
-      try (final DSLContext dslContext = getDslContext(config)) {
-        final Database database = getDatabase(dslContext);
-        database.query(ctx -> {
-          ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-          ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,E'\\u2013 someutfstring'),  (2, E'\\u2215');");
-          return null;
-        });
-      }
-
-      final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(config, CONFIGURED_CATALOG, null));
+    try (final var asciiTestDB = PostgresTestDatabase.make("postgres:16-alpine", "withASCII")) {
+      asciiTestDB.database.query(ctx -> {
+        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+        ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,E'\\u2013 someutfstring'),  (2, E'\\u2215');");
+        return null;
+      });
+      final var config = Jsons.jsonNode(ImmutableMap.builder()
+          .put(JdbcUtils.HOST_KEY, asciiTestDB.container.getHost())
+          .put(JdbcUtils.PORT_KEY, asciiTestDB.container.getFirstMappedPort())
+          .put(JdbcUtils.DATABASE_KEY, asciiTestDB.dbName)
+          .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
+          .put(JdbcUtils.USERNAME_KEY, asciiTestDB.userName)
+          .put(JdbcUtils.PASSWORD_KEY, asciiTestDB.password)
+          .put(JdbcUtils.SSL_KEY, false)
+          .build());
+      final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(source().read(config, CONFIGURED_CATALOG, null));
       setEmittedAtToNull(actualMessages);
-
       assertEquals(UTF8_MESSAGES, actualMessages);
-      db.stop();
     }
   }
 
   @Test
   void testUserDoesntHasPrivilegesToSelectTable() throws Exception {
-    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
-      db.start();
-      final JsonNode config = getConfig(db);
-      try (final DSLContext dslContext = getDslContext(config)) {
-        final Database database = new Database(dslContext);
-        database.query(ctx -> {
-          ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-          ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'John'),  (2, 'Alfred'), (3, 'Alex');");
-          ctx.fetch("CREATE USER test_user_3 password '132';");
-          ctx.fetch("GRANT CONNECT ON DATABASE test TO test_user_3;");
-          ctx.fetch("REVOKE ALL PRIVILEGES ON TABLE public.id_and_name FROM test_user_3");
-          return null;
-        });
-      }
-      try (final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_3", "132")) {
-        final Database database = new Database(dslContext);
-        database.query(ctx -> {
-          ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
-          ctx.fetch("CREATE VIEW id_and_name_3_view(id, name) as\n"
-              + "SELECT id_and_name_3.id,\n"
-              + "       id_and_name_3.name\n"
-              + "FROM id_and_name_3;\n"
-              + "ALTER TABLE id_and_name_3_view\n"
-              + "    owner TO test_user_3");
-          ctx.fetch("INSERT INTO id_and_name_3 (id, name) VALUES (1,'Zed'),  (2, 'Jack'), (3, 'Antuan');");
-          return null;
-        });
-      }
-      final JsonNode anotherUserConfig = getConfig(db, "test_user_3", "132");
-      final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(anotherUserConfig, CONFIGURED_CATALOG, null));
-      setEmittedAtToNull(actualMessages);
-      assertEquals(6, actualMessages.size());
-      assertEquals(PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES, actualMessages);
-      db.stop();
+    testdb.database.query(ctx -> {
+      ctx.execute("DROP TABLE id_and_name CASCADE;");
+      ctx.execute("DROP TABLE id_and_name2 CASCADE;");
+      ctx.execute("DROP TABLE names CASCADE;");
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'John'),  (2, 'Alfred'), (3, 'Alex');");
+      ctx.fetch("CREATE USER test_user_3 password '132';");
+      ctx.fetch("GRANT CONNECT ON DATABASE " + testdb.dbName + " TO test_user_3;");
+      ctx.fetch("GRANT ALL ON SCHEMA public TO test_user_3");
+      ctx.fetch("REVOKE ALL PRIVILEGES ON TABLE public.id_and_name FROM test_user_3");
+      return null;
+    });
+    final JsonNode config = getConfig();
+    try (final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_3", "132")) {
+      final Database database = new Database(dslContext);
+      database.query(ctx -> {
+        ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
+        ctx.fetch("CREATE VIEW id_and_name_3_view(id, name) as\n"
+            + "SELECT id_and_name_3.id,\n"
+            + "       id_and_name_3.name\n"
+            + "FROM id_and_name_3;\n"
+            + "ALTER TABLE id_and_name_3_view\n"
+            + "    owner TO test_user_3");
+        ctx.fetch("INSERT INTO id_and_name_3 (id, name) VALUES (1,'Zed'),  (2, 'Jack'), (3, 'Antuan');");
+        return null;
+      });
     }
+    final JsonNode anotherUserConfig = getConfig("test_user_3", "132");
+    final Set<AirbyteMessage> actualMessages =
+        MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
+    setEmittedAtToNull(actualMessages);
+    assertEquals(6, actualMessages.size());
+    assertEquals(PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES, actualMessages);
   }
 
   @Test
   void testDiscoverWithPk() throws Exception {
-    final AirbyteCatalog actual = new PostgresSource().discover(getConfig(PSQL_DB, dbName));
+    final AirbyteCatalog actual = source().discover(getConfig());
     actual.getStreams().forEach(actualStream -> {
       final Optional<AirbyteStream> expectedStream =
           CATALOG.getStreams().stream().filter(stream -> stream.getName().equals(actualStream.getName())).findAny();
@@ -360,150 +308,150 @@ class PostgresSourceTest {
 
   @Test
   void testDiscoverRecursiveRolePermissions() throws Exception {
-    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
-      db.start();
-      final JsonNode config = getConfig(db);
-      try (final DSLContext dslContext = getDslContext(config)) {
-        final Database database = new Database(dslContext);
-        database.query(ctx -> {
-          ctx.fetch("CREATE TABLE id_and_name_7(id INTEGER, name VARCHAR(200));");
-          ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+    testdb.database.query(ctx -> {
+      ctx.execute("DROP TABLE id_and_name CASCADE;");
+      ctx.execute("DROP TABLE id_and_name2 CASCADE;");
+      ctx.execute("DROP TABLE names CASCADE;");
+      ctx.fetch("CREATE TABLE id_and_name_7(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
 
-          ctx.fetch("CREATE USER test_user_4 password '132';");
+      ctx.fetch("CREATE USER test_user_4 password '132';");
+      ctx.fetch("GRANT ALL ON SCHEMA public TO test_user_4");
 
-          ctx.fetch("CREATE ROLE airbyte LOGIN password 'airbyte';");
-          ctx.fetch("CREATE ROLE read_only LOGIN password 'read_only';");
-          ctx.fetch("CREATE ROLE intermediate LOGIN password 'intermediate';");
+      ctx.fetch("CREATE ROLE airbyte LOGIN password 'airbyte';");
+      ctx.fetch("CREATE ROLE read_only LOGIN password 'read_only';");
+      ctx.fetch("CREATE ROLE intermediate LOGIN password 'intermediate';");
 
-          ctx.fetch("CREATE ROLE access_nothing LOGIN password 'access_nothing';");
+      ctx.fetch("CREATE ROLE access_nothing LOGIN password 'access_nothing';");
 
-          ctx.fetch("GRANT intermediate TO airbyte;");
-          ctx.fetch("GRANT read_only TO intermediate;");
+      ctx.fetch("GRANT intermediate TO airbyte;");
+      ctx.fetch("GRANT read_only TO intermediate;");
 
-          ctx.fetch("GRANT SELECT ON id_and_name, id_and_name_7 TO read_only;");
-          ctx.fetch("GRANT airbyte TO test_user_4;");
+      ctx.fetch("GRANT SELECT ON id_and_name, id_and_name_7 TO read_only;");
+      ctx.fetch("GRANT airbyte TO test_user_4;");
 
-          ctx.fetch("CREATE TABLE unseen(id INTEGER, name VARCHAR(200));");
-          ctx.fetch("GRANT CONNECT ON DATABASE test TO test_user_4;");
-          return null;
-        });
-      }
-      try (final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_4", "132")) {
-        final Database database = new Database(dslContext);
-        database.query(ctx -> {
-          ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
-          return null;
-        });
-      }
-      AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "test_user_4", "132"));
-      Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
-      assertEquals(Sets.newHashSet("id_and_name", "id_and_name_7", "id_and_name_3"), tableNames);
+      ctx.fetch("CREATE TABLE unseen(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("GRANT CONNECT ON DATABASE " + testdb.dbName + " TO test_user_4;");
+      return null;
+    });
+    final var config = getConfig();
 
-      actual = new PostgresSource().discover(getConfig(db, "access_nothing", "access_nothing"));
-      tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
-      assertEquals(Sets.newHashSet(), tableNames);
-      db.stop();
+    try (final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_4", "132")) {
+      final Database database = new Database(dslContext);
+      database.query(ctx -> {
+        ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
+        return null;
+      });
     }
+    AirbyteCatalog actual = source().discover(getConfig("test_user_4", "132"));
+    Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
+    assertEquals(Sets.newHashSet("id_and_name", "id_and_name_7", "id_and_name_3"), tableNames);
+
+    actual = source().discover(getConfig("access_nothing", "access_nothing"));
+    tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
+    assertEquals(Sets.newHashSet(), tableNames);
   }
 
   @Test
   void testDiscoverDifferentGrantAvailability() throws Exception {
-    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
-      db.start();
-      final JsonNode config = getConfig(db);
-      try (final DSLContext dslContext = getDslContext(config)) {
-        final Database database = new Database(dslContext);
-        database.query(ctx -> {
-          ctx.fetch("create table not_granted_table_name_1(column_1 integer);");
-          ctx.fetch("create table not_granted_table_name_2(column_1 integer);");
-          ctx.fetch("create table not_granted_table_name_3(column_1 integer);");
-          ctx.fetch("create table table_granted_by_role(column_1 integer);");
-          ctx.fetch("create table test_table_granted_directly(column_1 integer);");
-          ctx.fetch("create table table_granted_by_role_with_options(column_1 integer);");
-          ctx.fetch("create table test_table_granted_directly_with_options(column_1 integer);");
+    final JsonNode config = getConfig();
+    testdb.database.query(ctx -> {
+      ctx.fetch("create table not_granted_table_name_1(column_1 integer);");
+      ctx.fetch("create table not_granted_table_name_2(column_1 integer);");
+      ctx.fetch("create table not_granted_table_name_3(column_1 integer);");
+      ctx.fetch("create table table_granted_by_role(column_1 integer);");
+      ctx.fetch("create table test_table_granted_directly(column_1 integer);");
+      ctx.fetch("create table table_granted_by_role_with_options(column_1 integer);");
+      ctx.fetch("create table test_table_granted_directly_with_options(column_1 integer);");
 
-          ctx.fetch("create materialized view not_granted_mv_name_1 as SELECT not_granted_table_name_1.column_1 FROM not_granted_table_name_1;");
-          ctx.fetch("create materialized view not_granted_mv_name_2 as SELECT not_granted_table_name_2.column_1 FROM not_granted_table_name_2;");
-          ctx.fetch("create materialized view not_granted_mv_name_3 as SELECT not_granted_table_name_3.column_1 FROM not_granted_table_name_3;");
-          ctx.fetch("create materialized view mv_granted_by_role as SELECT table_granted_by_role.column_1 FROM table_granted_by_role;");
-          ctx.fetch(
-              "create materialized view test_mv_granted_directly as SELECT test_table_granted_directly.column_1 FROM test_table_granted_directly;");
-          ctx.fetch(
-              "create materialized view mv_granted_by_role_with_options as SELECT table_granted_by_role_with_options.column_1 FROM table_granted_by_role_with_options;");
-          ctx.fetch(
-              "create materialized view test_mv_granted_directly_with_options as SELECT test_table_granted_directly_with_options.column_1 FROM test_table_granted_directly_with_options;");
+      ctx.fetch(
+          "create materialized view not_granted_mv_name_1 as SELECT not_granted_table_name_1.column_1 FROM not_granted_table_name_1;");
+      ctx.fetch(
+          "create materialized view not_granted_mv_name_2 as SELECT not_granted_table_name_2.column_1 FROM not_granted_table_name_2;");
+      ctx.fetch(
+          "create materialized view not_granted_mv_name_3 as SELECT not_granted_table_name_3.column_1 FROM not_granted_table_name_3;");
+      ctx.fetch(
+          "create materialized view mv_granted_by_role as SELECT table_granted_by_role.column_1 FROM table_granted_by_role;");
+      ctx.fetch(
+          "create materialized view test_mv_granted_directly as SELECT test_table_granted_directly.column_1 FROM test_table_granted_directly;");
+      ctx.fetch(
+          "create materialized view mv_granted_by_role_with_options as SELECT table_granted_by_role_with_options.column_1 FROM table_granted_by_role_with_options;");
+      ctx.fetch(
+          "create materialized view test_mv_granted_directly_with_options as SELECT test_table_granted_directly_with_options.column_1 FROM test_table_granted_directly_with_options;");
 
-          ctx.fetch("create view not_granted_view_name_1(column_1) as SELECT not_granted_table_name_1.column_1 FROM not_granted_table_name_1;");
-          ctx.fetch("create view not_granted_view_name_2(column_1) as SELECT not_granted_table_name_2.column_1 FROM not_granted_table_name_2;");
-          ctx.fetch("create view not_granted_view_name_3(column_1) as SELECT not_granted_table_name_3.column_1 FROM not_granted_table_name_3;");
-          ctx.fetch("create view view_granted_by_role(column_1) as SELECT table_granted_by_role.column_1 FROM table_granted_by_role;");
-          ctx.fetch(
-              "create view test_view_granted_directly(column_1) as SELECT test_table_granted_directly.column_1 FROM test_table_granted_directly;");
-          ctx.fetch(
-              "create view view_granted_by_role_with_options(column_1) as SELECT table_granted_by_role_with_options.column_1 FROM table_granted_by_role_with_options;");
-          ctx.fetch(
-              "create view test_view_granted_directly_with_options(column_1) as SELECT test_table_granted_directly_with_options.column_1 FROM test_table_granted_directly_with_options;");
+      ctx.fetch(
+          "create view not_granted_view_name_1(column_1) as SELECT not_granted_table_name_1.column_1 FROM not_granted_table_name_1;");
+      ctx.fetch(
+          "create view not_granted_view_name_2(column_1) as SELECT not_granted_table_name_2.column_1 FROM not_granted_table_name_2;");
+      ctx.fetch(
+          "create view not_granted_view_name_3(column_1) as SELECT not_granted_table_name_3.column_1 FROM not_granted_table_name_3;");
+      ctx.fetch(
+          "create view view_granted_by_role(column_1) as SELECT table_granted_by_role.column_1 FROM table_granted_by_role;");
+      ctx.fetch(
+          "create view test_view_granted_directly(column_1) as SELECT test_table_granted_directly.column_1 FROM test_table_granted_directly;");
+      ctx.fetch(
+          "create view view_granted_by_role_with_options(column_1) as SELECT table_granted_by_role_with_options.column_1 FROM table_granted_by_role_with_options;");
+      ctx.fetch(
+          "create view test_view_granted_directly_with_options(column_1) as SELECT test_table_granted_directly_with_options.column_1 FROM test_table_granted_directly_with_options;");
 
-          ctx.fetch("create role test_role;");
+      ctx.fetch("create role test_role;");
 
-          ctx.fetch("grant delete on not_granted_table_name_2 to test_role;");
-          ctx.fetch("grant delete on not_granted_mv_name_2 to test_role;");
-          ctx.fetch("grant delete on not_granted_view_name_2 to test_role;");
+      ctx.fetch("grant delete on not_granted_table_name_2 to test_role;");
+      ctx.fetch("grant delete on not_granted_mv_name_2 to test_role;");
+      ctx.fetch("grant delete on not_granted_view_name_2 to test_role;");
 
-          ctx.fetch("grant select on table_granted_by_role to test_role;");
-          ctx.fetch("grant select on mv_granted_by_role to test_role;");
-          ctx.fetch("grant select on view_granted_by_role to test_role;");
+      ctx.fetch("grant select on table_granted_by_role to test_role;");
+      ctx.fetch("grant select on mv_granted_by_role to test_role;");
+      ctx.fetch("grant select on view_granted_by_role to test_role;");
 
-          ctx.fetch("grant select on table_granted_by_role_with_options to test_role with grant option;");
-          ctx.fetch("grant select on mv_granted_by_role_with_options to test_role with grant option;");
-          ctx.fetch("grant select on view_granted_by_role_with_options to test_role with grant option;");
+      ctx.fetch("grant select on table_granted_by_role_with_options to test_role with grant option;");
+      ctx.fetch("grant select on mv_granted_by_role_with_options to test_role with grant option;");
+      ctx.fetch("grant select on view_granted_by_role_with_options to test_role with grant option;");
 
-          ctx.fetch("create user new_test_user;");
-          ctx.fetch("ALTER USER new_test_user WITH PASSWORD 'new_pass';");
-          ctx.fetch("GRANT CONNECT ON DATABASE test TO new_test_user;");
+      ctx.fetch("create user new_test_user;");
+      ctx.fetch("ALTER USER new_test_user WITH PASSWORD 'new_pass';");
+      ctx.fetch("GRANT CONNECT ON DATABASE " + testdb.dbName + " TO new_test_user;");
+      ctx.fetch("GRANT ALL ON SCHEMA public TO test_user_4");
 
-          ctx.fetch("grant test_role to new_test_user;");
+      ctx.fetch("grant test_role to new_test_user;");
 
-          ctx.fetch("grant delete on not_granted_table_name_3 to new_test_user;");
-          ctx.fetch("grant delete on not_granted_mv_name_3 to new_test_user;");
-          ctx.fetch("grant delete on not_granted_view_name_3 to new_test_user;");
+      ctx.fetch("grant delete on not_granted_table_name_3 to new_test_user;");
+      ctx.fetch("grant delete on not_granted_mv_name_3 to new_test_user;");
+      ctx.fetch("grant delete on not_granted_view_name_3 to new_test_user;");
 
-          ctx.fetch("grant select on test_table_granted_directly to new_test_user;");
-          ctx.fetch("grant select on test_mv_granted_directly to new_test_user;");
-          ctx.fetch("grant select on test_view_granted_directly to new_test_user;");
+      ctx.fetch("grant select on test_table_granted_directly to new_test_user;");
+      ctx.fetch("grant select on test_mv_granted_directly to new_test_user;");
+      ctx.fetch("grant select on test_view_granted_directly to new_test_user;");
 
-          ctx.fetch("grant select on test_table_granted_directly_with_options to test_role with grant option;");
-          ctx.fetch("grant select on test_mv_granted_directly_with_options to test_role with grant option;");
-          ctx.fetch("grant select on test_view_granted_directly_with_options to test_role with grant option;");
-          return null;
-        });
-      }
+      ctx.fetch("grant select on test_table_granted_directly_with_options to test_role with grant option;");
+      ctx.fetch("grant select on test_mv_granted_directly_with_options to test_role with grant option;");
+      ctx.fetch("grant select on test_view_granted_directly_with_options to test_role with grant option;");
+      return null;
+    });
 
-      final AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
-      actual.getStreams().stream().forEach(airbyteStream -> {
-        assertEquals(2, airbyteStream.getSupportedSyncModes().size());
-        assertTrue(airbyteStream.getSupportedSyncModes().contains(SyncMode.FULL_REFRESH));
-        assertTrue(airbyteStream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL));
-      });
-      final Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
-      final Set<String> expectedVisibleNames = Sets.newHashSet(
-          "table_granted_by_role",
-          "table_granted_by_role_with_options",
-          "test_table_granted_directly",
-          "test_table_granted_directly_with_options",
-          "mv_granted_by_role",
-          "mv_granted_by_role_with_options",
-          "test_mv_granted_directly",
-          "test_mv_granted_directly_with_options",
-          "test_view_granted_directly",
-          "test_view_granted_directly_with_options",
-          "view_granted_by_role",
-          "view_granted_by_role_with_options");
+    final AirbyteCatalog actual = source().discover(getConfig("new_test_user", "new_pass"));
+    actual.getStreams().stream().forEach(airbyteStream -> {
+      assertEquals(2, airbyteStream.getSupportedSyncModes().size());
+      assertTrue(airbyteStream.getSupportedSyncModes().contains(SyncMode.FULL_REFRESH));
+      assertTrue(airbyteStream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL));
+    });
+    final Set<String> tableNames =
+        actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
+    final Set<String> expectedVisibleNames = Sets.newHashSet(
+        "table_granted_by_role",
+        "table_granted_by_role_with_options",
+        "test_table_granted_directly",
+        "test_table_granted_directly_with_options",
+        "mv_granted_by_role",
+        "mv_granted_by_role_with_options",
+        "test_mv_granted_directly",
+        "test_mv_granted_directly_with_options",
+        "test_view_granted_directly",
+        "test_view_granted_directly_with_options",
+        "view_granted_by_role",
+        "view_granted_by_role_with_options");
 
-      assertEquals(tableNames, expectedVisibleNames);
-
-      db.stop();
-    }
+    assertEquals(tableNames, expectedVisibleNames);
   }
 
   @Test
@@ -511,7 +459,7 @@ class PostgresSourceTest {
     final ConfiguredAirbyteCatalog configuredCatalog =
         CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
             Collectors.toList()));
-    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(new PostgresSource().read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
+    final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(source().read(getConfig(), configuredCatalog, null));
     setEmittedAtToNull(actualMessages);
 
     assertEquals(ASCII_MESSAGES, actualMessages);
@@ -519,56 +467,55 @@ class PostgresSourceTest {
 
   @Test
   void testReadIncrementalSuccess() throws Exception {
-    final JsonNode config = getConfig(PSQL_DB, dbName);
     // We want to test ordering, so we can delete the NaN entry and add a 3.
-    try (final DSLContext dslContext = getDslContext(config)) {
-      final Database database = getDatabase(dslContext);
-      database.query(ctx -> {
-        ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
-        ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
-        return null;
-      });
+    testdb.database.query(ctx -> {
+      ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
+      return null;
+    });
 
-      final ConfiguredAirbyteCatalog configuredCatalog =
-          CONFIGURED_INCR_CATALOG
-              .withStreams(CONFIGURED_INCR_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
-                  Collectors.toList()));
-      final PostgresSource source = new PostgresSource();
-      source.setStateEmissionFrequencyForDebug(1);
-      final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
-      setEmittedAtToNull(actualMessages);
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CONFIGURED_INCR_CATALOG
+            .withStreams(CONFIGURED_INCR_CATALOG.getStreams()
+                .stream()
+                .filter(s -> s.getStream().getName().equals(STREAM_NAME))
+                .toList());
+    final PostgresSource source = source();
+    source.setStateEmissionFrequencyForDebug(1);
+    final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(getConfig(), configuredCatalog, null));
+    setEmittedAtToNull(actualMessages);
 
-      final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
 
-      setEmittedAtToNull(actualMessages);
+    setEmittedAtToNull(actualMessages);
 
-      final Set<AirbyteMessage> expectedOutput = Sets.newHashSet(
-          createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
-          createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
-          createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
+    final Set<AirbyteMessage> expectedOutput = Sets.newHashSet(
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
 
-      // Assert that the correct number of messages are emitted.
-      assertEquals(actualMessages.size(), expectedOutput.size() + 1);
-      assertThat(actualMessages.contains(expectedOutput));
-      // Assert that the Postgres source is emitting records & state messages in the correct order.
-      assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
-          new AirbyteStreamNameNamespacePair("id_and_name", "public"));
+    // Assert that the correct number of messages are emitted.
+    assertEquals(actualMessages.size(), expectedOutput.size() + 1);
+    assertThat(actualMessages.contains(expectedOutput));
+    // Assert that the Postgres source is emitting records & state messages in the correct order.
+    assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
+        new AirbyteStreamNameNamespacePair("id_and_name", "public"));
 
-      final AirbyteStateMessage lastEmittedState = stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1);
-      final JsonNode state = Jsons.jsonNode(List.of(lastEmittedState));
+    final AirbyteStateMessage lastEmittedState = stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1);
+    final JsonNode state = Jsons.jsonNode(List.of(lastEmittedState));
 
-      database.query(ctx -> {
-        ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (5, 'piccolo', 100.0);");
-        return null;
-      });
-      // Incremental sync should only read one new message (where id = '5.0')
-      final Set<AirbyteMessage> nextSyncMessages = MoreIterators.toSet(source.read(getConfig(PSQL_DB, dbName), configuredCatalog, state));
-      setEmittedAtToNull(nextSyncMessages);
+    testdb.database.query(ctx -> {
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (5, 'piccolo', 100.0);");
+      return null;
+    });
+    // Incremental sync should only read one new message (where id = '5.0')
+    final Set<AirbyteMessage> nextSyncMessages =
+        MoreIterators.toSet(source.read(getConfig(), configuredCatalog, state));
+    setEmittedAtToNull(nextSyncMessages);
 
-      // An extra state message is emitted, in addition to the record messages.
-      assertEquals(nextSyncMessages.size(), 2);
-      assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
-    }
+    // An extra state message is emitted, in addition to the record messages.
+    assertEquals(nextSyncMessages.size(), 2);
+    assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
   }
 
   /*
@@ -607,7 +554,7 @@ class PostgresSourceTest {
 
   @Test
   void testIsCdc() {
-    final JsonNode config = getConfig(PSQL_DB, dbName);
+    final JsonNode config = getConfig();
 
     assertFalse(PostgresUtils.isCdc(config));
 
@@ -636,23 +583,15 @@ class PostgresSourceTest {
 
   @Test
   public void tableWithInvalidCursorShouldThrowException() throws Exception {
-    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
-      db.start();
-      final JsonNode config = getConfig(db);
-      try (final DSLContext dslContext = getDslContext(config)) {
-        final Database database = new Database(dslContext);
-        final ConfiguredAirbyteStream tableWithInvalidCursorType = createTableWithInvalidCursorType(database);
-        final ConfiguredAirbyteCatalog configuredAirbyteCatalog =
-            new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(tableWithInvalidCursorType));
+    final ConfiguredAirbyteStream tableWithInvalidCursorType = createTableWithInvalidCursorType(testdb.database);
+    final ConfiguredAirbyteCatalog configuredAirbyteCatalog =
+        new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(tableWithInvalidCursorType));
 
-        final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, configuredAirbyteCatalog, null)));
-        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
-            .hasMessageContaining(
-                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER, cause=Unsupported cursor type}");
-      } finally {
-        db.stop();
-      }
-    }
+    final Throwable throwable =
+        catchThrowable(() -> MoreIterators.toSet(source().read(getConfig(), configuredAirbyteCatalog, null)));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+        .hasMessageContaining(
+            "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER, cause=Unsupported cursor type}");
   }
 
   private ConfiguredAirbyteStream createTableWithInvalidCursorType(final Database database) throws SQLException {
@@ -677,7 +616,7 @@ class PostgresSourceTest {
 
   @Test
   void testJdbcUrlWithEscapedDatabaseName() {
-    final JsonNode jdbcConfig = new PostgresSource().toDatabaseConfig(buildConfigEscapingNeeded());
+    final JsonNode jdbcConfig = source().toDatabaseConfig(buildConfigEscapingNeeded());
     assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
@@ -694,23 +633,13 @@ class PostgresSourceTest {
 
   @Test
   public void tableWithNullValueCursorShouldThrowException() throws SQLException {
-    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
-      db.start();
-      final JsonNode config = getConfig(db);
-      try (final DSLContext dslContext = getDslContext(config)) {
-        final Database database = new Database(dslContext);
-        final ConfiguredAirbyteStream table = createTableWithNullValueCursor(database);
-        final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
+    final ConfiguredAirbyteStream table = createTableWithNullValueCursor(testdb.database);
+    final ConfiguredAirbyteCatalog catalog =
+        new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
 
-        final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, catalog, null)));
-        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
-            .hasMessageContaining(
-                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_table_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
-
-      } finally {
-        db.stop();
-      }
-    }
+    final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(source().read(getConfig(), catalog, null)));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class).hasMessageContaining(
+        "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_table_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
   }
 
   private ConfiguredAirbyteStream createTableWithNullValueCursor(final Database database) throws SQLException {
@@ -735,23 +664,13 @@ class PostgresSourceTest {
 
   @Test
   public void viewWithNullValueCursorShouldThrowException() throws SQLException {
-    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
-      db.start();
-      final JsonNode config = getConfig(db);
-      try (final DSLContext dslContext = getDslContext(config)) {
-        final Database database = new Database(dslContext);
-        final ConfiguredAirbyteStream table = createViewWithNullValueCursor(database);
-        final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
+    final ConfiguredAirbyteStream table = createViewWithNullValueCursor(testdb.database);
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
 
-        final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, catalog, null)));
-        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
-            .hasMessageContaining(
-                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_view_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
-
-      } finally {
-        db.stop();
-      }
-    }
+    final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(source().read(getConfig(), catalog, null)));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+        .hasMessageContaining(
+            "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_view_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
   }
 
   private ConfiguredAirbyteStream createViewWithNullValueCursor(final Database database) throws SQLException {
@@ -812,44 +731,83 @@ class PostgresSourceTest {
 
   @Test
   public void testJdbcOptionsParameter() throws Exception {
-    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
-      db.start();
+    // Populate DB.
+    final JsonNode dbConfig = getConfig();
+    testdb.database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_bytes (id INTEGER, bytes BYTEA);");
+      ctx.fetch("INSERT INTO id_and_bytes (id, bytes) VALUES (1, decode('DEADBEEF', 'hex'));");
+      return null;
+    });
 
-      // Populate DB.
-      final JsonNode dbConfig = getConfig(db);
-      try (final DSLContext dslContext = getDslContext(dbConfig)) {
-        final Database database = getDatabase(dslContext);
-        database.query(ctx -> {
-          ctx.fetch("CREATE TABLE id_and_bytes (id INTEGER, bytes BYTEA);");
-          ctx.fetch("INSERT INTO id_and_bytes (id, bytes) VALUES (1, decode('DEADBEEF', 'hex'));");
-          return null;
-        });
+    // Read the table contents using the non-default 'escape' format for bytea values.
+    final JsonNode sourceConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .putAll(Jsons.flatten(dbConfig))
+        .put(JdbcUtils.JDBC_URL_PARAMS_KEY, "options=-c%20statement_timeout=90000%20-c%20bytea_output=escape")
+        .build());
+    final AirbyteStream airbyteStream = CatalogHelpers.createAirbyteStream(
+        "id_and_bytes",
+        SCHEMA_NAME,
+        Field.of("id", JsonSchemaType.NUMBER),
+        Field.of("bytes", JsonSchemaType.STRING))
+        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+        .withSourceDefinedPrimaryKey(List.of(List.of("id")));
+    final AirbyteCatalog airbyteCatalog = new AirbyteCatalog().withStreams(List.of(airbyteStream));
+    final Set<AirbyteMessage> actualMessages =
+        MoreIterators.toSet(source().read(
+            sourceConfig,
+            CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog),
+            null));
+    setEmittedAtToNull(actualMessages);
+
+    // Check that the 'options' JDBC URL parameter was parsed correctly
+    // and that the bytea value is not in the default 'hex' format.
+    assertEquals(1, actualMessages.size());
+    final AirbyteMessage actualMessage = actualMessages.stream().findFirst().get();
+    assertTrue(actualMessage.getRecord().getData().has("bytes"));
+    assertEquals("\\336\\255\\276\\357", actualMessage.getRecord().getData().get("bytes").asText());
+  }
+
+  @Test
+  @DisplayName("Make sure initial incremental load is reading records in a certain order")
+  void testReadIncrementalRecordOrder() throws Exception {
+    // We want to test ordering, so we can delete the NaN entry
+    testdb.database.query(ctx -> {
+      ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
+      for (int i = 3; i < 1000; i++) {
+        ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (%d, 'gohan%d', 222.1);".formatted(i, i));
       }
+      return null;
+    });
 
-      // Read the table contents using the non-default 'escape' format for bytea values.
-      final JsonNode sourceConfig = Jsons.jsonNode(ImmutableMap.builder()
-          .putAll(Jsons.flatten(dbConfig))
-          .put(JdbcUtils.JDBC_URL_PARAMS_KEY, "options=-c%20statement_timeout=90000%20-c%20bytea_output=escape")
-          .build());
-      final AirbyteStream airbyteStream = CatalogHelpers.createAirbyteStream(
-          "id_and_bytes",
-          SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("bytes", JsonSchemaType.STRING))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id")));
-      final AirbyteCatalog airbyteCatalog = new AirbyteCatalog().withStreams(List.of(airbyteStream));
-      final Set<AirbyteMessage> actualMessages =
-          MoreIterators.toSet(new PostgresSource().read(sourceConfig, CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog), null));
-      setEmittedAtToNull(actualMessages);
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CONFIGURED_INCR_CATALOG
+            .withStreams(CONFIGURED_INCR_CATALOG.getStreams()
+                .stream()
+                .filter(s -> s.getStream().getName().equals(STREAM_NAME))
+                .toList());
+    final PostgresSource source = source();
+    source.setStateEmissionFrequencyForDebug(1);
+    final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(getConfig(), configuredCatalog, null));
+    setEmittedAtToNull(actualMessages);
 
-      // Check that the 'options' JDBC URL parameter was parsed correctly
-      // and that the bytea value is not in the default 'hex' format.
-      assertEquals(1, actualMessages.size());
-      final AirbyteMessage actualMessage = actualMessages.stream().findFirst().get();
-      assertTrue(actualMessage.getRecord().getData().has("bytes"));
-      assertEquals("\\336\\255\\276\\357", actualMessage.getRecord().getData().get("bytes").asText());
+    // final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
+
+    setEmittedAtToNull(actualMessages);
+
+    final Set<AirbyteMessage> expectedOutput = Sets.newHashSet(
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)));
+    for (int i = 3; i < 1000; i++) {
+      expectedOutput.add(
+          createRecord(
+              STREAM_NAME,
+              SCHEMA_NAME,
+              map("id", new BigDecimal("%d.0".formatted(i)), "name", "gohan%d".formatted(i), "power", 222.1)));
     }
+    assertThat(actualMessages.contains(expectedOutput));
+    // Assert that the Postgres source is emitting records & state messages in the correct order.
+    assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
+        new AirbyteStreamNameNamespacePair("id_and_name", "public"));
   }
 
 }
