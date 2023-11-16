@@ -134,11 +134,7 @@
             "type": ["null", "string"]
           },
           "default_tax_rates": {
-            "type": ["null", "array"],
-            "items": {
-              "type": ["null", "object"],
-              "additionalProperties": true
-            }
+            "$ref": "tax_rates.json"
           },
           "description": {
             "type": ["null", "string"]
