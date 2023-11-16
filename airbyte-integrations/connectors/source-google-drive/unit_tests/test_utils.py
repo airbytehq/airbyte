@@ -11,12 +11,12 @@ from source_google_drive.utils import get_folder_id
         ("https://drive.google.com/drive/folders/1q2w3e4r5t6y7u8i9o0p", "1q2w3e4r5t6y7u8i9o0p", False),
         ("https://drive.google.com/drive/folders/1q2w3e4r5t6y7u8i9o0p/", "1q2w3e4r5t6y7u8i9o0p", False),
         ("https://drive.google.com/drive/folders/1q2w3e4r5t6y7u8i9o0p?usp=link_sharing", "1q2w3e4r5t6y7u8i9o0p", False),
-        ("https://drive.google.com/u/0/drive/folders/1q2w3e4r5t6y7u8i9o0p/", "1q2w3e4r5t6y7u8i9o0p", False),
-        ("https://drive.google.com/u/0/drive/folders/1q2w3e4r5t6y7u8i9o0p?usp=link_sharing", "1q2w3e4r5t6y7u8i9o0p", False),
-        ("https://drive.google.com/u/0/drive/folders/1q2w3e4r5t6y7u8i9o0p#abc", "1q2w3e4r5t6y7u8i9o0p", False),
+        ("https://drive.google.com/drive/u/0/folders/1q2w3e4r5t6y7u8i9o0p/", "1q2w3e4r5t6y7u8i9o0p", False),
+        ("https://drive.google.com/drive/u/0/folders/1q2w3e4r5t6y7u8i9o0p?usp=link_sharing", "1q2w3e4r5t6y7u8i9o0p", False),
+        ("https://drive.google.com/drive/u/0/folders/1q2w3e4r5t6y7u8i9o0p#abc", "1q2w3e4r5t6y7u8i9o0p", False),
         ("https://docs.google.com/document/d/fsgfjdsh", None, True),
         ("https://drive.google.com/drive/my-drive", None, True),
-        ("http://drive.google.com/u/0/drive/folders/1q2w3e4r5t6y7u8i9o0p/", None, True),
+        ("http://drive.google.com/drive/u/0/folders/1q2w3e4r5t6y7u8i9o0p/", None, True),
         ("https://drive.google.com/", None, True),
     ]
 )

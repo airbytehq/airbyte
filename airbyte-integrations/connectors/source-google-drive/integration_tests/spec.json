@@ -305,7 +305,7 @@
         ],
         "order": 0,
         "pattern": "^https://drive.google.com/.+",
-        "pattern_descriptor": "https://drive.google.com/folders/MY-FOLDER-ID",
+        "pattern_descriptor": "https://drive.google.com/drive/folders/MY-FOLDER-ID",
         "type": "string"
       },
       "credentials": {

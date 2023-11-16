@@ -56,7 +56,7 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         examples=["https://drive.google.com/drive/folders/1Xaz0vXXXX2enKnNYU5qSt9NS70gvMyYn"],
         order=0,
         pattern="^https://drive.google.com/.+",
-        pattern_descriptor="https://drive.google.com/folders/MY-FOLDER-ID",
+        pattern_descriptor="https://drive.google.com/drive/folders/MY-FOLDER-ID",
     )
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
