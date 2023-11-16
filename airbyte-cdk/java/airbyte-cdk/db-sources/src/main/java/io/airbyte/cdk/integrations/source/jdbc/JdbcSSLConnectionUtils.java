@@ -5,12 +5,15 @@
 package io.airbyte.cdk.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Maps;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.util.SSLCertificateUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -25,6 +28,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,12 +139,12 @@ public class JdbcSSLConnectionUtils {
     // if has client cert
     // if has client password - make keystore using password
     // if no client password - make keystore using random password
-
-    if (sslConfigAsJson.has(PARAM_CA_CERTIFICATE) && !sslConfigAsJson.get(PARAM_CA_CERTIFICATE).asText().isEmpty()) {
+    final var encryption = sslConfigAsJson.get(JdbcUtils.SSL_MODE_KEY);
+    if (encryption.has(PARAM_CA_CERTIFICATE) && !encryption.get(PARAM_CA_CERTIFICATE).asText().isEmpty()) {
       final String clientKeyPassword = getOrGeneratePassword(sslConfigAsJson);
       try {
         final URI caCertKeyStoreUri = SSLCertificateUtils.keyStoreFromCertificate(
-            sslConfigAsJson.get(PARAM_CA_CERTIFICATE).asText(),
+            encryption.get(PARAM_CA_CERTIFICATE).asText(),
             clientKeyPassword,
             null,
             null);
