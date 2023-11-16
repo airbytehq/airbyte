@@ -133,7 +133,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     try {
       node.put(columnName, DateTimeConverter.convertToTimestamp(getObject(resultSet, index, LocalDateTime.class)));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       // for backward compatibility
       final Instant instant = resultSet.getTimestamp(index).toInstant();
       node.put(columnName, DataTypeUtils.toISO8601StringWithMicroseconds(instant));
@@ -229,16 +229,16 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     return resultSet.getObject(index, clazz);
   }
 
-  protected void putTimeWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final OffsetTime timetz = getObject(resultSet, index, OffsetTime.class);
-    node.put(columnName, DateTimeConverter.convertToTimeWithTimezone(timetz));
-  }
-
   protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
-    final OffsetDateTime timestamptz = getObject(resultSet, index, OffsetDateTime.class);
-    final LocalDate localDate = timestamptz.toLocalDate();
-    node.put(columnName, resolveEra(localDate, timestamptz.format(TIMESTAMPTZ_FORMATTER)));
+    try {
+      final OffsetDateTime timestamptz = getObject(resultSet, index, OffsetDateTime.class);
+      final LocalDate localDate = timestamptz.toLocalDate();
+      node.put(columnName, resolveEra(localDate, timestamptz.format(TIMESTAMPTZ_FORMATTER)));
+    } catch (final Exception e) {
+      final Instant instant = resultSet.getTimestamp(index).toInstant();
+      node.put(columnName, instant.toString());
+    }
   }
 
   /**
