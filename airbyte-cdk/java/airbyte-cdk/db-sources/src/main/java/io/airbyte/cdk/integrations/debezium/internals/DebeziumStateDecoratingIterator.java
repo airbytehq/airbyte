@@ -148,8 +148,6 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
     }
 
     if (changeEventIterator.hasNext()) {
-      LOGGER.info("Sending changeEventIterator message.");
-
       final ChangeEventWithMetadata event = changeEventIterator.next();
 
       if (cdcStateHandler.isCdcCheckpointEnabled()) {
