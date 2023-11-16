@@ -11,23 +11,29 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
+import static java.util.Collections.emptySet;
+import static java.util.stream.Collectors.toSet;
 import static org.jooq.impl.DSL.createSchemaIfNotExists;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.quotedName;
 
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.sql.SQLType;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.jooq.CreateSchemaFinalStep;
 import org.jooq.CreateTableColumnStep;
@@ -129,7 +135,24 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   @Override
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
-    return false;
+    // Check that the columns match, with special handling for the metadata columns.
+    final LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
+        .collect(LinkedHashMap::new,
+            (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue())),
+            LinkedHashMap::putAll);
+    final LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
+        .filter(column -> JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().map(String::toUpperCase)
+            .noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
+        .collect(LinkedHashMap::new,
+            (map, column) -> map.put(column.getKey(), column.getValue().type()),
+            LinkedHashMap::putAll);
+
+    final boolean sameColumns = actualColumns.equals(intendedColumns)
+        && "varchar".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toUpperCase()).type())
+        && "timestamptz".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase()).type())
+        && "super".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META.toUpperCase()).type());
+
+    return sameColumns;
   }
 
   @Override
