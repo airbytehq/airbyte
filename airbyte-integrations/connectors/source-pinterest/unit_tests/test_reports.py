@@ -2,12 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import copy
+import os
+
 import responses
 from source_pinterest import SourcePinterest
 from source_pinterest.utils import get_analytics_columns
 from unit_tests.test_source import setup_responses
 
-import os
 os.environ["REQUEST_CACHE_PATH"] = '/tmp'
 
 @responses.activate
