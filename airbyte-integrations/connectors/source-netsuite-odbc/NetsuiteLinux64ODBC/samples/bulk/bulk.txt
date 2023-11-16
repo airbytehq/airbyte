@@ -1,0 +1,70 @@
+     Progress DataDirect
+     Bulk Load Example Readme File
+
+The Bulk Load example is a sample application that demonstrates the 
+bulk export, load, and validate operations of DataDirect Bulk Load.
+
+The Bulk Load example prompts the user for the type of bulk operation 
+to perform and the necessary table, file, and option information needed 
+to perform the selected operation.
+
+For your applications to use DataDirect Bulk Load functionality, 
+they must obtain driver connection handles and function pointers. The 
+Bulk Load example illustrates the following steps needed to acquire the 
+bulk load function pointers:
+
+1. Use SQLGetInfo with the parameter SQL_DRIVER_HDBC to obtain the 
+driver's connection handle from the Driver Manager.
+
+2. Use SQLGetInfo with the parameter SQL_DRIVER_HLIB to obtain the 
+driver's shared library or DLL handle from the Driver Manager.
+
+3. Obtain function pointers to the bulk load functions using the 
+function name resolution method specific to your operating system. The 
+bulk.c application contains the function resolveName that illustrates 
+how to obtain function pointers to the bulk load functions.
+
+To execute the application, on a command line enter:
+
+bulk <connection_string>
+
+Where <connection_string> is the connection information for the 
+database to which you want to connect for either exporting data, 
+validating data, or bulk loading data. Follow the prompts to choose the 
+operation you want to perform on that database and enter other 
+information necessary to complete the bulk operation.
+
+You can view the provided source code, bulk.c, to see specifically 
+commented code. The functions are fully described in the "Using DataDirect 
+Bulk Load" chapter of the PROGRESS DATADIRECT OPENACCESS(R) FOR ODBC 
+REFERENCE.
+
+Windows
+-------
+The Bulk Load application can be built from the following files, 
+located in the \SAMPLES\BULK directory of the Progress DataDirect OpenAccess for ODBC 
+installation directory:
+
+BULK.C            Bulk example source
+BULK.EXE          Bulk application
+BULK.VCXPROJ      Bulk example project file
+BULK.MAK          Bulk example make file (instead of .SLN and .VCPROJ 
+                  files on Itanium 64 only)
+
+UNIX
+----
+Instructions for building the Bulk Load application are contained 
+inside the file bulk.mak, which can be read with a text editor. The 
+application can be built from the following files, located in the 
+/samples/bulk directory of the Progress DataDirect OpenAccess for ODBC 
+installation directory:
+
+bulk                Bulk application
+bulk.c              Bulk example source
+bulk.mak            Bulk example make file
+
+
+~~~~~~~~~~~~~
+End of Readme
+0810
+
