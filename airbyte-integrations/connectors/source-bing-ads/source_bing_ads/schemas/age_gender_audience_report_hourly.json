@@ -13,7 +13,8 @@
     },
     "TimePeriod": {
       "type": ["null", "string"],
-      "format": "date"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "AllConversions": {
       "type": ["null", "integer"]
