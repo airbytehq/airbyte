@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "number"]
+    },
+    "titleId": {
+      "type": ["null", "number"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "language": {
+      "type": ["null", "string"]
+    },
+    "orientation": {
+      "type": ["null", "string"]
+    },
+    "assets": {
+      "type": ["null", "array"],
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "id": {
+            "type": ["null", "number"]
+          },
+          "usageType": {
+            "type": ["null", "string"]
+          },
+          "titleId": {
+            "type": ["null", "number"]
+          }
+        }
+      }
+    }
+  }
+}
