@@ -15,6 +15,7 @@ import static org.jooq.impl.DSL.createSchemaIfNotExists;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.quotedName;
 
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
@@ -42,6 +43,13 @@ import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
 
 public class RedshiftSqlGenerator extends JdbcSqlGenerator {
+
+  private static final Map<String, String> REDSHIFT_TYPE_NAME_TO_JDBC_TYPE = ImmutableMap.of(
+      "float8", "float",
+      "int8", "bigint",
+      "bool", "boolean",
+      "timestamptz", "timestamp with time zone",
+      "timetz", "time with time zone");
 
   public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
@@ -131,21 +139,21 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   @Override
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final TableDefinition existingTable) {
     // Check that the columns match, with special handling for the metadata columns.
-    final LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
+    final LinkedHashMap<String, String> intendedColumns = stream.columns().entrySet().stream()
         .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue())),
+            (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue()).getTypeName()),
             LinkedHashMap::putAll);
     final LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
-        .filter(column -> JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().map(String::toUpperCase)
+        .filter(column -> JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream()
             .noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
         .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey(), column.getValue().type()),
+            (map, column) -> map.put(column.getKey(), jdbcTypeNameFromRedshiftTypeName(column.getValue().type())),
             LinkedHashMap::putAll);
 
     final boolean sameColumns = actualColumns.equals(intendedColumns)
-        && "varchar".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toUpperCase()).type())
-        && "timestamptz".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase()).type())
-        && "super".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META.toUpperCase()).type());
+        && "varchar".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).type())
+        && "timestamptz".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT).type())
+        && "super".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META).type());
 
     return sameColumns;
   }
@@ -191,6 +199,10 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     return DSL.update(DSL.table(DSL.name(streamId.rawNamespace(), streamId.rawName())))
         .set(DSL.field(COLUMN_NAME_AB_LOADED_AT), (Object) null)
         .getSQL();
+  }
+
+  private static String jdbcTypeNameFromRedshiftTypeName(final String redshiftType) {
+    return REDSHIFT_TYPE_NAME_TO_JDBC_TYPE.getOrDefault(redshiftType, redshiftType);
   }
 
 }
