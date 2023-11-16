@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 28fd835f-c377-4abb-ae53-a0a14652f4ca
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-applovin
+  githubIssueLabel: source-applovin
+  icon: applovin.svg
+  license: MIT
+  name: Applovin
+  releaseDate: TODO
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/applovin
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
