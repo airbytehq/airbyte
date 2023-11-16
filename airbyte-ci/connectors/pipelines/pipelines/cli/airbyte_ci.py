@@ -40,8 +40,8 @@ DEV_UPGRADE_COMMAND = "make tools.airbyte-ci-dev.install"
 
 
 def check_for_upgrade(
-        require_update=True,
-        enable_auto_update=True,
+    require_update=True,
+    enable_auto_update=True,
 ):
     """Check if the installed version of pipelines is up to date."""
     current_command = " ".join(sys.argv)
@@ -49,7 +49,6 @@ def check_for_upgrade(
     is_out_of_date = latest_version != __installed_version__
     is_dev_version = "airbyte-ci-dev" in current_command
     upgrade_command = DEV_UPGRADE_COMMAND if is_dev_version else f"{BINARY_UPGRADE_COMMAND} VERSION={latest_version}"
-
 
     if not is_out_of_date:
         main_logger.info(f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
@@ -72,18 +71,18 @@ def check_for_upgrade(
 
     # Ask the user if they want to upgrade
     if enable_auto_update and click.confirm(upgrade_error_message + "\nDo you want to upgrade?", default=True):
-            # if the current command contains `airbyte-ci-dev` is the dev version of the command
-            logging.info(f"[{'DEV' if is_dev_version else 'BINARY'}] Upgrading pipelines...")
+        # if the current command contains `airbyte-ci-dev` is the dev version of the command
+        logging.info(f"[{'DEV' if is_dev_version else 'BINARY'}] Upgrading pipelines...")
 
-            upgrade_exit_code = os.system(upgrade_command)
-            if upgrade_exit_code != 0:
-                raise Exception(f"Failed to upgrade pipelines. Exit code: {upgrade_exit_code}")
+        upgrade_exit_code = os.system(upgrade_command)
+        if upgrade_exit_code != 0:
+            raise Exception(f"Failed to upgrade pipelines. Exit code: {upgrade_exit_code}")
 
-            logging.info(f"Re-running command: {current_command}")
+        logging.info(f"Re-running command: {current_command}")
 
-            # Re-run the command
-            command_exit_code = os.system(current_command)
-            sys.exit(command_exit_code)
+        # Re-run the command
+        command_exit_code = os.system(current_command)
+        sys.exit(command_exit_code)
 
     if require_update:
         raise Exception(upgrade_error_message)
@@ -336,7 +335,6 @@ async def airbyte_ci(ctx: click.Context):  # noqa D103
         require_update=ctx.obj["is_local"],
         enable_auto_update=ctx.obj["is_local"] and ctx.obj["enable_auto_update"],
     )
-
 
     if not ctx.obj["is_local"]:
         log_git_info(ctx)
