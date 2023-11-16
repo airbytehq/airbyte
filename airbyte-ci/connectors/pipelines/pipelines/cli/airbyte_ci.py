@@ -35,49 +35,57 @@ from pipelines.helpers.utils import get_current_epoch_time, transform_strs_to_pa
 
 __installed_version__ = importlib.metadata.version("pipelines")
 
-
-def display_welcome_message() -> None:
-    print(
-        """
-        ╔─────────────────────────────────────────────────────────────────────────────────────────────────╗
-        │                                                                                                 │
-        │                                                                                                 │
-        │    /$$$$$$  /$$$$$$ /$$$$$$$  /$$$$$$$  /$$     /$$ /$$$$$$$$ /$$$$$$$$       /$$$$$$  /$$$$$$  │
-        │   /$$__  $$|_  $$_/| $$__  $$| $$__  $$|  $$   /$$/|__  $$__/| $$_____/      /$$__  $$|_  $$_/  │
-        │  | $$  \ $$  | $$  | $$  \ $$| $$  \ $$ \  $$ /$$/    | $$   | $$           | $$  \__/  | $$    │
-        │  | $$$$$$$$  | $$  | $$$$$$$/| $$$$$$$   \  $$$$/     | $$   | $$$$$ /$$$$$$| $$        | $$    │
-        │  | $$__  $$  | $$  | $$__  $$| $$__  $$   \  $$/      | $$   | $$__/|______/| $$        | $$    │
-        │  | $$  | $$  | $$  | $$  \ $$| $$  \ $$    | $$       | $$   | $$           | $$    $$  | $$    │
-        │  | $$  | $$ /$$$$$$| $$  | $$| $$$$$$$/    | $$       | $$   | $$$$$$$$     |  $$$$$$/ /$$$$$$  │
-        │  |__/  |__/|______/|__/  |__/|_______/     |__/       |__/   |________/      \______/ |______/  │
-        │                                                                                                 │
-        │                                                                                                 │
-        ╚─────────────────────────────────────────────────────────────────────────────────────────────────╝
-        """  # noqa: W605
-    )
+BINARY_UPGRADE_COMMAND = "make tools.airbyte-ci.install"
+DEV_UPGRADE_COMMAND = "make tools.airbyte-ci-dev.install"
 
 
-def check_up_to_date(throw_as_error=False) -> bool:
+def check_for_upgrade(
+        require_update=True,
+        enable_auto_update=True,
+):
     """Check if the installed version of pipelines is up to date."""
     latest_version = get_latest_version()
-    if latest_version != __installed_version__:
-        upgrade_error_message = f"""
-        🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+    is_out_of_date = latest_version != __installed_version__
+    if not is_out_of_date:
+        main_logger.info(f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
+        return
 
-        airbyte-ci is not up to date. Installed version: {__installed_version__}. Latest version: {latest_version}
-        Please run `pipx reinstall pipelines` to upgrade to the latest version.
+    upgrade_error_message = f"""
+    🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
 
-        🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
-        """
+    This version of `airbyte-ci` does not match that of your local airbyte repository.
 
-        if throw_as_error:
-            raise Exception(upgrade_error_message)
-        else:
-            logging.warning(upgrade_error_message)
-            return False
+    Installed Version: {__installed_version__}.
+    Local Repository Version: {latest_version}
 
-    main_logger.info(f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
-    return True
+    🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+    """
+    logging.warning(upgrade_error_message)
+
+    # Ask the user if they want to upgrade
+    if enable_auto_update and click.confirm(upgrade_error_message + "\nDo you want to upgrade?", default=True):
+            # if the current command contains `airbyte-ci-dev` is the dev version of the command
+            current_command = " ".join(sys.argv)
+            is_dev_version = "airbyte-ci-dev" in current_command
+
+            upgrade_command = DEV_UPGRADE_COMMAND if is_dev_version else f"{BINARY_UPGRADE_COMMAND} VERSION={latest_version}"
+
+            logging.info(f"[{'DEV' if is_dev_version else 'BINARY'}] Upgrading pipelines...")
+
+            upgrade_exit_code = os.system(upgrade_command)
+            if upgrade_exit_code != 0:
+                raise Exception(f"Failed to upgrade pipelines. Exit code: {upgrade_exit_code}")
+
+            logging.info(f"Re-running command: {current_command}")
+
+            # Re-run the command
+            command_exit_code = os.system(current_command)
+            sys.exit(command_exit_code)
+
+    if require_update:
+        raise Exception(upgrade_error_message)
+
+    return
 
 
 def get_latest_version() -> str:
@@ -271,6 +279,7 @@ async def get_modified_files_str(ctx: click.Context):
 )
 @click.version_option(__installed_version__)
 @click.option("--enable-dagger-run/--disable-dagger-run", default=is_dagger_run_enabled_by_default)
+@click.option("--enable-auto-update/--disable-auto-update", default=False)
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
@@ -308,8 +317,6 @@ async def get_modified_files_str(ctx: click.Context):
 @click.pass_context
 @click_ignore_unused_kwargs
 async def airbyte_ci(ctx: click.Context):  # noqa D103
-    display_welcome_message()
-
     if ctx.obj["enable_dagger_run"] and not is_current_process_wrapped_by_dagger_run():
         main_logger.debug("Re-Running airbyte-ci with dagger run.")
         from pipelines.cli.dagger_run import call_current_command_with_dagger_run
@@ -322,7 +329,11 @@ async def airbyte_ci(ctx: click.Context):  # noqa D103
         # In our CI the docker host used by the Dagger Engine is different from the one used by the runner.
         check_local_docker_configuration()
 
-    check_up_to_date(throw_as_error=ctx.obj["is_local"])
+    check_for_upgrade(
+        require_update=ctx.obj["is_local"],
+        enable_auto_update=ctx.obj["is_local"],
+    )
+
 
     if not ctx.obj["is_local"]:
         log_git_info(ctx)
