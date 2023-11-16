@@ -83,6 +83,7 @@ As properties have to start will a lowercase letter in Weaviate, field names mig
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.9 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
 | 0.2.8   | 2023-11-03 | [#32134](https://github.com/airbytehq/airbyte/pull/32134) | Improve test coverage |
 | 0.2.7   | 2023-11-03 | [#32134](https://github.com/airbytehq/airbyte/pull/32134) | Upgrade weaviate client library |
 | 0.2.6   | 2023-11-01 | [#32038](https://github.com/airbytehq/airbyte/pull/32038) | Retry failed object loads |

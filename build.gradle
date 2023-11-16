@@ -1,7 +1,4 @@
 import com.github.spotbugs.snom.SpotBugsTask
-import ru.vyarus.gradle.plugin.python.task.PythonTask
-import com.hierynomus.gradle.license.tasks.LicenseCheck
-import com.hierynomus.gradle.license.tasks.LicenseFormat
 
 // The buildscript block defines dependencies in order for .gradle file evaluation.
 // This is separate from application dependencies.
@@ -9,7 +6,6 @@ import com.hierynomus.gradle.license.tasks.LicenseFormat
 buildscript {
     dependencies {
         classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.20.0'
-        classpath 'gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.16.1'
     }
 }
 
@@ -67,57 +63,7 @@ allprojects {
     version = rootProject.ext.version
 }
 
-// License generation logic.
-def createLicenseWith = { File license, String startComment, String endComment, String lineComment, boolean isPython ->
-    /*
-    In java, we don't have a second linter/styling tool other than spotless so it doesn't really
-    matter if we write a newline or not for startComment/endComment.
-
-    However, in python, we are using black that double-checks and reformats the code.
-    Thus, writing an extra empty newline (not removed by trimTrailingWhitespace() is actually a
-    big deal and would be reformatted (removed) because of black's specs.
-    */
-    def tmp = File.createTempFile('tmp', '.tmp')
-    tmp.withWriter {
-        def w = it
-        if (startComment.length() > 0 || !isPython) {
-            w.writeLine(startComment)
-        }
-        license.eachLine {
-            w << lineComment
-            w.writeLine(it)
-        }
-        if (endComment.length() > 0 || !isPython) {
-            w.writeLine(endComment)
-        }
-        w.writeLine("")
-        if (isPython) {
-            w.writeLine("")
-        }
-    }
-    return tmp
-}
-def createPythonLicenseWith = { license ->
-    return createLicenseWith(license, '', '', '', true)
-}
-def createJavaLicenseWith = { license ->
-    return createLicenseWith(license, '/*', ' */', ' * ', false)
-}
-
-// node is required by the root project to apply the prettier formatter repo-wide.
-node {
-    download = true
-    version = '18.18.0'
-    npmVersion = '10.1.0'
-    // When setting both these directories, npm and node will be in separate directories.
-    workDir = file("${buildDir}/nodejs")
-    npmWorkDir = file("${buildDir}/npm")
-    // Do not declare the repository.
-    distBaseUrl = null
-
-}
-
-// python is required by the root project to apply python formatters like isort or black.
+// python is required by the root project to run CAT tests for connectors
 python {
     envPath = '.venv'
     minPythonVersion = '3.10' // should be 3.10 for local development
@@ -149,12 +95,10 @@ python {
 
     scope = 'VIRTUALENV'
     installVirtualenv = true
-    // black and isort are required for formatting
-    pip 'black:22.3.0'
-    pip 'isort:5.6.4'
     // poetry is required for installing and running airbyte-ci
     pip 'poetry:1.5.1'
 }
+
 def cleanPythonVenv = rootProject.tasks.register('cleanPythonVenv', Exec) {
     commandLine 'rm'
     args '-rf', "${rootProject.projectDir.absolutePath}/.venv"
@@ -167,56 +111,10 @@ rootProject.tasks.named('clean').configure {
 allprojects {
 
     def createFormatTarget = { pattern ->
-        // We are the spotless exclusions rules using file tree. It seems the excludeTarget option is super finicky in a
-        // monorepo setup and it doesn't actually exclude directories reliably.
-        // This code makes the behavior predictable.
         ArrayList<String> excludes = [
-                '.gradle',
-                'node_modules',
-                '.eggs',
-                '.mypy_cache',
-                '.venv',
-                '*.egg-info',
-                'build',
-                'dbt-project-template',
-                'dbt-project-template-mssql',
-                'dbt-project-template-mysql',
-                'dbt-project-template-oracle',
-                'dbt-project-template-clickhouse',
-                'dbt-project-template-snowflake',
-                'dbt-project-template-tidb',
-                'dbt-project-template-duckdb',
-                'dbt_test_config',
-                'normalization_test_output',
-                'tools',
-                'secrets',
-                'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
-                'resources/seed/*_catalog.json', // Do not remove - this is also necessary to prevent diffs in our github workflows
-                'resources/seed/*_registry.json', // Do not remove - this is also necessary to prevent diffs in our github workflows
-                'resources/seed/specs_secrets_mask.yaml', // Downloaded externally.
-                'resources/examples/airflow/superset/docker/pythonpath_dev/superset_config.py',
-                'source-amplitude/unit_tests/api_data/zipped.json', // Zipped file presents as non-UTF-8 making spotless sad
-                'airbyte-connector-builder-server/connector_builder/generated', // autogenerated code doesn't need to be formatted
-                'airbyte-ci/connectors/metadata_service/lib/tests/fixtures/**/invalid', // These are deliberately invalid and unformattable.
-                '__init__.py',
-                'declarative_component_schema.py',
-                'source-stock-ticker-api-tutorial/source.py',
-                'tools/git_hooks/tests/test_spec_linter.py',
-                'tools/schema_generator/schema_generator/infer_schemas.py',
+            '**/build', // Ignore new build files as well as the ones ignored when running this through airbyte-ci
+            '.gradle' // Ignore the gradle version that is downloaded in the container
         ]
-        // Ensure that the excludes work when we're already partly in their path.
-        excludes.addAll excludes.collectMany {
-            it.startsWith("${project.name}/") ? [it, it.substring("${project.name}/".length())] : [it]
-        }
-        // Prefix everything with double-globs because we only care about path suffixes.
-        excludes = excludes.collect { "**/${it}" }
-        // Remove whatever's covered by the project's subprojects, so that each file is targeted by at most one task.
-        def currentProject = project
-        project.subprojects {
-          if (it.parent.projectDir == currentProject.projectDir) {
-                excludes.add "${it.projectDir}/**"
-          }
-        }
         // Build the FileTree.
         return fileTree(dir: projectDir, include: pattern, exclude: excludes)
     }
@@ -230,7 +128,6 @@ allprojects {
                 target javaTarget
                 importOrder()
                 eclipse('4.21').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
-                licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
                 removeUnusedImports()
                 trimTrailingWhitespace()
             }
@@ -241,117 +138,16 @@ allprojects {
                 target groovyGradleTarget
             }
         }
-        def sqlTarget = createFormatTarget('**/*.sql')
-        if (!sqlTarget.isEmpty()) {
-            sql {
-                target sqlTarget
-                dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
-            }
-        }
-        def stylingTarget = createFormatTarget(['**/*.yaml', '**/*.yml', '**/*.json'])
-        if (!stylingTarget.isEmpty()) {
-            format 'styling', {
-                target stylingTarget
-                def npmPath = "${rootProject.tasks.named('npmSetup').get().npmDir.get()}/bin/npm"
-                def nodePath = "${rootProject.tasks.named('nodeSetup').get().nodeDir.get()}/bin/node"
-                prettier().npmExecutable(npmPath).nodeExecutable(nodePath)
-            }
-        }
-    }
-    tasks.matching { it.name =~ /spotless.*/ }.configureEach {
-        dependsOn tasks.matching { it.name == 'generate' }
-    }
-    tasks.matching { it.name =~ /spotlessStyling.*/ }.configureEach {
-        dependsOn rootProject.tasks.named('nodeSetup')
-        dependsOn rootProject.tasks.named('npmSetup')
-    }
-    // TODO: remove this once the CI routinely enforces formatting checks.
-    tasks.matching { it.name =~ /spotless.*Check/ }.configureEach {
-        enabled = false
     }
 
-    // python license header generation is part of 'format'
-    def pythonTarget = createFormatTarget('**/*.py')
-    if (!project.name.endsWith('source-stock-ticker-api-tutorial') && !pythonTarget.isEmpty()) {
-
-        apply plugin: 'com.github.hierynomus.license'
-
-        license {
-            header rootProject.file("LICENSE_SHORT")
-        }
-
-        // Disable auto-generated java tasks, we rely on spotless there.
-        tasks.matching { it.name =~ /license.*/ }.configureEach {
+    if (rootProject.ext.skipSlowTests) {
+        // Format checks should be run via airbyte-ci.
+        tasks.matching { it.name =~ /spotless.*Check/ }.configureEach {
             enabled = false
         }
-
-        def licensePythonCheck = tasks.register('licensePythonCheck', LicenseCheck) {
-            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
-            source = pythonTarget
-            strictCheck = true
-        }
-        licensePythonCheck.configure {
-            dependsOn tasks.matching { it.name == 'generate' }
-        }
-        def licensePythonFormat = tasks.register('licensePythonFormat', LicenseFormat) {
-            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
-            source = pythonTarget
-            strictCheck = true
-        }
-        licensePythonFormat.configure {
-            dependsOn tasks.matching { it.name == 'generate' }
-        }
-
-        def registerPythonFormatTask = {
-            String taskName, String moduleName, String settingsFileFlagName, String... extraArgs ->
-            def task = tasks.register(taskName, Exec) {
-                workingDir projectDir
-                commandLine rootProject.file('.venv/bin/python')
-                args "-m", moduleName, settingsFileFlagName, rootProject.file('pyproject.toml').absolutePath
-                args extraArgs
-                pythonTarget.getFiles().forEach {
-                    args projectDir.relativePath(it)
-                }
-            }
-            task.configure {
-                dependsOn rootProject.tasks.named('pipInstall')
-                dependsOn tasks.matching { it.name == 'generate' }
-            }
-            return task
-        }
-
-        def isortPythonCheck = registerPythonFormatTask('isortPythonCheck', 'isort', '--settings-file', '--check-only')
-        isortPythonCheck.configure {
-            dependsOn licensePythonCheck
-        }
-        def isortPythonFormat = registerPythonFormatTask('isortPythonFormat', 'isort', '--settings-file')
-        isortPythonFormat.configure {
-            dependsOn licensePythonFormat
-        }
-
-        def blackPythonCheck = registerPythonFormatTask('blackPythonCheck', 'black', '--config', '--check')
-        blackPythonCheck.configure {
-            dependsOn licensePythonCheck
-            dependsOn isortPythonCheck
-        }
-        def blackPythonFormat = registerPythonFormatTask('blackPythonFormat', 'black', '--config')
-        blackPythonFormat.configure {
-            dependsOn licensePythonFormat
-            dependsOn isortPythonFormat
-        }
-    }
-
-    tasks.register('format') {
-        dependsOn tasks.matching { it.name == 'generate' }
-        dependsOn tasks.matching { it.name =~ /spotless.*Apply/ }
-        dependsOn tasks.matching { it.name =~ /.*PythonFormat/ }
-    }
-    tasks.named('check').configure {
-        dependsOn tasks.matching { it.name == 'licensePythonCheck' }
-        dependsOn tasks.matching { it.name == 'isortPythonCheck' }
-        dependsOn tasks.matching { it.name == 'blackPythonCheck' }
     }
 }
+
 
 def getCDKTargetVersion() {
     def props = new Properties()
@@ -439,6 +235,14 @@ subprojects { subproj ->
     java {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        compileJava {
+            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing"]
+        }
+        compileTestJava {
+            //rawtypes and unchecked are necessary for mockito
+            //deprecation and removal are removed from error since we should still test those constructs.
+            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing,-rawtypes,-unchecked,-deprecation,-removal"]
+        }
     }
 
     if (isConnectorProject(subproj)) {

@@ -12,7 +12,9 @@
       "type": ["null", "integer"]
     },
     "TimePeriod": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "CurrencyCode": {
       "type": ["null", "string"]

@@ -375,11 +375,12 @@ class AbstractAPIBudget(abc.ABC):
 class APIBudget(AbstractAPIBudget):
     """Default APIBudget implementation"""
 
-    def __init__(self, policies: list[AbstractCallRatePolicy], maximum_attempts_to_acquire: int = 10) -> None:
+    def __init__(self, policies: list[AbstractCallRatePolicy], maximum_attempts_to_acquire: int = 100000) -> None:
         """Constructor
 
         :param policies: list of policies in this budget
-        :param maximum_attempts_to_acquire: number of attempts before throwing hit ratelimit exception
+        :param maximum_attempts_to_acquire: number of attempts before throwing hit ratelimit exception, we put some big number here
+         to avoid situations when many threads compete with each other for a few lots over a significant amount of time
         """
 
         self._policies = policies

@@ -26,7 +26,7 @@ To use a Google Cloud Storage bucket:
 
 1. [Create a Cloud Storage bucket](https://cloud.google.com/storage/docs/creating-buckets) with the Protection Tools set to `none` or `Object versioning`. Make sure the bucket does not have a [retention policy](https://cloud.google.com/storage/docs/samples/storage-set-retention-policy).
 2. [Create an HMAC key and access ID](https://cloud.google.com/storage/docs/authentication/managing-hmackeys#create).
-3. Grant the [`Storage Object Admin` role](https://cloud.google.com/storage/docs/access-control/iam-roles#standard-roles) to the Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts).
+3. Grant the [`Storage Object Admin` role](https://cloud.google.com/storage/docs/access-control/iam-roles#standard-roles) to the Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts). This must be the same service account as the one you configure for BigQuery access in the [BigQuery connector setup step](#step-2-set-up-the-bigquery-connector).
 4. Make sure your Cloud Storage bucket is accessible from the machine running Airbyte. The easiest way to verify if Airbyte is able to connect to your bucket is via the check connection tool in the UI.
 
 Your bucket must be encrypted using a Google-managed encryption key (this is the default setting when creating a new bucket). We currently do not support buckets using customer-managed encryption keys (CMEK). You can view this setting under the "Configuration" tab of your GCS bucket, in the `Encryption type` row.
@@ -140,8 +140,10 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.3.16  | 2023-11-14 | [\#32526](https://github.com/airbytehq/airbyte/pull/32526) | Clean up memory manager logs.                                                                                                                                   |
+| 2.3.15  | 2023-11-13 | [\#32468](https://github.com/airbytehq/airbyte/pull/32468) | Further error grouping enhancments                                                                                                                              |
 | 2.3.14  | 2023-11-06 | [\#32234](https://github.com/airbytehq/airbyte/pull/32234) | Remove unused config option.                                                                                                                                    |
-| 2.3.13  | 2023-11-08 | [\#32125](https://github.com/airbytehq/airbyte/pull/32125) | fix compiler warnings                                                                                                                          |
+| 2.3.13  | 2023-11-08 | [\#32125](https://github.com/airbytehq/airbyte/pull/32125) | fix compiler warnings                                                                                                                                           |
 | 2.3.12  | 2023-11-08 | [\#32309](https://github.com/airbytehq/airbyte/pull/32309) | Revert: Use Typed object for connection config                                                                                                                  |
 | 2.3.11  | 2023-11-07 | [\#32147](https://github.com/airbytehq/airbyte/pull/32147) | Use Typed object for connection config                                                                                                                          |
 | 2.3.10  | 2023-11-07 | [\#32261](https://github.com/airbytehq/airbyte/pull/32261) | Further improve error reporting                                                                                                                                 |
