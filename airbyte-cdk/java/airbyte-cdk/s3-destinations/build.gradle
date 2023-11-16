@@ -45,3 +45,12 @@ dependencies {
 
 
 }
+
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+    compileTestJava {
+        options.compilerArgs += "-Xlint:-try"
+    }
+}

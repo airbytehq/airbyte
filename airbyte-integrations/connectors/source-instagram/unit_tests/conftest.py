@@ -35,6 +35,10 @@ def config_fixture():
 def some_config_fixture(account_id):
     return {"start_date": "2021-01-23T00:00:00Z", "access_token": "unknown_token"}
 
+@fixture(scope="session", name="some_config_future_date")
+def some_config_future_date_fixture(account_id):
+    return {"start_date": "2030-01-23T00:00:00Z", "access_token": "unknown_token"}
+
 
 @fixture(name="fb_account_response")
 def fb_account_response_fixture(account_id, some_config, requests_mock):
