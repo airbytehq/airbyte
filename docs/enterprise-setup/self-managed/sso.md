@@ -6,7 +6,7 @@ Airbyte Self Managed currently supports SSO via OIDC with [Okta](https://www.okt
 
 The following instructions walk you through:
 1. [Setting up the Okta OIDC App Integration to be used by your Airbyte instance](#setting-up-okta-for-sso)
-2. [Configuring Airbyte Self Managed to use SSO](#deploying-airbyte-enterprise-with-okta)
+2. [Configuring Airbyte Self-Managed to use SSO](#deploying-airbyte-enterprise-with-okta)
 
 ### Setting up Okta for SSO
 
@@ -47,7 +47,7 @@ _Example values_
 `<your-airbyte-domain>` should point to where your Airbyte instance will be available, including the http/https protocol.
 
 
-## Deploying Airbyte Enterprise with Okta
+## Deploying Airbyte Self-Managed with Okta
 
 Once your Okta app is set up, you're ready to deploy Airbyte with SSO. Take note of the following configuration values, as you will need them to configure Airbyte to use your new Okta SSO app integration:
 

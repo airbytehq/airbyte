@@ -3,7 +3,7 @@ import TabItem from '@theme/TabItem';
 
 # Implementation Guide
 
-[Airbyte Self Managed](./README.md) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Self Managed license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
+[Airbyte Self-Managed](./README.md) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Self Managed license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
 
 Airbyte Self Managed must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
 
@@ -38,7 +38,7 @@ To install `kubectl`, please follow [these instructions](https://kubernetes.io/d
     </Tabs>
 </details>
 
-## Deploy Airbyte Self Managed
+## Deploy Airbyte Self-Managed
 
 ### Add Airbyte Helm Repository
 
@@ -99,5 +99,5 @@ In order to customize your deployment, you need to create `values.yaml` file in 
 After specifying your own configuration, run the following command:
 
 ```text
-./tools/bin/install_airbyte_pro_on_helm.sh --values path/to/values.yaml %release_name% airbyte/airbyte
+./tools/bin/install_airbyte_pro_on_helm.sh --values path/to/values.yaml $RELEASE_NAME airbyte/airbyte
 ```
