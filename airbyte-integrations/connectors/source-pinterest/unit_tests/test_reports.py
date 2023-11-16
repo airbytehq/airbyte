@@ -2,17 +2,26 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import copy
+import os
 from unittest.mock import MagicMock
 
 import pytest
-import os
-
 import responses
 from source_pinterest import SourcePinterest
 from source_pinterest.reports import CampaignAnalyticsReport
-from source_pinterest.reports.reports import CampaignTargetingReport, AdvertizerReport, AdvertizerTargetingReport, AdGroupReport, \
-    AdGroupTargetingReport, PinPromotionReport, PinPromotionTargetingReport, ProductGroupReport, ProductGroupTargetingReport, \
-    ProductItemReport, KeywordReport
+from source_pinterest.reports.reports import (
+    AdGroupReport,
+    AdGroupTargetingReport,
+    AdvertizerReport,
+    AdvertizerTargetingReport,
+    CampaignTargetingReport,
+    KeywordReport,
+    PinPromotionReport,
+    PinPromotionTargetingReport,
+    ProductGroupReport,
+    ProductGroupTargetingReport,
+    ProductItemReport,
+)
 from source_pinterest.utils import get_analytics_columns
 from unit_tests.test_source import setup_responses
 
