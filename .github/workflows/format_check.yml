@@ -10,7 +10,7 @@ on:
       - master
 jobs:
   format-check:
-    runs-on: "conn-prod-xlarge-runner"
+    runs-on: "ci-runner-connector-format-medium-dagger-0-6-4"
     name: "Check for formatting errors on ${{ github.head_ref }}"
     timeout-minutes: 40
     steps:
