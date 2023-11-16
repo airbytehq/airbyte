@@ -24,7 +24,7 @@ data:
       2.0.0:
         message:
           This release introduces a default primary key for the streams UserLifetimeInsights and UserInsights.
-          Additionally, the format of timestamp fields has been updated to include timezone information.
+          Additionally, the format of timestamp fields has been updated in the UserLifetimeInsights, UserInsights, Media and Stories streams to include timezone information.
         upgradeDeadline: "2023-12-03"
   suggestedStreams:
     streams:
