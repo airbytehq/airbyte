@@ -21,13 +21,13 @@ from .reports.reports import (
     AdvertizerReport,
     AdvertizerTargetingReport,
     CampaignTargetingReport,
+    CustomReport,
     KeywordReport,
     PinPromotionReport,
     PinPromotionTargetingReport,
     ProductGroupReport,
     ProductGroupTargetingReport,
     ProductItemReport,
-    CustomReport,
 )
 from .streams import (
     AdAccountAnalytics,
@@ -160,11 +160,11 @@ class SourcePinterest(AbstractSource):
     def get_custom_report_streams(self, parent, config: dict) -> List[Type[Stream]]:
         """return custom report streams"""
         custom_streams = []
-        for report_config in config.get('custom_reports', []):
-            report_config['authenticator'] = config['authenticator']
-            start_date = report_config.get('start_date')
+        for report_config in config.get("custom_reports", []):
+            report_config["authenticator"] = config["authenticator"]
+            start_date = report_config.get("start_date")
             if not start_date:
-                report_config['start_date'] = config.get('start_date')
+                report_config["start_date"] = config.get("start_date")
             report_config = self._validate_and_transform(report_config)
             stream = CustomReport(
                 parent=parent,

@@ -5,6 +5,8 @@ import copy
 from unittest.mock import MagicMock
 
 import pytest
+import os
+
 import responses
 from source_pinterest import SourcePinterest
 from source_pinterest.reports import CampaignAnalyticsReport
@@ -14,7 +16,6 @@ from source_pinterest.reports.reports import CampaignTargetingReport, Advertizer
 from source_pinterest.utils import get_analytics_columns
 from unit_tests.test_source import setup_responses
 
-import os
 os.environ["REQUEST_CACHE_PATH"] = '/tmp'
 
 @responses.activate
