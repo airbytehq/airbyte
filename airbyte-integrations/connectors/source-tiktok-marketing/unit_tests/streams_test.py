@@ -21,7 +21,7 @@ from source_tiktok_marketing.streams import (
     Daily,
     Hourly,
     Lifetime,
-    ReportGranularity,
+    ReportGranularity, Campaigns,
 )
 
 START_DATE = "2020-01-01"
@@ -228,6 +228,18 @@ def test_request_params():
         "page_size": 1000,
         "report_type": "AUDIENCE",
         "service_type": "AUCTION",
+        "start_date": "2020",
+    }
+
+
+def test_request_params_with_include_deleted():
+    stream_slice = {"advertiser_id": 1, "start_date": "2020", "end_date": "2021"}
+    params = Campaigns(**CONFIG).request_params(stream_slice=stream_slice)
+    assert params == {
+        "advertiser_id": 1,
+        "end_date": "2021",
+        "filtering": '{"secondary_status": "CAMPAIGN_STATUS_ALL"}',
+        "page_size": 1000,
         "start_date": "2020",
     }
 
