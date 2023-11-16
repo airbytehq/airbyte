@@ -267,6 +267,7 @@ async def get_modified_files_str(ctx: click.Context):
         "format": "pipelines.airbyte_ci.format.commands.format_code",
         "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
         "test": "pipelines.airbyte_ci.test.commands.test",
+        "cdk_publish": "pipelines.airbyte_ci.cdk_publish.commands.cdk_publish",
     },
 )
 @click.version_option(__installed_version__)
