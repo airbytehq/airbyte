@@ -11,8 +11,6 @@ This documentation should be helpful for both local and CI use of the CLI. We in
 ## How to install
 ### Requirements
 * A running Docker engine with version >= 20.10.23
-* Python >= 3.10
-* [pipx](https://pypa.github.io/pipx/installation/)
 
 
 ## Install or Update
@@ -20,6 +18,7 @@ This documentation should be helpful for both local and CI use of the CLI. We in
 The recommended way to install `airbyte-ci` is using the [Makefile](../../../Makefile).
 
 ```sh
+# from the root of the airbyte repository
 make tools.airbyte-ci.install
 ```
 
@@ -55,13 +54,15 @@ poetry shell
 cd ../../
 ```
 
-**Alternatively**, you can install airbyte-ci with pipx:
+**Alternatively**, you can install airbyte-ci with pipx so that the entrypoint is available in your PATH:
 
 ```bash
-pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/;
+make tools.airbyte-ci.install
 ```
 
 However, this will not automatically install the dependencies for the local dependencies of airbyte-ci, or respect the lockfile.
+
+Its often best to use the `poetry` steps instead.
 
 
 ## Commands reference
@@ -510,21 +511,19 @@ It means that the `airbyte-ci` command is not in your PATH.
 
 Try running
 ```bash
-make make tools.check.airbyte-ci
+make make tools.airbyte-ci.check
 ```
 
 For some hints on how to fix this.
 
 But when in doubt it can be best to run
 ```bash
-rm ${which airbyte-ci}
+make tools.airbyte-ci.clean
 ```
-
-Until there is no `airbyte-ci` command in your PATH.
 
 Then reinstall the CLI with
 ```bash
-make tools.install.airbyte-ci
+make tools.airbyte-ci.install
 ```
 
 
