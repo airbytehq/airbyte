@@ -153,7 +153,7 @@ class DocumentProcessor:
         stream_identifier = create_stream_identifier(record)
         current_stream: ConfiguredAirbyteStream = self.streams[stream_identifier]
         # if the sync mode is deduping, use the primary key to upsert existing records instead of appending new ones
-        if not current_stream.primary_key or not current_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
+        if not current_stream.primary_key or current_stream.destination_sync_mode != DestinationSyncMode.append_dedup:
             return None
 
         primary_key = []
