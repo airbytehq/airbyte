@@ -19,14 +19,17 @@ else
     exit 1
 fi
 
+# Create the directory if it does not exist
+mkdir -p ~/.local/bin
+
 # Remove the old binary if it exists
 rm -f ~/.local/bin/airbyte-ci
 
 # Download the binary
 curl -L -f $URL -o ~/.local/bin/airbyte-ci
 
-# Create the directory if it does not exist and make the binary executable
-mkdir -p ~/.local/bin && chmod +x ~/.local/bin/airbyte-ci
+# Make the binary executable
+chmod +x ~/.local/bin/airbyte-ci
 
 echo ""
 echo "╔───────────────────────────────────────────────────────────────────────────────╗"

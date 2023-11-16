@@ -44,8 +44,13 @@ def check_for_upgrade(
         enable_auto_update=True,
 ):
     """Check if the installed version of pipelines is up to date."""
+    current_command = " ".join(sys.argv)
     latest_version = get_latest_version()
     is_out_of_date = latest_version != __installed_version__
+    is_dev_version = "airbyte-ci-dev" in current_command
+    upgrade_command = DEV_UPGRADE_COMMAND if is_dev_version else f"{BINARY_UPGRADE_COMMAND} VERSION={latest_version}"
+
+
     if not is_out_of_date:
         main_logger.info(f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
         return
@@ -58,6 +63,9 @@ def check_for_upgrade(
     Installed Version: {__installed_version__}.
     Local Repository Version: {latest_version}
 
+    Please upgrade your local airbyte repository to the latest version using the following command:
+    {upgrade_command}
+
     🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
     """
     logging.warning(upgrade_error_message)
@@ -65,11 +73,6 @@ def check_for_upgrade(
     # Ask the user if they want to upgrade
     if enable_auto_update and click.confirm(upgrade_error_message + "\nDo you want to upgrade?", default=True):
             # if the current command contains `airbyte-ci-dev` is the dev version of the command
-            current_command = " ".join(sys.argv)
-            is_dev_version = "airbyte-ci-dev" in current_command
-
-            upgrade_command = DEV_UPGRADE_COMMAND if is_dev_version else f"{BINARY_UPGRADE_COMMAND} VERSION={latest_version}"
-
             logging.info(f"[{'DEV' if is_dev_version else 'BINARY'}] Upgrading pipelines...")
 
             upgrade_exit_code = os.system(upgrade_command)
