@@ -29,7 +29,7 @@ You'll need the following information to configure the destination:
 | :----------------------------- | :------------------- | :---- |
 | Full Refresh Sync              | Yes                  |       |
 | Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  | Deleting records via CDC is not supported (see issue [#29827](https://github.com/airbytehq/airbyte/issues/29827))  |
+| Incremental - Append + Deduped | Yes                  |  |
 | Namespaces                     | Yes                   |       |
 
 ## Data type mapping
@@ -74,7 +74,7 @@ OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere 
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.0.21 | 2023-11-15 | [32542](https://github.com/airbytehq/airbyte/pull/32542) | Add option to not store text as part of Pinecone record |
+| 0.0.21 | 2023-11-15 | [32542](https://github.com/airbytehq/airbyte/pull/32542) | Add option to not store text as part of Pinecone record and support deleting records for CDC sources |
 | 0.0.20 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
 | 0.0.19   | 2023-10-20 | [#31329](https://github.com/airbytehq/airbyte/pull/31373) | Improve error messages |
 | 0.0.18   | 2023-10-20 | [#31329](https://github.com/airbytehq/airbyte/pull/31373) | Add support for namespaces and fix index cleaning when namespace is defined |
