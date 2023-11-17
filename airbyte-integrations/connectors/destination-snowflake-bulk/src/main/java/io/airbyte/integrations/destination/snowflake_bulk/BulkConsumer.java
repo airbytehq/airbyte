@@ -164,7 +164,6 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     if (messages == null || messages.size() == 0) {
       return;
     }
-    LOGGER.info("uploading stream:{} count:{}", stream, messages.size());
 
     final String sql = getSqlForMessages(stream, this.configStaging, this.configFormat, messages);
     this.snowflakeDestinationHandler.execute(sql);
