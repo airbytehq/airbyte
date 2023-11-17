@@ -31,6 +31,7 @@ from pipelines.helpers.git import (
 )
 from pipelines.helpers.utils import get_current_epoch_time, transform_strs_to_paths
 
+
 def _validate_airbyte_repo(repo: git.Repo) -> bool:
     """Check if any of the remotes are the airbyte repo."""
     expected_repo_name = "airbytehq/airbyte"

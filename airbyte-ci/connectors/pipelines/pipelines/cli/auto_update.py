@@ -3,11 +3,10 @@
 import importlib
 import logging
 import os
-import asyncclick as click
 import sys
 
+import asyncclick as click
 import requests
-
 from pipelines import main_logger
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH
 
@@ -33,6 +32,10 @@ def _get_os_name():
 
 
 def _is_upgrade_available(version: str, is_dev: bool) -> bool:
+    """
+    Check if an upgrade is available for the given version.
+    """
+
     # Given that they can install from source, we don't need to check for upgrades
     if is_dev:
         return True
@@ -41,7 +44,7 @@ def _is_upgrade_available(version: str, is_dev: bool) -> bool:
     # "https://connectors.airbyte.com/files/airbyte-ci/releases"
     release_url = os.getenv("RELEASE_URL", "https://connectors.airbyte.com/files/airbyte-ci/releases")
     os_name = _get_os_name()
-    url = f"{release_url}/{version}/{os_name}/airbyte-ci"
+    url = f"{release_url}/{os_name}/{version}/airbyte-ci"
 
     # Just check if the URL exists, but dont download it
     return requests.head(url).status_code == 200
@@ -78,7 +81,9 @@ def check_for_upgrade(
 
     upgrade_available = _is_upgrade_available(latest_version, is_dev_version)
     if not upgrade_available:
-        main_logger.warning(f"airbyte-ci is out of date, but no upgrade is available yet. This likely means that a release is still being built. Installed version: {__installed_version__}. Latest version: {latest_version}")
+        main_logger.warning(
+            f"airbyte-ci is out of date, but no upgrade is available yet. This likely means that a release is still being built. Installed version: {__installed_version__}. Latest version: {latest_version}"
+        )
         return
 
     upgrade_error_message = f"""
@@ -115,4 +120,3 @@ def check_for_upgrade(
         raise Exception(upgrade_error_message)
 
     return
-
