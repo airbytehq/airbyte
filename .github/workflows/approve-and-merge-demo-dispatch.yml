@@ -4,6 +4,7 @@ name: Approve and Merge Command Dispatch
 on:
   repository_dispatch:
     types: [approve-and-merge-demo-command]
+
 jobs:
   checkFormat:
     runs-on: ubuntu-latest
