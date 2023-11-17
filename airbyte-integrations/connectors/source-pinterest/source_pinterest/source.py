@@ -3,6 +3,7 @@
 #
 
 import copy
+import logging
 from base64 import standard_b64encode
 from typing import Any, List, Mapping, Tuple, Type
 
@@ -53,7 +54,6 @@ from .streams import (
     UserAccountAnalytics,
 )
 
-import logging
 logger = logging.getLogger("airbyte")
 
 
@@ -78,7 +78,9 @@ class SourcePinterest(AbstractSource):
                 )
 
         if not start_date or config["start_date"] < latest_date_allowed_by_api:
-            logger.info(f"Current start_date: {start_date} does not meet API report requirements. Resetting start_date to: {latest_date_allowed_by_api}")
+            logger.info(
+                f"Current start_date: {start_date} does not meet API report requirements. Resetting start_date to: {latest_date_allowed_by_api}"
+            )
             config["start_date"] = latest_date_allowed_by_api
 
         return config
@@ -170,10 +172,10 @@ class SourcePinterest(AbstractSource):
             report_config["authenticator"] = config["authenticator"]
 
             # https://developers.pinterest.com/docs/api/v5/#operation/analytics/get_report
-            if report_config.get("granularity") == 'HOUR':
+            if report_config.get("granularity") == "HOUR":
                 # Otherwise: Response Code: 400 {"code":1,"message":"HOURLY request must be less than 3 days"}
                 amount_of_days_allowed_for_lookup = 2
-            elif report_config.get("level") == 'PRODUCT_ITEM':
+            elif report_config.get("level") == "PRODUCT_ITEM":
                 amount_of_days_allowed_for_lookup = 91
             else:
                 amount_of_days_allowed_for_lookup = 913
