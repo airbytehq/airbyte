@@ -38,21 +38,24 @@ public class MySQLTestDatabase extends
     return with("SET @@sql_mode=''");
   }
 
+  static private final int MAX_CONNECTIONS = 1000;
+
   @Override
   protected Stream<Stream<String>> inContainerBootstrapCmd() {
     return Stream.of(mysqlCmd(Stream.of(
-        String.format("CREATE DATABASE %s;", getDatabaseName()),
-        String.format("CREATE USER '%s' IDENTIFIED BY '%s';", getUserName(), getPassword()),
+        String.format("SET GLOBAL max_connections=%d", MAX_CONNECTIONS),
+        String.format("CREATE DATABASE %s", getDatabaseName()),
+        String.format("CREATE USER '%s' IDENTIFIED BY '%s'", getUserName(), getPassword()),
         // Grant privileges also to the container's user, which is not root.
-        String.format("GRANT ALL PRIVILEGES ON *.* TO '%s', '%s' WITH GRANT OPTION;", getUserName(),
+        String.format("GRANT ALL PRIVILEGES ON *.* TO '%s', '%s' WITH GRANT OPTION", getUserName(),
             getContainer().getUsername()))));
   }
 
   @Override
   protected Stream<String> inContainerUndoBootstrapCmd() {
     return mysqlCmd(Stream.of(
-        String.format("DROP USER '%s';", getUserName()),
-        String.format("DROP DATABASE %s;", getDatabaseName())));
+        String.format("DROP USER '%s'", getUserName()),
+        String.format("DROP DATABASE %s", getDatabaseName())));
   }
 
   @Override
@@ -73,7 +76,7 @@ public class MySQLTestDatabase extends
   public Stream<String> mysqlCmd(Stream<String> sql) {
     return Stream.of("bash", "-c", String.format(
         "set -o errexit -o pipefail; echo \"%s\" | mysql -v -v -v --user=root --password=test",
-        sql.collect(Collectors.joining(" "))));
+        sql.collect(Collectors.joining("; "))));
   }
 
   static public class MySQLConfigBuilder extends ConfigBuilder<MySQLTestDatabase, MySQLConfigBuilder> {
