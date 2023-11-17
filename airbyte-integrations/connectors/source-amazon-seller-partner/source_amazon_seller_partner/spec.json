@@ -7,6 +7,7 @@
     "required": [
       "aws_environment",
       "region",
+      "account_type",
       "lwa_app_id",
       "lwa_client_secret",
       "refresh_token",
@@ -59,10 +60,18 @@
         "type": "string",
         "order": 2
       },
+      "account_type": {
+        "title": "AWS Seller Partner Account Type",
+        "description": "Type of the Account you're going to authorize the Airbyte application by",
+        "enum": ["Seller", "Vendor"],
+        "default": "Seller",
+        "type": "string",
+        "order": 3
+      },
       "lwa_app_id": {
         "title": "LWA Client Id",
         "description": "Your Login with Amazon Client ID.",
-        "order": 3,
+        "order": 4,
         "airbyte_secret": true,
         "type": "string"
       },
@@ -70,14 +79,14 @@
         "title": "LWA Client Secret",
         "description": "Your Login with Amazon Client Secret.",
         "airbyte_secret": true,
-        "order": 4,
+        "order": 5,
         "type": "string"
       },
       "refresh_token": {
         "title": "Refresh Token",
         "description": "The Refresh Token obtained via OAuth flow authorization.",
         "airbyte_secret": true,
-        "order": 5,
+        "order": 6,
         "type": "string"
       },
       "replication_start_date": {
@@ -85,7 +94,7 @@
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-25T00:00:00Z"],
-        "order": 6,
+        "order": 7,
         "type": "string",
         "format": "date-time"
       },
@@ -94,7 +103,7 @@
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data after this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$|^$",
         "examples": ["2017-01-25T00:00:00Z"],
-        "order": 7,
+        "order": 8,
         "type": "string",
         "format": "date-time"
       },
@@ -104,7 +113,7 @@
         "description": "Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
         "default": 90,
         "minimum": 1,
-        "order": 8
+        "order": 9
       },
       "report_options": {
         "title": "Report Options",
@@ -113,7 +122,7 @@
           "{\"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT\": {\"reportPeriod\": \"WEEK\"}}",
           "{\"GET_SOME_REPORT\": {\"custom\": \"true\"}}"
         ],
-        "order": 9,
+        "order": 10,
         "type": "string"
       },
       "max_wait_seconds": {
@@ -121,7 +130,7 @@
         "description": "Sometimes report can take up to 30 minutes to generate. This will set the limit for how long to wait for a successful report.",
         "default": 500,
         "examples": ["500", "1980"],
-        "order": 10,
+        "order": 11,
         "minimum": 1,
         "type": "integer"
       },
@@ -132,7 +141,7 @@
           "{\"GET_SALES_AND_TRAFFIC_REPORT\": {\"availability_sla_days\": 3}}",
           "{\"GET_SOME_REPORT\": {\"custom\": \"true\"}}"
         ],
-        "order": 11,
+        "order": 12,
         "type": "string"
       }
     }
@@ -142,6 +151,19 @@
     "predicate_key": ["auth_type"],
     "predicate_value": "oauth2.0",
     "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "properties": {
+          "region": {
+            "type": "string",
+            "path_in_connector_config": ["region"]
+          },
+          "account_type": {
+            "type": "string",
+            "path_in_connector_config": ["account_type"]
+          }
+        }
+      },
       "complete_oauth_output_specification": {
         "type": "object",
         "additionalProperties": false,
