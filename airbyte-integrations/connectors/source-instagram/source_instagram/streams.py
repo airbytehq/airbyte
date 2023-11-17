@@ -81,7 +81,7 @@ class InstagramIncrementalStream(InstagramStream, IncrementalMixin):
 
     def __init__(self, start_date: datetime, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = pendulum.instance(start_date)
+        self._start_date = pendulum.parse(start_date)
         self._state = {}
 
     @property
@@ -301,7 +301,7 @@ class Media(InstagramStream):
     so they are excluded when trying to get child objects to avoid the error
     """
 
-    INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children"]
+    INVALID_CHILDREN_FIELDS = ["caption", "comments_count", "is_comment_enabled", "like_count", "children", "media_product_type"]
 
     def read_records(
         self,
@@ -380,16 +380,25 @@ class MediaInsights(Media):
             insights = item.get_insights(params={"metric": metrics})
             return {record.get("name"): record.get("values")[0]["value"] for record in insights}
         except FacebookRequestError as error:
+            error_code = error.api_error_code()
+            error_subcode = error.api_error_subcode()
+            error_message = error.api_error_message()
+
             # An error might occur if the media was posted before the most recent time that
             # the user's account was converted to a business account from a personal account
-            if error.api_error_subcode() == 2108006:
-                details = error.body().get("error", {}).get("error_user_title") or error.api_error_message()
+            if error_subcode == 2108006:
+                details = error.body().get("error", {}).get("error_user_title") or error_message
                 self.logger.error(f"Insights error for business_account_id {account_id}: {details}")
                 # We receive all Media starting from the last one, and if on the next Media we get an Insight error,
                 # then no reason to make inquiries for each Media further, since they were published even earlier.
                 return None
-            elif error.api_error_code() == 100 and error.api_error_subcode() == 33:
-                self.logger.error(f"Check provided permissions for {account_id}: {error.api_error_message()}")
+            elif (
+                error_code == 100
+                and error_subcode == 33
+                or error_code == 10
+                and error_message == "(#10) Application does not have permission for this action"
+            ):
+                self.logger.error(f"Check provided permissions for {account_id}: {error_message}")
                 return None
             raise error
 
