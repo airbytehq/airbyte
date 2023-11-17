@@ -257,8 +257,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final JsonNode state)
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final JsonNode state)
       throws Exception {
     final AirbyteStateType supportedStateType = getSupportedStateType(config);
     final StateManager stateManager =
@@ -389,10 +389,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-      final StateManager stateManager,
-      final Instant emittedAt) {
+                                                                             final ConfiguredAirbyteCatalog catalog,
+                                                                             final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+                                                                             final StateManager stateManager,
+                                                                             final Instant emittedAt) {
 
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
@@ -459,7 +459,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         ? String.format(DESCRIBE_TABLE_WITHOUT_SCHEMA_QUERY, tableName)
         : String.format(DESCRIBE_TABLE_WITH_SCHEMA_QUERY, schema, tableName);
     final List<JsonNode> tableRows = database.bufferedResultSetQuery(conn -> conn.createStatement()
-            .executeQuery(descQuery),
+        .executeQuery(descQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
 
     Optional<JsonNode> field = Optional.empty();
@@ -481,7 +481,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         if (isNullable.asText().equalsIgnoreCase("YES")) {
           final String query = schema == null || schema.isBlank()
               ? String.format(NULL_CURSOR_VALUE_WITHOUT_SCHEMA_QUERY,
-              tableName, columnName, resultColName)
+                  tableName, columnName, resultColName)
               : String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
                   schema, tableName, columnName, resultColName);
 
