@@ -93,6 +93,7 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 2.0.0   | 2023-11-17 | [32500](https://github.com/airbytehq/airbyte/pull/32500) | Add primary keys for UserLifetimeInsights and UserInsights; add airbyte_type to timestamp fields                          |
 | 1.0.16  | 2023-11-17 | [32627](https://github.com/airbytehq/airbyte/pull/32627) | Fix start_date type; fix docs                                                                                             |
 | 1.0.15  | 2023-11-14 | [32494](https://github.com/airbytehq/airbyte/pull/32494) | Marked start_date as optional; set max retry time to 10 minutes; add suggested streams                                    |
 | 1.0.14  | 2023-11-13 | [32423](https://github.com/airbytehq/airbyte/pull/32423) | Capture media_product_type column in media and stories stream                                                             |
