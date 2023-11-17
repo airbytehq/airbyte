@@ -6,6 +6,8 @@ import os
 from typing import Optional
 
 import requests
+import time
+from typing import Optional
 
 
 def get_docker_hub_auth_token() -> str:
@@ -25,14 +27,19 @@ def get_docker_hub_auth_token() -> str:
     token = response.json().get("token")
     return token
 
-
-def is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] = None) -> bool:
+def is_image_on_docker_hub(
+    image_name: str,
+    version: str,
+    digest: Optional[str] = None,
+    retries: int = 0
+) -> bool:
     """Check if a given image and version exists on Docker Hub.
 
     Args:
         image_name (str): The name of the image to check.
         version (str): The version of the image to check.
         digest (str, optional): The digest of the image to check. Defaults to None.
+        retries (int, optional): The number of times to retry the request. Defaults to 0.
     Returns:
         bool: True if the image and version exists on Docker Hub, False otherwise.
     """
@@ -40,7 +47,14 @@ def is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] 
     token = get_docker_hub_auth_token()
     headers = {"Authorization": f"JWT {token}"}
     tag_url = f"https://registry.hub.docker.com/v2/repositories/{image_name}/tags/{version}"
-    response = requests.get(tag_url, headers=headers)
+
+    # Allow for retries as the DockerHub API is not always reliable with returning the latest publish.
+    for _ in range(retries + 1):
+        response = requests.get(tag_url, headers=headers)
+        if response.ok:
+            break
+        time.sleep(30)
+
     if not response.ok:
         return False
     # If a digest is provided, check that it matches the digest of the image on Docker Hub.
