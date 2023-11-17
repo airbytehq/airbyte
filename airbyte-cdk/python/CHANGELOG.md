@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.53.8
+Vector DB CDK: Remove CDC records, File CDK: Update unstructured parser
+
+## 0.53.7
+low-code: fix debug logging when using --debug flag
+
 ## 0.53.6
 Increase maximum_attempts_to_acquire to avoid crashing in acquire_call
 
