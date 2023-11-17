@@ -12,21 +12,21 @@ fi
 # Remove airbyte-ci if it's on the path
 while which airbyte-ci >/dev/null 2>&1; do
     echo "Removing $(which airbyte-ci)"
-    rm $(which airbyte-ci)
+    rm "$(which airbyte-ci)"
 done
 echo "Removed airbyte-ci"
 
 # Remove airbyte-ci-internal if it's on the path
 while which airbyte-ci-internal >/dev/null 2>&1; do
     echo "Removing $(which airbyte-ci)"
-    rm $(which airbyte-ci-internal)
+    rm "$(which airbyte-ci-internal)"
 done
 echo "Removed airbyte-ci-internal"
 
 # Remove airbyte-ci-dev if it's on the path
 while which airbyte-ci-dev >/dev/null 2>&1; do
     echo "Removing $(which airbyte-ci)"
-    rm $(which airbyte-ci-dev)
+    rm "$(which airbyte-ci-dev)"
 done
   echo "Removed airbyte-ci-dev"
 

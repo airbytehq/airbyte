@@ -27,7 +27,7 @@ mkdir -p ~/.local/bin
 rm -f ~/.local/bin/airbyte-ci
 
 # Download the binary
-curl -L -f $URL -o ~/.local/bin/airbyte-ci
+curl -L -f "$URL" -o ~/.local/bin/airbyte-ci
 
 # Make the binary executable
 chmod +x ~/.local/bin/airbyte-ci
