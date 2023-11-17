@@ -34,9 +34,13 @@ import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGener
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
+import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.Struct;
+import io.airbyte.integrations.base.destination.typing_deduping.Union;
+import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import java.sql.SQLType;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -46,6 +50,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jooq.CommonTableExpression;
+import org.jooq.Condition;
 import org.jooq.CreateSchemaFinalStep;
 import org.jooq.CreateTableColumnStep;
 import org.jooq.DSLContext;
@@ -70,7 +75,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
       "bool", "boolean",
       "timestamptz", "timestamp with time zone",
       "timetz", "time with time zone");
-  private static final String COLUMN_ERROR_MESSAGE_FORMAT = "Problem with %s";
+  private static final String COLUMN_ERROR_MESSAGE_FORMAT = "Problem with `%s`";
   private static final String AIRBYTE_META_COLUMN_ERRORS_KEY = "errors";
 
   public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer) {
@@ -172,48 +177,66 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     return dataFields;
   }
 
-  String buildSqlConcatString(List<String> stringList) {
-    if (stringList.isEmpty()) {
-      return ""; // Return an empty string if the list is empty
+  Field<?> arrayConcatStmt(List<Field<?>> arrays) {
+    if (arrays.isEmpty()) {
+      return field(""); // Return an empty string if the list is empty
     }
 
     // Base case: if there's only one element, return it
-    if (stringList.size() == 1) {
-      return "ARRAY(" + stringList.get(0) + ")";
+    if (arrays.size() == 1) {
+      return arrays.get(0);
     }
 
     // Recursive case: construct ARRAY_CONCAT function call
-    String lastValue = stringList.get(stringList.size() - 1);
-    String recursiveCall = buildSqlConcatString(stringList.subList(0, stringList.size() - 1));
+    Field<?> lastValue = arrays.get(arrays.size() - 1);
+    Field<?> recursiveCall = arrayConcatStmt(arrays.subList(0, arrays.size() - 1));
 
-    return "ARRAY_CONCAT(" + recursiveCall + ", ARRAY(" + lastValue + "))";
+    return function("ARRAY_CONCAT", getSuperType(), recursiveCall, lastValue);
   }
 
-  String superTypeFunction(final AirbyteType type) {
-    if (type instanceof AirbyteProtocolType) {
-      return switch ((AirbyteProtocolType) type) {
-        case STRING -> "IS_VARCHAR";
-        case TIME_WITH_TIMEZONE -> "IS_TIME_WITH_TIMEZONE";
-        default -> "IS_" + type.getTypeName().toUpperCase();
-      };
+  Field<?> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
+    final String caseStatementSqlTemplate = "CASE WHEN {0} THEN {1} ELSE {2} END ";
+    final Field<?> field = field(quotedName(COLUMN_NAME_DATA, column.name()));
+    final Condition typeCheckCondition = typeCheckCondition(field, type);
+    return field(caseStatementSqlTemplate,
+                 field.isNotNull().and(typeCheckCondition).and(cast(field, toDialectType(type)).isNull())
+                 , function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT.formatted(column.name()))), field("ARRAY()")
+    );
+  }
+
+  // Sadly can't reuse the toDialectType because it returns Generics of DataType<?>
+  Condition typeCheckCondition(final Field<?> field, final AirbyteType type) {
+    if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
+      return typeCheckCondition(field, airbyteProtocolType);
     }
-    return "";
+    return switch (type.getTypeName()) {
+      case Struct.TYPE, UnsupportedOneOf.TYPE -> function("JSON_TYPEOF", SQLDataType.VARCHAR, field).eq("object");
+      case Array.TYPE -> function("JSON_TYPEOF", SQLDataType.VARCHAR, field).eq("array");
+      // No nested Unions supported so this will definitely not result in infinite recursion.
+      case Union.TYPE -> typeCheckCondition(field, ((Union) type).chooseType());
+      default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
+    };
+  }
+
+  Condition typeCheckCondition(final Field<?> field, final AirbyteProtocolType airbyteProtocolType) {
+    Condition defaultCondition = function("JSON_TYPEOF", SQLDataType.VARCHAR, field).eq("string");
+    return switch (airbyteProtocolType) {
+      case STRING -> function("IS_VARCHAR", SQLDataType.BOOLEAN, field).eq(true);
+      case NUMBER -> function("IS_FLOAT", SQLDataType.BOOLEAN, field).eq(true);
+      case INTEGER -> function("IS_BIGINT", SQLDataType.BOOLEAN, field).eq(true);
+      case BOOLEAN -> function("IS_BOOLEAN", SQLDataType.BOOLEAN, field).eq(true);
+      // Time data types are just string in redshift SUPER.
+      case TIMESTAMP_WITH_TIMEZONE, TIMESTAMP_WITHOUT_TIMEZONE, TIME_WITHOUT_TIMEZONE, TIME_WITH_TIMEZONE, DATE, UNKNOWN -> defaultCondition;
+    };
   }
 
   Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns) {
-    String caseStatementSqlTemplate = "CASE WHEN {0} THEN {1} ELSE {2} END ";
-    Field<?> caseSt2 = field(caseStatementSqlTemplate,
-        function("IS_VARCHAR", SQLDataType.BOOLEAN, field("first_name")).eq(true).and(cast("first_name", SQLDataType.VARCHAR).isNull()),
-        function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT)), field("ARRAY()"));
-    // Field<String> arrayFunction = function("ARRAY", SQLDataType.VARCHAR,
-    // val(COLUMN_ERROR_MESSAGE_FORMAT));
-    // Field<String> caseStmt = when(function("IS_VARCHAR", SQLDataType.BOOLEAN,
-    // field("first_name")).eq(true).and(cast("first_name", SQLDataType.VARCHAR).isNull()),
-    // arrayFunction).otherwise("ARRAY()");
-    // when(function("IS_VARCHAR", SQLDataType.BOOLEAN,
-    // field("first_name")).eq(true).and(cast("first_name", SQLDataType.VARCHAR).isNull()),
-    // function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_PREFIX))).otherwise(field("NULL")
-    return function("object", getSuperType(), val(AIRBYTE_META_COLUMN_ERRORS_KEY), caseSt2);
+    final List<Field<?>> dataFields = columns
+        .entrySet()
+        .stream()
+        .map(column -> toCastingErrorCaseStmt(column.getKey(), column.getValue()))
+        .collect(Collectors.toList());
+    return function("object", getSuperType(), val(AIRBYTE_META_COLUMN_ERRORS_KEY), arrayConcatStmt(dataFields)).as(COLUMN_NAME_AB_META);
 
   }
 
@@ -373,7 +396,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
             DSL.alterTable(DSL.name(stream.finalNamespace(), stream.finalName() + finalSuffix))
                 .renameTo(DSL.name(stream.finalName()))
                 .getSQL()),
-        ";\n");
+        ";" + System.lineSeparator());
   }
 
   @Override
