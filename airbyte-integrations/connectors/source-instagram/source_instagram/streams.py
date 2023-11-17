@@ -29,12 +29,7 @@ class DatetimeTransformerMixin:
         """
         Transform datetime string to RFC 3339 format
         """
-        if (
-            original_value
-            and "format" in field_schema
-            and field_schema["format"] == "date-time"
-            and field_schema["airbyte_type"] == "timestamp_with_timezone"
-        ):
+        if original_value and field_schema.get("format") == "date-time" and field_schema.get("airbyte_type") == "timestamp_with_timezone":
             # Parse the ISO format timestamp
             dt = pendulum.parse(original_value)
 
