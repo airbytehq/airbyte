@@ -179,6 +179,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   /**
    * Redshift ARRAY_CONCAT supports only 2 arrays, recursively build ARRAY_CONCAT for n arrays.
+   *
    * @param arrays
    * @return
    */
@@ -412,8 +413,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
             select(airbyteRawId)
                 .from(select(airbyteRawId, rowNumber)
                     .from(table(quotedName(schemaName, tableName))).asTable("airbyte_ids"))
-                .where(field("row_number").ne(1))
-                )).getSQL(ParamType.INLINED);
+                .where(field("row_number").ne(1))))
+        .getSQL(ParamType.INLINED);
   }
 
   @Override
