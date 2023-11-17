@@ -125,7 +125,7 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     }
     LOGGER.info("Final Table does not exist for stream {}, creating.", stream.id().finalName());
     // The table doesn't exist. Create it. Don't force.
-    this.snowflakeDestinationHandler.execute(sqlGenerator.createTable(stream, "", false));
+    this.snowflakeDestinationHandler.execute(sqlGenerator.createTable(stream, "", true));
   }
 
   @Override
