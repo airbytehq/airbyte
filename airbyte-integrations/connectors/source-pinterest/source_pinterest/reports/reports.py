@@ -4,12 +4,15 @@
 
 import json
 from abc import abstractmethod
+from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import urljoin
 
 import backoff
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from source_pinterest.streams import PinterestAnalyticsStream
 from source_pinterest.utils import get_analytics_columns
 
@@ -164,8 +167,96 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         """Fetch the report data from the given URL."""
         return self._http_get(url)
 
+    @lru_cache(maxsize=None)
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        :return: A dict of the JSON schema representing this stream.
+
+        Schema is the same for all *Report and *TargetingReport streams
+        """
+
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("reports")
+
+
+class PinterestAnalyticsTargetingReportStream(PinterestAnalyticsReportStream):
+    def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
+        """Return the body of the API request in JSON format."""
+        columns = get_analytics_columns().split(",")
+        # remove keys which are lot suitable for targeting report
+        for odd_value in ["TOTAL_IMPRESSION_FREQUENCY", "TOTAL_IMPRESSION_USER"]:
+            if odd_value in columns:
+                columns.remove(odd_value)
+        columns = ",".join(columns)
+        return self._construct_request_body(stream_slice["start_date"], stream_slice["end_date"], self.granularity, columns)
+
 
 class CampaignAnalyticsReport(PinterestAnalyticsReportStream):
     @property
     def level(self):
         return "CAMPAIGN"
+
+
+class CampaignTargetingReport(PinterestAnalyticsTargetingReportStream):
+    @property
+    def level(self):
+        return "CAMPAIGN_TARGETING"
+
+
+class AdvertizerReport(PinterestAnalyticsReportStream):
+    @property
+    def level(self):
+        return "ADVERTISER"
+
+
+class AdvertizerTargetingReport(PinterestAnalyticsTargetingReportStream):
+    @property
+    def level(self):
+        return "ADVERTISER_TARGETING"
+
+
+class AdGroupReport(PinterestAnalyticsReportStream):
+    @property
+    def level(self):
+        return "AD_GROUP"
+
+
+class AdGroupTargetingReport(PinterestAnalyticsTargetingReportStream):
+    @property
+    def level(self):
+        return "AD_GROUP_TARGETING"
+
+
+class PinPromotionReport(PinterestAnalyticsReportStream):
+    @property
+    def level(self):
+        return "PIN_PROMOTION"
+
+
+class PinPromotionTargetingReport(PinterestAnalyticsTargetingReportStream):
+    @property
+    def level(self):
+        return "PIN_PROMOTION_TARGETING"
+
+
+class ProductGroupReport(PinterestAnalyticsReportStream):
+    @property
+    def level(self):
+        return "PRODUCT_GROUP"
+
+
+class ProductGroupTargetingReport(PinterestAnalyticsTargetingReportStream):
+    @property
+    def level(self):
+        return "PRODUCT_GROUP_TARGETING"
+
+
+class ProductItemReport(PinterestAnalyticsReportStream):
+    @property
+    def level(self):
+        return "PRODUCT_ITEM"
+
+
+class KeywordReport(PinterestAnalyticsTargetingReportStream):
+    @property
+    def level(self):
+        return "KEYWORD"

@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
-  dockerImageTag: 1.0.14
+  dockerImageTag: 1.0.15
   dockerRepository: airbyte/source-instagram
   githubIssueLabel: source-instagram
   icon: instagram.svg
@@ -19,6 +19,15 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - media
+      - media_insights
+      - stories
+      - user_insights
+      - story_insights
+      - users
+      - user_lifetime_insights
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   tags:
     - language:python
