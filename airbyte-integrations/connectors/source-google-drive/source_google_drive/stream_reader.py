@@ -22,6 +22,7 @@ pid = os.getpid()
 process = psutil.Process(pid)
 
 
+from source_google_drive.utils import get_folder_id
 
 from .spec import SourceGoogleDriveSpec
 
@@ -92,7 +93,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         Get all files matching the specified glob patterns.
         """
         service = self.google_drive_service
-        root_folder_id = self._get_folder_id(self.config.folder_url)
+        root_folder_id = get_folder_id(self.config.folder_url)
         # ignore prefix argument as it's legacy only and this is a new connector
         prefixes = self.get_prefixes_from_globs(globs)
 
@@ -146,21 +147,6 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 request = service.files().list_next(request, results)
                 if request is None:
                     break
-
-    def _get_folder_id(self, url):
-        # Regular expression pattern to check the URL structure and extract the ID
-        pattern = r"^https://drive\.google\.com/drive/folders/([a-zA-Z0-9_-]+)$"
-
-        # Find the pattern in the URL
-        match = re.search(pattern, url)
-
-        if match:
-            # The matched group is the ID
-            drive_id = match.group(1)
-            return drive_id
-        else:
-            # If no match is found
-            raise ValueError(f"Could not extract folder ID from {url}")
 
     def _is_exportable_document(self, mime_type: str):
         """
