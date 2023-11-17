@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
 
 # Check if pipx is on the path and if so, uninstall pipelines
 if which pipx >/dev/null 2>&1; then

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
 
 # Check if airbyte-ci is on the PATH and pointing to the correct location
 EXPECTED_PATH="$HOME/.local/bin/airbyte-ci"

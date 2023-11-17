@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
 
 # Base URL for downloading airbyte-ci
 RELEASE_URL=${RELEASE_URL:-"https://connectors.airbyte.com/files/airbyte-ci/releases"}

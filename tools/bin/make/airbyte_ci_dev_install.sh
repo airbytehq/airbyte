@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
 
 # Check if pyenv is installed, and install it if not
 if ! which pyenv >/dev/null; then
