@@ -305,9 +305,9 @@ class CustomReport(PinterestAnalyticsTargetingReportStream):
     @property
     def window_in_days(self):
         """Docs: https://developers.pinterest.com/docs/api/v5/#operation/analytics/get_report"""
-        if self.granularity == 'HOUR':
+        if self.granularity == "HOUR":
             return 2
-        elif self.level == 'PRODUCT_ITEM':
+        elif self.level == "PRODUCT_ITEM":
             return 31
         else:
             return 185
