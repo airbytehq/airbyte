@@ -1,5 +1,8 @@
 package io.airbyte.integrations.source.mysql_strict_encrypt;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
@@ -9,10 +12,6 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 
 @Execution(ExecutionMode.CONCURRENT)
 public class MySqlStrictEncryptSslTest {
@@ -35,7 +34,7 @@ public class MySqlStrictEncryptSslTest {
       assertTrue(actual.getMessage().contains("Unsecured connection not allowed"), actual.getMessage());
     }
   }
-  
+
   @Test
   void testStrictSSLSecuredNoTunnel() throws Exception {
     final String PASSWORD = "Passw0rd";
@@ -118,4 +117,5 @@ public class MySqlStrictEncryptSslTest {
       }
     }
   }
+
 }

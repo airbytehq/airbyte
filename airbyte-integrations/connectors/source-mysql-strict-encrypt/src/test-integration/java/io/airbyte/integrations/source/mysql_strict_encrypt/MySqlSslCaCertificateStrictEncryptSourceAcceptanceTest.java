@@ -29,4 +29,5 @@ public class MySqlSslCaCertificateStrictEncryptSourceAcceptanceTest extends MySq
             .build())
         .build();
   }
+
 }

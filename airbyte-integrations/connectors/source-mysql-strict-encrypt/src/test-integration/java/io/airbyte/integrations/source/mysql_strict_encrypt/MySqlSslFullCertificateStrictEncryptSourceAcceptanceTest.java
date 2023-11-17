@@ -31,4 +31,5 @@ public class MySqlSslFullCertificateStrictEncryptSourceAcceptanceTest extends My
             .build())
         .build();
   }
+
 }
