@@ -318,6 +318,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         Decrypt and parse the report is its fully proceed, then yield the report document records.
         """
         report_payload = {}
+        stream_slice = stream_slice or {}
         is_processed = False
         start_time = pendulum.now("utc")
         seconds_waited = 0
@@ -333,8 +334,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         is_done = report_payload.get("processingStatus") == "DONE"
         is_cancelled = report_payload.get("processingStatus") == "CANCELLED"
         is_fatal = report_payload.get("processingStatus") == "FATAL"
-        report_start_date = pendulum.parse(report_payload.get("dataStartTime", stream_slice["dataStartTime"])).strftime(DATE_FORMAT)
-        report_end_date = pendulum.parse(report_payload.get("dataEndTime", stream_slice["dataEndTime"])).strftime(DATE_FORMAT)
+        report_end_date = pendulum.parse(report_payload.get("dataEndTime", stream_slice.get("dataEndTime")))
 
         if is_done:
             # retrieve and decrypt the report document
@@ -347,12 +347,11 @@ class ReportsAmazonSPStream(HttpStream, ABC):
             )
             response = self._send_request(request, {})
             for record in self.parse_response(response, stream_state, stream_slice):
-                record["dataEndTime"] = report_end_date
+                if report_end_date:
+                    record["dataEndTime"] = report_end_date.strftime(DATE_FORMAT)
                 yield record
         elif is_fatal:
-            raise AirbyteTracedException(
-                f"The report for stream '{self.name}' for period {report_start_date} - {report_end_date} was not created - skip reading"
-            )
+            raise AirbyteTracedException(f"The report for stream '{self.name}' was not created - skip reading")
         elif is_cancelled:
             logger.warn(f"The report for stream '{self.name}' was cancelled or there is no data to return")
         else:
@@ -1134,9 +1133,10 @@ class FbaCustomerReturnsReports(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA"
 
 
-class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
+class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
 
     name = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
+    cursor_field = "dataEndTime"
 
     def _create_report(
         self,
@@ -1150,7 +1150,7 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
         return {"reportId": stream_slice.get("report_id")}
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         From https://developer-docs.amazon.com/sp-api/docs/report-type-values
@@ -1162,9 +1162,14 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
         """
 
         strict_start_date = pendulum.now("utc").subtract(days=90)
+        utc_now = pendulum.now("utc").date().to_date_string()
 
         create_date = max(pendulum.parse(self._replication_start_date), strict_start_date)
-        end_date = pendulum.parse(self._replication_end_date or pendulum.now("utc").date().to_date_string())
+        end_date = pendulum.parse(self._replication_end_date or utc_now)
+
+        stream_state = stream_state or {}
+        if cursor_value := stream_state.get(self.cursor_field):
+            create_date = pendulum.parse(min(cursor_value, utc_now))
 
         if end_date < strict_start_date:
             end_date = pendulum.now("utc")
@@ -1179,7 +1184,6 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
         complete = False
 
         while not complete:
-
             request_headers = self.request_headers()
             get_reports = self._create_prepared_request(
                 path=f"{self.path_prefix}/reports",
