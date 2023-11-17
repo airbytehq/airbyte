@@ -73,6 +73,7 @@
                 "description": "When enabled, syncs will validate and structure records against the stream's schema.",
                 "default": true,
                 "type": "boolean",
+                "always_show": true,
                 "order": 7
               }
             }
@@ -130,6 +131,7 @@
                 "description": "When enabled, syncs will validate and structure records against the stream's schema.",
                 "default": true,
                 "type": "boolean",
+                "always_show": true,
                 "order": 7
               }
             }
