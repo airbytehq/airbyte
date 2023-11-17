@@ -199,9 +199,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     final Field<?> field = field(quotedName(COLUMN_NAME_DATA, column.name()));
     final Condition typeCheckCondition = typeCheckCondition(field, type);
     return field(caseStatementSqlTemplate,
-                 field.isNotNull().and(typeCheckCondition).and(cast(field, toDialectType(type)).isNull())
-                 , function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT.formatted(column.name()))), field("ARRAY()")
-    );
+        field.isNotNull().and(typeCheckCondition).and(cast(field, toDialectType(type)).isNull()),
+        function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT.formatted(column.name()))), field("ARRAY()"));
   }
 
   // Sadly can't reuse the toDialectType because it returns Generics of DataType<?>
