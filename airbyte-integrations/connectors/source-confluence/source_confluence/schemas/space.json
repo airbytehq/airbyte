@@ -1,17 +1,24 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "additionalProperties": true,
-  "properties": {
-    "id": { "type": ["null", "integer"] },
-    "key": { "type": ["null", "string"] },
-    "name": { "type": ["null", "string"] },
-    "type": { "type": ["null", "string"] },
-    "status": { "type": ["null", "string"] },
-    "permissions": { "type": ["null", "array"] },
-    "icon": { "type": ["null", "object"] },
-    "description": { "type": ["null", "object"] },
-    "_expandable": { "type": ["null", "object"] },
-    "_links": { "type": ["null", "object"] }
-  }
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "id": { "type": ["null", "integer"] },
+        "type": { "type": ["null", "string"] },
+        "status": { "type": ["null", "string"] },
+        "title": { "type": ["null", "string"] },
+        "paywallStatus": { "type": ["null", "string"] },
+        "history": {
+            "type": ["null", "object" ],
+            "additionalProperties": true
+        },
+        "_expandable": {
+            "type": ["null", "object"],
+            "additionalProperties": true
+        },
+        "_links": {
+            "type": ["null", "object"],
+            "additionalProperties": true
+        }
+    }
 }

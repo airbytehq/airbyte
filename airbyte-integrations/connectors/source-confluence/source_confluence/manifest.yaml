@@ -142,7 +142,7 @@ definitions:
         $ref: "#/definitions/requester"
         url_base: https://{{ config['domain_name'] }}/wiki/
         request_parameters:
-          cql: space={{ config['space_name'] }} and type=page and lastmodified >= "{{ stream_state.lastUpdated or config['start_date'] }}"
+          cql: type=page {{  ("and space="  ~ config['space_name']) if config['space_name'] }} {{ ('and lastmodified >= "' ~ (stream_state.lastUpdated or config['start_date']) ~ '"') if stream_state.lastUpdated or config['start_date'] }}
           expand: '["history.lastUpdated","body.view"]'
     primary_key: "id"
     $parameters:
