@@ -127,9 +127,12 @@ class AdRuleLibraries(FBMarketingIncrementalStream):
 
     entity_prefix = "ad_rule_libraries"
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_rules_library(params=params, fields=self.fields)
+    def list_objects(self, params: Mapping[str, Any], fields: List[str]) -> Iterable:
+        return self._get_object_list_parallel(api_call_wrapper=AdRuleLibraries.get_ad_rule_libraries, fields=fields, params=params)
 
+    @staticmethod
+    def get_ad_rule_libraries(account: FBAdAccount, **kwargs):
+        return account.get_ad_rules_library(**kwargs)
 
 class AdSets(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign"""
