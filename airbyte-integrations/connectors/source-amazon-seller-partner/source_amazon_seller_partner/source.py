@@ -121,6 +121,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
+        self.validate_stream_report_options(config)
         streams = []
         stream_kwargs = self._get_stream_kwargs(config)
         stream_list = [
@@ -180,7 +181,7 @@ class SourceAmazonSellerPartner(AbstractSource):
                 VendorSalesReports,
                 VendorInventoryReports,
             ]
-            streams += brand_analytics_reports
+            stream_list += brand_analytics_reports
 
         for stream in stream_list:
             streams.append(stream(**stream_kwargs, report_options=self.get_stream_report_options(stream.name, config)))
