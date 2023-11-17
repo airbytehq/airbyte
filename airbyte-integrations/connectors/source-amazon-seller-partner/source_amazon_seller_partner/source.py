@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from os import getenv
 from typing import Any, List, Mapping, Tuple, Optional
 
 from airbyte_cdk.logger import AirbyteLogger
@@ -20,12 +20,7 @@ from source_amazon_seller_partner.streams import (
     FbaAfnInventoryReports,
     FbaCustomerReturnsReports,
     FbaEstimatedFbaFeesTxtReport,
-    FbaFulfillmentCurrentInventoryReport,
     FbaFulfillmentCustomerShipmentPromotionReport,
-    FbaFulfillmentInventoryAdjustReport,
-    FbaFulfillmentInventoryReceiptsReport,
-    FbaFulfillmentInventorySummaryReport,
-    FbaFulfillmentMonthlyInventoryReport,
     FbaInventoryPlaningReport,
     FbaMyiUnsuppressedInventoryReport,
     FbaOrdersReports,
@@ -146,28 +141,16 @@ class SourceAmazonSellerPartner(AbstractSource):
             FulfilledShipmentsReports,
             MerchantListingsReports,
             VendorDirectFulfillmentShipping,
-            VendorInventoryReports,
-            VendorSalesReports,
             Orders,
             OrderItems,
             OrderReportDataShipping,
-            SellerAnalyticsSalesAndTrafficReports,
             SellerFeedbackReports,
-            BrandAnalyticsMarketBasketReports,
-            BrandAnalyticsSearchTermsReports,
-            BrandAnalyticsRepeatPurchaseReports,
-            BrandAnalyticsAlternatePurchaseReports,
-            BrandAnalyticsItemComparisonReports,
             GetXmlBrowseTreeData,
             ListFinancialEventGroups,
             ListFinancialEvents,
             LedgerDetailedViewReports,
             FbaEstimatedFbaFeesTxtReport,
-            FbaFulfillmentCurrentInventoryReport,
             FbaFulfillmentCustomerShipmentPromotionReport,
-            FbaFulfillmentInventoryAdjustReport,
-            FbaFulfillmentInventoryReceiptsReport,
-            FbaFulfillmentInventorySummaryReport,
             FbaMyiUnsuppressedInventoryReport,
             MerchantCancelledListingsReport,
             MerchantListingsReport,
@@ -175,7 +158,6 @@ class SourceAmazonSellerPartner(AbstractSource):
             MerchantListingsInactiveData,
             StrandedInventoryUiReport,
             XmlAllOrdersDataByOrderDataGeneral,
-            FbaFulfillmentMonthlyInventoryReport,
             MerchantListingsFypReport,
             FbaSnsForecastReport,
             FbaSnsPerformanceReport,
@@ -185,6 +167,22 @@ class SourceAmazonSellerPartner(AbstractSource):
             LedgerSummaryViewReport,
             FbaReimbursementsReports,
         ]
+
+        # TODO: Remove after Brand Analytics will be enabled in CLOUD:
+        #  https://github.com/airbytehq/airbyte/issues/32353
+        if getenv("DEPLOYMENT_MODE", "").upper() != "CLOUD":
+            brand_analytics_reports = [
+                BrandAnalyticsMarketBasketReports(**stream_kwargs),
+                BrandAnalyticsSearchTermsReports(**stream_kwargs),
+                BrandAnalyticsRepeatPurchaseReports(**stream_kwargs),
+                BrandAnalyticsAlternatePurchaseReports(**stream_kwargs),
+                BrandAnalyticsItemComparisonReports(**stream_kwargs),
+                SellerAnalyticsSalesAndTrafficReports(**stream_kwargs),
+                VendorSalesReports(**stream_kwargs),
+                VendorInventoryReports(**stream_kwargs),
+            ]
+            streams += brand_analytics_reports
+
         for stream in stream_list:
             streams.append(stream(**stream_kwargs , report_options=self.get_stream_report_options(stream.name, config)))
         return streams
