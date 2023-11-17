@@ -18,7 +18,7 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 @pass_pipeline_context
 @click_ignore_unused_kwargs
 async def test(pipeline_context: ClickPipelineContext):
-    """Runs the tests for the given airbyte-ci package
+    """Runs the tests for the given airbyte-ci package.
 
     Args:
         pipeline_context (ClickPipelineContext): The context object.
