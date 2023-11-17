@@ -62,16 +62,8 @@ public abstract class AbstractRedshiftTypingDedupingTest extends BaseTypingDedup
     if (streamNamespace == null) {
       streamNamespace = getDefaultSchema();
     }
-    database.execute(
-        String.format(
-            """
-            DROP TABLE IF EXISTS "%s"."%s";
-            DROP SCHEMA IF EXISTS "%s" CASCADE
-            """,
-            getRawSchema(),
-            // Raw table is still lowercase.
-            StreamId.concatenateRawTableName(streamNamespace, streamName),
-            streamNamespace.toUpperCase()));
+    database.execute(DSL.dropSchema(DSL.name(streamNamespace)).cascade().getSQL());
+    database.execute(DSL.dropTableIfExists(DSL.name(streamNamespace, streamName)).cascade().getSQL());
   }
 
   @Override
