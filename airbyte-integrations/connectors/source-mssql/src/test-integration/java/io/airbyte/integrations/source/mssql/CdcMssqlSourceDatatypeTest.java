@@ -19,59 +19,19 @@ import org.testcontainers.containers.MSSQLServerContainer;
 public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
-    container.close();
+  protected JsonNode getConfig() throws Exception {
+    return testdb.integrationTestConfigBuilder()
+        .withCdcReplication()
+        .withoutSsl()
+        .build();
   }
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
-    container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
-    container.start();
-
-    final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
-        "method", "CDC",
-        "data_to_sync", "Existing and New",
-        "initial_waiting_seconds", 5,
-        "snapshot_isolation", "Snapshot"));
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-        .put(JdbcUtils.DATABASE_KEY, DB_NAME)
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("replication_method", replicationConfig)
-        .put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")))
-        .build());
-
-    dslContext = DSLContextFactory.create(DataSourceFactory.create(
-        container.getUsername(),
-        container.getPassword(),
-        container.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            container.getHost(),
-            container.getFirstMappedPort()),
-        Map.of("encrypt", "false")), null);
-    final Database database = new Database(dslContext);
-
-    executeQuery("CREATE DATABASE " + DB_NAME + ";");
-    executeQuery("ALTER DATABASE " + DB_NAME + "\n\tSET ALLOW_SNAPSHOT_ISOLATION ON");
-    executeQuery("USE " + DB_NAME + "\n" + "EXEC sys.sp_cdc_enable_db");
-
-    return database;
-  }
-
-  private void executeQuery(final String query) {
-    try {
-      final Database database = new Database(dslContext);
-      database.query(
-          ctx -> ctx
-              .execute(query));
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
-    }
+    testdb = MsSQLTestDatabase.in("mcr.microsoft.com/mssql/server:2022-latest", "withAgent")
+        .withSnapshotIsolation()
+        .withCdc();
+    return testdb.getDatabase();
   }
 
   @Override
@@ -81,7 +41,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
   }
 
   private void enableCdcOnAllTables() {
-    executeQuery("USE " + DB_NAME + "\n"
+    testdb.with(""
         + "DECLARE @TableName VARCHAR(100)\n"
         + "DECLARE @TableSchema VARCHAR(100)\n"
         + "DECLARE CDC_Cursor CURSOR FOR\n"

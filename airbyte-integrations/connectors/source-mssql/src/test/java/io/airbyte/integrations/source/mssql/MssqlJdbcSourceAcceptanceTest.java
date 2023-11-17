@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.zaxxer.hikari.pool.HikariPool;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
@@ -26,11 +27,13 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,17 +44,12 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
   protected static final String PASSWORD_WITHOUT_PERMISSION = "password_3435!";
-  private static MSSQLServerContainer<?> dbContainer;
-  private JsonNode config;
+  private MsSQLTestDatabase testdb;
 
-  @BeforeAll
-  static void init() {
-    // In mssql, timestamp is generated automatically, so we need to use
-    // the datetime type instead so that we can set the value manually.
-    COL_TIMESTAMP_TYPE = "DATETIME2";
-
-    dbContainer = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
-    dbContainer.start();
+  static {
+      // In mssql, timestamp is generated automatically, so we need to use
+      // the datetime type instead so that we can set the value manually.
+      COL_TIMESTAMP_TYPE = "DATETIME2";
   }
 
   @Override
@@ -69,42 +67,16 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, dbContainer.getHost())
-        .put(JdbcUtils.PORT_KEY, dbContainer.getFirstMappedPort())
-        .put(JdbcUtils.USERNAME_KEY, dbContainer.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, dbContainer.getPassword())
-        .build());
-
-    final DataSource dataSource = DataSourceFactory.create(
-        configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
-        configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
-            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
-        Map.of("encrypt", "false"));
-
-    try {
-      final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
-
-      final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
-
-      database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
-
-      config = Jsons.clone(configWithoutDbName);
-      ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
-      ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")));
-
-      super.setup();
-    } finally {
-      DataSourceFactory.close(dataSource);
-    }
+    testdb = MsSQLTestDatabase.in("mcr.microsoft.com/mssql/server:2022-latest");
+    config = testdb.testConfigBuilder()
+        .withoutSsl()
+        .build();
+    super.setup();
   }
 
-  @AfterAll
-  public static void cleanUp() throws Exception {
-    dbContainer.close();
+  @AfterEach
+  public void tearDown() {
+    testdb.close();
   }
 
   @Override
@@ -127,8 +99,14 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return MssqlSource.DRIVER_CLASS;
   }
 
+  @Override
+  protected void maybeSetShorterConnectionTimeout(final JsonNode config) {
+    ((ObjectNode) config).put(JdbcUtils.JDBC_URL_PARAMS_KEY, "loginTimeout=1");
+  }
+
   @Test
   void testCheckIncorrectPasswordFailure() throws Exception {
+    maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus status = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
@@ -137,6 +115,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
+    maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
     final AirbyteConnectionStatus status = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
@@ -145,6 +124,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
+    maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     final AirbyteConnectionStatus status = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
@@ -153,6 +133,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectPortFailure() throws Exception {
+    maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "0000");
     final AirbyteConnectionStatus status = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
@@ -161,6 +142,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectDataBaseFailure() throws Exception {
+    maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
     final AirbyteConnectionStatus status = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
@@ -169,6 +151,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testUserHasNoPermissionToDataBase() throws Exception {
+    maybeSetShorterConnectionTimeout(config);
     database.execute(ctx -> ctx.createStatement()
         .execute(String.format("CREATE LOGIN %s WITH PASSWORD = '%s'; ", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION)));
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
