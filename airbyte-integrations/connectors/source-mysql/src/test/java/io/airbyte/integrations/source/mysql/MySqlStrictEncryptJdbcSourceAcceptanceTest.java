@@ -84,7 +84,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
-class CloudMySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @SystemStub
   private EnvironmentVariables environmentVariables;
@@ -113,7 +113,8 @@ class CloudMySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @BeforeEach
   public void setup() throws Exception {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    environmentVariables.set("DEPLOYMENT_MODE", "CLOUD");
+    environmentVariables.set(EnvVariableFeatureFlags.DEPLOYMENT_MODE, "CLOUD");
+
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
@@ -182,7 +183,7 @@ class CloudMySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
     final ConnectorSpecification expected =
-        SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
+        SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_cloud_spec.json"), ConnectorSpecification.class));
     assertEquals(expected, actual);
   }
 
@@ -218,8 +219,6 @@ class CloudMySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void testStrictSSLUnsecuredNoTunnel() throws Exception {
-    final String PASSWORD = "Passw0rd";
-    final var certs = MySqlUtils.getCertificate(container, true);
     final var sslMode = ImmutableMap.builder()
         .put(JdbcUtils.MODE_KEY, "preferred")
         .build();
@@ -227,7 +226,7 @@ class CloudMySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     final var tunnelMode = ImmutableMap.builder()
         .put("tunnel_method", "NO_TUNNEL")
         .build();
-    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake")
+    ((ObjectNode) config)
         .put(JdbcUtils.SSL_KEY, true)
         .putIfAbsent(JdbcUtils.SSL_MODE_KEY, Jsons.jsonNode(sslMode));
     ((ObjectNode) config).putIfAbsent("tunnel_method", Jsons.jsonNode(tunnelMode));

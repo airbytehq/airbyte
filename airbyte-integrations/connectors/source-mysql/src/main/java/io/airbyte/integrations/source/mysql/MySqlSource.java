@@ -32,7 +32,6 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
-import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
@@ -141,7 +140,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public ConnectorSpecification spec() throws Exception {
-    if (cloudDeploymentMode()) {
+    if (MODE != null && MODE.equalsIgnoreCase("cloud")) {
       return modifySpec(super.spec());
     }
     return super.spec();
@@ -151,7 +150,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
     // and not over SSH tunnel
-    if (cloudDeploymentMode()) {
+    if (MODE != null && MODE.equalsIgnoreCase("cloud")) {
       if (config.has(TUNNEL_METHOD)
           && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
           && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
@@ -258,8 +257,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(final JsonNode config,
-                                                                       final ConfiguredAirbyteCatalog catalog,
-                                                                       final JsonNode state)
+      final ConfiguredAirbyteCatalog catalog,
+      final JsonNode state)
       throws Exception {
     final AirbyteStateType supportedStateType = getSupportedStateType(config);
     final StateManager stateManager =
@@ -390,10 +389,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
-                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-                                                                             final StateManager stateManager,
-                                                                             final Instant emittedAt) {
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt) {
 
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
@@ -460,7 +459,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         ? String.format(DESCRIBE_TABLE_WITHOUT_SCHEMA_QUERY, tableName)
         : String.format(DESCRIBE_TABLE_WITH_SCHEMA_QUERY, schema, tableName);
     final List<JsonNode> tableRows = database.bufferedResultSetQuery(conn -> conn.createStatement()
-        .executeQuery(descQuery),
+            .executeQuery(descQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
 
     Optional<JsonNode> field = Optional.empty();
@@ -482,7 +481,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         if (isNullable.asText().equalsIgnoreCase("YES")) {
           final String query = schema == null || schema.isBlank()
               ? String.format(NULL_CURSOR_VALUE_WITHOUT_SCHEMA_QUERY,
-                  tableName, columnName, resultColName)
+              tableName, columnName, resultColName)
               : String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
                   schema, tableName, columnName, resultColName);
 
@@ -587,10 +586,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public enum ReplicationMethod {
     STANDARD,
     CDC
-  }
-
-  private boolean cloudDeploymentMode() {
-    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
   }
 
 }
