@@ -254,8 +254,10 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
         if (event == null) {
-          if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(5L)) > 0) {
-            LOGGER.error("No record is returned even after 5 minutes of waiting, closing the engine");
+          final Duration engineWarmupWaitTime = database.getSourceConfig().has(JdbcUtils.ENGINE_WARMUP_MINUTE_KEY) ? Duration
+              .ofMinutes(database.getSourceConfig().get(JdbcUtils.ENGINE_WARMUP_MINUTE_KEY).asLong()) : Duration.ofMinutes(5L);
+          if (Duration.between(engineStartTime, Instant.now()).compareTo(engineWarmupWaitTime) > 0) {
+            LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", engineWarmupWaitTime.getSeconds());
             publisher.close();
 
           }
