@@ -110,10 +110,12 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 supportsAllDrives=True,
                 includeItemsFromAllDrives=True,
             )
+            print("drin")
             while True:
                 results = request.execute()
                 new_files = results.get("files", [])
                 for new_file in new_files:
+                    print(new_file)
                     # It's possible files and folders are linked up multiple times, this prevents us from getting stuck in a loop
                     if new_file["id"] in seen:
                         continue
