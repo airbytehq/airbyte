@@ -5,14 +5,16 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils;
+import java.util.Map;
 
 public class PostgresSourceSSLCaCertificateAcceptanceTest extends AbstractPostgresSourceSSLCertificateAcceptanceTest {
 
   @Override
-  public ImmutableMap getCertificateConfiguration() {
+  public Map<Object, Object> getCertificateConfiguration() {
     return ImmutableMap.builder()
         .put("mode", "verify-ca")
-        .put("ca_certificate", certs.getCaCertificate())
+        .put("ca_certificate", testdb.getCertificates().caCertificate())
         .put("client_key_password", PASSWORD)
         .build();
   }
