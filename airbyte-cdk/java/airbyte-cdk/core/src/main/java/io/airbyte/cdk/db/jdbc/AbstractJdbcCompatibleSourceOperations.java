@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.chrono.IsoEra;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
@@ -132,7 +133,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     try {
       node.put(columnName, DateTimeConverter.convertToTimestamp(getObject(resultSet, index, LocalDateTime.class)));
-    } catch (final Exception e) {
+    } catch (Exception e) {
       // for backward compatibility
       final Instant instant = resultSet.getTimestamp(index).toInstant();
       node.put(columnName, DataTypeUtils.toISO8601StringWithMicroseconds(instant));
@@ -226,6 +227,11 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected <ObjectType> ObjectType getObject(final ResultSet resultSet, final int index, final Class<ObjectType> clazz) throws SQLException {
     return resultSet.getObject(index, clazz);
+  }
+
+  protected void putTimeWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    final OffsetTime timetz = getObject(resultSet, index, OffsetTime.class);
+    node.put(columnName, DateTimeConverter.convertToTimeWithTimezone(timetz));
   }
 
   protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
