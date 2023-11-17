@@ -61,6 +61,9 @@
   "form.discardChangesConfirmation": "There are unsaved changes. \nAre you sure you want to discard your changes?",
   "form.every.minutes": "Every {value, plural, one {minute} other {# minutes}}",
   "form.every.hours": "Every {value, plural, one {hour} other {# hours}}",
+  "form.every.days": "Every {value, plural, one {day} other {# days}}",
+  "form.every.weeks": "Every {value, plural, one {week} other {# weeks}}",
+  "form.every.months": "Every {value, plural, one {month} other {# months}}",
   "form.testingConnection": "Testing connection...",
   "form.successTests": "All connection tests passed!",
   "form.failedTests": "The connection tests failed.",
@@ -375,6 +378,7 @@
   "tables.sourceAdd": "add source",
   "tables.destinationAdd": "add destination",
   "tables.lastSync": "Last Sync",
+  "tables.syncStatus": "Sync Status",
   "tables.lastSyncAt": "Last sync at",
   "tables.sourceConnectionToName": "Destination name",
   "tables.destinationConnectionToName": "Source name",
@@ -830,5 +834,13 @@
   "sync.disabled": "Disabled",
   "sync.notstarted": "Not Started",
   "connection.active": "Active",
-  "connection.inactive": "Inactive"
+  "connection.inactive": "Inactive",
+  "permission.owner": "Administrator(owner):",
+  "permission.owner.roleone": "This role grants complete access to all sections of the space, including billing and payment.",
+  "permission.owner.roletwo": "This role has the ability to manage user permissions, including inviting or removing users from the account.",
+  "permission.owner.rolethree": "This account cannot be removed.",
+  "permission.admin": "Administrator:",
+  "permission.admin.role": "This role has the same permissions as the account owner. However, the account can be removed by another administrator.",
+  "permission.user": "User:",
+  "permission.user.role": "This role has access to all sections of the space, except for billing and payment, as well as user management."
 }
