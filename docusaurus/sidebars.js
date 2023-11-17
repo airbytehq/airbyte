@@ -420,7 +420,7 @@ const deployAirbyte = {
 
 const airbyteSelfManaged = {
   type: "category",
-  label: "Airbyte Self Managed",
+  label: "Airbyte Self-Managed",
   link: {
     type: "doc",
     id: "enterprise-setup/self-managed/README",

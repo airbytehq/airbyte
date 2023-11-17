@@ -81,7 +81,6 @@ class SourceAmazonSellerPartner(AbstractSource):
             "replication_start_date": config.get("replication_start_date"),
             "marketplace_id": marketplace_id,
             "period_in_days": config.get("period_in_days", 90),
-            "max_wait_seconds": config.get("max_wait_seconds", 500),
             "replication_end_date": config.get("replication_end_date"),
         }
         return stream_kwargs

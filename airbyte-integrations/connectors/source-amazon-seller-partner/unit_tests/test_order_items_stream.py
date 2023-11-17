@@ -38,7 +38,6 @@ def order_items_stream():
             authenticator=None,
             period_in_days=0,
             report_options=None,
-            max_wait_seconds=500,
         )
         return stream
 
