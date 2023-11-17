@@ -20,6 +20,9 @@ on:
       runner:
         description: "The runner to use for this job"
         default: "ci-runner-connector-test-large-dagger-0-6-4"
+      airbyte_ci_binary_url:
+        description: "URL to airbyte-ci binary"
+        default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
   pull_request:
     types:
       - opened
@@ -55,6 +58,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         uses: ./.github/actions/run-dagger-pipeline
         with:
+          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
           context: "manual"
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
