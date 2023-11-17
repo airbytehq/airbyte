@@ -131,7 +131,7 @@ class ConcurrentSource:
             yield from concurrent_stream_processor.on_exception(queue_item)
 
         elif isinstance(queue_item, StreamAndStreamAvailability):
-            optional_status_message = concurrent_stream_processor.on_stream_started_sentinel(queue_item)
+            optional_status_message = concurrent_stream_processor.on_stream_availability(queue_item)
             if optional_status_message:
                 yield optional_status_message
 

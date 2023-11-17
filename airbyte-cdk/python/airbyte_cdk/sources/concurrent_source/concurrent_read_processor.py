@@ -56,7 +56,7 @@ class ConcurrentReadProcessor:
         self._message_repository = message_repository
         self._partition_reader = partition_reader
 
-    def on_stream_started_sentinel(self, sentinel: StreamAndStreamAvailability) -> Optional[AirbyteMessage]:
+    def on_stream_availability(self, sentinel: StreamAndStreamAvailability) -> Optional[AirbyteMessage]:
         stream = sentinel.stream
         if sentinel.availability.is_available():
             self._logger.info(f"Marking stream {stream.name} as STARTED")

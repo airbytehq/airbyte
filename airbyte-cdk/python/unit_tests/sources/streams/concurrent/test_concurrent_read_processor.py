@@ -133,7 +133,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         assert expected_messages == messages
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
-    def test_handle_stream_started_sentinel(self):
+    def test_handle_stream_s_available(self):
         stream_instances_to_read_from = [self._stream]
 
         handler = ConcurrentReadProcessor(
@@ -148,7 +148,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         handler.start_next_partition_generator()
 
         sentinel = StreamAndStreamAvailability(self._stream, StreamAvailable())
-        messages = handler.on_stream_started_sentinel(sentinel)
+        messages = handler.on_stream_availability(sentinel)
 
         expected_message = AirbyteMessage(
             type=MessageType.TRACE,
@@ -180,7 +180,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         handler.start_next_partition_generator()
 
         sentinel = StreamAndStreamAvailability(self._stream, StreamUnavailable("stream is unavailable"))
-        messages = handler.on_stream_started_sentinel(sentinel)
+        messages = handler.on_stream_availability(sentinel)
 
         expected_message = None
 
