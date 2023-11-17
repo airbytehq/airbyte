@@ -33,8 +33,8 @@ class PartitionEnqueuer:
         """
         try:
             stream_availability = stream.check_availability()
+            self._queue.put(StreamAndStreamAvailability(stream, stream_availability))
             if stream_availability.is_available():
-                self._queue.put(StreamAndStreamAvailability(stream, stream_availability))
                 for partition in stream.generate_partitions():
                     self._queue.put(partition)
                 self._queue.put(PartitionGenerationCompletedSentinel(stream))
