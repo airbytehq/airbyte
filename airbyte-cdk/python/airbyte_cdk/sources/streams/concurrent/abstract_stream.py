@@ -87,9 +87,3 @@ class StreamAndStreamAvailability:
     def __init__(self, stream: AbstractStream, stream_availability: StreamAvailability):
         self.stream = stream
         self.availability = stream_availability
-
-    def __eq__(self, other):
-        return isinstance(other, StreamAndStreamAvailability) and self.stream == other.stream and self.availability == other.availability
-
-    def __hash__(self):
-        return hash((self.stream, self.availability))

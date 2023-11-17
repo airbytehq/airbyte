@@ -17,7 +17,6 @@ class PartitionEnqueuer:
     def __init__(self, queue: Queue[QueueItem]) -> None:
         """
         :param queue:  The queue to put the partitions in.
-        :param sentinel: The sentinel to put in the queue when all the partitions have been generated.
         """
         self._queue = queue
 
@@ -29,7 +28,7 @@ class PartitionEnqueuer:
         If an exception is encountered, the exception will be caught and put in the queue.
 
         This method is meant to be called in a separate thread.
-        :param partition_generator: The partition Generator
+        :param stream: The stream to generate partitions for.
         :return:
         """
         try:

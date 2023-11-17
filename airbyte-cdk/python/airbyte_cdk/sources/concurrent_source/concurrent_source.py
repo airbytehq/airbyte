@@ -103,7 +103,7 @@ class ConcurrentSource:
         self._threadpool.check_for_errors_and_shutdown()
         self._logger.info("Finished syncing")
 
-    def _submit_initial_partition_generators(self, concurrent_stream_processor: ConcurrentReadProcessor):
+    def _submit_initial_partition_generators(self, concurrent_stream_processor: ConcurrentReadProcessor) -> None:
         for _ in range(self._initial_number_partitions_to_generate):
             concurrent_stream_processor.start_next_partition_generator()
 
