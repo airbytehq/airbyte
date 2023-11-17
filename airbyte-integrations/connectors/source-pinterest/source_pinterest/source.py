@@ -164,7 +164,7 @@ class SourcePinterest(AbstractSource):
             report_config["authenticator"] = config["authenticator"]
             start_date = report_config.get("start_date")
             if start_date:
-                report_config = self._validate_and_transform(config, amount_of_days_allowed_for_lookup=913)
+                report_config = self._validate_and_transform(report_config, amount_of_days_allowed_for_lookup=913)
             else:
                 report_config["start_date"] = config.get("start_date")
             stream = CustomReport(
