@@ -6,10 +6,10 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
-import io.airbyte.integrations.source.mysql.MySQLContainerFactory;
-import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
+import io.airbyte.integrations.source.mysql.MySQLContainerFactory;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
 
 public class MySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
 

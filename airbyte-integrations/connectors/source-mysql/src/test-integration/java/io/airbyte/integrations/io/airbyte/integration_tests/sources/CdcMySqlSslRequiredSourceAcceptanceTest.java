@@ -7,7 +7,6 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import java.util.stream.Stream;
 
@@ -27,9 +26,9 @@ public class CdcMySqlSslRequiredSourceAcceptanceTest extends CdcMySqlSourceAccep
     testdb.with("ALTER USER %s REQUIRE SSL;", testdb.getUserName());
   }
 
-
   @Override
   protected Stream<String> extraContainerFactoryMethods() {
     return Stream.of("withRootAndServerCertificates", "withClientCertificate");
   }
+
 }
