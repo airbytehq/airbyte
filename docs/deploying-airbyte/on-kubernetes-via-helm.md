@@ -122,41 +122,6 @@ After specifying your own configuration, run the following command:
 helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 ```
 
-### (Early Access) Airbyte Enterprise deployment
-
-[Airbyte Enterprise](/airbyte-enterprise) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Enterprise license key](https://airbyte.com/company/talk-to-sales), you can install Airbyte Enterprise via helm by following these steps:
-
-1. Checkout the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
-
-2. Add your Airbyte Enterprise license key and [auth configuration details](/airbyte-enterprise#single-sign-on-sso) to a file called `airbyte.yml` in the `configs` directory of `airbyte-platform`. You can copy `airbyte.sample.yml` to use as a template:
-
-```sh
-cp configs/airbyte.sample.yml configs/airbyte.yml
-```
-
-Then, open up `airbyte.yml` in your text editor to fill in the indicated fields.
-
-:::caution
-
-For now, auth configurations aren't easy to modify once initially installed, so please double check them to make sure they're accurate before proceeding! This will be improved in the near future.
-
-:::
-
-3. Make sure your helm repository is up to date:
-
-```text
-helm repo update
-```
-
-4. Install Airbyte Enterprise on helm using the following command:
-
-```text
-./tools/bin/install_airbyte_pro_on_helm.sh
-```
-
-The default release name is `airbyte-pro`. You can change this via the `RELEASE_NAME` environment
-variable.
-
 ## Migrate from old charts to new ones
 
 Starting from `0.39.37-alpha` we've revisited helm charts structure and separated all components of airbyte into their own independent charts, thus by allowing our developers to test single component without deploying airbyte as a whole and by upgrading single component at a time.
