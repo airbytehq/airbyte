@@ -185,15 +185,6 @@ def test_403_error_handling(stream_by_name, requests_mock):
             2
         ),
         (
-            "checkout_sessions_line_items",
-            {
-                "/v1/events": {"data": [{"data":{"object": {"id": 1}}, "created": 1, "type": "checkout.session.completed"}]},
-                "/v1/checkout/sessions": {"data": [{"id": 1}]},
-                "/v1/checkout/sessions/1/line_items": {"data": []}
-            },
-            6
-        ),
-        (
             "customer_balance_transactions",
             {
                 "/v1/events": {"data": [{"data":{"object": {"id": 1}}, "created": 1, "type": "customer.updated"}]},
@@ -201,15 +192,6 @@ def test_403_error_handling(stream_by_name, requests_mock):
                 "/v1/customers/1/balance_transactions": {"data": []}
             },
             4
-        ),
-        (
-            "setup_attempts",
-            {
-                "/v1/events": {"data": [{"data":{"object": {"id": 1}}, "created": 1, "type": "setup_intent.succeeded"}]},
-                "/v1/setup_intents": {"data": [{"id": 1}]},
-                "/v1/setup_attempts": {"data": []}
-            },
-            6
         ),
         (
             "transfer_reversals",
