@@ -11,6 +11,7 @@ on:
 jobs:
   format-fix:
     runs-on: "ci-runner-connector-format-medium-dagger-0-6-4"
+    # Note if you are changing this name you must also change it in the approve-and-merge-dispatch.yml workflow
     name: "Apply All Formatting Rules"
     timeout-minutes: 40
     steps:
