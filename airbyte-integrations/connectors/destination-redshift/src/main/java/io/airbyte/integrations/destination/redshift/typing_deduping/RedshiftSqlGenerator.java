@@ -326,20 +326,17 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     final CommonTableExpression<Record> filteredRows = name("numbered_rows").as(select(asterisk(), rowNumber).from(rawDataWithCasts));
 
     // Transactional insert and delete, Jooq only supports transaction starting 3.18
-    // TODO: Complete this method.
-    /*
-     * return """ BEGIN; %s; %s; COMMIT; """.formatted(insertIntoFinalTable(...),
-     * deleteFromFinalTable(...));
-     */
-    String insertStmt = insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
-        .select(with(rawDataWithCasts)
-            .with(filteredRows)
-            .select(buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true)))
-            .from(filteredRows)
-            .where(field("row_number", Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
-        )
-        .getSQL(ParamType.INLINED);
-    String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
+    final String insertStmt =
+        insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
+            .select(
+                with(rawDataWithCasts)
+                    .with(filteredRows)
+                    .select(buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true)))
+                    .from(filteredRows)
+                    .where(field("row_number", Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
+            )
+            .getSQL(ParamType.INLINED);
+    final String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
     return Strings.join(
         List.of(
             "BEGIN",
@@ -397,17 +394,17 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
                                                  final String tableName,
                                                  final LinkedHashMap<ColumnId, AirbyteType> columns,
                                                  final Map<String, DataType<?>> metaFields) {
-    DSLContext dsl = getDslContext();
+    final DSLContext dsl = getDslContext();
     return dsl
         .insertInto(table(quotedName(schemaName, tableName)))
         .columns(buildFinalTableFields(columns, metaFields));
   }
 
   String deleteFromFinalTable(final String schemaName, final String tableName, List<ColumnId> primaryKeys, Optional<ColumnId> cursor) {
-    DSLContext dsl = getDslContext();
+    final DSLContext dsl = getDslContext();
     // Unknown type doesn't play well with where .. in (select..)
-    Field<Object> airbyteRawId = field(quotedName(COLUMN_NAME_AB_RAW_ID));
-    Field<Integer> rowNumber = getRowNumber(primaryKeys, cursor);
+    final Field<Object> airbyteRawId = field(quotedName(COLUMN_NAME_AB_RAW_ID));
+    final Field<Integer> rowNumber = getRowNumber(primaryKeys, cursor);
     return dsl.deleteFrom(table(quotedName(schemaName, tableName)))
         .where(airbyteRawId.in(
             select(airbyteRawId)
