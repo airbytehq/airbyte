@@ -9,6 +9,7 @@ import pytest
 from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_instagram.streams import (
+    DatetimeTransformerMixin,
     InstagramStream,
     Media,
     MediaInsights,
@@ -32,15 +33,11 @@ def test_clear_url(config):
 
 
 def test_state_outdated(api, config):
-    assert UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format(
-        {"state": MagicMock()}
-    )
+    assert UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format({"state": MagicMock()})
 
 
 def test_state_is_not_outdated(api, config):
-    assert not UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format(
-        {"state": {}}
-    )
+    assert not UserInsights(api=api, start_date=config["start_date"])._state_has_legacy_format({"state": {}})
 
 
 def test_media_get_children(api, requests_mock, some_config):
@@ -208,9 +205,9 @@ def test_user_lifetime_insights_read(api, config, user_insight_data, requests_mo
 @pytest.mark.parametrize(
     "values,expected",
     [
-        ({"end_time": "test_end_time", "value": "test_value"}, {"date": "test_end_time", "value": "test_value"}),
+        ({"end_time": "2020-05-04T07:00:00+0000", "value": "test_value"}, {"date": "2020-05-04T07:00:00+0000", "value": "test_value"}),
         ({"value": "test_value"}, {"date": None, "value": "test_value"}),
-        ({"end_time": "test_end_time"}, {"date": "test_end_time", "value": None}),
+        ({"end_time": "2020-05-04T07:00:00+0000"}, {"date": "2020-05-04T07:00:00+0000", "value": None}),
         ({}, {"date": None, "value": None}),
     ],
     ids=[
@@ -363,3 +360,22 @@ def test_exit_gracefully(api, config, requests_mock, caplog):
     assert not records
     assert requests_mock.call_count == 6  # 4 * 1 per `metric_to_period` map + 1 `summary` request + 1 `business_account_id` request
     assert "Stopping syncing stream 'user_insights'" in caplog.text
+
+
+@pytest.mark.parametrize(
+    "original_value, field_schema, expected",
+    [
+        ("2020-01-01T12:00:00Z", {"format": "date-time", "airbyte_type": "timestamp_with_timezone"}, "2020-01-01T12:00:00+00:00"),
+        ("2020-05-04T07:00:00+0000", {"format": "date-time", "airbyte_type": "timestamp_with_timezone"}, "2020-05-04T07:00:00+00:00"),
+        (None, {"format": "date-time", "airbyte_type": "timestamp_with_timezone"}, None),
+        ("2020-01-01T12:00:00", {"format": "date-time", "airbyte_type": "timestamp_without_timezone"}, "2020-01-01T12:00:00"),
+        ("2020-01-01T14:00:00", {"format": "date-time"}, "2020-01-01T14:00:00"),
+        ("2020-02-03T12:00:00", {"type": "string"}, "2020-02-03T12:00:00"),
+    ],
+)
+def test_custom_transform_datetime_rfc3339(original_value, field_schema, expected):
+    # Call the static method
+    result = DatetimeTransformerMixin.custom_transform_datetime_rfc3339(original_value, field_schema)
+
+    # Assert the result matches the expected output
+    assert result == expected
