@@ -43,10 +43,6 @@ jobs:
           permission: write
           commands: |
             approve-and-merge-demo
-          static-args: |
-            repo=${{ steps.getref.outputs.repo }}
-            gitref=${{ steps.getref.outputs.ref }}
-            comment-id=${{ github.event.comment.id }}
           dispatch-type: repository
 
       - name: Edit comment with error message

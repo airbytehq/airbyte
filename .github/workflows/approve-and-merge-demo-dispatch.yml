@@ -9,16 +9,12 @@ jobs:
   checkFormat:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump the client payload context
-        env:
-          PAYLOAD_CONTEXT: ${{ toJson(github.event.client_payload) }}
-        run: echo "$PAYLOAD_CONTEXT"
       - name: Wait for formatters to succeed
         id: wait-for-formatters
         uses: lewagon/wait-on-check-action@v1.3.1
         with:
-          ref: ${{ github.event.client_payload.slash_command.args.named.gitref }}
-          check-name: "Check for formatting errors on"
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+          check-name: "Apply All Formatting Rules"
           repo-token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
           wait-interval: 30
       - name: Comment if formatters failed
