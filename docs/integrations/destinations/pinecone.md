@@ -70,12 +70,12 @@ To get started, use the [Pinecone web UI or API](https://docs.pinecone.io/docs/q
 
 OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere embeddings produce vectors with 1024 dimensions. Make sure to configure the index accordingly.
 
-<FieldAnchor field="indexing.store_text">
-
 #### Storing raw text as metadata
 
-By default, the raw text that got embedded is stored along with the selected metadata fields and the vector in the Pinecone record. This allows you to retrieve the original text when querying the index. If you don't need this, you can disable it by disabling the "Store text" option. This will reduce the required storage space and improve indexing performance, but it means you need to be able to look up the original text during query time from the source system by using an identifying metadata field (like an id) if you want to retrieve it.
+<FieldAnchor field="indexing.store_text">
+By default, the raw text that got embedded is stored along with the selected metadata fields and the vector in the Pinecone record. This allows you to retrieve the original text when querying the index.
 
+If you don't need this, you can disable it by disabling the "Store text" option. This will reduce the required storage space and improve indexing performance, but it means you need to be able to look up the original text during query time from the source system by using an identifying metadata field (like an id) if you want to retrieve it.
 </FieldAnchor>
 
 ## CHANGELOG

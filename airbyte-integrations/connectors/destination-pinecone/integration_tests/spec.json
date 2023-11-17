@@ -26,7 +26,7 @@
             "type": "string"
           },
           "store_text": {
-            "title": "Store text",
+            "title": "Store raw text as metadata",
             "description": "Store the text that gets embedded along with the vector and the metadata in the Pinecone index under the key `text`. If set to false, only the vector and the metadata will be stored.",
             "default": true,
             "type": "boolean"
