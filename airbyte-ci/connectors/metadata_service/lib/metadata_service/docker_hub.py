@@ -3,11 +3,10 @@
 #
 
 import os
+import time
 from typing import Optional
 
 import requests
-import time
-from typing import Optional
 
 
 def get_docker_hub_auth_token() -> str:
@@ -27,12 +26,8 @@ def get_docker_hub_auth_token() -> str:
     token = response.json().get("token")
     return token
 
-def is_image_on_docker_hub(
-    image_name: str,
-    version: str,
-    digest: Optional[str] = None,
-    retries: int = 0
-) -> bool:
+
+def is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] = None, retries: int = 0) -> bool:
     """Check if a given image and version exists on Docker Hub.
 
     Args:
