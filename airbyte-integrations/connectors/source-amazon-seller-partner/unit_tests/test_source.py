@@ -4,6 +4,7 @@
 
 import pytest
 from source_amazon_seller_partner import SourceAmazonSellerPartner
+from source_amazon_seller_partner.utils import AmazonConfigException
 
 
 @pytest.fixture
@@ -47,3 +48,17 @@ def test_config_report_options(connector_config_with_report_options):
                          x.name not in ["GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA", *NOT_SUPPORTED_STREAMS_REPORT_OPTIONS])
     for streams in all_other_streams:
         assert not streams.report_options()
+
+
+def test_config_report_options_validation_error_duplicated_streams(connector_config_with_report_options):
+    connector_config_with_report_options["report_options_list"].append(connector_config_with_report_options["report_options_list"][0])
+    with pytest.raises(AmazonConfigException) as e:
+        SourceAmazonSellerPartner().validate_stream_report_options(connector_config_with_report_options)
+    assert e.value.message == "Stream name should be unique among all Report options list"
+
+
+def test_config_report_options_validation_error_duplicated_options(connector_config_with_report_options):
+    connector_config_with_report_options["report_options_list"][0]['options_list'].append(connector_config_with_report_options["report_options_list"][0]['options_list'][0])
+    with pytest.raises(AmazonConfigException) as e:
+        SourceAmazonSellerPartner().validate_stream_report_options(connector_config_with_report_options)
+    assert e.value.message == "Option names should be unique for `GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA` report options"
