@@ -22,7 +22,6 @@ import static org.jooq.impl.DSL.rowNumber;
 import static org.jooq.impl.DSL.select;
 import static org.jooq.impl.DSL.table;
 import static org.jooq.impl.DSL.val;
-import static org.jooq.impl.DSL.when;
 import static org.jooq.impl.DSL.with;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -117,7 +116,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   // TODO: Pull it into base class as abstract and formatted only for testing.
   protected DSLContext getDslContext() {
     return DSL.using(SQLDialect.POSTGRES, new Settings().withRenderFormatted(true));
-//    return DSL.using(SQLDialect.POSTGRES);
+    // return DSL.using(SQLDialect.POSTGRES);
   }
 
   /**
@@ -130,12 +129,13 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    * https://cloud.google.com/bigquery/docs/migration/redshift-sql#merge_statement * *
    * https://docs.aws.amazon.com/redshift/latest/dg/r_WITH_clause.html#r_WITH_clause-usage-notes *
    * Primary keys are informational only and not enforced
-   * (https://docs.aws.amazon.com/redshift/latest/dg/t_Defining_constraints.html)
-   * TODO: Look at SORT KEYS, DISTKEY in redshift for optimizing the query performance.
+   * (https://docs.aws.amazon.com/redshift/latest/dg/t_Defining_constraints.html) TODO: Look at SORT
+   * KEYS, DISTKEY in redshift for optimizing the query performance.
    */
 
   /**
    * build jooq fields for final table with customers columns first and then meta columns.
+   *
    * @param columns
    * @param metaColumns
    * @return
@@ -152,7 +152,9 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   /**
-   * build jooq fields for raw table with type-casted data columns first and then meta columns without _airbyte_meta.
+   * build jooq fields for raw table with type-casted data columns first and then meta columns without
+   * _airbyte_meta.
+   *
    * @param columns
    * @param metaColumns
    * @return
@@ -172,7 +174,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   String buildSqlConcatString(List<String> stringList) {
     if (stringList.isEmpty()) {
-      return "";  // Return an empty string if the list is empty
+      return ""; // Return an empty string if the list is empty
     }
 
     // Base case: if there's only one element, return it
@@ -182,7 +184,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
     // Recursive case: construct ARRAY_CONCAT function call
     String lastValue = stringList.get(stringList.size() - 1);
-    String recursiveCall = buildSqlConcatString(stringList.subList(0, stringList.size()-1));
+    String recursiveCall = buildSqlConcatString(stringList.subList(0, stringList.size() - 1));
 
     return "ARRAY_CONCAT(" + recursiveCall + ", ARRAY(" + lastValue + "))";
   }
@@ -200,16 +202,24 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns) {
     String caseStatementSqlTemplate = "CASE WHEN {0} THEN {1} ELSE {2} END ";
-    Field<?> caseSt2 = field(caseStatementSqlTemplate, function("IS_VARCHAR", SQLDataType.BOOLEAN, field("first_name")).eq(true).and(cast("first_name", SQLDataType.VARCHAR).isNull()), function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT)), field("ARRAY()"));
-//    Field<String> arrayFunction =  function("ARRAY", SQLDataType.VARCHAR, val(COLUMN_ERROR_MESSAGE_FORMAT));
-//    Field<String> caseStmt = when(function("IS_VARCHAR", SQLDataType.BOOLEAN, field("first_name")).eq(true).and(cast("first_name", SQLDataType.VARCHAR).isNull()), arrayFunction).otherwise("ARRAY()");
-//    when(function("IS_VARCHAR", SQLDataType.BOOLEAN, field("first_name")).eq(true).and(cast("first_name", SQLDataType.VARCHAR).isNull()), function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_PREFIX))).otherwise(field("NULL")
+    Field<?> caseSt2 = field(caseStatementSqlTemplate,
+        function("IS_VARCHAR", SQLDataType.BOOLEAN, field("first_name")).eq(true).and(cast("first_name", SQLDataType.VARCHAR).isNull()),
+        function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT)), field("ARRAY()"));
+    // Field<String> arrayFunction = function("ARRAY", SQLDataType.VARCHAR,
+    // val(COLUMN_ERROR_MESSAGE_FORMAT));
+    // Field<String> caseStmt = when(function("IS_VARCHAR", SQLDataType.BOOLEAN,
+    // field("first_name")).eq(true).and(cast("first_name", SQLDataType.VARCHAR).isNull()),
+    // arrayFunction).otherwise("ARRAY()");
+    // when(function("IS_VARCHAR", SQLDataType.BOOLEAN,
+    // field("first_name")).eq(true).and(cast("first_name", SQLDataType.VARCHAR).isNull()),
+    // function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_PREFIX))).otherwise(field("NULL")
     return function("object", getSuperType(), val(AIRBYTE_META_COLUMN_ERRORS_KEY), caseSt2);
 
   }
 
   /**
    * Use this method to get the final table meta columns with or without _airbyte_meta column.
+   *
    * @param includeMetaColumn
    * @return
    */
@@ -217,7 +227,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     final LinkedHashMap<String, DataType<?>> metaColumns = new LinkedHashMap<>();
     metaColumns.put(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false));
     metaColumns.put(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
-    if (includeMetaColumn) metaColumns.put(COLUMN_NAME_AB_META, getSuperType().nullable(false));
+    if (includeMetaColumn)
+      metaColumns.put(COLUMN_NAME_AB_META, getSuperType().nullable(false));
     return metaColumns;
   }
 
@@ -261,57 +272,58 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
                             final Optional<Instant> minRawTimestamp,
                             final boolean useExpensiveSaferCasting) {
 
-    //TODO: Add flag to use merge vs insert/delete
+    // TODO: Add flag to use merge vs insert/delete
     return insertAndDeleteTransaction(streamConfig, finalSuffix, minRawTimestamp, useExpensiveSaferCasting);
 
   }
 
   private String insertAndDeleteTransaction(final StreamConfig streamConfig,
-                                 final String finalSuffix,
-                                 final Optional<Instant> minRawTimestamp,
-                                 final boolean useExpensiveSaferCasting) {
+                                            final String finalSuffix,
+                                            final Optional<Instant> minRawTimestamp,
+                                            final boolean useExpensiveSaferCasting) {
     final String finalSchema = streamConfig.id().finalNamespace();
     final String finalTable = streamConfig.id().finalName();
     final String rawSchema = streamConfig.id().rawNamespace();
     final String rawTable = streamConfig.id().rawName();
 
-    // Poor person's guarantee of ordering of fields by using same source of ordered list of columns to generate fields.
+    // Poor person's guarantee of ordering of fields by using same source of ordered list of columns to
+    // generate fields.
     final CommonTableExpression<Record> rawDataWithCasts = name("intermediate_data")
         .as(selectFromRawTable(rawSchema, rawTable, streamConfig.columns(), getFinalTableMetaColumns(false)));
     final Field<?> rowNumber = getRowNumber(streamConfig.primaryKey(), streamConfig.cursor());
     final CommonTableExpression<Record> filteredRows = name("numbered_rows").as(select(asterisk(), rowNumber).from(rawDataWithCasts));
 
     // Transactional insert and delete, Jooq only supports transaction starting 3.18
-    //TODO: Complete this method.
-    /*return """
-        BEGIN;
-        %s;
-        %s;
-        COMMIT;
-        """.formatted(insertIntoFinalTable(...), deleteFromFinalTable(...));*/
+    // TODO: Complete this method.
+    /*
+     * return """ BEGIN; %s; %s; COMMIT; """.formatted(insertIntoFinalTable(...),
+     * deleteFromFinalTable(...));
+     */
 
     return insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
         .select(with(rawDataWithCasts)
-                    .with(filteredRows)
-                    .select(buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true)))
-                    .from(filteredRows)
-                    .where(field("row_number", Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
+            .with(filteredRows)
+            .select(buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true)))
+            .from(filteredRows)
+            .where(field("row_number", Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
         )
         .getSQL(ParamType.INLINED);
 
   }
 
   private String mergeTransaction(final StreamConfig streamConfig,
-                                 final String finalSuffix,
-                                 final Optional<Instant> minRawTimestamp,
-                                 final boolean useExpensiveSaferCasting) {
+                                  final String finalSuffix,
+                                  final Optional<Instant> minRawTimestamp,
+                                  final boolean useExpensiveSaferCasting) {
 
     throw new UnsupportedOperationException("Not implemented yet");
 
   }
 
   /**
-   * Return ROW_NUMBER() OVER (PARTITION BY primaryKeys ORDER BY cursor DESC NULLS LAST, _airbyte_extracted_at DESC)
+   * Return ROW_NUMBER() OVER (PARTITION BY primaryKeys ORDER BY cursor DESC NULLS LAST,
+   * _airbyte_extracted_at DESC)
+   *
    * @param primaryKeys
    * @param cursor
    * @return
@@ -382,7 +394,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
                     DSL.inline(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
                     DSL.field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(DSL.table(DSL.name(namespace, tableName))))
                 .getSQL()),
-        ";"+ System.lineSeparator());
+        ";" + System.lineSeparator());
   }
 
   @Override
