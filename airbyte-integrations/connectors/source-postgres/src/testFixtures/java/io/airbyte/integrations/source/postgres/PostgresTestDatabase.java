@@ -11,7 +11,6 @@ import io.airbyte.cdk.testutils.TestDatabase;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.time.Duration;
 import java.util.List;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
@@ -133,6 +132,7 @@ public class PostgresTestDatabase extends
     public PostgresConfigBuilder withSchemas(String... schemas) {
       return with(JdbcUtils.SCHEMAS_KEY, List.of(schemas));
     }
+
     public PostgresConfigBuilder withStandardReplication() {
       return with("replication_method", ImmutableMap.builder().put("method", "Standard").build());
     }

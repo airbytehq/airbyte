@@ -16,7 +16,6 @@ import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
-import java.sql.SQLException;
 import java.util.Set;
 
 public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {

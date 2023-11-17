@@ -5,7 +5,6 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import java.util.Map;
 
 public class PostgresSourceSSLCaCertificateAcceptanceTest extends AbstractPostgresSourceSSLCertificateAcceptanceTest {

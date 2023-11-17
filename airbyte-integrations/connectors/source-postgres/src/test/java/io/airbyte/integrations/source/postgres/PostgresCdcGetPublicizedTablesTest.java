@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.sql.SQLException;
 import java.util.Set;
