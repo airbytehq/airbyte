@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -61,4 +65,5 @@ public class RedshiftSourceOperationsTest {
         .parse(result.get(0).get("varchar").asText(), Instant::from);
     assertEquals(serverSideParse, clientSideParse);
   }
+
 }
