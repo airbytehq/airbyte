@@ -75,7 +75,11 @@ class SourceAmazonSellerPartner(AbstractSource):
             host=endpoint.replace("https://", ""),
             refresh_access_token_headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
-        start_date = config.get("replication_start_date") if config.get("replication_start_date") else pendulum.now("utc").subtract(years=2).strftime("%Y-%m-%dT%H:%M:%SZ")
+        start_date = (
+            config.get("replication_start_date")
+            if config.get("replication_start_date")
+            else pendulum.now("utc").subtract(years=2).strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
         stream_kwargs = {
             "url_base": endpoint,
             "authenticator": auth,
