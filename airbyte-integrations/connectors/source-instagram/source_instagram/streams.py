@@ -11,12 +11,31 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.igmedia import IGMedia
 from facebook_business.exceptions import FacebookRequestError
 from source_instagram.api import InstagramAPI
 
 from .common import remove_params_from_url
+
+
+class DatetimeTransformerMixin:
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.CustomSchemaNormalization)
+
+    @staticmethod
+    @transformer.registerCustomTransform
+    def custom_transform_datetime_rfc3339(original_value, field_schema):
+        """
+        Transform datetime string to RFC 3339 format
+        """
+        if original_value and field_schema.get("format") == "date-time" and field_schema.get("airbyte_type") == "timestamp_with_timezone":
+            # Parse the ISO format timestamp
+            dt = pendulum.parse(original_value)
+
+            # Convert to RFC 3339 format
+            return dt.to_rfc3339_string()
+        return original_value
 
 
 class InstagramStream(Stream, ABC):
@@ -121,10 +140,10 @@ class Users(InstagramStream):
         yield self.transform(record)
 
 
-class UserLifetimeInsights(InstagramStream):
+class UserLifetimeInsights(DatetimeTransformerMixin, InstagramStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights"""
 
-    primary_key = None
+    primary_key = ["business_account_id", "metric", "date"]
     LIFETIME_METRICS = ["audience_city", "audience_country", "audience_gender_age", "audience_locale"]
     period = "lifetime"
 
@@ -156,7 +175,7 @@ class UserLifetimeInsights(InstagramStream):
         return params
 
 
-class UserInsights(InstagramIncrementalStream):
+class UserInsights(DatetimeTransformerMixin, InstagramIncrementalStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights"""
 
     METRICS_BY_PERIOD = {
@@ -176,7 +195,7 @@ class UserInsights(InstagramIncrementalStream):
         "lifetime": ["online_followers"],
     }
 
-    primary_key = None
+    primary_key = ["business_account_id", "date"]
     cursor_field = "date"
 
     # For some metrics we can only get insights not older than 30 days, it is Facebook policy
@@ -295,7 +314,7 @@ class UserInsights(InstagramIncrementalStream):
         return False
 
 
-class Media(InstagramStream):
+class Media(DatetimeTransformerMixin, InstagramStream):
     """Children objects can only be of the media_type == "CAROUSEL_ALBUM".
     And children object does not support INVALID_CHILDREN_FIELDS fields,
     so they are excluded when trying to get child objects to avoid the error
@@ -403,7 +422,7 @@ class MediaInsights(Media):
             raise error
 
 
-class Stories(InstagramStream):
+class Stories(DatetimeTransformerMixin, InstagramStream):
     """Docs: https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories"""
 
     def read_records(

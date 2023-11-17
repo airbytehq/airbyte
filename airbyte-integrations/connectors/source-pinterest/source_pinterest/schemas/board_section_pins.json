@@ -35,6 +35,9 @@
         }
       }
     },
+    "pin_metrics": {
+      "type": ["null", "object"]
+    },
     "media": {
       "type": ["null", "object"],
       "properties": {
