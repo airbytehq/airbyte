@@ -1,14 +1,12 @@
-# Airbyte Enterprise
+# Using Single Sign-On (SSO)
 
-[Airbyte Enterprise](https://airbyte.com/solutions/airbyte-enterprise) is a self-managed version of Airbyte with additional features for enterprise customers. Airbyte Enterprise is in an early access stage for select priority users. A valid license key is required to get started with Airbyte Enterprise. [Talk to sales](https://airbyte.com/company/talk-to-sales) to receive your license key.
+Leverage your existing identity provider to enable employees to access your Airbyte instance using their corporate credentials, simplifying user provisioning. Enabling Single Sign-On extends Airbyte Self Managed to support multiple users, and multiple teams all on one instance.
 
-The following instructions outline how to:
-1. Configure Okta for Single Sign-On (SSO) with Airbyte Enterprise
-2. Deploy Airbyte Enterprise using Kubernetes (License Key Required)
+Airbyte Self Managed currently supports SSO via OIDC with [Okta](https://www.okta.com/) as an IdP. Support for Azure Active Directory and connecting via SAML are both coming soon. Please talk to us to learn more about upcoming [enterprise features](https://airbyte.com/company/talk-to-sales). 
 
-## Single Sign-On (SSO)
-
-Airbyte Enterprise supports Single Sign-On, allowing an organization to manage user access to their Airbyte Enterprise instance through the configuration of an Identity Provider (IdP). Airbyte Enterprise currently supports SSO via OIDC with [Okta](https://www.okta.com/) as an IdP.
+The following instructions walk you through:
+1. [Setting up the Okta OIDC App Integration to be used by your Airbyte instance](#setting-up-okta-for-sso)
+2. [Configuring Airbyte Self-Managed to use SSO](#deploying-airbyte-enterprise-with-okta)
 
 ### Setting up Okta for SSO
 
@@ -16,13 +14,13 @@ You will need to create a new Okta OIDC App Integration for your Airbyte instanc
 
 You should create an app integration with **OIDC - OpenID Connect** as the sign-in method and **Web Application** as the application type:
 
-![Screenshot of Okta app integration creation modal](./assets/docs/okta-create-new-app-integration.png)
+![Screenshot of Okta app integration creation modal](../assets/okta-create-new-app-integration.png)
 
 #### App integration name
 
 Please choose a URL-friendly app integraiton name without spaces or special characters, such as `my-airbyte-app`:
 
-![Screenshot of Okta app integration name](./assets/docs/okta-app-integration-name.png)
+![Screenshot of Okta app integration name](../assets/okta-app-integration-name.png)
 
 Spaces or special characters in this field could result in invalid redirect URIs.
 
@@ -42,13 +40,14 @@ Sign-out redirect URIs
 <your-airbyte-domain>/auth/realms/airbyte/broker/<app-integration-name>/endpoint/logout_response
 ```
 
-![Okta app integration name screenshot](./assets/docs/okta-login-redirect-uris.png)
+![Okta app integration name screenshot](../assets/okta-login-redirect-uris.png)
 
 _Example values_
 
 `<your-airbyte-domain>` should point to where your Airbyte instance will be available, including the http/https protocol.
 
-## Deploying Airbyte Enterprise with Okta
+
+## Deploying Airbyte Self-Managed with Okta
 
 Once your Okta app is set up, you're ready to deploy Airbyte with SSO. Take note of the following configuration values, as you will need them to configure Airbyte to use your new Okta SSO app integration:
 
@@ -57,4 +56,4 @@ Once your Okta app is set up, you're ready to deploy Airbyte with SSO. Take note
 - Client ID
 - Client Secret
 
-Visit [Airbyte Enterprise deployment](/deploying-airbyte/on-kubernetes-via-helm#early-access-airbyte-enterprise-deployment) for instructions on how to deploy Airbyte Enterprise using `kubernetes`, `kubectl` and `helm`.
+Visit the [implementation guide](./implementation-guide.md) for instructions on how to deploy Airbyte Enterprise using `kubernetes`, `kubectl` and `helm`.
