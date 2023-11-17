@@ -10,7 +10,7 @@ import requests
 import responses
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
-from source_mailchimp.streams import Campaigns, EmailActivity, ListMembers, Lists, Segments
+from source_mailchimp.streams import Campaigns, EmailActivity, ListMembers, Lists, Reports, Segments
 from utils import read_full_refresh, read_incremental
 
 
@@ -413,3 +413,39 @@ def test_403_error_handling(
     # Handle non-403 error
     except HTTPError as e:
         assert e.response.status_code == status_code
+
+@pytest.mark.parametrize(
+    "record, expected_return",
+    [
+        (
+            {"clicks": {"last_click": ""}, "opens": {"last_open": ""}},
+            {"clicks": {}, "opens": {}},
+        ),
+        (
+            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {"last_open": ""}},
+            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {}},
+        ),
+        (         
+            {"clicks": {"last_click": ""}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
+            {"clicks": {}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
+
+        ),
+        (
+            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
+            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
+        ),
+    ],
+    ids=[
+        "last_click and last_open empty",
+        "last_click empty",
+        "last_open empty",
+        "last_click and last_open not empty"
+    ]
+)
+def test_reports_remove_empty_datetime_fields(auth, record, expected_return):
+    """
+    Tests that the Reports stream removes the 'clicks' and 'opens' fields from the response
+    when they are empty strings
+    """
+    stream = Reports(authenticator=auth)
+    assert stream.remove_empty_datetime_fields(record) == expected_return, f"Expected: {expected_return}, Actual: {stream.remove_empty_datetime_fields(record)}"
