@@ -26,7 +26,7 @@ class PendoPythonStream(HttpStream, ABC):
         if field_type == "time":
             output_types = ["null", "integer"]
         elif field_type == "list":
-            output_types = ["null", "array"]
+            output_types = ["null", "array", "string"]
         elif field_type == "":
             output_types = ["null", "array", "string", "integer", "boolean"]
         else:
@@ -52,7 +52,7 @@ class PendoPythonStream(HttpStream, ABC):
 # Airbyte Streams using the Pendo /aggregation endpoint (Currently only Account and Visitor)
 class PendoAggregationStream(PendoPythonStream):
     json_schema = None  # Field to store dynamically built Airbyte Stream Schema
-    page_size = 10
+    page_size = 100
 
     @property
     def http_method(self) -> str:
