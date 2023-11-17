@@ -9,7 +9,7 @@ from facebook_business.adobjects.ad import Ad
 from source_facebook_marketing.api import API, AdAccount
 
 from source_facebook_marketing.streams import Ads, Activities, AdCreatives, Campaigns, Videos, AdSets, CustomConversions, CustomAudiences, \
-    Images, AdsInsights
+    Images, AdsInsights, AdRuleLibraries
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -56,6 +56,7 @@ class TestMultiAccount:
         ("adcreatives", AdCreatives, {"include_deleted": False, "page_size": 100}),
         ("adimages", Images,
          {"start_date": pendulum.now(), "end_date": pendulum.now(), "include_deleted": False, "page_size": 100}),
+        ("adrules_library", AdRuleLibraries, {"start_date": pendulum.now(), "end_date": pendulum.now(), "include_deleted": False, "page_size": 100}),
         ("ads", Ads, {"start_date": pendulum.now(), "end_date": pendulum.now(), "include_deleted": False, "page_size": 100}),
         ("adsets", AdSets, {"start_date": pendulum.now(), "end_date": pendulum.now(), "include_deleted": False, "page_size": 100}),
         ("advideos", Videos, {"start_date": pendulum.now(), "end_date": pendulum.now(), "include_deleted": False, "page_size": 100}),
