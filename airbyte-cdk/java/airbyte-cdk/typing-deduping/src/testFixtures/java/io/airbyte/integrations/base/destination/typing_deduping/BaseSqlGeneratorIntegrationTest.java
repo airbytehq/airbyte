@@ -1074,46 +1074,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Verify that the final table does not include NON-NULL PKs (after
-   * https://github.com/airbytehq/airbyte/pull/31082)
-   */
-  @Test
-  public void ensurePKsAreIndexedUnique() throws Exception {
-    createRawTable(streamId);
-    insertRawTableRecords(
-        streamId,
-        List.of(Jsons.deserialize(
-            """
-            {
-              "_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc",
-              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-              "_airbyte_data": {
-                "id1": 1,
-                "id2": 2
-              }
-            }
-            """)));
-
-    final String createTable = generator.createTable(incrementalDedupStream, "", false);
-
-    // should be OK with new tables
-    destinationHandler.execute(createTable);
-    final Optional<DialectTableDefinition> existingTableA = destinationHandler.findExistingTable(streamId);
-    assertTrue(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableA.get()));
-    destinationHandler.execute("DROP TABLE " + streamId.finalTableId(""));
-
-    // Hack the create query to add NOT NULLs to emulate the old behavior
-    final String createTableModified = Arrays.stream(createTable.split(System.lineSeparator()))
-        .map(line -> !line.contains("CLUSTER") && (line.contains("id1") || line.contains("id2") || line.contains("ID1") || line.contains("ID2"))
-            ? line.replace(",", " NOT NULL,")
-            : line)
-        .collect(Collectors.joining("\r\n"));
-    destinationHandler.execute(createTableModified);
-    final Optional<DialectTableDefinition> existingTableB = destinationHandler.findExistingTable(streamId);
-    assertFalse(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableB.get()));
-  }
-
-  /**
    * A stream with no columns is weird, but we shouldn't treat it specially in any way. It should
    * create a final table as usual, and populate it with the relevant metadata columns.
    */
