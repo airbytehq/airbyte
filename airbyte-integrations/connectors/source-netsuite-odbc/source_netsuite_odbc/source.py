@@ -24,12 +24,14 @@ from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStream,
+    AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
     Status,
     Type,
 )
 from airbyte_cdk.sources import Source
 from source_netsuite_odbc.discover_utils import NetsuiteODBCTableDiscoverer
+from source_netsuite_odbc.reader_utils import NetsuiteODBCTableReader, NETSUITE_PAGINATION_INTERVAL
 
 
 
@@ -153,17 +155,43 @@ class SourceNetsuiteOdbc(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        stream_name = "TableName"  # Example
-        data = {"columnName": "Hello World"}  # Example
 
-        print('Running read!')
-        print('Catalog')
-        print(catalog)
+        streams = catalog.streams
+        for stream in streams:
+            try: 
+                stream_name = stream.stream.name
+                reader = NetsuiteODBCTableReader(self.create_database_cursor(config), stream_name, stream.stream)
+
+                while True:
+                    rows = reader.read_table(state)
+                
+                    for row in rows:
+                        yield AirbyteMessage(
+                            type=Type.RECORD,
+                            record=AirbyteRecordMessage(stream=stream_name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000),
+                        )
+
+                    if len(rows) < NETSUITE_PAGINATION_INTERVAL:
+                        print(len(rows), 'breaking')
+                        break
+                    else:
+                        reader.update_state(state, rows)
+
+                    
+            except Exception as e:
+                yield AirbyteMessage(
+                    type=Type.STATE,
+                    state=AirbyteStateMessage(
+                        data=state,
+                        emitted_at=self.find_emitted_at(),
+                    ),
+                )
+                logger.error(e)
+                raise
         print(state)
 
-        # Not Implemented
 
-        yield AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
-        )
+    def find_emitted_at(self):
+        return int(datetime.now().timestamp()) * 1000
+
+

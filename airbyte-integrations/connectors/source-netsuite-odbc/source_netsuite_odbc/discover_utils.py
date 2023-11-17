@@ -36,7 +36,7 @@ class NetsuiteODBCTableDiscoverer():
        return table[2]
 
     def get_tables(self) -> None:
-      self.cursor.execute("SELECT * FROM OA_TABLES")
+      self.cursor.execute("SELECT * FROM OA_TABLES WHERE TABLE_NAME = 'Customer'")
       # for resting with smaller number of tables
       row = self.cursor.fetchone()
       self.tables.append(row)
