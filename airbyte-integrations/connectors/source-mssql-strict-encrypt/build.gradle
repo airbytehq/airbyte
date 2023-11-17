@@ -6,10 +6,8 @@ plugins {
 airbyteJavaConnector {
     cdkVersionRequired = '0.4.1'
     features = ['db-sources']
-    useLocalCdk = false
+    useLocalCdk = true
 }
-
-airbyteJavaConnector.addCdkDependencies()
 
 configurations.all {
     resolutionStrategy {
@@ -26,6 +24,7 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-mssql')
     implementation libs.jooq
 
+    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-mssql'))
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation libs.testcontainers.mssqlserver
     testImplementation 'org.hamcrest:hamcrest-all:1.3'

@@ -20,6 +20,8 @@ import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.integrations.source.mssql.MsSQLContainerFactory;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase;
 import io.airbyte.integrations.source.mssql.MssqlSource;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -28,12 +30,14 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,59 +45,34 @@ import org.testcontainers.containers.MSSQLServerContainer;
 
 public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
-  private static MSSQLServerContainer<?> dbContainer;
-  private static DataSource dataSource;
-  private JsonNode config;
+  private MsSQLTestDatabase testdb;
 
-  @BeforeAll
-  static void init() {
+  static {
     // In mssql, timestamp is generated automatically, so we need to use
     // the datetime type instead so that we can set the value manually.
     COL_TIMESTAMP_TYPE = "DATETIME";
+  }
 
-    if (dbContainer == null) {
-      dbContainer = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04").acceptLicense();
-      dbContainer.start();
-    }
+  @Override
+  protected void maybeSetShorterConnectionTimeout(final JsonNode config) {
+    ((ObjectNode) config).put(JdbcUtils.JDBC_URL_PARAMS_KEY, "loginTimeout=1");
   }
 
   @BeforeEach
   public void setup() throws Exception {
-    final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, dbContainer.getHost())
-        .put(JdbcUtils.PORT_KEY, dbContainer.getFirstMappedPort())
-        .put(JdbcUtils.USERNAME_KEY, dbContainer.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, dbContainer.getPassword())
-        .build());
-
-    dataSource = DataSourceFactory.create(
-        configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
-        configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;encrypt=true;trustServerCertificate=true;",
-            dbContainer.getHost(),
-            dbContainer.getFirstMappedPort()));
-
-    try {
-      database = new DefaultJdbcDatabase(dataSource);
-
-      final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
-
-      database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
-
-      config = Jsons.clone(configWithoutDbName);
-      ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
-      ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "encrypted_trust_server_certificate")));
-
-      super.setup();
-    } finally {
-      DataSourceFactory.close(dataSource);
-    }
+    final var container = new MsSQLContainerFactory().shared("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04");
+    testdb = new MsSQLTestDatabase(container);
+    testdb = testdb
+        .withConnectionProperty("encrypt", "true")
+        .withConnectionProperty("trustServerCertificate", "true")
+        .withConnectionProperty("databaseName", testdb.getDatabaseName())
+        .initialized();
+    super.setup();
   }
 
-  @AfterAll
-  public static void cleanUp() throws Exception {
-    dbContainer.close();
+  @AfterEach
+  public void tearDown() {
+    testdb.close();
   }
 
   @Override
@@ -103,7 +82,9 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
 
   @Override
   public JsonNode getConfig() {
-    return config;
+    return testdb.testConfigBuilder()
+        .withSsl(Map.of("ssl_method", "encrypted_trust_server_certificate"))
+        .build();
   }
 
   @Override
