@@ -9,14 +9,10 @@ jobs:
   checkFormat:
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for formatters to succeed
-        id: wait-for-formatters
-        uses: lewagon/wait-on-check-action@v1.3.1
+      - uses: maael/confirm-checks-action
         with:
-          ref: ${{ github.ref }}
-          check-name: "Apply All Formatting Rules"
-          repo-token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
-          wait-interval: 30
+          github_token: ${{secrets.GH_PAT_APPROVINGTON_OCTAVIA}}
+          checks: 'Apply All Formatting Rules'
       - name: Comment if formatters failed
         if: failure()
         uses: peter-evans/create-or-update-comment@v1
