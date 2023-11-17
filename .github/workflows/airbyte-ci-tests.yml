@@ -13,6 +13,7 @@ on:
       - synchronize
 jobs:
   run-airbyte-ci-tests:
+    # Note if you are changing this name you must also change it in the approve-and-merge-dispatch.yml workflow
     name: Run Airbyte CI tests
     runs-on: "ci-runner-connector-test-large-dagger-0-6-4"
     steps:

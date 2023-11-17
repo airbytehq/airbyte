@@ -59,7 +59,7 @@ class SourcePinterest(AbstractSource):
         today = pendulum.today()
         latest_date_allowed_by_api = today.subtract(days=amount_of_days_allowed_for_lookup)
 
-        start_date = config["start_date"]
+        start_date = config.get("start_date")
         if not start_date:
             config["start_date"] = latest_date_allowed_by_api
         else:

@@ -55,6 +55,8 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         description="URL for the folder you want to sync. Using individual streams and glob patterns, it's possible to only sync a subset of all files located in the folder.",
         examples=["https://drive.google.com/drive/folders/1Xaz0vXXXX2enKnNYU5qSt9NS70gvMyYn"],
         order=0,
+        pattern="^https://drive.google.com/.+",
+        pattern_descriptor="https://drive.google.com/drive/folders/MY-FOLDER-ID",
     )
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
