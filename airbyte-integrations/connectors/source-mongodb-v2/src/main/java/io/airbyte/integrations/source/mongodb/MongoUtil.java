@@ -210,8 +210,10 @@ public class MongoUtil {
    * : 1. User is in schemaless mode + catalog corresponds to schema enabled mode. 2. User is in
    * schema enabled mode + catalog corresponds to schemaless mode
    *
-   * @param isConfigSchemaEnforced true if schema is enforced in configuration, false if in schemaless mode.
-   * @param isStateSchemaEnforced true if schema is enforced in saved state, false if in schemaless mode.
+   * @param isConfigSchemaEnforced true if schema is enforced in configuration, false if in schemaless
+   *        mode.
+   * @param isStateSchemaEnforced true if schema is enforced in saved state, false if in schemaless
+   *        mode.
    * @param catalog User's configured catalog.
    */
   public static void checkSchemaModeMismatch(final boolean isConfigSchemaEnforced,

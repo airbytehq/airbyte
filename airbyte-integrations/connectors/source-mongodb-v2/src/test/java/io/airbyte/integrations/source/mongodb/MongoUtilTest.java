@@ -373,7 +373,9 @@ public class MongoUtilTest {
 
   }
 
-  private static String formatMismatchException(final boolean isConfigSchemaEnforced, final boolean isCatalogSchemaEnforcing, final boolean isStateSchemaEnforced) {
+  private static String formatMismatchException(final boolean isConfigSchemaEnforced,
+                                                final boolean isCatalogSchemaEnforcing,
+                                                final boolean isStateSchemaEnforced) {
     return "Mismatch between schema enforcing mode in sync configuration (%b), catalog (%b) and saved state (%b). "
         .formatted(isConfigSchemaEnforced, isCatalogSchemaEnforcing, isStateSchemaEnforced)
         + "Please refresh source schema and reset streams.";
