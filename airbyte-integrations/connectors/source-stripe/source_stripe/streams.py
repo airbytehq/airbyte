@@ -15,6 +15,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_stripe.availability_strategy import StripeAvailabilityStrategy, StripeSubStreamAvailabilityStrategy
 
@@ -491,12 +492,9 @@ class CustomerBalanceTransactions(StripeStream):
     API docs: https://stripe.com/docs/api/customer_balance_transactions/list
     """
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"customers/{stream_slice['id']}/balance_transactions"
-
-    @property
-    def customers(self) -> IncrementalStripeStream:
-        return IncrementalStripeStream(
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parent = IncrementalStripeStream(
             name="customers",
             path="customers",
             use_cache=USE_CACHE,
@@ -506,13 +504,19 @@ class CustomerBalanceTransactions(StripeStream):
             start_date=self.start_date,
         )
 
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"customers/{stream_slice['id']}/balance_transactions"
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return StripeSubStreamAvailabilityStrategy()
+
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream = self.customers
-        slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        slices = self.parent.stream_slices(sync_mode=SyncMode.full_refresh)
         for _slice in slices:
-            for customer in parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice):
+            for customer in self.parent.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice):
                 # we use `get` here because some attributes may not be returned by some API versions
                 if customer.get("next_invoice_sequence") == 1 and customer.get("balance") == 0:
                     # We're making this check in order to speed up a sync. if a customer's balance is 0 and there are no
@@ -546,6 +550,12 @@ class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
 
     def path(self, **kwargs) -> str:
         return "setup_attempts"
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        # we use the default http availability strategy here because parent stream may lack data in the incremental stream mode
+        # and this stream would be marked inaccessible which is not actually true
+        return HttpAvailabilityStrategy()
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -586,6 +596,10 @@ class Persons(UpdatedCursorIncrementalStripeStream, HttpSubStream):
         parent = StripeStream(*args, name="accounts", path="accounts", use_cache=USE_CACHE, **kwargs)
         super().__init__(*args, parent=parent, **kwargs)
 
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return StripeSubStreamAvailabilityStrategy()
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"accounts/{stream_slice['parent']['id']}/persons"
 
@@ -597,7 +611,9 @@ class Persons(UpdatedCursorIncrementalStripeStream, HttpSubStream):
 
 
 class StripeSubStream(StripeStream, HttpSubStream):
-    pass
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return StripeSubStreamAvailabilityStrategy()
 
 
 class StripeLazySubStream(StripeStream, HttpSubStream):
@@ -801,10 +817,6 @@ class ParentIncrementalStipeSubStream(StripeSubStream):
         return {self.cursor_field: max(current_stream_state.get(self.cursor_field, 0), latest_record[self.cursor_field])}
 
     @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return StripeSubStreamAvailabilityStrategy()
-
-    @property
     def raise_on_http_errors(self) -> bool:
         return False
 
@@ -822,3 +834,9 @@ class ParentIncrementalStipeSubStream(StripeSubStream):
             )
             return []
         response.raise_for_status()
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        # we use the default http availability strategy here because parent stream may lack data in the incremental stream mode
+        # and this stream would be marked inaccessible which is not actually true
+        return HttpAvailabilityStrategy()
