@@ -10,9 +10,10 @@ This page contains the setup guide and reference information for the Instagram s
 
 - [Meta for Developers account](https://developers.facebook.com)
 - [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your Facebook page
+- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte <!-- env:oss -->
 - [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
-- [Facebook OAuth Reference](https://developers.facebook.com/docs/instagram-basic-display-api/reference)
-- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte)
+- [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-basic-display-api/reference)
+<!-- /env:oss -->
 
 ## Setup Guide
 
@@ -28,7 +29,7 @@ This page contains the setup guide and reference information for the Instagram s
 4. Enter a name for your source.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
-7. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.
 8. Click **Set up source**.
 <!-- /env:cloud -->
 
@@ -40,9 +41,8 @@ This page contains the setup guide and reference information for the Instagram s
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Instagram** from the **Source type** dropdown.
 4. Enter a name for your source.
-5. Click **Authenticate your Instagram account**.
-6. Log in and authorize the Instagram account.
-7. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+5. Enter **Access Token** generated using [Graph API Explorer](https://developers.facebook.com/tools/explorer/) or [by using an app you can create on Facebook](https://developers.facebook.com/docs/instagram-api/getting-started) with the required permissions: instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement.
+7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.
 8. Click **Set up source**.
 <!-- /env:oss -->
 
