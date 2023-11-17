@@ -66,7 +66,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   }
 
   @AfterAll
-  public static void teardownSnowflake() throws Exception {
+  public static void teardownRedshift() throws Exception {
     DataSourceFactory.close(dataSource);
   }
 
