@@ -5,19 +5,10 @@
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DataSourceFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -25,11 +16,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Map;
-import org.jooq.DSLContext;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -84,4 +70,5 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
+
 }

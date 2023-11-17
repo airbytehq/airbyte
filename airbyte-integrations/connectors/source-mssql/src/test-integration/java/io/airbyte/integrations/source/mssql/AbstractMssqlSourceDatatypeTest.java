@@ -4,14 +4,10 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
-import org.jooq.DSLContext;
-import org.junit.jupiter.api.AfterEach;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 

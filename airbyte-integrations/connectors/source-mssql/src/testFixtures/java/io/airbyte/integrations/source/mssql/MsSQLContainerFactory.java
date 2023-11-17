@@ -5,8 +5,6 @@
 package io.airbyte.integrations.source.mssql;
 
 import io.airbyte.cdk.testutils.ContainerFactory;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
@@ -33,4 +31,5 @@ public class MsSQLContainerFactory implements ContainerFactory<MSSQLServerContai
   public void withAgent(MSSQLServerContainer<?> container) {
     container.addEnv("MSSQL_AGENT_ENABLED", "True");
   }
+
 }

@@ -9,7 +9,6 @@ import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_DEFAULT_CURSOR;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_EVENT_SERIAL_NO;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_LSN;
-import static io.airbyte.integrations.source.mssql.MssqlSource.DRIVER_CLASS;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -25,18 +24,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
 import io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -46,21 +41,16 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.sql.DataSource;
-import org.jooq.DSLContext;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 public class CdcMssqlSourceTest extends CdcSourceTest {
 
   private static final String CDC_ROLE_NAME = "cdc_selector";
 
   private MsSQLTestDatabase testdb;
-
 
   static private MsSQLTestDatabase createCdcTestDatabase() {
     return MsSQLTestDatabase.in("mcr.microsoft.com/mssql/server:2022-latest", "withAgent");
@@ -171,8 +161,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   public void tearDown() {
     testdb.close();
   }
-
-
 
   @Test
   void testAssertCdcEnabledInDb() {

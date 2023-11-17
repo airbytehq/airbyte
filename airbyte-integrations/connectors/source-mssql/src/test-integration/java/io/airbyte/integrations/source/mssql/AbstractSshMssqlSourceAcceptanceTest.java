@@ -5,12 +5,7 @@
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
@@ -28,12 +23,6 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.HashMap;
-import java.util.Objects;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.jooq.DSLContext;
-import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.containers.MSSQLServerContainer;
-import org.testcontainers.containers.Network;
 
 public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -62,12 +51,12 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     testdb = MsSQLTestDatabase.in("mcr.microsoft.com/mssql/server:2017-latest", "withNetwork");
     testdb = testdb
-            .with("ALTER DATABASE %s SET AUTO_CLOSE OFF WITH NO_WAIT;", testdb.getDatabaseName())
-            .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));")
-            .with("INSERT INTO id_and_name (id, name, born) VALUES " +
-                "(1, 'picard', '2124-03-04T01:01:01Z'), " +
-                "(2, 'crusher', '2124-03-04T01:01:01Z'), " +
-                "(3, 'vash', '2124-03-04T01:01:01Z');");
+        .with("ALTER DATABASE %s SET AUTO_CLOSE OFF WITH NO_WAIT;", testdb.getDatabaseName())
+        .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));")
+        .with("INSERT INTO id_and_name (id, name, born) VALUES " +
+            "(1, 'picard', '2124-03-04T01:01:01Z'), " +
+            "(2, 'crusher', '2124-03-04T01:01:01Z'), " +
+            "(3, 'vash', '2124-03-04T01:01:01Z');");
     bastion.initAndStartBastion(testdb.getContainer().getNetwork());
   }
 

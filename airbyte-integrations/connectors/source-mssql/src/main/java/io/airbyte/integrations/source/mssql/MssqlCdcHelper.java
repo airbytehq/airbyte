@@ -168,8 +168,8 @@ public class MssqlCdcHelper {
 
     final Duration heartbeatInterval =
         (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())
-                       ? HEARTBEAT_INTERVAL_IN_TESTS
-                       : HEARTBEAT_INTERVAL;
+            ? HEARTBEAT_INTERVAL_IN_TESTS
+            : HEARTBEAT_INTERVAL;
     props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
 
     if (config.has("ssl_method")) {

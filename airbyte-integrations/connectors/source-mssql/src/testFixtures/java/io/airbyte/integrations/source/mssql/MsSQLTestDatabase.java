@@ -4,14 +4,9 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.testutils.TestDatabase;
-import io.airbyte.commons.json.Jsons;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,10 +61,10 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
         mssqlCmd(Stream.of(String.format("CREATE DATABASE %s", getDatabaseName()))),
         mssqlCmd(Stream.of(
             String.format("USE %s", getDatabaseName()),
-        String.format("CREATE LOGIN %s WITH PASSWORD = '%s', DEFAULT_DATABASE = %s", getUserName(), getPassword(), getDatabaseName()),
-        String.format("ALTER SERVER ROLE [sysadmin] ADD MEMBER %s", getUserName()),
-        String.format("CREATE USER %s FOR LOGIN %s WITH DEFAULT_SCHEMA = [dbo]", getUserName(), getUserName()),
-        String.format("ALTER ROLE [db_owner] ADD MEMBER %s", getUserName()))));
+            String.format("CREATE LOGIN %s WITH PASSWORD = '%s', DEFAULT_DATABASE = %s", getUserName(), getPassword(), getDatabaseName()),
+            String.format("ALTER SERVER ROLE [sysadmin] ADD MEMBER %s", getUserName()),
+            String.format("CREATE USER %s FOR LOGIN %s WITH DEFAULT_SCHEMA = [dbo]", getUserName(), getUserName()),
+            String.format("ALTER ROLE [db_owner] ADD MEMBER %s", getUserName()))));
   }
 
   @Override
@@ -82,10 +77,10 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   public Stream<String> mssqlCmd(Stream<String> sql) {
     return Stream.of("/opt/mssql-tools/bin/sqlcmd",
-            "-U", getContainer().getUsername(),
-            "-P", getContainer().getPassword(),
-            "-Q", sql.collect(Collectors.joining("; ")),
-            "-b", "-e");
+        "-U", getContainer().getUsername(),
+        "-P", getContainer().getPassword(),
+        "-Q", sql.collect(Collectors.joining("; ")),
+        "-b", "-e");
   }
 
   @Override
@@ -130,5 +125,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
     public MsSQLConfigBuilder withSsl(Map<Object, Object> sslMode) {
       return with("ssl_method", sslMode);
     }
+
   }
+
 }

@@ -9,17 +9,8 @@ import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DataSourceFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -29,28 +20,23 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import org.jooq.DSLContext;
 import org.junit.jupiter.api.*;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 class MssqlSourceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
-          STREAM_NAME,
-          "dbo",
-          Field.of("id", JsonSchemaType.INTEGER),
-          Field.of("name", JsonSchemaType.STRING),
-          Field.of("born", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
+      STREAM_NAME,
+      "dbo",
+      Field.of("id", JsonSchemaType.INTEGER),
+      Field.of("name", JsonSchemaType.STRING),
+      Field.of("born", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
       .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
 
   private MsSQLTestDatabase testdb;
-
 
   // how to interact with the mssql test container manaully.
   // 1. exec into mssql container (not the test container container)
@@ -94,16 +80,16 @@ class MssqlSourceTest {
         .with("INSERT INTO id_and_name(id) VALUES (7), (8), (NULL)");
 
     ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withSyncMode(
-            SyncMode.INCREMENTAL)
+        SyncMode.INCREMENTAL)
         .withCursorField(Lists.newArrayList("id"))
         .withDestinationSyncMode(DestinationSyncMode.APPEND)
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
-                testdb.getDatabaseName(),
-                Field.of("id", JsonSchemaType.INTEGER),
-                Field.of("name", JsonSchemaType.STRING),
-                Field.of("born", JsonSchemaType.STRING))
+            STREAM_NAME,
+            testdb.getDatabaseName(),
+            Field.of("id", JsonSchemaType.INTEGER),
+            Field.of("name", JsonSchemaType.STRING),
+            Field.of("born", JsonSchemaType.STRING))
             .withSupportedSyncModes(
                 Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
@@ -117,4 +103,5 @@ class MssqlSourceTest {
         .hasMessageContaining(
             "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='dbo.id_and_name', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
   }
+
 }
