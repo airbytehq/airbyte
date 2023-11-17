@@ -177,6 +177,11 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     return dataFields;
   }
 
+  /**
+   * Redshift ARRAY_CONCAT supports only 2 arrays, recursively build ARRAY_CONCAT for n arrays.
+   * @param arrays
+   * @return
+   */
   Field<?> arrayConcatStmt(List<Field<?>> arrays) {
     if (arrays.isEmpty()) {
       return field(""); // Return an empty string if the list is empty
@@ -263,7 +268,11 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
     CreateTableColumnStep createTableSql = dsl.createTable(quotedName(stream.id().finalNamespace(), finalTableIdentifier))
         .columns(buildFinalTableFields(stream.columns(), getFinalTableMetaColumns(true)));
-    return createSchemaSql.getSQL() + ";" + System.lineSeparator() + createTableSql.getSQL() + ";";
+    return Strings.join(
+        List.of(
+            createSchemaSql.getSQL(),
+            createTableSql.getSQL()),
+        ";" + System.lineSeparator());
   }
 
   @Override
@@ -312,7 +321,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     // generate fields.
     final CommonTableExpression<Record> rawDataWithCasts = name("intermediate_data")
         .as(selectFromRawTable(rawSchema, rawTable, streamConfig.columns(), getFinalTableMetaColumns(false)));
-    final Field<?> rowNumber = getRowNumber(streamConfig.primaryKey(), streamConfig.cursor());
+    final Field<Integer> rowNumber = getRowNumber(streamConfig.primaryKey(), streamConfig.cursor());
     final CommonTableExpression<Record> filteredRows = name("numbered_rows").as(select(asterisk(), rowNumber).from(rawDataWithCasts));
 
     // Transactional insert and delete, Jooq only supports transaction starting 3.18
@@ -321,8 +330,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
      * return """ BEGIN; %s; %s; COMMIT; """.formatted(insertIntoFinalTable(...),
      * deleteFromFinalTable(...));
      */
-
-    return insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
+    String insertStmt = insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
         .select(with(rawDataWithCasts)
             .with(filteredRows)
             .select(buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true)))
@@ -330,7 +338,14 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
             .where(field("row_number", Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
         )
         .getSQL(ParamType.INLINED);
-
+    String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
+    return Strings.join(
+        List.of(
+            "BEGIN",
+            insertStmt,
+            deleteStmt,
+            "COMMIT"),
+        ";" + System.lineSeparator());
   }
 
   private String mergeTransaction(final StreamConfig streamConfig,
@@ -350,7 +365,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    * @param cursor
    * @return
    */
-  Field<?> getRowNumber(List<ColumnId> primaryKeys, Optional<ColumnId> cursor) {
+  Field<Integer> getRowNumber(List<ColumnId> primaryKeys, Optional<ColumnId> cursor) {
     final List<Field<?>> primaryKeyFields = primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList());
     final List<Field<?>> orderedFields = new ArrayList<>();
     // We can still use Jooq's field to get the quoted name with raw sql templating.
@@ -385,6 +400,20 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     return dsl
         .insertInto(table(quotedName(schemaName, tableName)))
         .columns(buildFinalTableFields(columns, metaFields));
+  }
+
+  String deleteFromFinalTable(final String schemaName, final String tableName, List<ColumnId> primaryKeys, Optional<ColumnId> cursor) {
+    DSLContext dsl = getDslContext();
+    // Unknown type doesn't play well with where .. in (select..)
+    Field<Object> airbyteRawId = field(quotedName(COLUMN_NAME_AB_RAW_ID));
+    Field<Integer> rowNumber = getRowNumber(primaryKeys, cursor);
+    return dsl.deleteFrom(table(quotedName(schemaName, tableName)))
+        .where(airbyteRawId.in(
+            select(airbyteRawId)
+                .from(select(airbyteRawId, rowNumber)
+                    .from(table(quotedName(schemaName, tableName))).asTable("airbyte_ids"))
+                .where(field("row_number").ne(1))
+                )).getSQL(ParamType.INLINED);
   }
 
   @Override
