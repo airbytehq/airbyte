@@ -285,7 +285,7 @@ public abstract class JdbcSourceAcceptanceTest {
     });
   }
 
-  protected void maybeSetShorterConnectionTimeout() {
+  protected void maybeSetShorterConnectionTimeout(final JsonNode config) {
     // Optionally implement this to speed up test cases which will result in a connection timeout.
   }
 
@@ -320,7 +320,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   void testCheckFailure() throws Exception {
-    maybeSetShorterConnectionTimeout();
+    maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());

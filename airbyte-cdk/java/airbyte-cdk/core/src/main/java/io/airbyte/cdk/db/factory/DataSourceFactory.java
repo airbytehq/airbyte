@@ -13,6 +13,9 @@ import java.io.Closeable;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.function.LongFunction;
 import javax.sql.DataSource;
 
 /**
@@ -203,27 +206,25 @@ public class DataSourceFactory {
      * @return DataSourceBuilder class used to create dynamic fields for DataSource
      */
     private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties, String driverClassName) {
-      // TODO: the usage of CONNECT_TIMEOUT is Postgres specific, may need to extend for other databases
-      if (driverClassName.equals(DatabaseDriver.POSTGRESQL.getDriverClassName())) {
-        final String pgPropertyConnectTimeout = CONNECT_TIMEOUT.getName();
-        // If the PGProperty.CONNECT_TIMEOUT was set by the user, then take its value, if not take the
-        // default
-        if (connectionProperties.containsKey(pgPropertyConnectTimeout)
-            && (Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout)) >= 0)) {
-          return Duration.ofSeconds(Long.parseLong(connectionProperties.get(pgPropertyConnectTimeout))).toMillis();
-        } else {
-          return Duration.ofSeconds(Long.parseLong(Objects.requireNonNull(CONNECT_TIMEOUT.getDefaultValue()))).toMillis();
-        }
-      }
-      final Duration connectionTimeout;
-      connectionTimeout =
-          connectionProperties.containsKey(CONNECT_TIMEOUT_KEY) ? Duration.ofSeconds(Long.parseLong(connectionProperties.get(CONNECT_TIMEOUT_KEY)))
-              : CONNECT_TIMEOUT_DEFAULT;
-      if (connectionTimeout.getSeconds() == 0) {
-        return connectionTimeout.toMillis();
-      } else {
-        return (connectionTimeout.compareTo(CONNECT_TIMEOUT_DEFAULT) > 0 ? connectionTimeout : CONNECT_TIMEOUT_DEFAULT).toMillis();
-      }
+      final Duration connectionTimeout = switch (DatabaseDriver.findByDriverClassName(driverClassName)) {
+        case POSTGRESQL ->
+            getConnectionTimeoutValue(connectionProperties, CONNECT_TIMEOUT.getName(), CONNECT_TIMEOUT.getDefaultValue(), Duration::ofSeconds);
+        case MYSQL ->
+            getConnectionTimeoutValue(connectionProperties, "connectTimeout", "0", Duration::ofMillis);
+        case MSSQLSERVER ->
+            getConnectionTimeoutValue(connectionProperties, "loginTimeout", "15", Duration::ofSeconds);
+        default -> Optional.ofNullable(connectionProperties.get(CONNECT_TIMEOUT_KEY))
+            .map(Long::parseLong)
+            .map(Duration::ofSeconds)
+            .filter(d -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) > 0)
+            .orElse(CONNECT_TIMEOUT_DEFAULT);
+      };
+      return connectionTimeout.toMillis();
+    }
+
+    private static Duration getConnectionTimeoutValue(final Map<String, String> connectionProperties, final String key, final String defaultValue, LongFunction<Duration> toDuration) {
+      final var parsedValue = Long.parseLong(connectionProperties.getOrDefault(key, defaultValue));
+      return toDuration.apply((parsedValue > 0) ? parsedValue : Long.parseLong(defaultValue));
     }
 
     public DataSourceBuilder withConnectionProperties(final Map<String, String> connectionProperties) {
