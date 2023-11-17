@@ -143,16 +143,12 @@ public class BulkConsumer implements AirbyteMessageConsumer {
       recordMessage.setNamespace(this.defaultNamespace);
     }
 
-    // LOGGER.info("record: {}", recordMessage);
     final String streamName = recordMessage.getStream();
     final String namespace = recordMessage.getNamespace();
 
     final StreamConfig stream = this.parsedCatalog.getStream(namespace, streamName);
 
-    LOGGER.info("stream: {}", stream);
-
     if(!this.streamMessages.containsKey(stream)) {
-      LOGGER.info("  does not have key: {}", stream);
       this.streamMessages.put(stream, new ArrayList<>());
     }
     final List messageList = this.streamMessages.get(stream);
