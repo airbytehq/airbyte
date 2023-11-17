@@ -501,7 +501,14 @@ This project is owned by the Connectors Operations team.
 We share project updates and remaining stories before its release to production in this [EPIC](https://github.com/airbytehq/airbyte/issues/24403).
 
 # Troubleshooting
+## Commands
+### `make tools.airbyte-ci.check`
+This command checks if the `airbyte-ci` command is appropriately installed.
 
+### `make tools.airbyte-ci.clean`
+This command removes the `airbyte-ci` command from your system.
+
+## Common issues
 ### `airbyte-ci` is not found
 If you get the following error when running `airbyte-ci`:
 ```bash

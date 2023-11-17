@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 set -o errexit -o nounset -o pipefail
 
-# Check if pyenv is installed, and install it if not
-if ! which pyenv >/dev/null; then
-    echo "pyenv not found, installing pyenv..."
-    brew install pyenv
-    echo "pyenv installed."
+# Check if Python 3.10 is on the path
+if ! which python3.10 >/dev/null; then
+  echo "python3.10 not found on the path."
+  echo "Please install Python 3.10 using pyenv:"
+  echo "1. Install pyenv if not already installed:"
+  echo "   brew install pyenv"
+  echo "2. Install Python 3.10 using pyenv:"
+  echo "   pyenv install 3.10.12"
+  exit 1
 else
-    echo "pyenv is already installed."
+  echo "Python 3.10 is already installed."
 fi
 
 # Check if pipx is installed, and install it if not

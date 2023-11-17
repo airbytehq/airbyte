@@ -23,11 +23,24 @@ fi
 # Create the directory if it does not exist
 mkdir -p ~/.local/bin
 
-# Remove the old binary if it exists
-rm -f ~/.local/bin/airbyte-ci
+# Download the binary to a temporary folder
+TMP_DIR=$(mktemp -d)
+TMP_FILE="$TMP_DIR/airbyte-ci"
+curl -L -f "$URL" -o "$TMP_FILE"
 
-# Download the binary
-curl -L -f "$URL" -o ~/.local/bin/airbyte-ci
+# Check if the destination path is a symlink and delete it if it is
+if [ -L ~/.local/bin/airbyte-ci ]; then
+  rm ~/.local/bin/airbyte-ci
+fi
+
+# Copy the file from the temporary folder to the destination
+cp "$TMP_FILE" ~/.local/bin/airbyte-ci
+
+# Make the binary executable
+chmod +x ~/.local/bin/airbyte-ci
+
+# Clean up the temporary folder
+rm -rf "$TMP_DIR"
 
 # Make the binary executable
 chmod +x ~/.local/bin/airbyte-ci
