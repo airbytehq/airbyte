@@ -91,6 +91,9 @@
     "view_tracking_url": {
       "type": ["null", "string"]
     },
+    "lead_form_id": {
+      "type": ["null", "string"]
+    },
     "ad_account_id": {
       "type": ["null", "string"]
     },
