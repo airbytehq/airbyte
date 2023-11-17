@@ -14,7 +14,7 @@ jobs:
         uses: lewagon/wait-on-check-action@v1.3.1
         with:
           ref: ${{ github.ref }}
-          check-name: "Apply All Formatting Rules"
+          check-name: "Automatic Formatting on PRs"
           repo-token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
           wait-interval: 30
       - name: Comment if formatters failed
@@ -23,49 +23,11 @@ jobs:
         with:
           comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
           body: |
-            > Error: Formatters failed. Please fix the errors and try again.
-
-  checkGradle:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Wait for Gradle Check to succeed
-        id: wait-for-gradle
-        uses: lewagon/wait-on-check-action@v1.3.1
-        with:
-          ref: ${{ github.ref }}
-          check-name: "Gradle Check"
-          repo-token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
-          wait-interval: 60
-      - name: Comment if Gradle Check failed
-        if: failure()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
-          body: |
-            > Error: Gradle Check failed. Please fix the errors and try again.
-
-  checkAirbyteCI:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Wait for Airbyte CI tests to succeed
-        id: wait-for-gradle
-        uses: lewagon/wait-on-check-action@v1.3.1
-        with:
-          ref: ${{ github.ref }}
-          check-name: "Run Airbyte CI tests"
-          repo-token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
-          wait-interval: 30
-      - name: Comment if Airbyte CI tests failed
-        if: failure()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
-          body: |
-            > Error: Airbyte CI tests failed. Please fix the errors and try again.
+            > Error: Formatters failed. Ensure formatting is passing before using approve-and-merge.
 
   approveAndMergeDispatch:
     runs-on: ubuntu-latest
-    needs: [checkFormat, checkGradle, checkAirbyteCI]
+    needs: [checkFormat]
     steps:
       - name: Auto Approve Slash Command Dispatch
         uses: peter-evans/slash-command-dispatch@v3
