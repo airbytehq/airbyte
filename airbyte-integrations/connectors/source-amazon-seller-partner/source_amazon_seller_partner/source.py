@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from os import getenv
-from typing import Any, List, Mapping, Tuple, Optional
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -81,7 +81,6 @@ class SourceAmazonSellerPartner(AbstractSource):
             "replication_start_date": config.get("replication_start_date"),
             "marketplace_id": marketplace_id,
             "period_in_days": config.get("period_in_days", 90),
-            "report_options": config.get("report_options"),
             "max_wait_seconds": config.get("max_wait_seconds", 500),
             "replication_end_date": config.get("replication_end_date"),
         }
@@ -172,26 +171,26 @@ class SourceAmazonSellerPartner(AbstractSource):
         #  https://github.com/airbytehq/airbyte/issues/32353
         if getenv("DEPLOYMENT_MODE", "").upper() != "CLOUD":
             brand_analytics_reports = [
-                BrandAnalyticsMarketBasketReports(**stream_kwargs),
-                BrandAnalyticsSearchTermsReports(**stream_kwargs),
-                BrandAnalyticsRepeatPurchaseReports(**stream_kwargs),
-                BrandAnalyticsAlternatePurchaseReports(**stream_kwargs),
-                BrandAnalyticsItemComparisonReports(**stream_kwargs),
-                SellerAnalyticsSalesAndTrafficReports(**stream_kwargs),
-                VendorSalesReports(**stream_kwargs),
-                VendorInventoryReports(**stream_kwargs),
+                BrandAnalyticsMarketBasketReports,
+                BrandAnalyticsSearchTermsReports,
+                BrandAnalyticsRepeatPurchaseReports,
+                BrandAnalyticsAlternatePurchaseReports,
+                BrandAnalyticsItemComparisonReports,
+                SellerAnalyticsSalesAndTrafficReports,
+                VendorSalesReports,
+                VendorInventoryReports,
             ]
             streams += brand_analytics_reports
 
         for stream in stream_list:
-            streams.append(stream(**stream_kwargs , report_options=self.get_stream_report_options(stream.name, config)))
+            streams.append(stream(**stream_kwargs, report_options=self.get_stream_report_options(stream.name, config)))
         return streams
 
     def validate_stream_report_options(self, config: Mapping[str, Any]):
         if len([x.get("stream_name") for x in config.get("report_options_list", [])]) != len(
             set(x.get("stream_name") for x in config.get("report_options_list", []))
         ):
-            raise AmazonConfigException(message="Stream name shuould be unique among all Report options list")
+            raise AmazonConfigException(message="Stream name should be unique among all Report options list")
         for stream_report_option in config.get("report_options_list"):
             if len([x.get("option_name") for x in stream_report_option.get("options_list")]) != len(
                 set(x.get("option_name") for x in stream_report_option.get("options_list"))
@@ -201,6 +200,6 @@ class SourceAmazonSellerPartner(AbstractSource):
                 )
 
     def get_stream_report_options(self, report_name: str, config: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
-        if any(x for x in config.get("report_options_list", []) if x.get('stream_name') == report_name):
-            return [x.get('option_list') for x in self._report_options if x.get('stream_name') == self.name][0]
+        if any(x for x in config.get("report_options_list", []) if x.get("stream_name") == report_name):
+            return [x.get("options_list") for x in config.get("report_options_list") if x.get("stream_name") == report_name][0]
         return {}

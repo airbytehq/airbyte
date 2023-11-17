@@ -36,7 +36,7 @@ class AmazonSPStream(HttpStream, ABC):
         replication_start_date: str,
         marketplace_id: str,
         period_in_days: Optional[int],
-        report_options: Optional[str],
+        report_options: Optional[Mapping[str, Any]],
         max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         *args,
@@ -161,7 +161,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         replication_start_date: str,
         marketplace_id: str,
         period_in_days: Optional[int],
-        report_options: Optional[str],
+        report_options: Optional[Mapping[str, Any]],
         max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         *args,
@@ -173,7 +173,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self._replication_end_date = replication_end_date
         self.marketplace_id = marketplace_id
         self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work as well
-        self._report_options = report_options or []
+        self._report_options = report_options
         self.max_wait_seconds = max_wait_seconds
         self._http_method = "GET"
 
@@ -268,11 +268,8 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     def parse_document(self, document):
         return csv.DictReader(StringIO(document), delimiter="\t")
 
-    def report_options(self) -> Mapping[str, Any]:
-        if self._report_options is not None and any(x for x in self._report_options if x.get('stream_name') == self.name):
-            return [x.get('option_list') for x in self._report_options if x.get('stream_name')== self.name][0]
-        else:
-            return {}
+    def report_options(self) -> Optional[Mapping[str, Any]]:
+        return {key: value for d in self._report_options for key, value in d.items()} if self._report_options else None
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
