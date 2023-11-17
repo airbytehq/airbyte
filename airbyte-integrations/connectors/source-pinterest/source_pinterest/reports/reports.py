@@ -301,3 +301,13 @@ class CustomReport(PinterestAnalyticsTargetingReportStream):
             "attribution_types": self.attribution_types,
             "columns": self.columns,
         }
+
+    @property
+    def window_in_days(self):
+        """Docs: https://developers.pinterest.com/docs/api/v5/#operation/analytics/get_report"""
+        if self.granularity == 'HOUR':
+            return 2
+        elif self.level == 'PRODUCT_ITEM':
+            return 31
+        else:
+            return 185

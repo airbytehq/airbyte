@@ -60,21 +60,23 @@ class SourcePinterest(AbstractSource):
         today = pendulum.today()
         latest_date_allowed_by_api = today.subtract(days=amount_of_days_allowed_for_lookup)
 
-        start_date = config["start_date"]
-        if not start_date:
-            config["start_date"] = latest_date_allowed_by_api
-        else:
+        start_date = config.get("start_date")
+
+        # transform to datetime
+        if start_date and isinstance(start_date, str):
             try:
-                config["start_date"] = pendulum.from_format(config["start_date"], "YYYY-MM-DD")
+                config["start_date"] = pendulum.from_format(start_date, "YYYY-MM-DD")
             except ValueError:
-                message = "Entered `Start Date` does not match format YYYY-MM-DD"
+                message = f"Entered `Start Date` {start_date} does not match format YYYY-MM-DD"
                 raise AirbyteTracedException(
                     message=message,
                     internal_message=message,
                     failure_type=FailureType.config_error,
                 )
-            if (today - config["start_date"]).days > amount_of_days_allowed_for_lookup:
-                config["start_date"] = latest_date_allowed_by_api
+
+        if not start_date or config["start_date"] < latest_date_allowed_by_api:
+            config["start_date"] = latest_date_allowed_by_api
+
         return config
 
     @staticmethod
@@ -162,11 +164,22 @@ class SourcePinterest(AbstractSource):
         custom_streams = []
         for report_config in config.get("custom_reports", []):
             report_config["authenticator"] = config["authenticator"]
-            start_date = report_config.get("start_date")
-            if start_date:
-                report_config = self._validate_and_transform(report_config, amount_of_days_allowed_for_lookup=913)
+
+            # https://developers.pinterest.com/docs/api/v5/#operation/analytics/get_report
+            if report_config.get("granularity") == 'HOUR':
+                # Otherwise: Response Code: 400 {"code":1,"message":"HOURLY request must be less than 3 days"}
+                amount_of_days_allowed_for_lookup = 2
+            elif report_config.get("level") == 'PRODUCT_ITEM':
+                amount_of_days_allowed_for_lookup = 91
             else:
+                amount_of_days_allowed_for_lookup = 913
+
+            start_date = report_config.get("start_date")
+            if not start_date:
                 report_config["start_date"] = config.get("start_date")
+
+            report_config = self._validate_and_transform(report_config, amount_of_days_allowed_for_lookup)
+
             stream = CustomReport(
                 parent=parent,
                 config=report_config,
