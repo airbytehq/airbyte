@@ -56,9 +56,9 @@ Airbyte supports the following configuration options for a connection:
 
    | Destination Namepsace | Description                |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Destination default | All streams will be replicated to the single default namespace defined by the Destination. For more details, see<a href="https://docs.airbyte.com/understanding-airbyte/namespaces#--destination-connector-settings"> ​​Destination Connector Settings</a> |
+| Destination default | All streams will be replicated to the single default namespace defined by the Destination. For more details, see <a href="/understanding-airbyte/namespaces#--destination-connector-settings"> ​​Destination Connector Settings</a> |
 | Mirror source structure | Some sources (for example, databases) provide namespace information for a stream. If a source provides namespace information, the destination will mirror the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option.  |
-| Custom format | All streams will be replicated to a single user-defined namespace. See<a href="https://docs.airbyte.com/understanding-airbyte/namespaces#--custom-format"> Custom format</a> for more details | 
+| Custom format | All streams will be replicated to a single user-defined namespace. See<a href="/understanding-airbyte/namespaces#--custom-format"> Custom format</a> for more details | 
 
 ## Connection sync modes
 
