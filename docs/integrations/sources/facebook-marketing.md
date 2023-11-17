@@ -1,10 +1,6 @@
 # Facebook Marketing
 
-<HideInUI>
-
 This page guides you through the process of setting up the Facebook Marketing source connector.
-
-</HideInUI>
 
 ## Prerequisites
 
