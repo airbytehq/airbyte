@@ -160,6 +160,7 @@ public class GlueOperations implements MetastoreOperations {
           };
         }
       }
+      case "null" -> "binary";
       default -> type;
     };
   }
