@@ -261,6 +261,7 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     public B withSsl(Map<Object, Object> sslMode) {
       return with(JdbcUtils.SSL_KEY, true).with(JdbcUtils.SSL_MODE_KEY, sslMode);
     }
+
   }
 
 }

@@ -12,9 +12,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.function.LongFunction;
 import javax.sql.DataSource;
 
@@ -207,12 +205,10 @@ public class DataSourceFactory {
      */
     private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties, String driverClassName) {
       final Duration connectionTimeout = switch (DatabaseDriver.findByDriverClassName(driverClassName)) {
-        case POSTGRESQL ->
-            getConnectionTimeoutValue(connectionProperties, CONNECT_TIMEOUT.getName(), CONNECT_TIMEOUT.getDefaultValue(), Duration::ofSeconds);
-        case MYSQL ->
-            getConnectionTimeoutValue(connectionProperties, "connectTimeout", "0", Duration::ofMillis);
-        case MSSQLSERVER ->
-            getConnectionTimeoutValue(connectionProperties, "loginTimeout", "15", Duration::ofSeconds);
+        case POSTGRESQL -> getConnectionTimeoutValue(connectionProperties, CONNECT_TIMEOUT.getName(), CONNECT_TIMEOUT.getDefaultValue(),
+            Duration::ofSeconds);
+        case MYSQL -> getConnectionTimeoutValue(connectionProperties, "connectTimeout", "0", Duration::ofMillis);
+        case MSSQLSERVER -> getConnectionTimeoutValue(connectionProperties, "loginTimeout", "15", Duration::ofSeconds);
         default -> Optional.ofNullable(connectionProperties.get(CONNECT_TIMEOUT_KEY))
             .map(Long::parseLong)
             .map(Duration::ofSeconds)
@@ -222,7 +218,10 @@ public class DataSourceFactory {
       return connectionTimeout.toMillis();
     }
 
-    private static Duration getConnectionTimeoutValue(final Map<String, String> connectionProperties, final String key, final String defaultValue, LongFunction<Duration> toDuration) {
+    private static Duration getConnectionTimeoutValue(final Map<String, String> connectionProperties,
+                                                      final String key,
+                                                      final String defaultValue,
+                                                      LongFunction<Duration> toDuration) {
       final var parsedValue = Long.parseLong(connectionProperties.getOrDefault(key, defaultValue));
       return toDuration.apply((parsedValue > 0) ? parsedValue : Long.parseLong(defaultValue));
     }
