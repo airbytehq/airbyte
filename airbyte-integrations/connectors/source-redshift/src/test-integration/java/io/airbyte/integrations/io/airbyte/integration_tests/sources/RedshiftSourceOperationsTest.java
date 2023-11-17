@@ -11,6 +11,7 @@ import io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.redshift.RedshiftSource;
+import io.airbyte.integrations.source.redshift.RedshiftSourceOperations;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -35,7 +36,7 @@ public class RedshiftSourceOperationsTest {
         DatabaseDriver.REDSHIFT.getDriverClassName(),
         RedshiftSource.getJdbcUrl(config),
         JdbcDataSourceUtils.getConnectionProperties(config));
-    database = new DefaultJdbcDatabase(dataSource);
+    database = new DefaultJdbcDatabase(dataSource, new RedshiftSourceOperations());
   }
 
   @Test

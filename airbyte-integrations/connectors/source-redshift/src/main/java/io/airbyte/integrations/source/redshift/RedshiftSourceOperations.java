@@ -29,7 +29,6 @@ public class RedshiftSourceOperations extends JdbcSourceOperations {
 
   @Override
   public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
-
     if ("timestamptz".equalsIgnoreCase(resultSet.getMetaData().getColumnTypeName(colIndex))) {
       // Massive hack. Sometimes the JDBCType is TIMESTAMP (i.e. without timezone)
       // even though it _should_ be TIMESTAMP_WITH_TIMEZONE.
