@@ -25,11 +25,9 @@ data:
   name: Bing Ads
   registries:
     cloud:
-      dockerImageTag: 1.13.0 #https://airbytehq-team.slack.com/archives/C0662JB7XPU
       enabled: true
     oss:
       enabled: true
-      dockerImageTag: 1.13.0 #https://airbytehq-team.slack.com/archives/C0662JB7XPU
   releaseStage: generally_available
   releases:
     breakingChanges:
