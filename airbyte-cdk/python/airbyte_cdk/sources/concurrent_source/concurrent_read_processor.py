@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionE
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, StreamAndStreamAvailability
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
@@ -56,6 +56,25 @@ class ConcurrentReadProcessor:
         self._message_repository = message_repository
         self._partition_reader = partition_reader
 
+    def on_stream_started_sentinel(self, sentinel: StreamAndStreamAvailability) -> Optional[AirbyteMessage]:
+        stream = sentinel.stream
+        if sentinel.availability.is_available():
+            self._logger.info(f"Marking stream {stream.name} as STARTED")
+            self._logger.info(f"Syncing stream: {stream.name} ")
+            return stream_status_as_airbyte_message(
+                stream.as_airbyte_stream(),
+                AirbyteStreamStatus.STARTED,
+            )
+        else:
+            # Remove the stream from _streams_currently_generating_partitions because no partitions will be generated
+            self._streams_currently_generating_partitions.remove(stream.name)
+            self._logger.warning(
+                f"Skipped syncing stream '{sentinel.stream.name}' because it was unavailable. {sentinel.availability.message()}"
+            )
+            if self._stream_instances_to_start_partition_generation:
+                self.start_next_partition_generator()
+            return None
+
     def on_partition_generation_completed(self, sentinel: PartitionGenerationCompletedSentinel) -> Iterable[AirbyteMessage]:
         """
         This method is called when a partition generation is completed.
@@ -67,15 +86,11 @@ class ConcurrentReadProcessor:
         self._streams_currently_generating_partitions.remove(sentinel.stream.name)
         ret = []
 
-        if not sentinel.stream_availability.is_available():
-            self._logger.warning(
-                f"Skipped syncing stream '{sentinel.stream.name}' because it was unavailable. {sentinel.stream_availability.message()}"
-            )
         # It is possible for the stream to already be done if no partitions were generated
         if self._is_stream_done(stream_name):
             ret.append(self._on_stream_is_done(stream_name))
         if self._stream_instances_to_start_partition_generation:
-            ret.append(self.start_next_partition_generator())
+            self.start_next_partition_generator()
         return ret
 
     def on_partition(self, partition: Partition) -> None:
@@ -137,7 +152,7 @@ class ConcurrentReadProcessor:
         yield from self._stop_streams()
         raise exception
 
-    def start_next_partition_generator(self) -> Optional[AirbyteMessage]:
+    def start_next_partition_generator(self) -> None:
         """
         Start the next partition generator.
         1. Pop the next stream to read from
@@ -149,14 +164,6 @@ class ConcurrentReadProcessor:
             stream = self._stream_instances_to_start_partition_generation.pop(0)
             self._thread_pool_manager.submit(self._partition_enqueuer.generate_partitions, stream)
             self._streams_currently_generating_partitions.append(stream.name)
-            self._logger.info(f"Marking stream {stream.name} as STARTED")
-            self._logger.info(f"Syncing stream: {stream.name} ")
-            return stream_status_as_airbyte_message(
-                stream.as_airbyte_stream(),
-                AirbyteStreamStatus.STARTED,
-            )
-        else:
-            return None
 
     def is_done(self) -> bool:
         """

@@ -6,7 +6,7 @@ from queue import Queue
 
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
+from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem, StreamAndStreamAvailability
 
 
 class PartitionEnqueuer:
@@ -35,8 +35,9 @@ class PartitionEnqueuer:
         try:
             stream_availability = stream.check_availability()
             if stream_availability.is_available():
+                self._queue.put(StreamAndStreamAvailability(stream, stream_availability))
                 for partition in stream.generate_partitions():
                     self._queue.put(partition)
-            self._queue.put(PartitionGenerationCompletedSentinel(stream, stream_availability))
+                self._queue.put(PartitionGenerationCompletedSentinel(stream))
         except Exception as e:
             self._queue.put(e)

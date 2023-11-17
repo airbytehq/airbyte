@@ -28,7 +28,7 @@ from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionE
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, StreamAndStreamAvailability
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 _STREAM_NAME = "stream"
@@ -92,7 +92,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         handler.start_next_partition_generator()
         handler.on_partition(self._an_open_partition)
 
-        sentinel = PartitionGenerationCompletedSentinel(self._stream, StreamAvailable())
+        sentinel = PartitionGenerationCompletedSentinel(self._stream)
         messages = list(handler.on_partition_generation_completed(sentinel))
 
         expected_messages = []
@@ -114,7 +114,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         handler.start_next_partition_generator()
         handler.on_partition(self._a_closed_partition)
 
-        sentinel = PartitionGenerationCompletedSentinel(self._another_stream, StreamAvailable())
+        sentinel = PartitionGenerationCompletedSentinel(self._another_stream)
         messages = handler.on_partition_generation_completed(sentinel)
 
         expected_messages = [
@@ -133,6 +133,38 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         assert expected_messages == messages
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
+    def test_handle_stream_started_sentinel(self):
+        stream_instances_to_read_from = [self._stream]
+
+        handler = ConcurrentReadProcessor(
+            stream_instances_to_read_from,
+            self._partition_enqueuer,
+            self._thread_pool_manager,
+            self._logger,
+            self._slice_logger,
+            self._message_repository,
+            self._partition_reader,
+        )
+        handler.start_next_partition_generator()
+
+        sentinel = StreamAndStreamAvailability(self._stream, StreamAvailable())
+        messages = handler.on_stream_started_sentinel(sentinel)
+
+        expected_message = AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name=_STREAM_NAME),
+                    status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED),
+                ),
+            ),
+        )
+
+        assert expected_message == messages
+
+    @freezegun.freeze_time("2020-01-01T00:00:00")
     def test_handle_stream_is_unavailable(self):
         stream_instances_to_read_from = [self._stream, self._another_stream]
 
@@ -147,33 +179,13 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         )
         handler.start_next_partition_generator()
 
-        sentinel = PartitionGenerationCompletedSentinel(self._stream, StreamUnavailable("stream in unavailable"))
-        messages = handler.on_partition_generation_completed(sentinel)
+        sentinel = StreamAndStreamAvailability(self._stream, StreamUnavailable("stream is unavailable"))
+        messages = handler.on_stream_started_sentinel(sentinel)
 
-        expected_messages = [
-            AirbyteMessage(
-                type=MessageType.TRACE,
-                trace=AirbyteTraceMessage(
-                    type=TraceType.STREAM_STATUS,
-                    emitted_at=1577836800000.0,
-                    stream_status=AirbyteStreamStatusTraceMessage(
-                        stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
-                    ),
-                ),
-            ),
-            AirbyteMessage(
-                type=MessageType.TRACE,
-                trace=AirbyteTraceMessage(
-                    type=TraceType.STREAM_STATUS,
-                    emitted_at=1577836800000.0,
-                    stream_status=AirbyteStreamStatusTraceMessage(
-                        stream_descriptor=StreamDescriptor(name=_ANOTHER_STREAM_NAME),
-                        status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED),
-                    ),
-                ),
-            ),
-        ]
-        assert expected_messages == messages
+        expected_message = None
+
+        assert expected_message == messages
+        self._thread_pool_manager.submit.assert_called_with(self._partition_enqueuer.generate_partitions, self._another_stream)
 
     def test_handle_partition(self):
         stream_instances_to_read_from = [self._another_stream]
@@ -267,7 +279,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             self._partition_reader,
         )
         handler.start_next_partition_generator()
-        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream, StreamAvailable()))
+        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._another_stream))
 
         sentinel = PartitionCompleteSentinel(self._a_closed_partition)
 
@@ -599,7 +611,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
 
         handler.start_next_partition_generator()
         handler.on_partition(self._an_open_partition)
-        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream, StreamAvailable()))
+        handler.on_partition_generation_completed(PartitionGenerationCompletedSentinel(self._stream))
 
         assert not handler.is_done()
 
@@ -631,18 +643,7 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             self._partition_reader,
         )
 
-        status_message = handler.start_next_partition_generator()
-
-        assert status_message == AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name=_STREAM_NAME), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
-                ),
-            ),
-        )
+        handler.start_next_partition_generator()
 
         assert _STREAM_NAME in handler._streams_currently_generating_partitions
         self._thread_pool_manager.submit.assert_called_with(self._partition_enqueuer.generate_partitions, self._stream)

@@ -16,7 +16,7 @@ from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionE
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem, StreamAndStreamAvailability
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 
 
@@ -93,7 +93,7 @@ class ConcurrentSource:
         )
 
         # Enqueue initial partition generation tasks
-        yield from self._submit_initial_partition_generators(concurrent_stream_processor)
+        self._submit_initial_partition_generators(concurrent_stream_processor)
 
         # Read from the queue until all partitions were generated and read
         yield from self._consume_from_queue(
@@ -103,11 +103,9 @@ class ConcurrentSource:
         self._threadpool.check_for_errors_and_shutdown()
         self._logger.info("Finished syncing")
 
-    def _submit_initial_partition_generators(self, concurrent_stream_processor: ConcurrentReadProcessor) -> Iterable[AirbyteMessage]:
+    def _submit_initial_partition_generators(self, concurrent_stream_processor: ConcurrentReadProcessor):
         for _ in range(self._initial_number_partitions_to_generate):
-            status_message = concurrent_stream_processor.start_next_partition_generator()
-            if status_message:
-                yield status_message
+            concurrent_stream_processor.start_next_partition_generator()
 
     def _consume_from_queue(
         self,
@@ -131,6 +129,11 @@ class ConcurrentSource:
         # handle queue item and call the appropriate handler depending on the type of the queue item
         if isinstance(queue_item, Exception):
             yield from concurrent_stream_processor.on_exception(queue_item)
+
+        elif isinstance(queue_item, StreamAndStreamAvailability):
+            optional_status_message = concurrent_stream_processor.on_stream_started_sentinel(queue_item)
+            if optional_status_message:
+                yield optional_status_message
 
         elif isinstance(queue_item, PartitionGenerationCompletedSentinel):
             yield from concurrent_stream_processor.on_partition_generation_completed(queue_item)
