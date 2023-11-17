@@ -137,8 +137,7 @@ public class MongoUtilTest {
         new ConfiguredAirbyteCatalog().withStreams(configuredAirbyteStreams);
     Throwable throwable = catchThrowable(() -> checkSchemaModeMismatch(true, true, schemaLessCatalog));
     assertThat(throwable).isInstanceOf(ConfigErrorException.class)
-        .hasMessageContaining(
-            "Mismatch between schema enforcing mode in sync config(true), catalog(false) and saved state(true) Please refresh source schema and reset streams.");
+        .hasMessageContaining(formatMismatchException(true, false, true));
     throwable = catchThrowable(() -> checkSchemaModeMismatch(false, false, schemaLessCatalog));
     assertThat(throwable).isNull();
   }
@@ -211,8 +210,7 @@ public class MongoUtilTest {
         new ConfiguredAirbyteCatalog().withStreams(configuredAirbyteStreams);
     Throwable throwable = catchThrowable(() -> checkSchemaModeMismatch(false, false, schemaEnforcedCatalog));
     assertThat(throwable).isInstanceOf(ConfigErrorException.class)
-        .hasMessageContaining(
-            "Mismatch between schema enforcing mode in sync config(false), catalog(true) and saved state(false) Please refresh source schema and reset streams.");
+        .hasMessageContaining(formatMismatchException(false, true, false));
     throwable = catchThrowable(() -> checkSchemaModeMismatch(true, true, schemaEnforcedCatalog));
     assertThat(throwable).isNull();
   }
@@ -372,6 +370,13 @@ public class MongoUtilTest {
     final Optional<MongoUtil.CollectionStatistics> statistics = MongoUtil.getCollectionStatistics(mongoClient, configuredAirbyteStream);
 
     assertFalse(statistics.isPresent());
+
+  }
+
+  private static String formatMismatchException(final boolean isConfigSchemaEnforced, final boolean isCatalogSchemaEnforcing, final boolean isStateSchemaEnforced) {
+    return "Mismatch between schema enforcing mode in sync configuration (%b), catalog (%b) and saved state (%b). "
+        .formatted(isConfigSchemaEnforced, isCatalogSchemaEnforcing, isStateSchemaEnforced)
+        + "Please refresh source schema and reset streams.";
   }
 
 }

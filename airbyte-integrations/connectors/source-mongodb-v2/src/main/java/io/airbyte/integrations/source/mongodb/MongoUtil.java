@@ -133,8 +133,8 @@ public class MongoUtil {
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
     return authorizedCollections.parallelStream()
         .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced))
-        .filter(stream -> stream.isPresent())
-        .map(stream -> stream.get())
+        .filter(Optional::isPresent)
+        .map(Optional::get)
         .collect(Collectors.toList());
   }
 
@@ -210,20 +210,18 @@ public class MongoUtil {
    * : 1. User is in schemaless mode + catalog corresponds to schema enabled mode. 2. User is in
    * schema enabled mode + catalog corresponds to schemaless mode
    *
-   * @param isConfigSchemaEnforced true if schema is enforced, false if in schemaless mode.
+   * @param isConfigSchemaEnforced true if schema is enforced in configuration, false if in schemaless mode.
+   * @param isStateSchemaEnforced true if schema is enforced in saved state, false if in schemaless mode.
    * @param catalog User's configured catalog.
    */
   public static void checkSchemaModeMismatch(final boolean isConfigSchemaEnforced,
                                              final boolean isStateSchemaEnforced,
                                              final ConfiguredAirbyteCatalog catalog) {
-    final boolean isCatalogSchemaless = catalog.getStreams().stream()
+    final boolean isCatalogSchemaEnforcing = !catalog.getStreams().stream()
         .allMatch(stream -> verifySchemaless(stream.getStream().getJsonSchema()));
 
-    final boolean isCatalogSchemaEnforcing = !isCatalogSchemaless;
-    boolean allTrue = Stream.of(isConfigSchemaEnforced, isStateSchemaEnforced, isCatalogSchemaEnforcing).allMatch(val -> val == true);
-    boolean allFalse = Stream.of(isConfigSchemaEnforced, isStateSchemaEnforced, isCatalogSchemaEnforcing).allMatch(val -> val == false);
-    if (!allTrue && !allFalse) {
-      throw new ConfigErrorException("Mismatch between schema enforcing mode in sync config(%b), catalog(%b) and saved state(%b) "
+    if (Stream.of(isConfigSchemaEnforced, isStateSchemaEnforced, isCatalogSchemaEnforcing).distinct().count() > 1) {
+      throw new ConfigErrorException("Mismatch between schema enforcing mode in sync configuration (%b), catalog (%b) and saved state (%b). "
           .formatted(isConfigSchemaEnforced, isCatalogSchemaEnforcing, isStateSchemaEnforced)
           + "Please refresh source schema and reset streams.");
     }
