@@ -157,32 +157,4 @@ class SourcePinterest(AbstractSource):
             ProductGroupTargetingReport(ad_accounts, config=report_config),
             KeywordReport(ad_accounts, config=report_config),
             ProductItemReport(ad_accounts, config=report_config),
-        ] + self.get_custom_report_streams(ad_accounts, config=report_config)
-
-    def get_custom_report_streams(self, parent, config: dict) -> List[Type[Stream]]:
-        """return custom report streams"""
-        custom_streams = []
-        for report_config in config.get("custom_reports", []):
-            report_config["authenticator"] = config["authenticator"]
-
-            # https://developers.pinterest.com/docs/api/v5/#operation/analytics/get_report
-            if report_config.get("granularity") == 'HOUR':
-                # Otherwise: Response Code: 400 {"code":1,"message":"HOURLY request must be less than 3 days"}
-                amount_of_days_allowed_for_lookup = 2
-            elif report_config.get("level") == 'PRODUCT_ITEM':
-                amount_of_days_allowed_for_lookup = 91
-            else:
-                amount_of_days_allowed_for_lookup = 913
-
-            start_date = report_config.get("start_date")
-            if not start_date:
-                report_config["start_date"] = config.get("start_date")
-
-            report_config = self._validate_and_transform(report_config, amount_of_days_allowed_for_lookup)
-
-            stream = CustomReport(
-                parent=parent,
-                config=report_config,
-            )
-            custom_streams.append(stream)
-        return custom_streams
+        ]

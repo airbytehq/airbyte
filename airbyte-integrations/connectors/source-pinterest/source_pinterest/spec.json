@@ -4,7 +4,6 @@
     "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Pinterest Spec",
     "type": "object",
-    "required": ["start_date"],
     "additionalProperties": true,
     "properties": {
       "start_date": {
