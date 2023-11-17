@@ -70,71 +70,36 @@
           "title": "ReportConfig",
           "description": "Config for custom report",
           "type": "object",
-          "required": ["level", "granularity", "columns"],
+          "required": ["name", "level", "granularity", "columns"],
           "properties": {
             "name": {
               "title": "Name",
               "description": "The name value of report",
-              "type": "string"
+              "type": "string",
+              "order": 0
             },
             "level": {
               "title": "Level",
               "description": "Chosen level for API",
               "default": "ADVERTISER",
               "enum": ["ADVERTISER", "ADVERTISER_TARGETING", "CAMPAIGN", "CAMPAIGN_TARGETING", "AD_GROUP", "AD_GROUP_TARGETING", "PIN_PROMOTION", "PIN_PROMOTION_TARGETING", "KEYWORD", "PRODUCT_GROUP", "PRODUCT_GROUP_TARGETING", "PRODUCT_ITEM"],
-              "type": "string"
+              "type": "string",
+              "order": 1
             },
             "granularity": {
               "title": "Granularity",
               "description": "Chosen granularity for API",
               "default": "TOTAL",
               "enum": ["TOTAL", "DAY", "HOUR", "WEEK", "MONTH"],
-              "type": "string"
-            },
-            "click_window_days": {
-              "title": "Click window days",
-              "description": "Number of days to use as the conversion attribution window for a pin click action.",
-              "default": 30,
-              "enum": [0, 1, 7, 14, 30, 60],
-              "type": "integer"
-            },
-            "engagement_window_days": {
-              "title": "Engagement window days",
-              "description": "Number of days to use as the conversion attribution window for an engagement action.",
-              "default": 30,
-              "enum": [0, 1, 7, 14, 30, 60],
-              "type": "integer"
-            },
-            "view_window_days": {
-              "title": "View window days",
-              "description": "Number of days to use as the conversion attribution window for a view action.",
-              "default": 30,
-              "enum": [0, 1, 7, 14, 30, 60],
-              "type": "integer"
-            },
-            "conversion_report_time": {
-              "title": "View window days",
-              "description": "The date by which the conversion metrics returned from this endpoint will be reported. There are two dates associated with a conversion event: the date that the user interacted with the ad, and the date that the user completed a conversion event..",
-              "default": "TIME_OF_AD_ACTION",
-              "enum": ["TIME_OF_AD_ACTION", "TIME_OF_CONVERSION"],
-              "type": "string"
-            },
-            "attribution_types": {
-              "title": "View window days",
-              "description": "List of types of attribution for the conversion report",
-              "default": [["INDIVIDUAL", "HOUSEHOLD"]],
-              "type": "array",
-              "items": {
-                "title": "ValidEnums",
-                "description": "An enumeration.",
-                "enum": ["INDIVIDUAL", "HOUSEHOLD"]
-              }
+              "type": "string",
+              "order": 2
             },
             "columns": {
               "title": "Columns",
               "description": "A list of chosen columns",
               "default": [],
               "type": "array",
+              "order": 3,
               "items": {
                 "title": "ValidEnums",
                 "description": "An enumeration.",
@@ -254,17 +219,61 @@
                 ]
               }
             },
+            "click_window_days": {
+              "title": "Click window days",
+              "description": "Number of days to use as the conversion attribution window for a pin click action.",
+              "default": 30,
+              "enum": [0, 1, 7, 14, 30, 60],
+              "type": "integer",
+              "order": 4
+            },
+            "engagement_window_days": {
+              "title": "Engagement window days",
+              "description": "Number of days to use as the conversion attribution window for an engagement action.",
+              "default": [30],
+              "enum": [0, 1, 7, 14, 30, 60],
+              "type": "integer",
+              "order": 5
+            },
+            "view_window_days": {
+              "title": "View window days",
+              "description": "Number of days to use as the conversion attribution window for a view action.",
+              "default": [30],
+              "enum": [0, 1, 7, 14, 30, 60],
+              "type": "integer",
+              "order": 6
+            },
+            "conversion_report_time": {
+              "title": "Conversion report time",
+              "description": "The date by which the conversion metrics returned from this endpoint will be reported. There are two dates associated with a conversion event: the date that the user interacted with the ad, and the date that the user completed a conversion event..",
+              "default": "TIME_OF_AD_ACTION",
+              "enum": ["TIME_OF_AD_ACTION", "TIME_OF_CONVERSION"],
+              "type": "string",
+              "order": 7
+            },
+            "attribution_types": {
+              "title": "Attribution types",
+              "description": "List of types of attribution for the conversion report",
+              "default": ["INDIVIDUAL", "HOUSEHOLD"],
+              "type": "array",
+              "items": {
+                "title": "ValidEnums",
+                "description": "An enumeration.",
+                "enum": ["INDIVIDUAL", "HOUSEHOLD"]
+              },
+              "order": 8
+            },
             "start_date": {
               "type": "string",
               "title": "Start Date",
-              "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (89 days from today).",
+              "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by report api (913 days from today).",
               "format": "date",
               "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
               "pattern_descriptor": "YYYY-MM-DD",
-              "examples": ["2022-07-28"]
+              "examples": ["2022-07-28"],
+              "order": 9
             }
-          },
-          "required": ["name"]
+          }
         }
       }
     }
