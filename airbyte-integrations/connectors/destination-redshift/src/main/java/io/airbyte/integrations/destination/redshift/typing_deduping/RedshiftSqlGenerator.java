@@ -11,10 +11,21 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
+import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.cast;
 import static org.jooq.impl.DSL.createSchemaIfNotExists;
 import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.function;
+import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.quotedName;
+import static org.jooq.impl.DSL.rowNumber;
+import static org.jooq.impl.DSL.select;
+import static org.jooq.impl.DSL.table;
+import static org.jooq.impl.DSL.val;
+import static org.jooq.impl.DSL.when;
+import static org.jooq.impl.DSL.with;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
@@ -22,22 +33,32 @@ import io.airbyte.cdk.integrations.destination.jdbc.CustomSqlType;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
+import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.sql.SQLType;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.jooq.CommonTableExpression;
 import org.jooq.CreateSchemaFinalStep;
 import org.jooq.CreateTableColumnStep;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.InsertValuesStepN;
 import org.jooq.Name;
+import org.jooq.Record;
 import org.jooq.SQLDialect;
+import org.jooq.SelectConditionStep;
+import org.jooq.conf.ParamType;
+import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
@@ -50,6 +71,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
       "bool", "boolean",
       "timestamptz", "timestamp with time zone",
       "timetz", "time with time zone");
+  private static final String COLUMN_ERROR_MESSAGE_FORMAT = "Problem with %s";
+  private static final String AIRBYTE_META_COLUMN_ERRORS_KEY = "errors";
 
   public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
@@ -93,8 +116,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   // TODO: Pull it into base class as abstract and formatted only for testing.
   protected DSLContext getDslContext() {
-    // return DSL.using(SQLDialect.POSTGRES, new Settings().withRenderFormatted(true));
-    return DSL.using(SQLDialect.POSTGRES);
+    return DSL.using(SQLDialect.POSTGRES, new Settings().withRenderFormatted(true));
+//    return DSL.using(SQLDialect.POSTGRES);
   }
 
   /**
@@ -108,31 +131,105 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    * https://docs.aws.amazon.com/redshift/latest/dg/r_WITH_clause.html#r_WITH_clause-usage-notes *
    * Primary keys are informational only and not enforced
    * (https://docs.aws.amazon.com/redshift/latest/dg/t_Defining_constraints.html)
+   * TODO: Look at SORT KEYS, DISTKEY in redshift for optimizing the query performance.
    */
 
-  List<Field<?>> buildFields(final Map<String, DataType<?>> metaColumns, final StreamConfig streamConfig) {
+  /**
+   * build jooq fields for final table with customers columns first and then meta columns.
+   * @param columns
+   * @param metaColumns
+   * @return
+   */
+  @VisibleForTesting
+  List<Field<?>> buildFinalTableFields(final LinkedHashMap<ColumnId, AirbyteType> columns, final Map<String, DataType<?>> metaColumns) {
     final List<Field<?>> fields =
         metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(Collectors.toList());
     final List<Field<?>> dataFields =
-        streamConfig.columns().entrySet().stream().map(column -> field(quotedName(column.getKey().name()), toDialectType(column.getValue()))).collect(
+        columns.entrySet().stream().map(column -> field(quotedName(column.getKey().name()), toDialectType(column.getValue()))).collect(
             Collectors.toList());
-    fields.addAll(dataFields);
-    return fields;
+    dataFields.addAll(fields);
+    return dataFields;
+  }
+
+  /**
+   * build jooq fields for raw table with type-casted data columns first and then meta columns without _airbyte_meta.
+   * @param columns
+   * @param metaColumns
+   * @return
+   */
+  @VisibleForTesting
+  List<Field<?>> buildRawTableSelectFields(final LinkedHashMap<ColumnId, AirbyteType> columns, final Map<String, DataType<?>> metaColumns) {
+    final List<Field<?>> fields =
+        metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(Collectors.toList());
+    final List<Field<?>> dataFields = columns
+        .entrySet()
+        .stream()
+        .map(column -> cast(field(quotedName(COLUMN_NAME_DATA, column.getKey().name())), toDialectType(column.getValue())))
+        .collect(Collectors.toList());
+    dataFields.addAll(fields);
+    return dataFields;
+  }
+
+  String buildSqlConcatString(List<String> stringList) {
+    if (stringList.isEmpty()) {
+      return "";  // Return an empty string if the list is empty
+    }
+
+    // Base case: if there's only one element, return it
+    if (stringList.size() == 1) {
+      return "ARRAY(" + stringList.get(0) + ")";
+    }
+
+    // Recursive case: construct ARRAY_CONCAT function call
+    String lastValue = stringList.get(stringList.size() - 1);
+    String recursiveCall = buildSqlConcatString(stringList.subList(0, stringList.size()-1));
+
+    return "ARRAY_CONCAT(" + recursiveCall + ", ARRAY(" + lastValue + "))";
+  }
+
+  String superTypeFunction(final AirbyteType type) {
+    if (type instanceof AirbyteProtocolType) {
+      return switch ((AirbyteProtocolType) type) {
+        case STRING -> "IS_VARCHAR";
+        case TIME_WITH_TIMEZONE -> "IS_TIME_WITH_TIMEZONE";
+        default -> "IS_" + type.getTypeName().toUpperCase();
+      };
+    }
+    return "";
+  }
+
+  Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns) {
+    String caseStatementSqlTemplate = "CASE WHEN {0} THEN {1} ELSE {2} END ";
+    Field<?> caseSt2 = field(caseStatementSqlTemplate, function("IS_VARCHAR", SQLDataType.BOOLEAN, field("first_name")).eq(true).and(cast("first_name", SQLDataType.VARCHAR).isNull()), function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT)), field("ARRAY()"));
+//    Field<String> arrayFunction =  function("ARRAY", SQLDataType.VARCHAR, val(COLUMN_ERROR_MESSAGE_FORMAT));
+//    Field<String> caseStmt = when(function("IS_VARCHAR", SQLDataType.BOOLEAN, field("first_name")).eq(true).and(cast("first_name", SQLDataType.VARCHAR).isNull()), arrayFunction).otherwise("ARRAY()");
+//    when(function("IS_VARCHAR", SQLDataType.BOOLEAN, field("first_name")).eq(true).and(cast("first_name", SQLDataType.VARCHAR).isNull()), function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_PREFIX))).otherwise(field("NULL")
+    return function("object", getSuperType(), val(AIRBYTE_META_COLUMN_ERRORS_KEY), caseSt2);
+
+  }
+
+  /**
+   * Use this method to get the final table meta columns with or without _airbyte_meta column.
+   * @param includeMetaColumn
+   * @return
+   */
+  LinkedHashMap<String, DataType<?>> getFinalTableMetaColumns(boolean includeMetaColumn) {
+    final LinkedHashMap<String, DataType<?>> metaColumns = new LinkedHashMap<>();
+    metaColumns.put(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false));
+    metaColumns.put(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
+    if (includeMetaColumn) metaColumns.put(COLUMN_NAME_AB_META, getSuperType().nullable(false));
+    return metaColumns;
   }
 
   @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
-    final DSLContext dsl = getDslContext();
-    final CreateSchemaFinalStep createSchemaSql = createSchemaIfNotExists(quotedName(stream.id().finalNamespace()));
+    DSLContext dsl = getDslContext();
+    CreateSchemaFinalStep createSchemaSql = createSchemaIfNotExists(quotedName(stream.id().finalNamespace()));
 
     // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
-    final String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
-    final Map<String, DataType<?>> metaColumns = new LinkedHashMap<>();
-    metaColumns.put(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false));
-    metaColumns.put(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false));
-    metaColumns.put(COLUMN_NAME_AB_META, getSuperType().nullable(false));
-    final CreateTableColumnStep createTableSql = dsl.createTable(quotedName(stream.id().finalNamespace(), finalTableIdentifier))
-        .columns(buildFields(metaColumns, stream));
+    String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
+    CreateTableColumnStep createTableSql = dsl.createTable(quotedName(stream.id().finalNamespace(), finalTableIdentifier))
+        .columns(buildFinalTableFields(stream.columns(), getFinalTableMetaColumns(true)));
     return createSchemaSql.getSQL() + ";" + System.lineSeparator() + createTableSql.getSQL() + ";";
   }
 
@@ -159,11 +256,101 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   @Override
-  public String updateTable(final StreamConfig stream,
+  public String updateTable(final StreamConfig streamConfig,
                             final String finalSuffix,
                             final Optional<Instant> minRawTimestamp,
                             final boolean useExpensiveSaferCasting) {
-    return null;
+
+    //TODO: Add flag to use merge vs insert/delete
+    return insertAndDeleteTransaction(streamConfig, finalSuffix, minRawTimestamp, useExpensiveSaferCasting);
+
+  }
+
+  private String insertAndDeleteTransaction(final StreamConfig streamConfig,
+                                 final String finalSuffix,
+                                 final Optional<Instant> minRawTimestamp,
+                                 final boolean useExpensiveSaferCasting) {
+    final String finalSchema = streamConfig.id().finalNamespace();
+    final String finalTable = streamConfig.id().finalName();
+    final String rawSchema = streamConfig.id().rawNamespace();
+    final String rawTable = streamConfig.id().rawName();
+
+    // Poor person's guarantee of ordering of fields by using same source of ordered list of columns to generate fields.
+    final CommonTableExpression<Record> rawDataWithCasts = name("intermediate_data")
+        .as(selectFromRawTable(rawSchema, rawTable, streamConfig.columns(), getFinalTableMetaColumns(false)));
+    final Field<?> rowNumber = getRowNumber(streamConfig.primaryKey(), streamConfig.cursor());
+    final CommonTableExpression<Record> filteredRows = name("numbered_rows").as(select(asterisk(), rowNumber).from(rawDataWithCasts));
+
+    // Transactional insert and delete, Jooq only supports transaction starting 3.18
+    //TODO: Complete this method.
+    /*return """
+        BEGIN;
+        %s;
+        %s;
+        COMMIT;
+        """.formatted(insertIntoFinalTable(...), deleteFromFinalTable(...));*/
+
+    return insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
+        .select(with(rawDataWithCasts)
+                    .with(filteredRows)
+                    .select(buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true)))
+                    .from(filteredRows)
+                    .where(field("row_number", Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
+        )
+        .getSQL(ParamType.INLINED);
+
+  }
+
+  private String mergeTransaction(final StreamConfig streamConfig,
+                                 final String finalSuffix,
+                                 final Optional<Instant> minRawTimestamp,
+                                 final boolean useExpensiveSaferCasting) {
+
+    throw new UnsupportedOperationException("Not implemented yet");
+
+  }
+
+  /**
+   * Return ROW_NUMBER() OVER (PARTITION BY primaryKeys ORDER BY cursor DESC NULLS LAST, _airbyte_extracted_at DESC)
+   * @param primaryKeys
+   * @param cursor
+   * @return
+   */
+  Field<?> getRowNumber(List<ColumnId> primaryKeys, Optional<ColumnId> cursor) {
+    final List<Field<?>> primaryKeyFields = primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList());
+    final List<Field<?>> orderedFields = new ArrayList<>();
+    // We can still use Jooq's field to get the quoted name with raw sql templating.
+    // jooq's .desc returns SortField<?> instead of Field<?> and NULLS LAST doesn't work with it
+    cursor.ifPresent(columnId -> orderedFields.add(field("{0} desc NULLS LAST", field(quotedName(columnId.name())))));
+    orderedFields.add(field("{0} desc", quotedName(COLUMN_NAME_AB_EXTRACTED_AT)));
+    return rowNumber()
+        .over()
+        .partitionBy(primaryKeyFields)
+        .orderBy(orderedFields).as("row_number");
+  }
+
+  @VisibleForTesting
+  SelectConditionStep<Record> selectFromRawTable(final String schemaName,
+                                                 final String tableName,
+                                                 final LinkedHashMap<ColumnId, AirbyteType> columns,
+                                                 final Map<String, DataType<?>> metaColumns) {
+    final DSLContext dsl = getDslContext();
+    return dsl
+        .select(buildRawTableSelectFields(columns, metaColumns))
+        .select(buildAirbyteMetaColumn(columns))
+        .from(table(quotedName(schemaName, tableName)))
+        .where(field(name(COLUMN_NAME_AB_LOADED_AT)).isNull());
+  }
+
+  @VisibleForTesting
+  InsertValuesStepN<Record> insertIntoFinalTable(final String schemaName,
+                                                 final String tableName,
+                                                 final LinkedHashMap<ColumnId, AirbyteType> columns,
+                                                 final Map<String, DataType<?>> metaFields) {
+    DSLContext dsl = getDslContext();
+    return dsl
+        .insertInto(table(quotedName(schemaName, tableName)))
+        .columns(buildFinalTableFields(columns, metaFields));
   }
 
   @Override
@@ -195,7 +382,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
                     DSL.inline(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
                     DSL.field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(DSL.table(DSL.name(namespace, tableName))))
                 .getSQL()),
-        ";\n");
+        ";"+ System.lineSeparator());
   }
 
   @Override

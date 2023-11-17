@@ -42,3 +42,9 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
     integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
 }
+
+configurations.all {
+    resolutionStrategy {
+        force libs.jooq
+    }
+}
