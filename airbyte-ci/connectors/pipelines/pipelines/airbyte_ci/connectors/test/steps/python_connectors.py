@@ -14,45 +14,9 @@ from dagger import Container, File
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed
-from pipelines.consts import LOCAL_BUILD_PLATFORM, PYPROJECT_TOML_FILE_PATH
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.models.steps import Step, StepResult, StepStatus
-
-
-class CodeFormatChecks(Step):
-    """A step to run the code format checks on a Python connector using Black, Isort and Flake."""
-
-    title = "Code format checks"
-
-    RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{PYPROJECT_TOML_FILE_PATH}", "--check", "."]
-    RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
-    RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{PYPROJECT_TOML_FILE_PATH}", "."]
-
-    async def _run(self) -> StepResult:
-        """Run a code format check on the container source code.
-
-        We call black, isort and flake commands:
-        - Black formats the code: fails if the code is not formatted.
-        - Isort checks the import orders: fails if the import are not properly ordered.
-        - Flake enforces style-guides: fails if the style-guide is not followed.
-
-        Args:
-            context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
-            step (Step): The step in which the code format checks are run. Defaults to Step.CODE_FORMAT_CHECKS
-        Returns:
-            StepResult: Failure or success of the code format checks with stdout and stderr.
-        """
-        connector_under_test = pipelines.dagger.actions.python.common.with_python_connector_source(self.context)
-
-        formatter = (
-            connector_under_test.with_exec(["echo", "Running black"])
-            .with_exec(self.RUN_BLACK_CMD)
-            .with_exec(["echo", "Running Isort"])
-            .with_exec(self.RUN_ISORT_CMD)
-            .with_exec(["echo", "Running Flake"])
-            .with_exec(self.RUN_FLAKE_CMD)
-        )
-        return await self.get_step_result(formatter)
 
 
 class PytestStep(Step, ABC):
@@ -60,6 +24,8 @@ class PytestStep(Step, ABC):
 
     PYTEST_INI_FILE_NAME = "pytest.ini"
     PYPROJECT_FILE_NAME = "pyproject.toml"
+    common_test_dependencies: List[str] = []
+
     skipped_exit_code = 5
     bind_to_docker_host = False
 
@@ -73,6 +39,15 @@ class PytestStep(Step, ABC):
         if self.context.connector.is_using_poetry:
             return ("dev",)
         return ("dev", "tests")
+
+    @property
+    def additional_pytest_options(self) -> List[str]:
+        """Theses options are added to the pytest command.
+
+        Returns:
+            List[str]: The additional pytest options.
+        """
+        return []
 
     async def _run(self, connector_under_test: Container) -> StepResult:
         """Run all pytest tests declared in the test directory of the connector code.
@@ -105,7 +80,7 @@ class PytestStep(Step, ABC):
         Returns:
             List[str]: The pytest command to run.
         """
-        cmd = ["pytest", "-s", self.test_directory_name, "-c", test_config_file_name]
+        cmd = ["pytest", "-s", self.test_directory_name, "-c", test_config_file_name] + self.additional_pytest_options
         if self.context.connector.is_using_poetry:
             return ["poetry", "run"] + cmd
         return cmd
@@ -174,6 +149,10 @@ class PytestStep(Step, ABC):
                 additional_dependency_groups=extra_dependencies_names,
             )
         )
+        if self.common_test_dependencies:
+            container_with_test_deps = container_with_test_deps.with_exec(
+                ["pip", "install", f'{" ".join(self.common_test_dependencies)}'], skip_entrypoint=True
+            )
         return (
             container_with_test_deps
             # Mount the test config file
@@ -188,6 +167,22 @@ class UnitTests(PytestStep):
 
     title = "Unit tests"
     test_directory_name = "unit_tests"
+    common_test_dependencies = ["pytest-cov==4.1.0"]
+    MINIMUM_COVERAGE_FOR_CERTIFIED_CONNECTORS = 90
+
+    @property
+    def additional_pytest_options(self) -> List[str]:
+        """Make sure the coverage computation is run for the unit tests.
+        Fail if the coverage is under 90% for certified connectors.
+
+        Returns:
+            List[str]: The additional pytest options to run coverage reports.
+        """
+        coverage_options = ["--cov", self.context.connector.technical_name.replace("-", "_")]
+        if self.context.connector.support_level == "certified":
+            coverage_options += ["--cov-fail-under", str(self.MINIMUM_COVERAGE_FOR_CERTIFIED_CONNECTORS)]
+
+        return super().additional_pytest_options + coverage_options
 
 
 class IntegrationTests(PytestStep):
@@ -230,15 +225,3 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         ]
 
     return step_results + [task.value for task in tasks]
-
-
-async def run_code_format_checks(context: ConnectorContext) -> List[StepResult]:
-    """Run the code format check steps for Python connectors.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-
-    Returns:
-        List[StepResult]: Results of the code format checks.
-    """
-    return [await CodeFormatChecks(context).run()]

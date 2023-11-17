@@ -24,6 +24,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
@@ -62,7 +63,7 @@ class HttpRequester(Requester):
 
     _DEFAULT_MAX_RETRY = 5
     _DEFAULT_RETRY_FACTOR = 5
-    _DELAULT_MAX_TIME = 60 * 10
+    _DEFAULT_MAX_TIME = 60 * 10
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
@@ -79,6 +80,9 @@ class HttpRequester(Requester):
         self._parameters = parameters
         self.decoder = JsonDecoder(parameters={})
         self._session = requests.Session()
+        self._session.mount(
+            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
+        )
 
         if isinstance(self._authenticator, AuthBase):
             self._session.auth = self._authenticator
@@ -177,7 +181,7 @@ class HttpRequester(Requester):
         Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
         """
         if self.error_handler is None:
-            return self._DELAULT_MAX_TIME
+            return self._DEFAULT_MAX_TIME
         return self.error_handler.max_time
 
     @property

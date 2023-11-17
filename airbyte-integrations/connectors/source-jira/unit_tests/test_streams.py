@@ -386,6 +386,17 @@ def test_board_issues_stream(config, board_issues_response):
     assert len(responses.calls) == 3
 
 
+def test_stream_updated_state(config):
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = BoardIssues(**args)
+
+    current_stream_state = {"updated": "09.11.2023"}
+    latest_record = {"updated": "10.11.2023"}
+
+    assert {"updated": "10.11.2023"} == stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
+
+
 @responses.activate
 def test_filter_sharing_stream(config, filter_sharing_response):
     responses.add(
@@ -682,6 +693,21 @@ def test_avatars_stream(config, avatars_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"avatar_type": "issuetype"})]
     assert len(records) == 2
     assert len(responses.calls) == 1
+
+
+@responses.activate
+def test_avatars_stream_should_retry(config, caplog):
+    url = f"https://{config['domain']}/rest/api/3/avatar/issuetype/system?maxResults=50"
+    responses.add(method=responses.GET, url=url, json={"errorMessages": ["The error message"], "errors": {}}, status=400)
+
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = Avatars(**args)
+
+    response = requests.get(url)
+    actual = stream.should_retry(response)
+    assert actual is False
+    assert "The error message" in caplog.text
 
 
 @responses.activate

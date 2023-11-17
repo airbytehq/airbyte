@@ -2,9 +2,11 @@
 
 This python package contains the base images used by Airbyte connectors.
 It is intended to be used as a python library.
-Our connector build pipeline ([`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1)) **will** use this library to build the connector images.
+Our connector build pipeline ([`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1)) uses this library to build the connector images.
 Our base images are declared in code, using the [Dagger Python SDK](https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/).
 
+- [Python base image code declaration](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/base_images/python/bases.py)
+- ~Java base image code declaration~ *TODO* 
 
 
 ## Where are the Dockerfiles?
