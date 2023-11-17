@@ -13,7 +13,6 @@ import static io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcState
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_DEFAULT_CURSOR;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_FILE;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_POS;
-import static io.airbyte.integrations.source.mysql.MySqlSource.DRIVER_CLASS;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.STATE_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +30,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
 import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -40,6 +38,7 @@ import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -63,7 +62,6 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -71,89 +69,35 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
-import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.containers.MySQLContainer;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@ExtendWith(SystemStubsExtension.class)
+@Order(1)
 public class CdcMysqlSourceTest extends CdcSourceTest {
 
   private static final String START_DB_CONTAINER_WITH_INVALID_TIMEZONE = "START-DB-CONTAINER-WITH-INVALID-TIMEZONE";
   private static final String INVALID_TIMEZONE_CEST = "CEST";
 
-  @SystemStub
-  private EnvironmentVariables environmentVariables;
-
-  private static final String DB_NAME = MODELS_SCHEMA;
-  private MySQLContainer<?> container;
-  private Database database;
-  private MySqlSource source;
-  private JsonNode config;
   private static final Random RANDOM = new Random();
+
+  private MySQLTestDatabase testdb;
 
   @BeforeEach
   public void setup(final TestInfo testInfo) throws SQLException {
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    init(testInfo);
-    revokeAllPermissions();
-    grantCorrectPermissions();
+    testdb = MySQLTestDatabase.in("mysql:8.0", "withInvalidTimezoneCEST")
+        .withCdcPermissions();
     super.setup();
   }
 
-  private void init(final TestInfo testInfo) {
-    container = new MySQLContainer<>("mysql:8.0");
-    if (testInfo.getTags().contains(START_DB_CONTAINER_WITH_INVALID_TIMEZONE)) {
-      container.withEnv(Map.of("TZ", INVALID_TIMEZONE_CEST));
-    }
-    container.start();
-    source = new MySqlSource();
-    database = new Database(DSLContextFactory.create(
-        "root",
-        "test",
-        DRIVER_CLASS,
-        String.format("jdbc:mysql://%s:%s",
-            container.getHost(),
-            container.getFirstMappedPort()),
-        SQLDialect.MYSQL));
-
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "CDC")
-        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
-        .put("server_time_zone", "America/Los_Angeles")
-        .build());
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", DB_NAME)
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("replication_method", replicationMethod)
-        .put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
-        .put("is_test", true)
-        .build());
-  }
-
-  private void revokeAllPermissions() {
-    executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + container.getUsername() + "@'%';");
-  }
-
-  private void revokeReplicationClientPermission() {
-    executeQuery("REVOKE REPLICATION CLIENT ON *.* FROM " + container.getUsername() + "@'%';");
-  }
-
-  private void grantCorrectPermissions() {
-    executeQuery("GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO " + container.getUsername() + "@'%';");
+  @Override
+  public String getModelsSchema() {
+    return testdb.getDatabaseName();
   }
 
   protected void purgeAllBinaryLogs() {
@@ -162,24 +106,12 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   @AfterEach
   public void tearDown() {
-    try {
-      container.close();
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
-    }
+    testdb.close();
   }
 
   @Override
   protected MySqlCdcTargetPosition cdcLatestTargetPosition() {
-    final DataSource dataSource = DataSourceFactory.create(
-        "root",
-        "test",
-        DRIVER_CLASS,
-        String.format("jdbc:mysql://%s:%s",
-            container.getHost(),
-            container.getFirstMappedPort()),
-        Collections.emptyMap());
-    return MySqlCdcTargetPosition.targetPosition(new DefaultJdbcDatabase(dataSource));
+    return MySqlCdcTargetPosition.targetPosition(new DefaultJdbcDatabase(testdb.getDataSource()));
   }
 
   @Override
@@ -242,27 +174,33 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   @Override
   protected Source getSource() {
+    final var source = new MySqlSource();
+    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
     return source;
   }
 
   @Override
   protected JsonNode getConfig() {
-    return config;
+    return testdb.testConfigBuilder()
+        .withCdcReplication()
+        .withoutSsl()
+        .with(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
+        .build();
   }
 
   @Override
   protected Database getDatabase() {
-    return database;
+    return testdb.getDatabase();
   }
 
   @Override
   protected String randomTableSchema() {
-    return MODELS_SCHEMA;
+    return testdb.getDatabaseName();
   }
 
   @Test
   protected void syncWithReplicationClientPrivilegeRevokedFailsCheck() throws Exception {
-    revokeReplicationClientPermission();
+    testdb.with("REVOKE REPLICATION CLIENT ON *.* FROM %s@'%%';", testdb.getUserName());
     final AirbyteConnectionStatus status = getSource().check(getConfig());
     final String expectedErrorMessage = "Please grant REPLICATION CLIENT privilege, so that binary log files are available"
         + " for CDC mode.";
@@ -284,7 +222,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     }
 
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+        .read(getConfig(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
@@ -315,7 +253,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, state);
+        .read(getConfig(), getConfiguredCatalog(), state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
 
@@ -341,7 +279,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final int recordsToCreate = 20000;
 
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+        .read(getConfig(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateMessages = extractStateMessages(dataFromFirstBatch);
@@ -360,7 +298,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
     final JsonNode stateAfterFirstSync = Jsons.jsonNode(Collections.singletonList(stateMessages.get(stateMessages.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, stateAfterFirstSync);
+        .read(getConfig(), getConfiguredCatalog(), stateAfterFirstSync);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
@@ -450,13 +388,13 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
       assertEquals(2, streamsInSnapshotState.size());
       assertTrue(
           streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-      assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+      assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(testdb.getDatabaseName())));
 
       stateMessage.getGlobal().getStreamStates().forEach(s -> {
         final JsonNode streamState = s.getStreamState();
         if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema()))) {
           assertEquals(PRIMARY_KEY_STATE_TYPE, streamState.get(STATE_TYPE_KEY).asText());
-        } else if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA))) {
+        } else if (s.getStreamDescriptor().equals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(testdb.getDatabaseName()))) {
           assertFalse(streamState.has(STATE_TYPE_KEY));
         } else {
           throw new RuntimeException("Unknown stream");
@@ -475,7 +413,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     assertEquals(2, streamsInSnapshotState.size());
     assertTrue(
         streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(testdb.getDatabaseName())));
     secondLastSateMessage.getGlobal().getStreamStates().forEach(s -> {
       final JsonNode streamState = s.getStreamState();
       assertFalse(streamState.has(STATE_TYPE_KEY));
@@ -493,7 +431,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     assertTrue(
         streamsInSyncCompletionState.contains(
             new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(testdb.getDatabaseName())));
     assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
   }
 
@@ -512,7 +450,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     assertEquals("America/Los_Angeles", debeziumEngineTimezone);
 
     final AutoCloseableIterator<AirbyteMessage> read = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+        .read(getConfig(), getConfiguredCatalog(), null);
 
     final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
 
@@ -526,7 +464,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   @Test
   public void testCompositeIndexInitialLoad() throws Exception {
     // Simulate adding a composite index by modifying the catalog.
-    final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(CONFIGURED_CATALOG);
+    final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(getConfiguredCatalog());
     final List<List<String>> primaryKeys = configuredCatalog.getStreams().get(0).getStream().getSourceDefinedPrimaryKey();
     primaryKeys.add(List.of("make_id"));
 
@@ -561,7 +499,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   @Test
   public void testTwoStreamSync() throws Exception {
     // Add another stream models_2 and read that one as well.
-    final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(CONFIGURED_CATALOG);
+    final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(getConfiguredCatalog());
 
     final List<JsonNode> MODEL_RECORDS_2 = ImmutableList.of(
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 110, COL_MAKE_ID, 1, COL_MODEL, "Fiesta-2")),
@@ -571,18 +509,18 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 150, COL_MAKE_ID, 2, COL_MODEL, "A 220-2")),
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 160, COL_MAKE_ID, 2, COL_MODEL, "E 350-2")));
 
-    createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2",
+    createTable(testdb.getDatabaseName(), MODELS_STREAM_NAME + "_2",
         columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.of(COL_ID)));
 
     for (final JsonNode recordJson : MODEL_RECORDS_2) {
-      writeRecords(recordJson, MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", COL_ID,
+      writeRecords(recordJson, testdb.getDatabaseName(), MODELS_STREAM_NAME + "_2", COL_ID,
           COL_MAKE_ID, COL_MODEL);
     }
 
     final ConfiguredAirbyteStream airbyteStream = new ConfiguredAirbyteStream()
         .withStream(CatalogHelpers.createAirbyteStream(
             MODELS_STREAM_NAME + "_2",
-            MODELS_SCHEMA,
+            testdb.getDatabaseName(),
             Field.of(COL_ID, JsonSchemaType.INTEGER),
             Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
             Field.of(COL_MODEL, JsonSchemaType.STRING))
@@ -658,9 +596,9 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         recordMessages1,
         names,
         names,
-        MODELS_SCHEMA);
+        testdb.getDatabaseName());
 
-    assertEquals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA), firstStreamInState);
+    assertEquals(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(testdb.getDatabaseName()), firstStreamInState);
 
     // Triggering a sync with a primary_key state for 1 stream and complete state for other stream
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
@@ -701,7 +639,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         recordMessages2,
         names,
         names,
-        MODELS_SCHEMA);
+        testdb.getDatabaseName());
   }
 
   /**
@@ -715,7 +653,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   public void testCompressedSchemaHistory() throws Exception {
     createTablesToIncreaseSchemaHistorySize();
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+        .read(getConfig(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final AirbyteStateMessage lastStateMessageFromFirstBatch = Iterables.getLast(extractStateMessages(dataFromFirstBatch));
@@ -738,7 +676,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     }
 
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, Jsons.jsonNode(Collections.singletonList(lastStateMessageFromFirstBatch)));
+        .read(getConfig(), getConfiguredCatalog(), Jsons.jsonNode(Collections.singletonList(lastStateMessageFromFirstBatch)));
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
     final AirbyteStateMessage lastStateMessageFromSecondBatch = Iterables.getLast(extractStateMessages(dataFromSecondBatch));
@@ -758,7 +696,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   private void createTablesToIncreaseSchemaHistorySize() {
     for (int i = 0; i <= 200; i++) {
       final String tableName = generateRandomStringOf32Characters();
-      final StringBuilder createTableQuery = new StringBuilder("CREATE TABLE models_schema." + tableName + "(");
+      final StringBuilder createTableQuery = new StringBuilder("CREATE TABLE " + tableName + "(");
       String firstCol = null;
       for (int j = 1; j <= 250; j++) {
         final String columnName = generateRandomStringOf32Characters();

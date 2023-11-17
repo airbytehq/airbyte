@@ -15,7 +15,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 
+@Order(3)
 class MySqlSslJdbcSourceAcceptanceTest extends MySqlJdbcSourceAcceptanceTest {
 
   @BeforeEach
