@@ -1,4 +1,4 @@
-name: Approve and Merge Command Dispatch
+name: Approve and Merge Demo Command Dispatch
 
 # Note: We have a two stage dispatch so that we can wait for the formatters to run before approving and merging.
 on:
@@ -12,7 +12,7 @@ jobs:
       - uses: maael/confirm-checks-action
         with:
           github_token: ${{secrets.GH_PAT_APPROVINGTON_OCTAVIA}}
-          checks: 'Apply All Formatting Rules'
+          checks: "Apply All Formatting Rules"
       - name: Comment if formatters failed
         if: failure()
         uses: peter-evans/create-or-update-comment@v1
