@@ -4,7 +4,6 @@
 
 """This module is the CLI entrypoint to the airbyte-ci commands."""
 
-import importlib
 import logging
 import multiprocessing
 import os
@@ -17,10 +16,11 @@ import docker
 import git
 from github import PullRequest
 from pipelines import main_logger
+from pipelines.cli.auto_update import __installed_version__, check_for_upgrade
 from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
-from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_PIPELINE_PACKAGE_PATH, CIContext
+from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, CIContext
 from pipelines.helpers import github
 from pipelines.helpers.git import (
     get_current_git_branch,
@@ -30,78 +30,6 @@ from pipelines.helpers.git import (
     get_modified_files_in_pull_request,
 )
 from pipelines.helpers.utils import get_current_epoch_time, transform_strs_to_paths
-
-# HELPERS
-
-__installed_version__ = importlib.metadata.version("pipelines")
-
-BINARY_UPGRADE_COMMAND = "make tools.airbyte-ci.install"
-DEV_UPGRADE_COMMAND = "make tools.airbyte-ci-dev.install"
-
-
-def check_for_upgrade(
-    require_update=True,
-    enable_auto_update=True,
-):
-    """Check if the installed version of pipelines is up to date."""
-    current_command = " ".join(sys.argv)
-    latest_version = get_latest_version()
-    is_out_of_date = latest_version != __installed_version__
-    is_dev_version = "airbyte-ci-dev" in current_command
-    upgrade_command = DEV_UPGRADE_COMMAND if is_dev_version else f"{BINARY_UPGRADE_COMMAND} VERSION={latest_version}"
-
-    if not is_out_of_date:
-        main_logger.info(f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
-        return
-
-    upgrade_error_message = f"""
-    🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
-
-    This version of `airbyte-ci` does not match that of your local airbyte repository.
-
-    Installed Version: {__installed_version__}.
-    Local Repository Version: {latest_version}
-
-    Please upgrade your local airbyte repository to the latest version using the following command:
-    {upgrade_command}
-
-    🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
-    """
-    logging.warning(upgrade_error_message)
-
-    # Ask the user if they want to upgrade
-    if enable_auto_update and click.confirm(upgrade_error_message + "\nDo you want to upgrade?", default=True):
-        # if the current command contains `airbyte-ci-dev` is the dev version of the command
-        logging.info(f"[{'DEV' if is_dev_version else 'BINARY'}] Upgrading pipelines...")
-
-        upgrade_exit_code = os.system(upgrade_command)
-        if upgrade_exit_code != 0:
-            raise Exception(f"Failed to upgrade pipelines. Exit code: {upgrade_exit_code}")
-
-        logging.info(f"Re-running command: {current_command}")
-
-        # Re-run the command
-        command_exit_code = os.system(current_command)
-        sys.exit(command_exit_code)
-
-    if require_update:
-        raise Exception(upgrade_error_message)
-
-    return
-
-
-def get_latest_version() -> str:
-    """
-    Get the version of the latest release, which is just in the pyproject.toml file of the pipelines package
-    as this is an internal tool, we don't need to check for the latest version on PyPI
-    """
-    path_to_pyproject_toml = LOCAL_PIPELINE_PACKAGE_PATH + "pyproject.toml"
-    with open(path_to_pyproject_toml, "r") as f:
-        for line in f.readlines():
-            if "version" in line:
-                return line.split("=")[1].strip().replace('"', "")
-    raise Exception("Could not find version in pyproject.toml. Please ensure you are running from the root of the airbyte repo.")
-
 
 def _validate_airbyte_repo(repo: git.Repo) -> bool:
     """Check if any of the remotes are the airbyte repo."""
@@ -281,6 +209,7 @@ async def get_modified_files_str(ctx: click.Context):
 )
 @click.version_option(__installed_version__)
 @click.option("--enable-dagger-run/--disable-dagger-run", default=is_dagger_run_enabled_by_default)
+@click.option("--enable-update-check/--disable-update-check", default=True)
 @click.option("--enable-auto-update/--disable-auto-update", default=True)
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
@@ -331,10 +260,11 @@ async def airbyte_ci(ctx: click.Context):  # noqa D103
         # In our CI the docker host used by the Dagger Engine is different from the one used by the runner.
         check_local_docker_configuration()
 
-    check_for_upgrade(
-        require_update=ctx.obj["is_local"],
-        enable_auto_update=ctx.obj["is_local"] and ctx.obj["enable_auto_update"],
-    )
+    if ctx.obj["enable_update_check"]:
+        check_for_upgrade(
+            require_update=ctx.obj["is_local"],
+            enable_auto_update=ctx.obj["is_local"] and ctx.obj["enable_auto_update"],
+        )
 
     if not ctx.obj["is_local"]:
         log_git_info(ctx)
