@@ -1732,7 +1732,7 @@ def test_create_offset_increment():
         page_size=10,
         inject_on_first_request=True,
     )
-    expected_strategy = OffsetIncrement(page_size="10", inject_on_first_request=True, parameters={}, config=input_config)
+    expected_strategy = OffsetIncrement(page_size=10, inject_on_first_request=True, parameters={}, config=input_config)
 
     strategy = factory.create_offset_increment(model, input_config)
 
