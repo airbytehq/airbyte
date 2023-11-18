@@ -102,7 +102,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
             },
           }
         : {
-            Header: "Sync Status",
+            Header: <FormattedMessage id="tables.syncStatus" />,
             accessor: "latestSyncJobStatus",
             Cell: ({ cell }: CellProps<ITableDataItem>) => {
               return cell.row.original.latestSyncJobStatus === "succeeded" ? (
