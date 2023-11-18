@@ -13,6 +13,17 @@
     },
     {
       "stream": {
+        "name": "ad_account_targeting_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "ad_accounts",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],

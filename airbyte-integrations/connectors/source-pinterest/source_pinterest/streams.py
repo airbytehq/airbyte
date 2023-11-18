@@ -367,6 +367,37 @@ class AdAccountAnalytics(PinterestAnalyticsStream):
         return f"ad_accounts/{stream_slice['parent']['id']}/analytics"
 
 
+class AdAccountTargetingAnalytics(PinterestAnalyticsStream):
+    primary_key = None
+    cursor_field = "DATE"
+    data_fields = []
+    granularity = "DAY"
+    analytics_target_ids = None
+    targeting_types=["APPTYPE"]
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update(
+            {
+                "start_date": stream_slice["start_date"],
+                "end_date": stream_slice["end_date"],
+                "granularity": self.granularity,
+                "columns": get_analytics_columns(),
+                "targeting_types": self.targeting_types,
+            }
+        )
+
+        if self.analytics_target_ids:
+            params.update({self.analytics_target_ids: stream_slice["parent"]["id"]})
+
+        return params
+    
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"ad_accounts/{stream_slice['parent']['id']}/targeting_analytics"
+
+
 class Campaigns(ServerSideFilterStream):
     def __init__(self, parent: HttpStream, with_data_slices: bool = False, status_filter: str = "", **kwargs):
         super().__init__(parent, with_data_slices, **kwargs)

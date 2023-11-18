@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ad Account Targeting Analytics",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "targeting_type": {
+      "type": ["null", "string"]
+    },
+    "targeting_value": {
+      "type": ["null", "string"]
+    },
+    "metrics": {
+      "type": ["null", "object"],
+      "properties": {
+        "AD_GROUP_ID": {
+          "type": ["null", "number"]
+        },
+        "DATE": {
+          "type": ["null", "string"]
+        },
+        "SPEND_IN_DOLLAR": {
+          "type": ["null", "number"]
+        }
+      }
+    }
+  }
+}
