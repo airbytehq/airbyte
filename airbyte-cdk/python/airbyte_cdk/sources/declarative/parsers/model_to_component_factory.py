@@ -311,11 +311,13 @@ class ModelToComponentFactory:
         )
         if model.request_authentication.type == "Bearer":
             return ModelToComponentFactory.create_bearer_authenticator(
-                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""), config, token_provider=token_provider
+                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""),
+                config,
+                token_provider=token_provider,  # type: ignore # $parameters defaults to None
             )
         else:
             return ModelToComponentFactory.create_api_key_authenticator(
-                ApiKeyAuthenticatorModel(type="ApiKeyAuthenticator", api_token="", inject_into=model.request_authentication.inject_into),
+                ApiKeyAuthenticatorModel(type="ApiKeyAuthenticator", api_token="", inject_into=model.request_authentication.inject_into),  # type: ignore # $parameters and headers defaults to None
                 config=config,
                 token_provider=token_provider,
             )
@@ -837,7 +839,7 @@ class ModelToComponentFactory:
         return OffsetIncrement(
             page_size=model.page_size,
             config=config,
-            inject_on_first_request=model.inject_on_first_request,
+            inject_on_first_request=model.inject_on_first_request or False,
             parameters=model.parameters or {},
         )
 
@@ -846,7 +848,7 @@ class ModelToComponentFactory:
         return PageIncrement(
             page_size=model.page_size,
             start_from_page=model.start_from_page or 0,
-            inject_on_first_request=model.inject_on_first_request,
+            inject_on_first_request=model.inject_on_first_request or False,
             parameters=model.parameters or {},
         )
 
