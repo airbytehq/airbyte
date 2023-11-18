@@ -21,35 +21,48 @@ At a high level, a sync job is an individual invocation of the Airbyte pipeline 
 ---
 title: Job Status State Machine
 ---
-%%{ init: { 'flowchart': { 'curve': 'radial' } } }%%
-flowchart RL
-subgraph active [Active Statuses]
-%%direction TB
-    pending(pending)
-    running(running)
-    incomplete(incomplete)
-end
+stateDiagram-v2
+direction TB
+state NonTerminal {
+    [*] --> pending
+    pending
+    running
+    incomplete
+    note left of incomplete
+        When an attempt fails, the job status is transitioned to incomplete.
+        If this is the final attempt, then the job is transitioned to failed.
+        Otherwise it is transitioned back to running upon new attempt creation.
+            
+    end note
+}
+note left of NonSuccess 
+    All Non Terminal Statuses can be transitioned to cancelled or failed
+end note
 
-
-subgraph terminal [Non Success Statuses]
-%%direction LR
-  cancelled(cancelled)
-  failed(failed)
-end
-succeeded(succeeded)
 pending --> running
 running --> incomplete
 incomplete --> running
 running --> succeeded
-active --> cancelled
-active --> failed
-
-%%linkStyle 4,5 stroke:blue;
+state NonSuccess {
+    cancelled
+    failed
+}
+NonTerminal --> NonSuccess
 ```
 
 Sync jobs have the following state machine.
 
 ![Job state machine](../.gitbook/assets/job-state-machine.png)
+
+```mermaid
+---
+title: Attempt Status State Machine
+---
+stateDiagram-v2
+    direction LR
+    running --> succeeded
+    running --> failed
+```
 
 [Image Source](https://docs.google.com/drawings/d/1cp8LRZs6UnhAt3jbQ4h40nstcNB0OBOnNRdMFwOJL8I/edit)
 
@@ -247,6 +260,17 @@ This section will depict the worker-job architecture as discussed above. Only th
 
 The source process should automatically exit after passing all of its messages. Similarly, the destination process shutdowns after receiving all records. Each process is given a shutdown grace period. The worker forces shutdown if this is exceeded.
 
+```mermaid
+sequenceDiagram
+    Worker->>Source: docker run
+    Worker->>Destination: docker run
+    Source->>Worker: STDOUT
+    Worker->>Destination: STDIN
+    Worker->>Source: exit*
+    Worker->>Destination: exit*
+    Worker->>Result: json output
+```
+
 ![Worker Lifecycle](../.gitbook/assets/worker-lifecycle.png)
 
 [Image Source](https://docs.google.com/drawings/d/1k4v_m2M5o2UUoNlYM7mwtZicRkQgoGLgb3eTOVH8QFo/edit)
@@ -291,6 +315,32 @@ Brief description of how this works,
 The Cloud Storage store is treated as the source-of-truth of execution state.
 
 The Container Orchestrator is only available for Airbyte Kubernetes today and automatically enabled when running the Airbyte Helm Charts deploys.
+
+
+```mermaid
+---
+title: Start a new Sync
+---
+sequenceDiagram
+%%    participant API
+    participant Temporal as Temporal Queues
+    participant Sync as Sync Workflow
+    participant ReplicationA as Replication Activity
+    participant ReplicationP as Replication Process
+    participant PersistA as Persistent Activity
+    participant AirbyteDB
+    Sync->>Temporal: Start a replication Activity
+    Temporal->>Sync: Pick up a new Sync
+    Temporal->>ReplicationA: Pick up a new task
+    ReplicationA->>ReplicationP: Starts a process
+    ReplicationP->>ReplicationA: Replication Summary with State message and stats
+    ReplicationA->>Temporal: Return Output (States and Summary)
+    Temporal->>Sync: Read results from Replication Activity
+    Sync->>Temporal: Start Persistent State Activity
+    Temporal->>PersistA: Pick up new task
+    PersistA->>AirbyteDB: Persist States
+    PersistA->>Temporal: Return output
+```
 
 ![Orchestrator Lifecycle](../.gitbook/assets/orchestrator-lifecycle.png)
 
