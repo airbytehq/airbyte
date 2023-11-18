@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Questions Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "modifiers": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "modifier_type": {
+            "type": ["null", "string"]
+          },
+          "options": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "modifier_options_id": {
+                  "type": ["null", "string"]
+                },
+                "value": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          },
+          "modifier_id": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "text": {
+      "type": ["null", "string"]
+    },
+    "locales": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "question_id": {
+      "type": ["null", "string"]
+    }
+  }
+}

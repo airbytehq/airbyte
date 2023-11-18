@@ -304,3 +304,35 @@ class Collectors(SurveymonkeyStream):
         for slice in survey_ids:
             for collector in survey_collectors.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=slice):
                 yield {"collector_id": collector["id"]}
+
+class ContactLists(SurveymonkeyStream):
+    """
+    API Docs: https://api.surveymonkey.com/v3/docs#api-endpoints-get-contact_lists
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"contact_lists"
+
+class SurveyFolders(SurveymonkeyStream):
+    """
+    API Docs: https://api.surveymonkey.com/v3/docs#api-endpoints-get-survey_folders
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"survey_folders"
+
+class SurveyCategories(SurveymonkeyStream):
+    """
+    API Docs: https://api.surveymonkey.com/v3/docs#api-endpoints-get-survey_categories
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"survey_categories"
+
+class Questions(SurveymonkeyStream):
+    """
+    API Docs: https://api.surveymonkey.com/v3/docs#api-endpoints-get-question_bank-questions
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"question_bank/questions"
