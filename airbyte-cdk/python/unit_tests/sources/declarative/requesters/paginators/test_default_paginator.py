@@ -213,6 +213,7 @@ def test_initial_token_with_offset_pagination():
     paginator = DefaultPaginator(
         strategy, config, url_base, parameters={}, page_size_option=page_size_request_option, page_token_option=page_token_request_option
     )
+    paginator.reset()
     initial_request_parameters = paginator.get_request_params()
 
     assert initial_request_parameters == {"limit": 2, "offset": 0}
