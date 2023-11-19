@@ -20,6 +20,7 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.TableId;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
@@ -134,6 +135,8 @@ public class BigQueryDatabase extends SqlDatabase {
         .newBuilder(sql)
         .setUseLegacySql(false)
         .setPositionalParameters(params)
+        .setDestinationTable(TableId.of("temp", UUID.randomUUID().toString()))
+        .setAllowLargeResults(true)
         .build();
   }
 

@@ -3,7 +3,7 @@
  */
 
 package io.airbyte.integrations.source.bigquery;
-
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
@@ -47,7 +47,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySource.class);
   private static final String QUOTE = "`";
-
+  private int stateEmissionFrequency = 10000;
   public static final String CONFIG_DATASET_ID = "dataset_id";
   public static final String CONFIG_PROJECT_ID = "project_id";
   public static final String CONFIG_CREDS = "credentials_json";
@@ -145,6 +145,11 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   }
 
   @Override
+  protected int getStateEmissionFrequency() {
+    return this.stateEmissionFrequency;
+  }
+
+  @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(final BigQueryDatabase database,
                                                                final List<String> columnNames,
                                                                final String schemaName,
@@ -168,10 +173,21 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                   final SyncMode syncMode,
                                                                   final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    return queryTable(database, String.format("SELECT %s FROM %s",
-        enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())),
-        tableName, schemaName);
+     // This corresponds to the initial sync for in INCREMENTAL_MODE, where the ordering of the records matters
+    // as intermediate state messages are emitted (if the connector emits intermediate state).
+    if (syncMode.equals(SyncMode.INCREMENTAL) && getStateEmissionFrequency() > 0) {
+      final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
+      return queryTable(database, String.format("SELECT %s FROM %s ORDER BY %s ASC",
+          enquoteIdentifierList(columnNames, getQuoteString()),
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField),
+          tableName, schemaName);
+    } else {
+      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
+      // of the records.
+      return queryTable(database, String.format("SELECT %s FROM %s",
+          enquoteIdentifierList(columnNames, getQuoteString()),
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())), tableName, schemaName);
+    }
   }
 
   @Override
