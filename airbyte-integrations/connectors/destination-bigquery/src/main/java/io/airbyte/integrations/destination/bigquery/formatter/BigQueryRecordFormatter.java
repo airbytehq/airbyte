@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.Schema;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.protocol.PartialAirbyteMessage;
-import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
