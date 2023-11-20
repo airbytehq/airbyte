@@ -10,7 +10,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.jackson.MoreMappers;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.UUID;
 import org.apache.avro.Schema;
@@ -30,11 +32,12 @@ public class AvroRecordFactory {
     this.converter = converter;
   }
 
-  public GenericData.Record getAvroRecord(final UUID id, final AirbyteRecordMessage recordMessage) throws JsonProcessingException {
+  public GenericData.Record getAvroRecord(final UUID id, final PartialAirbyteRecordMessage recordMessage) throws JsonProcessingException {
     final ObjectNode jsonRecord = MAPPER.createObjectNode();
     jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
     jsonRecord.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
-    jsonRecord.setAll((ObjectNode) recordMessage.getData());
+    // Explicitly deserialize the json. We need the full json structure to convert it to avro.
+    jsonRecord.setAll((ObjectNode) Jsons.deserializeExact(recordMessage.getSerializedData()));
 
     return converter.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonRecord), schema);
   }

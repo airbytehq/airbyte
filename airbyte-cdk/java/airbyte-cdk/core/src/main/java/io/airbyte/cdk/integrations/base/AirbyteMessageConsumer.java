@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.base;
 
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -21,14 +22,14 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
  * <li>1. Instantiate consumer.</li>
  * <li>2. start() to initialize any resources that need to be created BEFORE the consumer consumes
  * any messages.</li>
- * <li>3. Consumes ALL records via {@link AirbyteMessageConsumer#accept(AirbyteMessage)}</li>
+ * <li>3. Consumes ALL records via {@link AirbyteMessageConsumer#accept(PartialAirbyteMessage)}</li>
  * <li>4. Always (on success or failure) finalize by calling
  * {@link AirbyteMessageConsumer#close()}</li>
  * </ul>
  * We encourage implementing this interface using the {@link FailureTrackingAirbyteMessageConsumer}
  * class.
  */
-public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, Exception>, AutoCloseable {
+public interface AirbyteMessageConsumer extends CheckedConsumer<PartialAirbyteMessage, Exception>, AutoCloseable {
 
   void start() throws Exception;
 
@@ -39,7 +40,7 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
    * @throws Exception
    */
   @Override
-  void accept(AirbyteMessage message) throws Exception;
+  void accept(PartialAirbyteMessage message) throws Exception;
 
   /**
    * Executes at the end of consumption of all incoming streamed data regardless of success or failure
@@ -61,7 +62,7 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
       }
 
       @Override
-      public void accept(final AirbyteMessage message) throws Exception {
+      public void accept(final PartialAirbyteMessage message) throws Exception {
         consumer.accept(message);
       }
 

@@ -6,8 +6,8 @@ package io.airbyte.cdk.integrations.destination.buffered_stream_consumer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,13 +43,13 @@ public class RecordSizeEstimator {
     this(DEFAULT_SAMPLE_BATCH_SIZE);
   }
 
-  public long getEstimatedByteSize(final AirbyteRecordMessage record) {
+  public long getEstimatedByteSize(final PartialAirbyteRecordMessage record) {
     final String stream = record.getStream();
     final Integer countdown = streamSampleCountdown.get(stream);
 
     // this is a new stream; initialize its estimation
     if (countdown == null) {
-      final long byteSize = getStringByteSize(record.getData());
+      final long byteSize = getStringByteSize(record.getSerializedData());
       streamRecordSizeEstimation.put(stream, byteSize);
       streamSampleCountdown.put(stream, sampleBatchSize - 1);
       return byteSize;
@@ -58,7 +58,7 @@ public class RecordSizeEstimator {
     // this stream needs update; compute a new estimation
     if (countdown <= 0) {
       final long prevMeanByteSize = streamRecordSizeEstimation.get(stream);
-      final long currentByteSize = getStringByteSize(record.getData());
+      final long currentByteSize = getStringByteSize(record.getSerializedData());
       final long newMeanByteSize = prevMeanByteSize / 2 + currentByteSize / 2;
       streamRecordSizeEstimation.put(stream, newMeanByteSize);
       streamSampleCountdown.put(stream, sampleBatchSize - 1);
@@ -71,9 +71,9 @@ public class RecordSizeEstimator {
   }
 
   @VisibleForTesting
-  public static long getStringByteSize(final JsonNode data) {
+  public static long getStringByteSize(final String data) {
     // assume UTF-8 encoding, and each char is 4 bytes long
-    return Jsons.serialize(data).length() * 4L;
+    return data.length() * 4L;
   }
 
 }

@@ -13,6 +13,8 @@ import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -29,17 +31,17 @@ public class InMemoryRecordBufferingStrategyTest {
   private static final int MAX_QUEUE_SIZE_IN_BYTES = 130;
 
   @SuppressWarnings("unchecked")
-  private final RecordWriter<AirbyteRecordMessage> recordWriter = mock(RecordWriter.class);
+  private final RecordWriter<PartialAirbyteRecordMessage> recordWriter = mock(RecordWriter.class);
 
   @Test
   public void testBuffering() throws Exception {
     final InMemoryRecordBufferingStrategy buffering = new InMemoryRecordBufferingStrategy(recordWriter, MAX_QUEUE_SIZE_IN_BYTES);
     final AirbyteStreamNameNamespacePair stream1 = new AirbyteStreamNameNamespacePair("stream1", "namespace");
     final AirbyteStreamNameNamespacePair stream2 = new AirbyteStreamNameNamespacePair("stream2", null);
-    final AirbyteMessage message1 = generateMessage(stream1);
-    final AirbyteMessage message2 = generateMessage(stream2);
-    final AirbyteMessage message3 = generateMessage(stream2);
-    final AirbyteMessage message4 = generateMessage(stream2);
+    final PartialAirbyteMessage message1 = generateMessage(stream1);
+    final PartialAirbyteMessage message2 = generateMessage(stream2);
+    final PartialAirbyteMessage message3 = generateMessage(stream2);
+    final PartialAirbyteMessage message4 = generateMessage(stream2);
 
     assertFalse(buffering.addRecord(stream1, message1).isPresent());
     assertFalse(buffering.addRecord(stream2, message2).isPresent());
@@ -60,8 +62,8 @@ public class InMemoryRecordBufferingStrategyTest {
     verify(recordWriter, times(1)).accept(stream2, List.of(message3.getRecord(), message4.getRecord()));
   }
 
-  private static AirbyteMessage generateMessage(final AirbyteStreamNameNamespacePair stream) {
-    return new AirbyteMessage().withRecord(new AirbyteRecordMessage()
+  private static PartialAirbyteMessage generateMessage(final AirbyteStreamNameNamespacePair stream) {
+    return new PartialAirbyteMessage().withRecord(new PartialAirbyteRecordMessage()
         .withStream(stream.getName())
         .withNamespace(stream.getNamespace())
         .withData(MESSAGE_DATA));

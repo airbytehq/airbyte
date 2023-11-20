@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.record_buffer;
 
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.Optional;
@@ -30,7 +31,7 @@ public interface BufferingStrategy extends AutoCloseable {
    *         value means only a record was added
    * @throws Exception throw on failure
    */
-  Optional<BufferFlushType> addRecord(AirbyteStreamNameNamespacePair stream, AirbyteMessage message) throws Exception;
+  Optional<BufferFlushType> addRecord(AirbyteStreamNameNamespacePair stream, PartialAirbyteMessage message) throws Exception;
 
   /**
    * Flush buffered messages in a buffer from a particular stream

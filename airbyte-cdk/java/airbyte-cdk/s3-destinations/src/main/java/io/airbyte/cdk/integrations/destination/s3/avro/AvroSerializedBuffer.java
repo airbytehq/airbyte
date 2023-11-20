@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.s3.avro;
 import io.airbyte.cdk.integrations.destination.record_buffer.BaseSerializedBuffer;
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -48,7 +49,7 @@ public class AvroSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
-  protected void writeRecord(final AirbyteRecordMessage record) throws IOException {
+  protected void writeRecord(final PartialAirbyteRecordMessage record) throws IOException {
     dataFileWriter.append(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record));
   }
 

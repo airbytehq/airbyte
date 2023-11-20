@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.jackson.MoreMappers;
+import io.airbyte.commons.json.Jsons;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +40,7 @@ class NoFlatteningSheetGeneratorTest {
 
     assertLinesMatch(
         Collections.singletonList("{\"Field 4\":{\"Field 41\":15},\"Field 1\":\"A\",\"Field 3\":71,\"Field 2\":true}"),
-        sheetGenerator.getRecordColumns(json));
+        sheetGenerator.getRecordColumns(Jsons.serialize(json)));
   }
 
 }

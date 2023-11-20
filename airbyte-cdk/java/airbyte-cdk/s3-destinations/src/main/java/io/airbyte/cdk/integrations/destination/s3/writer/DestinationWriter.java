@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.destination.s3.writer;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.IOException;
@@ -24,11 +25,11 @@ public interface DestinationWriter {
   /**
    * Write an Airbyte record message to an S3 object.
    */
-  void write(UUID id, AirbyteRecordMessage recordMessage) throws IOException;
+  void write(UUID id, PartialAirbyteRecordMessage recordMessage) throws IOException;
 
   void write(JsonNode formattedData) throws IOException;
 
-  default void write(String formattedData) throws IOException {
+  default void write(final String formattedData) throws IOException {
     write(Jsons.deserialize(formattedData));
   }
 

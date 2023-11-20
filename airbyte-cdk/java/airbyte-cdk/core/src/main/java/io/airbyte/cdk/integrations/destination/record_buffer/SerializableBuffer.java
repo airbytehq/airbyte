@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.record_buffer;
 
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -36,18 +37,18 @@ public interface SerializableBuffer extends AutoCloseable {
    * @return number of bytes written to the buffer
    */
   @Deprecated
-  long accept(AirbyteRecordMessage record) throws Exception;
+  long accept(PartialAirbyteRecordMessage record) throws Exception;
 
   /**
    * TODO: (ryankfu) Move all destination connectors to pass the serialized record string instead of
    * the entire AirbyteRecordMessage
    *
-   * @param recordString serialized record
+   * @param record    serialized record
    * @param emittedAt timestamp of the record in milliseconds
    * @return number of bytes written to the buffer
    * @throws Exception
    */
-  long accept(String recordString, long emittedAt) throws Exception;
+  long accept(PartialAirbyteRecordMessage record, long emittedAt) throws Exception;
 
   /**
    * Flush a buffer implementation.

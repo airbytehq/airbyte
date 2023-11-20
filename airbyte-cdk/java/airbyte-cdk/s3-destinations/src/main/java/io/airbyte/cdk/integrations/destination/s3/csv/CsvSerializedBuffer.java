@@ -8,6 +8,8 @@ import io.airbyte.cdk.integrations.destination.record_buffer.BaseSerializedBuffe
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionType;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -67,13 +69,13 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
    * @throws IOException
    */
   @Override
-  protected void writeRecord(final AirbyteRecordMessage record) throws IOException {
+  protected void writeRecord(final PartialAirbyteRecordMessage record) throws IOException {
     csvPrinter.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), record));
   }
 
   @Override
-  protected void writeRecord(final String recordString, final long emittedAt) throws IOException {
-    csvPrinter.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), recordString, emittedAt));
+  protected void writeRecord(final PartialAirbyteRecordMessage record, final long emittedAt) throws IOException {
+    csvPrinter.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), record.getSerializedData(), emittedAt));
   }
 
   @Override

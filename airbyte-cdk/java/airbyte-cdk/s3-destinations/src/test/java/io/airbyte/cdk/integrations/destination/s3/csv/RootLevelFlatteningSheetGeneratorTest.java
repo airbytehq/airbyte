@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.jackson.MoreMappers;
+import io.airbyte.commons.json.Jsons;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,7 +63,7 @@ class RootLevelFlatteningSheetGeneratorTest {
     assertLinesMatch(
         // A, B, C, a, b, c
         Lists.newArrayList("{\"Field 41\":15}", "value B", "3", "1", "value b", ""),
-        sheetGenerator.getRecordColumns(json));
+        sheetGenerator.getRecordColumns(Jsons.serialize(json)));
   }
 
 }

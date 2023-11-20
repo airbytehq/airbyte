@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.base;
 
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,10 +58,10 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
    * @param msg {@link AirbyteMessage} to be processed
    * @throws Exception
    */
-  protected abstract void acceptTracked(AirbyteMessage msg) throws Exception;
+  protected abstract void acceptTracked(PartialAirbyteMessage msg) throws Exception;
 
   @Override
-  public void accept(final AirbyteMessage msg) throws Exception {
+  public void accept(final PartialAirbyteMessage msg) throws Exception {
     try {
       acceptTracked(msg);
     } catch (final Exception e) {

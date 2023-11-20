@@ -9,9 +9,10 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.cdk.integrations.destination_async.buffers.MemoryAwareMessageBatch;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+
 import io.airbyte.cdk.integrations.destination_async.state.FlushFailure;
 import io.airbyte.cdk.integrations.destination_async.state.GlobalAsyncStateManager;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.io.IOException;
 import java.util.List;

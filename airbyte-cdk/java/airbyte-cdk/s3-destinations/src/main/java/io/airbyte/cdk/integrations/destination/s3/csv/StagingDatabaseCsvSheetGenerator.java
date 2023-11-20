@@ -6,8 +6,8 @@ package io.airbyte.cdk.integrations.destination.s3.csv;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collections;
@@ -48,13 +48,13 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
   }
 
   @Override
-  public List<Object> getDataRow(final UUID id, final AirbyteRecordMessage recordMessage) {
-    return getDataRow(id, Jsons.serialize(recordMessage.getData()), recordMessage.getEmittedAt());
+  public List<Object> getDataRow(final UUID id, final PartialAirbyteRecordMessage recordMessage) {
+    return getDataRow(id, recordMessage.getSerializedData(), recordMessage.getEmittedAt());
   }
 
   @Override
-  public List<Object> getDataRow(final JsonNode formattedData) {
-    return new LinkedList<>(Collections.singletonList(Jsons.serialize(formattedData)));
+  public List<Object> getDataRow(final String serializedFormattedData) {
+    return new LinkedList<>(Collections.singletonList(serializedFormattedData));
   }
 
   @Override

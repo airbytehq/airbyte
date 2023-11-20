@@ -8,8 +8,8 @@ import static java.lang.Thread.sleep;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteStreamState;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;

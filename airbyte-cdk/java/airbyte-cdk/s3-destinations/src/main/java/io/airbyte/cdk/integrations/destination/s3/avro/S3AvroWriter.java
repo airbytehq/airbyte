@@ -14,6 +14,7 @@ import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplatePar
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
@@ -76,7 +77,7 @@ public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter 
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
+  public void write(final UUID id, final PartialAirbyteRecordMessage recordMessage) throws IOException {
     dataFileWriter.append(avroRecordFactory.getAvroRecord(id, recordMessage));
   }
 

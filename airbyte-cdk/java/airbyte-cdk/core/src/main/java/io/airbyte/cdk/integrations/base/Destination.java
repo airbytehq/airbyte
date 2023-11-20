@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -24,7 +25,7 @@ public interface Destination extends Integration {
    * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
    *        "password": "super secure" }
    * @param catalog - schema of the incoming messages.
-   * @return Consumer that accepts message. The {@link AirbyteMessageConsumer#accept(AirbyteMessage)}
+   * @return Consumer that accepts message. The {@link AirbyteMessageConsumer#accept(PartialAirbyteMessage)}
    *         will be called n times where n is the number of messages.
    *         {@link AirbyteMessageConsumer#close()} will always be called once regardless of success
    *         or failure.
@@ -110,7 +111,7 @@ public interface Destination extends Integration {
     @VisibleForTesting
     static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString) throws Exception {
 
-      final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
+      final Optional<PartialAirbyteMessage> messageOptional = PartialAirbyteMessage.tryFromJson(inputString);
       if (messageOptional.isPresent()) {
         consumer.accept(messageOptional.get());
       } else {

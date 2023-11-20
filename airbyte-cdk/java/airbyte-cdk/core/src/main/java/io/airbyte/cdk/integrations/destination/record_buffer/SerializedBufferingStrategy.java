@@ -5,7 +5,7 @@
 package io.airbyte.cdk.integrations.destination.record_buffer;
 
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
@@ -58,11 +58,11 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
    * Handles both adding records and when buffer is full to also flush
    *
    * @param stream stream associated with record
-   * @param message {@link AirbyteMessage} to buffer
+   * @param message {@link PartialAirbyteMessage} to buffer
    * @return Optional which contains a {@link BufferFlushType} if a flush occurred, otherwise empty)
    */
   @Override
-  public Optional<BufferFlushType> addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+  public Optional<BufferFlushType> addRecord(final AirbyteStreamNameNamespacePair stream, final PartialAirbyteMessage message) throws Exception {
     Optional<BufferFlushType> flushed = Optional.empty();
 
     final SerializableBuffer buffer = getOrCreateBuffer(stream);

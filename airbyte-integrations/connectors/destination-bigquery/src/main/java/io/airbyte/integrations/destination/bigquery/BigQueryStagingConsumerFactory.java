@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseF
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer;
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
@@ -64,7 +65,7 @@ public class BigQueryStagingConsumerFactory {
         (hasFailed) -> {
           try {
             onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(hasFailed);
-          } catch (Exception e) {
+          } catch (final Exception e) {
             throw new RuntimeException(e);
           }
         },

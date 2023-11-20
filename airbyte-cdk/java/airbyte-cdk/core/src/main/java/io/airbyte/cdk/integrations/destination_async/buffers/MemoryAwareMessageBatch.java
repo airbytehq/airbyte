@@ -6,8 +6,9 @@ package io.airbyte.cdk.integrations.destination_async.buffers;
 
 import io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.cdk.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+
 import io.airbyte.cdk.integrations.destination_async.state.GlobalAsyncStateManager;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;

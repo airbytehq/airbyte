@@ -37,7 +37,9 @@ public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implem
    * With root level flattening, the record columns are the first level fields of the json.
    */
   @Override
-  List<String> getRecordColumns(final JsonNode json) {
+  List<String> getRecordColumns(final String serializedJson) {
+    // TODO we can probably use the better json deserializer to only deserialize the top-level fields
+    final JsonNode json = Jsons.deserializeExact(serializedJson);
     final List<String> values = new LinkedList<>();
     for (final String field : recordHeaders) {
       final JsonNode value = json.get(field);

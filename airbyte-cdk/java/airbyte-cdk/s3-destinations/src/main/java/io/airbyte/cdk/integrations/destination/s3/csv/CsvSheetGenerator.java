@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.destination.s3.csv;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.List;
 import java.util.UUID;
@@ -20,9 +21,9 @@ public interface CsvSheetGenerator {
 
   // TODO: (ryankfu) remove this and switch over all destinations to pass in serialized recordStrings,
   // both for performance and lowers memory footprint
-  List<Object> getDataRow(UUID id, AirbyteRecordMessage recordMessage);
+  List<Object> getDataRow(UUID id, PartialAirbyteRecordMessage recordMessage);
 
-  List<Object> getDataRow(JsonNode formattedData);
+  List<Object> getDataRow(String serializedFormattedData);
 
   List<Object> getDataRow(UUID id, String formattedString, long emittedAt);
 

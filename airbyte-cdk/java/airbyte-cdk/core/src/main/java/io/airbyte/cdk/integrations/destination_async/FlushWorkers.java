@@ -6,10 +6,9 @@ package io.airbyte.cdk.integrations.destination_async;
 
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.cdk.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination_async.state.FlushFailure;
 import io.airbyte.cdk.integrations.destination_async.state.GlobalAsyncStateManager;
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.List;
@@ -236,7 +235,7 @@ public class FlushWorkers implements AutoCloseable {
   private void emitStateMessages(final List<PartialAirbyteMessage> partials) {
     partials
         .stream()
-        .map(partial -> Jsons.deserialize(partial.getSerialized(), AirbyteMessage.class))
+        .map(PartialAirbyteMessage::toFullMessage)
         .forEach(outputRecordCollector);
   }
 

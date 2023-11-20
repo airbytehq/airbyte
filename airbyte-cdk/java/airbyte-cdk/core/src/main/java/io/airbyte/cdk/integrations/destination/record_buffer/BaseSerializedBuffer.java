@@ -5,7 +5,7 @@
 package io.airbyte.cdk.integrations.destination.record_buffer;
 
 import com.google.common.io.CountingOutputStream;
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.File;
 import java.io.IOException;
@@ -59,18 +59,18 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
    * OutputStream provided when {@link BaseSerializedBuffer#initWriter} was called.
    */
   @Deprecated
-  protected abstract void writeRecord(AirbyteRecordMessage record) throws IOException;
+  protected abstract void writeRecord(PartialAirbyteRecordMessage record) throws IOException;
 
   /**
    * TODO: (ryankfu) move destination to use serialized record string instead of passing entire
    * AirbyteRecord
    *
-   * @param recordString serialized record
+   * @param record    serialized record
    * @param emittedAt timestamp of the record in milliseconds
    * @throws IOException
    */
-  protected void writeRecord(final String recordString, final long emittedAt) throws IOException {
-    writeRecord(Jsons.deserialize(recordString, AirbyteRecordMessage.class).withEmittedAt(emittedAt));
+  protected void writeRecord(final PartialAirbyteRecordMessage record, final long emittedAt) throws IOException {
+    writeRecord(record.withEmittedAt(emittedAt));
   }
 
   /**
@@ -91,7 +91,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public long accept(final AirbyteRecordMessage record) throws Exception {
+  public long accept(final PartialAirbyteRecordMessage record) throws Exception {
     if (!isStarted) {
       if (useCompression) {
         compressedBuffer = new GzipCompressorOutputStream(byteCounter);
@@ -111,7 +111,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public long accept(final String recordString, final long emittedAt) throws Exception {
+  public long accept(final PartialAirbyteRecordMessage record, final long emittedAt) throws Exception {
     if (!isStarted) {
       if (useCompression) {
         compressedBuffer = new GzipCompressorOutputStream(byteCounter);
@@ -123,7 +123,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
     }
     if (inputStream == null && !isClosed) {
       final long startCount = byteCounter.getCount();
-      writeRecord(recordString, emittedAt);
+      writeRecord(record, emittedAt);
       return byteCounter.getCount() - startCount;
     } else {
       throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");

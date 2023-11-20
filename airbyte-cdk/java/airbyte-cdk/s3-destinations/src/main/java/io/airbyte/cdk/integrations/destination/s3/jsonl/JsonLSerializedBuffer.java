@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionType;
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -48,15 +49,17 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
-  protected void writeRecord(final AirbyteRecordMessage record) {
+  protected void writeRecord(final PartialAirbyteRecordMessage record) {
     final ObjectNode json = MAPPER.createObjectNode();
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, record.getEmittedAt());
     if (flattenData) {
-      final Map<String, JsonNode> data = MAPPER.convertValue(record.getData(), new TypeReference<>() {});
+      // TODO this is inefficient. We're deserializing the serialized data just so we can wrap
+      // it back inside a jsonnode.
+      final Map<String, JsonNode> data = MAPPER.convertValue(Jsons.deserializeExact(record.getSerializedData()), new TypeReference<>() {});
       json.setAll(data);
     } else {
-      json.set(JavaBaseConstants.COLUMN_NAME_DATA, record.getData());
+      json.set(JavaBaseConstants.COLUMN_NAME_DATA, Jsons.deserializeExact(record.getSerializedData()));
     }
     printWriter.println(Jsons.serialize(json));
   }

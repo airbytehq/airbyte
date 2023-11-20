@@ -13,6 +13,7 @@ import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory;
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -91,7 +92,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public long accept(final AirbyteRecordMessage record) throws Exception {
+  public long accept(final PartialAirbyteRecordMessage record) throws Exception {
     if (inputStream == null && !isClosed) {
       final long startCount = getByteCount();
       parquetWriter.write(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record));
@@ -102,7 +103,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public long accept(final String recordString, final long emittedAt) throws Exception {
+  public long accept(final PartialAirbyteRecordMessage record, final long emittedAt) throws Exception {
     throw new UnsupportedOperationException("This method is not supported for ParquetSerializedBuffer");
   }
 
