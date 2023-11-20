@@ -117,9 +117,12 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
         final T heartbeatPos = getHeartbeatPosition(next);
         // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
         // too long
-        if (hasSyncFinished(heartbeatPos)) {
-          requestClose("Closing: Heartbeat indicates sync is done");
+        if (targetPosition.reachedTargetPosition(heartbeatPos)) {
+          requestClose("Closing: Heartbeat indicates sync is done by reaching the target position");
+        } else if (heartbeatPosNotChanging(heartbeatPos)) {
+          requestClose("Closing: Heartbeat indicates sync is not progressing");
         }
+
         if (!heartbeatPos.equals(lastHeartbeatPosition)) {
           this.tsLastHeartbeat = LocalDateTime.now();
           this.lastHeartbeatPosition = heartbeatPos;
@@ -150,7 +153,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
       final ChangeEvent<String, String> event;
       try {
         event = debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().poll(100, TimeUnit.MILLISECONDS);
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         throw new RuntimeException(e);
       }
       if (event == null || isHeartbeatEvent(event)) {
@@ -162,11 +165,6 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
     }
     throwExceptionIfSnapshotNotFinished();
     return endOfData();
-  }
-
-  private boolean hasSyncFinished(final T heartbeatPos) {
-    return targetPosition.reachedTargetPosition(heartbeatPos)
-        || (heartbeatPos.equals(this.lastHeartbeatPosition) && heartbeatPosNotChanging());
   }
 
   /**
@@ -194,11 +192,15 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
     return targetPosition.isHeartbeatSupported() && Objects.nonNull(event) && !event.value().contains("source");
   }
 
-  private boolean heartbeatPosNotChanging() {
+  private boolean heartbeatPosNotChanging(final T heartbeatPos) {
     final Duration timeElapsedSinceLastHeartbeatTs = Duration.between(this.tsLastHeartbeat, LocalDateTime.now());
     LOGGER.debug("Time since last hb_pos change {}s", timeElapsedSinceLastHeartbeatTs.toSeconds());
-    // wait time for no change in heartbeat position is half of initial waitTime
-    return timeElapsedSinceLastHeartbeatTs.compareTo(this.firstRecordWaitTime.dividedBy(2)) > 0;
+    final boolean heartbeatPosSame = heartbeatPos.equals(this.lastHeartbeatPosition);
+    if (heartbeatPosSame) {
+      LOGGER.debug("Time since last hb_pos change {}s", timeElapsedSinceLastHeartbeatTs.toSeconds());
+    }
+    // wait time for no change in heartbeat position = initialWaitTime
+    return heartbeatPosSame && timeElapsedSinceLastHeartbeatTs.compareTo(this.firstRecordWaitTime) > 0;
   }
 
   private void requestClose(final String closeLogMessage) {
