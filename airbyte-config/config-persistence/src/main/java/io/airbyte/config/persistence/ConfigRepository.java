@@ -676,6 +676,7 @@ public class ConfigRepository {
                                                        final Integer pageSize,
                                                        final Integer pageCurrent)
       throws IOException {
+    long startTime = System.nanoTime();
     final Result<Record> result = database.query(ctx -> {
       List<UUID> destinationList = null;
       if (destinationId != null) {
@@ -701,6 +702,10 @@ public class ConfigRepository {
       return where.limit(pageSize)
           .offset(pageSize * (pageCurrent - 1));
     }).fetch();
+    long endTime = System.nanoTime();
+    long elapsedTimeInNano = endTime - startTime;
+    double elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
+    LOGGER.info("getting connection spends {} milliseconds", elapsedTimeInMilli);
     return getStandardSyncsWithoutOperationFromResult(result);
   }
 
