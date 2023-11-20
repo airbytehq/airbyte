@@ -69,7 +69,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
 
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
-            return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout * 60, interval=10)(func)(
+            return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout, interval=10)(func)(
                 self, *args, **kwargs
             )
 
