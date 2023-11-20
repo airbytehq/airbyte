@@ -148,7 +148,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final boolean hasPksWithNonNullConstraint = existingTable.columns().entrySet().stream()
         .anyMatch(c -> pks.contains(c.getKey()) && !c.getValue().isNullable());
 
-    final boolean sameColumns = actualColumns.size() == intendedColumns.size() // switching to be _super_ lenient if it's already there.
+    final boolean sameColumns = actualColumns.keySet().equals(intendedColumns.keySet()) // switching to be lenient on types if it's already there.
         && !hasPksWithNonNullConstraint
         && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toUpperCase()).type())
         && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase()).type())
