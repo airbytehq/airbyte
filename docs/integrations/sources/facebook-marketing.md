@@ -10,7 +10,7 @@ This page guides you through the process of setting up the Facebook Marketing so
 
 #### For Airbyte Cloud
 
-The credentials of an active Facebook account with [permissions to access the Ad account](https://www.facebook.com/business/help/155909647811305?id=829106167281625)
+If you are not the owner/admin of the Ad account, you must be granted [permissions to access the Ad account](https://www.facebook.com/business/help/155909647811305?id=829106167281625) by an admin.
 
 <!-- /env:cloud -->
 
