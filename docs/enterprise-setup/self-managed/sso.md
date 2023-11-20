@@ -46,7 +46,6 @@ _Example values_
 
 `<your-airbyte-domain>` should point to where your Airbyte instance will be available, including the http/https protocol.
 
-
 ## Deploying Airbyte Self-Managed with Okta
 
 Once your Okta app is set up, you're ready to deploy Airbyte with SSO. Take note of the following configuration values, as you will need them to configure Airbyte to use your new Okta SSO app integration:
