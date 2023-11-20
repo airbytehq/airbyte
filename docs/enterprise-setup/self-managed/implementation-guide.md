@@ -60,7 +60,7 @@ cp configs/airbyte.sample.yml configs/airbyte.yml
 
 3. Add your Airbyte Enterprise license key to your `airbyte.yml`. 
 
-4. Add your [auth details](/airbyte-enterprise#single-sign-on-sso) to your `airbyte.yml`. Auth configurations aren't easy to modify after Airbyte is installed, so please double check them to make sure they're accurate before proceeding.
+4. Add your [auth details](/enterprise-setup/self-managed/sso) to your `airbyte.yml`. Auth configurations aren't easy to modify after Airbyte is installed, so please double check them to make sure they're accurate before proceeding.
 
 <details>
     <summary>Configuring auth in your airbyte.yml file</summary>
