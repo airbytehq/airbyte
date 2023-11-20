@@ -474,24 +474,8 @@ class FbaEstimatedFbaFeesTxtReport(ReportsAmazonSPStream):
     name = "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA"
 
 
-class FbaFulfillmentCurrentInventoryReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_CURRENT_INVENTORY_DATA"
-
-
 class FbaFulfillmentCustomerShipmentPromotionReport(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA"
-
-
-class FbaFulfillmentInventoryAdjustReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_INVENTORY_ADJUSTMENTS_DATA"
-
-
-class FbaFulfillmentInventoryReceiptsReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_INVENTORY_RECEIPTS_DATA"
-
-
-class FbaFulfillmentInventorySummaryReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_INVENTORY_SUMMARY_DATA"
 
 
 class FbaMyiUnsuppressedInventoryReport(ReportsAmazonSPStream):
@@ -530,10 +514,6 @@ class MerchantListingsReportBackCompat(ReportsAmazonSPStream):
 
 class MerchantCancelledListingsReport(ReportsAmazonSPStream):
     name = "GET_MERCHANT_CANCELLED_LISTINGS_DATA"
-
-
-class FbaFulfillmentMonthlyInventoryReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_MONTHLY_INVENTORY_DATA"
 
 
 class MerchantListingsFypReport(ReportsAmazonSPStream):

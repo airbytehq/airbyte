@@ -494,3 +494,41 @@ def test_path(auth, stream, stream_slice, expected_endpoint):
     endpoint = stream.path(stream_slice=stream_slice)
 
     assert endpoint == expected_endpoint, f"Stream {stream}: expected path '{expected_endpoint}', got '{endpoint}'"
+
+
+@pytest.mark.parametrize(
+    "record, expected_return",
+    [
+        (
+            {"clicks": {"last_click": ""}, "opens": {"last_open": ""}},
+            {"clicks": {}, "opens": {}},
+        ),
+        (
+            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {"last_open": ""}},
+            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {}},
+        ),
+        (         
+            {"clicks": {"last_click": ""}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
+            {"clicks": {}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
+
+        ),
+        (
+            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
+            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
+        ),
+    ],
+    ids=[
+        "last_click and last_open empty",
+        "last_click empty",
+        "last_open empty",
+        "last_click and last_open not empty"
+    ]
+)
+def test_reports_remove_empty_datetime_fields(auth, record, expected_return):
+    """
+    Tests that the Reports stream removes the 'clicks' and 'opens' fields from the response
+    when they are empty strings
+    """
+    stream = Reports(authenticator=auth)
+    assert stream.remove_empty_datetime_fields(record) == expected_return, f"Expected: {expected_return}, Actual: {stream.remove_empty_datetime_fields(record)}"
+    

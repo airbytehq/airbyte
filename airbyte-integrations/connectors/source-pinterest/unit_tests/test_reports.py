@@ -3,7 +3,9 @@
 #
 
 import responses
+from source_pinterest import SourcePinterest
 from source_pinterest.utils import get_analytics_columns
+from unit_tests.test_source import setup_responses
 
 
 @responses.activate
@@ -51,3 +53,12 @@ def test_read_records(analytics_report_stream, date_range):
     assert next(records) == expected_record
     assert len(responses.calls) == 3
     assert responses.calls[0].request.url == report_request_url
+
+
+@responses.activate
+def test_streams(test_config):
+    setup_responses()
+    source = SourcePinterest()
+    streams = source.streams(test_config)
+    expected_streams_number = 32
+    assert len(streams) == expected_streams_number
