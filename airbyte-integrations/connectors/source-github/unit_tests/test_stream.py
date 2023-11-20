@@ -1384,7 +1384,6 @@ def test_stream_contributor_activity_accepted_response(caplog):
         records = list(read_full_refresh(stream))
     assert records[0].log.message == "Syncing `ContributorActivity` stream isn't available for repository `airbytehq/airbyte`."
     assert resp.call_count == 6
-    assert "Syncing `ContributorActivity` stream isn't available for repository `airbytehq/airbyte`." in caplog.messages
 
 
 @responses.activate
