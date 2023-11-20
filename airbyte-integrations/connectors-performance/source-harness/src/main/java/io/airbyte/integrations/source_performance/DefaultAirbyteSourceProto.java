@@ -9,7 +9,6 @@ import static io.airbyte.protocol.models.AirbyteMessage.Type.STATE;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
@@ -67,7 +66,8 @@ public class DefaultAirbyteSourceProto {
   private final boolean featureFlagLogConnectorMsgs;
 
   public DefaultAirbyteSourceProto(IntegrationLauncher integrationLauncher, FeatureFlags featureFlags, HeartbeatMonitor heartbeatMonitor) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), heartbeatMonitor, new DefaultProtocolSerializer(), featureFlags);
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), heartbeatMonitor, new DefaultProtocolSerializer(),
+        featureFlags);
   }
 
   public DefaultAirbyteSourceProto(final IntegrationLauncher integrationLauncher,
@@ -100,9 +100,9 @@ public class DefaultAirbyteSourceProto {
 
     // read protobuf from the source process
     final List<Type> acceptedMessageTypes = List.of(Type.RECORD, STATE, Type.TRACE, Type.CONTROL);
-//    messageIterator = streamFactory.(IOs.newBufferedReader(sourceProcess.getInputStream()))
-//        .filter(message -> acceptedMessageTypes.contains(message.getType()))
-//        .iterator();
+    // messageIterator = streamFactory.(IOs.newBufferedReader(sourceProcess.getInputStream()))
+    // .filter(message -> acceptedMessageTypes.contains(message.getType()))
+    // .iterator();
   }
 
   @VisibleForTesting
