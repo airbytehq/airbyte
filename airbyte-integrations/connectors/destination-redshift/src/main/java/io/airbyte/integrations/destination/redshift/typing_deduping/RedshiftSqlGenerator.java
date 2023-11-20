@@ -41,6 +41,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.SQLType;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -77,6 +78,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
       "timetz", "time with time zone");
   private static final String COLUMN_ERROR_MESSAGE_FORMAT = "Problem with `%s`";
   private static final String AIRBYTE_META_COLUMN_ERRORS_KEY = "errors";
+
+  private final ColumnId CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at");
 
   public RedshiftSqlGenerator(final NamingConventionTransformer namingTransformer) {
     super(namingTransformer);
@@ -267,12 +270,14 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
     // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
     String finalTableIdentifier = stream.id().finalName() + suffix.toLowerCase();
-    CreateTableColumnStep createTableSql = dsl.createTable(quotedName(stream.id().finalNamespace(), finalTableIdentifier))
+    CreateTableColumnStep createTableSql = dsl
+        .createTable(quotedName(stream.id().finalNamespace(), finalTableIdentifier))
         .columns(buildFinalTableFields(stream.columns(), getFinalTableMetaColumns(true)));
     return Strings.join(
         List.of(
             createSchemaSql.getSQL(),
-            createTableSql.getSQL()),
+            // Redshift doesn't care about primary key but we can use SORTKEY for performance, its a table attribute not supported by jooq.
+            createTableSql.getSQL() + System.lineSeparator()+ " SORTKEY(\"" + COLUMN_NAME_AB_EXTRACTED_AT + "\");"),
         ";" + System.lineSeparator());
   }
 
@@ -314,35 +319,65 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
                                             final Optional<Instant> minRawTimestamp,
                                             final boolean useExpensiveSaferCasting) {
     final String finalSchema = streamConfig.id().finalNamespace();
-    final String finalTable = streamConfig.id().finalName();
+    final String finalTable = streamConfig.id().finalName() + (finalSuffix != null ? finalSuffix.toLowerCase() : "");
     final String rawSchema = streamConfig.id().rawNamespace();
     final String rawTable = streamConfig.id().rawName();
 
     // Poor person's guarantee of ordering of fields by using same source of ordered list of columns to
     // generate fields.
-    final CommonTableExpression<Record> rawDataWithCasts = name("intermediate_data")
-        .as(selectFromRawTable(rawSchema, rawTable, streamConfig.columns(), getFinalTableMetaColumns(false)));
+    final CommonTableExpression<Record> rawTableRowsWithCast = name("intermediate_data").as(
+        selectFromRawTable(rawSchema, rawTable, streamConfig.columns(),
+                           getFinalTableMetaColumns(false),
+                           rawTableCondition(streamConfig.destinationSyncMode(),
+                                             streamConfig.columns().containsKey(CDC_DELETED_AT_COLUMN),
+                                             minRawTimestamp)));
+    final List<Field<?>> finalTableFields = buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true));
     final Field<Integer> rowNumber = getRowNumber(streamConfig.primaryKey(), streamConfig.cursor());
-    final CommonTableExpression<Record> filteredRows = name("numbered_rows").as(select(asterisk(), rowNumber).from(rawDataWithCasts));
+    final CommonTableExpression<Record> filteredRows = name("numbered_rows").as(
+        select(asterisk(), rowNumber).from(rawTableRowsWithCast));
 
-    // Transactional insert and delete, Jooq only supports transaction starting 3.18
-    final String insertStmt =
+    // Used for append-dedupe mode.
+    final String insertStmtWithDedupe =
         insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
-            .select(
-                with(rawDataWithCasts)
-                    .with(filteredRows)
-                    .select(buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true)))
-                    .from(filteredRows)
-                    .where(field("row_number", Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
+            .select(with(rawTableRowsWithCast)
+                        .with(filteredRows)
+                        .select(finalTableFields)
+                        .from(filteredRows)
+                        .where(field("row_number", Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
             )
             .getSQL(ParamType.INLINED);
+
+    // Used for append and overwrite modes.
+    final String insertStmt =
+        insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
+            .select(with(rawTableRowsWithCast)
+                        .select(finalTableFields)
+                        .from(rawTableRowsWithCast))
+            .getSQL(ParamType.INLINED);
     final String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
+    final String deleteCdcDeletesStmt = deleteFromFinalTableCdcDeletes(finalSchema, finalTable);
+    final String checkpointStmt = checkpointRawTable(rawSchema, rawTable);
+
+
+    if (streamConfig.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
+      return Strings.join(
+          List.of(
+              "BEGIN",
+              insertStmt,
+              checkpointStmt,
+              "COMMIT;"),
+          ";" + System.lineSeparator());
+    }
+
+    // For append-dedupe
     return Strings.join(
         List.of(
             "BEGIN",
-            insertStmt,
+            insertStmtWithDedupe,
             deleteStmt,
-            "COMMIT"),
+            deleteCdcDeletesStmt,
+            checkpointStmt,
+            "COMMIT;"),
         ";" + System.lineSeparator());
   }
 
@@ -380,13 +415,29 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   SelectConditionStep<Record> selectFromRawTable(final String schemaName,
                                                  final String tableName,
                                                  final LinkedHashMap<ColumnId, AirbyteType> columns,
-                                                 final Map<String, DataType<?>> metaColumns) {
+                                                 final Map<String, DataType<?>> metaColumns,
+                                                 final Condition condition) {
     final DSLContext dsl = getDslContext();
     return dsl
         .select(buildRawTableSelectFields(columns, metaColumns))
         .select(buildAirbyteMetaColumn(columns))
         .from(table(quotedName(schemaName, tableName)))
-        .where(field(name(COLUMN_NAME_AB_LOADED_AT)).isNull());
+        .where(condition);
+  }
+
+  Condition rawTableCondition(DestinationSyncMode syncMode, boolean isCdcDeletedAtPresent, Optional<Instant> minRawTimestamp) {
+    Condition condition = field(name(COLUMN_NAME_AB_LOADED_AT)).isNull();
+    if (syncMode == DestinationSyncMode.APPEND_DEDUP) {
+      if (isCdcDeletedAtPresent) {
+        condition = condition.or(field(name(COLUMN_NAME_AB_LOADED_AT)).isNotNull()
+            .and(function("JSON_TYPEOF", SQLDataType.VARCHAR, field(quotedName(COLUMN_NAME_DATA, CDC_DELETED_AT_COLUMN.name())))
+                     .ne("null")));
+      }
+    }
+    if (minRawTimestamp.isPresent()) {
+      condition = condition.and(field(name(COLUMN_NAME_AB_EXTRACTED_AT)).gt(minRawTimestamp.get()));
+    }
+    return condition;
   }
 
   @VisibleForTesting
@@ -411,6 +462,22 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
                 .from(select(airbyteRawId, rowNumber)
                     .from(table(quotedName(schemaName, tableName))).asTable("airbyte_ids"))
                 .where(field("row_number").ne(1))))
+        .getSQL(ParamType.INLINED);
+  }
+
+  String deleteFromFinalTableCdcDeletes(final String schema, final String tableName) {
+    final DSLContext dsl = getDslContext();
+    return dsl.deleteFrom(table(quotedName(schema, tableName)))
+        .where(field(quotedName(CDC_DELETED_AT_COLUMN.name())).isNotNull())
+        .getSQL(ParamType.INLINED);
+  }
+
+  String checkpointRawTable(final String schemaName, final String tableName) {
+    final DSLContext dsl = getDslContext();
+    return dsl.update(table(quotedName(schemaName, tableName)))
+        .set(field(quotedName(COLUMN_NAME_AB_LOADED_AT), SQLDataType.TIMESTAMPWITHTIMEZONE),
+             function("GETDATE", SQLDataType.TIMESTAMPWITHTIMEZONE))
+        .where(field(quotedName(COLUMN_NAME_AB_LOADED_AT)).isNull())
         .getSQL(ParamType.INLINED);
   }
 
