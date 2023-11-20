@@ -730,7 +730,7 @@ invalid_csv_scenario: TestScenario[InMemoryFilesSource] = (
     .set_expected_records([])
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_read_error(
-        AirbyteTracedException, 
+        AirbyteTracedException,
         f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.csv line_no=1 n_skipped=0",
     )
 ).build()
@@ -2052,7 +2052,7 @@ csv_newline_in_values_not_quoted_scenario: TestScenario[InMemoryFilesSource] = (
         ]
     )
     .set_expected_read_error(
-        AirbyteTracedException, 
+        AirbyteTracedException,
         f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.csv line_no=2 n_skipped=0",
     )
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)

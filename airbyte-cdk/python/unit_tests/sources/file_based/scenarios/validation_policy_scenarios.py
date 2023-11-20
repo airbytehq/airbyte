@@ -274,7 +274,7 @@ skip_record_scenario_single_stream = (
         }
     )
     .set_expected_read_error(
-        AirbyteTracedException, 
+        AirbyteTracedException,
         f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=c.csv line_no=2 n_skipped=0",
     )
 ).build()
@@ -422,7 +422,7 @@ skip_record_scenario_multi_stream = (
         }
     )
     .set_expected_read_error(
-        AirbyteTracedException, 
+        AirbyteTracedException,
         f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a/a3.csv line_no=2 n_skipped=0",
     )
 ).build()
@@ -502,7 +502,7 @@ emit_record_scenario_single_stream = (
         ]
     )
     .set_expected_read_error(
-        AirbyteTracedException, 
+        AirbyteTracedException,
         f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=c.csv line_no=2 n_skipped=0",
     )
 ).build()
@@ -640,7 +640,7 @@ emit_record_scenario_multi_stream = (
         ]
     )
     .set_expected_read_error(
-        AirbyteTracedException, 
+        AirbyteTracedException,
         f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a/a3.csv line_no=2 n_skipped=0",
     )
 ).build()
