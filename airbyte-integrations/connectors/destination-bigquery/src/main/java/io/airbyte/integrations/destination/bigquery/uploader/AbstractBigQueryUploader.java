@@ -21,6 +21,7 @@ import com.google.cloud.bigquery.TableInfo;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationWriter;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
@@ -59,19 +60,6 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
 
   protected void postProcessAction(final boolean hasFailed) throws Exception {
     // Do nothing by default
-  }
-
-  public void upload(final AirbyteMessage airbyteMessage) {
-    try {
-      writer.write(recordFormatter.formatRecord(airbyteMessage.getRecord()));
-    } catch (final IOException | RuntimeException e) {
-      LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
-      LOGGER.error(String.format(
-          "Failed to process a message for job: %s",
-          writer.toString()));
-      printHeapMemoryConsumption();
-      throw new RuntimeException(e);
-    }
   }
 
   public void upload(final PartialAirbyteMessage airbyteMessage) {

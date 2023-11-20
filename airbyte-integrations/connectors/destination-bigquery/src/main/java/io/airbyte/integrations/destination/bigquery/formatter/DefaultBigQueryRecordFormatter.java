@@ -11,6 +11,8 @@ import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.HashMap;
@@ -34,24 +36,13 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
   }
 
   @Override
-  public JsonNode formatRecord(final AirbyteRecordMessage recordMessage) {
-    // Map.of has a @NonNull requirement, so creating a new Hash map
-    final HashMap<String, Object> destinationV2record = new HashMap<>();
-    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString());
-    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, getEmittedAtField(recordMessage));
-    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, null);
-    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage));
-    return Jsons.jsonNode(destinationV2record);
-  }
-
-  @Override
-  public String formatRecord(PartialAirbyteMessage message) {
+  public String formatRecord(final PartialAirbyteMessage message) {
     // Map.of has a @NonNull requirement, so creating a new Hash map
     final HashMap<String, Object> destinationV2record = new HashMap<>();
     destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString());
     destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, getEmittedAtField(message.getRecord()));
     destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, null);
-    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, message.getSerialized());
+    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, message.getRecord().getSerializedData());
     return Jsons.serialize(destinationV2record);
   }
 
