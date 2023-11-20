@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.jdbc.copy;
 
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.UUID;
 
@@ -16,7 +17,7 @@ public interface StreamCopier {
   /**
    * Writes a value to a staging file for the stream.
    */
-  void write(UUID id, AirbyteRecordMessage recordMessage, String fileName) throws Exception;
+  void write(UUID id, PartialAirbyteRecordMessage recordMessage, String fileName) throws Exception;
 
   /**
    * Closes the writer for the stream to the current staging file. The staging file must be of a

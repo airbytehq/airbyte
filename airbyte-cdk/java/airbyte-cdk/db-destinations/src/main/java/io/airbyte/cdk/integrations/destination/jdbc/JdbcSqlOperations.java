@@ -142,7 +142,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   @Override
-  public boolean isValidData(final JsonNode data) {
+  public boolean isValidData(final String data) {
     return true;
   }
 

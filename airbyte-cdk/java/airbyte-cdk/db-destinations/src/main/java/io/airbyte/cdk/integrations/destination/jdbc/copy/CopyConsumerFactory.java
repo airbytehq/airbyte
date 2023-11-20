@@ -17,6 +17,7 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartF
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.cdk.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -90,14 +91,14 @@ public class CopyConsumerFactory {
     return pairToIgnoredRecordCount::clear;
   }
 
-  private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
-                                                                         final SqlOperations sqlOperations,
-                                                                         final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
-    return (AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) -> {
+  private static RecordWriter<PartialAirbyteRecordMessage> recordWriterFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
+                                                                                final SqlOperations sqlOperations,
+                                                                                final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
+    return (final AirbyteStreamNameNamespacePair pair, final List<PartialAirbyteRecordMessage> records) -> {
       final var fileName = pairToCopier.get(pair).prepareStagingFile();
-      for (final AirbyteRecordMessage recordMessage : records) {
+      for (final PartialAirbyteRecordMessage recordMessage : records) {
         final var id = UUID.randomUUID();
-        if (sqlOperations.isValidData(recordMessage.getData())) {
+        if (sqlOperations.isValidData(recordMessage.getSerializedData())) {
           // TODO Truncate json data instead of throwing whole record away?
           // or should we upload it into a special rejected record folder in s3 instead?
           pairToCopier.get(pair).write(id, recordMessage, fileName);
@@ -109,7 +110,7 @@ public class CopyConsumerFactory {
   }
 
   private static CheckAndRemoveRecordWriter removeStagingFilePrinter(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
-    return (AirbyteStreamNameNamespacePair pair, String stagingFileName) -> {
+    return (final AirbyteStreamNameNamespacePair pair, final String stagingFileName) -> {
       final String currentFileName = pairToCopier.get(pair).getCurrentFile();
       if (stagingFileName != null && currentFileName != null && !stagingFileName.equals(currentFileName)) {
         pairToCopier.get(pair).closeNonCurrentStagingFileWriters();

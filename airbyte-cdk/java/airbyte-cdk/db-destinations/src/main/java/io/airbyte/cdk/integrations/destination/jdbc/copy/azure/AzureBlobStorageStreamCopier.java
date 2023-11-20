@@ -14,8 +14,7 @@ import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.cdk.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
 import io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -134,10 +133,10 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String azureFileName) throws Exception {
+  public void write(final UUID id, final PartialAirbyteRecordMessage recordMessage, final String azureFileName) throws Exception {
     if (csvPrinters.containsKey(azureFileName)) {
       csvPrinters.get(azureFileName).printRecord(id,
-          Jsons.serialize(recordMessage.getData()),
+          recordMessage.getSerializedData(),
           Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
     }
   }

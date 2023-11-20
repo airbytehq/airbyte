@@ -17,8 +17,7 @@ import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.cdk.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
 import io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -115,10 +114,10 @@ public abstract class GcsStreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String gcsFileName) throws Exception {
+  public void write(final UUID id, final PartialAirbyteRecordMessage recordMessage, final String gcsFileName) throws Exception {
     if (csvPrinters.containsKey(gcsFileName)) {
       csvPrinters.get(gcsFileName).printRecord(id,
-          Jsons.serialize(recordMessage.getData()),
+          recordMessage.getSerializedData(),
           Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
     }
   }

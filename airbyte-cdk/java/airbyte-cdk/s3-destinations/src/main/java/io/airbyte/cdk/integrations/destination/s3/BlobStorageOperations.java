@@ -51,7 +51,7 @@ public abstract class BlobStorageOperations {
 
   public abstract void dropBucketObject(String objectPath);
 
-  public abstract boolean isValidData(JsonNode jsonNode);
+  public abstract boolean isValidData(String jsonNode);
 
   protected abstract Map<String, String> getMetadataMapping();
 
