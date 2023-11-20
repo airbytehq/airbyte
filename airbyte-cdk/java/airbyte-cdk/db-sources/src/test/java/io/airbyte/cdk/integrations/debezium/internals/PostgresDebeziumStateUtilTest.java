@@ -146,10 +146,9 @@ public class PostgresDebeziumStateUtilTest {
     Assertions.assertTrue(savedOffsetAfterReplicationSlotLSN);
   }
 
-  @ParameterizedTest
-  @Disabled
-  @ValueSource(strings = {"pgoutput", "wal2json"})
-  public void LsnCommitTest(final String plugin) throws SQLException {
+  @Test
+  public void LsnCommitTest() throws SQLException {
+    final String plugin = "pgoutput";
     final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     final String fullReplicationSlot = "debezium_slot" + "_" + dbName;
@@ -199,47 +198,6 @@ public class PostgresDebeziumStateUtilTest {
       Assertions.assertEquals(1, lsnAfterCommit.compareTo(lsnAtTheBeginning));
       Assertions.assertEquals(targetLsn, lsnAfterCommit.asLong());
       Assertions.assertNotEquals(slotStateAtTheBeginning, slotStateAfterCommit);
-
-      // Now check that maybeReplicationStreamIntervalHasRecords behaves as expected.
-
-      final long lsnBeforeBookkeepingStatements = PostgresUtils.getLsn(database).asLong();
-
-      database.execute("SELECT txid_current();");
-      database.execute("CHECKPOINT");
-      final long lsnAfterBookkeepingStatements = PostgresUtils.getLsn(database).asLong();
-      Assertions.assertNotEquals(lsnBeforeBookkeepingStatements, lsnAfterBookkeepingStatements);
-
-      Assertions.assertFalse(postgresDebeziumStateUtil.maybeReplicationStreamIntervalHasRecords(
-          Jsons.jsonNode(databaseConfig),
-          fullReplicationSlot,
-          publication,
-          plugin,
-          lsnBeforeBookkeepingStatements,
-          lsnAfterBookkeepingStatements));
-
-      database.execute("INSERT INTO public.test_table VALUES (3, 'baz');");
-      final long lsnAfterMeaningfulStatement = PostgresUtils.getLsn(database).asLong();
-      Assertions.assertNotEquals(lsnBeforeBookkeepingStatements, lsnAfterMeaningfulStatement);
-
-      Assertions.assertTrue(postgresDebeziumStateUtil.maybeReplicationStreamIntervalHasRecords(
-          Jsons.jsonNode(databaseConfig),
-          fullReplicationSlot,
-          publication,
-          plugin,
-          lsnBeforeBookkeepingStatements,
-          lsnAfterMeaningfulStatement));
-      Assertions.assertTrue(postgresDebeziumStateUtil.maybeReplicationStreamIntervalHasRecords(
-          Jsons.jsonNode(databaseConfig),
-          fullReplicationSlot,
-          publication,
-          plugin,
-          lsnAfterBookkeepingStatements,
-          lsnAfterMeaningfulStatement));
-
-      final var slotStateAtTheEnd = getReplicationSlot(database, fullReplicationSlot, plugin, dbName);
-      Assertions.assertEquals(slotStateAfterCommit, slotStateAtTheEnd);
-
-      container.stop();
     }
   }
 
