@@ -134,7 +134,7 @@ definitions:
       extractorPath: "greetings"
     $ref: "#/definitions/base_stream_without_pagination"
     name: "call_record_settings"
-  
+
   greetings_stream:
     $parameters:
       path: "/dictionary/greeting"

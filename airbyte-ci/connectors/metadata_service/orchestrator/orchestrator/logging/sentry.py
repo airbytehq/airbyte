@@ -1,8 +1,12 @@
-import os
-import sentry_sdk
-import functools
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
-from dagster import OpExecutionContext, SensorEvaluationContext, AssetExecutionContext, get_dagster_logger
+import functools
+import os
+
+import sentry_sdk
+from dagster import AssetExecutionContext, OpExecutionContext, SensorEvaluationContext, get_dagster_logger
 
 sentry_logger = get_dagster_logger("sentry")
 

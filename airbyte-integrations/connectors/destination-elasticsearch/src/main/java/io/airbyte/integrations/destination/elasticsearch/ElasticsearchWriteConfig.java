@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.elasticsearch;
 
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.List;
 import java.util.Objects;

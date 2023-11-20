@@ -1,13 +1,16 @@
-import pandas as pd
-import urllib.parse
-import json
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
-from jinja2 import Environment, PackageLoader
-from typing import List, Optional, Callable, Any
+import json
+import urllib.parse
 from dataclasses import dataclass
 from datetime import timedelta
-from orchestrator.utils.object_helpers import deep_copy_params
+from typing import Any, Callable, List, Optional
 
+import pandas as pd
+from jinja2 import Environment, PackageLoader
+from orchestrator.utils.object_helpers import deep_copy_params
 
 # 🔗 HTML Renderers
 
@@ -40,10 +43,8 @@ def test_badge_html(test_summary_url: str) -> str:
 
 
 def internal_level_html(level_value: float) -> str:
-    level = level_value / 100
-
-    # remove trailing zeros
-    level = f"{level:.2f}".rstrip("0").rstrip(".")
+    # cast to int to remove decimal places
+    level = int(level_value)
 
     return f"Level <b>{level}</b>"
 

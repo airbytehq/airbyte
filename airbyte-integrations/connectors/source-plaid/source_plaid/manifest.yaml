@@ -18,21 +18,21 @@ streams:
             type: string
           available:
             type:
-              - 'null'
+              - "null"
               - number
           current:
             type: number
           iso_currency_code:
             type:
-              - 'null'
+              - "null"
               - string
           limit:
             type:
-              - 'null'
+              - "null"
               - number
           unofficial_currency_code:
             type:
-              - 'null'
+              - "null"
               - string
         required:
           - account_id
@@ -50,18 +50,18 @@ streams:
         authenticator:
           type: NoAuth
         request_body_json:
-          secret: '{{config[''api_key'']}}'
+          secret: "{{config['api_key']}}"
           options:
-            min_last_updated_datetime: '{{format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%SZ'')}}'
-          client_id: '{{config[''client_id'']}}'
-          access_token: '{{config[''access_token'']}}'
+            min_last_updated_datetime: "{{format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ')}}"
+          client_id: "{{config['client_id']}}"
+          access_token: "{{config['access_token']}}"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
             - accounts
-            - '*'
+            - "*"
       paginator:
         type: NoPagination
     transformations:
@@ -69,27 +69,27 @@ streams:
         fields:
           - path:
               - available
-            value: '{{record[''balances''][''available'']}}'
+            value: "{{record['balances']['available']}}"
       - type: AddFields
         fields:
           - path:
               - current
-            value: '{{record[''balances''][''current'']}}'
+            value: "{{record['balances']['current']}}"
       - type: AddFields
         fields:
           - path:
               - iso_currency_code
-            value: '{{record[''balances''][''iso_currency_code'']}}'
+            value: "{{record['balances']['iso_currency_code']}}"
       - type: AddFields
         fields:
           - path:
               - limit
-            value: '{{record[''balances''][''limit'']}}'
+            value: "{{record['balances']['limit']}}"
       - type: AddFields
         fields:
           - path:
               - unofficial_currency_code
-            value: '{{record[''balances''][''unofficial_currency_code'']}}'
+            value: "{{record['balances']['unofficial_currency_code']}}"
       - type: RemoveFields
         field_pointers:
           - - balances
@@ -122,17 +122,17 @@ streams:
           account_owner:
             type:
               - string
-              - 'null'
+              - "null"
           amount:
             type: number
           authorized_date:
             type:
               - string
-              - 'null'
+              - "null"
           authorized_datetime:
             type:
               - string
-              - 'null'
+              - "null"
           category:
             items:
               type: string
@@ -140,17 +140,17 @@ streams:
           category_id:
             type:
               - string
-              - 'null'
+              - "null"
           check_number:
             type:
               - string
-              - 'null'
+              - "null"
           date:
             type: string
           datetime:
             type:
               - string
-              - 'null'
+              - "null"
           iso_currency_code:
             type: string
           location:
@@ -158,101 +158,101 @@ streams:
               address:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               city:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               country:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               lat:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               lon:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               postal_code:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               region:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               store_number:
                 type:
                   - string
-                  - 'null'
+                  - "null"
             type:
               - object
-              - 'null'
+              - "null"
           merchant_name:
             type:
               - string
-              - 'null'
+              - "null"
           name:
             type: string
           payment_channel:
             type:
               - string
-              - 'null'
+              - "null"
           payment_meta:
             properties:
               by_order_of:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               payee:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               payer:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               payment_method:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               payment_processor:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               ppd_id:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               reason:
                 type:
                   - string
-                  - 'null'
+                  - "null"
               reference_number:
                 type:
                   - string
-                  - 'null'
+                  - "null"
             type:
               - object
-              - 'null'
+              - "null"
           pending:
             type:
               - boolean
-              - 'null'
+              - "null"
           pending_transaction_id:
             type:
               - string
-              - 'null'
+              - "null"
           personal_finance_category:
             type:
               - string
-              - 'null'
+              - "null"
           transaction_code:
             type:
               - string
-              - 'null'
+              - "null"
           transaction_id:
             type: string
           transaction_type:
@@ -260,7 +260,7 @@ streams:
           unofficial_currency_code:
             type:
               - string
-              - 'null'
+              - "null"
         required:
           - account_id
           - amount
@@ -283,18 +283,18 @@ streams:
         authenticator:
           type: NoAuth
         request_body_json:
-          secret: '{{config[''api_key'']}}'
+          secret: "{{config['api_key']}}"
           options:
-            offset: '{{ next_page_token[''next_page_token''] }}'
-          client_id: '{{config[''client_id'']}}'
-          access_token: '{{config[''access_token'']}}'
+            offset: "{{ next_page_token['next_page_token'] }}"
+          client_id: "{{config['client_id']}}"
+          access_token: "{{config['access_token']}}"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
             - transactions
-            - '*'
+            - "*"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -302,7 +302,7 @@ streams:
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: date
-      datetime_format: '%Y-%m-%d'
+      datetime_format: "%Y-%m-%d"
       start_time_option:
         type: RequestOption
         field_name: start_date
@@ -313,12 +313,12 @@ streams:
         inject_into: body_json
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{config[''start_date'']}}'
-        datetime_format: '%Y-%m-%d'
+        datetime: "{{config['start_date']}}"
+        datetime_format: "%Y-%m-%d"
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#

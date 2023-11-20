@@ -184,7 +184,7 @@ font-style: italic;
 <a href="https://airbyte.io">https://airbyte.io</a>.</p>
 <p>The Configuration API is an internal Airbyte API that is designed for communications between different Airbyte components.</p>
 <ul>
-<li>It's main purpose is to enable the Airbyte Engineering team to configure the internal state of <a href="https://airbyte.com/airbyte-cloud">Airbyte Cloud</a></li>
+<li>Its main purpose is to enable the Airbyte Engineering team to configure the internal state of <a href="https://airbyte.com/airbyte-cloud">Airbyte Cloud</a></li>
 <li>It is also sometimes used by OSS users to configure their own Self-Hosted Airbyte deployment (internal state, etc)</li>
 </ul>
 <p>WARNING</p>
@@ -199,7 +199,7 @@ font-style: italic;
 <ul>
 <li>All endpoints are http POST methods.</li>
 <li>All endpoints accept data via <code>application/json</code> request bodies. The API does not accept any data via query params.</li>
-<li>The naming convention for endpoints is: localhost:8000/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. <code>localhost:8000/v1/connections/create</code>.</li>
+<li>The naming convention for endpoints is: localhost:8000/api/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. <code>localhost:8000/api/v1/connections/create</code>.</li>
 <li>For all <code>update</code> methods, the whole object must be passed in, even the fields that did not change.</li>
 </ul>
 <p>Authentication (OSS):</p>

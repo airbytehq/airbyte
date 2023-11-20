@@ -394,6 +394,6 @@ class TestStreamResourceSets:
     def test_resource_sets_request_params(self, requests_mock, patch_base_class, resource_set_instance, url_base, api_url, start_date):
         stream = ResourceSets(url_base=url_base, start_date=start_date)
         cursor = "iam5cursorFybecursor"
-        inputs = {"stream_slice": None, "stream_state": {"id": cursor}, "next_page_token": {'after': cursor}}
+        inputs = {"stream_slice": None, "stream_state": {"id": cursor}, "next_page_token": {"after": cursor}}
         expected_params = {"limit": 200, "after": "iam5cursorFybecursor"}
         assert stream.request_params(**inputs) == expected_params

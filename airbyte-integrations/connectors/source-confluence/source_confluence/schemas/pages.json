@@ -162,11 +162,11 @@
     },
     "body": {
       "type": "object",
-			"properties": {
+      "properties": {
         "storage": {
           "type": "object",
-					"properties": {
-						"value": {
+          "properties": {
+            "value": {
               "type": "string"
             },
             "representation": {
@@ -177,7 +177,7 @@
             },
             "_expandable": {
               "type": "object",
-							"properties": {
+              "properties": {
                 "content": {
                   "type": "string"
                 }
@@ -187,8 +187,8 @@
         },
         "view": {
           "type": "object",
-					"properties": {
-						"value": {
+          "properties": {
+            "value": {
               "type": "string"
             },
             "representation": {
@@ -196,8 +196,8 @@
             },
             "_expandable": {
               "type": "object",
-							"properties": {
-								"webresource": {
+              "properties": {
+                "webresource": {
                   "type": "string"
                 }
               }

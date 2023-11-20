@@ -1,6 +1,10 @@
-from dagster import define_asset_job, AssetSelection, job, SkipReason, op
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+from dagster import AssetSelection, SkipReason, define_asset_job, job, op
 from orchestrator.assets import registry_entry
-from orchestrator.config import MAX_METADATA_PARTITION_RUN_REQUEST, HIGH_QUEUE_PRIORITY
+from orchestrator.config import HIGH_QUEUE_PRIORITY, MAX_METADATA_PARTITION_RUN_REQUEST
 from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
 
 oss_registry_inclusive = AssetSelection.keys("persisted_oss_registry", "specs_secrets_mask_yaml").upstream()

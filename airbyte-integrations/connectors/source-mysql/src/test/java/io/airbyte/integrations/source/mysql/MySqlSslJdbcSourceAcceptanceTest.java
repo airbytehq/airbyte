@@ -7,12 +7,12 @@ package io.airbyte.integrations.source.mysql;
 import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
 
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.BeforeEach;
 

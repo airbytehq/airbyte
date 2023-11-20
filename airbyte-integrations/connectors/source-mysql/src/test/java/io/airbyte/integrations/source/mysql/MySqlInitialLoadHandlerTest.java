@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,4 +32,5 @@ public class MySqlInitialLoadHandlerTest {
     assertEquals(MySqlInitialLoadHandler.calculateChunkSize(new TableSizeInfo(ONE_GB, 2 * ONE_MB), pair), 512L);
     assertEquals(MySqlInitialLoadHandler.calculateChunkSize(new TableSizeInfo(ONE_GB, 200L), pair), 5368709L);
   }
+
 }

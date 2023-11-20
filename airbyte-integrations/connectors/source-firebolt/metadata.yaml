@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 6f2ac653-8623-43c4-8950-19218c7caf3d
-  dockerImageTag: 0.2.1
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-firebolt
   githubIssueLabel: source-firebolt
   icon: firebolt.svg
@@ -21,4 +21,9 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "Add new data type columns."
+        upgradeDeadline: "2023-08-23"
 metadataSpecVersion: "1.0"

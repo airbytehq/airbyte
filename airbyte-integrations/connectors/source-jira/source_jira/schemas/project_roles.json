@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Project Roles",
+  "properties": {
+    "actors": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "actorGroup": {
+            "type": ["null", "object"],
+            "properties": {
+              "displayName": {
+                "type": ["null", "string"]
+              },
+              "groupId": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "actorUser": {
+            "type": ["null", "object"],
+            "properties": {
+              "accountId": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "avatarUrl": {
+            "type": ["null", "string"]
+          },
+          "displayName": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "admin": {
+      "type": ["null", "boolean"]
+    },
+    "currentUserRole": {
+      "type": ["null", "boolean"]
+    },
+    "default": {
+      "type": ["null", "boolean"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "roleConfigurable": {
+      "type": ["null", "boolean"]
+    },
+    "scope": {
+      "description": "Details of the next-gen projects the issue type is available in.",
+      "readOnly": true,
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["null", "string"],
+          "description": "The type of scope.",
+          "readOnly": true
+        },
+        "project": {
+          "description": "The project the item has scope in.",
+          "readOnly": true,
+          "type": "object",
+          "properties": {
+            "self": {
+              "type": ["null", "string"],
+              "description": "The URL of the project details.",
+              "readOnly": true
+            },
+            "id": {
+              "type": ["null", "string"],
+              "description": "The ID of the project."
+            },
+            "key": {
+              "type": ["null", "string"],
+              "description": "The key of the project.",
+              "readOnly": true
+            },
+            "name": {
+              "type": ["null", "string"],
+              "description": "The name of the project.",
+              "readOnly": true
+            },
+            "projectTypeKey": {
+              "type": ["null", "string"],
+              "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
+              "readOnly": true
+            },
+            "simplified": {
+              "type": ["null", "boolean"],
+              "description": "Whether or not the project is simplified.",
+              "readOnly": true
+            },
+            "avatarUrls": {
+              "description": "The URLs of the project's avatars.",
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "16x16": {
+                  "type": ["null", "string"],
+                  "description": "The URL of the item's 16x16 pixel avatar."
+                },
+                "24x24": {
+                  "type": ["null", "string"],
+                  "description": "The URL of the item's 24x24 pixel avatar."
+                },
+                "32x32": {
+                  "type": ["null", "string"],
+                  "description": "The URL of the item's 32x32 pixel avatar."
+                },
+                "48x48": {
+                  "type": ["null", "string"],
+                  "description": "The URL of the item's 48x48 pixel avatar."
+                }
+              }
+            },
+            "projectCategory": {
+              "description": "The category the project belongs to.",
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "self": {
+                  "type": ["null", "string"],
+                  "description": "The URL of the project category.",
+                  "readOnly": true
+                },
+                "id": {
+                  "type": ["null", "string"],
+                  "description": "The ID of the project category.",
+                  "readOnly": true
+                },
+                "description": {
+                  "type": ["null", "string"],
+                  "description": "The name of the project category.",
+                  "readOnly": true
+                },
+                "name": {
+                  "type": ["null", "string"],
+                  "description": "The description of the project category.",
+                  "readOnly": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "self": {
+      "type": ["null", "string"]
+    },
+    "translatedName": {
+      "type": ["null", "string"]
+    }
+  }
+}

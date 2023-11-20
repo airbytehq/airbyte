@@ -27,6 +27,8 @@ acceptance_tests:
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_products_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_display_creatives
+            bypass_reason: "can't populate stream because it requires real ad campaign"
         ignored_fields:
           sponsored_product_campaigns:
             - name: dailyBudget
@@ -61,5 +63,7 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: integration_tests/spec.json
+        backward_compatibility_tests_config:
+          disable_for_version: "3.2.0"
 connector_image: airbyte/source-amazon-ads:dev
 test_strictness_level: high

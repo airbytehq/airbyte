@@ -11,6 +11,7 @@ import sys
 from typing import Dict
 
 import jsonschema
+import pandas as pd
 from airbyte_cdk.sources.streams.http import auth
 from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
 
@@ -135,3 +136,111 @@ def get_source_defined_primary_key(stream):
         catalog = json.loads(open(args.catalog).read())
         res = {s["stream"]["name"]: s["stream"].get("source_defined_primary_key") for s in catalog["streams"]}
         return res.get(stream)
+
+
+def transform_string_filter(filter):
+    string_filter = {"value": filter.get("value")}
+    if "matchType" in filter:
+        string_filter["matchType"] = filter.get("matchType")[0]
+    if "caseSensitive" in filter:
+        string_filter["caseSensitive"] = filter.get("caseSensitive")
+    return {"stringFilter": string_filter}
+
+
+def transform_in_list_filter(filter):
+    in_list_filter = {"values": filter.get("values")}
+    if "caseSensitive" in filter:
+        in_list_filter["caseSensitive"] = filter.get("caseSensitive")
+    return {"inListFilter": in_list_filter}
+
+
+def transform_numeric_filter(filter):
+    numeric_filter = {
+        "value": {filter.get("value").get("value_type"): filter.get("value").get("value")},
+    }
+    if "operation" in filter:
+        numeric_filter["operation"] = filter.get("operation")[0]
+    return {"numericFilter": numeric_filter}
+
+
+def transform_between_filter(filter):
+    from_value = filter.get("fromValue")
+    to_value = filter.get("toValue")
+
+    from_value_type = from_value.get("value_type")
+    to_value_type = to_value.get("value_type")
+
+    if from_value_type == "doubleValue" and isinstance(from_value.get("value"), str):
+        from_value["value"] = float(from_value.get("value"))
+    if to_value_type == "doubleValue" and isinstance(to_value.get("value"), str):
+        to_value["value"] = float(to_value.get("value"))
+
+    return {
+        "betweenFilter": {
+            "fromValue": {from_value_type: from_value.get("value")},
+            "toValue": {to_value_type: to_value.get("value")},
+        }
+    }
+
+
+def transform_expression(expression):
+    transformed_expression = {"fieldName": expression.get("field_name")}
+    filter = expression.get("filter")
+    filter_name = filter.get("filter_name")
+
+    if filter_name == "stringFilter":
+        transformed_expression.update(transform_string_filter(filter))
+    elif filter_name == "inListFilter":
+        transformed_expression.update(transform_in_list_filter(filter))
+    elif filter_name == "numericFilter":
+        transformed_expression.update(transform_numeric_filter(filter))
+    elif filter_name == "betweenFilter":
+        transformed_expression.update(transform_between_filter(filter))
+
+    return {"filter": transformed_expression}
+
+
+def transform_json(original_json):
+    transformed_json = {}
+    filter_type = original_json.get("filter_type")
+
+    if filter_type in ["andGroup", "orGroup"]:
+        expressions = original_json.get("expressions", [])
+        transformed_expressions = [transform_expression(exp) for exp in expressions]
+        transformed_json = {filter_type: {"expressions": transformed_expressions}} if transformed_expressions else {}
+
+    elif filter_type == "notExpression":
+        expression = original_json.get("expression")
+        transformed_expression = transform_expression(expression)
+        transformed_json = {filter_type: transformed_expression}
+
+    elif filter_type == "filter":
+        transformed_json = transform_expression(original_json)
+
+    return transformed_json
+
+
+def serialize_to_date_string(date: str, date_format: str, date_type: str) -> str:
+    """
+    Serialize a date string to a different date format based on the date_type.
+
+    Parameters:
+    - date (str): The input date string.
+    - date_format (str): The desired output format for the date string.
+    - date_type (str): The type of the date string ('yearWeek', 'yearMonth', or 'year').
+
+    Returns:
+    str: The date string formatted according to date_format.
+
+    Examples:
+    '202245' -> '2022-11-07'
+    '202210' -> '2022-10-01'
+    '2022' -> '2022-01-01'
+    """
+    if date_type == "yearWeek":
+        return pd.to_datetime(f"{date}1", format="%Y%W%w").strftime(date_format)
+    elif date_type == "yearMonth":
+        year = int(date[:-2])
+        month = int(date[-2:])
+        return datetime.datetime(year, month, 1).strftime(date_format)
+    return datetime.datetime(int(date), 1, 1).strftime(date_format)

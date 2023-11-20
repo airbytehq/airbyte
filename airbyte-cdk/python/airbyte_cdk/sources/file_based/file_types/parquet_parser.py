@@ -30,7 +30,7 @@ class ParquetParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> SchemaType:
-        parquet_format = config.format or ParquetFormat()
+        parquet_format = config.format
         if not isinstance(parquet_format, ParquetFormat):
             raise ValueError(f"Expected ParquetFormat, got {parquet_format}")
 
@@ -54,7 +54,7 @@ class ParquetParser(FileTypeParser):
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
-        parquet_format = config.format or ParquetFormat()
+        parquet_format = config.format
         if not isinstance(parquet_format, ParquetFormat):
             logger.info(f"Expected ParquetFormat, got {parquet_format}")
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR)
@@ -95,7 +95,10 @@ class ParquetParser(FileTypeParser):
 
         # Decode binary strings to utf-8
         if ParquetParser._is_binary(parquet_value.type):
-            return parquet_value.as_py().decode("utf-8")
+            py_value = parquet_value.as_py()
+            if py_value is None:
+                return py_value
+            return py_value.decode("utf-8")
         if pa.types.is_decimal(parquet_value.type):
             if parquet_format.decimal_as_float:
                 return parquet_value.as_py()

@@ -1,9 +1,14 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.MYSQL_STATUS_VERSION;
 
-import autovalue.shaded.com.google.common.collect.AbstractIterator;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.AbstractIterator;
+import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.integrations.source.mysql.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -22,8 +27,8 @@ import org.slf4j.LoggerFactory;
 public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialSyncStateIterator.class);
-  public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(15);
-  public static final Integer SYNC_CHECKPOINT_RECORDS = 100_000;
+  public static final Duration SYNC_CHECKPOINT_DURATION = DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION;
+  public static final Integer SYNC_CHECKPOINT_RECORDS = DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
   private final Iterator<AirbyteMessage> messageIterator;
   private final AirbyteStreamNameNamespacePair pair;
@@ -38,11 +43,11 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
   private final String pkFieldName;
 
   public MySqlInitialSyncStateIterator(final Iterator<AirbyteMessage> messageIterator,
-      final AirbyteStreamNameNamespacePair pair,
-      final MySqlInitialLoadStateManager stateManager,
-      final JsonNode streamStateForIncrementalRun,
-      final Duration checkpointDuration,
-      final Long checkpointRecords) {
+                                       final AirbyteStreamNameNamespacePair pair,
+                                       final MySqlInitialLoadStateManager stateManager,
+                                       final JsonNode streamStateForIncrementalRun,
+                                       final Duration checkpointDuration,
+                                       final Long checkpointRecords) {
     this.messageIterator = messageIterator;
     this.pair = pair;
     this.stateManager = stateManager;
@@ -95,4 +100,5 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
       return endOfData();
     }
   }
+
 }

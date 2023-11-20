@@ -80,6 +80,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ValueType
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.partition_routers import ListPartitionRouter, SinglePartitionRouter, SubstreamPartitionRouter
@@ -232,14 +233,35 @@ class ModelToComponentFactory:
     @staticmethod
     def create_added_field_definition(model: AddedFieldDefinitionModel, config: Config, **kwargs: Any) -> AddedFieldDefinition:
         interpolated_value = InterpolatedString.create(model.value, parameters=model.parameters or {})
-        return AddedFieldDefinition(path=model.path, value=interpolated_value, parameters=model.parameters or {})
+        return AddedFieldDefinition(
+            path=model.path,
+            value=interpolated_value,
+            value_type=ModelToComponentFactory._json_schema_type_name_to_type(model.value_type),
+            parameters=model.parameters or {},
+        )
 
     def create_add_fields(self, model: AddFieldsModel, config: Config, **kwargs: Any) -> AddFields:
         added_field_definitions = [
-            self._create_component_from_model(model=added_field_definition_model, config=config)
+            self._create_component_from_model(
+                model=added_field_definition_model,
+                value_type=ModelToComponentFactory._json_schema_type_name_to_type(added_field_definition_model.value_type),
+                config=config,
+            )
             for added_field_definition_model in model.fields
         ]
         return AddFields(fields=added_field_definitions, parameters=model.parameters or {})
+
+    @staticmethod
+    def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[Type[Any]]:
+        if not value_type:
+            return None
+        names_to_types = {
+            ValueType.string: str,
+            ValueType.number: float,
+            ValueType.integer: int,
+            ValueType.boolean: bool,
+        }
+        return names_to_types[value_type]
 
     @staticmethod
     def create_api_key_authenticator(
@@ -791,7 +813,7 @@ class ModelToComponentFactory:
                 token_expiry_date_format=model.token_expiry_date_format,
                 message_repository=self._message_repository,
             )
-        # ignore type error beause fixing it would have a lot of dependencies, revisit later
+        # ignore type error because fixing it would have a lot of dependencies, revisit later
         return DeclarativeOauth2Authenticator(  # type: ignore
             access_token_name=model.access_token_name or "access_token",
             client_id=model.client_id,
@@ -803,6 +825,7 @@ class ModelToComponentFactory:
             scopes=model.scopes,
             token_expiry_date=model.token_expiry_date,
             token_expiry_date_format=model.token_expiry_date_format,  # type: ignore
+            token_expiry_is_time_of_expiration=bool(model.token_expiry_date_format),
             token_refresh_endpoint=model.token_refresh_endpoint,
             config=config,
             parameters=model.parameters or {},

@@ -5,7 +5,7 @@
 package io.airbyte.integrations.source.mysql_strict_encrypt;
 
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 
 public class MySqlSslCaCertificateStrictEncryptSourceAcceptanceTest extends AbstractMySqlSslCertificateStrictEncryptSourceAcceptanceTest {
 

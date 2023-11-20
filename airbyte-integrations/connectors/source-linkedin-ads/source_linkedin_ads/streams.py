@@ -193,7 +193,6 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
 
     parent_stream = Accounts
     parent_values_map = {"account_id": "id"}
-    # define default additional request params
 
     def filter_records_newer_than_state(
         self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping[str, Any]] = None
@@ -354,6 +353,43 @@ class Creatives(LinkedInAdsStreamSlicing):
         return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
 
 
+class Conversions(LinkedInAdsStreamSlicing):
+    """
+    Get Conversions data using `account_id` slicing.
+    https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking?view=li-lms-2023-05&tabs=curl#find-conversions-by-ad-account
+    """
+
+    endpoint = "conversions"
+    search_param = "account"
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        headers = super().request_headers(stream_state, stream_slice, next_page_token)
+        headers.update({"X-Restli-Protocol-Version": "2.0.0"})
+        return headers
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["q"] = self.search_param
+        params["account"] = f"urn%3Ali%3AsponsoredAccount%3A{stream_slice.get('account_id')}"
+
+        return urlencode(params, safe="():,%")
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = (
+            {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
+            if not current_stream_state
+            else current_stream_state
+        )
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
+
+
 class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     """
     AdAnalytics Streams more info:
@@ -364,6 +400,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     # For Analytics streams the primary_key is the entity of the pivot [Campaign URN, Creative URN, etc] + `end_date`
     primary_key = ["pivotValue", "end_date"]
     cursor_field = "end_date"
+    records_limit = 15000
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ad_analytics")
@@ -403,6 +440,20 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         params.update(**update_analytics_params(stream_slice))
         params[self.search_param] = f"List(urn%3Ali%3A{self.search_param_value}%3A{self.get_primary_key_from_slice(stream_slice)})"
         return urlencode(params, safe="():,%")
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        Pagination is not supported
+        (See Restrictions: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?view=li-lms-2023-09&tabs=http#restrictions)
+        """
+        parsed_response = response.json()
+        if len(parsed_response.get("elements")) < self.records_limit:
+            return None
+        raise Exception(
+            f"Limit {self.records_limit} elements exceeded. "
+            f"Try to request your data in more granular pieces. "
+            f"(For example switch `Time Granularity` from MONTHLY to DAILY)"
+        )
 
     def get_primary_key_from_slice(self, stream_slice) -> str:
         return stream_slice.get(self.primary_slice_key)

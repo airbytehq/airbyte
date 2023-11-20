@@ -26,7 +26,7 @@ acceptance_tests:
           extra_fields: no
           exact_order: no
           extra_records: yes
-  incremental: 
+  incremental:
     # bypass_reason: "This connector does not implement incremental sync"
     tests:
       - config_path: "secrets/config.json"

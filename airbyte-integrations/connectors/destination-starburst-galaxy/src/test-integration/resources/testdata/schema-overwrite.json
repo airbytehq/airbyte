@@ -11,8 +11,7 @@
     },
     "c_array": {
       "type": "array",
-      "items":
-      {
+      "items": {
         "type": "string"
       }
     }

@@ -2,17 +2,15 @@ import ConnectorRegistry from '@site/src/components/ConnectorRegistry';
 
 # Connector Catalog
 
-## Connector Release Stages
+## Connector Support Levels
 
-Airbyte uses a grading system for connectors to help you understand what to expect from a connector:
+Airbyte uses a two tiered system for connectors to help you understand what to expect from a connector:
 
-**Generally Available**: A generally available connector has been deemed ready for use in a production environment and is officially supported by Airbyte. Its documentation is considered sufficient to support widespread adoption.
+**Certified**: A certified connector is actively maintained and supported by the Airbyte team and maintains a high quality bar. It is production ready.
 
-**Beta**: A beta connector is considered stable with no backwards incompatible changes but has not been validated by a broader group of users. We expect to find and fix a few issues and bugs in the release before it’s ready for GA.
+**Community**: A community connector is maintained by the Airbyte community until it becomes Certified. Airbyte has over 800 code contributors and 15,000 people in the Slack community to help. The Airbyte team is continually certifying Community connectors as usage grows. As these connectors are not maintained by Airbyte, we do not offer support SLAs around them, and we encourage caution when using them in production.
 
-**Alpha**: An alpha connector signifies a connector under development and helps Airbyte gather early feedback and issues reported by early adopters. We strongly discourage using alpha releases for production use cases and do not offer Cloud Support SLAs around these products, features, or connectors.
-
-For more information about the grading system, see [Product Release Stages](https://docs.airbyte.com/project-overview/product-release-stages)
+For more information about the system, see [Product Support Levels](https://docs.airbyte.com/project-overview/product-support-levels)
 
 _[View the connector registries in full](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html)_
 

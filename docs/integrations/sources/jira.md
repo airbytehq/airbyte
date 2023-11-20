@@ -25,10 +25,7 @@ This page contains the setup guide and reference information for the Jira source
 5. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
 6. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
 7. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
-8. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams:BoardIssues, IssueComments, IssueProperties, IssueRemoteLinks, IssueVotes, IssueWatchers, IssueWorklogs, Issues, PullRequests, SprintIssues. For other streams it will replicate all data.
-9. Toggle **Expand Issue Changelog** allows you to get a list of recent updates to every issue in the Issues stream.
-10. Toggle **Render Issue Fields** allows returning field values rendered in HTML format in the Issues stream.
-11. Toggle **Enable Experimental Streams** enables experimental PullRequests stream.
+8. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
 
 ## Supported sync modes
 
@@ -38,10 +35,6 @@ The Jira source connector supports the following [sync modes](https://docs.airby
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
-
-## Troubleshooting
-
-Check out common troubleshooting issues for the Jira connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 ## Supported Streams
 
@@ -57,6 +50,7 @@ This connector outputs the following full refresh streams:
 - [Issue fields](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get)
 - [Issue field configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get)
 - [Issue custom field contexts](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get)
+- [Issue custom field options](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-rest-api-3-field-fieldid-context-contextid-option-get)
 - [Issue link types](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get)
 - [Issue navigator settings](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-navigator-settings/#api-rest-api-3-settings-columns-get)
 - [Issue notification schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-notification-schemes/#api-rest-api-3-notificationscheme-get)
@@ -65,8 +59,10 @@ This connector outputs the following full refresh streams:
 - [Issue remote links](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get)
 - [Issue resolutions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-resolutions/#api-rest-api-3-resolution-search-get)
 - [Issue security schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-security-schemes/#api-rest-api-3-issuesecurityschemes-get)
+- [Issue transitions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get)
 - [Issue type schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-schemes/#api-rest-api-3-issuetypescheme-get)
 - [Issue type screen schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-screen-schemes/#api-rest-api-3-issuetypescreenscheme-get)
+- [Issue types](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-group-issue-types)
 - [Issue votes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-group-issue-votes)
 - [Issue watchers](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-get)
 - [Jira settings](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-rest-api-3-application-properties-get)
@@ -79,6 +75,7 @@ This connector outputs the following full refresh streams:
 - [Project components](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-components/#api-rest-api-3-project-projectidorkey-component-get)
 - [Project email](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-email/#api-rest-api-3-project-projectid-email-get)
 - [Project permission schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-permission-schemes/#api-group-project-permission-schemes)
+- [Project roles](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-roles#api-rest-api-3-role-get)
 - [Project types](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-types/#api-rest-api-3-project-type-get)
 - [Project versions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-versions/#api-rest-api-3-project-projectidorkey-version-get)
 - [Screens](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-get)
@@ -101,6 +98,7 @@ This connector outputs the following incremental streams:
 - [Issue worklogs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get)
 - [Issues](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get)
 - [Sprint issues](https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-agile-1-0-sprint-sprintid-issue-get)
+- [PullRequests](https://docs.airbyte.com/integrations/sources/jira#experimental-tables)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -125,7 +123,22 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
-| :------ | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.10.2  | 2023-10-26 | [31896](https://github.com/airbytehq/airbyte/pull/31896)   | Provide better guidance when configuring the connector with an invalid domain                                           |
+| 0.10.1  | 2023-10-23 | [31702](https://github.com/airbytehq/airbyte/pull/31702)   | Base image migration: remove Dockerfile and use the python-connector-base image                                         |
+| 0.10.0  | 2023-10-13 | [\#31385](https://github.com/airbytehq/airbyte/pull/31385) | Fixed `aggregatetimeoriginalestimate, timeoriginalestimate` field types for the `Issues` stream schema                  |
+| 0.9.0   | 2023-09-26 | [\#30688](https://github.com/airbytehq/airbyte/pull/30688) | Added `createdDate` field to sprints schema, Removed `Expand Issues stream` from spec                                   |
+| 0.8.0   | 2023-09-26 | [\#30755](https://github.com/airbytehq/airbyte/pull/30755) | Add new streams: `Issue custom field options`, `IssueTypes`, `Project Roles`                                            |
+| 0.7.2   | 2023-09-19 | [\#30675](https://github.com/airbytehq/airbyte/pull/30675) | Ensure invalid URL does not trigger Sentry alert                                                                        |
+| 0.7.1   | 2023-09-19 | [\#30585](https://github.com/airbytehq/airbyte/pull/30585) | Add skip for 404 error in issue properties steam                                                                        |
+| 0.7.0   | 2023-09-17 | [\#30532](https://github.com/airbytehq/airbyte/pull/30532) | Add foreign key to stream record where it misseing                                                                      |
+| 0.6.3   | 2023-09-19 | [\#30515](https://github.com/airbytehq/airbyte/pull/30515) | Add transform for invalid date-time format, add 404 handling for check                                                  |
+| 0.6.2   | 2023-09-19 | [\#30578](https://github.com/airbytehq/airbyte/pull/30578) | Fetch deleted and archived Projects                                                                                     |
+| 0.6.1   | 2023-09-17 | [\#30550](https://github.com/airbytehq/airbyte/pull/30550) | Update `Issues` expand settings                                                                                         |
+| 0.6.0   | 2023-09-17 | [\#30507](https://github.com/airbytehq/airbyte/pull/30507) | Add new stream `IssueTransitions`                                                                                       |
+| 0.5.0   | 2023-09-14 | [\#29960](https://github.com/airbytehq/airbyte/pull/29960) | Add `boardId` to `sprints` stream                                                                                       |
+| 0.3.14  | 2023-09-11 | [\#30297](https://github.com/airbytehq/airbyte/pull/30297) | Remove `requests` and `pendulum` from setup dependencies                                                                |
+| 0.3.13  | 2023-09-01 | [\#30108](https://github.com/airbytehq/airbyte/pull/30108) | Skip 404 error for stream `IssueWatchers`                                                                               |
 | 0.3.12  | 2023-06-01 | [\#26652](https://github.com/airbytehq/airbyte/pull/26652) | Expand on `leads` for `projects` stream                                                                                 |
 | 0.3.11  | 2023-06-01 | [\#26906](https://github.com/airbytehq/airbyte/pull/26906) | Handle project permissions error                                                                                        |
 | 0.3.10  | 2023-05-26 | [\#26652](https://github.com/airbytehq/airbyte/pull/26652) | Fixed bug when `board` doesn't support `sprints`                                                                        |

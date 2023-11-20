@@ -22,9 +22,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_sli
         (
             "test_two_stream_slicers",
             [
-                ListPartitionRouter(
-                    values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}
-                ),
+                ListPartitionRouter(values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}),
                 ListPartitionRouter(values=["A", "B"], cursor_field="letter", config={}, parameters={}),
             ],
             [
@@ -39,9 +37,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_sli
         (
             "test_list_and_datetime",
             [
-                ListPartitionRouter(
-                    values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}
-                ),
+                ListPartitionRouter(values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}),
                 DatetimeBasedCursor(
                     start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", parameters={}),
                     end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", parameters={}),

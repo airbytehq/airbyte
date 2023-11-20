@@ -14,6 +14,7 @@ from functools import wraps
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlparse
 
+import requests
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
@@ -21,7 +22,9 @@ from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification  # type: ignore [attr-defined]
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
+from airbyte_cdk.utils import is_cloud_environment
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
+from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import PreparedRequest, Response, Session
 
@@ -35,10 +38,8 @@ class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         init_uncaught_exception_handler(logger)
 
-        # DEPLOYMENT_MODE is read when instantiating the entrypoint because it is the common path shared by syncs and connector
-        # builder test requests
-        deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
-        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE:
+        # deployment mode is read when instantiating the entrypoint because it is the common path shared by syncs and connector builder test requests
+        if is_cloud_environment():
             _init_internal_request_filter()
 
         self.source = source
@@ -86,6 +87,7 @@ class AirbyteEntrypoint(object):
 
         if hasattr(parsed_args, "debug") and parsed_args.debug:
             self.logger.setLevel(logging.DEBUG)
+            logger.setLevel(logging.DEBUG)
             self.logger.debug("Debug logs enabled")
         else:
             self.logger.setLevel(logging.INFO)
@@ -93,6 +95,7 @@ class AirbyteEntrypoint(object):
         source_spec: ConnectorSpecification = self.source.spec(self.logger)
         try:
             with tempfile.TemporaryDirectory() as temp_dir:
+                os.environ[ENV_REQUEST_CACHE_PATH] = temp_dir  # set this as default directory for request_cache to store *.sqlite files
                 if cmd == "spec":
                     message = AirbyteMessage(type=Type.SPEC, spec=source_spec)
                     yield from [
@@ -175,6 +178,13 @@ class AirbyteEntrypoint(object):
         return airbyte_message.json(exclude_unset=True)
 
     @classmethod
+    def extract_state(cls, args: List[str]) -> Optional[Any]:
+        parsed_args = cls.parse_args(args)
+        if hasattr(parsed_args, "state"):
+            return parsed_args.state
+        return None
+
+    @classmethod
     def extract_catalog(cls, args: List[str]) -> Optional[Any]:
         parsed_args = cls.parse_args(args)
         if hasattr(parsed_args, "catalog"):
@@ -212,13 +222,13 @@ def _init_internal_request_filter() -> None:
         parsed_url = urlparse(request.url)
 
         if parsed_url.scheme not in VALID_URL_SCHEMES:
-            raise ValueError(
+            raise requests.exceptions.InvalidSchema(
                 "Invalid Protocol Scheme: The endpoint that data is being requested from is using an invalid or insecure "
                 + f"protocol {parsed_url.scheme!r}. Valid protocol schemes: {','.join(VALID_URL_SCHEMES)}"
             )
 
         if not parsed_url.hostname:
-            raise ValueError("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
+            raise requests.exceptions.InvalidURL("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
 
         try:
             is_private = _is_private_url(parsed_url.hostname, parsed_url.port)  # type: ignore [arg-type]
@@ -227,10 +237,11 @@ def _init_internal_request_filter() -> None:
                     "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source "
                     + "connectors only support requesting data from public API endpoints."
                 )
-        except socket.gaierror:
+        except socket.gaierror as exception:
             # This is a special case where the developer specifies an IP address string that is not formatted correctly like trailing
             # whitespace which will fail the socket IP lookup. This only happens when using IP addresses and not text hostnames.
-            raise ValueError(f"Invalid hostname or IP address '{parsed_url.hostname!r}' specified.")
+            # Knowing that this is a request using the requests library, we will mock the exception without calling the lib
+            raise requests.exceptions.InvalidURL(f"Invalid URL {parsed_url}: {exception}")
 
         return wrapped_fn(self, request, **kwargs)
 

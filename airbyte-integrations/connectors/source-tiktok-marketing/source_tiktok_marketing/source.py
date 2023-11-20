@@ -1,9 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from typing import Any, List, Mapping, Tuple
 
+import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -13,6 +14,7 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from .streams import (
     DEFAULT_END_DATE,
     DEFAULT_START_DATE,
+    MINIMUM_START_DATE,
     AdGroupAudienceReports,
     AdGroupAudienceReportsByCountry,
     AdGroupAudienceReportsByPlatform,
@@ -22,6 +24,7 @@ from .streams import (
     AdsAudienceReports,
     AdsAudienceReportsByCountry,
     AdsAudienceReportsByPlatform,
+    AdsAudienceReportsByProvince,
     AdsReports,
     AdvertiserIds,
     Advertisers,
@@ -29,18 +32,24 @@ from .streams import (
     AdvertisersAudienceReportsByCountry,
     AdvertisersAudienceReportsByPlatform,
     AdvertisersReports,
+    Audiences,
     BasicReports,
     Campaigns,
     CampaignsAudienceReports,
     CampaignsAudienceReportsByCountry,
     CampaignsAudienceReportsByPlatform,
     CampaignsReports,
+    CreativeAssetsImages,
+    CreativeAssetsMusic,
+    CreativeAssetsPortfolios,
+    CreativeAssetsVideos,
     Daily,
     Hourly,
     Lifetime,
     ReportGranularity,
 )
 
+logger = logging.getLogger("airbyte")
 DOCUMENTATION_URL = "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
 
 
@@ -86,9 +95,13 @@ class SourceTiktokMarketing(AbstractSource):
             app_id = int(config.get("environment", {}).get("app_id", 0))
             advertiser_id = config.get("environment", {}).get("advertiser_id")
 
+        start_date = config.get("start_date") or DEFAULT_START_DATE
+        if pendulum.parse(start_date) < pendulum.parse(MINIMUM_START_DATE):
+            logger.warning(f"The start date is too far in the past. Setting it to {MINIMUM_START_DATE}.")
+            start_date = MINIMUM_START_DATE
         stream_args = {
             "authenticator": TiktokTokenAuthenticator(access_token),
-            "start_date": config.get("start_date") or DEFAULT_START_DATE,
+            "start_date": start_date,
             "end_date": config.get("end_date") or DEFAULT_END_DATE,
             "app_id": app_id,
             "secret": secret,
@@ -127,7 +140,12 @@ class SourceTiktokMarketing(AbstractSource):
             Advertisers(**args),
             Ads(**args),
             AdGroups(**args),
+            Audiences(**args),
             Campaigns(**args),
+            CreativeAssetsImages(**args),
+            CreativeAssetsMusic(**args),
+            CreativeAssetsPortfolios(**args),
+            CreativeAssetsVideos(**args),
         ]
 
         if is_production:
@@ -184,6 +202,7 @@ class SourceTiktokMarketing(AbstractSource):
                 AdsAudienceReports,
                 AdsAudienceReportsByCountry,
                 AdsAudienceReportsByPlatform,
+                AdsAudienceReportsByProvince,
                 AdGroupAudienceReports,
                 AdGroupAudienceReportsByCountry,
                 AdGroupAudienceReportsByPlatform,

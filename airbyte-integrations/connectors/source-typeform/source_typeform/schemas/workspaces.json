@@ -4,7 +4,7 @@
     "account_id": {
       "type": ["null", "string"]
     },
-    "default":{
+    "default": {
       "type": ["null", "boolean"]
     },
     "forms": {

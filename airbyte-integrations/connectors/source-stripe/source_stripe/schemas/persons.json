@@ -75,6 +75,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "dob": {
       "type": ["null", "object"],
       "properties": {
@@ -417,6 +420,9 @@
           "type": ["null", "string"]
         }
       }
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }

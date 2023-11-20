@@ -260,7 +260,7 @@ Brief description of how this works,
 
 The Cloud Storage store is treated as the source-of-truth of execution state.
 
-The Container Orchestrator is only available for Airbyte Kubernetes today and automatically enabled when running the Airbyte Helm charts/Kustomize deploys.
+The Container Orchestrator is only available for Airbyte Kubernetes today and automatically enabled when running the Airbyte Helm Charts deploys.
 
 ![Orchestrator Lifecycle](../.gitbook/assets/orchestrator-lifecycle.png)
 

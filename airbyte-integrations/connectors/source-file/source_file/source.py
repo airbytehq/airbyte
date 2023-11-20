@@ -17,13 +17,16 @@ from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     ConfiguredAirbyteCatalog,
+    ConnectorSpecification,
+    FailureType,
     Status,
     Type,
 )
 from airbyte_cdk.sources import Source
+from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
 
-from .client import Client, ConfigurationError
-from .utils import dropbox_force_download
+from .client import Client
+from .utils import LOCAL_STORAGE_NAME, dropbox_force_download
 
 
 class SourceFile(Source):
@@ -85,41 +88,52 @@ class SourceFile(Source):
             try:
                 config["reader_options"] = json.loads(config["reader_options"])
                 if not isinstance(config["reader_options"], dict):
-                    raise ConfigurationError(
+                    message = (
                         "Field 'reader_options' is not a valid JSON object. "
                         "Please provide key-value pairs, See field description for examples."
                     )
+                    raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
             except ValueError:
-                raise ConfigurationError("Field 'reader_options' is not valid JSON object. https://www.json.org/")
+                message = "Field 'reader_options' is not valid JSON object. https://www.json.org/"
+                raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         else:
             config["reader_options"] = {}
         config["url"] = dropbox_force_download(config["url"])
 
         parse_result = urlparse(config["url"])
         if parse_result.netloc == "docs.google.com" and parse_result.path.lower().startswith("/spreadsheets/"):
-            raise ConfigurationError(f'Failed to load {config["url"]}: please use the Official Google Sheets Source connector')
+            message = f'Failed to load {config["url"]}: please use the Official Google Sheets Source connector'
+            raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return config
+
+    def spec(self, logger: AirbyteLogger) -> ConnectorSpecification:
+        """Returns the json schema for the spec"""
+        spec = super().spec(logger)
+
+        # override cloud spec to remove local file support
+        if is_cloud_environment():
+            for i in range(len(spec.connectionSpecification["properties"]["provider"]["oneOf"])):
+                provider = spec.connectionSpecification["properties"]["provider"]["oneOf"][i]
+                if provider["properties"]["storage"]["const"] == LOCAL_STORAGE_NAME:
+                    spec.connectionSpecification["properties"]["provider"]["oneOf"].pop(i)
+
+        return spec
 
     def check(self, logger, config: Mapping) -> AirbyteConnectionStatus:
         """
         Check involves verifying that the specified file is reachable with
         our credentials.
         """
-        try:
-            config = self._validate_and_transform(config)
-        except ConfigurationError as e:
-            logger.error(str(e))
-            return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
-
+        config = self._validate_and_transform(config)
         client = self._get_client(config)
         source_url = client.reader.full_url
         try:
             list(client.streams(empty_schema=True))
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except (TypeError, ValueError, ConfigurationError) as err:
+        except (TypeError, ValueError, AirbyteTracedException) as err:
             reason = f"Failed to load {source_url}. Please check File Format and Reader Options are set correctly."
             logger.error(f"{reason}\n{repr(err)}")
-            return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
+            raise AirbyteTracedException(message=reason, internal_message=reason, failure_type=FailureType.config_error)
         except Exception as err:
             reason = f"Failed to load {source_url}. You could have provided an invalid URL, please verify it: {repr(err)}."
             logger.error(reason)

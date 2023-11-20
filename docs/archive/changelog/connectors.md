@@ -15,7 +15,7 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 New sources:
 
 - [**Chartmogul**](https://docs.airbyte.com/integrations/sources/chartmogul)
-- [**Baton**](https://docs.airbyte.com/integrations/sources/baton)
+- [**Hellobaton**](https://docs.airbyte.com/integrations/sources/hellobaton)
 - [**Flexport**](https://docs.airbyte.com/integrations/sources/flexport)
 - [**PersistIq**](https://docs.airbyte.com/integrations/sources/persistiq)
 

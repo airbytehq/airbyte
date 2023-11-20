@@ -4,9 +4,9 @@ connectionSpecification:
   title: Freshservice Spec
   type: object
   required:
-  - domain_name
-  - api_key
-  - start_date
+    - domain_name
+    - api_key
+    - start_date
   additionalProperties: true
   properties:
     domain_name:
@@ -14,18 +14,20 @@ connectionSpecification:
       title: Domain Name
       description: The name of your Freshservice domain
       examples:
-      - mydomain.freshservice.com
+        - mydomain.freshservice.com
     api_key:
       title: API Key
       type: string
-      description: Freshservice API Key. See <a href="https://api.freshservice.com/#authentication">here</a>.
+      description:
+        Freshservice API Key. See <a href="https://api.freshservice.com/#authentication">here</a>.
         The key is case sensitive.
       airbyte_secret: true
     start_date:
       title: Start Date
       type: string
-      description: UTC date and time in the format 2020-10-01T00:00:00Z. Any data
+      description:
+        UTC date and time in the format 2020-10-01T00:00:00Z. Any data
         before this date will not be replicated.
       examples:
-      - '2020-10-01T00:00:00Z'
+        - "2020-10-01T00:00:00Z"
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"

@@ -5,18 +5,18 @@
 package io.airbyte.integrations.destination.gcs.avro;
 
 import static com.amazonaws.services.s3.internal.Constants.MB;
-import static io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB;
+import static io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.integrations.destination.s3.S3FormatConfig;
+import io.airbyte.cdk.integrations.destination.s3.avro.S3AvroFormatConfig;
+import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.util.ConfigTestUtils;
-import io.airbyte.integrations.destination.s3.S3FormatConfig;
-import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
-import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import java.util.List;
 import org.apache.avro.file.CodecFactory;
 import org.apache.avro.file.DataFileConstants;

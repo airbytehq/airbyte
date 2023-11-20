@@ -10,7 +10,7 @@ in the destination and use the most recent data. On the other hand, the [Increme
 Airbyte supports syncing data in **Incremental Append Deduped** mode i.e:
 
 1. **Incremental** means syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source. If the sync is running for the first time, it is equivalent to a [Full Refresh](full-refresh-append.md) since all data will be considered as _new_.
-2. **Append** means taht this incremental data is added to existing tables in your data warehouse.
+2. **Append** means that this incremental data is added to existing tables in your data warehouse.
 3. **Deduped** means that data in the final table will be unique per primary key \(unlike [Append modes](incremental-append.md)\). This is determined by sorting the data using the cursor field and keeping only the latest de-duplicated data row.
 
 Records in the final destination can potentially be deleted as they are de-duplicated, and if your source supports emitting deleting records (e.g. an CDC database source). You should not find multiple copies of the same primary key as these should be unique in that table.

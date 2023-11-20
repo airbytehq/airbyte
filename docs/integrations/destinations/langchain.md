@@ -1,5 +1,17 @@
 # Vector Database (powered by LangChain)
 
+:::warning
+The vector db destination destination has been split into separate destinations per vector database. This destination will not receive any further updates and is not subject to SLAs. The separate destinations support all features of this destination and are actively maintained. Please migrate to the respective destination as soon as possible.
+
+Please use the respective destination for the vector database you want to use to ensure you receive updates and support.
+
+To following databases are supported:
+* [Pinecone](https://docs.airbyte.com/integrations/destinations/pinecone)
+* [Weaviate](https://docs.airbyte.com/integrations/destinations/weaviate)
+* [Milvus](https://docs.airbyte.com/integrations/destinations/milvus)
+* [Chroma](https://docs.airbyte.com/integrations/destinations/chroma)
+* [Qdrant](https://docs.airbyte.com/integrations/destinations/qdrant)
+:::
 
 ## Overview
 
@@ -18,7 +30,7 @@ When specifying text fields, you can access nested fields in the record by using
 
 The chunk length is measured in tokens produced by the `tiktoken` library. The maximum is 8191 tokens, which is the maximum length supported by the `text-embedding-ada-002` model.
 
-The stream name gets added as a metadata field `_airbyte_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are indexed. It is added as the `_natural_id` metadata field.
+The stream name gets added as a metadata field `_airbyte_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are indexed. It is added as the `_record_id` metadata field.
 
 ### Embedding
 
@@ -59,6 +71,7 @@ For Pinecone pods of type starter, only up to 10,000 chunks can be indexed. For 
 
 :::
 
+<!-- env:oss -->
 #### Chroma vector store
 
 The [Chroma vector store](https://trychroma.com) is running the Chroma embedding database as persistent client and stores the vectors in a local file.
@@ -133,12 +146,15 @@ DocArrayHnswSearch is meant to be used on a local workstation and won't work on 
 Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
 
 :::
-
+<!-- /env:oss -->
 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.2   | 2023-11-13 | [#32455](https://github.com/airbytehq/airbyte/pull/32455)     | Fix build  | 
+| 0.1.1   | 2023-09-01 | [#30282](https://github.com/airbytehq/airbyte/pull/30282)     | Use embedders from CDK  | 
+| 0.1.0   | 2023-09-01 | [#30080](https://github.com/airbytehq/airbyte/pull/30080)     | Fix bug with potential data loss on append+dedup syncing. 🚨 Streams using append+dedup mode need to be reset after upgrade.  | 
 | 0.0.8   | 2023-08-21 | [#29515](https://github.com/airbytehq/airbyte/pull/29515)     | Clean up generated schema spec  |
 | 0.0.7   | 2023-08-18 | [#29513](https://github.com/airbytehq/airbyte/pull/29513)     | Fix for starter pods  |
 | 0.0.6   | 2023-08-02 | [#28977](https://github.com/airbytehq/airbyte/pull/28977)     | Validate pinecone index dimensions during check  |

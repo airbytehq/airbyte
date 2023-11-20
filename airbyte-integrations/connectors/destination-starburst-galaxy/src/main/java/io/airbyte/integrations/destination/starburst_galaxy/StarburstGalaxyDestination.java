@@ -7,9 +7,9 @@ package io.airbyte.integrations.destination.starburst_galaxy;
 import static io.airbyte.integrations.destination.starburst_galaxy.StarburstGalaxyStagingStorageType.S3;
 
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.SwitchingDestination;
 import java.io.Closeable;
 import java.sql.DriverManager;
 
