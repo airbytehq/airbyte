@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.53.9
+Fix of generate the error message using _try_get_error based on list of errors
+
+## 0.53.8
+Vector DB CDK: Remove CDC records, File CDK: Update unstructured parser
+
+## 0.53.7
+low-code: fix debug logging when using --debug flag
+
 ## 0.53.6
 Increase maximum_attempts_to_acquire to avoid crashing in acquire_call
 
