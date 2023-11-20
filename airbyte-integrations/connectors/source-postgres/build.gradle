@@ -13,7 +13,7 @@ java {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.4.8'
+    cdkVersionRequired = '0.4.12'
     features = ['db-sources']
     useLocalCdk = true
 }
