@@ -9,7 +9,7 @@ from urllib import parse
 
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import SyncMode, AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
@@ -25,6 +25,8 @@ from .graphql import (
     get_query_reviews,
 )
 from .utils import getter
+
+from airbyte_cdk.models import Type as MessageType
 
 
 class GithubStreamABC(HttpStream, ABC):
@@ -1606,8 +1608,11 @@ class ContributorActivity(GithubStream):
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         except HTTPError as e:
             if e.response.status_code == requests.codes.ACCEPTED:
-                self.logger.info(f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`.")
-                yield
+                yield AirbyteMessage(
+                            type=MessageType.LOG,
+                            log=AirbyteLogMessage(level=Level.INFO, message=f"Syncing `{self.__class__.__name__}` "
+                                                                            f"stream isn't available for repository `{repository}`."),
+                        )
             else:
                 raise e
 
