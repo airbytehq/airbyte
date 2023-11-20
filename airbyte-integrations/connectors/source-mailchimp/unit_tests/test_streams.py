@@ -10,7 +10,19 @@ import requests
 import responses
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
-from source_mailchimp.streams import Campaigns, EmailActivity, ListMembers, Lists, Reports, Segments
+from source_mailchimp.streams import (
+    Automations,
+    Campaigns,
+    EmailActivity,
+    InterestCategories,
+    Interests,
+    ListMembers,
+    Lists,
+    Reports,
+    Segments,
+    Tags,
+    Unsubscribes,
+)
 from utils import read_full_refresh, read_incremental
 
 
@@ -58,21 +70,43 @@ def test_next_page_token(auth):
 
 
 @pytest.mark.parametrize(
-    "inputs, expected_params",
+    "stream, inputs, expected_params",
     [
         (
+            Lists,
             {"stream_slice": None, "stream_state": None, "next_page_token": None},
             {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created"},
         ),
         (
+            Lists,
             {"stream_slice": None, "stream_state": None, "next_page_token": {"offset": 1000}},
             {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created", "offset": 1000},
         ),
+        (
+            InterestCategories,
+            {"stream_slice": {"parent": {"id": "123"}}, "stream_state": None, "next_page_token": None},
+            {"count": 1000, "exclude_fields": "categories._links"},
+        ),
+        (
+            Interests,
+            {"stream_slice": {"parent": {"id": "123"}}, "stream_state": None, "next_page_token": {"offset": 2000}},
+            {"count": 1000, "exclude_fields": "interests._links", "offset": 2000},
+        ),
+    ],
+    ids=[
+        "Lists: no next_page_token or state to add to request params",
+        "Lists: next_page_token added to request params",
+        "InterestCategories: no next_page_token to add to request params",
+        "Interests: next_page_token added to request params",
     ],
 )
-def test_request_params(auth, inputs, expected_params):
+def test_request_params(auth, stream, inputs, expected_params):
     args = {"authenticator": auth}
-    stream = Lists(**args)
+    if stream == InterestCategories:
+        args["parent"] = Lists(**args)
+    elif stream == Interests:
+        args["parent"] = InterestCategories(authenticator=auth, parent=Lists(authenticator=auth))
+    stream = stream(**args)
     assert stream.request_params(**inputs) == expected_params
 
 
@@ -414,6 +448,54 @@ def test_403_error_handling(
     except HTTPError as e:
         assert e.response.status_code == status_code
 
+
+@pytest.mark.parametrize(
+    "stream, stream_slice, expected_endpoint",
+    [
+        (Automations, {}, "automations"),
+        (Lists, {}, "lists"),
+        (Campaigns, {}, "campaigns"),
+        (EmailActivity, {"campaign_id": "123"}, "reports/123/email-activity"),
+        (InterestCategories, {"parent": {"id": "123"}}, "lists/123/interest-categories"),
+        (Interests, {"parent": {"list_id": "123", "id": "456"}}, "lists/123/interest-categories/456/interests"),
+        (ListMembers, {"list_id": "123"}, "lists/123/members"),
+        (Reports, {}, "reports"),
+        (Segments, {"list_id": "123"}, "lists/123/segments"),
+        (Tags, {"parent": {"id": "123"}}, "lists/123/tag-search"),
+        (Unsubscribes, {"campaign_id": "123"}, "reports/123/unsubscribed"),
+    ],
+    ids=[
+        "Automations",
+        "Lists",
+        "Campaigns",
+        "EmailActivity",
+        "InterestCategories",
+        "Interests",
+        "ListMembers",
+        "Reports",
+        "Segments",
+        "Tags",
+        "Unsubscribes",
+    ],
+)
+def test_path(auth, stream, stream_slice, expected_endpoint):
+    """
+    Test the path method for each stream.
+    """
+
+    # Add parent stream where necessary
+    if stream is InterestCategories or stream is Tags:
+        stream = stream(authenticator=auth, parent=Lists(authenticator=auth))
+    elif stream is Interests:
+        stream = stream(authenticator=auth, parent=InterestCategories(authenticator=auth, parent=Lists(authenticator=auth)))
+    else:
+        stream = stream(authenticator=auth)
+
+    endpoint = stream.path(stream_slice=stream_slice)
+
+    assert endpoint == expected_endpoint, f"Stream {stream}: expected path '{expected_endpoint}', got '{endpoint}'"
+
+
 @pytest.mark.parametrize(
     "record, expected_return",
     [
@@ -449,3 +531,4 @@ def test_reports_remove_empty_datetime_fields(auth, record, expected_return):
     """
     stream = Reports(authenticator=auth)
     assert stream.remove_empty_datetime_fields(record) == expected_return, f"Expected: {expected_return}, Actual: {stream.remove_empty_datetime_fields(record)}"
+    
