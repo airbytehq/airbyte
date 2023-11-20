@@ -56,14 +56,12 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
         .put("replication_method", replicationMethod)
         .put("ssl_mode", getCertificateConfiguration())
         .build());
-    testdb.database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      ctx.fetch("CREATE MATERIALIZED VIEW testview AS select * from id_and_name where id = '2';");
-      return null;
-    });
+    testdb.execSQL( "\\connect " + testdb.dbName + ";",
+        "CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));",
+      "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
+      "CREATE TABLE starships(id INTEGER, name VARCHAR(200));",
+      "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
+      "CREATE MATERIALIZED VIEW testview AS select * from id_and_name where id = '2';");
   }
 
   public abstract ImmutableMap getCertificateConfiguration();

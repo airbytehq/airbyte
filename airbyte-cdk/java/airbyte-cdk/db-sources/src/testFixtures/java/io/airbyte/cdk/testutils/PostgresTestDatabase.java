@@ -24,6 +24,7 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -45,7 +46,6 @@ public class PostgresTestDatabase implements AutoCloseable {
     POSTGRES_16_BULLSEYE("postgres:16-bullseye"),
     POSTGRES_16_ALPINE("postgres:16-alpine"),
     POSTGRES_9_ALPINE("postgres:9-alpine"),
-    POSTGRES_SSL_DEV("marcosmarxm/postgres-ssl:dev"),
     ;
 
     private final String imageName;
@@ -57,8 +57,6 @@ public class PostgresTestDatabase implements AutoCloseable {
   }
 
   public enum PostgresImageLayer {
-
-    SSL(ContainerFactory::withSSL),
     ASCII(ContainerFactory::withASCII),
     CONF(ContainerFactory::withConf),
     NETWORK(ContainerFactory::withNetwork),
@@ -115,6 +113,7 @@ public class PostgresTestDatabase implements AutoCloseable {
         jdbcUrl,
         SQLDialect.POSTGRES);
     this.database = new Database(dslContext);
+
   }
 
   public final PostgreSQLContainer<?> container;
@@ -148,9 +147,9 @@ public class PostgresTestDatabase implements AutoCloseable {
   public PostgresUtils.Certificate getCertificate() {
     final String caCert, clientKey, clientCert;
     try {
-      caCert = container.execInContainer("su", "-c", "cat ca.crt").getStdout().trim();
-      clientKey = container.execInContainer("su", "-c", "cat client.key").getStdout().trim();
-      clientCert = container.execInContainer("su", "-c", "cat client.crt").getStdout().trim();
+      caCert = container.execInContainer("su", "-c", "cat /var/lib/postgresql/certs/ca.crt").getStdout().trim();
+      clientKey = container.execInContainer("su", "-c", "cat /var/lib/postgresql/certs/client.key").getStdout().trim();
+      clientCert = container.execInContainer("su", "-c", "cat /var/lib/postgresql/certs/client.crt").getStdout().trim();
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     } catch (InterruptedException e) {
@@ -159,15 +158,15 @@ public class PostgresTestDatabase implements AutoCloseable {
     return new PostgresUtils.Certificate(caCert, clientCert, clientKey);
   }
 
-  private void execSQL(String... stmts) {
+  public void execSQL(String... stmts) {
     final List<String> cmd = Stream.concat(
         Stream.of("psql", "-a", "-d", container.getDatabaseName(), "-U", container.getUsername()),
         Stream.of(stmts).flatMap(stmt -> Stream.of("-c", stmt)))
         .toList();
     try {
-      LOGGER.debug("executing {}", Strings.join(cmd, " "));
+      LOGGER.warn("executing {}", Strings.join(cmd, " "));
       final var exec = container.execInContainer(cmd.toArray(new String[0]));
-      LOGGER.debug("exit code: {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
+      LOGGER.warn("exit code: {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     } catch (InterruptedException e) {
@@ -190,7 +189,7 @@ public class PostgresTestDatabase implements AutoCloseable {
   @Override
   public void close() {
     dslContext.close();
-    execSQL(String.format("DROP USER %s", userName));
+    //execSQL(String.format("DROP USER %s", userName));
   }
 
   static private class ContainerFactory {
@@ -240,6 +239,9 @@ public class PostgresTestDatabase implements AutoCloseable {
      * Apply the postgresql.conf file that we've packaged as a resource.
      */
     public void withConf() {
+      if (sharedContainer.isRunning()) {
+        throw new RuntimeException ("the shared container is already running. This call will have no effect!");
+      }
       sharedContainer
           .withCopyFileToContainer(
               MountableFile.forClasspathResource("postgresql.conf"),
@@ -251,6 +253,9 @@ public class PostgresTestDatabase implements AutoCloseable {
      * Create a new network and bind it to the container.
      */
     public void withNetwork() {
+      if (sharedContainer.isRunning()) {
+        throw new RuntimeException ("the shared container is already running. This call will have no effect!");
+      }
       sharedContainer.withNetwork(Network.newNetwork());
     }
 
@@ -258,6 +263,9 @@ public class PostgresTestDatabase implements AutoCloseable {
      * Configure postgres with wal_level=logical.
      */
     public void withWalLevelLogical() {
+      if (sharedContainer.isRunning()) {
+        throw new RuntimeException ("the shared container is already running. This call will have no effect!");
+      }
       sharedContainer.withCommand("postgres -c wal_level=logical");
     }
 
@@ -267,38 +275,43 @@ public class PostgresTestDatabase implements AutoCloseable {
     public void withCert() {
       sharedContainer.start();
       String[] commands = {
-        "psql -U test -c \"CREATE USER postgres WITH PASSWORD 'postgres';\"",
-        "psql -U test -c \"GRANT CONNECT ON DATABASE \"test\" TO postgres;\"",
-        "psql -U test -c \"ALTER USER postgres WITH SUPERUSER;\"",
-        "openssl ecparam -name prime256v1 -genkey -noout -out ca.key",
-        "openssl req -new -x509 -sha256 -key ca.key -out ca.crt -subj \"/CN=127.0.0.1\"",
-        "openssl ecparam -name prime256v1 -genkey -noout -out server.key",
-        "openssl req -new -sha256 -key server.key -out server.csr -subj \"/CN=localhost\"",
-        "openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 365 -sha256",
-        "cp server.key /etc/ssl/private/",
-        "cp server.crt /etc/ssl/private/",
-        "cp ca.crt /etc/ssl/private/",
-        "chmod og-rwx /etc/ssl/private/server.* /etc/ssl/private/ca.*",
-        "chown postgres:postgres /etc/ssl/private/server.crt /etc/ssl/private/server.key /etc/ssl/private/ca.crt",
-        "echo \"ssl = on\" >> /var/lib/postgresql/data/postgresql.conf",
-        "echo \"ssl_cert_file = '/etc/ssl/private/server.crt'\" >> /var/lib/postgresql/data/postgresql.conf",
-        "echo \"ssl_key_file = '/etc/ssl/private/server.key'\" >> /var/lib/postgresql/data/postgresql.conf",
-        "echo \"ssl_ca_file = '/etc/ssl/private/ca.crt'\" >> /var/lib/postgresql/data/postgresql.conf",
-        "mkdir root/.postgresql",
-        "echo \"hostssl    all    all    127.0.0.1/32    cert clientcert=verify-full\" >> /var/lib/postgresql/data/pg_hba.conf",
-        "openssl ecparam -name prime256v1 -genkey -noout -out client.key",
-        "openssl req -new -sha256 -key client.key -out client.csr -subj \"/CN=postgres\"",
-        "openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days 365 -sha256",
-        "cp client.crt ~/.postgresql/postgresql.crt",
-        "cp client.key ~/.postgresql/postgresql.key",
-        "chmod 0600 ~/.postgresql/postgresql.crt ~/.postgresql/postgresql.key",
-        "cp ca.crt root/.postgresql/ca.crt",
-        "chown postgres:postgres ~/.postgresql/ca.crt",
-        "psql -U test -c \"SELECT pg_reload_conf();\"",
+          "mkdir /var/lib/postgresql/certs",
+          // create the CA key and certificate
+          "openssl ecparam -name prime256v1 -genkey -noout -out /var/lib/postgresql/certs/ca.key",
+          "openssl req -new -x509 -sha256 -key /var/lib/postgresql/certs/ca.key -out /var/lib/postgresql/certs/ca.crt -subj \"/CN=127.0.0.1\"",
+          //create the server key and certificate, certified by the CA above
+          "openssl ecparam -name prime256v1 -genkey -noout -out /var/lib/postgresql/certs/server.key",
+          "openssl req -new -sha256 -key /var/lib/postgresql/certs/server.key -out /var/lib/postgresql/certs/server.csr -subj \"/CN=localhost\"",
+          "openssl x509 -req -in /var/lib/postgresql/certs/server.csr -CA /var/lib/postgresql/certs/ca.crt -CAkey /var/lib/postgresql/certs/ca.key " +
+              "-CAcreateserial -out /var/lib/postgresql/certs/server.crt -days 365 -sha256",
+          // reconfigure postgres
+          "echo \"ssl = on\" >> /var/lib/postgresql/data/postgresql.conf",
+          "echo \"ssl_cert_file = '/var/lib/postgresql/certs/server.crt'\" >> /var/lib/postgresql/data/postgresql.conf",
+          "echo \"ssl_key_file = '/var/lib/postgresql/certs/server.key'\" >> /var/lib/postgresql/data/postgresql.conf",
+          "echo \"ssl_ca_file = '/var/lib/postgresql/certs/ca.crt'\" >> /var/lib/postgresql/data/postgresql.conf",
+          // Here, we reset pg_hba to not accept any connection except locals.
+          "echo \"local all test all trust\" > /var/lib/postgresql/data/pg_hba.conf",
+          // Then we add SSL-only with full certification to the user used by all network connections.
+          "echo \"hostssl all " + sharedContainer.getUsername() + " all cert\" >> /var/lib/postgresql/data/pg_hba.conf",
+          // finally, create client key and certificate, both verified by the CA
+          "openssl ecparam -name prime256v1 -genkey -noout -out /var/lib/postgresql/certs/client.key",
+          "openssl req -new -sha256 -key /var/lib/postgresql/certs/client.key -out /var/lib/postgresql/certs/client.csr -subj \"/CN="+ sharedContainer.getUsername()+"\"",
+          "openssl x509 -req -in /var/lib/postgresql/certs/client.csr -CA /var/lib/postgresql/certs/ca.crt -CAkey /var/lib/postgresql/certs/ca.key " +
+              "-CAcreateserial -out /var/lib/postgresql/certs/client.crt -days 365 -sha256",
+          // make everything accessible by postgres only, as required by the postgres doc at https://www.postgresql.org/docs/16/ssl-tcp.html
+          "chmod 0600 /var/lib/postgresql/certs/*",
+          "chown postgres:postgres /var/lib/postgresql/certs/*",
+          // reload config and pg_hba.
+          "psql -U test -c \"SELECT pg_reload_conf();\""
       };
       for (String cmd : commands) {
         try {
-          sharedContainer.execInContainer("su", "-c", cmd);
+          ExecResult res = sharedContainer.execInContainer("su", "-c", cmd);
+          if (res.getExitCode() != 0) {
+            LOGGER.warn(res.getStdout());
+            PostgresTestDatabase.LOGGER.error(res.getStderr());
+            throw new RuntimeException("execution failed. CMD = " + cmd);
+          }
         } catch (IOException e) {
           throw new UncheckedIOException(e);
         } catch (InterruptedException e) {

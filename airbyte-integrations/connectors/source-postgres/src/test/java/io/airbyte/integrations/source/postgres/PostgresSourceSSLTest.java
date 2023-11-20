@@ -79,7 +79,7 @@ class PostgresSourceSSLTest {
 
   @BeforeEach
   void setup() throws Exception {
-    testdb = PostgresTestDatabase.make(PostgresImage.POSTGRES_SSL_DEV, PostgresImageLayer.SSL);
+    testdb = PostgresTestDatabase.make(PostgresImage.POSTGRES_16_BULLSEYE, PostgresImageLayer.CERT);
     testdb.database.query(ctx -> {
       ctx.fetch(
           "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");

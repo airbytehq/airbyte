@@ -29,6 +29,10 @@ import java.util.Objects;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.testcontainers.containers.Network;
 
 public class CloudDeploymentPostgresSourceTest {
@@ -44,9 +48,9 @@ public class CloudDeploymentPostgresSourceTest {
     BASTION_NO_SSL = new SshBastionContainer();
     BASTION_NO_SSL.initAndStartBastion(NETWORK_NO_SSL);
 
-    DB_WITH_SSL = PostgresTestDatabase.make(PostgresImage.POSTGRES_SSL_DEV, PostgresImageLayer.SSL);
+    DB_WITH_SSL = PostgresTestDatabase.make(PostgresImage.POSTGRES_16_BULLSEYE, PostgresImageLayer.CERT);
 
-    DB_WITH_SSL_WITH_NETWORK = PostgresTestDatabase.make(PostgresImage.POSTGRES_SSL_DEV, PostgresImageLayer.SSL, PostgresImageLayer.NETWORK);
+    DB_WITH_SSL_WITH_NETWORK = PostgresTestDatabase.make(PostgresImage.POSTGRES_16_BULLSEYE, PostgresImageLayer.NETWORK, PostgresImageLayer.CERT);
     NETWORK_WITH_SSL = DB_WITH_SSL_WITH_NETWORK.container.getNetwork();
     BASTION_WITH_SSL = new SshBastionContainer();
     BASTION_WITH_SSL.initAndStartBastion(NETWORK_WITH_SSL);
@@ -61,7 +65,9 @@ public class CloudDeploymentPostgresSourceTest {
     DB_WITH_SSL.close();
   }
 
-  private static final List<String> NON_STRICT_SSL_MODES = List.of("disable", "allow", "prefer");
+  private static List<String> getNonStrictSslModes() {
+    return List.of("disable", "allow", "prefer");
+  }
   private static final String SSL_MODE_REQUIRE = "require";
 
   private Source source() {
@@ -75,30 +81,28 @@ public class CloudDeploymentPostgresSourceTest {
     return PostgresSource.sshWrappedSource(source);
   }
 
-  @Test
-  void testSSlModesDisableAllowPreferWithTunnelIfServerDoesNotSupportSSL() throws Exception {
-    for (final String sslmode : NON_STRICT_SSL_MODES) {
-      final AirbyteConnectionStatus connectionStatus = checkWithTunnel(DB_NO_SSL_WITH_NETWORK, BASTION_NO_SSL, sslmode);
-      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
-    }
+  @ParameterizedTest()
+  @MethodSource("getNonStrictSslModes")
+  void testSSlModesDisableAllowPreferWithTunnelIfServerDoesNotSupportSSL(String sslMode) throws Exception {
+    final AirbyteConnectionStatus connectionStatus = checkWithTunnel(DB_NO_SSL_WITH_NETWORK, BASTION_NO_SSL, sslMode);
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
   }
 
-  @Test
-  void testSSlModesDisableAllowPreferWithTunnelIfServerSupportSSL() throws Exception {
-    for (final String sslmode : NON_STRICT_SSL_MODES) {
-      final AirbyteConnectionStatus connectionStatus = checkWithTunnel(DB_WITH_SSL_WITH_NETWORK, BASTION_WITH_SSL, sslmode);
-      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
-    }
+  @ParameterizedTest()
+  @MethodSource("getNonStrictSslModes")
+  void testSSlModesDisableAllowPreferWithTunnelIfServerSupportSSL(String sslMode) throws Exception {
+    final AirbyteConnectionStatus connectionStatus = checkWithTunnel(DB_WITH_SSL_WITH_NETWORK, BASTION_WITH_SSL, sslMode);
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus(),
+        connectionStatus.toString());
   }
 
-  @Test
-  void testSSlModesDisableAllowPreferWithFailedTunnelIfServerSupportSSL() throws Exception {
-    for (final String sslmode : NON_STRICT_SSL_MODES) {
-      final AirbyteConnectionStatus connectionStatus = checkWithTunnel(DB_WITH_SSL, BASTION_WITH_SSL, sslmode);
-      assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
-      final String msg = connectionStatus.getMessage();
-      assertTrue(msg.matches(".*Connection is not available.*|.*The connection attempt failed.*"), msg);
-    }
+  @ParameterizedTest()
+  @MethodSource("getNonStrictSslModes")
+  void testSSlModesDisableAllowPreferWithFailedTunnelIfServerSupportSSL(String sslMode) throws Exception {
+    final AirbyteConnectionStatus connectionStatus = checkWithTunnel(DB_WITH_SSL, BASTION_WITH_SSL, sslMode);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
+    final String msg = connectionStatus.getMessage();
+    assertTrue(msg.matches(".*Connection is not available.*|.*The connection attempt failed.*"), msg);
   }
 
   @Test
@@ -121,7 +125,8 @@ public class CloudDeploymentPostgresSourceTest {
   @Test
   void testStrictSSLSecuredWithTunnel() throws Exception {
     final AirbyteConnectionStatus connectionStatus = checkWithTunnel(DB_WITH_SSL_WITH_NETWORK, BASTION_WITH_SSL, SSL_MODE_REQUIRE);
-    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus(),
+        connectionStatus.getMessage());
   }
 
   private ImmutableMap.Builder<Object, Object> getDatabaseConfigBuilderWithSSLMode(final PostgresTestDatabase db,
@@ -152,20 +157,19 @@ public class CloudDeploymentPostgresSourceTest {
         .build());
   }
 
-  @Test
-  void testSslModesUnsecuredNoTunnel() throws Exception {
-    for (final String sslMode : NON_STRICT_SSL_MODES) {
-      final JsonNode config = getMockedSSLConfig(sslMode);
-      addNoTunnel((ObjectNode) config);
+  @ParameterizedTest()
+  @MethodSource("getNonStrictSslModes")
+  void testSslModesUnsecuredNoTunnel(String sslMode) throws Exception {
+    final JsonNode config = getMockedSSLConfig(sslMode);
+    addNoTunnel((ObjectNode) config);
 
-      final AirbyteConnectionStatus connectionStatus = source().check(config);
-      assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
-      assertTrue(connectionStatus.getMessage().contains("Unsecured connection not allowed"), connectionStatus.getMessage());
-    }
+    final AirbyteConnectionStatus connectionStatus = source().check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
+    assertTrue(connectionStatus.getMessage().contains("Unsecured connection not allowed"), connectionStatus.getMessage());
   }
 
-  private AirbyteConnectionStatus checkWithTunnel(final PostgresTestDatabase db, SshBastionContainer bastion, final String sslmode) throws Exception {
-    final var configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, sslmode, true);
+  private AirbyteConnectionStatus checkWithTunnel(final PostgresTestDatabase db, SshBastionContainer bastion, final String sslMode) throws Exception {
+    final var configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, sslMode, true);
     final JsonNode configWithSSLModeDisable =
         bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, configBuilderWithSSLMode, false);
     ((ObjectNode) configWithSSLModeDisable).put(JdbcUtils.JDBC_URL_PARAMS_KEY, "connectTimeout=1");
