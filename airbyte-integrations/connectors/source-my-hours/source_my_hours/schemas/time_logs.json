@@ -160,6 +160,37 @@
     },
     "logDurationBillable": {
       "type": ["null", "number"]
+    },
+    "startTime": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "startEndTime": {
+      "type": ["null", "string"]
+    },
+    "teams": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "teamsNames": {
+        "type": ["null", "string"]
+    },
+    "taskListName": {
+      "type": ["null", "string"]
+    },
+    "taskDueDate": {
+      "type": ["null", "string"]
+    },
+    "taskStartDate": {
+      "type": ["null", "string"]
+    },
+    "tagsData": {
+      "type": ["null", "array"]
+    },
+    "uninvoicedAmount": {
+      "type": ["null", "number"]
     }
   }
 }
