@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.cdk.integrations.destination.record_buffer.InMemoryBuffer;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -36,7 +37,7 @@ public class JsonLSerializedBufferTest {
       "nested_column", Map.of("array_column", List.of(1, 2, 3))));
   private static final String STREAM = "stream1";
   private static final AirbyteStreamNameNamespacePair streamPair = new AirbyteStreamNameNamespacePair(STREAM, null);
-  private static final AirbyteRecordMessage message = new AirbyteRecordMessage()
+  private static final PartialAirbyteRecordMessage message = new PartialAirbyteRecordMessage()
       .withStream(STREAM)
       .withData(MESSAGE_DATA)
       .withEmittedAt(System.currentTimeMillis());

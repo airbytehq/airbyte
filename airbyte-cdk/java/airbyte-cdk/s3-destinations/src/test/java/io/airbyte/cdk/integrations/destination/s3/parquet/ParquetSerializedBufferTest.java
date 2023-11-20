@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
@@ -48,7 +49,7 @@ public class ParquetSerializedBufferTest {
       "datetime_with_timezone", "2022-05-12T15:35:44.192950Z"));
   private static final String STREAM = "stream1";
   private static final AirbyteStreamNameNamespacePair streamPair = new AirbyteStreamNameNamespacePair(STREAM, null);
-  private static final AirbyteRecordMessage message = new AirbyteRecordMessage()
+  private static final PartialAirbyteRecordMessage message = new PartialAirbyteRecordMessage()
       .withStream(STREAM)
       .withData(MESSAGE_DATA)
       .withEmittedAt(System.currentTimeMillis());
@@ -96,7 +97,7 @@ public class ParquetSerializedBufferTest {
   @Test
   public void testLzoCompressedParquet() throws Exception {
     final String currentDir = System.getProperty("user.dir");
-    Runtime runtime = Runtime.getRuntime();
+    final Runtime runtime = Runtime.getRuntime();
     final String architecture = resolveArchitecture();
     if (architecture.equals("Linux-amd64-64") || architecture.equals("Linux-x86_64-64")) {
       runProcess(currentDir, runtime, "/bin/sh", "-c", "apt-get update");
