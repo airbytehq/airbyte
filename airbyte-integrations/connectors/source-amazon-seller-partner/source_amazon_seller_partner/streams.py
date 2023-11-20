@@ -38,7 +38,6 @@ class AmazonSPStream(HttpStream, ABC):
         period_in_days: Optional[int],
         report_options: Optional[str],
         advanced_stream_options: Optional[str],
-        max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         *args,
         **kwargs,
@@ -132,6 +131,7 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
 
 
 class ReportsAmazonSPStream(HttpStream, ABC):
+    max_wait_seconds = 3600
     """
     API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reports_2020-09-04.md
     API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/reports-api-model/reports_2020-09-04.json
@@ -163,7 +163,6 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
-        max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         advanced_stream_options: Optional[str],
         *args,
@@ -176,7 +175,6 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self.marketplace_id = marketplace_id
         self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work as well
         self._report_options = report_options or "{}"
-        self.max_wait_seconds = max_wait_seconds
         self._advanced_stream_options = dict()
         self._http_method = "GET"
         if advanced_stream_options is not None:
@@ -250,11 +248,11 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         return report_payload
 
     @default_backoff_handler(factor=5, max_tries=5)
-    def download_and_decompress_report_document(self, url, payload):
+    def download_and_decompress_report_document(self, payload: dict) -> str:
         """
         Unpacks a report document
         """
-        report = requests.get(url)
+        report = requests.get(payload.get("url"))
         report.raise_for_status()
         if "compressionAlgorithm" in payload:
             return gzip.decompress(report.content).decode("iso-8859-1")
@@ -265,7 +263,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     ) -> Iterable[Mapping]:
         payload = response.json()
 
-        document = self.download_and_decompress_report_document(payload.get("url"), payload)
+        document = self.download_and_decompress_report_document(payload)
 
         document_records = self.parse_document(document)
         yield from document_records
@@ -474,24 +472,8 @@ class FbaEstimatedFbaFeesTxtReport(ReportsAmazonSPStream):
     name = "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA"
 
 
-class FbaFulfillmentCurrentInventoryReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_CURRENT_INVENTORY_DATA"
-
-
 class FbaFulfillmentCustomerShipmentPromotionReport(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA"
-
-
-class FbaFulfillmentInventoryAdjustReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_INVENTORY_ADJUSTMENTS_DATA"
-
-
-class FbaFulfillmentInventoryReceiptsReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_INVENTORY_RECEIPTS_DATA"
-
-
-class FbaFulfillmentInventorySummaryReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_INVENTORY_SUMMARY_DATA"
 
 
 class FbaMyiUnsuppressedInventoryReport(ReportsAmazonSPStream):
@@ -530,10 +512,6 @@ class MerchantListingsReportBackCompat(ReportsAmazonSPStream):
 
 class MerchantCancelledListingsReport(ReportsAmazonSPStream):
     name = "GET_MERCHANT_CANCELLED_LISTINGS_DATA"
-
-
-class FbaFulfillmentMonthlyInventoryReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_MONTHLY_INVENTORY_DATA"
 
 
 class MerchantListingsFypReport(ReportsAmazonSPStream):
@@ -922,10 +900,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
 
         payload = response.json()
 
-        document = self.decompress_report_document(
-            payload.get("url"),
-            payload,
-        )
+        document = self.download_and_decompress_report_document(payload)
         document_records = self.parse_document(document)
 
         # Not all (partial) responses include the request date, so adding it manually here

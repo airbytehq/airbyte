@@ -1,8 +1,14 @@
 # Changelog
 
-## 0.53.8
+## 0.53.10
 File CDK: Add `format.skip_unprocessable_file_types` with default value `True`, to `config.avro_format`, `config.csv_parser`, `config.parquet_format`.
 Added logic to raise the `RecordParseError` if `format.skip_unprocessable_file_types = false` to `stream.default_file_based_stream`
+
+## 0.53.9
+Fix of generate the error message using _try_get_error based on list of errors
+
+## 0.53.8
+Vector DB CDK: Remove CDC records, File CDK: Update unstructured parser
 
 ## 0.53.7
 low-code: fix debug logging when using --debug flag
