@@ -45,6 +45,7 @@ Make sure your Qdrant database can be accessed by Airbyte. If your database is w
 You should now have all the requirements needed to configure Qdrant as a destination in the UI. You'll need the following information to configure the Qdrant destination:
 
 - (Required) **Text fields to embed**
+- (Optional) **Text splitter** Options around configuring the chunking process provided by the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
 - (Required) **Fields to store as metadata**
 - (Required) **Collection** The name of the collection in Qdrant db to store your data 
 - (Required) **The field in the payload that contains the embedded text**
