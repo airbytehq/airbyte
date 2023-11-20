@@ -12,7 +12,6 @@ import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationWriter;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.UUID;

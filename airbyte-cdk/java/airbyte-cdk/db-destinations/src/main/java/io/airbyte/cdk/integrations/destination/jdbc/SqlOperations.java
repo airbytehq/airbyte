@@ -4,10 +4,8 @@
 
 package io.airbyte.cdk.integrations.destination.jdbc;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

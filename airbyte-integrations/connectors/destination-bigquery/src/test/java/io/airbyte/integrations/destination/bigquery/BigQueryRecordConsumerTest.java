@@ -10,7 +10,6 @@ import com.google.cloud.bigquery.BigQuery;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.standardtest.destination.PerStreamStateMessageTest;
-import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;

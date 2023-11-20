@@ -7,7 +7,6 @@ package io.airbyte.cdk.integrations.destination.s3.parquet;
 import static org.apache.parquet.avro.AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3Format;
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory;

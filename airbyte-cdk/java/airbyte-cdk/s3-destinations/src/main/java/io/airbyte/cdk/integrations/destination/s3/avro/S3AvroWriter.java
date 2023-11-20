@@ -7,7 +7,6 @@ package io.airbyte.cdk.integrations.destination.s3.avro;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3Format;
 import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplateParameterObject;

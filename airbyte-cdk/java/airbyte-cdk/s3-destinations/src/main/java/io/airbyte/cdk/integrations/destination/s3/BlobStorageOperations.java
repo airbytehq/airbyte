@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.integrations.destination.s3;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import java.util.ArrayList;
 import java.util.List;

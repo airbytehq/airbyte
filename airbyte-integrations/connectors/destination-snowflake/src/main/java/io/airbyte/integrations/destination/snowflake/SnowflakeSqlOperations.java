@@ -12,7 +12,6 @@ import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
