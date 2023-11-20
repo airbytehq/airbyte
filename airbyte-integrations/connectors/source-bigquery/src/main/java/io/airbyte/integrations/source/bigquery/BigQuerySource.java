@@ -175,7 +175,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
     LOGGER.info("Queueing query for table: {}", tableName);
      // This corresponds to the initial sync for in INCREMENTAL_MODE, where the ordering of the records matters
     // as intermediate state messages are emitted (if the connector emits intermediate state).
-    if (syncMode.equals(SyncMode.INCREMENTAL) && getStateEmissionFrequency() > 0) {
+    if (syncMode.equals(SyncMode.INCREMENTAL)) {
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
       return queryTable(database, String.format("SELECT %s FROM %s ORDER BY %s ASC",
           enquoteIdentifierList(columnNames, getQuoteString()),
