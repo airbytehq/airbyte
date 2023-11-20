@@ -33,8 +33,8 @@ class MyHoursAuthenticator(Oauth2Authenticator):
         json_response = response.json()
 
         self.refresh_token = json_response["refreshToken"]
-        self._access_token = json_response[self.access_token_name]
-        self._token_expiry_date = t0.add(seconds=json_response[self.expires_in_name])
+        self._access_token = json_response[self._access_token_name]
+        self._token_expiry_date = t0.add(seconds=json_response[self._expires_in_name])
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         payload: MutableMapping[str, Any] = {
