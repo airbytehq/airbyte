@@ -274,8 +274,28 @@ class Reports(IncrementalMailChimpStream):
     cursor_field = "send_time"
     data_field = "reports"
 
+    @staticmethod
+    def remove_empty_datetime_fields(record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        In some cases, the 'clicks.last_click' and 'opens.last_open' fields are returned as an empty string,
+        which causes validation errors on the `date-time` format.
+        To avoid this, we remove the fields if they are empty.
+        """
+        clicks = record.get("clicks", {})
+        opens = record.get("opens", {})
+        if not clicks.get("last_click"):
+            clicks.pop("last_click", None)
+        if not opens.get("last_open"):
+            opens.pop("last_open", None)
+        return record
+
     def path(self, **kwargs) -> str:
         return "reports"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response = super().parse_response(response, **kwargs)
+        for record in response:
+            yield self.remove_empty_datetime_fields(record)
 
 
 class Segments(MailChimpListSubStream):

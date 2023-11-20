@@ -1,8 +1,8 @@
 # Configuring connections
 
-After you have created a connection, you can change how your data syncs to the destination by modifying the [configuration settings](#configure-connection-settings) and the [stream settings](#modify-streams-in-your-connection).
+A connection links a source to a destination and defines how your data will sync. After you have created a connection, you can modify any of the [configuration settings](#configure-connection-settings) or  [stream settings](#modify-streams-in-your-connection).
 
-## Configure connection settings
+## Configure Connection Settings
 
 Configuring the connection settings allows you to manage various aspects of the sync, such as how often data syncs and where data is written. 
 
@@ -12,9 +12,7 @@ To configure these settings:
 
 2. Click the **Replication** tab.
 
-3. Click the **Configuration** dropdown.
-
-You can configure the following settings:
+3. Click the **Configuration** dropdown to expand the options.
 
 :::note
 
@@ -22,12 +20,15 @@ These settings apply to all streams in the connection.
 
 :::
 
+You can configure the following settings:
+
 | Setting                              | Description                                                                         |
 |--------------------------------------|-------------------------------------------------------------------------------------|
 | Replication frequency                | How often the data syncs                                                            |
 | Destination namespace                | Where the replicated data is written                                                |
 | Destination stream prefix            | How you identify streams from different connectors                                  |
 | [Detect and propagate schema changes](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-schema-changes/#review-non-breaking-schema-changes) | How Airbyte handles syncs when it detects schema changes in the source |
+| Connection Data Residency | Where data will be processed |
 
 To use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html):
 
@@ -39,13 +40,13 @@ To use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.
 
 * Only one sync per connection can run at a time. 
 * If a sync is scheduled to run before the previous sync finishes, the scheduled sync will start after the completion of the previous sync.
-* Reach out to [Sales](https://airbyte.com/company/talk-to-sales) to enable syncs more frequently than once per hour. 
+* Reach out to [Sales](https://airbyte.com/company/talk-to-sales) if you require replication more frequently than once per hour. 
 
 :::
 
 ## Modify streams in your connection
 
-In the **Activate the streams you want to sync** table, you can choose which streams to sync and how they are loaded to the destination.
+In the **Activate the streams you want to sync** table, you choose which streams to sync and how they are loaded to the destination.
 
 :::info
 A connection's schema consists of one or many streams. Each stream is most commonly associated with a database table or an API endpoint. Within a stream, there can be one or many fields or columns.
@@ -71,9 +72,9 @@ Source-defined cursors and primary keys are selected automatically and cannot be
 
 :::
 
-3. Click on a stream to display the stream details panel.
+3. Click on a stream to display the stream details panel. You'll see each column we detect from the source.
 
-4. Toggle individual fields to include or exclude them in the sync, or use the toggle in the table header to select all fields at once.
+4. Toggle individual fields or columns to include or exclude them in the sync, or use the toggle in the table header to select all fields at once.
 
 :::info
 
