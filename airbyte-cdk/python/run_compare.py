@@ -50,6 +50,7 @@ def main(connector, left, right, config, start, end, stream):
 
     compare_df = compare_dataframes(left_df, right_df, "id")
     print(compare_df)
+    generate_plots_single_pdf_per_metric(compare_df)
 
 
 def create_df(connector, connector_version, config_path, stream):
@@ -140,6 +141,32 @@ def compare_dataframes(left, right, primary_key):
 
     return pd.DataFrame(comparison_results)
 
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
+def generate_plots_single_pdf_per_metric(dataframe, output_filename='plots_combined_per_metric.pdf'):
+    unique_columns = dataframe['column'].unique()
+    metrics = ['missing_right', 'missing_left', 'diff_count', 'equal_count']
+
+    with PdfPages(output_filename) as pdf:
+        for col_value in unique_columns:
+            plt.figure(figsize=(8, 6))
+
+            for metric in metrics:
+                subset = dataframe[(dataframe['column'] == col_value)]
+
+                plt.plot(subset['cursor_day'], subset[metric], label=metric)
+
+                plt.xlabel('Cursor Day')
+                plt.ylabel('Values')
+                plt.title(f'Plot for Column Value: {col_value}')
+                plt.legend()
+                plt.grid(True)
+
+                pdf.savefig()  # Save each plot into the PDF file
+                plt.close()
+
+    print(f"All plots saved in {output_filename}")
 
 def subprocess_stdout_generator(command):
     process = subprocess.Popen(
