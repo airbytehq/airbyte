@@ -1,8 +1,7 @@
 # Changelog
 
 ## 0.53.10
-File CDK: Add `format.skip_unprocessable_file_types` with default value `True`, to `config.avro_format`, `config.csv_parser`, `config.parquet_format`.
-Added logic to raise the `RecordParseError` if `format.skip_unprocessable_file_types = false` to `stream.default_file_based_stream`
+File CDK: Added logic to raise the `RecordParseError` to `stream.default_file_based_stream`, instead of silent skipping. PR: https://github.com/airbytehq/airbyte/pull/32589
 
 ## 0.53.9
 Fix of generate the error message using _try_get_error based on list of errors
