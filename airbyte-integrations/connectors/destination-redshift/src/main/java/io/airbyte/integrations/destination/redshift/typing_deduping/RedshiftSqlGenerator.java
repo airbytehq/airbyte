@@ -276,8 +276,9 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     return Strings.join(
         List.of(
             createSchemaSql.getSQL(),
-            // Redshift doesn't care about primary key but we can use SORTKEY for performance, its a table attribute not supported by jooq.
-            createTableSql.getSQL() + System.lineSeparator()+ " SORTKEY(\"" + COLUMN_NAME_AB_EXTRACTED_AT + "\");"),
+            // Redshift doesn't care about primary key but we can use SORTKEY for performance, its a table
+            // attribute not supported by jooq.
+            createTableSql.getSQL() + System.lineSeparator() + " SORTKEY(\"" + COLUMN_NAME_AB_EXTRACTED_AT + "\");"),
         ";" + System.lineSeparator());
   }
 
@@ -327,10 +328,10 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     // generate fields.
     final CommonTableExpression<Record> rawTableRowsWithCast = name("intermediate_data").as(
         selectFromRawTable(rawSchema, rawTable, streamConfig.columns(),
-                           getFinalTableMetaColumns(false),
-                           rawTableCondition(streamConfig.destinationSyncMode(),
-                                             streamConfig.columns().containsKey(CDC_DELETED_AT_COLUMN),
-                                             minRawTimestamp)));
+            getFinalTableMetaColumns(false),
+            rawTableCondition(streamConfig.destinationSyncMode(),
+                streamConfig.columns().containsKey(CDC_DELETED_AT_COLUMN),
+                minRawTimestamp)));
     final List<Field<?>> finalTableFields = buildFinalTableFields(streamConfig.columns(), getFinalTableMetaColumns(true));
     final Field<Integer> rowNumber = getRowNumber(streamConfig.primaryKey(), streamConfig.cursor());
     final CommonTableExpression<Record> filteredRows = name("numbered_rows").as(
@@ -340,10 +341,10 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     final String insertStmtWithDedupe =
         insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
             .select(with(rawTableRowsWithCast)
-                        .with(filteredRows)
-                        .select(finalTableFields)
-                        .from(filteredRows)
-                        .where(field("row_number", Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
+                .with(filteredRows)
+                .select(finalTableFields)
+                .from(filteredRows)
+                .where(field("row_number", Integer.class).eq(1)) // Can refer by CTE.field but no use since we don't strongly type them.
             )
             .getSQL(ParamType.INLINED);
 
@@ -351,13 +352,12 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     final String insertStmt =
         insertIntoFinalTable(finalSchema, finalTable, streamConfig.columns(), getFinalTableMetaColumns(true))
             .select(with(rawTableRowsWithCast)
-                        .select(finalTableFields)
-                        .from(rawTableRowsWithCast))
+                .select(finalTableFields)
+                .from(rawTableRowsWithCast))
             .getSQL(ParamType.INLINED);
     final String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
     final String deleteCdcDeletesStmt = deleteFromFinalTableCdcDeletes(finalSchema, finalTable);
     final String checkpointStmt = checkpointRawTable(rawSchema, rawTable);
-
 
     if (streamConfig.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return Strings.join(
@@ -431,7 +431,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
       if (isCdcDeletedAtPresent) {
         condition = condition.or(field(name(COLUMN_NAME_AB_LOADED_AT)).isNotNull()
             .and(function("JSON_TYPEOF", SQLDataType.VARCHAR, field(quotedName(COLUMN_NAME_DATA, CDC_DELETED_AT_COLUMN.name())))
-                     .ne("null")));
+                .ne("null")));
       }
     }
     if (minRawTimestamp.isPresent()) {
@@ -476,7 +476,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     final DSLContext dsl = getDslContext();
     return dsl.update(table(quotedName(schemaName, tableName)))
         .set(field(quotedName(COLUMN_NAME_AB_LOADED_AT), SQLDataType.TIMESTAMPWITHTIMEZONE),
-             function("GETDATE", SQLDataType.TIMESTAMPWITHTIMEZONE))
+            function("GETDATE", SQLDataType.TIMESTAMPWITHTIMEZONE))
         .where(field(quotedName(COLUMN_NAME_AB_LOADED_AT)).isNull())
         .getSQL(ParamType.INLINED);
   }
