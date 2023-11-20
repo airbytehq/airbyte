@@ -165,9 +165,9 @@ public class PostgresTestDatabase implements AutoCloseable {
         Stream.of(stmts).flatMap(stmt -> Stream.of("-c", stmt)))
         .toList();
     try {
-      LOGGER.info("executing {}", Strings.join(cmd, " "));
+      LOGGER.debug("executing {}", Strings.join(cmd, " "));
       final var exec = container.execInContainer(cmd.toArray(new String[0]));
-      LOGGER.info("exit code: {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
+      LOGGER.debug("exit code: {}\nstdout:\n{}\nstderr:\n{}", exec.getExitCode(), exec.getStdout(), exec.getStderr());
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     } catch (InterruptedException e) {
