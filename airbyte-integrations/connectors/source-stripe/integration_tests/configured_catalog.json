@@ -143,11 +143,11 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["checkout_session_expires_at"],
+        "default_cursor_field": ["checkout_session_updated"],
         "source_defined_primary_key": [["id"]]
       },
       "primary_key": [["id"]],
-      "cursor_field": ["checkout_session_expires_at"],
+      "cursor_field": ["checkout_session_updated"],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
@@ -459,11 +459,11 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["updated"],
+        "default_cursor_field": ["created"],
         "source_defined_primary_key": [["id"]]
       },
       "primary_key": [["id"]],
-      "cursor_field": ["updated"],
+      "cursor_field": ["created"],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },

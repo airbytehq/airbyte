@@ -4,6 +4,7 @@
 
 from typing import List, Literal, Optional, Union
 
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic import BaseModel, Field
 
 
@@ -16,11 +17,10 @@ class SeparatorSplitterConfigModel(BaseModel):
     )
     keep_separator: bool = Field(default=False, title="Keep separator", description="Whether to keep the separator in the resulting chunks")
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "By Separator"
-        schema_extra = {
-            "description": "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc."
-        }
+        description = "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc."
+        discriminator = "mode"
 
 
 class MarkdownHeaderSplitterConfigModel(BaseModel):
@@ -33,11 +33,10 @@ class MarkdownHeaderSplitterConfigModel(BaseModel):
         ge=1,
     )
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "By Markdown header"
-        schema_extra = {
-            "description": "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk."
-        }
+        description = "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk."
+        discriminator = "mode"
 
 
 class CodeSplitterConfigModel(BaseModel):
@@ -65,11 +64,12 @@ class CodeSplitterConfigModel(BaseModel):
         ],
     )
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "By Programming Language"
-        schema_extra = {
-            "description": "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
-        }
+        description = (
+            "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
+        )
+        discriminator = "mode"
 
 
 TextSplitterConfigModel = Union[SeparatorSplitterConfigModel, MarkdownHeaderSplitterConfigModel, CodeSplitterConfigModel]
@@ -128,11 +128,12 @@ class OpenAIEmbeddingConfigModel(BaseModel):
     mode: Literal["openai"] = Field("openai", const=True)
     openai_key: str = Field(..., title="OpenAI API key", airbyte_secret=True)
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "OpenAI"
-        schema_extra = {
-            "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
-        }
+        description = (
+            "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+        )
+        discriminator = "mode"
 
 
 class OpenAICompatibleEmbeddingConfigModel(BaseModel):
@@ -151,9 +152,10 @@ class OpenAICompatibleEmbeddingConfigModel(BaseModel):
         title="Embedding dimensions", description="The number of dimensions the embedding model is generating", examples=[1536, 384]
     )
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "OpenAI-compatible"
-        schema_extra = {"description": "Use a service that's compatible with the OpenAI API to embed text."}
+        description = "Use a service that's compatible with the OpenAI API to embed text."
+        discriminator = "mode"
 
 
 class AzureOpenAIEmbeddingConfigModel(BaseModel):
@@ -177,21 +179,19 @@ class AzureOpenAIEmbeddingConfigModel(BaseModel):
         examples=["your-resource-name"],
     )
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "Azure OpenAI"
-        schema_extra = {
-            "description": "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
-        }
+        description = "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+        discriminator = "mode"
 
 
 class FakeEmbeddingConfigModel(BaseModel):
     mode: Literal["fake"] = Field("fake", const=True)
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "Fake"
-        schema_extra = {
-            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
-        }
+        description = "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
+        discriminator = "mode"
 
 
 class FromFieldEmbeddingConfigModel(BaseModel):
@@ -203,17 +203,17 @@ class FromFieldEmbeddingConfigModel(BaseModel):
         ..., title="Embedding dimensions", description="The number of dimensions the embedding model is generating", examples=[1536, 384]
     )
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "From Field"
-        schema_extra = {
-            "description": "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
-        }
+        description = "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
+        discriminator = "mode"
 
 
 class CohereEmbeddingConfigModel(BaseModel):
     mode: Literal["cohere"] = Field("cohere", const=True)
     cohere_key: str = Field(..., title="Cohere API key", airbyte_secret=True)
 
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "Cohere"
-        schema_extra = {"description": "Use the Cohere API to embed text."}
+        description = "Use the Cohere API to embed text."
+        discriminator = "mode"

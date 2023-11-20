@@ -97,3 +97,6 @@ run --vars '{"table_name":"sample","schema_name":"other_value"}'
 
 This string must have no space. There is a [Github issue](https://github.com/airbytehq/airbyte/issues/4348) to improve this. If you want to contribute to Airbyte, this is a good opportunity!
 
+### DBT Profile
+
+There is no need to specify `--profiles-dir`. By default AirByte based on the destination type. For example, if you're using Postgres as your destination, Airbyte will create a profile configuration based on that destination. This means you don't need to specify the credentials. If you specify a custom `profile` file, you are responsible for securely managing the credentials. Currently, we don't have a way to manage and pass secrets and it's recommended you let Airbyte pass this to dbt. 
