@@ -19,27 +19,21 @@ public class PartialAirbyteStreamState {
   String serializedStreamState;
 
   public static PartialAirbyteStreamState fromJson(final StringIterator message) {
-    final PartialAirbyteStreamState streamState = new PartialAirbyteStreamState();
-    final boolean nonNull = PartialJsonDeserializer.processObject(
+    return PartialJsonDeserializer.parseObject(
         message,
+        PartialAirbyteStreamState::new,
         Map.of(
-            "stream_descriptor", (recordDataIterator) -> streamState.streamDescriptor = streamDescriptorFromJson(recordDataIterator),
-            "stream_state", (stateIterator) -> streamState.serializedStreamState = PartialJsonDeserializer.readSerializedValue(stateIterator)));
-    if (nonNull) {
-      return streamState;
-    } else {
-      return null;
-    }
+            "stream_descriptor", (streamState) -> streamState.streamDescriptor = streamDescriptorFromJson(message),
+            "stream_state", (streamState) -> streamState.serializedStreamState = PartialJsonDeserializer.readSerializedValue(message)));
   }
 
   public static StreamDescriptor streamDescriptorFromJson(final StringIterator message) {
-    final StreamDescriptor streamDescriptor = new StreamDescriptor();
-    PartialJsonDeserializer.processObject(
+    return PartialJsonDeserializer.parseObject(
         message,
+        StreamDescriptor::new,
         Map.of(
-            "name", (nameIterator) -> streamDescriptor.setName(PartialJsonDeserializer.readStringValue(nameIterator)),
-            "namespace", (namespaceIterator) -> streamDescriptor.setNamespace(PartialJsonDeserializer.readStringValue(namespaceIterator))));
-    return streamDescriptor;
+            "name", (streamDescriptor) -> streamDescriptor.setName(PartialJsonDeserializer.readStringValue(message)),
+            "namespace", (streamDescriptor) -> streamDescriptor.setNamespace(PartialJsonDeserializer.readStringValue(message))));
   }
 
   public StreamDescriptor getStreamDescriptor() {

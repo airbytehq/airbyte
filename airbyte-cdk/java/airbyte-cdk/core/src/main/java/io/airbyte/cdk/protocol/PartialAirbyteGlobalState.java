@@ -19,18 +19,13 @@ public class PartialAirbyteGlobalState {
   List<PartialAirbyteStreamState> streamStates;
 
   public static PartialAirbyteGlobalState fromJson(final StringIterator message) {
-    final PartialAirbyteGlobalState state = new PartialAirbyteGlobalState();
-    final boolean nonNull = PartialJsonDeserializer.processObject(
+    return PartialJsonDeserializer.parseObject(
         message,
+        PartialAirbyteGlobalState::new,
         Map.of(
-            "shared_state", (globalStateIterator) -> state.serializedGlobalState = PartialJsonDeserializer.readSerializedValue(globalStateIterator),
-            "stream_states", (streamStatesIterator) -> state.streamStates =
-                PartialJsonDeserializer.readList(streamStatesIterator, PartialAirbyteStreamState::fromJson)));
-    if (nonNull) {
-      return state;
-    } else {
-      return null;
-    }
+            "shared_state", (state) -> state.serializedGlobalState = PartialJsonDeserializer.readSerializedValue(message),
+            "stream_states", (state) -> state.streamStates =
+                PartialJsonDeserializer.readList(message, PartialAirbyteStreamState::fromJson)));
   }
 
   @Override

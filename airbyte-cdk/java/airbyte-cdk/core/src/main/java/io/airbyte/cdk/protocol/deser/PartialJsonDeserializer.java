@@ -7,8 +7,10 @@ package io.airbyte.cdk.protocol.deser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class PartialJsonDeserializer {
 
@@ -27,19 +29,22 @@ public class PartialJsonDeserializer {
    *
    * @return true if the object was non-null, false if it was null
    */
-  public static boolean processObject(final StringIterator data, final Map<String, Consumer<StringIterator>> keyValueConsumers) {
+  public static <T> T parseObject(final StringIterator data, Supplier<T> constructor, final Map<String, Consumer<T>> keyValueConsumers) {
     final char firstChar = data.peek();
     if (firstChar == 'n') {
       skipExactString(data, "null");
-      return false;
+      return null;
     }
 
     skipWhitespaceAndCharacter(data, '{');
     skipWhitespace(data);
+
+    T object = constructor.get();
+
     // handle empty object specially
     if (data.peek() == '}') {
       data.next();
-      return true;
+      return object;
     }
     while (data.hasNext()) {
       // Read a key/value pair
@@ -48,7 +53,7 @@ public class PartialJsonDeserializer {
       skipWhitespace(data);
       // Pass to the appropriate consumer, or read past the value
       if (keyValueConsumers.containsKey(key)) {
-        keyValueConsumers.get(key).accept(data);
+        keyValueConsumers.get(key).accept(object);
       } else {
         skipValue(data);
       }
@@ -57,7 +62,7 @@ public class PartialJsonDeserializer {
       skipWhitespace(data);
       final char ch = data.next();
       if (ch == '}') {
-        return true;
+        return object;
       } else if (ch != ',') {
         throw new RuntimeException("Unexpected '" + ch + "'" + " at index " + data.getIndex());
       }
@@ -138,7 +143,7 @@ public class PartialJsonDeserializer {
   }
 
   public static <T> List<T> readList(final StringIterator data, final Function<StringIterator, T> valueMapper) {
-    // Skip the opening bracket and start reading the object
+    // Check the first character. Either it's a null, or it's an opening bracket.
     final char firstChar = data.next();
     if (firstChar == 'n') {
       skipExactString(data, "ull");

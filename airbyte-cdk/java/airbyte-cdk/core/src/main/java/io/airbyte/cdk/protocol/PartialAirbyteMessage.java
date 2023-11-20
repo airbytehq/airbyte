@@ -30,19 +30,14 @@ public class PartialAirbyteMessage {
   }
 
   public static PartialAirbyteMessage fromJson(final StringIterator message) {
-    final PartialAirbyteMessage deserMessage = new PartialAirbyteMessage();
-    final boolean nonNull = PartialJsonDeserializer.processObject(
+    return PartialJsonDeserializer.parseObject(
         message,
+        PartialAirbyteMessage::new,
         Map.of(
-            "type",
-            (messageTypeIterator) -> deserMessage.type = AirbyteMessage.Type.valueOf(PartialJsonDeserializer.readStringValue(messageTypeIterator)),
-            "record", (messageRecordIterator) -> deserMessage.record = PartialAirbyteRecordMessage.fromJson(messageRecordIterator),
-            "state", (messageStateIterator) -> deserMessage.state = PartialAirbyteStateMessage.fromJson(messageStateIterator)));
-    if (nonNull) {
-      return deserMessage;
-    } else {
-      return null;
-    }
+            "type", (deserMessage) -> deserMessage.type =
+                AirbyteMessage.Type.valueOf(PartialJsonDeserializer.readStringValue(message)),
+            "record", (deserMessage) -> deserMessage.record = PartialAirbyteRecordMessage.fromJson(message),
+            "state", (deserMessage) -> deserMessage.state = PartialAirbyteStateMessage.fromJson(message)));
   }
 
   public AirbyteMessage.Type getType() {

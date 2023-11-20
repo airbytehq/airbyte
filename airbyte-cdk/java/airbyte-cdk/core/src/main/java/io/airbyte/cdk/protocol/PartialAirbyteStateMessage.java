@@ -21,19 +21,13 @@ public class PartialAirbyteStateMessage {
   String serializedData;
 
   public static PartialAirbyteStateMessage fromJson(final StringIterator message) {
-    final PartialAirbyteStateMessage state = new PartialAirbyteStateMessage();
-    final boolean nonNull = PartialJsonDeserializer.processObject(
+    return PartialJsonDeserializer.parseObject(
         message,
+        PartialAirbyteStateMessage::new,
         Map.of(
-            "type",
-            (typeIterator) -> state.type = AirbyteStateMessage.AirbyteStateType.valueOf(PartialJsonDeserializer.readStringValue(typeIterator)),
-            "stream", (streamIterator) -> state.stream = PartialAirbyteStreamState.fromJson(streamIterator),
-            "data", (dataIterator) -> state.serializedData = PartialJsonDeserializer.readSerializedValue(dataIterator)));
-    if (nonNull) {
-      return state;
-    } else {
-      return null;
-    }
+            "type", (state) -> state.type = AirbyteStateMessage.AirbyteStateType.valueOf(PartialJsonDeserializer.readStringValue(message)),
+            "stream", (state) -> state.stream = PartialAirbyteStreamState.fromJson(message),
+            "data", (state) -> state.serializedData = PartialJsonDeserializer.readSerializedValue(message)));
   }
 
   public AirbyteStateMessage.AirbyteStateType getType() {
