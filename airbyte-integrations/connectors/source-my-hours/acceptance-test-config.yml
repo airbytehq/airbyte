@@ -4,7 +4,7 @@ connector_image: airbyte/source-my-hours:dev
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "source_my_hours/spec.json"
+      - spec_path: "source_my_hours/spec.json"
   connection:
     tests:
       - config_path: "secrets/config.json"
