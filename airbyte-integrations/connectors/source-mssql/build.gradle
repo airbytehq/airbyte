@@ -31,6 +31,7 @@ dependencies {
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
+    testImplementation 'org.awaitility:awaitility:4.2.0'
 
     testImplementation libs.testcontainers.mssqlserver
     testFixturesImplementation libs.testcontainers.mssqlserver

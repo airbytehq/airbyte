@@ -9,32 +9,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.commons.json.Jsons;
+import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceTest;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.sql.JDBCType;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import javax.sql.DataSource;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+public class MssqlJdbcSourceTest extends JdbcSourceTest<MssqlSource, MsSQLTestDatabase> {
 
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
   protected static final String PASSWORD_WITHOUT_PERMISSION = "password_3435!";
-  private MsSQLTestDatabase testdb;
 
   static {
     // In mssql, timestamp is generated automatically, so we need to use
@@ -43,50 +34,25 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  protected DataSource getDataSource(final JsonNode jdbcConfig) {
-    final Map<String, String> connectionProperties = JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY,
-        getJdbcParameterDelimiter());
-    connectionProperties.put("encrypt", "false");
-    return DataSourceFactory.create(
-        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        getDriverClass(),
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        connectionProperties);
-  }
-
-  @BeforeEach
-  public void setup() throws Exception {
-    testdb = MsSQLTestDatabase.in("mcr.microsoft.com/mssql/server:2022-latest");
-    config = testdb.testConfigBuilder()
+  protected JsonNode config() {
+    return testdb.testConfigBuilder()
         .withoutSsl()
         .build();
-    super.setup();
   }
 
-  @AfterEach
-  public void tearDown() {
-    testdb.close();
+  @Override
+  protected MssqlSource source() {
+    return new MssqlSource();
+  }
+
+  @Override
+  protected MsSQLTestDatabase createTestDatabase() {
+    return MsSQLTestDatabase.in("mcr.microsoft.com/mssql/server:2022-latest");
   }
 
   @Override
   public boolean supportsSchemas() {
     return true;
-  }
-
-  @Override
-  public JsonNode getConfig() {
-    return Jsons.clone(config);
-  }
-
-  @Override
-  public AbstractJdbcSource<JDBCType> getJdbcSource() {
-    return new MssqlSource();
-  }
-
-  @Override
-  public String getDriverClass() {
-    return MssqlSource.DRIVER_CLASS;
   }
 
   @Override
@@ -96,59 +62,64 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void testCheckIncorrectPasswordFailure() throws Exception {
+    final var config = config();
     maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
-    final AirbyteConnectionStatus status = source.check(config);
+    final AirbyteConnectionStatus status = source().check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: S0001; Error code: 18456;"));
+    assertTrue(status.getMessage().contains("State code: S0001; Error code: 18456;"), status.getMessage());
   }
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
+    final var config = config();
     maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
-    final AirbyteConnectionStatus status = source.check(config);
+    final AirbyteConnectionStatus status = source().check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: S0001; Error code: 18456;"));
+    assertTrue(status.getMessage().contains("State code: S0001; Error code: 18456;"), status.getMessage());
   }
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
+    final var config = config();
     maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
-    final AirbyteConnectionStatus status = source.check(config);
+    final AirbyteConnectionStatus status = source().check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 08S01;"));
+    assertTrue(status.getMessage().contains("State code: 08S01;"), status.getMessage());
   }
 
   @Test
   public void testCheckIncorrectPortFailure() throws Exception {
+    final var config = config();
     maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "0000");
-    final AirbyteConnectionStatus status = source.check(config);
+    final AirbyteConnectionStatus status = source().check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 08S01;"));
+    assertTrue(status.getMessage().contains("State code: 08S01;"), status.getMessage());
   }
 
   @Test
   public void testCheckIncorrectDataBaseFailure() throws Exception {
+    final var config = config();
     maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
-    final AirbyteConnectionStatus status = source.check(config);
+    final AirbyteConnectionStatus status = source().check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: S0001; Error code: 4060;"));
+    assertTrue(status.getMessage().contains("State code: S0001; Error code: 4060;"), status.getMessage());
   }
 
   @Test
   public void testUserHasNoPermissionToDataBase() throws Exception {
+    final var config = config();
     maybeSetShorterConnectionTimeout(config);
-    database.execute(ctx -> ctx.createStatement()
-        .execute(String.format("CREATE LOGIN %s WITH PASSWORD = '%s'; ", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION)));
+    testdb.with("CREATE LOGIN %s WITH PASSWORD = '%s'; ", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION);
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
-    final AirbyteConnectionStatus status = source.check(config);
+    final AirbyteConnectionStatus status = source().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: S0001; Error code: 4060;"));
+    assertTrue(status.getMessage().contains("State code: S0001; Error code: 4060;"), status.getMessage());
   }
 
   @Override

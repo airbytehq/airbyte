@@ -81,55 +81,35 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws InterruptedException {
+  protected void setupEnvironment(final TestDestinationEnv environment) {
     testdb = MsSQLTestDatabase.in("mcr.microsoft.com/mssql/server:2022-latest", "withAgent");
+    final var enableCdcSqlFmt = """
+                                EXEC sys.sp_cdc_enable_table
+                                \t@source_schema = N'%s',
+                                \t@source_name   = N'%s',
+                                \t@role_name     = N'%s',
+                                \t@supports_net_changes = 0""";
     testdb
         .withSnapshotIsolation()
         .withCdc()
+        .withWaitUntilAgentRunning()
+        // create tables
+        .with("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));", SCHEMA_NAME, STREAM_NAME)
+        .with("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));", SCHEMA_NAME, STREAM_NAME2)
+        // populate tables
+        .with("INSERT INTO %s.%s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');", SCHEMA_NAME, STREAM_NAME)
+        .with("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');", SCHEMA_NAME, STREAM_NAME2)
+        // enable cdc on tables for designated role
+        .with(enableCdcSqlFmt, SCHEMA_NAME, STREAM_NAME, CDC_ROLE_NAME)
+        .with(enableCdcSqlFmt, SCHEMA_NAME, STREAM_NAME2, CDC_ROLE_NAME)
+        .withWaitUntilMaxLsnAvailable()
+        // revoke user permissions
         .with("REVOKE ALL FROM %s CASCADE;", testdb.getUserName())
-        .with("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO %s;\"", testdb.getUserName());
-    createAndPopulateTables();
-    testdb
+        .with("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO %s;\"", testdb.getUserName())
+        // grant user permissions
         .with("EXEC sp_addrolemember N'%s', N'%s';", "db_datareader", testdb.getUserName())
         .with("GRANT SELECT ON SCHEMA :: [cdc] TO %s", testdb.getUserName())
         .with("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testdb.getUserName());
-  }
-
-  private void createAndPopulateTables() throws InterruptedException {
-    testdb.with("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));", SCHEMA_NAME, STREAM_NAME);
-    testdb.with("INSERT INTO %s.%s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');", SCHEMA_NAME, STREAM_NAME);
-    testdb.with("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));", SCHEMA_NAME, STREAM_NAME2);
-    testdb.with("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');", SCHEMA_NAME, STREAM_NAME2);
-
-    // sometimes seeing an error that we can't enable cdc on a table while sql server agent is still
-    // spinning up
-    // solving with a simple while retry loop
-    boolean failingToStart = true;
-    int retryNum = 0;
-    final int maxRetries = 10;
-    while (failingToStart) {
-      try {
-        // enabling CDC on each table
-        final String[] tables = {STREAM_NAME, STREAM_NAME2};
-        for (final String table : tables) {
-          testdb.with(
-              "EXEC sys.sp_cdc_enable_table\n"
-                  + "\t@source_schema = N'%s',\n"
-                  + "\t@source_name   = N'%s', \n"
-                  + "\t@role_name     = N'%s',\n"
-                  + "\t@supports_net_changes = 0",
-              SCHEMA_NAME, table, CDC_ROLE_NAME);
-        }
-        failingToStart = false;
-      } catch (final Exception e) {
-        if (retryNum >= maxRetries) {
-          throw e;
-        } else {
-          retryNum++;
-          Thread.sleep(10000); // 10 seconds
-        }
-      }
-    }
   }
 
   @Override

@@ -7,14 +7,22 @@ package io.airbyte.integrations.source.mssql;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.testutils.TestDatabase;
+import io.debezium.connector.sqlserver.Lsn;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsSQLTestDatabase, MsSQLTestDatabase.MsSQLConfigBuilder> {
+
+  static private final Logger LOGGER = LoggerFactory.getLogger(MsSQLTestDatabase.class);
+
+  static public final int MAX_RETRIES = 60;
 
   static public MsSQLTestDatabase in(String imageName, String... methods) {
     final var container = new MsSQLContainerFactory().shared(imageName, methods);
@@ -45,6 +53,69 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
     return with("EXEC sys.sp_cdc_disable_db;");
   }
 
+  public MsSQLTestDatabase withAgentStarted() {
+    return with("EXEC master.dbo.xp_servicecontrol N'START', N'SQLServerAGENT';");
+  }
+
+  public MsSQLTestDatabase withAgentStopped() {
+    return with("EXEC master.dbo.xp_servicecontrol N'STOP', N'SQLServerAGENT';");
+  }
+
+  public MsSQLTestDatabase withWaitUntilAgentRunning() {
+    waitForAgentState(true);
+    return self();
+  }
+
+  public MsSQLTestDatabase withWaitUntilAgentStopped() {
+    waitForAgentState(false);
+    return self();
+  }
+
+  private void waitForAgentState(final boolean running) {
+    final String expectedValue = running ? "Running." : "Stopped.";
+    LOGGER.debug("Waiting for SQLServerAgent state to change to '{}'.", expectedValue);
+    for (int i = 0; i < MAX_RETRIES; i++) {
+      try {
+        final var r = query(ctx -> ctx.fetch("EXEC master.dbo.xp_servicecontrol 'QueryState', N'SQLServerAGENT';").get(0));
+        if (expectedValue.equalsIgnoreCase(r.getValue(0).toString())) {
+          LOGGER.debug("SQLServerAgent state is '{}', as expected.", expectedValue);
+          return;
+        }
+        LOGGER.debug("Retrying, SQLServerAgent state {} does not match expected '{}'.", r, expectedValue);
+      } catch (SQLException e) {
+        LOGGER.debug("Retrying agent state query after catching exception {}.", e.getMessage());
+      }
+      try {
+        Thread.sleep(1_000); // Wait one second between retries.
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    throw new RuntimeException("Exhausted retry attempts while polling for agent state");
+  }
+
+  public MsSQLTestDatabase withWaitUntilMaxLsnAvailable() {
+    LOGGER.debug("Waiting for max LSN to become available for database {}.", getDatabaseName());
+    for (int i = 0; i < MAX_RETRIES; i++) {
+      try {
+        final var maxLSN = query(ctx -> ctx.fetch("SELECT sys.fn_cdc_get_max_lsn();").get(0).get(0, byte[].class));
+        if (maxLSN != null) {
+          LOGGER.debug("Max LSN available for database {}: {}", getDatabaseName(), Lsn.valueOf(maxLSN));
+          return self();
+        }
+        LOGGER.debug("Retrying, max LSN still not available for database {}.", getDatabaseName());
+      } catch (SQLException e) {
+        LOGGER.warn("Retrying max LSN query after catching exception {}", e.getMessage());
+      }
+      try {
+        Thread.sleep(1_000); // Wait one second between retries.
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    throw new RuntimeException("Exhausted retry attempts while polling for max LSN availability");
+  }
+
   @Override
   public String getPassword() {
     return "S00p3rS33kr3tP4ssw0rd!";
@@ -67,12 +138,21 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
             String.format("ALTER ROLE [db_owner] ADD MEMBER %s", getUserName()))));
   }
 
+  /**
+   * Don't drop anything when closing the test database. Instead, if cleanup is required, call
+   * {@link #dropDatabaseAndUser()} explicitly. Implicit cleanups may result in deadlocks and so
+   * aren't really worth it.
+   */
   @Override
   protected Stream<String> inContainerUndoBootstrapCmd() {
-    return mssqlCmd(Stream.of(
+    return Stream.empty();
+  }
+
+  public void dropDatabaseAndUser() {
+    execInContainer(mssqlCmd(Stream.of(
         String.format("USE master"),
         String.format("ALTER DATABASE %s SET single_user WITH ROLLBACK IMMEDIATE", getDatabaseName()),
-        String.format("DROP DATABASE %s", getDatabaseName())));
+        String.format("DROP DATABASE %s", getDatabaseName()))));
   }
 
   public Stream<String> mssqlCmd(Stream<String> sql) {
