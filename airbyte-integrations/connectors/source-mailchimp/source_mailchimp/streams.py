@@ -10,7 +10,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 
 logger = logging.getLogger("airbyte")
 
@@ -260,6 +260,53 @@ class EmailActivity(IncrementalMailChimpStream):
                 yield {**item, **activity_item}
 
 
+class InterestCategories(MailChimpStream, HttpSubStream):
+    """
+    Get information about interest categories for a specific list.
+    Docs link: https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/
+    """
+
+    data_field = "categories"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        """
+        Get the list_id from the parent stream slice and use it to construct the path.
+        """
+        list_id = stream_slice.get("parent").get("id")
+        return f"lists/{list_id}/interest-categories"
+
+    def request_params(self, **kwargs):
+
+        # Exclude the _links field, as it is not user-relevant data
+        params = super().request_params(**kwargs)
+        params["exclude_fields"] = "categories._links"
+        return params
+
+
+class Interests(MailChimpStream, HttpSubStream):
+    """
+    Get a list of interests for a specific interest category.
+    Docs link: https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/
+    """
+
+    data_field = "interests"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        """
+        Get the list_id from the parent stream slice and use it to construct the path.
+        """
+        list_id = stream_slice.get("parent").get("list_id")
+        category_id = stream_slice.get("parent").get("id")
+        return f"lists/{list_id}/interest-categories/{category_id}/interests"
+
+    def request_params(self, **kwargs):
+
+        # Exclude the _links field, as it is not user-relevant data
+        params = super().request_params(**kwargs)
+        params["exclude_fields"] = "interests._links"
+        return params
+
+
 class ListMembers(MailChimpListSubStream):
     """
     Get information about members in a specific Mailchimp list.
@@ -306,6 +353,29 @@ class Segments(MailChimpListSubStream):
 
     cursor_field = "updated_at"
     data_field = "segments"
+
+
+class Tags(MailChimpStream, HttpSubStream):
+    """
+    Get information about tags for a specific list.
+    Docs link: https://mailchimp.com/developer/marketing/api/list-tags/list-tags-for-list/
+    """
+
+    data_field = "tags"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        list_id = stream_slice.get("parent").get("id")
+        return f"lists/{list_id}/tag-search"
+
+    def parse_response(self, response: requests.Response, stream_slice, **kwargs) -> Iterable[Mapping]:
+        """
+        Tags do not reference parent_ids, so we need to add the list_id to each record.
+        """
+        response = super().parse_response(response, **kwargs)
+
+        for record in response:
+            record["list_id"] = stream_slice.get("parent").get("id")
+            yield record
 
 
 class Unsubscribes(IncrementalMailChimpStream):
