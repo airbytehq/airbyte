@@ -18,11 +18,11 @@ To buy credits:
 
     Purchase limits:
     * Minimum: 20 credits
-    * Maximum: 2,500 credits
+    * Maximum: 6,000 credits
 
     :::
 
-    To buy more credits or a custom plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
+    To buy more credits or discuss a custom plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
 
 5. Fill out the payment information. 
     
