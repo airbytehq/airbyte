@@ -208,7 +208,7 @@ public class DataSourceFactory {
             .or(() -> Optional.ofNullable(CONNECT_TIMEOUT.getDefaultValue()).map(Long::parseLong))
             .map(Duration::ofSeconds);
         case MYSQL -> getConnectionTimeoutValue(connectionProperties, "connectTimeout").map(Duration::ofMillis);
-        case MSSQLSERVER -> getConnectionTimeoutValue(connectionProperties, "loginTimeout").map(Duration::ofMillis);
+        case MSSQLSERVER -> getConnectionTimeoutValue(connectionProperties, "loginTimeout").map(Duration::ofSeconds);
         default -> Optional.ofNullable(connectionProperties.get(CONNECT_TIMEOUT_KEY))
             .map(Long::parseLong)
             .map(Duration::ofSeconds)
