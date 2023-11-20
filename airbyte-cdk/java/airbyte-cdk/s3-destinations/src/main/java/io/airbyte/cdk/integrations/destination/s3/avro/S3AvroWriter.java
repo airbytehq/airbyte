@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFact
 import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -110,8 +111,9 @@ public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter 
   }
 
   @Override
-  public void write(final JsonNode formattedData) throws IOException {
-    final Record record = avroRecordFactory.getAvroRecord(formattedData);
+  public void write(final String formattedData) throws IOException {
+    // We need the full deserialize to convert to avro.
+    final Record record = avroRecordFactory.getAvroRecord(Jsons.deserializeExact(formattedData));
     dataFileWriter.append(record);
   }
 

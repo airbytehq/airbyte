@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+// TODO is this class even used anywhere?
 public class DataAdapter {
 
   private final Predicate<JsonNode> filterValueNode;

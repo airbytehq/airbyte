@@ -10,6 +10,7 @@ import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.common.base.Charsets;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationWriter;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.IOException;
@@ -32,7 +33,7 @@ public class BigQueryTableWriter implements DestinationWriter {
   public void initialize() throws IOException {}
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage) {
+  public void write(final UUID id, final PartialAirbyteRecordMessage recordMessage) {
     throw new RuntimeException("This write method is not used!");
   }
 

@@ -5,12 +5,13 @@
 package io.airbyte.cdk.integrations.standardtest.destination;
 
 import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteStateMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteStreamState;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
@@ -25,9 +26,9 @@ public abstract class PerStreamStateMessageTest {
 
   @Test
   void ensureAllStateMessageAreEmitted() throws Exception {
-    final AirbyteMessage airbyteMessage1 = AirbyteMessageCreator.createStreamStateMessage("name_one", "state_one");
-    final AirbyteMessage airbyteMessage2 = AirbyteMessageCreator.createStreamStateMessage("name_two", "state_two");
-    final AirbyteMessage airbyteMessage3 = AirbyteMessageCreator.createStreamStateMessage("name_three", "state_three");
+    final PartialAirbyteMessage airbyteMessage1 = AirbyteMessageCreator.createStreamStateMessage("name_one", "state_one");
+    final PartialAirbyteMessage airbyteMessage2 = AirbyteMessageCreator.createStreamStateMessage("name_two", "state_two");
+    final PartialAirbyteMessage airbyteMessage3 = AirbyteMessageCreator.createStreamStateMessage("name_three", "state_three");
     final FailureTrackingAirbyteMessageConsumer messageConsumer = getMessageConsumer();
 
     messageConsumer.accept(airbyteMessage1);
@@ -37,21 +38,21 @@ public abstract class PerStreamStateMessageTest {
     final Consumer<AirbyteMessage> mConsumer = getMockedConsumer();
     final InOrder inOrder = Mockito.inOrder(mConsumer);
 
-    inOrder.verify(mConsumer).accept(airbyteMessage1);
-    inOrder.verify(mConsumer).accept(airbyteMessage2);
-    inOrder.verify(mConsumer).accept(airbyteMessage3);
+    inOrder.verify(mConsumer).accept(airbyteMessage1.toFullMessage());
+    inOrder.verify(mConsumer).accept(airbyteMessage2.toFullMessage());
+    inOrder.verify(mConsumer).accept(airbyteMessage3.toFullMessage());
   }
 
   class AirbyteMessageCreator {
 
-    public static AirbyteMessage createStreamStateMessage(final String name, final String value) {
-      return new AirbyteMessage()
+    public static PartialAirbyteMessage createStreamStateMessage(final String name, final String value) {
+      return new PartialAirbyteMessage()
           .withType(Type.STATE)
           .withState(
-              new AirbyteStateMessage()
+              new PartialAirbyteStateMessage()
                   .withType(AirbyteStateType.STREAM)
                   .withStream(
-                      new AirbyteStreamState()
+                      new PartialAirbyteStreamState()
                           .withStreamDescriptor(
                               new StreamDescriptor()
                                   .withName(name))

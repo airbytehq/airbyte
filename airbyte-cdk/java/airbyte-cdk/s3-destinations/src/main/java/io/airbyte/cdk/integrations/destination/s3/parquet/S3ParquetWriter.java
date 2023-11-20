@@ -16,6 +16,7 @@ import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplatePar
 import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.net.URI;
@@ -148,8 +149,8 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
   }
 
   @Override
-  public void write(final JsonNode formattedData) throws IOException {
-    parquetWriter.write(avroRecordFactory.getAvroRecord(formattedData));
+  public void write(final String formattedData) throws IOException {
+    parquetWriter.write(avroRecordFactory.getAvroRecord(Jsons.deserializeExact(formattedData)));
   }
 
 }

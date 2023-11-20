@@ -17,6 +17,7 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseF
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.cdk.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -170,10 +171,10 @@ public class JdbcBufferedConsumerFactory {
    * @param catalog catalog of all streams to sync
    * @return
    */
-  private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final JdbcDatabase database,
-                                                                         final SqlOperations sqlOperations,
-                                                                         final List<WriteConfig> writeConfigs,
-                                                                         final ConfiguredAirbyteCatalog catalog) {
+  private static RecordWriter<PartialAirbyteRecordMessage> recordWriterFunction(final JdbcDatabase database,
+                                                                                final SqlOperations sqlOperations,
+                                                                                final List<WriteConfig> writeConfigs,
+                                                                                final ConfiguredAirbyteCatalog catalog) {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = writeConfigs.stream()
         .collect(Collectors.toUnmodifiableMap(JdbcBufferedConsumerFactory::toNameNamespacePair, Function.identity()));
 

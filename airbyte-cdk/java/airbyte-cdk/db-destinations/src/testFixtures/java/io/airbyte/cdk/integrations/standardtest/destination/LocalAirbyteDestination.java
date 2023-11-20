@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.standardtest.destination;
 
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.configoss.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -40,7 +41,7 @@ public class LocalAirbyteDestination implements AirbyteDestination {
 
   @Override
   public void accept(final AirbyteMessage message) throws Exception {
-    consumer.accept(Jsons.object(Jsons.jsonNode(message), io.airbyte.protocol.models.v0.AirbyteMessage.class));
+    consumer.accept(PartialAirbyteMessage.fromJson(Jsons.serialize(message)));
   }
 
   @Override

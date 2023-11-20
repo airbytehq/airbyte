@@ -17,6 +17,7 @@ import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplatePar
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -69,11 +70,12 @@ public class S3JsonlWriter extends BaseS3Writer implements DestinationFileWriter
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage) {
+  public void write(final UUID id, final PartialAirbyteRecordMessage recordMessage) {
     final ObjectNode json = MAPPER.createObjectNode();
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
     json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
-    json.set(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData());
+    // TODO we can probably just manually construct a string here instead of fully deserializing stuff
+    json.set(JavaBaseConstants.COLUMN_NAME_DATA, Jsons.deserializeExact(recordMessage.getSerializedData()));
     printWriter.println(Jsons.serialize(json));
   }
 
@@ -107,8 +109,8 @@ public class S3JsonlWriter extends BaseS3Writer implements DestinationFileWriter
   }
 
   @Override
-  public void write(final JsonNode formattedData) throws IOException {
-    printWriter.println(Jsons.serialize(formattedData));
+  public void write(final String formattedData) throws IOException {
+    printWriter.println(formattedData);
   }
 
 }

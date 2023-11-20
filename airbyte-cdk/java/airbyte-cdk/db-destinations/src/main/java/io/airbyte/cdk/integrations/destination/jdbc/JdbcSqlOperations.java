@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -86,19 +87,19 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
-  protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
+  protected void writeBatchToFile(final File tmpFile, final List<PartialAirbyteRecordMessage> records) throws Exception {
     try (final PrintWriter writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
         final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
-      for (final AirbyteRecordMessage record : records) {
+      for (final PartialAirbyteRecordMessage record : records) {
         final var uuid = UUID.randomUUID().toString();
-        final var jsonData = Jsons.serialize(formatData(record.getData()));
+        final var jsonData = formatData(record.getSerializedData());
         final var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
         csvPrinter.printRecord(uuid, jsonData, emittedAt);
       }
     }
   }
 
-  protected JsonNode formatData(final JsonNode data) {
+  protected String formatData(final String data) {
     return data;
   }
 
@@ -148,16 +149,20 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   @Override
   public final void insertRecords(final JdbcDatabase database,
-                                  final List<AirbyteRecordMessage> records,
+                                  final List<PartialAirbyteRecordMessage> records,
                                   final String schemaName,
                                   final String tableName)
       throws Exception {
-    dataAdapter.ifPresent(adapter -> records.forEach(airbyteRecordMessage -> adapter.adapt(airbyteRecordMessage.getData())));
+    dataAdapter.ifPresent(adapter -> records.forEach(airbyteRecordMessage -> {
+      // TODO can we avoid a full deserialize?
+      final JsonNode deserializedData = Jsons.deserializeExact(airbyteRecordMessage.getSerializedData());
+      adapter.adapt(deserializedData);
+    }));
     insertRecordsInternal(database, records, schemaName, tableName);
   }
 
   protected abstract void insertRecordsInternal(JdbcDatabase database,
-                                                List<AirbyteRecordMessage> records,
+                                                List<PartialAirbyteRecordMessage> records,
                                                 String schemaName,
                                                 String tableName)
       throws Exception;

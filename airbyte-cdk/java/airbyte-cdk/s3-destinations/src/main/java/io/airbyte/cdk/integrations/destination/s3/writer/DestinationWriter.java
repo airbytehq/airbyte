@@ -26,11 +26,11 @@ public interface DestinationWriter {
    */
   void write(UUID id, PartialAirbyteRecordMessage recordMessage) throws IOException;
 
-  void write(JsonNode formattedData) throws IOException;
-
-  default void write(final String formattedData) throws IOException {
-    write(Jsons.deserialize(formattedData));
+  default void write(final JsonNode formattedData) throws IOException {
+    write(Jsons.serialize(formattedData));
   }
+
+  void write(final String formattedData) throws IOException;
 
   /**
    * Close the S3 writer for the stream.
