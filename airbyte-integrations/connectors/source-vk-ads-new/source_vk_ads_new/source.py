@@ -1,21 +1,20 @@
 import json
+import logging
 from abc import ABC, abstractproperty
 from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-import logging
 import requests
-from airbyte_cdk.models import SyncMode, ConnectorSpecification
+from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
 from source_vk_ads_new.auth import CredentialsCraftAuthenticator
-from source_vk_ads_new.utils import chunks
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-
 from source_vk_ads_new.fields import AVAILABLE_FIELDS
+from source_vk_ads_new.utils import chunks
 
 CONFIG_DATE_FORMAT = "%Y-%m-%d"
 
@@ -24,14 +23,18 @@ CONFIG_DATE_FORMAT = "%Y-%m-%d"
 class VkAdsNewStream(HttpStream, ABC):
     limit = 250
     url_base = "https://ads.vk.com/api/"
-    transformer: TypeTransformer = TypeTransformer(config=TransformConfig.DefaultSchemaNormalization)
+    transformer: TypeTransformer = TypeTransformer(
+        config=TransformConfig.DefaultSchemaNormalization
+    )
     pagination = True
 
     def __init__(self, authenticator: AuthBase = None):
         HttpStream.__init__(self)
         self._authenticator = authenticator
 
-    def request_params(self, next_page_token: Mapping[str, Any] = {}, *args, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, next_page_token: Mapping[str, Any] = {}, *args, **kwargs
+    ) -> MutableMapping[str, Any]:
         if self.pagination:
             return {
                 "limit": self.limit,
@@ -43,7 +46,10 @@ class VkAdsNewStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_data: dict[str, Any] = response.json()
         # ensure pagination objects are in response
-        if all(key in ("count", "offset", "items") for key in response_data.keys()) and self.pagination:
+        if (
+            all(key in ("count", "offset", "items") for key in response_data.keys())
+            and self.pagination
+        ):
             if response_data.get("items") and len(response_data.get("items", [])) == self.limit:
                 return {"offset": response_data.get("offset") + self.limit}
         return None
@@ -97,7 +103,9 @@ class ObjectStream(VkAdsNewStream, ABC):
                 user_specified_fields = self.spec_fields["user_specified_fields"]
                 for required_field in available_fields["required"]:
                     if required_field not in user_specified_fields:
-                        raise ValueError(f'Stream {self.name} required fields: {available_fields["required"]}')
+                        raise ValueError(
+                            f'Stream {self.name} required fields: {available_fields["required"]}'
+                        )
                 fields = user_specified_fields
         return fields
 
@@ -128,7 +136,9 @@ class StatisticsStream(VkAdsNewStream, HttpSubStream, ABC):
         parent: ObjectStream,
     ):
         if not isinstance(parent, self.parent_class):
-            raise ValueError(f"{self.name} can't be instantiated with {parent.name} class as substream parent")
+            raise ValueError(
+                f"{self.name} can't be instantiated with {parent.name} class as substream parent"
+            )
         HttpSubStream.__init__(self, parent=parent)
         VkAdsNewStream.__init__(self, authenticator=authenticator)
         self.parent: ObjectStream = self.parent
@@ -142,7 +152,9 @@ class StatisticsStream(VkAdsNewStream, HttpSubStream, ABC):
     def path(self, *args, **kwargs) -> str:
         return f"v2/statistics/{self.parent.many_objects_field_name}/day.json"
 
-    def request_params(self, stream_slice: Mapping[str, any] = {}, *args, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_slice: Mapping[str, any] = {}, *args, **kwargs
+    ) -> MutableMapping[str, Any]:
         return {
             **VkAdsNewStream.request_params(self, stream_slice=stream_slice, *args, **kwargs),
             "date_from": self.date_from.strftime("%Y-%m-%d"),
@@ -166,7 +178,9 @@ class StatisticsStream(VkAdsNewStream, HttpSubStream, ABC):
             ),
             20,
         ):
-            yield {"id": ",".join([str(parent_record["parent"]["id"]) for parent_record in ids_chunk])}
+            yield {
+                "id": ",".join([str(parent_record["parent"]["id"]) for parent_record in ids_chunk])
+            }
 
     def parse_response(
         self,
@@ -275,6 +289,11 @@ class SourceVkAdsNew(AbstractSource):
         streams: list[VkAdsNewStream] = self.streams(config)
         for stream in streams:
             stream.request_params()
+        try:
+            next(streams[0].read_records(sync_mode=SyncMode.full_refresh))
+        except requests.HTTPError as e:
+            if e.response.status_code == 401:
+                return False, "Invalid credentials"
 
         return True, None
 
@@ -319,17 +338,23 @@ class SourceVkAdsNew(AbstractSource):
             raise ValueError("Invalid date_range_type")
 
         if isinstance(prepared_range["date_from"], str):
-            prepared_range["date_from"] = datetime.strptime(prepared_range["date_from"], CONFIG_DATE_FORMAT)
+            prepared_range["date_from"] = datetime.strptime(
+                prepared_range["date_from"], CONFIG_DATE_FORMAT
+            )
 
         if isinstance(prepared_range["date_to"], str):
-            prepared_range["date_to"] = datetime.strptime(prepared_range["date_to"], CONFIG_DATE_FORMAT)
+            prepared_range["date_to"] = datetime.strptime(
+                prepared_range["date_to"], CONFIG_DATE_FORMAT
+            )
         config["prepared_date_range"] = prepared_range
         return config
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         spec = super().spec(logger)
         properties: dict[str, Any] = spec.connectionSpecification["properties"]
-        for property_order, obj_stream_class in enumerate(self.object_streams_classes, len(properties)):
+        for property_order, obj_stream_class in enumerate(
+            self.object_streams_classes, len(properties)
+        ):
             obj_stream: ObjectStream = obj_stream_class()
             if not obj_stream.appear_fields_choice_in_spec:
                 continue
@@ -351,7 +376,8 @@ class SourceVkAdsNew(AbstractSource):
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": available_fields["required"] + available_fields["additional"],
+                                    "enum": available_fields["required"]
+                                    + available_fields["additional"],
                                 },
                                 "default": available_fields["default"],
                             },
