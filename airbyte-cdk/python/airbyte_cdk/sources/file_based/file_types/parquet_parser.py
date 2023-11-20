@@ -75,11 +75,8 @@ class ParquetParser(FileTypeParser):
                             },
                             **partition_columns,
                         }
-        except Exception as parse_error:
-            if parquet_format.skip_unprocessable_file_types:
-                logger.warn(f"ParquetParser: File `{file.uri}` cannot be parsed and will be skipped. Error Details: {parse_error}.")
-            else:
-                raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=f"{row_group=}, {line_no=}")
+        except Exception:
+            raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=f"{row_group=}, {line_no=}")
 
     @staticmethod
     def _extract_partitions(filepath: str) -> List[str]:

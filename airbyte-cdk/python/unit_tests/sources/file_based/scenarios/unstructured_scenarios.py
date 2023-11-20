@@ -4,6 +4,7 @@
 import base64
 
 import nltk
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
@@ -171,6 +172,10 @@ unstructured_invalid_file_type_discover_scenario_no_skip = (
     )
     .set_expected_records([])
     .set_expected_discover_error(AirbyteTracedException, "Error inferring schema from files")
+    .set_expected_read_error(
+        AirbyteTracedException, 
+        f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.txt line_no=1 n_skipped=0",
+    )
 ).build()
 
 # If skip unprocessable file types is set to true, then discover will succeed even if there are non-matching file types

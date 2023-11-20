@@ -188,10 +188,7 @@ class CsvParser(FileTypeParser):
                     cast_fn(row), deduped_property_types, config_format.null_values, config_format.strings_can_be_null
                 )
         except RecordParseError:
-            if config_format.skip_unprocessable_file_types:
-                logger.warn(f"CsvParser: File {file.uri} cannot be parsed and will be skipped.")
-            else:
-                raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no)
+            raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no)
         finally:
             data_generator.close()
 

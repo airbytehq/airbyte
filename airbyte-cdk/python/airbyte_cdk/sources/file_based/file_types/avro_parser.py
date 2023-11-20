@@ -152,10 +152,7 @@ class AvroParser(FileTypeParser):
                         for record_field, record_value in schema_field_name_to_type.items()
                     }
         except Exception:
-            if avro_format.skip_unprocessable_file_types:
-                logger.warn(f"AvroParser: File {file.uri} cannot be parsed and will be skipped.")
-            else:
-                raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no)
+            raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no)
 
     @property
     def file_read_mode(self) -> FileReadMode:
