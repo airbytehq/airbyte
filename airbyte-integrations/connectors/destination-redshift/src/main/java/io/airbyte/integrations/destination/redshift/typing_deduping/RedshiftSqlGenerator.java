@@ -356,7 +356,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
                 .from(rawTableRowsWithCast))
             .getSQL(ParamType.INLINED);
     final String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
-    final String deleteCdcDeletesStmt = deleteFromFinalTableCdcDeletes(finalSchema, finalTable);
+    final String deleteCdcDeletesStmt = streamConfig.columns().containsKey(CDC_DELETED_AT_COLUMN) ? deleteFromFinalTableCdcDeletes(finalSchema, finalTable) : "";
     final String checkpointStmt = checkpointRawTable(rawSchema, rawTable);
 
     if (streamConfig.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
@@ -399,7 +399,9 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    * @return
    */
   Field<Integer> getRowNumber(List<ColumnId> primaryKeys, Optional<ColumnId> cursor) {
-    final List<Field<?>> primaryKeyFields = primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList());
+    final List<Field<?>> primaryKeyFields =
+        primaryKeys != null ? primaryKeys.stream().map(columnId -> field(quotedName(columnId.name()))).collect(Collectors.toList())
+            : new ArrayList<>();
     final List<Field<?>> orderedFields = new ArrayList<>();
     // We can still use Jooq's field to get the quoted name with raw sql templating.
     // jooq's .desc returns SortField<?> instead of Field<?> and NULLS LAST doesn't work with it
