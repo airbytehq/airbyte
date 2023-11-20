@@ -101,7 +101,7 @@ class SourceMailchimp(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = MailChimpAuthenticator().get_auth(config)
         campaign_id = config.get("campaign_id")
-        
+
         lists = Lists(authenticator=authenticator)
         interest_categories = InterestCategories(authenticator=authenticator, parent=lists)
 
