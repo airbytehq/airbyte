@@ -1,0 +1,13 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Pendo Python Spec
+  type: object
+  required:
+    - api_key
+  properties:
+    api_key:
+      type: string
+      title: API Key
+      airbyte_secret: true
+  additionalProperties: true

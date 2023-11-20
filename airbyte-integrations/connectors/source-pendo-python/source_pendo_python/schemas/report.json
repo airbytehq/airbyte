@@ -1,0 +1,1075 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "level": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string"
+    },
+    "share": {
+      "type": "string"
+    },
+    "shared": {
+      "type": "boolean"
+    },
+    "target": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "integer"
+    },
+    "lastRunAt": {
+      "type": "integer"
+    },
+    "definition": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "appId": {
+              "oneOf": [
+                {
+                  "type": [
+                    "integer",
+                    "string"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "integer",
+                      "string"
+                    ]
+                  }
+                }
+              ]
+            },
+            "pageId": {
+              "type": "string"
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "pageId": {
+                    "type": "string"
+                  },
+                  "pollId": {
+                    "type": "string"
+                  },
+                  "schema": {
+                    "type": "string"
+                  },
+                  "guideId": {
+                    "type": "string"
+                  },
+                  "disabled": {
+                    "type": "boolean"
+                  },
+                  "showIcon": {
+                    "type": "boolean"
+                  },
+                  "featureId": {
+                    "type": "string"
+                  },
+                  "fieldName": {
+                    "type": "string"
+                  },
+                  "immutable": {
+                    "type": "boolean"
+                  },
+                  "pollField": {
+                    "type": "string"
+                  },
+                  "columnName": {
+                    "type": "string"
+                  },
+                  "columnLabel": {
+                    "type": "string"
+                  },
+                  "primaryKeys": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "functionName": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "filters": {
+              "type": "array"
+            },
+            "features": {
+              "type": "boolean"
+            },
+            "segments": {
+              "type": "array"
+            },
+            "maxLength": {
+              "type": "integer"
+            },
+            "omitPages": {
+              "type": "boolean"
+            },
+            "segmentId": {
+              "type": "string"
+            },
+            "acrossApps": {
+              "type": "boolean"
+            },
+            "maxInterval": {
+              "type": "integer"
+            },
+            "trackEvents": {
+              "type": "boolean"
+            },
+            "collapseDups": {
+              "type": "boolean"
+            },
+            "predecessors": {
+              "type": "boolean"
+            },
+            "uniqueVisitors": {
+              "type": "boolean"
+            },
+            "selectedAccount": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "className": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "period": {
+          "type": "string"
+        },
+        "history": {
+          "type": "array"
+        },
+        "minimum": {
+          "type": "integer"
+        },
+        "sources": {
+          "type": "object",
+          "properties": {
+            "alls": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "segments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attribute": {
+          "type": "string"
+        },
+        "generator": {
+          "type": "string"
+        },
+        "graphType": {
+          "type": "string"
+        },
+        "tableType": {
+          "type": "string"
+        },
+        "dateRanges": {
+          "type": "object",
+          "properties": {
+            "primaryDateRange": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                }
+              }
+            },
+            "secondaryDateRange": {
+              "type": "null"
+            },
+            "useSecondaryDateRange": {
+              "type": "boolean"
+            }
+          }
+        },
+        "timeSeries": {
+          "type": "object",
+          "properties": {
+            "end": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "start": {
+              "type": "string"
+            },
+            "primaryTimeSeries": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "integer"
+                },
+                "first": {
+                  "type": "integer"
+                },
+                "period": {
+                  "type": "string"
+                }
+              }
+            },
+            "secondaryTimeSeries": {
+              "type": "null"
+            }
+          }
+        },
+        "singleSource": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string"
+            }
+          }
+        },
+        "multiSourceType": {
+          "type": "string"
+        },
+        "singleSourceType": {
+          "type": "string"
+        },
+        "isComparingSources": {
+          "type": "boolean"
+        },
+        "isComparingSegments": {
+          "type": "boolean"
+        }
+      }
+    },
+    "aggregation": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "pipeline": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "eval": {
+                "type": "object",
+                "properties": {
+                  "account_auto_id": {
+                    "type": "string"
+                  },
+                  "visitor_agent_age": {
+                    "type": "string"
+                  },
+                  "visitor_agent_language": {
+                    "type": "string"
+                  },
+                  "visitor_auto_firstvisit": {
+                    "type": "string"
+                  }
+                }
+              },
+              "fork": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "eval": {
+                        "type": "object",
+                        "properties": {
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "group": {
+                        "type": "object",
+                        "properties": {
+                          "group": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "fields": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "count": {
+                                  "type": "object",
+                                  "properties": {
+                                    "count": {
+                                      "type": [
+                                        "null",
+                                        "string"
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "limit": {
+                        "type": "integer"
+                      },
+                      "treeify": {
+                        "type": "object",
+                        "properties": {
+                          "keySort": {
+                            "type": "boolean"
+                          },
+                          "threshold": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "group": {
+                "type": "object",
+                "properties": {
+                  "group": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "fields": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "object",
+                          "properties": {
+                            "path": {
+                              "type": "object",
+                              "properties": {
+                                "pageId": {
+                                  "type": "string"
+                                },
+                                "features": {
+                                  "type": "boolean"
+                                },
+                                "maxLength": {
+                                  "type": "integer"
+                                },
+                                "omitPages": {
+                                  "type": "boolean"
+                                },
+                                "maxInterval": {
+                                  "type": "integer"
+                                },
+                                "trackEvents": {
+                                  "type": "boolean"
+                                },
+                                "collapseDups": {
+                                  "type": "boolean"
+                                },
+                                "predecessors": {
+                                  "type": "boolean"
+                                },
+                                "followAcrossSessions": {
+                                  "type": "boolean"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "merge": {
+                "type": "object",
+                "properties": {
+                  "fields": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "mappings": {
+                    "type": "object",
+                    "properties": {
+                      "daysActive": {
+                        "type": "string"
+                      },
+                      "usageTrending": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": true
+                  },
+                  "pipeline": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "cat": {
+                          "type": "null"
+                        },
+                        "eval": {
+                          "type": "object",
+                          "properties": {
+                            "usageTrending": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "join": {
+                          "type": "object",
+                          "properties": {
+                            "fields": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "group": {
+                          "type": "object",
+                          "properties": {
+                            "group": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "fields": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "daysActive": {
+                                    "type": "object",
+                                    "properties": {
+                                      "count": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                },
+                                "additionalProperties": true
+                              }
+                            }
+                          }
+                        },
+                        "spawn": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "group": {
+                                  "type": "object",
+                                  "properties": {
+                                    "group": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "fields": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "totalTime": {
+                                            "type": "object",
+                                            "properties": {
+                                              "sum": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          },
+                                          "prevTotalTime": {
+                                            "type": "object",
+                                            "properties": {
+                                              "sum": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "source": {
+                                  "type": "object",
+                                  "properties": {
+                                    "events": {
+                                      "type": "object",
+                                      "properties": {
+                                        "appId": {
+                                          "oneOf": [
+                                            {
+                                              "type": [
+                                                "integer",
+                                                "string"
+                                              ]
+                                            },
+                                            {
+                                              "type": "array",
+                                              "items": {
+                                                "type": [
+                                                  "integer",
+                                                  "string"
+                                                ]
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "blacklist": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    },
+                                    "timeSeries": {
+                                      "type": "object",
+                                      "properties": {
+                                        "last": {
+                                          "type": [
+                                            "string",
+                                            "integer"
+                                          ]
+                                        },
+                                        "first": {
+                                          "type": [
+                                            "string",
+                                            "integer"
+                                          ]
+                                        },
+                                        "period": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "identified": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "filter": {
+                          "type": "string"
+                        },
+                        "source": {
+                          "type": "object",
+                          "properties": {
+                            "events": {
+                              "type": "object",
+                              "properties": {
+                                "appId": {
+                                  "oneOf": [
+                                    {
+                                      "type": [
+                                        "integer",
+                                        "string"
+                                      ]
+                                    },
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "type": [
+                                          "integer",
+                                          "string"
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                "blacklist": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "pollsSeen": {
+                              "type": "object",
+                              "properties": {
+                                "pollId": {
+                                  "type": "string"
+                                },
+                                "guideId": {
+                                  "type": "string"
+                                },
+                                "blacklist": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "pageEvents": {
+                              "type": "object",
+                              "properties": {
+                                "pageId": {
+                                  "type": "string"
+                                },
+                                "blacklist": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "timeSeries": {
+                              "type": "object",
+                              "properties": {
+                                "last": {
+                                  "type": [
+                                    "string",
+                                    "integer"
+                                  ]
+                                },
+                                "first": {
+                                  "type": [
+                                    "string",
+                                    "integer"
+                                  ]
+                                },
+                                "period": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "guideEvents": {
+                              "type": "object",
+                              "properties": {
+                                "guideId": {
+                                  "type": "string"
+                                },
+                                "blacklist": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "featureEvents": {
+                              "type": "object",
+                              "properties": {
+                                "blacklist": {
+                                  "type": "string"
+                                },
+                                "featureId": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "pollsSeenEver": {
+                              "type": "object",
+                              "properties": {
+                                "pollId": {
+                                  "type": "string"
+                                },
+                                "guideId": {
+                                  "type": "string"
+                                },
+                                "blacklist": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "switch": {
+                          "type": "object",
+                          "properties": {
+                            "response": {
+                              "type": "object",
+                              "properties": {
+                                "response": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "==": {
+                                        "type": "integer"
+                                      },
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "segment": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "identified": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "select": {
+                "type": "object",
+                "properties": {
+                  "accountId": {
+                    "type": "string"
+                  },
+                  "visitorId": {
+                    "type": "string"
+                  },
+                  "daysActive": {
+                    "type": "string"
+                  },
+                  "usageTrending": {
+                    "type": "string"
+                  },
+                  "account_auto_id": {
+                    "type": "string"
+                  },
+                  "visitor_agent_age": {
+                    "type": "string"
+                  },
+                  "visitor_agent_language": {
+                    "type": "string"
+                  },
+                  "visitor_auto_firstvisit": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": true
+              },
+              "source": {
+                "type": "object",
+                "properties": {
+                  "events": {
+                    "type": "object",
+                    "properties": {
+                      "appId": {
+                        "oneOf": [
+                          {
+                            "type": [
+                              "integer",
+                              "string"
+                            ]
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": [
+                                "integer",
+                                "string"
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "blacklist": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "timeSeries": {
+                    "type": "object",
+                    "properties": {
+                      "last": {
+                        "type": [
+                          "string",
+                          "integer"
+                        ]
+                      },
+                      "first": {
+                        "type": [
+                          "string",
+                          "integer"
+                        ]
+                      },
+                      "count": {
+                        "type": "integer"
+                      },
+                      "period": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "singleEvents": {
+                    "type": "object",
+                    "properties": {
+                      "appId": {
+                        "oneOf": [
+                          {
+                            "type": [
+                              "integer",
+                              "string"
+                            ]
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": [
+                                "integer",
+                                "string"
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "blacklist": {
+                        "type": "string"
+                      },
+                      "eventClass": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "reverseTime": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              },
+              "unwind": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string"
+                  }
+                }
+              },
+              "segment": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                }
+              },
+              "bulkExpand": {
+                "type": "object",
+                "properties": {
+                  "account": {
+                    "type": "object",
+                    "properties": {
+                      "account": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "visitor": {
+                    "type": "object",
+                    "properties": {
+                      "visitor": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "identified": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "ownedByUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "last": {
+          "type": "string"
+        },
+        "role": {
+          "type": "integer"
+        },
+        "first": {
+          "type": "string"
+        },
+        "userType": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "hasLoggedIn": {
+          "type": "boolean"
+        }
+      }
+    },
+    "createdByUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "last": {
+          "type": "string"
+        },
+        "role": {
+          "type": "integer"
+        },
+        "first": {
+          "type": "string"
+        },
+        "userType": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "deletedAt": {
+          "type": "integer"
+        },
+        "lastLogin": {
+          "type": "integer"
+        },
+        "visitorIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hasLoggedIn": {
+          "type": "boolean"
+        }
+      }
+    },
+    "lastUpdatedAt": {
+      "type": "integer"
+    },
+    "rootVersionId": {
+      "type": "string"
+    },
+    "stableVersionId": {
+      "type": "string"
+    },
+    "lastSuccessRunAt": {
+      "type": "integer"
+    },
+    "lastSuccessRunObj": {
+      "type": "string"
+    },
+    "lastUpdatedByUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "last": {
+          "type": "string"
+        },
+        "role": {
+          "type": "integer"
+        },
+        "first": {
+          "type": "string"
+        },
+        "userType": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "deletedAt": {
+          "type": "integer"
+        },
+        "lastLogin": {
+          "type": "integer"
+        },
+        "visitorIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hasLoggedIn": {
+          "type": "boolean"
+        }
+      }
+    },
+    "dependentMetadata": {
+      "type": "array"
+    }
+  },
+  "additionalProperties": true
+}

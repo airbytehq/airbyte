@@ -1,0 +1,26 @@
+data:
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:1.0.0@sha256:dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27
+  connectorSubtype: api
+  connectorType: source
+  definitionId: a2b1b9e0-a857-4e8f-ad51-3ecb1f629663
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-pendo-python
+  githubIssueLabel: source-pendo-python
+  icon: pendo-python.svg
+  license: MIT
+  name: Pendo Python
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pendo-python
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

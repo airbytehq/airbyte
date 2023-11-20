@@ -1,0 +1,417 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "agent": {
+      "properties": {
+        "id": {
+          "properties": {
+            "Dirty": {
+              "type": "boolean"
+            },
+            "DisplayName": {
+              "type": "string"
+            },
+            "ElementFormat": {
+              "type": "string"
+            },
+            "ElementType": {
+              "type": "string"
+            },
+            "Type": {
+              "type": "string"
+            },
+            "isCalculated": {
+              "type": "boolean"
+            },
+            "isDeleted": {
+              "type": "boolean"
+            },
+            "isHidden": {
+              "type": "boolean"
+            },
+            "isPerApp": {
+              "type": "boolean"
+            },
+            "isPromoted": {
+              "type": "boolean"
+            },
+            "neverIndex": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "name": {
+          "properties": {
+            "Dirty": {
+              "type": "boolean"
+            },
+            "DisplayName": {
+              "type": "string"
+            },
+            "ElementFormat": {
+              "type": "string"
+            },
+            "ElementType": {
+              "type": "string"
+            },
+            "Type": {
+              "type": "string"
+            },
+            "isCalculated": {
+              "type": "boolean"
+            },
+            "isDeleted": {
+              "type": "boolean"
+            },
+            "isHidden": {
+              "type": "boolean"
+            },
+            "isPerApp": {
+              "type": "boolean"
+            },
+            "isPromoted": {
+              "type": "boolean"
+            },
+            "neverIndex": {
+              "type": "boolean"
+            },
+            "sample": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "size": {
+          "properties": {
+            "Dirty": {
+              "type": "boolean"
+            },
+            "DisplayName": {
+              "type": "string"
+            },
+            "ElementFormat": {
+              "type": "string"
+            },
+            "ElementType": {
+              "type": "string"
+            },
+            "Type": {
+              "type": "string"
+            },
+            "isCalculated": {
+              "type": "boolean"
+            },
+            "isDeleted": {
+              "type": "boolean"
+            },
+            "isHidden": {
+              "type": "boolean"
+            },
+            "isPerApp": {
+              "type": "boolean"
+            },
+            "isPromoted": {
+              "type": "boolean"
+            },
+            "neverIndex": {
+              "type": "boolean"
+            },
+            "sample": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "tier": {
+          "properties": {
+            "Dirty": {
+              "type": "boolean"
+            },
+            "DisplayName": {
+              "type": "string"
+            },
+            "ElementFormat": {
+              "type": "string"
+            },
+            "ElementType": {
+              "type": "string"
+            },
+            "Type": {
+              "type": "string"
+            },
+            "isCalculated": {
+              "type": "boolean"
+            },
+            "isDeleted": {
+              "type": "boolean"
+            },
+            "isHidden": {
+              "type": "boolean"
+            },
+            "isPerApp": {
+              "type": "boolean"
+            },
+            "isPromoted": {
+              "type": "boolean"
+            },
+            "neverIndex": {
+              "type": "boolean"
+            },
+            "sample": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "timezone": {
+          "properties": {
+            "Dirty": {
+              "type": "boolean"
+            },
+            "DisplayName": {
+              "type": "string"
+            },
+            "ElementFormat": {
+              "type": "string"
+            },
+            "ElementType": {
+              "type": "string"
+            },
+            "Type": {
+              "type": "string"
+            },
+            "isCalculated": {
+              "type": "boolean"
+            },
+            "isDeleted": {
+              "type": "boolean"
+            },
+            "isHidden": {
+              "type": "boolean"
+            },
+            "isPerApp": {
+              "type": "boolean"
+            },
+            "isPromoted": {
+              "type": "boolean"
+            },
+            "neverIndex": {
+              "type": "boolean"
+            },
+            "sample": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "auto": {
+      "properties": {
+        "firstvisit": {
+          "properties": {
+            "Dirty": {
+              "type": "boolean"
+            },
+            "DisplayName": {
+              "type": "string"
+            },
+            "ElementFormat": {
+              "type": "string"
+            },
+            "ElementType": {
+              "type": "string"
+            },
+            "Type": {
+              "type": "string"
+            },
+            "isCalculated": {
+              "type": "boolean"
+            },
+            "isDeleted": {
+              "type": "boolean"
+            },
+            "isHidden": {
+              "type": "boolean"
+            },
+            "isPerApp": {
+              "type": "boolean"
+            },
+            "isPromoted": {
+              "type": "boolean"
+            },
+            "neverIndex": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "id": {
+          "properties": {
+            "Dirty": {
+              "type": "boolean"
+            },
+            "DisplayName": {
+              "type": "string"
+            },
+            "ElementFormat": {
+              "type": "string"
+            },
+            "ElementType": {
+              "type": "string"
+            },
+            "Type": {
+              "type": "string"
+            },
+            "isCalculated": {
+              "type": "boolean"
+            },
+            "isDeleted": {
+              "type": "boolean"
+            },
+            "isHidden": {
+              "type": "boolean"
+            },
+            "isPerApp": {
+              "type": "boolean"
+            },
+            "isPromoted": {
+              "type": "boolean"
+            },
+            "neverIndex": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "lastvisit": {
+          "properties": {
+            "Dirty": {
+              "type": "boolean"
+            },
+            "DisplayName": {
+              "type": "string"
+            },
+            "ElementFormat": {
+              "type": "string"
+            },
+            "ElementType": {
+              "type": "string"
+            },
+            "Type": {
+              "type": "string"
+            },
+            "isCalculated": {
+              "type": "boolean"
+            },
+            "isDeleted": {
+              "type": "boolean"
+            },
+            "isHidden": {
+              "type": "boolean"
+            },
+            "isPerApp": {
+              "type": "boolean"
+            },
+            "isPromoted": {
+              "type": "boolean"
+            },
+            "neverIndex": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "pendo": {
+      "properties": {
+        "blacklistguides": {
+          "properties": {
+            "Dirty": {
+              "type": "boolean"
+            },
+            "DisplayName": {
+              "type": "string"
+            },
+            "ElementFormat": {
+              "type": "string"
+            },
+            "ElementType": {
+              "type": "string"
+            },
+            "Type": {
+              "type": "string"
+            },
+            "isCalculated": {
+              "type": "boolean"
+            },
+            "isDeleted": {
+              "type": "boolean"
+            },
+            "isHidden": {
+              "type": "boolean"
+            },
+            "isPerApp": {
+              "type": "boolean"
+            },
+            "isPromoted": {
+              "type": "boolean"
+            },
+            "neverIndex": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "donotprocess": {
+          "properties": {
+            "Dirty": {
+              "type": "boolean"
+            },
+            "DisplayName": {
+              "type": "string"
+            },
+            "ElementFormat": {
+              "type": "string"
+            },
+            "ElementType": {
+              "type": "string"
+            },
+            "Type": {
+              "type": "string"
+            },
+            "isCalculated": {
+              "type": "boolean"
+            },
+            "isDeleted": {
+              "type": "boolean"
+            },
+            "isHidden": {
+              "type": "boolean"
+            },
+            "isPerApp": {
+              "type": "boolean"
+            },
+            "isPromoted": {
+              "type": "boolean"
+            },
+            "neverIndex": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "custom": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "type": "object"
+}

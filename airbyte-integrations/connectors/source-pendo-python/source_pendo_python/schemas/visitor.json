@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "auto": {
+          "type": ["null", "object"]
+        },
+        "agent": {
+          "type": ["null", "object"]
+        },
+        "custom": {
+          "type": ["null", "object"]
+        },
+        "segmentio": {
+          "type": ["null", "object"]
+        },
+        "salesforce": {
+          "type": ["null", "object"]
+        },
+        "hubspot": {
+          "type": ["null", "object"]
+        },
+        "pendo": {
+          "type": ["null", "object"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "visitorId": {
+      "type": ["null", "string"]
+    }
+  }
+}

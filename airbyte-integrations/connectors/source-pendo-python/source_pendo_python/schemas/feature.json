@@ -1,0 +1,288 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "appId": {
+      "type": "integer"
+    },
+    "color": {
+      "type": "string"
+    },
+    "dirty": {
+      "type": "boolean"
+    },
+    "group": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "length": {
+          "type": "integer"
+        },
+        "createdAt": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string"
+        },
+        "createdByUser": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "last": {
+              "type": "string"
+            },
+            "role": {
+              "type": "integer"
+            },
+            "first": {
+              "type": "string"
+            },
+            "userType": {
+              "type": "string"
+            },
+            "username": {
+              "type": "string"
+            },
+            "deletedAt": {
+              "type": "integer"
+            },
+            "lastLogin": {
+              "type": "integer"
+            },
+            "visitorIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "hasLoggedIn": {
+              "type": "boolean"
+            }
+          }
+        },
+        "lastUpdatedAt": {
+          "type": "integer"
+        },
+        "lastUpdatedByUser": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "last": {
+              "type": "string"
+            },
+            "role": {
+              "type": "integer"
+            },
+            "first": {
+              "type": "string"
+            },
+            "userType": {
+              "type": "string"
+            },
+            "username": {
+              "type": "string"
+            },
+            "lastLogin": {
+              "type": "integer"
+            },
+            "visitorIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "hasLoggedIn": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "pageId": {
+      "type": "string"
+    },
+    "appWide": {
+      "type": "boolean"
+    },
+    "createdAt": {
+      "type": "integer"
+    },
+    "isCoreEvent": {
+      "type": "boolean"
+    },
+    "validThrough": {
+      "type": "integer"
+    },
+    "createdByUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "last": {
+          "type": "string"
+        },
+        "role": {
+          "type": "integer"
+        },
+        "first": {
+          "type": "string"
+        },
+        "userType": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "deletedAt": {
+          "type": "integer"
+        },
+        "lastLogin": {
+          "type": "integer"
+        },
+        "visitorIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hasLoggedIn": {
+          "type": "boolean"
+        }
+      }
+    },
+    "lastUpdatedAt": {
+      "type": "integer"
+    },
+    "rootVersionId": {
+      "type": "string"
+    },
+    "suggestedMatch": {
+      "type": "string"
+    },
+    "dailyMergeFirst": {
+      "type": "integer"
+    },
+    "stableVersionId": {
+      "type": "string"
+    },
+    "dailyRollupFirst": {
+      "type": "integer"
+    },
+    "elementPathRules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "elementInitialTag": {
+      "type": "string"
+    },
+    "lastUpdatedByUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "last": {
+          "type": "string"
+        },
+        "role": {
+          "type": "integer"
+        },
+        "first": {
+          "type": "string"
+        },
+        "userType": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "deletedAt": {
+          "type": "integer"
+        },
+        "lastLogin": {
+          "type": "integer"
+        },
+        "visitorIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hasLoggedIn": {
+          "type": "boolean"
+        }
+      }
+    },
+    "elementSelectionType": {
+      "type": "string"
+    },
+    "createdDesignerVersion": {
+      "type": "string"
+    },
+    "eventPropertyConfigurations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "selector": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "isSuggested": {
+      "type": "boolean"
+    }
+  }
+}
