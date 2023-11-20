@@ -356,7 +356,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
                 .from(rawTableRowsWithCast))
             .getSQL(ParamType.INLINED);
     final String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
-    final String deleteCdcDeletesStmt = streamConfig.columns().containsKey(CDC_DELETED_AT_COLUMN) ? deleteFromFinalTableCdcDeletes(finalSchema, finalTable) : "";
+    final String deleteCdcDeletesStmt =
+        streamConfig.columns().containsKey(CDC_DELETED_AT_COLUMN) ? deleteFromFinalTableCdcDeletes(finalSchema, finalTable) : "";
     final String checkpointStmt = checkpointRawTable(rawSchema, rawTable);
 
     if (streamConfig.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
