@@ -29,7 +29,6 @@ import io.airbyte.cdk.integrations.destination.s3.util.CompressionType;
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
