@@ -57,6 +57,7 @@ public class PostgresTestDatabase implements AutoCloseable {
   }
 
   public enum PostgresImageLayer {
+
     ASCII(ContainerFactory::withASCII),
     CONF(ContainerFactory::withConf),
     NETWORK(ContainerFactory::withNetwork),
@@ -189,7 +190,7 @@ public class PostgresTestDatabase implements AutoCloseable {
   @Override
   public void close() {
     dslContext.close();
-    //execSQL(String.format("DROP USER %s", userName));
+    // execSQL(String.format("DROP USER %s", userName));
   }
 
   static private class ContainerFactory {
@@ -240,7 +241,7 @@ public class PostgresTestDatabase implements AutoCloseable {
      */
     public void withConf() {
       if (sharedContainer.isRunning()) {
-        throw new RuntimeException ("the shared container is already running. This call will have no effect!");
+        throw new RuntimeException("the shared container is already running. This call will have no effect!");
       }
       sharedContainer
           .withCopyFileToContainer(
@@ -254,7 +255,7 @@ public class PostgresTestDatabase implements AutoCloseable {
      */
     public void withNetwork() {
       if (sharedContainer.isRunning()) {
-        throw new RuntimeException ("the shared container is already running. This call will have no effect!");
+        throw new RuntimeException("the shared container is already running. This call will have no effect!");
       }
       sharedContainer.withNetwork(Network.newNetwork());
     }
@@ -264,7 +265,7 @@ public class PostgresTestDatabase implements AutoCloseable {
      */
     public void withWalLevelLogical() {
       if (sharedContainer.isRunning()) {
-        throw new RuntimeException ("the shared container is already running. This call will have no effect!");
+        throw new RuntimeException("the shared container is already running. This call will have no effect!");
       }
       sharedContainer.withCommand("postgres -c wal_level=logical");
     }
@@ -275,34 +276,36 @@ public class PostgresTestDatabase implements AutoCloseable {
     public void withCert() {
       sharedContainer.start();
       String[] commands = {
-          "mkdir /var/lib/postgresql/certs",
-          // create the CA key and certificate
-          "openssl ecparam -name prime256v1 -genkey -noout -out /var/lib/postgresql/certs/ca.key",
-          "openssl req -new -x509 -sha256 -key /var/lib/postgresql/certs/ca.key -out /var/lib/postgresql/certs/ca.crt -subj \"/CN=127.0.0.1\"",
-          //create the server key and certificate, certified by the CA above
-          "openssl ecparam -name prime256v1 -genkey -noout -out /var/lib/postgresql/certs/server.key",
-          "openssl req -new -sha256 -key /var/lib/postgresql/certs/server.key -out /var/lib/postgresql/certs/server.csr -subj \"/CN=localhost\"",
-          "openssl x509 -req -in /var/lib/postgresql/certs/server.csr -CA /var/lib/postgresql/certs/ca.crt -CAkey /var/lib/postgresql/certs/ca.key " +
-              "-CAcreateserial -out /var/lib/postgresql/certs/server.crt -days 365 -sha256",
-          // reconfigure postgres
-          "echo \"ssl = on\" >> /var/lib/postgresql/data/postgresql.conf",
-          "echo \"ssl_cert_file = '/var/lib/postgresql/certs/server.crt'\" >> /var/lib/postgresql/data/postgresql.conf",
-          "echo \"ssl_key_file = '/var/lib/postgresql/certs/server.key'\" >> /var/lib/postgresql/data/postgresql.conf",
-          "echo \"ssl_ca_file = '/var/lib/postgresql/certs/ca.crt'\" >> /var/lib/postgresql/data/postgresql.conf",
-          // Here, we reset pg_hba to not accept any connection except locals.
-          "echo \"local all test all trust\" > /var/lib/postgresql/data/pg_hba.conf",
-          // Then we add SSL-only with full certification to the user used by all network connections.
-          "echo \"hostssl all " + sharedContainer.getUsername() + " all cert\" >> /var/lib/postgresql/data/pg_hba.conf",
-          // finally, create client key and certificate, both verified by the CA
-          "openssl ecparam -name prime256v1 -genkey -noout -out /var/lib/postgresql/certs/client.key",
-          "openssl req -new -sha256 -key /var/lib/postgresql/certs/client.key -out /var/lib/postgresql/certs/client.csr -subj \"/CN="+ sharedContainer.getUsername()+"\"",
-          "openssl x509 -req -in /var/lib/postgresql/certs/client.csr -CA /var/lib/postgresql/certs/ca.crt -CAkey /var/lib/postgresql/certs/ca.key " +
-              "-CAcreateserial -out /var/lib/postgresql/certs/client.crt -days 365 -sha256",
-          // make everything accessible by postgres only, as required by the postgres doc at https://www.postgresql.org/docs/16/ssl-tcp.html
-          "chmod 0600 /var/lib/postgresql/certs/*",
-          "chown postgres:postgres /var/lib/postgresql/certs/*",
-          // reload config and pg_hba.
-          "psql -U test -c \"SELECT pg_reload_conf();\""
+        "mkdir /var/lib/postgresql/certs",
+        // create the CA key and certificate
+        "openssl ecparam -name prime256v1 -genkey -noout -out /var/lib/postgresql/certs/ca.key",
+        "openssl req -new -x509 -sha256 -key /var/lib/postgresql/certs/ca.key -out /var/lib/postgresql/certs/ca.crt -subj \"/CN=127.0.0.1\"",
+        // create the server key and certificate, certified by the CA above
+        "openssl ecparam -name prime256v1 -genkey -noout -out /var/lib/postgresql/certs/server.key",
+        "openssl req -new -sha256 -key /var/lib/postgresql/certs/server.key -out /var/lib/postgresql/certs/server.csr -subj \"/CN=localhost\"",
+        "openssl x509 -req -in /var/lib/postgresql/certs/server.csr -CA /var/lib/postgresql/certs/ca.crt -CAkey /var/lib/postgresql/certs/ca.key " +
+            "-CAcreateserial -out /var/lib/postgresql/certs/server.crt -days 365 -sha256",
+        // reconfigure postgres
+        "echo \"ssl = on\" >> /var/lib/postgresql/data/postgresql.conf",
+        "echo \"ssl_cert_file = '/var/lib/postgresql/certs/server.crt'\" >> /var/lib/postgresql/data/postgresql.conf",
+        "echo \"ssl_key_file = '/var/lib/postgresql/certs/server.key'\" >> /var/lib/postgresql/data/postgresql.conf",
+        "echo \"ssl_ca_file = '/var/lib/postgresql/certs/ca.crt'\" >> /var/lib/postgresql/data/postgresql.conf",
+        // Here, we reset pg_hba to not accept any connection except locals.
+        "echo \"local all test all trust\" > /var/lib/postgresql/data/pg_hba.conf",
+        // Then we add SSL-only with full certification to the user used by all network connections.
+        "echo \"hostssl all " + sharedContainer.getUsername() + " all cert\" >> /var/lib/postgresql/data/pg_hba.conf",
+        // finally, create client key and certificate, both verified by the CA
+        "openssl ecparam -name prime256v1 -genkey -noout -out /var/lib/postgresql/certs/client.key",
+        "openssl req -new -sha256 -key /var/lib/postgresql/certs/client.key -out /var/lib/postgresql/certs/client.csr -subj \"/CN="
+            + sharedContainer.getUsername() + "\"",
+        "openssl x509 -req -in /var/lib/postgresql/certs/client.csr -CA /var/lib/postgresql/certs/ca.crt -CAkey /var/lib/postgresql/certs/ca.key " +
+            "-CAcreateserial -out /var/lib/postgresql/certs/client.crt -days 365 -sha256",
+        // make everything accessible by postgres only, as required by the postgres doc at
+        // https://www.postgresql.org/docs/16/ssl-tcp.html
+        "chmod 0600 /var/lib/postgresql/certs/*",
+        "chown postgres:postgres /var/lib/postgresql/certs/*",
+        // reload config and pg_hba.
+        "psql -U test -c \"SELECT pg_reload_conf();\""
       };
       for (String cmd : commands) {
         try {
@@ -319,7 +322,6 @@ public class PostgresTestDatabase implements AutoCloseable {
         }
       }
     }
-
 
     /**
      * Configure postgres with client_encoding=sql_ascii.

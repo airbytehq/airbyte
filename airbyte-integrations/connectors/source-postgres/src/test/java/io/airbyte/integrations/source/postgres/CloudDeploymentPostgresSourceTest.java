@@ -30,9 +30,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.testcontainers.containers.Network;
 
 public class CloudDeploymentPostgresSourceTest {
@@ -68,6 +66,7 @@ public class CloudDeploymentPostgresSourceTest {
   private static List<String> getNonStrictSslModes() {
     return List.of("disable", "allow", "prefer");
   }
+
   private static final String SSL_MODE_REQUIRE = "require";
 
   private Source source() {
