@@ -17,6 +17,7 @@ import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.model.generated.DiscoverCatalogResult;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaWriteRequestBody;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.configoss.JobGetSpecConfig;
 import io.airbyte.configoss.StandardCheckConnectionInput;
@@ -45,6 +46,7 @@ import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -142,12 +144,14 @@ public abstract class AbstractSourceConnectorTest {
     when(mSourceApi.writeDiscoverCatalogResult(any()))
         .thenReturn(new DiscoverCatalogResult().catalogId(CATALOG_ID));
     mConnectorConfigUpdater = mock(ConnectorConfigUpdater.class);
+    var envMap = new HashMap<>(new TestEnvConfigs().getJobDefaultEnvMap());
+    envMap.put(EnvVariableFeatureFlags.DEPLOYMENT_MODE, featureFlags().deploymentMode());
     processFactory = new DockerProcessFactory(
         workspaceRoot,
         workspaceRoot.toString(),
         localRoot.toString(),
         "host",
-        new TestEnvConfigs().getJobDefaultEnvMap());
+        envMap);
 
     postSetup();
   }
@@ -163,10 +167,14 @@ public abstract class AbstractSourceConnectorTest {
     tearDown(environment);
   }
 
+  protected FeatureFlags featureFlags() {
+    return new EnvVariableFeatureFlags();
+  }
+
   protected ConnectorSpecification runSpec() throws TestHarnessException {
     final io.airbyte.protocol.models.ConnectorSpecification spec = new DefaultGetSpecTestHarness(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false,
-            new EnvVariableFeatureFlags()))
+            featureFlags()))
                 .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
     return convertProtocolObject(spec, ConnectorSpecification.class);
   }
@@ -174,7 +182,7 @@ public abstract class AbstractSourceConnectorTest {
   protected StandardCheckConnectionOutput runCheck() throws Exception {
     return new DefaultCheckConnectionTestHarness(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false,
-            new EnvVariableFeatureFlags()),
+            featureFlags()),
         mConnectorConfigUpdater)
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot).getCheckConnection();
   }
@@ -182,7 +190,7 @@ public abstract class AbstractSourceConnectorTest {
   protected String runCheckAndGetStatusAsString(final JsonNode config) throws Exception {
     return new DefaultCheckConnectionTestHarness(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false,
-            new EnvVariableFeatureFlags()),
+            featureFlags()),
         mConnectorConfigUpdater)
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).getCheckConnection().getStatus().toString();
   }
@@ -191,7 +199,7 @@ public abstract class AbstractSourceConnectorTest {
     final UUID toReturn = new DefaultDiscoverCatalogTestHarness(
         mAirbyteApiClient,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false,
-            new EnvVariableFeatureFlags()),
+            featureFlags()),
         mConnectorConfigUpdater)
             .run(new StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(getConfig()), jobRoot)
             .getDiscoverCatalogId();
@@ -222,12 +230,10 @@ public abstract class AbstractSourceConnectorTest {
         .withState(state == null ? null : new State().withState(state))
         .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 
-    final var featureFlags = new EnvVariableFeatureFlags();
-
     final AirbyteSource source = new DefaultAirbyteSource(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false,
-            featureFlags),
-        featureFlags);
+            featureFlags()),
+        featureFlags());
     final List<AirbyteMessage> messages = new ArrayList<>();
     source.start(sourceConfig, jobRoot);
     while (!source.isFinished()) {
@@ -266,7 +272,6 @@ public abstract class AbstractSourceConnectorTest {
   }
 
   private AirbyteSource prepareAirbyteSource() {
-    final var featureFlags = new EnvVariableFeatureFlags();
     final var integrationLauncher = new AirbyteIntegrationLauncher(
         JOB_ID,
         JOB_ATTEMPT,
@@ -275,8 +280,8 @@ public abstract class AbstractSourceConnectorTest {
         null,
         null,
         false,
-        featureFlags);
-    return new DefaultAirbyteSource(integrationLauncher, featureFlags);
+        featureFlags());
+    return new DefaultAirbyteSource(integrationLauncher, featureFlags());
   }
 
   private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {

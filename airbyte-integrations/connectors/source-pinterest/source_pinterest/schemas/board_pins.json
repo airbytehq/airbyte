@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
   "properties": {
@@ -7,18 +7,11 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "creative_type": {
-      "type": ["null", "string"],
-      "enum": [
-        "REGULAR",
-        "VIDEO",
-        "CAROUSEL",
-        "MAX_VIDEO",
-        "SHOP_THE_PIN",
-        "IDEA"
-      ]
+      "type": ["null", "string"]
     },
     "is_standard": {
       "type": ["null", "boolean"]
@@ -76,6 +69,12 @@
           "type": ["null", "string"]
         }
       }
+    },
+    "pin_metrics": {
+      "type": ["null", "object"]
+    },
+    "has_been_promoted": {
+      "type": ["null", "boolean"]
     }
   }
 }

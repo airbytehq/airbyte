@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import functools
 from typing import List, Set
 
-import anyio
 import git
 from dagger import Connection
 from github import PullRequest
@@ -12,11 +12,11 @@ from pipelines.helpers.utils import AIRBYTE_REPO_URL, DAGGER_CONFIG, DIFF_FILTER
 
 
 def get_current_git_revision() -> str:  # noqa D103
-    return git.Repo().head.object.hexsha
+    return git.Repo(search_parent_directories=True).head.object.hexsha
 
 
 def get_current_git_branch() -> str:  # noqa D103
-    return git.Repo().active_branch.name
+    return git.Repo(search_parent_directories=True).active_branch.name
 
 
 async def get_modified_files_in_branch_remote(
@@ -64,12 +64,14 @@ def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch:
     return set(modified_files)
 
 
-def get_modified_files_in_branch(current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True) -> Set[str]:
+async def get_modified_files_in_branch(
+    current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True
+) -> Set[str]:
     """Retrieve the list of modified files on the branch."""
     if is_local:
         return get_modified_files_in_branch_local(current_git_revision, diffed_branch)
     else:
-        return anyio.run(get_modified_files_in_branch_remote, current_git_branch, current_git_revision, diffed_branch)
+        return await get_modified_files_in_branch_remote(current_git_branch, current_git_revision, diffed_branch)
 
 
 async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str) -> Set[str]:
@@ -104,13 +106,25 @@ def get_modified_files_in_commit_local(current_git_revision: str) -> Set[str]:
     return set(modified_files)
 
 
-def get_modified_files_in_commit(current_git_branch: str, current_git_revision: str, is_local: bool = True) -> Set[str]:
+async def get_modified_files_in_commit(current_git_branch: str, current_git_revision: str, is_local: bool = True) -> Set[str]:
     if is_local:
         return get_modified_files_in_commit_local(current_git_revision)
     else:
-        return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
+        return await get_modified_files_in_commit_remote(current_git_branch, current_git_revision)
 
 
 def get_modified_files_in_pull_request(pull_request: PullRequest) -> List[str]:
     """Retrieve the list of modified files in a pull request."""
     return [f.filename for f in pull_request.get_files()]
+
+
+@functools.cache
+def get_git_repo() -> git.Repo:
+    """Retrieve the git repo."""
+    return git.Repo(search_parent_directories=True)
+
+
+@functools.cache
+def get_git_repo_path() -> str:
+    """Retrieve the git repo path."""
+    return get_git_repo().working_tree_dir

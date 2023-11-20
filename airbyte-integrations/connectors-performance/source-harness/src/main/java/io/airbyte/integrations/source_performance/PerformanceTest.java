@@ -55,13 +55,23 @@ public class PerformanceTest {
   public static final double MEGABYTE = Math.pow(1024, 2);
   private final String imageName;
   private final String dataset;
+  private final String syncMode;
+  private final boolean reportToDatadog;
   private final JsonNode config;
   private final ConfiguredAirbyteCatalog catalog;
 
-  PerformanceTest(final String imageName, final String dataset, final String config, final String catalog) throws JsonProcessingException {
+  PerformanceTest(final String imageName,
+                  final String dataset,
+                  final String syncMode,
+                  final Boolean reportToDatadog,
+                  final String config,
+                  final String catalog)
+      throws JsonProcessingException {
     final ObjectMapper mapper = new ObjectMapper();
     this.imageName = imageName;
     this.dataset = dataset;
+    this.syncMode = syncMode;
+    this.reportToDatadog = reportToDatadog;
     this.config = mapper.readTree(config);
     this.catalog = Jsons.deserialize(catalog, ConfiguredAirbyteCatalog.class);
   }
@@ -118,6 +128,9 @@ public class PerformanceTest {
             totalBytes / MEGABYTE);
       }
     }
+    if (source.getExitValue() > 0) {
+      throw new RuntimeException("Source failed with exit code: " + source.getExitValue());
+    }
     log.info("Test ended successfully");
     final var end = System.currentTimeMillis();
     final var totalMB = totalBytes / MEGABYTE;
@@ -126,13 +139,17 @@ public class PerformanceTest {
     final var throughput = totalMB / totalTimeSecs;
     log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, throughput);
     source.close();
+    if (!reportToDatadog) {
+      return;
+    }
 
     final long reportingTimeInEpochSeconds = OffsetDateTime.now().toInstant().getEpochSecond();
 
     List<MetricResource> metricResources = List.of(
         new MetricResource().name("github").type("runner"),
         new MetricResource().name(imageName).type("image"),
-        new MetricResource().name(dataset).type("dataset"));
+        new MetricResource().name(dataset).type("dataset"),
+        new MetricResource().name(syncMode).type("syncMode"));
     MetricPayload body =
         new MetricPayload()
             .series(

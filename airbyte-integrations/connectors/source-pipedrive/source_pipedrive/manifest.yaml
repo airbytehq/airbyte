@@ -10,8 +10,9 @@ definitions:
   selector_increment:
     type: RecordSelector
     extractor:
-      type: DpathExtractor
-      field_path: ["data", "*", "data"]
+      class_name: source_pipedrive.extractor.NullCheckedDpathExtractor
+      field_path: ["data", "*"]
+      nullable_nested_field: data
 
   selector_users:
     type: RecordSelector
@@ -190,6 +191,41 @@ definitions:
     $parameters:
       path: "/currencies"
 
+  mail_stream:
+    $ref: "#/definitions/base_stream"
+    name: mail
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: thread_id
+              stream:
+                $ref: "#/definitions/base_stream"
+                name: mailthreads
+                primary_key: "id"
+                retriever:
+                  $ref: "#/definitions/retriever"
+                  partition_router:
+                    - type: ListPartitionRouter
+                      values:
+                        - inbox
+                        - drafts
+                        - sent
+                        - archive
+                      cursor_field: folder
+                      request_option:
+                        inject_into: request_parameter
+                        type: RequestOption
+                        field_name: folder
+                $parameters:
+                  path: "mailbox/mailThreads"
+    $parameters:
+      path: "mailbox/mailThreads/{{ stream_partition.thread_id }}/mailMessages"
+
   organization_stream:
     $ref: "#/definitions/base_stream"
     name: "organizations"
@@ -330,6 +366,7 @@ streams:
   - "#/definitions/activity_types_stream"
   - "#/definitions/activity_fields_stream"
   - "#/definitions/currencies_stream"
+  - "#/definitions/mail_stream"
   - "#/definitions/organization_stream"
   - "#/definitions/organization_fields_stream"
   - "#/definitions/permission_sets_stream"

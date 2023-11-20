@@ -3,11 +3,13 @@
 #
 
 import re
+from http import HTTPStatus
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from requests.exceptions import HTTPError
 from source_klaviyo.streams import Campaigns, EmailTemplates, Events, Flows, GlobalExclusions, Lists, Metrics, Profiles
 
 
@@ -21,6 +23,12 @@ class SourceKlaviyo(AbstractSource):
         try:
             # we use metrics endpoint because it never returns an error
             _ = list(Metrics(api_key=config["api_key"]).read_records(sync_mode=SyncMode.full_refresh))
+        except HTTPError as e:
+            if e.response.status_code in (HTTPStatus.FORBIDDEN, HTTPStatus.UNAUTHORIZED):
+                message = "Please provide a valid API key and make sure it has permissions to read specified streams."
+            else:
+                message = "Unable to connect to Klaviyo API with provided credentials."
+            return False, message
         except Exception as e:
             original_error_message = repr(e)
 
@@ -39,14 +47,14 @@ class SourceKlaviyo(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         api_key = config["api_key"]
-        start_date = config["start_date"]
+        start_date = config.get("start_date")
         return [
-            Campaigns(api_key=api_key),
+            Campaigns(api_key=api_key, start_date=start_date),
             Events(api_key=api_key, start_date=start_date),
             GlobalExclusions(api_key=api_key, start_date=start_date),
-            Lists(api_key=api_key),
-            Metrics(api_key=api_key),
+            Lists(api_key=api_key, start_date=start_date),
+            Metrics(api_key=api_key, start_date=start_date),
             Flows(api_key=api_key, start_date=start_date),
-            EmailTemplates(api_key=api_key),
+            EmailTemplates(api_key=api_key, start_date=start_date),
             Profiles(api_key=api_key, start_date=start_date),
         ]

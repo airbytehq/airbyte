@@ -78,6 +78,8 @@ def test_http_method(patch_base_class):
         (HTTPStatus.BAD_REQUEST, True),
         (HTTPStatus.TOO_MANY_REQUESTS, True),
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+        (HTTPStatus.BAD_GATEWAY, True),
+        (HTTPStatus.FORBIDDEN, False),
     ],
 )
 def test_should_retry(patch_base_class, http_status, should_retry):
@@ -124,10 +126,22 @@ def test_empty_blocks_results(requests_mock):
     assert list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=[])) == []
 
 
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock(headers={"retry-after": "10"})
+@pytest.mark.parametrize(
+    "status_code,retry_after_header,expected_backoff",
+    [
+        (429, "10", 10.0),  # Case for 429 error with retry-after header
+        (429, None, 5.0),  # Case for 429 error without retry-after header, should default to 5.0
+        (504, None, None),  # Case for 500-level error, should default to None and use CDK exponential backoff
+        (400, None, 10.0),  # Case for specific 400-level error handled by check_invalid_start_cursor
+    ],
+)
+def test_backoff_time(status_code, retry_after_header, expected_backoff, patch_base_class):
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = status_code
+    response_mock.headers = {"retry-after": retry_after_header} if retry_after_header else {}
     stream = NotionStream(config=MagicMock())
-    assert stream.backoff_time(response_mock) == 10.0
+
+    assert stream.backoff_time(response_mock) == expected_backoff
 
 
 def test_users_request_params(patch_base_class):
@@ -263,3 +277,38 @@ def test_403_error_handling(
         assert expected_reason_substring in reason
     else:
         assert reason is None
+
+
+@pytest.mark.parametrize(
+    "initial_page_size, expected_page_size, mock_response",
+    [
+        (100, 50, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}),
+        (50, 25, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}),
+        (100, 100, {"status_code": 429, "json": {}, "headers": {"retry-after": "1"}}),
+        (50, 100, {"status_code": 200, "json": {"data": "success"}, "headers": {}}),
+    ],
+    ids=[
+        "504 error, page_size 100 -> 50",
+        "504 error, page_size 50 -> 25",
+        "429 error, page_size 100 -> 100",
+        "200 success, page_size 50 -> 100",
+    ],
+)
+def test_request_throttle(initial_page_size, expected_page_size, mock_response, requests_mock):
+    """
+    Tests that the request page_size is halved when a 504 error is encountered.
+    Once a 200 success is encountered, the page_size is reset to 100, for use in the next call.
+    """
+    requests_mock.register_uri(
+        "GET",
+        "https://api.notion.com/v1/users",
+        [{"status_code": mock_response["status_code"], "json": mock_response["json"], "headers": mock_response["headers"]}],
+    )
+
+    stream = Users(config={"authenticator": "auth"})
+    stream.page_size = initial_page_size
+    response = requests.get("https://api.notion.com/v1/users")
+
+    stream.should_retry(response=response)
+
+    assert stream.page_size == expected_page_size

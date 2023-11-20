@@ -10,7 +10,7 @@ from glob import glob
 from pathlib import Path
 from typing import Any
 
-import click
+import asyncclick as click
 from dagger import DaggerError
 from pipelines import consts, main_logger
 from pipelines.consts import GCS_PUBLIC_DOMAIN, STATIC_REPORT_PREFIX
@@ -21,7 +21,7 @@ from pipelines.helpers.utils import slugify
 
 class DaggerPipelineCommand(click.Command):
     @sentry_utils.with_command_context
-    def invoke(self, ctx: click.Context) -> Any:
+    async def invoke(self, ctx: click.Context) -> Any:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
         Args:
             ctx (click.Context): The invocation context.
@@ -49,7 +49,7 @@ class DaggerPipelineCommand(click.Command):
                     ctx.obj["dagger_logs_url"] = None
             else:
                 ctx.obj["dagger_logs_path"] = None
-            pipeline_success = super().invoke(ctx)
+            pipeline_success = await super().invoke(ctx)
             if not pipeline_success:
                 raise DaggerError(f"Dagger Command {command_name} failed.")
         except DaggerError as e:

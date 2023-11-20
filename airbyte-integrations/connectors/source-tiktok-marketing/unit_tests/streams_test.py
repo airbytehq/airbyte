@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 import pendulum
 import pytest
+import requests
 from source_tiktok_marketing.source import get_report_stream
 from source_tiktok_marketing.streams import (
     AdGroupsReports,
@@ -200,6 +201,20 @@ def test_basic_reports_cursor_field(granularity, cursor_field_expected):
     assert cursor_field == cursor_field_expected
 
 
+@pytest.mark.parametrize(
+    "granularity, cursor_field_expected",
+    [
+        (Daily, ["dimensions", "stat_time_day"]),
+        (Hourly, ["dimensions", "stat_time_hour"]),
+        (Lifetime, ["dimensions", "stat_time_day"]),
+    ],
+)
+def test_basic_reports_deprecated_cursor_field(granularity, cursor_field_expected):
+    ads_reports = get_report_stream(AdsReports, granularity)(**CONFIG)
+    deprecated_cursor_field = ads_reports.deprecated_cursor_field
+    assert deprecated_cursor_field == cursor_field_expected
+
+
 def test_request_params():
     stream_slice = {"advertiser_id": 1, "start_date": "2020", "end_date": "2021"}
     params = get_report_stream(AdvertisersAudienceReports, Daily)(**CONFIG).request_params(stream_slice=stream_slice)
@@ -237,3 +252,24 @@ def test_get_updated_state():
         # state2_modify_time is JsonUpdatedState object
         state2_modify_time = state2["modify_time"]
         assert state2_modify_time.dict() == "2020-01-08 00:00:00"
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        (["str1", "str2", "str3"], '["str1", "str2", "str3"]'),
+        ([1, 2, 3], "[1, 2, 3]"),
+    ],
+)
+def test_convert_array_param(value, expected):
+    stream = Advertisers("2021-01-01", "2021-01-02")
+    test = stream.convert_array_param(value)
+    assert test == expected
+
+
+def test_no_next_page_token(requests_mock):
+    stream = Advertisers("2021-01-01", "2021-01-02")
+    url = stream.url_base + stream.path()
+    requests_mock.get(url, json={"data": {"page_info": {}}})
+    test_response = requests.get(url)
+    assert stream.next_page_token(test_response) is None

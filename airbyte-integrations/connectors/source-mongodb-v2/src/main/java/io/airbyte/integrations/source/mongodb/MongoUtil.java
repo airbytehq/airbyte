@@ -160,9 +160,10 @@ public class MongoUtil {
       final MongoCollection<Document> collection = mongoDatabase.getCollection(stream.getStream().getName());
       final AggregateIterable<Document> output = collection.aggregate(List.of(new Document("$collStats", collStats)));
 
-      try (final MongoCursor<Document> cursor = output.cursor()) {
+      try (final MongoCursor<Document> cursor = output.allowDiskUse(true).cursor()) {
         if (cursor.hasNext()) {
           final Document stats = cursor.next();
+          @SuppressWarnings("unchecked")
           final Map<String, Object> storageStats = (Map<String, Object>) stats.get(MongoConstants.STORAGE_STATS_KEY);
           if (storageStats != null && !storageStats.isEmpty()) {
             return Optional.of(new CollectionStatistics((Number) storageStats.get(MongoConstants.COLLECTION_STATISTICS_COUNT_KEY),
@@ -252,8 +253,9 @@ public class MongoUtil {
      */
     final AggregateIterable<Document> output = collection.aggregate(aggregateList);
 
-    try (final MongoCursor<Document> cursor = output.cursor()) {
+    try (final MongoCursor<Document> cursor = output.allowDiskUse(true).cursor()) {
       while (cursor.hasNext()) {
+        @SuppressWarnings("unchecked")
         final Map<String, String> fields = ((List<Map<String, String>>) cursor.next().get("fields")).get(0);
         discoveredFields.addAll(fields.entrySet().stream()
             .map(e -> new MongoField(e.getKey(), convertToSchemaType(e.getValue())))

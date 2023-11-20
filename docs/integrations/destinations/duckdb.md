@@ -106,6 +106,7 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 | Version | Date       | Pull Request                                             | Subject                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------- |
+| 0.3.0   | 2022-11-23 | [#31744](https://github.com/airbytehq/airbyte/pull/31744) | Upgrade DuckDB version to [`v0.9.1`](https://github.com/duckdb/duckdb/releases/tag/v0.9.1). **Required update for all MotherDuck users.** Note, this is a **BREAKING CHANGE** for users who may have other connections using versions of DuckDB prior to 0.9.x. See the [0.9.0 release notes](https://github.com/duckdb/duckdb/releases/tag/v0.9.0) for more information and for upgrade instructions. |
 | 0.2.1   | 2022-10-20 | [#30600](https://github.com/airbytehq/airbyte/pull/30600) | Fix: schema name mapping |
 | 0.2.0   | 2022-10-19 | [#29428](https://github.com/airbytehq/airbyte/pull/29428) | Add support for MotherDuck. Upgrade DuckDB version to `v0.8``. |
 | 0.1.0   | 2022-10-14 | [17494](https://github.com/airbytehq/airbyte/pull/17494) | New DuckDB destination |
