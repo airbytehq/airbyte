@@ -11,6 +11,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.protos.AirbyteCatalog;
+import io.airbyte.protocol.protos.AirbyteStreamState;
+import io.airbyte.protocol.protos.StreamDescriptor;
+
 import java.time.Instant;
 import javax.annotation.CheckForNull;
 
@@ -52,6 +56,14 @@ class SpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
 
     message.getRecord().withData(jsonNode);
     return Jsons.clone(message);
+  }
+
+
+  public static void main(String[] args) {
+    System.out.println("poop");
+
+    System.out.println(AirbyteStreamState.getDefaultInstance().isInitialized());
+    System.out.println(AirbyteStreamState.newBuilder().setStreamDescriptor(StreamDescriptor.newBuilder().setName("Test").build()));
   }
 
 }
