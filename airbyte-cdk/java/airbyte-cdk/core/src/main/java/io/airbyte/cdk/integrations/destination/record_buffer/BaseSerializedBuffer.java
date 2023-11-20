@@ -65,7 +65,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
    * TODO: (ryankfu) move destination to use serialized record string instead of passing entire
    * AirbyteRecord
    *
-   * @param record    serialized record
+   * @param record serialized record
    * @param emittedAt timestamp of the record in milliseconds
    * @throws IOException
    */

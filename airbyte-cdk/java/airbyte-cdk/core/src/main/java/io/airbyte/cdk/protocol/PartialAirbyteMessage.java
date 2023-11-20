@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.protocol;
 
 import io.airbyte.cdk.protocol.deser.PartialJsonDeserializer;
@@ -8,6 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class PartialAirbyteMessage {
+
   AirbyteMessage.Type type;
   PartialAirbyteRecordMessage record;
   PartialAirbyteStateMessage state;
@@ -29,11 +34,10 @@ public class PartialAirbyteMessage {
     final boolean nonNull = PartialJsonDeserializer.processObject(
         message,
         Map.of(
-            "type", (messageTypeIterator) -> deserMessage.type = AirbyteMessage.Type.valueOf(PartialJsonDeserializer.readStringValue(messageTypeIterator)),
+            "type",
+            (messageTypeIterator) -> deserMessage.type = AirbyteMessage.Type.valueOf(PartialJsonDeserializer.readStringValue(messageTypeIterator)),
             "record", (messageRecordIterator) -> deserMessage.record = PartialAirbyteRecordMessage.fromJson(messageRecordIterator),
-            "state", (messageStateIterator) -> deserMessage.state = PartialAirbyteStateMessage.fromJson(messageStateIterator)
-        )
-    );
+            "state", (messageStateIterator) -> deserMessage.state = PartialAirbyteStateMessage.fromJson(messageStateIterator)));
     if (nonNull) {
       return deserMessage;
     } else {
@@ -64,13 +68,17 @@ public class PartialAirbyteMessage {
 
   @Override
   public boolean equals(final Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
 
     final PartialAirbyteMessage that = (PartialAirbyteMessage) o;
 
-    if (type != that.type) return false;
-    if (!Objects.equals(record, that.record)) return false;
+    if (type != that.type)
+      return false;
+    if (!Objects.equals(record, that.record))
+      return false;
     return Objects.equals(state, that.state);
   }
 
@@ -121,4 +129,5 @@ public class PartialAirbyteMessage {
     this.state = state;
     return this;
   }
+
 }

@@ -389,7 +389,8 @@ class AsyncStreamConsumerTest {
         .withRecord(new PartialAirbyteRecordMessage()
             .withStream(m.getRecord().getStream())
             .withNamespace(m.getRecord().getNamespace())
-            .withSerializedData(m.getRecord().getSerializedData()))).collect(Collectors.toList());
+            .withSerializedData(m.getRecord().getSerializedData())))
+        .collect(Collectors.toList());
     assertEquals(expRecords, actualRecords);
   }
 

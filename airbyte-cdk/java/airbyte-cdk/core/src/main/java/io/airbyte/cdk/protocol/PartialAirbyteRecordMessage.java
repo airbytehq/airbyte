@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.protocol;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,9 +28,7 @@ public class PartialAirbyteRecordMessage {
             "data", (recordDataIterator) -> record.serializedData = PartialJsonDeserializer.readSerializedValue(recordDataIterator),
             "namespace", (recordNamespaceIterator) -> record.namespace = PartialJsonDeserializer.readStringValue(recordNamespaceIterator),
             "stream", (recordStreamIterator) -> record.stream = PartialJsonDeserializer.readStringValue(recordStreamIterator),
-            "emitted_at", (recordStreamIterator) -> record.emittedAt = (Long) PartialJsonDeserializer.readNumber(recordStreamIterator)
-        )
-    );
+            "emitted_at", (recordStreamIterator) -> record.emittedAt = (Long) PartialJsonDeserializer.readNumber(recordStreamIterator)));
     if (nonNull) {
       return record;
     } else {
@@ -62,13 +64,17 @@ public class PartialAirbyteRecordMessage {
 
   @Override
   public boolean equals(final Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
 
     final PartialAirbyteRecordMessage that = (PartialAirbyteRecordMessage) o;
 
-    if (!Objects.equals(namespace, that.namespace)) return false;
-    if (!Objects.equals(stream, that.stream)) return false;
+    if (!Objects.equals(namespace, that.namespace))
+      return false;
+    if (!Objects.equals(stream, that.stream))
+      return false;
     if (!Objects.equals(serializedData, that.serializedData))
       return false;
     return Objects.equals(emittedAt, that.emittedAt);
@@ -134,4 +140,5 @@ public class PartialAirbyteRecordMessage {
     this.serializedData = serializedData;
     return this;
   }
+
 }

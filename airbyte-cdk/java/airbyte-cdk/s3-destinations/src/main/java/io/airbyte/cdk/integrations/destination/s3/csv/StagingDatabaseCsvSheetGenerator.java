@@ -4,10 +4,8 @@
 
 package io.airbyte.cdk.integrations.destination.s3.csv;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
-import io.airbyte.commons.json.Jsons;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Collections;

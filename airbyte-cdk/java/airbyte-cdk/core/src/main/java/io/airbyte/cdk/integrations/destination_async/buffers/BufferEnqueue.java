@@ -7,7 +7,6 @@ package io.airbyte.cdk.integrations.destination_async.buffers;
 import static java.lang.Thread.sleep;
 
 import io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager;
-
 import io.airbyte.cdk.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;

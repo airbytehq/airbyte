@@ -4,10 +4,8 @@
 
 package io.airbyte.cdk.integrations.destination.buffered_stream_consumer;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
-import io.airbyte.commons.json.Jsons;
 import java.util.HashMap;
 import java.util.Map;
 

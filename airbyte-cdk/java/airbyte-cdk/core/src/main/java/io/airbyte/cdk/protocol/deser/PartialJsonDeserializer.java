@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.protocol.deser;
 
 import java.util.ArrayList;
@@ -9,15 +13,17 @@ import java.util.function.Function;
 public class PartialJsonDeserializer {
 
   /**
-   * Given a StringIterator over a serialized JSON object, advance the iterator through the object. Any time we find an
-   * object key matching one of the consumers, we position the iterator at the start of the value for that key and call
-   * the consumer with the iterator.
+   * Given a StringIterator over a serialized JSON object, advance the iterator through the object.
+   * Any time we find an object key matching one of the consumers, we position the iterator at the
+   * start of the value for that key and call the consumer with the iterator.
    * <p>
-   * The consumers MUST fully read the value (including any nested objects), and MUST NOT read anything after the value.
+   * The consumers MUST fully read the value (including any nested objects), and MUST NOT read
+   * anything after the value.
    * <p>
-   * We intentionally define the consumers as accepting an iterator instead of the substring to avoid duplicating the
-   * data in-memory when possible. Consumers may need to extract the substring, but this method is designed to operate
-   * solely on the original copy of the string, even in recursive calls.
+   * We intentionally define the consumers as accepting an iterator instead of the substring to avoid
+   * duplicating the data in-memory when possible. Consumers may need to extract the substring, but
+   * this method is designed to operate solely on the original copy of the string, even in recursive
+   * calls.
    *
    * @return true if the object was non-null, false if it was null
    */
@@ -67,7 +73,8 @@ public class PartialJsonDeserializer {
     final int start = data.getIndex();
     skipValue(data);
     final int end = data.getIndex();
-    // TODO maybe faster if we fill a stringbuilder while we're reading the value, rather than skipping the value?
+    // TODO maybe faster if we fill a stringbuilder while we're reading the value, rather than skipping
+    // the value?
     return data.substring(start, end);
   }
 
@@ -104,8 +111,7 @@ public class PartialJsonDeserializer {
               sb.append((char) value);
             }
             // Invalid escape
-            default ->
-                throw new RuntimeException("Invalid escape character '" + escapeChar + "'" + " at index " + data.getIndex());
+            default -> throw new RuntimeException("Invalid escape character '" + escapeChar + "'" + " at index " + data.getIndex());
           }
         }
         default -> sb.append(ch);
@@ -186,7 +192,7 @@ public class PartialJsonDeserializer {
               // Unicode escape (e.g. "\uf00d")
               case 'u' -> {
                 for (int i = 0; i < 4; i++) {
-                  final char expectedHexDigit  = data.next();
+                  final char expectedHexDigit = data.next();
                   final boolean isDigit = '0' <= expectedHexDigit && expectedHexDigit <= '9';
                   final boolean isLowercaseHexDigit = 'a' <= expectedHexDigit && expectedHexDigit <= 'f';
                   final boolean isUppercaseHexDigit = 'A' <= expectedHexDigit && expectedHexDigit <= 'F';
@@ -282,10 +288,10 @@ public class PartialJsonDeserializer {
   }
 
   /**
-   * Advance the iterator past the next closing curly brace, ignoring all key/value pairs. Assumes that
-   * the iterator is pointing inside an object, immediately after a key/value pair. Throw an exception
-   * if we reach the end of the string before finding a closing brace, or if we find a different
-   * unexpected terminator (e.g. a closing square bracket).
+   * Advance the iterator past the next closing curly brace, ignoring all key/value pairs. Assumes
+   * that the iterator is pointing inside an object, immediately after a key/value pair. Throw an
+   * exception if we reach the end of the string before finding a closing brace, or if we find a
+   * different unexpected terminator (e.g. a closing square bracket).
    */
   private static void readToEndOfObject(final StringIterator data) {
     while (data.hasNext()) {
@@ -347,4 +353,5 @@ public class PartialJsonDeserializer {
       data.next();
     }
   }
+
 }

@@ -43,7 +43,7 @@ public interface SerializableBuffer extends AutoCloseable {
    * TODO: (ryankfu) Move all destination connectors to pass the serialized record string instead of
    * the entire AirbyteRecordMessage
    *
-   * @param record    serialized record
+   * @param record serialized record
    * @param emittedAt timestamp of the record in milliseconds
    * @return number of bytes written to the buffer
    * @throws Exception

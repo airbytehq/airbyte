@@ -9,7 +9,6 @@ import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.cdk.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.cdk.integrations.destination_async.DestinationFlushFunction;
-
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;

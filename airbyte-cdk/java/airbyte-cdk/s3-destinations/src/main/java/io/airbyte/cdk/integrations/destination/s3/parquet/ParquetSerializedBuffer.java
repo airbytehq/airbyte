@@ -14,7 +14,6 @@ import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory;
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.File;

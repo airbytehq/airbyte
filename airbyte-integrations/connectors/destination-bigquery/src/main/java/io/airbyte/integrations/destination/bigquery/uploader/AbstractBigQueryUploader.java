@@ -21,7 +21,6 @@ import com.google.cloud.bigquery.TableInfo;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationWriter;
-
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;

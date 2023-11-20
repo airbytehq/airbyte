@@ -18,7 +18,6 @@ import io.airbyte.cdk.integrations.destination.s3.util.Flattening;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.OutputStream;

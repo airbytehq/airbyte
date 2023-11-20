@@ -29,13 +29,10 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -556,7 +553,8 @@ public class BufferedStreamConsumerTest {
     return output;
   }
 
-  private void verifyRecords(final String streamName, final String namespace, final Collection<PartialAirbyteMessage> expectedRecords) throws Exception {
+  private void verifyRecords(final String streamName, final String namespace, final Collection<PartialAirbyteMessage> expectedRecords)
+      throws Exception {
     verify(recordWriter).accept(
         new AirbyteStreamNameNamespacePair(streamName, namespace),
         expectedRecords.stream().map(PartialAirbyteMessage::getRecord).collect(Collectors.toList()));

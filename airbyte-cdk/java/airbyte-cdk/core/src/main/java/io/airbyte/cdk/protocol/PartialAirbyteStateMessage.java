@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.protocol;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,11 +25,10 @@ public class PartialAirbyteStateMessage {
     final boolean nonNull = PartialJsonDeserializer.processObject(
         message,
         Map.of(
-            "type", (typeIterator) -> state.type = AirbyteStateMessage.AirbyteStateType.valueOf(PartialJsonDeserializer.readStringValue(typeIterator)),
+            "type",
+            (typeIterator) -> state.type = AirbyteStateMessage.AirbyteStateType.valueOf(PartialJsonDeserializer.readStringValue(typeIterator)),
             "stream", (streamIterator) -> state.stream = PartialAirbyteStreamState.fromJson(streamIterator),
-            "data", (dataIterator) -> state.serializedData = PartialJsonDeserializer.readSerializedValue(dataIterator)
-        )
-    );
+            "data", (dataIterator) -> state.serializedData = PartialJsonDeserializer.readSerializedValue(dataIterator)));
     if (nonNull) {
       return state;
     } else {
@@ -63,14 +66,19 @@ public class PartialAirbyteStateMessage {
 
   @Override
   public boolean equals(final Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
 
     final PartialAirbyteStateMessage that = (PartialAirbyteStateMessage) o;
 
-    if (type != that.type) return false;
-    if (!Objects.equals(stream, that.stream)) return false;
-    if (!Objects.equals(global, that.global)) return false;
+    if (type != that.type)
+      return false;
+    if (!Objects.equals(stream, that.stream))
+      return false;
+    if (!Objects.equals(global, that.global))
+      return false;
     return Objects.equals(serializedData, that.serializedData);
   }
 
@@ -117,4 +125,5 @@ public class PartialAirbyteStateMessage {
     this.serializedData = Jsons.serialize(data);
     return this;
   }
+
 }

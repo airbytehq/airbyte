@@ -13,7 +13,6 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.UUID;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;

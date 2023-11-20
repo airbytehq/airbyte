@@ -16,7 +16,6 @@ import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplatePar
 import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.net.URI;

@@ -7,7 +7,6 @@ package io.airbyte.cdk.integrations.destination.s3.writer;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.IOException;
 import java.util.UUID;
 

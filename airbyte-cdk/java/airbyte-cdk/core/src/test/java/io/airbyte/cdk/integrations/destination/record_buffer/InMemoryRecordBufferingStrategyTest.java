@@ -16,8 +16,6 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWr
 import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.List;
 import java.util.Optional;

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.protocol;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,9 +24,8 @@ public class PartialAirbyteGlobalState {
         message,
         Map.of(
             "shared_state", (globalStateIterator) -> state.serializedGlobalState = PartialJsonDeserializer.readSerializedValue(globalStateIterator),
-            "stream_states", (streamStatesIterator) -> state.streamStates = PartialJsonDeserializer.readList(streamStatesIterator, PartialAirbyteStreamState::fromJson)
-        )
-    );
+            "stream_states", (streamStatesIterator) -> state.streamStates =
+                PartialJsonDeserializer.readList(streamStatesIterator, PartialAirbyteStreamState::fromJson)));
     if (nonNull) {
       return state;
     } else {
@@ -40,8 +43,10 @@ public class PartialAirbyteGlobalState {
 
   @Override
   public boolean equals(final Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
 
     final PartialAirbyteGlobalState that = (PartialAirbyteGlobalState) o;
 
@@ -70,4 +75,5 @@ public class PartialAirbyteGlobalState {
     }
     return state;
   }
+
 }

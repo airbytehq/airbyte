@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.protocol;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,9 +24,7 @@ public class PartialAirbyteStreamState {
         message,
         Map.of(
             "stream_descriptor", (recordDataIterator) -> streamState.streamDescriptor = streamDescriptorFromJson(recordDataIterator),
-            "stream_state", (stateIterator) -> streamState.serializedStreamState = PartialJsonDeserializer.readSerializedValue(stateIterator)
-        )
-    );
+            "stream_state", (stateIterator) -> streamState.serializedStreamState = PartialJsonDeserializer.readSerializedValue(stateIterator)));
     if (nonNull) {
       return streamState;
     } else {
@@ -36,9 +38,7 @@ public class PartialAirbyteStreamState {
         message,
         Map.of(
             "name", (nameIterator) -> streamDescriptor.setName(PartialJsonDeserializer.readStringValue(nameIterator)),
-            "namespace", (namespaceIterator) -> streamDescriptor.setNamespace(PartialJsonDeserializer.readStringValue(namespaceIterator))
-        )
-    );
+            "namespace", (namespaceIterator) -> streamDescriptor.setNamespace(PartialJsonDeserializer.readStringValue(namespaceIterator))));
     return streamDescriptor;
   }
 
@@ -68,8 +68,10 @@ public class PartialAirbyteStreamState {
 
   @Override
   public boolean equals(final Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
 
     final PartialAirbyteStreamState that = (PartialAirbyteStreamState) o;
 
@@ -101,4 +103,5 @@ public class PartialAirbyteStreamState {
     this.serializedStreamState = Jsons.serialize(streamState);
     return this;
   }
+
 }

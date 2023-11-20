@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.cdk.integrations.destination_async.buffers.MemoryAwareMessageBatch;
-
 import io.airbyte.cdk.integrations.destination_async.state.FlushFailure;
 import io.airbyte.cdk.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.cdk.protocol.PartialAirbyteMessage;

@@ -1,6 +1,11 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.protocol.deser;
 
 public class StringIterator {
+
   private final String data;
   private int index;
 
@@ -33,4 +38,5 @@ public class StringIterator {
   public String substring(final int start, final int end) {
     return data.substring(start, end);
   }
+
 }
