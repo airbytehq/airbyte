@@ -320,15 +320,6 @@ public class PostgresTestDatabase implements AutoCloseable {
       }
     }
 
-    /**
-     * Tell postgres to enable SSL.
-     */
-    public void withSSL() {
-      sharedContainer.withCommand("postgres " +
-          "-c ssl=on " +
-          "-c ssl_cert_file=/var/lib/postgresql/server.crt " +
-          "-c ssl_key_file=/var/lib/postgresql/server.key");
-    }
 
     /**
      * Configure postgres with client_encoding=sql_ascii.
