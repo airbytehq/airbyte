@@ -9,8 +9,8 @@ from typing import List, Optional, Tuple, Union
 
 import orchestrator.hacks as HACKS
 import pandas as pd
+from orchestrator.utils.blob_helpers import yaml_blob_to_dict
 import sentry_sdk
-import yaml
 from dagster import AutoMaterializePolicy, DynamicPartitionsDefinition, MetadataValue, OpExecutionContext, Output, asset
 from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
 from google.cloud import storage
@@ -331,13 +331,6 @@ def delete_registry_entry(registry_name, metadata_entry: LatestMetadataEntry, me
     file_handle = metadata_directory_manager.delete_by_key(key=registry_entry_write_path, ext="json")
     return file_handle.public_url if file_handle else None
 
-def yaml_blob_to_dict(yaml_blob: storage.Blob) -> dict:
-    """
-    Convert the given yaml blob to a dictionary.
-    """
-    yaml_string = yaml_blob.download_as_string().decode("utf-8")
-    return yaml.safe_load(yaml_string)
-
 @sentry_sdk.trace
 def safe_parse_metadata_definition(file_name: str, metadata_dict: dict) -> Optional[MetadataDefinition]:
     """
@@ -380,7 +373,7 @@ def safe_get_slack_user_identifier(airbyte_slack_users: pd.DataFrame, metadata_d
     # if the user is found, return the slack real_name and id e.g. "John Doe (U12345678)"
     slack_id = slack_user["id"].iloc[0]
     slack_real_name = slack_user["real_name"].iloc[0]
-    return f"{slack_real_name} (U{slack_id})"
+    return f"{slack_real_name} (<@{slack_id}>)"
 
 def safe_get_commit_sha(metadata_dict: Union[dict, BaseModel]) -> Optional[str]:
     if isinstance(metadata_dict, BaseModel):

@@ -6,8 +6,8 @@ import os
 from enum import Enum
 
 from dagster import OpExecutionContext
+from orchestrator.config import REPO_URL
 from orchestrator.ops.slack import send_slack_message
-
 
 class StageStatus(str, Enum):
     IN_PROGRESS = "in_progress"
@@ -56,6 +56,15 @@ class PublishConnectorLifecycle:
         else:
             return "info"
 
+    def _commit_link(commit_sha: str) -> str:
+        """Create a markdown link to a commit."""
+        commit_url = f"{REPO_URL}/commit/{commit_sha}"
+        return f" commit: <{commit_url}|{commit_sha}>"
+
+    def _user_mention(user_identifier: str) -> str:
+        """Create a markdown link to a user."""
+        return f" author: {user_identifier}"
+
     @staticmethod
     def create_log_message(
         lifecycle_stage: PublishConnectorLifecycleStage,
@@ -68,10 +77,10 @@ class PublishConnectorLifecycle:
         final_message = f"*{emoji} _{lifecycle_stage}_ {stage_status}*: {message}."
 
         if user_identifier:
-            final_message += f" attn: {user_identifier}"
+            final_message += PublishConnectorLifecycle._user_mention(user_identifier)
 
         if commit_sha:
-            final_message += f" commit: ({commit_sha})"
+            final_message += PublishConnectorLifecycle._commit_link(commit_sha)
 
         return final_message
 

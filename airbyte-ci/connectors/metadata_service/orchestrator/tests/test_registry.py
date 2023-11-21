@@ -4,6 +4,7 @@
 
 from unittest import mock
 from uuid import UUID
+from orchestrator.utils.blob_helpers import yaml_blob_to_dict
 
 import pytest
 import yaml
@@ -17,7 +18,6 @@ from orchestrator.assets.registry_entry import (
     get_registry_status_lists,
     metadata_to_registry_entry,
     safe_parse_metadata_definition,
-    yaml_blob_to_dict,
 )
 from orchestrator.assets.registry_report import (
     all_destinations_dataframe,
