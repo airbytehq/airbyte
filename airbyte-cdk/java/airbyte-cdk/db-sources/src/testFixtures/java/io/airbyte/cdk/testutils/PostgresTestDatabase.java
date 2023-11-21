@@ -291,7 +291,7 @@ public class PostgresTestDatabase implements AutoCloseable {
         "echo \"ssl_key_file = '/var/lib/postgresql/certs/server.key'\" >> /var/lib/postgresql/data/postgresql.conf",
         "echo \"ssl_ca_file = '/var/lib/postgresql/certs/ca.crt'\" >> /var/lib/postgresql/data/postgresql.conf",
         // Here, we reset pg_hba to not accept any connection except locals.
-        "echo \"local all test all trust\" > /var/lib/postgresql/data/pg_hba.conf",
+        "echo \"local all test trust\" > /var/lib/postgresql/data/pg_hba.conf",
         // Then we add SSL-only with full certification to the user used by all network connections.
         "echo \"hostssl all " + sharedContainer.getUsername() + " all cert\" >> /var/lib/postgresql/data/pg_hba.conf",
         // finally, create client key and certificate, both verified by the CA
