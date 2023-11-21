@@ -27,7 +27,8 @@ from airbyte_cdk.models import (
 @click.option("--start")
 @click.option("--end")
 @click.option("--stream")
-def main(connector, left, right, config, start, end, stream):
+@click.option("--mode")
+def main(connector, left, right, config, start, end, stream, mode):
     print(f"connector: {connector}")
     print(f"left: {left}")
     print(f"right: {right}")
@@ -40,42 +41,58 @@ def main(connector, left, right, config, start, end, stream):
     # discover_result = subprocess.run(discover_command, shell=True, check=True, stdout=subprocess.PIPE, text=True)
     # print(discover_result.stdout)
 
-    left_df = create_df(connector, left, config, stream)
-    right_df = create_df(connector, left, config, stream)
+    if mode == "live":
+        left_df = create_df(connector, left, config, stream)
+        right_df = create_df(connector, left, config, stream)
+    else:
+        left_df = create_df_from_file(left, stream)
+        right_df = create_df_from_file(right, stream)
 
     print("left")
-    print(left_df.head())
+    #print(left_df.head())
     print("right")
-    print(right_df.head())
+    #print(right_df.head())
 
     compare_df = compare_dataframes(left_df, right_df, "id")
-    print(compare_df)
-    generate_plots_single_pdf_per_metric(compare_df)
+    #print(compare_df)
+    generate_plots_single_pdf_per_metric(compare_df, output_filename=f"{connector}_{stream}_{left}_{right}.pdf")
 
 
 def create_df(connector, connector_version, config_path, stream):
     records = [m.record for m in read_messages(connector, connector_version, config_path) if m.record]
     return to_stream_to_dataframe(records)[stream]
 
-
+def create_df_from_file(path, stream):
+    with open(path) as f:
+        messages = []
+        for line in f.readlines():
+            try:
+                messages.append(AirbyteMessage.parse_raw(line))
+            except Exception as e:
+                print(e)
+                print(line)
+        #messages = [AirbyteMessage.parse_raw(line) for line in f.readlines()]
+        records = [m.record for m in messages if m.record]
+        return to_stream_to_dataframe(records)[stream]
 def read_messages(connector, connector_version, config_path):
     command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version} read --config /{config_path} --catalog /secrets/tmp_catalog.json"
     for line in subprocess_stdout_generator(command):
-        yield AirbyteMessage.parse_raw(line)
+        try:
+            yield AirbyteMessage.parse_raw(line)
+        except Exception as e:
+            print(e)
+            print(line)
 
 
 def to_stream_to_dataframe(records: list[AirbyteRecordMessage]):
     records_data = [r.dict() for r in records]
-    print(f"records_data: {records_data}")
 
     records_data_per_stream = {}
     for record in records_data:
         stream = record["stream"]
-        print(f"record_stream: {stream}")
         if stream not in records_data_per_stream:
             records_data_per_stream[stream] = []
         records_data_per_stream[stream].append(record)
-    print(f"records_data_per_stream: {records_data_per_stream}")
 
     return {stream: extract_json_to_dataframe(pd.DataFrame.from_dict(data), "data") for stream, data in records_data_per_stream.items()}
 
@@ -87,12 +104,17 @@ def extract_json_to_dataframe(df, json_column, cursor_field="updated_at"):
     # Normalize JSON data and create a new DataFrame
     df = pd.concat([df.drop([json_column], axis=1), pd.json_normalize(json_data)], axis=1)
     if isinstance(df[cursor_field].iloc[0], str):
-        df["cursor_day"] = pd.to_datetime(df[cursor_field]).dt.strftime("%Y-%m-%d")
+        df["cursor_day"] = df[cursor_field].apply(convert_to_datetime)
     elif isinstance(df[cursor_field].iloc[0], int):
         df["cursor_day"] = pd.to_datetime(df[cursor_field], unit="s").dt.strftime("%Y-%m-%d")
     else:
         raise ValueError(f"Unexpected cursor type for {df[cursor_field].iloc[0]}")
     return df
+
+def convert_to_datetime(value):
+    if isinstance(value, pd.Timestamp):
+        return value.to_pydatetime()
+    return pd.to_datetime(value)
 
 
 def compare_dataframes(left, right, primary_key):
@@ -117,7 +139,7 @@ def compare_dataframes(left, right, primary_key):
             diff_values = pd.merge(left_subset, right_subset, on=primary_key, suffixes=("_left", "_right"), how="inner")
             diff_values = diff_values.dropna(subset=[f"{column}_left", f"{column}_right"])
 
-            print(f"diff_values:{diff_values}")
+
             if len(diff_values) == 0 and False:
                 # FIXME should be an empty df, not an empty list..
                 diff_values = []
@@ -126,7 +148,6 @@ def compare_dataframes(left, right, primary_key):
 
             equal_values = pd.merge(left_subset, right_subset, on=primary_key, suffixes=("_left", "_right"), how="inner")
             equal_values = equal_values.dropna(subset=[f"{column}_left", f"{column}_right"])
-            print(f"equal_values:\n{equal_values}")
             if len(equal_values) == 0 and False:
                 equal_values = []
             else:
