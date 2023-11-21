@@ -108,7 +108,7 @@ public class MySqlStrictEncryptSslTest {
   }
 
   @Test
-  void testCheckWithSSlModeDisabled() throws Exception {
+  void testCheckWithSslModeDisabled() throws Exception {
     try (final var testdb = MySQLTestDatabase.in("mysql:8.0", "withNetwork")) {
       try (final SshBastionContainer bastion = new SshBastionContainer()) {
         bastion.initAndStartBastion(testdb.getContainer().getNetwork());
