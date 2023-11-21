@@ -1,0 +1,4 @@
+# Don't commit test artifacts back to the repo
+
+*
+!.gitignore
