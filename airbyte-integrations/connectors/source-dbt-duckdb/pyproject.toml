@@ -9,7 +9,11 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
 
-# airbyte-cdk = "^0.53.9"
+# Toggle which version of the CDK to use by commenting/uncommenting the appropriate line below.
+# airbyte-cdk = "^0.53.9"  # Use published version of the CDK
+airbyte-cdk = { path = "../../../airbyte-cdk/python", develop = true }  # Use local version of the CDK
+
+# Other dependencies
 dbt-duckdb = "^1.7.0"
 # SQLAlchemy = "^2.0.23"
 # duckdb = "^0.9.2"
