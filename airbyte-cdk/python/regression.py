@@ -206,11 +206,12 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
         # TODO
         summary_stats = []
         for stream_name, stream_stat in streams_stats.items():
-            any_diff = any([val > 0 for val in stream_stat.columns_to_diff_count.values()])
+            any_diff = any([val > 0 for col, val in stream_stat.columns_to_diff_count.items() if col not in stream_stat.fields_to_ignore])
             print(f"diff for stream {stream_name}: {stream_stat.columns_to_diff_count}")
             stat = {
                 "stream": stream_name,
-                "equal": not any_diff,
+                "OK": not any_diff and len(stream_stat.left_rows_missing) == 0 and len(stream_stat.right_rows_missing) == 0,
+                "diff_fields": sum([val for col, val in stream_stat.columns_to_diff_count.items()]),
                 "record_count": stream_stat.record_count,
                 "missing_left": len(stream_stat.left_rows_missing),
                 "missing_right": len(stream_stat.right_rows_missing),
@@ -229,9 +230,18 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
         summary_df = pd.DataFrame.from_records(summary_stats)
         # table = pd.pivot_table(summary_df, index='stream', columns=['equal', "record_count", "missing_left", "missing_right"], aggfunc=len, fill_value=0)
         # table = pd.pivot_table(summary_df, index='stream', columns=["record_count"], aggfunc=len, fill_value=0)
-        table = summary_df.pivot_table(values=["equal", "record_count", "missing_left", "missing_right"], index="stream", aggfunc="first")
+        table = summary_df.pivot_table(values=["OK", "record_count", "diff_fields","missing_left", "missing_right"], index="stream", aggfunc="first")
         plt.figure(figsize=(6, 4))
-        plt.table(cellText=table.values, colLabels=table.columns, rowLabels=table.index, loc="center")
+        def summary_color_cells(table, row, col):
+            value = table.loc[row, col]
+            if col == "OK":
+                if value:
+                    return "green"
+                else:
+                    return "red"
+            return "white"  # Default color for other cells
+        summary_cell_colors = [[summary_color_cells(table, row, col) for col in table.columns] for row in table.index]
+        plt.table(cellText=table.values, colLabels=table.columns, rowLabels=table.index, loc="center", cellColours=summary_cell_colors)
         plt.title(f"Summary stats")
         plt.axis("off")  # Hide axis
         pdf.savefig(bbox_inches="tight", pad_inches=1)
