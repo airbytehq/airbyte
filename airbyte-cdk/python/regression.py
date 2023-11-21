@@ -79,12 +79,14 @@ async def main():
                 if left.message.record.data[primary_key] != right.message.record.data[primary_key]:
                     stream_stats.left_rows_missing[left.message.record.data[primary_key]] = left
                     stream_stats.right_rows_missing[right.message.record.data[primary_key]] = right
+                    continue
 
                 compare_records(left, right, stream_stats)
 
                 if left.message.record.data != right.message.record.data:
                     print(f"Data mismatch: {left.message.record.data} != {right.message.record.data}")
 
+                # check missing
                 left_keys = set(stream_stats.left_rows_missing.keys())
                 for left_key in left_keys:
                     print(f"missinh {left_key}")
@@ -97,6 +99,18 @@ async def main():
                         print(f"did not find {left_key} in right")
         except StopAsyncIteration:
             #FIXME needd to do another check of missing
+            # check missing
+            for stream_name, stream_stats in streams_stats.items():
+                left_keys = set(stream_stats.left_rows_missing.keys())
+                for left_key in left_keys:
+                    print(f"missinh {left_key}")
+                    if left_key in stream_stats.right_rows_missing:
+                        print(f"found {left_key} in right")
+                        compare_records(stream_stats.left_rows_missing[left_key], stream_stats.right_rows_missing[left_key], stream_stats)
+                        stream_stats.left_rows_missing.pop(left_key)
+                        stream_stats.right_rows_missing.pop(left_key)
+                    else:
+                        print(f"did not find {left_key} in right")
             # FIXME need to check if both are done
             for stream_stats in streams_stats.values():
                 stats_rows = []
@@ -134,15 +148,58 @@ async def main():
                 print(len(stream_stats.right_rows_missing))
 
             break
-    generate_plots_single_pdf_per_metric(streams_to_dataframe)
+    generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats)
 
-def generate_plots_single_pdf_per_metric(streams_to_dataframe, output_filename='plots_combined_per_metric.pdf'):
+def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, output_filename='plots_combined_per_metric.pdf'):
     with PdfPages(output_filename) as pdf:
 
         # Generate summary
         # TODO
+        summary_stats = []
+        for stream_name, stream_stat in streams_stats.items():
+            any_diff = any([val > 0 for val in stream_stat.columns_to_diff_count.values()])
+            print(f"diff for stream {stream_name}: {stream_stat.columns_to_diff_count}")
+            stat = {
+                "stream": stream_name,
+                "equal": not any_diff,
+                "record_count": stream_stat.record_count,
+                "missing_left": len(stream_stat.left_rows_missing),
+                "missing_right": len(stream_stat.right_rows_missing),
+            }
+            print(f"stat:{stat}")
+            summary_stats.append(stat)
+        print(f"summary_stats:{summary_stats}")
+        summary_df = pd.DataFrame.from_records(summary_stats)
+        #table = pd.pivot_table(summary_df, index='stream', columns=['equal', "record_count", "missing_left", "missing_right"], aggfunc=len, fill_value=0)
+        table = pd.pivot_table(summary_df, index='stream', aggfunc=len, fill_value=0)
+        plt.figure(figsize=(6, 4))
+        plt.table(cellText=table.values,
+                  colLabels=table.columns,
+                  rowLabels=table.index,
+                  loc='center')
+        plt.title(f"Summary stats")
+        plt.axis('off')  # Hide axis
+        pdf.savefig(bbox_inches='tight', pad_inches=1)
+        plt.close()
 
-        # Generate per stream-column tables
+
+        for stream, group_data in streams_to_dataframe.items():
+            # Generate per-stream tables
+            table = pd.pivot_table(group_data, values='value', index='column', columns='metric')
+            print(f"table for {stream}:\n{table}")
+            # Plotting table using matplotlib
+            plt.figure(figsize=(6, 4))
+            plt.title(f"Stream: {stream}", y=1.2)
+            plt.table(cellText=table.values,
+                      colLabels=table.columns,
+                      rowLabels=table.index,
+                      loc='center')
+            plt.axis('off')  # Hide axis
+
+            # Save the table as a page in the PDF
+            pdf.savefig(bbox_inches='tight', pad_inches=1)
+            plt.close()
+
         for stream, group_data in streams_to_dataframe.items():
             grouped = group_data.groupby('column')
             for column, group_data in grouped:
