@@ -1,3 +1,5 @@
+connector_version_left: "4.5.4"
+connector_version_right: "4.5.4"
 streams:
   - name: customers
     ignore_fields:
@@ -7,8 +9,6 @@ streams:
     ignore_fields:
       - hosted_invoice_url
       - invoice_pdf
-  - name: events
+  - name: usage_records
     ignore_fields:
-      - hosted_invoice_url
-      - invoice_pdf
-
+      - id

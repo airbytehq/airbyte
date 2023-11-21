@@ -55,16 +55,19 @@ class StreamStats:
 
 async def main():
     connector = "source-stripe"
-    connector_version = "4.5.4"
     config_path = "secrets/prod_config_recent_only.json"
     regression_config_path = "regression_config.yaml"
     with open(regression_config_path) as f:
         regression_config = yaml.safe_load(f)
 
+    connector_version_left = regression_config["connector_version_left"]
+    connector_version_right = regression_config["connector_version_right"]
+
     stream_configs = regression_config["streams"]
     stream_to_stream_config = {stream_config["name"]: stream_config for stream_config in stream_configs}
     stream_names = [stream_config["name"] for stream_config in stream_configs]
-    discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version} discover --config /{config_path}"
+    #FIXME uses left for the discover. this is somewhat arbitrary
+    discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version_left} discover --config /{config_path}"
     discover_result = subprocess.run(discover_command, shell=True, check=True, stdout=subprocess.PIPE, text=True)
     discover_output = discover_result.stdout
     catalog = None
@@ -79,10 +82,11 @@ async def main():
     configured_catalog = _configured_catalog(streams)
     with open(f"secrets/tmp_catalog.json", "w") as f:
         f.write(configured_catalog.json(exclude_unset=True))
-    command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version} read --config /{config_path} --catalog /secrets/tmp_catalog.json"
+    command_left = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version_left} read --config /{config_path} --catalog /secrets/tmp_catalog.json"
+    command_right = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version_right} read --config /{config_path} --catalog /secrets/tmp_catalog.json"
 
-    subprocess_left = run_subprocess(command, "left")
-    subprocess_right = run_subprocess(command, "right")
+    subprocess_left = run_subprocess(command_left, "left")
+    subprocess_right = run_subprocess(command_right, "right")
 
     streams_stats = {}
     #primary_key = "id"
