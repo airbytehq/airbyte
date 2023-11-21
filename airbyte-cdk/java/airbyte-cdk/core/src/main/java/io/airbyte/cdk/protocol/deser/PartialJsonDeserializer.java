@@ -5,6 +5,7 @@
 package io.airbyte.cdk.protocol.deser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -17,19 +18,29 @@ public class PartialJsonDeserializer {
   /**
    * Given a StringIterator over a serialized JSON object, advance the iterator through the object.
    * Any time we find an object key matching one of the consumers, we position the iterator at the
-   * start of the value for that key and call the consumer with the iterator.
+   * start of the value for that key and call the consumer. The consumer should read from the same
+   * iterator that is passed into this method.
    * <p>
    * The consumers MUST fully read the value (including any nested objects), and MUST NOT read
-   * anything after the value.
+   * any non-whitespace characters after the value (they MAY read whitespace, but aren't required to).
    * <p>
    * We intentionally define the consumers as accepting an iterator instead of the substring to avoid
    * duplicating the data in-memory when possible. Consumers may need to extract the substring, but
    * this method is designed to operate solely on the original copy of the string, even in recursive
    * calls.
    *
-   * @return true if the object was non-null, false if it was null
+   * @param constructor A function that returns a new instance of the object to be deserialized into.
+   * @param keyValueConsumers The consumers to handle each field of the object
+   * @param exitParseEarly Whether to stop parsing the object after all consumers have been called.
+   *                       Top-level calls probably should set this to true, but recursive calls
+   *                       (i.e. calls within the keyValueConsumers) MUST set this to false.
+   *
+   * @return The object, or null if the input string is "null".
    */
-  public static <T> T parseObject(final StringIterator data, Supplier<T> constructor, final Map<String, Consumer<T>> keyValueConsumers) {
+  public static <T> T parseObject(final StringIterator data,
+                                  final Supplier<T> constructor,
+                                  final Map<String, Consumer<T>> keyValueConsumers,
+                                  final boolean exitParseEarly) {
     final char firstChar = data.peek();
     if (firstChar == 'n') {
       skipExactString(data, "null");
@@ -39,7 +50,8 @@ public class PartialJsonDeserializer {
     skipWhitespaceAndCharacter(data, '{');
     skipWhitespace(data);
 
-    T object = constructor.get();
+    final T object = constructor.get();
+    final Map<String, Consumer<T>> copiedKeyValueConsumers = new HashMap<>(keyValueConsumers);
 
     // handle empty object specially
     if (data.peek() == '}') {
@@ -52,8 +64,12 @@ public class PartialJsonDeserializer {
       skipWhitespaceAndCharacter(data, ':');
       skipWhitespace(data);
       // Pass to the appropriate consumer, or read past the value
-      if (keyValueConsumers.containsKey(key)) {
-        keyValueConsumers.get(key).accept(object);
+      final Consumer<T> consumer = copiedKeyValueConsumers.remove(key);
+      if (consumer != null) {
+        consumer.accept(object);
+        if (exitParseEarly && copiedKeyValueConsumers.isEmpty()) {
+          return object;
+        }
       } else {
         skipValue(data);
       }

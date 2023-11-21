@@ -18,22 +18,24 @@ public class PartialAirbyteStreamState {
   StreamDescriptor streamDescriptor;
   String serializedStreamState;
 
-  public static PartialAirbyteStreamState fromJson(final StringIterator message) {
+  static PartialAirbyteStreamState fromJson(final StringIterator message) {
     return PartialJsonDeserializer.parseObject(
         message,
         PartialAirbyteStreamState::new,
         Map.of(
             "stream_descriptor", (streamState) -> streamState.streamDescriptor = streamDescriptorFromJson(message),
-            "stream_state", (streamState) -> streamState.serializedStreamState = PartialJsonDeserializer.readSerializedValue(message)));
+            "stream_state", (streamState) -> streamState.serializedStreamState = PartialJsonDeserializer.readSerializedValue(message)),
+        false);
   }
 
-  public static StreamDescriptor streamDescriptorFromJson(final StringIterator message) {
+  static StreamDescriptor streamDescriptorFromJson(final StringIterator message) {
     return PartialJsonDeserializer.parseObject(
         message,
         StreamDescriptor::new,
         Map.of(
             "name", (streamDescriptor) -> streamDescriptor.setName(PartialJsonDeserializer.readStringValue(message)),
-            "namespace", (streamDescriptor) -> streamDescriptor.setNamespace(PartialJsonDeserializer.readStringValue(message))));
+            "namespace", (streamDescriptor) -> streamDescriptor.setNamespace(PartialJsonDeserializer.readStringValue(message))),
+        false);
   }
 
   public StreamDescriptor getStreamDescriptor() {

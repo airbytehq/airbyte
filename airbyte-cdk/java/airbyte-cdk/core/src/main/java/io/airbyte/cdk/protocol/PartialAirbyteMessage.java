@@ -19,17 +19,17 @@ public class PartialAirbyteMessage {
 
   public static Optional<PartialAirbyteMessage> tryFromJson(final String message) {
     try {
-      return Optional.of(fromJson(new StringIterator(message)));
+      return Optional.of(fromJson(message));
     } catch (final Exception e) {
       return Optional.empty();
     }
   }
 
   public static PartialAirbyteMessage fromJson(final String message) {
-    return fromJson(new StringIterator(message));
+    return fromJson(new StringIterator(message), true);
   }
 
-  public static PartialAirbyteMessage fromJson(final StringIterator message) {
+  static PartialAirbyteMessage fromJson(final StringIterator message, final boolean exitParseEarly) {
     return PartialJsonDeserializer.parseObject(
         message,
         PartialAirbyteMessage::new,
@@ -37,7 +37,8 @@ public class PartialAirbyteMessage {
             "type", (deserMessage) -> deserMessage.type =
                 AirbyteMessage.Type.valueOf(PartialJsonDeserializer.readStringValue(message)),
             "record", (deserMessage) -> deserMessage.record = PartialAirbyteRecordMessage.fromJson(message),
-            "state", (deserMessage) -> deserMessage.state = PartialAirbyteStateMessage.fromJson(message)));
+            "state", (deserMessage) -> deserMessage.state = PartialAirbyteStateMessage.fromJson(message)),
+        exitParseEarly);
   }
 
   public AirbyteMessage.Type getType() {

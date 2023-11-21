@@ -18,14 +18,15 @@ public class PartialAirbyteGlobalState {
   String serializedGlobalState;
   List<PartialAirbyteStreamState> streamStates;
 
-  public static PartialAirbyteGlobalState fromJson(final StringIterator message) {
+  static PartialAirbyteGlobalState fromJson(final StringIterator message) {
     return PartialJsonDeserializer.parseObject(
         message,
         PartialAirbyteGlobalState::new,
         Map.of(
             "shared_state", (state) -> state.serializedGlobalState = PartialJsonDeserializer.readSerializedValue(message),
             "stream_states", (state) -> state.streamStates =
-                PartialJsonDeserializer.readList(message, PartialAirbyteStreamState::fromJson)));
+                PartialJsonDeserializer.readList(message, PartialAirbyteStreamState::fromJson)),
+        false);
   }
 
   @Override

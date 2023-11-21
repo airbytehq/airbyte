@@ -20,7 +20,7 @@ public class PartialAirbyteRecordMessage {
   String serializedData;
   Long emittedAt;
 
-  public static PartialAirbyteRecordMessage fromJson(final StringIterator message) {
+  static PartialAirbyteRecordMessage fromJson(final StringIterator message) {
     return PartialJsonDeserializer.parseObject(
         message,
         PartialAirbyteRecordMessage::new,
@@ -28,7 +28,8 @@ public class PartialAirbyteRecordMessage {
             "data", (record) -> record.serializedData = PartialJsonDeserializer.readSerializedValue(message),
             "namespace", (record) -> record.namespace = PartialJsonDeserializer.readStringValue(message),
             "stream", (record) -> record.stream = PartialJsonDeserializer.readStringValue(message),
-            "emitted_at", (record) -> record.emittedAt = (Long) PartialJsonDeserializer.readNumber(message)));
+            "emitted_at", (record) -> record.emittedAt = (Long) PartialJsonDeserializer.readNumber(message)),
+        false);
   }
 
   public String getNamespace() {

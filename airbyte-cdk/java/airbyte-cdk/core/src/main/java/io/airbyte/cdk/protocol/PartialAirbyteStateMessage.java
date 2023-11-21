@@ -20,14 +20,16 @@ public class PartialAirbyteStateMessage {
   // deprecated legacy state blob
   String serializedData;
 
-  public static PartialAirbyteStateMessage fromJson(final StringIterator message) {
+  static PartialAirbyteStateMessage fromJson(final StringIterator message) {
     return PartialJsonDeserializer.parseObject(
         message,
         PartialAirbyteStateMessage::new,
         Map.of(
             "type", (state) -> state.type = AirbyteStateMessage.AirbyteStateType.valueOf(PartialJsonDeserializer.readStringValue(message)),
             "stream", (state) -> state.stream = PartialAirbyteStreamState.fromJson(message),
-            "data", (state) -> state.serializedData = PartialJsonDeserializer.readSerializedValue(message)));
+            "global", (state) -> state.global = PartialAirbyteGlobalState.fromJson(message),
+            "data", (state) -> state.serializedData = PartialJsonDeserializer.readSerializedValue(message)),
+        false);
   }
 
   public AirbyteStateMessage.AirbyteStateType getType() {
