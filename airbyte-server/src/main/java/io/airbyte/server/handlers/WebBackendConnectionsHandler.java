@@ -164,10 +164,16 @@ public class WebBackendConnectionsHandler {
     StandardDestinationDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinationByDestinationId(connectionRead.getDestinationId());
     StandardDestinationDefinition sourceDefinition = configRepository.getStandardSourceDefinationBySourceId(connectionRead.getSourceId());
-    final JobReadList syncJobReadList = getSyncJobs(connectionRead);
 
     long elapsedTimeInNano = System.nanoTime() - startTime;
     double elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
+    LOGGER.info("buildWebBackendConnectionPageRead part 0 spends {} milliseconds", elapsedTimeInMilli);
+
+    startTime = System.nanoTime();
+    final JobReadList syncJobReadList = getSyncJobs(connectionRead);
+
+    elapsedTimeInNano = System.nanoTime() - startTime;
+    elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
     LOGGER.info("buildWebBackendConnectionPageRead part 1 spends {} milliseconds", elapsedTimeInMilli);
 
     startTime = System.nanoTime();
@@ -192,7 +198,7 @@ public class WebBackendConnectionsHandler {
 
     elapsedTimeInNano = System.nanoTime() - startTime;
     elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
-    LOGGER.info("webBackendConnectionsPageForWorkspace part 3 spends {} milliseconds", elapsedTimeInMilli);
+    LOGGER.info("buildWebBackendConnectionPageRead part 3 spends {} milliseconds", elapsedTimeInMilli);
 
     return webBackendConnectionPageRead;
   }
