@@ -61,13 +61,12 @@ import org.junit.jupiter.api.Test;
 @Order(2)
 class MySqlJdbcSourceTest extends JdbcSourceTest<MySqlSource, MySQLTestDatabase> {
 
-
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
   protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
 
   @Override
   protected JsonNode config() {
-    return testdb.testConfigBuilder().withoutSsl().build();
+    return testdb.testConfigBuilder().build();
   }
 
   @Override
@@ -100,32 +99,32 @@ class MySqlJdbcSourceTest extends JdbcSourceTest<MySqlSource, MySQLTestDatabase>
     final String streamOneName = TABLE_NAME + "one";
     // Create a fresh first table
     testdb.with("CREATE TABLE %s (\n"
-          + "    id int PRIMARY KEY,\n"
-          + "    name VARCHAR(200) NOT NULL,\n"
-          + "    updated_at VARCHAR(200) NOT NULL\n"
-          + ");", streamOneName)
-            .with("INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')",
-              getFullyQualifiedTableName(streamOneName))
-                .with("INSERT INTO %s(id, name, updated_at) VALUES (2, 'crusher', '2005-10-19')",
-              getFullyQualifiedTableName(streamOneName))
-                    .with("INSERT INTO %s(id, name, updated_at) VALUES (3, 'vash', '2006-10-19')",
-              getFullyQualifiedTableName(streamOneName));
+        + "    id int PRIMARY KEY,\n"
+        + "    name VARCHAR(200) NOT NULL,\n"
+        + "    updated_at VARCHAR(200) NOT NULL\n"
+        + ");", streamOneName)
+        .with("INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')",
+            getFullyQualifiedTableName(streamOneName))
+        .with("INSERT INTO %s(id, name, updated_at) VALUES (2, 'crusher', '2005-10-19')",
+            getFullyQualifiedTableName(streamOneName))
+        .with("INSERT INTO %s(id, name, updated_at) VALUES (3, 'vash', '2006-10-19')",
+            getFullyQualifiedTableName(streamOneName));
 
     // Create a fresh second table
     final String streamTwoName = TABLE_NAME + "two";
     final String streamTwoFullyQualifiedName = getFullyQualifiedTableName(streamTwoName);
     // Insert records into second table
     testdb.with("CREATE TABLE %s (\n"
-          + "    id int PRIMARY KEY,\n"
-          + "    name VARCHAR(200) NOT NULL,\n"
-          + "    updated_at DATE NOT NULL\n"
-          + ");", streamTwoName)
-            .with("INSERT INTO %s(id, name, updated_at) VALUES (40,'Jean Luc','2006-10-19')",
-              streamTwoFullyQualifiedName)
-                .with("INSERT INTO %s(id, name, updated_at) VALUES (41, 'Groot', '2006-10-19')",
-              streamTwoFullyQualifiedName)
-                    .with("INSERT INTO %s(id, name, updated_at) VALUES (42, 'Thanos','2006-10-19')",
-              streamTwoFullyQualifiedName);
+        + "    id int PRIMARY KEY,\n"
+        + "    name VARCHAR(200) NOT NULL,\n"
+        + "    updated_at DATE NOT NULL\n"
+        + ");", streamTwoName)
+        .with("INSERT INTO %s(id, name, updated_at) VALUES (40,'Jean Luc','2006-10-19')",
+            streamTwoFullyQualifiedName)
+        .with("INSERT INTO %s(id, name, updated_at) VALUES (41, 'Groot', '2006-10-19')",
+            streamTwoFullyQualifiedName)
+        .with("INSERT INTO %s(id, name, updated_at) VALUES (42, 'Thanos','2006-10-19')",
+            streamTwoFullyQualifiedName);
 
     // Create records list that we expect to see in the state message
     final List<AirbyteMessage> streamTwoExpectedRecords = Arrays.asList(
@@ -252,9 +251,9 @@ class MySqlJdbcSourceTest extends JdbcSourceTest<MySqlSource, MySQLTestDatabase>
     // Add some data to each table and perform a third read.
     // Expect to see all records be synced via cursorBased method and not primaryKey
     testdb.with("INSERT INTO %s(id, name, updated_at) VALUES (4,'Hooper','2006-10-19')",
-              getFullyQualifiedTableName(streamOneName))
-            .with("INSERT INTO %s(id, name, updated_at) VALUES (43, 'Iron Man', '2006-10-19')",
-              streamTwoFullyQualifiedName);
+        getFullyQualifiedTableName(streamOneName))
+        .with("INSERT INTO %s(id, name, updated_at) VALUES (43, 'Iron Man', '2006-10-19')",
+            streamTwoFullyQualifiedName);
 
     final List<AirbyteMessage> messagesFromThirdSync = MoreIterators
         .toList(source().read(config, configuredCatalog,

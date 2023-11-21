@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 
 public class MySqlSourceTests {
 
-  public MySqlSource mySqlSource() {
+  public MySqlSource source() {
     final var source = new MySqlSource();
     source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
     return source;
@@ -51,14 +51,14 @@ public class MySqlSourceTests {
           .with(JdbcUtils.JDBC_URL_PARAMS_KEY, "serverTimezone=Europe/Moscow")
           .withoutSsl()
           .build();
-      final AirbyteConnectionStatus check = mySqlSource().check(config);
-      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
+      final AirbyteConnectionStatus check = source().check(config);
+      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus(), check.getMessage());
     }
   }
 
   @Test
   void testJdbcUrlWithEscapedDatabaseName() {
-    final JsonNode jdbcConfig = mySqlSource().toDatabaseConfig(buildConfigEscapingNeeded());
+    final JsonNode jdbcConfig = source().toDatabaseConfig(buildConfigEscapingNeeded());
     assertNotNull(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
     assertTrue(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText().startsWith(EXPECTED_JDBC_ESCAPED_URL));
   }
@@ -93,7 +93,7 @@ public class MySqlSourceTests {
               .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
               .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
       final var tableCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(tableStream));
-      final var tableThrowable = catchThrowable(() -> MoreIterators.toSet(mySqlSource().read(config, tableCatalog, null)));
+      final var tableThrowable = catchThrowable(() -> MoreIterators.toSet(source().read(config, tableCatalog, null)));
       assertThat(tableThrowable).isInstanceOf(ConfigErrorException.class).hasMessageContaining(NULL_CURSOR_EXCEPTION_MESSAGE_CONTAINS);
 
       final var viewStream = new ConfiguredAirbyteStream()
@@ -107,7 +107,7 @@ public class MySqlSourceTests {
               .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
               .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
       final var viewCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(viewStream));
-      final var viewThrowable = catchThrowable(() -> MoreIterators.toSet(mySqlSource().read(config, viewCatalog, null)));
+      final var viewThrowable = catchThrowable(() -> MoreIterators.toSet(source().read(config, viewCatalog, null)));
       assertThat(viewThrowable).isInstanceOf(ConfigErrorException.class).hasMessageContaining(NULL_CURSOR_EXCEPTION_MESSAGE_CONTAINS);
     }
   }
@@ -131,7 +131,7 @@ public class MySqlSourceTests {
           .with(JdbcUtils.JDBC_URL_PARAMS_KEY, "sessionVariables=MAX_EXECUTION_TIME=28800000")
           .withoutSsl()
           .build();
-      final AirbyteConnectionStatus check = mySqlSource().check(config);
+      final AirbyteConnectionStatus check = source().check(config);
       assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
     }
   }
