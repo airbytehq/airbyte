@@ -3,10 +3,20 @@ import subprocess
 from airbyte_cdk.logger import AirbyteLogger
 from pathlib import Path
 
-def run_dbt(*args, project_dir: str, logger: AirbyteLogger, profiles_dir: str = None, **kwargs) -> None:
-    dbt_path = "dbt"
-    if "dbt_path" in kwargs:
-        dbt_path = kwargs.pop("dbt_path")
+from dbt.cli.main import dbtRunner, dbtRunnerResult
+
+# initialize
+dbt = dbtRunner()
+
+
+def run_dbt(
+    *args,
+    project_dir: str,
+    logger: AirbyteLogger,
+    profiles_dir: str = None,
+    env_vars: dict[str, str] = None,
+    **kwargs,
+) -> None:
     profiles_dir = profiles_dir or project_dir
 
     profiles_dir_path = Path(profiles_dir).absolute()
@@ -18,9 +28,16 @@ def run_dbt(*args, project_dir: str, logger: AirbyteLogger, profiles_dir: str = 
     # Set NO_COLOR to prevent dbt from printing ANSI color codes
     os.environ["NO_COLOR"] = "true"
 
-    result = subprocess.run([dbt_path, *arg_list], capture_output=True, text=True)
-    logger.info(result.stdout)
+    env_vars = {
+        "DUCKDB_DB_DIR": "/Users/ajsteers/Source/airbyte/airbyte-integrations/connectors/source-dbt-duckdb/unit_tests/artifacts",
+    }
 
-    if result.returncode != 0:
-        logger.info(f'An error occurred. Log: {result.stderr}')
-        raise Exception(result.stderr)
+    os.environ.update(env_vars)
+    results_obj: dbtRunnerResult = dbt.invoke(arg_list)
+
+    if not results_obj.success:
+        logger.info(f'An error occurred. Log: {results_obj.exception}')
+        raise results_obj.exception
+
+    for r in results_obj.result:
+        logger.info(f"dbt result for '{r.node.name}': {r.status}")
