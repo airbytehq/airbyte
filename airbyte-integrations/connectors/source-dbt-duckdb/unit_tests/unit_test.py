@@ -37,13 +37,35 @@ def sample_config() -> dict[str, Any]:
     return json.loads(SAMPLE_CONFIG_PATH.read_text())
 
 
-def test_test_sync(sample_configured_catalog, sample_config):
+def test_read_success(sample_configured_catalog, sample_config):
     """Test that we can run a sync."""
     launch(
         SourceDbtDuckDB(),
         [
             "read",
-            f"--catalog={SAMPLE_CONFIGURED_CATALOG_PATH}",
             f"--config={SAMPLE_CONFIG_PATH}",
+            f"--catalog={SAMPLE_CONFIGURED_CATALOG_PATH}",
+        ],
+    )
+
+
+def test_spec_success(sample_configured_catalog, sample_config):
+    """Test that we can run a sync."""
+    launch(
+        SourceDbtDuckDB(),
+        [
+            "spec",
+        ],
+    )
+
+
+def test_check_success(sample_configured_catalog, sample_config):
+    """Test that we can run a sync."""
+    launch(
+        SourceDbtDuckDB(),
+        [
+            "check",
+            f"--config={SAMPLE_CONFIG_PATH}",
+            # f"--catalog={SAMPLE_CONFIGURED_CATALOG_PATH}",
         ],
     )
