@@ -18,6 +18,19 @@ class Message:
     prefix: str
     message: AirbyteMessage
 
+@dataclasses.dataclass
+class StreamStats:
+    stream: str
+    record_count = 0
+
+    columns_to_diff_count = {}
+    columns_to_right_missing = {}
+    columns_to_left_missing = {}
+    columns_to_equal = {}
+
+    left_rows_missing = {}
+    right_rows_missing = {}
+
 
 
 async def main():
@@ -29,23 +42,15 @@ async def main():
     subprocess_left = run_subprocess(command, "left")
     subprocess_right = run_subprocess(command, "right")
 
-    record_count = 0
-
-    columns_to_diff_count = {}
-    columns_to_right_missing = {}
-    columns_to_left_missing = {}
-    columns_to_equal = {}
-
-    left_rows_missing = {}
-    right_rows_missing = {}
     primary_key = "id"
+    stream_stats = StreamStats(stream="customers")
 
     while subprocess_left.__anext__() and subprocess_right.__anext__():
         try:
             left = await subprocess_left.__anext__()
             right = await subprocess_right.__anext__()
 
-            record_count += 1
+            stream_stats.record_count += 1
 
             if left.message.type != right.message.type:
                 print(f"Type mismatch: {left.message.type} != {right.message.type}")
@@ -57,53 +62,53 @@ async def main():
             if left.message.type == MessageType.RECORD:
 
                 if left.message.record.data[primary_key] != right.message.record.data[primary_key]:
-                    left_rows_missing[left.message.record.data[primary_key]] = left
-                    right_rows_missing[right.message.record.data[primary_key]] = right
+                    stream_stats.left_rows_missing[left.message.record.data[primary_key]] = left
+                    stream_stats.right_rows_missing[right.message.record.data[primary_key]] = right
 
                 for column, left_value in left.message.record.data.items():
-                    if column not in columns_to_diff_count:
-                        columns_to_diff_count[column] = 0
-                    if column not in columns_to_right_missing:
-                        columns_to_right_missing[column] = 0
-                    if column not in columns_to_left_missing:
-                        columns_to_left_missing[column] = 0
-                    if column not in columns_to_equal:
-                        columns_to_equal[column] = 0
+                    if column not in stream_stats.columns_to_diff_count:
+                        stream_stats.columns_to_diff_count[column] = 0
+                    if column not in stream_stats.columns_to_right_missing:
+                        stream_stats.columns_to_right_missing[column] = 0
+                    if column not in stream_stats.columns_to_left_missing:
+                        stream_stats.columns_to_left_missing[column] = 0
+                    if column not in stream_stats.columns_to_equal:
+                        stream_stats.columns_to_equal[column] = 0
 
                     if column not in right.message.record.data:
-                        columns_to_right_missing[column] += 1
+                        stream_stats.columns_to_right_missing[column] += 1
                         continue
                     elif left_value != right.message.record.data[column]:
-                        columns_to_diff_count[column] += 1
+                        stream_stats.columns_to_diff_count[column] += 1
                     else:
-                        columns_to_equal[column] += 1
+                        stream_stats.columns_to_equal[column] += 1
                 for column, right_value in right.message.record.data.items():
-                    if column not in columns_to_diff_count:
-                        columns_to_diff_count[column] = 0
-                    if column not in columns_to_right_missing:
-                        columns_to_right_missing[column] = 0
-                    if column not in columns_to_left_missing:
-                        columns_to_left_missing[column] = 0
-                    if column not in columns_to_equal:
-                        columns_to_equal[column] = 0
+                    if column not in stream_stats.columns_to_diff_count:
+                        stream_stats.columns_to_diff_count[column] = 0
+                    if column not in stream_stats.columns_to_right_missing:
+                        stream_stats.columns_to_right_missing[column] = 0
+                    if column not in stream_stats.columns_to_left_missing:
+                        stream_stats.columns_to_left_missing[column] = 0
+                    if column not in stream_stats.columns_to_equal:
+                        stream_stats.columns_to_equal[column] = 0
                     if column not in left.message.record.data:
-                        columns_to_left_missing[column] += 1
+                        stream_stats.columns_to_left_missing[column] += 1
 
                 if left.message.record.data != right.message.record.data:
                     print(f"Data mismatch: {left.message.record.data} != {right.message.record.data}")
         except StopAsyncIteration:
-            print(f"done processing {record_count} records")
-            print(f"columns_to_diff_count: {columns_to_diff_count}")
-            print(f"columns_to_right_missing: {columns_to_right_missing}")
-            print(f"columns_to_left_missing: {columns_to_left_missing}")
-            print(f"columns_to_equal: {columns_to_equal}")
+            print(f"done processing {stream_stats.record_count} records")
+            print(f"columns_to_diff_count: {stream_stats.columns_to_diff_count}")
+            print(f"columns_to_right_missing: {stream_stats.columns_to_right_missing}")
+            print(f"columns_to_left_missing: {stream_stats.columns_to_left_missing}")
+            print(f"columns_to_equal: {stream_stats.columns_to_equal}")
             # NEED TO VERIFY BOTH ARE DONE
 
-            print(f"left_rows_missing: {left_rows_missing}")
-            print(len(left_rows_missing))
+            print(f"left_rows_missing: {stream_stats.left_rows_missing}")
+            print(len(stream_stats.left_rows_missing))
 
-            print(f"right_rows_missing: {right_rows_missing}")
-            print(len(right_rows_missing))
+            print(f"right_rows_missing: {stream_stats.right_rows_missing}")
+            print(len(stream_stats.right_rows_missing))
 
             break
 
