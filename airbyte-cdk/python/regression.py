@@ -3,7 +3,12 @@
 #
 import asyncio
 import dataclasses
+import json
+import subprocess
 
+import matplotlib.pyplot as plt
+import pandas as pd
+import yaml
 from aiostream import stream
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -15,13 +20,9 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
-import pandas as pd
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-import json
-
 
 
 @dataclasses.dataclass
@@ -49,6 +50,24 @@ async def main():
     connector = "source-stripe"
     connector_version = "4.5.4"
     config_path = "secrets/config.json"
+    regression_config_path = "regression_config.yaml"
+    with open(regression_config_path) as f:
+        regression_config = yaml.safe_load(f)
+
+    stream_configs = regression_config["streams"]
+    stream_names = [stream_config["name"] for stream_config in stream_configs]
+    discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version} discover --config /{config_path}"
+    discover_result = subprocess.run(discover_command, shell=True, check=True, stdout=subprocess.PIPE, text=True)
+    discover_output = discover_result.stdout
+    for discover_line in discover_output.split("\n"):
+        if "CATALOG" in discover_line:
+            print(discover_line)
+            discover_message = AirbyteMessage.parse_raw(discover_line)
+            catalog = discover_message.catalog
+            break
+    streams = [stream for stream in catalog.streams if stream.name in stream_names]
+    with open(f"secrets/tmp_catalog.json", "w") as f:
+        f.write(_configured_catalog(streams).json(exclude_unset=True))
     command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version} read --config /{config_path} --catalog /secrets/tmp_catalog.json"
 
     subprocess_left = run_subprocess(command, "left")
@@ -63,7 +82,6 @@ async def main():
         try:
             left = await subprocess_left.__anext__()
             right = await subprocess_right.__anext__()
-
 
             if left.message.type != right.message.type:
                 print(f"Type mismatch: {left.message.type} != {right.message.type}")
@@ -104,7 +122,7 @@ async def main():
                     else:
                         print(f"did not find {left_key} in right")
         except StopAsyncIteration:
-            #FIXME needd to do another check of missing
+            # FIXME needd to do another check of missing
             # check missing
             for stream_name, stream_stats in streams_stats.items():
                 left_keys = set(stream_stats.left_rows_missing.keys())
@@ -156,9 +174,23 @@ async def main():
             break
     generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats)
 
-def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, output_filename='plots_combined_per_metric.pdf'):
-    #diff_pdf_filename = "diff.pdf"
-    #diff_pdf = canvas.Canvas(diff_pdf_filename)
+
+def _configured_catalog(streams):
+    return ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=stream,
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+            for stream in streams
+        ]
+    )
+
+
+def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, output_filename="plots_combined_per_metric.pdf"):
+    # diff_pdf_filename = "diff.pdf"
+    # diff_pdf = canvas.Canvas(diff_pdf_filename)
     diff_filename = "diff_{stream}.jsonl"
     with PdfPages(output_filename) as pdf:
 
@@ -183,71 +215,59 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
                     left_data_json = json.dumps({"left": left.message.record.data, "right": right.message.record.data})
                     diff_file.write(left_data_json)
 
-        #diff_pdf.save()
-        #print(f"Diff saved to {diff_pdf_filename}")
+        # diff_pdf.save()
+        # print(f"Diff saved to {diff_pdf_filename}")
         print(f"summary_stats:{summary_stats}")
         summary_df = pd.DataFrame.from_records(summary_stats)
-        #table = pd.pivot_table(summary_df, index='stream', columns=['equal', "record_count", "missing_left", "missing_right"], aggfunc=len, fill_value=0)
-        #table = pd.pivot_table(summary_df, index='stream', columns=["record_count"], aggfunc=len, fill_value=0)
-        table = summary_df.pivot_table(values=['equal', 'record_count', 'missing_left', 'missing_right'],
-                               index='stream', aggfunc='first')
+        # table = pd.pivot_table(summary_df, index='stream', columns=['equal', "record_count", "missing_left", "missing_right"], aggfunc=len, fill_value=0)
+        # table = pd.pivot_table(summary_df, index='stream', columns=["record_count"], aggfunc=len, fill_value=0)
+        table = summary_df.pivot_table(values=["equal", "record_count", "missing_left", "missing_right"], index="stream", aggfunc="first")
         plt.figure(figsize=(6, 4))
-        plt.table(cellText=table.values,
-                  colLabels=table.columns,
-                  rowLabels=table.index,
-                  loc='center')
+        plt.table(cellText=table.values, colLabels=table.columns, rowLabels=table.index, loc="center")
         plt.title(f"Summary stats")
-        plt.axis('off')  # Hide axis
-        pdf.savefig(bbox_inches='tight', pad_inches=1)
+        plt.axis("off")  # Hide axis
+        pdf.savefig(bbox_inches="tight", pad_inches=1)
         plt.close()
-
 
         for stream, group_data in streams_to_dataframe.items():
             # Generate per-stream tables
-            table = pd.pivot_table(group_data, values='value', index='column', columns='metric')
+            table = pd.pivot_table(group_data, values="value", index="column", columns="metric")
             print(f"table for {stream}:\n{table}")
             # Plotting table using matplotlib
 
             # Define a function to assign colors based on conditions
             def color_cells(table, row, col):
                 value = table.loc[row, col]
-                if value > 0 and col != 'equal_count':
-                    return 'red'
-                return 'white'  # Default color for other cells
+                if value > 0 and col != "equal_count":
+                    return "red"
+                return "white"  # Default color for other cells
 
             # Convert table data to a list for cell colors
             cell_colors = [[color_cells(table, row, col) for col in table.columns] for row in table.index]
 
             plt.figure(figsize=(6, 4))
             plt.title(f"Stream: {stream}", y=3.2)
-            plt.table(cellText=table.values,
-                      colLabels=table.columns,
-                      rowLabels=table.index,
-                      cellColours=cell_colors,
-                      loc='center')
-            plt.axis('off')  # Hide axis
+            plt.table(cellText=table.values, colLabels=table.columns, rowLabels=table.index, cellColours=cell_colors, loc="center")
+            plt.axis("off")  # Hide axis
 
             # Save the table as a page in the PDF
-            pdf.savefig(bbox_inches='tight', pad_inches=1)
+            pdf.savefig(bbox_inches="tight", pad_inches=1)
             plt.close()
 
         for stream, group_data in streams_to_dataframe.items():
-            grouped = group_data.groupby('column')
+            grouped = group_data.groupby("column")
             for column, group_data in grouped:
                 # Create a table for each stream and column combination
-                table = pd.pivot_table(group_data, values='value', index='metric', columns='column')
+                table = pd.pivot_table(group_data, values="value", index="metric", columns="column")
 
                 # Plotting table using matplotlib
                 plt.figure(figsize=(6, 4))
-                plt.table(cellText=table.values,
-                          colLabels=table.columns,
-                          rowLabels=table.index,
-                          loc='center')
+                plt.table(cellText=table.values, colLabels=table.columns, rowLabels=table.index, loc="center")
                 plt.title(f"Stream: {stream}, Column: {column}")
-                plt.axis('off')  # Hide axis
+                plt.axis("off")  # Hide axis
 
                 # Save the table as a page in the PDF
-                pdf.savefig(bbox_inches='tight', pad_inches=1)
+                pdf.savefig(bbox_inches="tight", pad_inches=1)
                 plt.close()
 
         print(f"Tables saved to {output_filename}")

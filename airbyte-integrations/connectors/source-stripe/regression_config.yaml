@@ -1,0 +1,3 @@
+streams:
+  - name: customers
+  - name: invoices
