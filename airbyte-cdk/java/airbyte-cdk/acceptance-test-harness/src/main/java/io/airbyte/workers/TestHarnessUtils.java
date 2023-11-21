@@ -22,7 +22,7 @@ import io.airbyte.protocol.models.Config;
 import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.FailureHelper.ConnectorCommand;
-
+import io.airbyte.workers.internal.AirbyteStreamFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,8 +36,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import io.airbyte.workers.internal.AirbyteStreamFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

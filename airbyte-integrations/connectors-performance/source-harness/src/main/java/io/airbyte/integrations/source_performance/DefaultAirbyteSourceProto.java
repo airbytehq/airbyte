@@ -43,13 +43,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
+import javax.annotation.CheckForNull;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.CheckForNull;
 
 /**
  * Default implementation of {@link AirbyteSource}.
@@ -123,6 +120,7 @@ public class DefaultAirbyteSourceProto {
 
     private final ByteArrayOutputStream buffer = new ByteArrayOutputStream(); // this has an inbuilt buffer.
     private final InputStream stream;
+
     public ProtoIterator(InputStream stream) {
       super();
       this.stream = stream;
@@ -136,7 +134,8 @@ public class DefaultAirbyteSourceProto {
 
       while (true) {
         try {
-          if ((nextByte = stream.read()) == -1) break;
+          if ((nextByte = stream.read()) == -1)
+            break;
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
@@ -171,8 +170,8 @@ public class DefaultAirbyteSourceProto {
       }
       return endOfData();
     }
-  }
 
+  }
 
   @VisibleForTesting
   static boolean shouldBeat(final AirbyteMessage.Type airbyteMessageType) {
@@ -315,7 +314,7 @@ public class DefaultAirbyteSourceProto {
 
     msgs.forEach(msg -> {
       try {
-        outputStream.write(new byte[]{0});
+        outputStream.write(new byte[] {0});
         io.airbyte.protocol.protos.AirbyteMessage.newBuilder()
             .setRecord(msg).build().writeDelimitedTo(outputStream);
         outputStream.write("\n".getBytes(Charsets.UTF_8));
@@ -329,7 +328,7 @@ public class DefaultAirbyteSourceProto {
 
     // consume them from the output stream
 
-    //    readFromInput(inputStream);
+    // readFromInput(inputStream);
     new ProtoIterator(inputStream).forEachRemaining(System.out::println);
 
   }

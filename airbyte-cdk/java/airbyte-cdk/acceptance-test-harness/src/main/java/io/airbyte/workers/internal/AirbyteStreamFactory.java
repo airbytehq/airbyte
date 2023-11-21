@@ -12,8 +12,9 @@ public interface AirbyteStreamFactory {
 
   Stream<AirbyteMessage> create(BufferedReader bufferedReader);
 
-//  default Stream<io.airbyte.protocol.protos.AirbyteMessage> createProto(BufferedReader bufferedReader) {
-//    return Stream.of(io.airbyte.protocol.protos.AirbyteMessage.newBuilder().build());
-//  }
+  // default Stream<io.airbyte.protocol.protos.AirbyteMessage> createProto(BufferedReader
+  // bufferedReader) {
+  // return Stream.of(io.airbyte.protocol.protos.AirbyteMessage.newBuilder().build());
+  // }
 
 }
