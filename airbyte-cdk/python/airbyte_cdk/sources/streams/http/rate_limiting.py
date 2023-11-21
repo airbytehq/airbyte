@@ -5,7 +5,7 @@
 import logging
 import sys
 import time
-from typing import Any, Callable, Mapping, Optional
+from typing import Any, Callable, Mapping, Optional, List
 
 import backoff
 from requests import PreparedRequest, RequestException, Response, codes, exceptions
@@ -27,7 +27,7 @@ SendRequestCallableType = Callable[[PreparedRequest, Mapping[str, Any]], Respons
 
 
 def default_backoff_handler(
-    max_tries: Optional[int], factor: float, max_time: Optional[int] = None, **kwargs: Any
+    max_tries: Optional[int], factor: float, max_time: Optional[int] = None, on_backoff: Callable[[Mapping[str, Any]], None] = None, **kwargs: Any
 ) -> Callable[[SendRequestCallableType], SendRequestCallableType]:
     def log_retry_attempt(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
@@ -36,6 +36,12 @@ def default_backoff_handler(
         logger.info(
             f"Caught retryable error '{str(exc)}' after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         )
+
+    def composite_on_backoff(callables: List[Callable[[Mapping[str, Any]], None]]) -> Callable[[Mapping[str, Any]], None]:
+        def composite(details: Mapping[str, Any]) -> None:
+            for callable in callables:
+                callable(details)
+        return composite
 
     def should_give_up(exc: Exception) -> bool:
         # If a non-rate-limiting related 4XX error makes it this far, it means it was unexpected and probably consistent, so we shouldn't back off
@@ -53,7 +59,7 @@ def default_backoff_handler(
         backoff.expo,
         TRANSIENT_EXCEPTIONS,
         jitter=None,
-        on_backoff=log_retry_attempt,
+        on_backoff=composite_on_backoff([log_retry_attempt, on_backoff]) if on_backoff else log_retry_attempt,
         giveup=should_give_up,
         max_tries=max_tries,
         max_time=max_time,

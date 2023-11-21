@@ -357,6 +357,9 @@ class Stream(ABC):
         else:
             raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
 
+    def end_stream(self) -> None:
+        pass
+
     def _checkpoint_state(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
         self,
         stream_state: Mapping[str, Any],

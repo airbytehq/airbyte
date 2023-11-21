@@ -62,7 +62,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self._source_config = propagated_source_config
         self._debug = debug
         self._emit_connector_builder_messages = emit_connector_builder_messages
-        self._constructor = component_factory if component_factory else ModelToComponentFactory(emit_connector_builder_messages)
+        self._constructor = component_factory if component_factory else ModelToComponentFactory(emit_connector_builder_messages, source_name=self.name)
         self._message_repository = self._constructor.get_message_repository()
         self._slice_logger: SliceLogger = AlwaysLogSliceLogger() if emit_connector_builder_messages else DebugSliceLogger()
 

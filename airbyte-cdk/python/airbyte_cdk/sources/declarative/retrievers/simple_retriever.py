@@ -288,6 +288,9 @@ class SimpleRetriever(Retriever):
                 next_page_token = self._next_page_token(response)
                 if not next_page_token:
                     pagination_complete = True
+                else:
+                    # TODO stream_metrics.on_pagination()
+                    pass
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []

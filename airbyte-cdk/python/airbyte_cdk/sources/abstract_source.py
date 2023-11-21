@@ -30,7 +30,7 @@ from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-
+from ddtrace import tracer
 
 class AbstractSource(Source, ABC):
     """
@@ -101,48 +101,50 @@ class AbstractSource(Source, ABC):
         self._stream_to_instance_map = stream_instances
         with create_timer(self.name) as timer:
             for configured_stream in catalog.streams:
-                stream_instance = stream_instances.get(configured_stream.stream.name)
-                if not stream_instance:
-                    if not self.raise_exception_on_missing_stream:
-                        continue
-                    raise KeyError(
-                        f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
-                        f"Refresh the schema in replication settings and remove this stream from future sync attempts."
-                    )
 
-                try:
-                    timer.start_event(f"Syncing stream {configured_stream.stream.name}")
-                    stream_is_available, reason = stream_instance.check_availability(logger, self)
-                    if not stream_is_available:
-                        logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
-                        continue
-                    logger.info(f"Marking stream {configured_stream.stream.name} as STARTED")
-                    yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.STARTED)
-                    yield from self._read_stream(
-                        logger=logger,
-                        stream_instance=stream_instance,
-                        configured_stream=configured_stream,
-                        state_manager=state_manager,
-                        internal_config=internal_config,
-                    )
-                    logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
-                    yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE)
-                except AirbyteTracedException as e:
-                    yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                    raise e
-                except Exception as e:
-                    yield from self._emit_queued_messages()
-                    logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
-                    logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
-                    yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                    display_message = stream_instance.get_error_display_message(e)
-                    if display_message:
-                        raise AirbyteTracedException.from_exception(e, message=display_message) from e
-                    raise e
-                finally:
-                    timer.finish_event()
-                    logger.info(f"Finished syncing {configured_stream.stream.name}")
-                    logger.info(timer.report())
+                with tracer.trace(name="configured_stream.stream.name", service="hack-days_source-stripe", resource="stream_read") as span:
+                    stream_instance = stream_instances.get(configured_stream.stream.name)
+                    if not stream_instance:
+                        if not self.raise_exception_on_missing_stream:
+                            continue
+                        raise KeyError(
+                            f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
+                            f"Refresh the schema in replication settings and remove this stream from future sync attempts."
+                        )
+
+                    try:
+                        timer.start_event(f"Syncing stream {configured_stream.stream.name}")
+                        stream_is_available, reason = stream_instance.check_availability(logger, self)
+                        if not stream_is_available:
+                            logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
+                            continue
+                        logger.info(f"Marking stream {configured_stream.stream.name} as STARTED")
+                        yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.STARTED)
+                        yield from self._read_stream(
+                            logger=logger,
+                            stream_instance=stream_instance,
+                            configured_stream=configured_stream,
+                            state_manager=state_manager,
+                            internal_config=internal_config,
+                        )
+                        logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
+                        yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE)
+                    except AirbyteTracedException as e:
+                        yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
+                        raise e
+                    except Exception as e:
+                        yield from self._emit_queued_messages()
+                        logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
+                        logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
+                        yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
+                        display_message = stream_instance.get_error_display_message(e)
+                        if display_message:
+                            raise AirbyteTracedException.from_exception(e, message=display_message) from e
+                        raise e
+                    finally:
+                        timer.finish_event()
+                        logger.info(f"Finished syncing {configured_stream.stream.name}")
+                        logger.info(timer.report())
 
         logger.info(f"Finished syncing {self.name}")
 
@@ -200,7 +202,10 @@ class AbstractSource(Source, ABC):
             yield from self._emit_queued_messages()
             yield record
 
+        stream_instance.end_stream()
         logger.info(f"Read {record_counter} records from {stream_name} stream")
+        span = tracer.current_span()
+        span.set_tag("stream.number_of_records", record_counter)
 
     def _read_incremental(
         self,

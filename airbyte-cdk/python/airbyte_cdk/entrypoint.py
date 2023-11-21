@@ -88,6 +88,7 @@ class AirbyteEntrypoint(object):
         if hasattr(parsed_args, "debug") and parsed_args.debug:
             self.logger.setLevel(logging.DEBUG)
             logger.setLevel(logging.DEBUG)
+            logging.root.setLevel(logging.DEBUG)
             self.logger.debug("Debug logs enabled")
         else:
             self.logger.setLevel(logging.INFO)

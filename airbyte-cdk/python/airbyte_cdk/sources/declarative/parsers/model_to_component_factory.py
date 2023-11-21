@@ -113,6 +113,7 @@ from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTra
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
+from airbyte_cdk.sources.message.analytic import StreamMetrics
 from isodate import parse_duration
 from pydantic import BaseModel
 
@@ -130,6 +131,7 @@ class ModelToComponentFactory:
         emit_connector_builder_messages: bool = False,
         disable_retries: bool = False,
         message_repository: Optional[MessageRepository] = None,
+        source_name: str = "<UNDEFINED_SOURCE_NAME>",
     ):
         self._init_mappings()
         self._limit_pages_fetched_per_slice = limit_pages_fetched_per_slice
@@ -139,6 +141,7 @@ class ModelToComponentFactory:
         self._message_repository = message_repository or InMemoryMessageRepository(  # type: ignore
             self._evaluate_log_level(emit_connector_builder_messages)
         )
+        self._source_name = source_name
 
     def _init_mappings(self) -> None:
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: Mapping[Type[BaseModel], Callable[..., Any]] = {
@@ -560,6 +563,7 @@ class ModelToComponentFactory:
         if model.transformations:
             for transformation_model in model.transformations:
                 transformations.append(self._create_component_from_model(model=transformation_model, config=config))
+        stream_metrics = StreamMetrics(self._source_name, model.name)
         retriever = self._create_component_from_model(
             model=model.retriever,
             config=config,
@@ -568,6 +572,7 @@ class ModelToComponentFactory:
             stream_slicer=combined_slicers,
             stop_condition_on_cursor=stop_condition_on_cursor,
             transformations=transformations,
+            stream_metrics=stream_metrics,
         )
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
 
@@ -587,6 +592,8 @@ class ModelToComponentFactory:
             stream_cursor_field=cursor_field or "",
             config=config,
             parameters=model.parameters or {},
+            _message_repository=self._message_repository,
+            _stream_metrics=stream_metrics,
         )
 
     def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
@@ -684,7 +691,7 @@ class ModelToComponentFactory:
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
         return ExponentialBackoffStrategy(factor=model.factor or 5, parameters=model.parameters or {}, config=config)
 
-    def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
+    def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str, stream_metrics: StreamMetrics) -> HttpRequester:
         authenticator = (
             self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base, name=name)
             if model.authenticator
@@ -720,6 +727,7 @@ class ModelToComponentFactory:
             config=config,
             disable_retries=self._disable_retries,
             parameters=model.parameters or {},
+            _stream_metrics=stream_metrics,
             message_repository=self._message_repository,
         )
 
@@ -906,12 +914,13 @@ class ModelToComponentFactory:
         config: Config,
         *,
         name: str,
+        stream_metrics: StreamMetrics,
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
         stop_condition_on_cursor: bool = False,
         transformations: List[RecordTransformation],
     ) -> SimpleRetriever:
-        requester = self._create_component_from_model(model=model.requester, config=config, name=name)
+        requester = self._create_component_from_model(model=model.requester, config=config, name=name, stream_metrics=stream_metrics)
         record_selector = self._create_component_from_model(model=model.record_selector, config=config, transformations=transformations)
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})

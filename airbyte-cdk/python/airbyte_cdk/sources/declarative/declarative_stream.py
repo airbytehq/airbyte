@@ -2,15 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import SyncMode, AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.message.analytic import StreamMetrics
 from airbyte_cdk.sources.streams.core import Stream
 
 
@@ -29,6 +33,8 @@ class DeclarativeStream(Stream):
         stream. Transformations are applied in the order in which they are defined.
     """
 
+    _stream_metrics: StreamMetrics
+    _message_repository: MessageRepository
     retriever: Retriever
     config: Config
     parameters: InitVar[Mapping[str, Any]]
@@ -101,7 +107,9 @@ class DeclarativeStream(Stream):
         """
         :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
         """
-        yield from self.retriever.read_records(stream_slice)
+        for record in self.retriever.read_records(stream_slice):
+            self._stream_metrics.on_record()
+            yield record
 
     def get_json_schema(self) -> Mapping[str, Any]:  # type: ignore
         """
@@ -135,3 +143,11 @@ class DeclarativeStream(Stream):
             important state is the one at the beginning of the slice
         """
         return None
+
+    def end_stream(self) -> None:
+        self._message_repository.emit_message(
+            AirbyteMessage(
+                type=Type.LOG,
+                log=AirbyteLogMessage(level=Level.INFO, message=json.dumps(self._stream_metrics.get_report())),
+            )
+        )

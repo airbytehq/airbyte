@@ -11,6 +11,16 @@ from typing import List
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
 from source_stripe import SourceStripe
+from ddtrace import config, patch_all, tracer
+
+
+tracer.configure(hostname="localhost", port=8126, https=False)
+
+config.env = "local"      # the environment the application is in
+config.service = "hack-days_source-stripe"  # name of your application
+config.version = "0.1"  # version of your application
+patch_all()
+print("PATCHED_ALL")
 
 
 def _get_source(args: List[str]):
@@ -34,8 +44,13 @@ def _get_source(args: List[str]):
         return None
 
 
+@tracer.wrap("main", service="hack-days_source-stripe", resource="entrypoint")
+def main(args):
+    source = _get_source(args)
+    if source:
+        launch(source, args)
+
+
 if __name__ == "__main__":
     _args = sys.argv[1:]
-    source = _get_source(_args)
-    if source:
-        launch(source, _args)
+    main(_args)

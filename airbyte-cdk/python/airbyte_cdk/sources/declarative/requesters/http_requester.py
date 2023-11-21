@@ -6,6 +6,7 @@ import logging
 import os
 import urllib
 from dataclasses import InitVar, dataclass
+from datetime import timedelta
 from functools import lru_cache
 from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
@@ -26,11 +27,18 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Req
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
+from airbyte_cdk.sources.message.analytic import Response, StreamMetrics
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler, user_defined_backoff_handler
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
 from requests.auth import AuthBase
+
+
+def _assemble_analytic_response(response: requests.Response) -> Response:
+    url = urllib.parse.urlparse(response.request.url)
+    # TODO method?
+    return Response(f"{url.hostname}{url.path}", str(response.status_code), len(response.content), response.elapsed, hasattr(response, "from_cache") and response.from_cache)
 
 
 @dataclass
@@ -54,6 +62,7 @@ class HttpRequester(Requester):
     path: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+    _stream_metrics: StreamMetrics
     authenticator: Optional[DeclarativeAuthenticator] = None
     http_method: Union[str, HttpMethod] = HttpMethod.GET
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
@@ -453,7 +462,7 @@ class HttpRequester(Requester):
             max_tries = max(0, max_tries) + 1
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)  # type: ignore # we don't pass in kwargs to the backoff handler
-        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self._DEFAULT_RETRY_FACTOR)
+        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self._DEFAULT_RETRY_FACTOR, on_backoff=lambda details: self._stream_metrics.on_retry())
         # backoff handlers wrap _send, so it will always return a response
         return backoff_handler(user_backoff_handler)(request, log_formatter=log_formatter)  # type: ignore
 
@@ -484,6 +493,7 @@ class HttpRequester(Requester):
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
         response: requests.Response = self._session.send(request)
+        self._stream_metrics.on_response(_assemble_analytic_response(response))
         self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
         if log_formatter:
             formatter = log_formatter
