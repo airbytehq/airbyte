@@ -5,17 +5,15 @@
 import base64
 import hashlib
 import json
+import logging
 import os
 import re
 import tempfile
-import git
-import logging
-
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Tuple
-from pydash import set_
 
+import git
 import yaml
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -27,10 +25,11 @@ from metadata_service.constants import (
     METADATA_FILE_NAME,
     METADATA_FOLDER,
 )
-from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
+from pydash import set_
 from pydash.objects import get
 
 
@@ -232,10 +231,12 @@ def _apply_author_info_to_metadata_file(metadata_dict: dict, original_metadata_f
         metadata_dict = set_(metadata_dict, "data.ab_internal.git", git_info_dict)
     return metadata_dict
 
+
 def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_file:
         yaml.dump(metadata_dict, tmp_file)
         return Path(tmp_file.name)
+
 
 def _apply_modifications_to_metadata_file(original_metadata_file_path: Path, validator_opts: ValidatorOptions) -> Path:
     """Apply modifications to the metadata file before uploading it to GCS.

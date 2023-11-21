@@ -4,7 +4,6 @@
 
 from unittest import mock
 from uuid import UUID
-from orchestrator.utils.blob_helpers import yaml_blob_to_dict
 
 import pytest
 import yaml
@@ -28,6 +27,7 @@ from orchestrator.assets.registry_report import (
     oss_sources_dataframe,
 )
 from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
+from orchestrator.utils.blob_helpers import yaml_blob_to_dict
 from pydantic import ValidationError
 
 VALID_METADATA_DICT = {

@@ -9,7 +9,6 @@ from typing import List, Optional, Tuple, Union
 
 import orchestrator.hacks as HACKS
 import pandas as pd
-from orchestrator.utils.blob_helpers import yaml_blob_to_dict
 import sentry_sdk
 from dagster import AutoMaterializePolicy, DynamicPartitionsDefinition, MetadataValue, OpExecutionContext, Output, asset
 from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
@@ -17,12 +16,13 @@ from google.cloud import storage
 from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
-from metadata_service.spec_cache import SpecCache
 from metadata_service.models.transform import to_json_sanitized_dict
+from metadata_service.spec_cache import SpecCache
 from orchestrator.config import MAX_METADATA_PARTITION_RUN_REQUEST, VALID_REGISTRIES, get_public_url_for_gcs_file
 from orchestrator.logging import sentry
 from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
 from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
+from orchestrator.utils.blob_helpers import yaml_blob_to_dict
 from orchestrator.utils.dagster_helpers import OutputDataFrame
 from orchestrator.utils.object_helpers import deep_copy_params
 from pydantic import BaseModel, ValidationError
@@ -331,6 +331,7 @@ def delete_registry_entry(registry_name, metadata_entry: LatestMetadataEntry, me
     file_handle = metadata_directory_manager.delete_by_key(key=registry_entry_write_path, ext="json")
     return file_handle.public_url if file_handle else None
 
+
 @sentry_sdk.trace
 def safe_parse_metadata_definition(file_name: str, metadata_dict: dict) -> Optional[MetadataDefinition]:
     """
@@ -348,6 +349,7 @@ def safe_parse_metadata_definition(file_name: str, metadata_dict: dict) -> Optio
         else:
             print(f"WARNING: Could not parse metadata definition for {file_name}. Error: {e}")
             return None
+
 
 def safe_get_slack_user_identifier(airbyte_slack_users: pd.DataFrame, metadata_dict: Union[dict, BaseModel]) -> Optional[str]:
     if isinstance(metadata_dict, BaseModel):
@@ -375,6 +377,7 @@ def safe_get_slack_user_identifier(airbyte_slack_users: pd.DataFrame, metadata_d
     slack_real_name = slack_user["real_name"].iloc[0]
     return f"{slack_real_name} (<@{slack_id}>)"
 
+
 def safe_get_commit_sha(metadata_dict: Union[dict, BaseModel]) -> Optional[str]:
     if isinstance(metadata_dict, BaseModel):
         metadata_dict = to_json_sanitized_dict(metadata_dict)
@@ -386,6 +389,7 @@ def safe_get_commit_sha(metadata_dict: Union[dict, BaseModel]) -> Optional[str]:
 
     # if the git commit sha is present, return the commit sha
     return commit_sha
+
 
 # ASSETS
 
@@ -422,7 +426,6 @@ def metadata_entry(context: OpExecutionContext, airbyte_slack_users: pd.DataFram
         user_identifier=user_identifier,
         commit_sha=commit_sha,
     )
-
 
     # read the matching_blob into a metadata definition
     metadata_def = safe_parse_metadata_definition(matching_blob.name, metadata_dict)
@@ -481,7 +484,9 @@ def metadata_entry(context: OpExecutionContext, airbyte_slack_users: pd.DataFram
     auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),
 )
 @sentry.instrument_asset_op
-def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry], airbyte_slack_users: pd.DataFrame) -> Output[Optional[dict]]:
+def registry_entry(
+    context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry], airbyte_slack_users: pd.DataFrame
+) -> Output[Optional[dict]]:
     """
     Generate the registry entry files from the given metadata file, and persist it to GCS.
     """

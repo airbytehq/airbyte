@@ -9,6 +9,7 @@ from dagster import OpExecutionContext
 from orchestrator.config import REPO_URL
 from orchestrator.ops.slack import send_slack_message
 
+
 class StageStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     SUCCESS = "success"
@@ -83,7 +84,6 @@ class PublishConnectorLifecycle:
             final_message += PublishConnectorLifecycle._commit_link(commit_sha)
 
         return final_message
-
 
     @staticmethod
     def log(

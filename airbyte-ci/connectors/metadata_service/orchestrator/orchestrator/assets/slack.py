@@ -4,21 +4,21 @@
 
 import os
 
-from dagster import AutoMaterializePolicy, FreshnessPolicy, OpExecutionContext, Output, asset
 import pandas as pd
-
-from orchestrator.utils.dagster_helpers import output_dataframe, OutputDataFrame
+from dagster import AutoMaterializePolicy, FreshnessPolicy, OpExecutionContext, Output, asset
+from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
 GROUP_NAME = "slack"
 
 USER_REQUEST_CHUNK_SIZE = 2000
 MAX_REQUESTS = 5
 
+
 @asset(
     group_name=GROUP_NAME,
     required_resource_keys={"slack"},
     auto_materialize_policy=AutoMaterializePolicy.eager(),
-    freshness_policy=FreshnessPolicy(maximum_lag_minutes=60 * 12)
+    freshness_policy=FreshnessPolicy(maximum_lag_minutes=60 * 12),
 )
 def airbyte_slack_users(context: OpExecutionContext) -> OutputDataFrame:
     """
@@ -49,4 +49,3 @@ def airbyte_slack_users(context: OpExecutionContext) -> OutputDataFrame:
     users_df = users_df[["id", "real_name", "email"]]
 
     return output_dataframe(users_df)
-

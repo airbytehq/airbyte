@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import yaml
 from google.cloud import storage
 
