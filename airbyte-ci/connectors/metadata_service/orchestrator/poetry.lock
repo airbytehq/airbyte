@@ -982,6 +982,20 @@ six = "*"
 grpc = ["gax-google-logging-v2 (>=0.8.0,<0.9dev)", "gax-google-pubsub-v1 (>=0.8.0,<0.9dev)", "google-gax (>=0.12.3,<0.13dev)", "grpc-google-logging-v2 (>=0.8.0,<0.9dev)", "grpc-google-pubsub-v1 (>=0.8.0,<0.9dev)", "grpcio (>=1.0rc1)"]
 
 [[package]]
+name = "gitdb"
+version = "4.0.11"
+description = "Git Object Database"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "gitdb-4.0.11-py3-none-any.whl", hash = "sha256:81a3407ddd2ee8df444cbacea00e2d038e40150acfa3001696fe0dcf1d3adfa4"},
+    {file = "gitdb-4.0.11.tar.gz", hash = "sha256:bf5421126136d6d0af55bc1e7c1af1c397a34f5b7bd79e776cd3e89785c2b04b"},
+]
+
+[package.dependencies]
+smmap = ">=3.0.1,<6"
+
+[[package]]
 name = "github3-py"
 version = "4.0.1"
 description = "Python wrapper for the GitHub API(http://developer.github.com/v3)"
@@ -1001,6 +1015,23 @@ uritemplate = ">=3.0.0"
 [package.extras]
 dev = ["build", "github3-py[test]", "tox (>=3.1.3)", "twine", "wheel"]
 test = ["betamax (>=0.5.1)", "betamax-matchers (>=0.3.0)", "pytest (>=7.0)", "pytest-xdist[psutil]"]
+
+[[package]]
+name = "gitpython"
+version = "3.1.40"
+description = "GitPython is a Python library used to interact with Git repositories"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "GitPython-3.1.40-py3-none-any.whl", hash = "sha256:cf14627d5a8049ffbf49915732e5eddbe8134c3bdb9d476e6182b676fc573f8a"},
+    {file = "GitPython-3.1.40.tar.gz", hash = "sha256:22b126e9ffb671fdd0c129796343a02bf67bf2994b35449ffc9321aa755e18a4"},
+]
+
+[package.dependencies]
+gitdb = ">=4.0.1,<5"
+
+[package.extras]
+test = ["black", "coverage[toml]", "ddt (>=1.1.1,!=1.4.3)", "mock", "mypy", "pre-commit", "pytest", "pytest-cov", "pytest-instafail", "pytest-subtests", "pytest-sugar"]
 
 [[package]]
 name = "google"
@@ -2013,7 +2044,7 @@ files = [
 
 [[package]]
 name = "metadata-service"
-version = "0.2.1"
+version = "0.4.0"
 description = ""
 optional = false
 python-versions = "^3.9"
@@ -2023,6 +2054,7 @@ develop = true
 [package.dependencies]
 click = "^8.1.3"
 gcloud = "^0.18.3"
+gitpython = "^3.1.40"
 google = "^3.0.0"
 google-cloud-storage = "^2.8.0"
 pydantic = "^1.10.6"
@@ -3529,6 +3561,17 @@ files = [
 [package.extras]
 optional = ["SQLAlchemy (>=1.4,<3)", "aiodns (>1.0)", "aiohttp (>=3.7.3,<4)", "boto3 (<=2)", "websocket-client (>=1,<2)", "websockets (>=10,<11)"]
 testing = ["Flask (>=1,<2)", "Flask-Sockets (>=0.2,<1)", "Jinja2 (==3.0.3)", "Werkzeug (<2)", "black (==22.8.0)", "boto3 (<=2)", "click (==8.0.4)", "databases (>=0.5)", "flake8 (>=5,<6)", "itsdangerous (==1.1.0)", "moto (>=3,<4)", "psutil (>=5,<6)", "pytest (>=6.2.5,<7)", "pytest-asyncio (<1)", "pytest-cov (>=2,<3)"]
+
+[[package]]
+name = "smmap"
+version = "5.0.1"
+description = "A pure Python implementation of a sliding window memory map manager"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "smmap-5.0.1-py3-none-any.whl", hash = "sha256:e6d8668fa5f93e706934a62d7b4db19c8d9eb8cf2adbb75ef1b675aa332b69da"},
+    {file = "smmap-5.0.1.tar.gz", hash = "sha256:dceeb6c0028fdb6734471eb07c0cd2aae706ccaecab45965ee83f11c8d3b1f62"},
+]
 
 [[package]]
 name = "sniffio"
