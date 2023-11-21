@@ -3,6 +3,6 @@
 #
 
 
-from .source import SourceDbtDuckdb
+from .source import SourceDbtDuckDB
 
-__all__ = ["SourceDbtDuckdb"]
+__all__ = ["SourceDbtDuckDB"]

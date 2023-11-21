@@ -22,7 +22,7 @@ from airbyte_cdk.sources import Source
 
 from .utils.dbt import run_dbt
 
-class SourceDbtDuckdb(Source):
+class SourceDbtDuckDB(Source):
     """This source will run dbt build operations using the dbt-duckdb adapter."""
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:

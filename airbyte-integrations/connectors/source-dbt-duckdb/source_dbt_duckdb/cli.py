@@ -5,10 +5,10 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_dbt_duckdb import SourceDbtDuckdb
+from source_dbt_duckdb import SourceDbtDuckDB
 
 def main():
-    source = SourceDbtDuckdb()
+    source = SourceDbtDuckDB()
     launch(source, sys.argv[1:])
 
 if __name__ == "__main__":
