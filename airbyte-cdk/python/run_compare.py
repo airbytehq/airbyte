@@ -16,6 +16,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     SyncMode,
+    Type as MessageType
 )
 
 
@@ -37,24 +38,41 @@ def main(connector, left, right, config, start, end, stream, mode):
     with open(f"secrets/tmp_catalog.json", "w") as f:
         f.write(_configured_catalog(stream).json(exclude_unset=True))
 
-    # discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{left} discover --config /secrets/buck_mason_oc_config.json"
-    # discover_result = subprocess.run(discover_command, shell=True, check=True, stdout=subprocess.PIPE, text=True)
-    # print(discover_result.stdout)
+    discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:latest discover --config /secrets/buck_mason_oc_config.json"
+    #discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{left} discover --config /secrets/buck_mason_oc_config.json"
+    discover_result = subprocess.run(discover_command, shell=True, check=True, stdout=subprocess.PIPE, text=True)
+    discover_output = discover_result.stdout
+    print(discover_output)
+    discover_message = AirbyteMessage.parse_raw(discover_output)
+    catalog = discover_message.catalog
+    compare_df  = None
 
-    if mode == "live":
-        left_df = create_df(connector, left, config, stream)
-        right_df = create_df(connector, left, config, stream)
-    else:
-        left_df = create_df_from_file(left, stream)
-        right_df = create_df_from_file(right, stream)
+    for airbyte_stream in catalog.streams:
+        if stream and airbyte_stream.name != stream:
+            continue
 
-    print("left")
-    #print(left_df.head())
-    print("right")
-    #print(right_df.head())
+        try:
 
-    compare_df = compare_dataframes(left_df, right_df, "id")
-    #print(compare_df)
+            if mode == "live":
+                left_df = create_df(connector, left, config, stream)
+                right_df = create_df(connector, left, config, stream)
+            else:
+                left_df = create_df_from_file(left, stream)
+                right_df = create_df_from_file(right, stream)
+
+            print("left")
+            #print(left_df.head())
+            print("right")
+            #print(right_df.head())
+
+            if compare_df is None:
+                compare_df = compare_dataframes(left_df, right_df, "id")
+            else:
+                compare_df = compare_df.append(compare_dataframes(left_df, right_df, "id"))
+            #print(compare_df)
+            print(f"compared {stream}")
+        except Exception as e:
+            print(f"failed to compare {stream}. {e}")
     generate_plots_single_pdf_per_metric(compare_df, output_filename=f"{connector}_{stream}_{left}_{right}.pdf")
 
 
@@ -67,6 +85,8 @@ def create_df_from_file(path, stream):
         messages = []
         for line in f.readlines():
             try:
+                if '{"type": "DEBUG"' in line:
+                    continue
                 messages.append(AirbyteMessage.parse_raw(line))
             except Exception as e:
                 print(e)
