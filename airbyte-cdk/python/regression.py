@@ -50,7 +50,7 @@ class StreamStats:
 async def main():
     connector = "source-stripe"
     connector_version = "4.5.4"
-    config_path = "secrets/config.json"
+    config_path = "secrets/prod_config_recent_only.json"
     regression_config_path = "regression_config.yaml"
     with open(regression_config_path) as f:
         regression_config = yaml.safe_load(f)
@@ -61,12 +61,15 @@ async def main():
     discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version} discover --config /{config_path}"
     discover_result = subprocess.run(discover_command, shell=True, check=True, stdout=subprocess.PIPE, text=True)
     discover_output = discover_result.stdout
+    catalog = None
     for discover_line in discover_output.split("\n"):
         if "CATALOG" in discover_line:
             print(discover_line)
             discover_message = AirbyteMessage.parse_raw(discover_line)
             catalog = discover_message.catalog
             break
+    if not catalog:
+        print(f"Could not find catalog in {discover_output}")
     streams = [stream for stream in catalog.streams if stream.name in stream_names]
     with open(f"secrets/tmp_catalog.json", "w") as f:
         f.write(_configured_catalog(streams).json(exclude_unset=True))
@@ -98,7 +101,7 @@ async def main():
                 if left.message.record.stream not in streams_stats:
                     streams_stats[left.message.record.stream] = StreamStats(left.message.record.stream)
                     streams_stats[left.message.record.stream].fields_to_ignore = set(
-                        stream_to_stream_config[left.message.record.stream]["ignore_fields"]
+                        stream_to_stream_config[left.message.record.stream].get("ignore_fields", [])
                     )
 
                 stream_stats = streams_stats[left.message.record.stream]

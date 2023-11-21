@@ -7,3 +7,8 @@ streams:
     ignore_fields:
       - hosted_invoice_url
       - invoice_pdf
+  - name: events
+    ignore_fields:
+      - hosted_invoice_url
+      - invoice_pdf
+
