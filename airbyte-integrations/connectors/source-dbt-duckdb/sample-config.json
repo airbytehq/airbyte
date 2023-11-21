@@ -5,5 +5,7 @@
         "DUCKDB_DB_DIR": "./sample_dbt_project/dbs/"
     },
     "env_var_secrets": {
-    }
+        "DUCKDB_DB_PASSWORD": "you'll never know"
+    },
+    "run_tests": true
 }
