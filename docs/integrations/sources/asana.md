@@ -86,7 +86,7 @@ Expand to see details about Asana connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The connector is restricted by normal Asana [requests limitation](https://developers.asana.com/docs/rate-limits).
+The connector is restricted by [Asana rate limits](https://developers.asana.com/docs/rate-limits).
 
 ### Troubleshooting
 
