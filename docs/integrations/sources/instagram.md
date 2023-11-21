@@ -100,7 +100,7 @@ Expand to see details about Instagram connector limitations and troubleshooting.
 
 #### Rate limiting
 
-Instagram limits the number of requests that can be made at a time, but the Instagram connector handles rate limiting. See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) for more information.
+Instagram limits the number of requests that can be made at a time. See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) for more information.
 
 ### Troubleshooting
 
