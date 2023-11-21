@@ -18,6 +18,7 @@ airbyte-cdk = { path = "../../../airbyte-cdk/python", develop = true }
 
 # Other dependencies
 dbt-duckdb = "^1.7.0"
+dbt = "^1.0.0.34.14"
 # SQLAlchemy = "^2.0.23"
 # duckdb = "^0.9.2"
 

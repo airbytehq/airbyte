@@ -367,6 +367,19 @@ files = [
 ]
 
 [[package]]
+name = "dbt"
+version = "1.0.0.34.14"
+description = "The dbt Cloud CLI - an ELT tool for running SQL transformations and data models in dbt Cloud."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "dbt-1.0.0.34.14.tar.gz", hash = "sha256:2bfd6b852b54974a199ce08f64dd5924d96a593e7f56e9265b442c1102dc1143"},
+]
+
+[package.dependencies]
+setuptools = ">=61.2"
+
+[[package]]
 name = "dbt-core"
 version = "1.7.2"
 description = "With dbt, data analysts and engineers can build analytics the way engineers build applications."
@@ -1653,4 +1666,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "500e8b131ae47fc9700632f98e49f29caf3a924c1ca9bd0cb96d66711c00a673"
+content-hash = "339e19c2d4e85cd86442a4b05b1a1513db92914410b2b540925687f8fbd8b5fb"
