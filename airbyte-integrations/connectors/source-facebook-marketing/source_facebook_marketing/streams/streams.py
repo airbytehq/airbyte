@@ -10,6 +10,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
+from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
@@ -128,11 +129,36 @@ class Activities(FBMarketingIncrementalStream):
     cursor_field = "event_time"
     primary_key = None
 
-    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
-        yield from stream_slice.get("account").get_activities(fields=self.fields, params=params)
+    def list_objects(self, fields, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        if stream_slice.get("account").get("dolead_type") != "GEOLOC":
+            yield from stream_slice.get("account").get_activities(fields=fields, params=params)
+        else:
+            logger.info("Account number {} is a geoloc account. Not parsing its Activities".
+                        format(stream_slice.get("account").get("account_id")))
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """Main read method used by CDK"""
+        loaded_records_iter = self.list_objects(fields=self.fields,
+                                                stream_slice=stream_slice,
+                                                params=self.request_params(stream_slice=stream_slice, stream_state=stream_state))
+
+        for record in loaded_records_iter:
+            if isinstance(record, AbstractObject):
+                yield record.export_all_data()  # convert FB object to dict
+            else:
+                yield record  # execute_in_batch will emmit dicts
 
     def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
+
+        logger.info("stream_state : {}".format(stream_state))
+
         state_value = stream_state.get(self.cursor_field)
         since = self._start_date if not state_value else pendulum.parse(state_value)
 

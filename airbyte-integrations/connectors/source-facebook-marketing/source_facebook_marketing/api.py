@@ -206,15 +206,18 @@ class API:
             bq_credentials = service_account.Credentials.from_service_account_info(google_service_account)
             bq_client = bigquery.Client(credentials=bq_credentials)
 
-            query = bq_client.query(query="SELECT DISTINCT publisher_account_id "
+            query = bq_client.query(query="SELECT DISTINCT publisher_account_id, dolead_type "
                                           "FROM `dolead-gsp-2020.dbt_mart.new_core_ppc_accounts` "
                                           "WHERE publisher = 'FB_ADS' "
-                                          "AND is_active = TRUE ")
+                                          "AND is_active = TRUE "
+                                          "AND archived <> TRUE AND parent_archived <> TRUE AND disabled <> TRUE "
+                                          )
             results = query.result()
             for res in results:
                 id = str(res.publisher_account_id)
                 try:
                     account = self._find_account(id)
+                    account["dolead_type"] = res.dolead_type or "NOT GEOLOC"
                     ad_accounts.append(account)
                 except FacebookRequestError as e:
                     missing_permissions.append(id)

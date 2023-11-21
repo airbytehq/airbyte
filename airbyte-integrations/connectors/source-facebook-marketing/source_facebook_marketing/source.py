@@ -70,12 +70,12 @@ UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 class SourceFacebookMarketing(AbstractSource):
     def _read_incremental(
-        self,
-        logger: logging.Logger,
-        stream_instance: Stream,
-        configured_stream: ConfiguredAirbyteStream,
-        state_manager: ConnectorStateManager,
-        internal_config: InternalConfig,
+            self,
+            logger: logging.Logger,
+            stream_instance: Stream,
+            configured_stream: ConfiguredAirbyteStream,
+            state_manager: ConnectorStateManager,
+            internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         """Read stream using incremental algorithm
 
