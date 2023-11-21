@@ -85,7 +85,7 @@ public class PartialJsonDeserializer {
 
   }
 
-  private record MapParseHandler<T>(Map<String, Consumer<T>> consumers) implements ParseHandler<T> {
+  private record MapParseHandler<T> (Map<String, Consumer<T>> consumers) implements ParseHandler<T> {
 
     private MapParseHandler(final Map<String, Consumer<T>> consumers) {
       this.consumers = new HashMap<>(consumers);
