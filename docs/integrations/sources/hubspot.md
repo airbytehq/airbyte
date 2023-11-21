@@ -214,7 +214,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 ### Troubleshooting
 
 * Consider checking out the following Hubspot tutorial: [Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view).
-* **Enabling streams:** Some streams, such as `workflows`, need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation only sync the other streams available.
+* **Enabling streams:** Some streams, such as `workflows`, need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation will only sync the other streams available.
 
     Example of the output message when trying to read `workflows` stream with missing permissions for the `API Key`:
 
