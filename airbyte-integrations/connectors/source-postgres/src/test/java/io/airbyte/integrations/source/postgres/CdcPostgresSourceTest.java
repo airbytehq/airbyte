@@ -38,8 +38,8 @@ import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresCdcTarget
 import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresReplicationConnection;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.cdk.testutils.PostgresTestDatabase;
-import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
 import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresContainerModifier;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
