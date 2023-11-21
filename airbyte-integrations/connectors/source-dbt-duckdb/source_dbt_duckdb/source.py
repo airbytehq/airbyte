@@ -20,6 +20,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 
+from .utils.dbt import run_dbt
 
 class SourceDbtDuckdb(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
@@ -36,7 +37,7 @@ class SourceDbtDuckdb(Source):
         """
         try:
             # Not Implemented
-
+            run_dbt('debug', project_dir=config["dbt_project_path"], logger=logger, dbt_path="dbt-duckdb")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
@@ -94,7 +95,11 @@ class SourceDbtDuckdb(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
+        
         stream_name = "TableName"  # Example
+
+        run_dbt('run', project_dir=config["dbt_project_path"], logger=logger, dbt_path="dbt-duckdb")
+
         data = {"columnName": "Hello World"}  # Example
 
         # Not Implemented

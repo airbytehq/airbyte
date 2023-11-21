@@ -4,8 +4,8 @@ connectionSpecification:
   title: Dbt Duckdb Spec
   type: object
   required:
-    - fix-me
+    - dbt_project_path
   properties:
-    fix-me:
+    dbt_project_path:
       type: string
-      description: describe me
+      description: Path to the dbt project directory.

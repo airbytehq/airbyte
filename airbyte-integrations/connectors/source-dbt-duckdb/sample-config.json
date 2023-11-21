@@ -1,0 +1,4 @@
+{
+    "dbt_project_path": "./sample_dbt_project/",
+    "profile": "default"
+}
