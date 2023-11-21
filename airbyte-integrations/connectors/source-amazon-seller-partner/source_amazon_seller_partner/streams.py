@@ -16,6 +16,7 @@ import xmltodict
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -318,7 +319,11 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         is_done = False
         start_time = pendulum.now("utc")
         seconds_waited = 0
-        report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
+        try:
+            report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
+        except DefaultBackoffException as e:
+            logger.warn(f"The report for stream '{self.name}' was cancelled due to several failed retry attempts. {e}")
+            return []
 
         # create and retrieve the report
         while not is_processed and seconds_waited < self.max_wait_seconds:
