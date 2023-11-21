@@ -10,8 +10,11 @@ readme = "README.md"
 python = ">=3.10,<4.0"
 
 # Toggle which version of the CDK to use by commenting/uncommenting the appropriate line below.
-# airbyte-cdk = "^0.53.9"  # Use published version of the CDK
-airbyte-cdk = { path = "../../../airbyte-cdk/python", develop = true }  # Use local version of the CDK
+#
+# Use a published version of the CDK:
+# airbyte-cdk = "^0.53.9"  
+# OR use the local version of the CDK:
+airbyte-cdk = { path = "../../../airbyte-cdk/python", develop = true }
 
 # Other dependencies
 dbt-duckdb = "^1.7.0"
