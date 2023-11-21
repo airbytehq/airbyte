@@ -181,6 +181,11 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     overridden_metadata_data["custom"] = False
     overridden_metadata_data["public"] = True
 
+    # add etag
+    overridden_metadata_data["metadata_etag"] = metadata_entry.etag
+    overridden_metadata_data["metadata_file_path"] = metadata_entry.file_path
+    overridden_metadata_data["metadata_bucket_name"] = metadata_entry.bucket_name
+
     # if there is no supportLevel, set it to "community"
     if not overridden_metadata_data.get("supportLevel"):
         overridden_metadata_data["supportLevel"] = "community"
@@ -463,6 +468,7 @@ def metadata_entry(context: OpExecutionContext, airbyte_slack_users: pd.DataFram
         icon_url=icon_url,
         bucket_name=matching_blob.bucket.name,
         file_path=metadata_file_path,
+        etag=etag,
     )
 
     PublishConnectorLifecycle.log(
