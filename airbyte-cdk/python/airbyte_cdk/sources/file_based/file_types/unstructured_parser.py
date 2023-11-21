@@ -69,9 +69,15 @@ class UnstructuredParser(FileTypeParser):
                 self._handle_unprocessable_file(file, format, logger)
 
             return {
-                "content": {"type": "string", "description": "Content of the file as markdown. Might be null if the file could not be parsed"},
+                "content": {
+                    "type": "string",
+                    "description": "Content of the file as markdown. Might be null if the file could not be parsed",
+                },
                 "document_key": {"type": "string", "description": "Unique identifier of the document, e.g. the file path"},
-                "error": {"type": "string", "description": "Error message if the file could not be parsed even though the file is supported"},
+                "error": {
+                    "type": "string",
+                    "description": "Error message if the file could not be parsed even though the file is supported",
+                },
             }
 
     def parse_records(
