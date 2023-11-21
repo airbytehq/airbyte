@@ -26,7 +26,9 @@ class Writer:
     The omit_raw_text parameter can be used to omit the raw text from the documents. This can be useful if the raw text is very large and not needed for the destination.
     """
 
-    def __init__(self, processing_config: ProcessingConfigModel, indexer: Indexer, embedder: Embedder, batch_size: int, omit_raw_text: bool) -> None:
+    def __init__(
+        self, processing_config: ProcessingConfigModel, indexer: Indexer, embedder: Embedder, batch_size: int, omit_raw_text: bool
+    ) -> None:
         self.processing_config = processing_config
         self.indexer = indexer
         self.embedder = embedder
