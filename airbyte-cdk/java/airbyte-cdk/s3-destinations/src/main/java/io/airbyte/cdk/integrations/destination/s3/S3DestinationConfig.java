@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.destination.s3;
 
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.ACCESS_KEY_ID;
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.ACCOUNT_ID;
-import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.EXTERNAL_ID;
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.FILE_NAME_PATTERN;
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.ROLE_ARN;
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.SECRET_ACCESS_KEY;
