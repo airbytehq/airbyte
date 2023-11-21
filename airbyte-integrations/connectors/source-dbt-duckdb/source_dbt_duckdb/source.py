@@ -23,9 +23,7 @@ from airbyte_cdk.sources import Source
 from .utils.dbt import run_dbt
 
 class SourceDbtDuckdb(Source):
-    """
-    This source will run dbt build operations using the dbt-duckdb adapter.
-    """
+    """This source will run dbt build operations using the dbt-duckdb adapter."""
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
@@ -72,9 +70,13 @@ class SourceDbtDuckdb(Source):
             "properties": {"columnName": {"type": "string"}},
         }
 
-        # Not Implemented
+        stream = AirbyteStream(
+            name=stream_name,
+            json_schema=json_schema,
+            supported_sync_modes=["full_refresh"],
+        )
 
-        streams.append(AirbyteStream(name=stream_name, json_schema=json_schema))
+        streams.append(stream)
         return AirbyteCatalog(streams=streams)
 
     def read(
