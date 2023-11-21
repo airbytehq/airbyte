@@ -20,8 +20,8 @@ public class PartialJsonDeserializer {
    * start of the value for that key and call the consumer. The consumer should read from the same
    * iterator that is passed into this method.
    * <p>
-   * The consumers MUST fully read the value (including any nested objects), and MUST NOT read
-   * any non-whitespace characters after the value (they MAY read whitespace, but aren't required to).
+   * The consumers MUST fully read the value (including any nested objects), and MUST NOT read any
+   * non-whitespace characters after the value (they MAY read whitespace, but aren't required to).
    * <p>
    * We intentionally define the consumers as accepting an iterator instead of the substring to avoid
    * duplicating the data in-memory when possible. Consumers may need to extract the substring, but
@@ -31,8 +31,8 @@ public class PartialJsonDeserializer {
    * @param constructor A function that returns a new instance of the object to be deserialized into.
    * @param keyValueConsumers The consumers to handle each field of the object
    * @param exitParseEarly Whether to stop parsing the object after all consumers have been called.
-   *                       Top-level calls probably should set this to true, but recursive calls
-   *                       (i.e. calls within the keyValueConsumers) MUST set this to false.
+   *        Top-level calls probably should set this to true, but recursive calls (i.e. calls within
+   *        the keyValueConsumers) MUST set this to false.
    *
    * @return The object, or null if the input string is "null".
    */
