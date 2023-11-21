@@ -104,7 +104,6 @@ def list_financial_event_groups_stream():
             period_in_days=0,
             report_options=None,
             advanced_stream_options=None,
-            max_wait_seconds=500,
         )
         return stream
 
@@ -123,7 +122,6 @@ def list_financial_events_stream():
             period_in_days=0,
             report_options=None,
             advanced_stream_options=None,
-            max_wait_seconds=500,
         )
         return stream
 
