@@ -23,7 +23,8 @@
       "type": ["null", "string"]
     },
     "open-date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "image-url": {
       "type": ["null", "string"]

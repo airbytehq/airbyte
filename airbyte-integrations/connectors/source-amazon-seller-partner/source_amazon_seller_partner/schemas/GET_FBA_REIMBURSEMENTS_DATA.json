@@ -6,7 +6,8 @@
   "additionalProperties": true,
   "properties": {
     "approval-date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "reimbursement-id": {
       "type": ["null", "string"]

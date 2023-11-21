@@ -86,7 +86,8 @@
       "type": ["null", "string"]
     },
     "Recommended ship date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "Recommended action": {
       "type": ["null", "string"]
