@@ -44,6 +44,7 @@ class StreamStats:
     left_rows_missing = {}
     right_rows_missing = {}
     mismatch = []
+    fields_to_ignore = set()
 
 
 async def main():
@@ -55,6 +56,7 @@ async def main():
         regression_config = yaml.safe_load(f)
 
     stream_configs = regression_config["streams"]
+    stream_to_stream_config = {stream_config["name"]: stream_config for stream_config in stream_configs}
     stream_names = [stream_config["name"] for stream_config in stream_configs]
     discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version} discover --config /{config_path}"
     discover_result = subprocess.run(discover_command, shell=True, check=True, stdout=subprocess.PIPE, text=True)
@@ -95,6 +97,9 @@ async def main():
                 assert left.message.record.stream == right.message.record.stream
                 if left.message.record.stream not in streams_stats:
                     streams_stats[left.message.record.stream] = StreamStats(left.message.record.stream)
+                    streams_stats[left.message.record.stream].fields_to_ignore = set(
+                        stream_to_stream_config[left.message.record.stream]["ignore_fields"]
+                    )
 
                 stream_stats = streams_stats[left.message.record.stream]
 
@@ -232,14 +237,17 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
         for stream, group_data in streams_to_dataframe.items():
             # Generate per-stream tables
             table = pd.pivot_table(group_data, values="value", index="column", columns="metric")
-            print(f"table for {stream}:\n{table}")
             # Plotting table using matplotlib
 
             # Define a function to assign colors based on conditions
             def color_cells(table, row, col):
                 value = table.loc[row, col]
                 if value > 0 and col != "equal_count":
-                    return "red"
+                    s = table.loc[row].name
+                    if s in stream_stat.fields_to_ignore:
+                        return "yellow"
+                    else:
+                        return "red"
                 return "white"  # Default color for other cells
 
             # Convert table data to a list for cell colors

@@ -1,3 +1,9 @@
 streams:
   - name: customers
+    ignore_fields:
+      - hosted_invoice_url
+      - invoice_pdf
   - name: invoices
+    ignore_fields:
+      - hosted_invoice_url
+      - invoice_pdf
