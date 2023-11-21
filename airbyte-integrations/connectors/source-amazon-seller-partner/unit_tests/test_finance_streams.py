@@ -206,15 +206,15 @@ def test_reports_read_records_exit_on_backoff(mocker, requests_mock, caplog):
     mocker.patch("time.sleep", lambda x: None)
     requests_mock.post("https://test.url/reports/2021-06-30/reports", status_code=429)
 
-    stream = RestockInventoryReports(url_base="https://test.url",
-                                     replication_start_date=START_DATE_1,
-                                     replication_end_date=END_DATE_1,
-                                     marketplace_id="id",
-                                     authenticator=None,
-                                     period_in_days=0,
-                                     report_options=None,
-                                     advanced_stream_options=None,
-                                     max_wait_seconds=10,
-                                     )
+    stream = RestockInventoryReports(
+        url_base="https://test.url",
+        replication_start_date=START_DATE_1,
+        replication_end_date=END_DATE_1,
+        marketplace_id="id",
+        authenticator=None,
+        period_in_days=0,
+        report_options=None,
+        advanced_stream_options=None,
+    )
     assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == []
     assert "The report for stream 'GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT' was cancelled due to several failed retry attempts." in caplog.messages[-1]
