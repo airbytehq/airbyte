@@ -1,4 +1,3 @@
-
 version: 2
 
 models:
@@ -10,7 +9,6 @@ models:
         tests:
           - unique
           # - not_null # This test demonstrates how to fail. Uncomment if you want to see it in action.
-           
 
   - name: my_second_dbt_model
     description: "A starter dbt model"

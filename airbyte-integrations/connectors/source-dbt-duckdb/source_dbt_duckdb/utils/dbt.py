@@ -1,7 +1,9 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import os
-from airbyte_cdk.logger import AirbyteLogger
 from pathlib import Path
 
+from airbyte_cdk.logger import AirbyteLogger
 from dbt.cli.main import dbtRunner, dbtRunnerResult
 from dbt.contracts.graph.manifest import Manifest
 

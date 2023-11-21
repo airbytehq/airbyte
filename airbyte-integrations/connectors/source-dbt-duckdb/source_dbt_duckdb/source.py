@@ -20,7 +20,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 
-from .utils.dbt import invoke_dbt, get_dbt_manifest
+from .utils.dbt import get_dbt_manifest, invoke_dbt
 
 
 class SourceDbtDuckDB(Source):
@@ -43,9 +43,7 @@ class SourceDbtDuckDB(Source):
             invoke_dbt("debug", project_dir=config["dbt_project_path"], logger=logger)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"An exception occurred: {str(e)}"
-            )
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         """

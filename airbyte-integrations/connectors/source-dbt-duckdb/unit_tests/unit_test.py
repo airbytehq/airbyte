@@ -3,15 +3,13 @@
 #
 
 import json
-import pytest
 from pathlib import Path
 from typing import Any
 
+import pytest
 from airbyte_cdk import models
 from airbyte_cdk.entrypoint import launch
-
 from source_dbt_duckdb import SourceDbtDuckDB
-
 
 SAMPLE_CATALOG_PATH = Path(__file__).parent.parent / "sample-catalog.json"
 SAMPLE_CONFIGURED_CATALOG_PATH = (
