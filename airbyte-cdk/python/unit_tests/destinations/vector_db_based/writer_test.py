@@ -5,6 +5,7 @@
 from typing import Optional
 from unittest.mock import ANY, MagicMock, call
 
+import pytest
 from airbyte_cdk.destinations.vector_db_based import ProcessingConfigModel, Writer
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteLogMessage,
@@ -15,7 +16,6 @@ from airbyte_cdk.models.airbyte_protocol import (
     Level,
     Type,
 )
-import pytest
 
 
 def _generate_record_message(index: int, stream: str = "example_stream", namespace: Optional[str] = None):

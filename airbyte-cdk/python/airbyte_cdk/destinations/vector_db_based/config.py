@@ -4,10 +4,10 @@
 
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
-from pydantic import BaseModel, Field
 import dpath.util
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
+from pydantic import BaseModel, Field
 
 
 class SeparatorSplitterConfigModel(BaseModel):
@@ -220,6 +220,7 @@ class CohereEmbeddingConfigModel(BaseModel):
         description = "Use the Cohere API to embed text."
         discriminator = "mode"
 
+
 class VectorDBConfigModel(BaseModel):
     """
     The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,
@@ -231,7 +232,7 @@ class VectorDBConfigModel(BaseModel):
     * Indexing configuration
     * Advanced configuration
 
-    Processing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.    
+    Processing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.
     """
 
     embedding: Union[
