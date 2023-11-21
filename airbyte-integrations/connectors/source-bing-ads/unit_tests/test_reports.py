@@ -13,6 +13,7 @@ import pytest
 import source_bing_ads
 from bingads.service_info import SERVICE_INFO_DICT_V13
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
+from bingads.v13.internal.reporting.row_report import _RowReport
 from source_bing_ads.base_streams import Accounts
 from source_bing_ads.report_streams import (
     AccountImpressionPerformanceReportDaily,
@@ -47,7 +48,11 @@ from source_bing_ads.report_streams import (
     UserLocationPerformanceReportHourly,
 )
 from source_bing_ads.source import SourceBingAds
+from airbyte_cdk.models import SyncMode
 from suds import WebFault
+from pathlib import Path
+import json
+
 
 TEST_CONFIG = {
     "developer_token": "developer_token",
@@ -424,3 +429,29 @@ def test_custom_performance_report_no_last_year_stream_slices(mocked_client, con
             {"account_id": 180519267, "customer_id": 100, "time_period": "ThisYear"},
             {"account_id": 180278106, "customer_id": 200, "time_period": "ThisYear"},
         ]
+
+
+@pytest.mark.parametrize(
+    "stream, response, records",
+    [
+        (CampaignPerformanceReportHourly, "hourly_reports/campaign_performance.csv", "hourly_reports/campaign_performance_records.json"),
+        (AccountPerformanceReportHourly, "hourly_reports/account_performance.csv", "hourly_reports/account_performance_records.json"),
+        (AdGroupPerformanceReportHourly, "hourly_reports/ad_group_performance.csv", "hourly_reports/ad_group_performance_records.json"),
+        (AdPerformanceReportHourly, "hourly_reports/ad_performance.csv", "hourly_reports/ad_performance_records.json"),
+        (CampaignImpressionPerformanceReportHourly, "hourly_reports/campaign_impression_performance.csv", "hourly_reports/campaign_impression_performance_records.json"),
+        (KeywordPerformanceReportHourly, "hourly_reports/keyword_performance.csv", "hourly_reports/keyword_performance_records.json"),
+        (GeographicPerformanceReportHourly, "hourly_reports/geographic_performance.csv", "hourly_reports/geographic_performance_records.json"),
+        (AgeGenderAudienceReportHourly, "hourly_reports/age_gender_audience.csv", "hourly_reports/age_gender_audience_records.json"),
+        (SearchQueryPerformanceReportHourly, "hourly_reports/search_query_performance.csv", "hourly_reports/search_query_performance_records.json"),
+        (UserLocationPerformanceReportHourly, "hourly_reports/user_location_performance.csv", "hourly_reports/user_location_performance_records.json"),
+        (AccountImpressionPerformanceReportHourly, "hourly_reports/account_impression_performance.csv", "hourly_reports/account_impression_performance_records.json"),
+        (AdGroupImpressionPerformanceReportHourly, "hourly_reports/ad_group_impression_performance.csv", "hourly_reports/ad_group_impression_performance_records.json"),
+    ],
+)
+@patch.object(source_bing_ads.source, "Client")
+def test_hourly_reports(mocked_client, config, stream, response, records):
+    stream_object = stream(mocked_client, config)
+    with patch.object(stream, "send_request", return_value=_RowReport(file=Path(__file__).parent / response)):
+        with open(Path(__file__).parent / records, "r") as file:
+            assert list(stream_object.read_records(sync_mode=SyncMode.full_refresh, stream_slice={}, stream_state={})) == json.load(file)
+
