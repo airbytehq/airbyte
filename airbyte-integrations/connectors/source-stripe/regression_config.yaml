@@ -1,12 +1,57 @@
 connector_version_left: "4.5.4"
-_connector_version_right: "4.5.4"
 connector_version_right: "5.0.1-dev.e4339d53e7"
 streams:
+  - name: accounts
+  - name: application_fees
+  - name: application_fees_refunds
+  - name: authorizations
+  - name: balance_transactions
+  - name: bank_accounts
+  - name: cardholders
+  - name: cards
+  - name: charges
+    ignore_fields:
+      - receipt_url
   - name: customers
     ignore_fields:
       - hosted_invoice_url
       - invoice_pdf
+  - name: coupons
+  - name: credit_notes
+  - name: customer_balance_transactions
+  - name: disputes
+  - name: early_fraud_warnings
+  - name: events
+    ignore_fields:
+      - hosted_invoice_url
+      - invoice_pdf
+  - name: external_account_bank_accounts
+  - name: external_account_cards
+  - name: file_links
+  - name: files
+  - name: invoice_items
   - name: invoices
     ignore_fields:
       - hosted_invoice_url
       - invoice_pdf
+  - name: payment_intents
+  - name: payment_methods
+  - name: payouts
+  - name: persons
+  - name: plans
+  - name: prices
+  - name: products
+  - name: promotion_codes
+  - name: refunds
+  - name: reviews
+  - name: setup_attempts
+  - name: setup_intents
+  - name: shipping_rates
+  - name: subscription_items
+  - name: subscription_schedule
+  - name: subscriptions
+  - name: top_ups
+  - name: transactions
+  - name: transfer_reversals
+  - name: transfers
+  - name: usage_records
