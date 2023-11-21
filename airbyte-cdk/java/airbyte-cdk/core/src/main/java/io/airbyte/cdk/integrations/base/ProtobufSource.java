@@ -9,7 +9,6 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.protos.AirbyteMessage;
-
 import java.util.Collection;
 import java.util.List;
 

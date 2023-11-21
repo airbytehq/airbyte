@@ -244,7 +244,8 @@ class IntegrationRunnerTest {
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
-    final Throwable throwable = catchThrowable(() -> new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, jsonSchemaValidator).run(ARGS));
+    final Throwable throwable =
+        catchThrowable(() -> new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, jsonSchemaValidator).run(ARGS));
 
     assertThat(throwable).isInstanceOf(ConfigErrorException.class);
     // noinspection resource

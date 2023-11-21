@@ -89,7 +89,7 @@ public class IntegrationRunner {
   }
 
   public IntegrationRunner(final Source source) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source,  null);
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source, null);
   }
 
   public IntegrationRunner(final ProtobufSource psource) {
@@ -452,7 +452,7 @@ public class IntegrationRunner {
 
   static void protobufOutputRecordCollector(final io.airbyte.protocol.protos.AirbyteMessage message) {
     try {
-      System.out.writeBytes(new byte[]{0});
+      System.out.writeBytes(new byte[] {0});
       message.writeDelimitedTo(System.out);
     } catch (IOException e) {
       throw new RuntimeException(e);
