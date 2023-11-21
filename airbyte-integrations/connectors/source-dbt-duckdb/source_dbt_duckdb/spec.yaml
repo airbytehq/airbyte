@@ -9,3 +9,7 @@ connectionSpecification:
     dbt_project_path:
       type: string
       description: Path to the dbt project directory.
+    profile:
+      type: string
+      description: Name of the profile to use.
+      default: dev
