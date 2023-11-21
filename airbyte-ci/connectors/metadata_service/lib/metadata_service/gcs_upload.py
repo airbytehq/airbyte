@@ -179,6 +179,7 @@ def _doc_upload(
 
 
 def _apply_prerelease_overrides(metadata_dict: dict, validator_opts: ValidatorOptions) -> dict:
+    """Apply any prerelease overrides to the metadata file before uploading it to GCS."""
     if validator_opts.prerelease_tag is None:
         return metadata_dict
 
@@ -223,6 +224,7 @@ def _get_git_info_for_file(original_metadata_file_path: Path) -> Optional[GitInf
 
 
 def _apply_author_info_to_metadata_file(metadata_dict: dict, original_metadata_file_path: Path) -> dict:
+    """Apply author info to the metadata file before uploading it to GCS."""
     git_info = _get_git_info_for_file(original_metadata_file_path)
     if git_info:
         # Apply to the nested / optional field at metadata.data.ab_internal.git
