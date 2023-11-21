@@ -15,6 +15,9 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 
 
 @dataclasses.dataclass
@@ -48,6 +51,8 @@ async def main():
 
     streams_stats = {}
     primary_key = "id"
+    # FIXME: need to get pk from catalog
+    streams_to_dataframe = {}
 
     while subprocess_left.__anext__() and subprocess_right.__anext__():
         try:
@@ -91,7 +96,30 @@ async def main():
                     else:
                         print(f"did not find {left_key} in right")
         except StopAsyncIteration:
+            #FIXME needd to do another check of missing
+            # FIXME need to check if both are done
             for stream_stats in streams_stats.values():
+                stats_rows = []
+                for column in stream_stats.columns_to_diff_count:
+                    stats_rows.append(
+                        {
+                            "stream": stream_stats.stream,
+                            "column": column,
+                            "metric": "diff_count",
+                            "value": stream_stats.columns_to_diff_count[column],
+                        }
+                    )
+                for column in stream_stats.columns_to_equal:
+                    stats_rows.append(
+                        {
+                            "stream": stream_stats.stream,
+                            "column": column,
+                            "metric": "equal_count",
+                            "value": stream_stats.columns_to_equal[column],
+                        }
+                    )
+                df = pd.DataFrame.from_records(stats_rows)
+                streams_to_dataframe[stream_stats.stream] = df
                 print(f"done processing {stream_stats.record_count} records")
                 print(f"columns_to_diff_count: {stream_stats.columns_to_diff_count}")
                 print(f"columns_to_right_missing: {stream_stats.columns_to_right_missing}")
@@ -106,6 +134,35 @@ async def main():
                 print(len(stream_stats.right_rows_missing))
 
             break
+    generate_plots_single_pdf_per_metric(streams_to_dataframe)
+
+def generate_plots_single_pdf_per_metric(streams_to_dataframe, output_filename='plots_combined_per_metric.pdf'):
+    with PdfPages(output_filename) as pdf:
+
+        # Generate summary
+        # TODO
+
+        # Generate per stream-column tables
+        for stream, group_data in streams_to_dataframe.items():
+            grouped = group_data.groupby('column')
+            for column, group_data in grouped:
+                # Create a table for each stream and column combination
+                table = pd.pivot_table(group_data, values='value', index='metric', columns='column')
+
+                # Plotting table using matplotlib
+                plt.figure(figsize=(6, 4))
+                plt.table(cellText=table.values,
+                          colLabels=table.columns,
+                          rowLabels=table.index,
+                          loc='center')
+                plt.title(f"Stream: {stream}, Column: {column}")
+                plt.axis('off')  # Hide axis
+
+                # Save the table as a page in the PDF
+                pdf.savefig(bbox_inches='tight', pad_inches=1)
+                plt.close()
+
+        print(f"Tables saved to {output_filename}")
 
 
 def compare_records(left, right, stream_stats):
