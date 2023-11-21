@@ -1,0 +1,80 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "comments_count": {
+        "type": "number"
+      },
+      "created_at": {
+        "type": "string"
+      },
+      "custom_fields": {
+        "properties": {
+          "birthday": {
+            "type": "string"
+          },
+          "certification": {
+            "type": "string"
+          },
+          "checkbox": {
+            "type": "string"
+          },
+          "dropdown": {
+            "type": "string"
+          },
+          "out_of_network_mechanic": {
+            "type": "string"
+          },
+          "pronouns": {
+            "type": "string"
+          },
+          "t-shirt_size": {
+            "type": "string"
+          },
+          "test_restricted_custom_fields": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "documents_count": {
+        "type": "number"
+      },
+      "email": {
+        "type": "string"
+      },
+      "employee": {
+        "type": "boolean"
+      },
+      "first_name": {
+        "type": "string"
+      },
+      "group_id": {
+        "type": "number"
+      },
+      "group_name": {
+        "type": "string"
+      },
+      "id": {
+        "type": "number"
+      },
+      "images_count": {
+        "type": "number"
+      },
+      "last_name": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "technician": {
+        "type": "boolean"
+      },
+      "updated_at": {
+        "type": "string"
+      },
+      "vehicle_operator": {
+        "type": "boolean"
+      }
+    },
+    "type": "object"
+  }

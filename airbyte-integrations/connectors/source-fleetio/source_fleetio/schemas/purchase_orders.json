@@ -1,0 +1,139 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "approved_at": {
+        "type": "string"
+      },
+      "approved_by": {
+        "type": "string"
+      },
+      "comments_count": {
+        "type": "number"
+      },
+      "created_at": {
+        "type": "string"
+      },
+      "created_by": {
+        "type": "string"
+      },
+      "custom_fields": {
+        "properties": {
+          "fet": {
+            "type": "string"
+          },
+          "po_custom_field_date": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "description": {
+        "type": "string"
+      },
+      "discount": {
+        "type": "number"
+      },
+      "discount_percentage": {
+        "type": "number"
+      },
+      "discount_type": {
+        "type": "string"
+      },
+      "documents_count": {
+        "type": "number"
+      },
+      "id": {
+        "type": "number"
+      },
+      "label_list": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "number": {
+        "type": "number"
+      },
+      "part_location_id": {
+        "type": "number"
+      },
+      "part_location_name": {
+        "type": "string"
+      },
+      "purchase_order_line_items": {
+        "items": {
+          "properties": {
+            "created_at": {
+              "type": "string"
+            },
+            "id": {
+              "type": "number"
+            },
+            "part_id": {
+              "type": "number"
+            },
+            "part_number": {
+              "type": "string"
+            },
+            "quantity": {
+              "type": "string"
+            },
+            "subtotal": {
+              "type": "number"
+            },
+            "total_quantity_received": {
+              "type": "string"
+            },
+            "unit_cost": {
+              "type": "number"
+            },
+            "updated_at": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "shipping": {
+        "type": "number"
+      },
+      "state": {
+        "type": "string"
+      },
+      "subtotal": {
+        "type": "number"
+      },
+      "tax_1": {
+        "type": "number"
+      },
+      "tax_1_percentage": {
+        "type": "number"
+      },
+      "tax_1_type": {
+        "type": "string"
+      },
+      "tax_2": {
+        "type": "number"
+      },
+      "tax_2_percentage": {
+        "type": "number"
+      },
+      "tax_2_type": {
+        "type": "string"
+      },
+      "total_amount": {
+        "type": "number"
+      },
+      "updated_at": {
+        "type": "string"
+      },
+      "vendor_id": {
+        "type": "number"
+      },
+      "vendor_name": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }

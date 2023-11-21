@@ -1,0 +1,71 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "created_at": {
+        "type": "string"
+      },
+      "custom_fields": {
+        "properties": {
+          "expense_status": {
+            "type": "string"
+          },
+          "juan_reason_for_entry_field": {
+            "type": "string"
+          },
+          "otr_expenses": {
+            "type": "string"
+          },
+          "test_checkbox": {
+            "type": "string"
+          },
+          "test_date": {
+            "type": "string"
+          },
+          "test_dropdown": {
+            "type": "string"
+          },
+          "test_text": {
+            "type": "string"
+          },
+          "xylophone": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "expense_entry_type_id": {
+        "type": "number"
+      },
+      "expense_entry_type_name": {
+        "type": "string"
+      },
+      "id": {
+        "type": "number"
+      },
+      "notes": {
+        "type": "string"
+      },
+      "occurred_at": {
+        "type": "string"
+      },
+      "total_amount": {
+        "type": "number"
+      },
+      "updated_at": {
+        "type": "string"
+      },
+      "vehicle_id": {
+        "type": "number"
+      },
+      "vehicle_name": {
+        "type": "string"
+      },
+      "vendor_id": {
+        "type": "number"
+      },
+      "vendor_name": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }

@@ -1,0 +1,146 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attachment_permissions": {
+        "type": "object"
+      },
+      "comments": {
+        "type": "array"
+      },
+      "comments_count": {
+        "type": "number"
+      },
+      "created_at": {
+        "type": "string"
+      },
+      "custom_fields": {
+        "properties": {
+          "card_number": {
+            "type": "string"
+          },
+          "custom_fuel_date": {
+            "type": "string"
+          },
+          "expense_type": {
+            "type": "string"
+          },
+          "fuel-up_state": {
+            "type": "string"
+          },
+          "fuel_unit_number": {
+            "type": "string"
+          },
+          "juan_type_of_fuel": {
+            "type": "string"
+          },
+          "second_tank_gallons": {
+            "type": "string"
+          },
+          "test_restricted_custom_fields": {
+            "type": "string"
+          },
+          "used_card": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "date": {
+        "type": "string"
+      },
+      "documents": {
+        "type": "array"
+      },
+      "documents_count": {
+        "type": "number"
+      },
+      "fuel_economy_units_for_current_user": {
+        "type": "string"
+      },
+      "geolocation": {
+        "type": "object"
+      },
+      "id": {
+        "type": "number"
+      },
+      "images": {
+        "type": "array"
+      },
+      "images_count": {
+        "type": "number"
+      },
+      "is_sample": {
+        "type": "boolean"
+      },
+      "liters": {
+        "type": "string"
+      },
+      "map_previews": {
+        "properties": {},
+        "type": "object"
+      },
+      "meter_entry": {
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "id": {
+            "type": "number"
+          },
+          "meterable_id": {
+            "type": "number"
+          },
+          "meterable_type": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "vehicle_id": {
+            "type": "number"
+          },
+          "void": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "partial": {
+        "type": "boolean"
+      },
+      "personal": {
+        "type": "boolean"
+      },
+      "reference": {
+        "type": "string"
+      },
+      "reset": {
+        "type": "boolean"
+      },
+      "total_amount": {
+        "type": "number"
+      },
+      "uk_gallons": {
+        "type": "string"
+      },
+      "updated_at": {
+        "type": "string"
+      },
+      "us_gallons": {
+        "type": "string"
+      },
+      "vehicle_id": {
+        "type": "number"
+      },
+      "vehicle_name": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }

@@ -1,0 +1,124 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attachment_permissions": {
+        "type": "object"
+      },
+      "comments": {
+        "items": {
+          "properties": {
+            "comment": {
+              "type": "string"
+            },
+            "commentable_id": {
+              "type": "number"
+            },
+            "commentable_type": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "id": {
+              "type": "number"
+            },
+            "rich_content": {
+              "properties": {
+                "state": {
+                  "items": {
+                    "properties": {
+                      "children": {
+                        "items": {
+                          "properties": {
+                            "text": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "title": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "user_full_name": {
+              "type": "string"
+            },
+            "user_id": {
+              "type": "number"
+            },
+            "with_mentions": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "comments_count": {
+        "type": "number"
+      },
+      "contact_full_name": {
+        "type": "string"
+      },
+      "contact_id": {
+        "type": "number"
+      },
+      "contact_image_url": {
+        "type": "string"
+      },
+      "created_at": {
+        "type": "string"
+      },
+      "current": {
+        "type": "boolean"
+      },
+      "custom_fields": {
+        "properties": {
+          "checkbox_type": {
+            "type": "string"
+          },
+          "department_using_vehicle": {
+            "type": "string"
+          },
+          "license_expiration_date": {
+            "type": "string"
+          },
+          "operator_id": {
+            "type": "string"
+          },
+          "test_restricted_custom_fields": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "future": {
+        "type": "boolean"
+      },
+      "id": {
+        "type": "number"
+      },
+      "updated_at": {
+        "type": "string"
+      },
+      "vehicle_id": {
+        "type": "number"
+      }
+    },
+    "type": "object"
+  }

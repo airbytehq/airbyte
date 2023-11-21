@@ -1,0 +1,384 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attachment_permissions": {
+        "type": "object"
+      },
+      "comments": {
+        "items": {
+          "properties": {
+            "comment": {
+              "type": "string"
+            },
+            "commentable_id": {
+              "type": "number"
+            },
+            "commentable_type": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "html_content": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "id": {
+              "type": "number"
+            },
+            "rich_content": {
+              "properties": {
+                "state": {
+                  "items": {
+                    "properties": {
+                      "children": {
+                        "items": {
+                          "properties": {
+                            "text": {
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "title": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "user_full_name": {
+              "type": "string"
+            },
+            "user_id": {
+              "type": "number"
+            },
+            "user_image_url": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "with_mentions": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "comments_count": {
+        "type": "number"
+      },
+      "created_at": {
+        "type": "string"
+      },
+      "custom_fields": {
+        "properties": {
+          "dropdown_type_test": {
+            "type": "string"
+          },
+          "free_text_test": {
+            "type": "string"
+          },
+          "test": {
+            "type": "string"
+          },
+          "test_restricted_custom_fields": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "default_image_url": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "default_image_url_large": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "default_image_url_medium": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "default_image_url_small": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "description": {
+        "type": "string"
+      },
+      "documents": {
+        "items": {
+          "properties": {
+            "created_at": {
+              "type": "string"
+            },
+            "documentable_id": {
+              "type": "number"
+            },
+            "documentable_type": {
+              "type": "string"
+            },
+            "file_mime_type": {
+              "type": "string"
+            },
+            "file_name": {
+              "type": "string"
+            },
+            "file_size": {
+              "type": "number"
+            },
+            "file_url": {
+              "type": "string"
+            },
+            "full_file_url": {
+              "type": "string"
+            },
+            "id": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "documents_count": {
+        "type": "number"
+      },
+      "id": {
+        "type": "number"
+      },
+      "images": {
+        "items": {
+          "properties": {
+            "created_at": {
+              "type": "string"
+            },
+            "file_mime_type": {
+              "type": "string"
+            },
+            "file_name": {
+              "type": "string"
+            },
+            "file_size": {
+              "type": "number"
+            },
+            "file_url": {
+              "type": "string"
+            },
+            "full_url": {
+              "type": "string"
+            },
+            "id": {
+              "type": "number"
+            },
+            "imageable_id": {
+              "type": "number"
+            },
+            "imageable_type": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "images_count": {
+        "type": "number"
+      },
+      "inventory_item": {
+        "type": "boolean"
+      },
+      "manufacturer_part_number": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "measurement_unit_id": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "measurement_unit_name": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "number": {
+        "type": "string"
+      },
+      "part_category": {
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "tire_category": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "part_category_id": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "part_category_name": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "part_locations": {
+        "items": {
+          "properties": {
+            "active": {
+              "type": "boolean"
+            },
+            "aisle": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "available_quantity": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "available_quantity_updated_at": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "bin": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "id": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            },
+            "part_location_id": {
+              "type": "number"
+            },
+            "part_location_name": {
+              "type": "string"
+            },
+            "quantity_allocated_to_work_orders": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "quantity_on_order": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "reorder_point": {
+              "type": [
+                "null",
+                "number"
+              ]
+            },
+            "reorder_point_enabled": {
+              "type": "boolean"
+            },
+            "row": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "track_inventory": {
+              "type": "boolean"
+            },
+            "updated_at": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "part_manufacturer_id": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "part_manufacturer_name": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "total_quantity": {
+        "type": "number"
+      },
+      "unit_cost": {
+        "type": [
+          "null",
+          "number"
+        ]
+      },
+      "upc": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "updated_at": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }
