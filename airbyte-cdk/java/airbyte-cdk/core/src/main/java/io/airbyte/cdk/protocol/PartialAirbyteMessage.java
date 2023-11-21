@@ -99,6 +99,11 @@ public class PartialAirbyteMessage {
     return output;
   }
 
+  /**
+   * This is primarily useful for state messages, which are still handled via full AirbyteMessage
+   * objects. It's also used in tests. You probably don't want to use this for record messages,
+   * because that would negate the benefit of partially-deserialized messages.
+   */
   public AirbyteMessage toFullMessage() {
     final AirbyteMessage fullMessage = new AirbyteMessage();
     fullMessage.setType(type);
