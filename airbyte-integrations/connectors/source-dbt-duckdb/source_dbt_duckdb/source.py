@@ -39,7 +39,7 @@ class SourceDbtDuckDB(Source):
         """
         try:
             # Not Implemented
-            run_dbt('debug', project_dir=config["dbt_project_path"], logger=logger, dbt_path="dbt-duckdb")
+            run_dbt('debug', project_dir=config["dbt_project_path"], logger=logger)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
@@ -105,7 +105,7 @@ class SourceDbtDuckDB(Source):
         
         stream_name = "TableName"  # Example
 
-        run_dbt('run', project_dir=config["dbt_project_path"], logger=logger, dbt_path="dbt-duckdb")
+        run_dbt('run', project_dir=config["dbt_project_path"], logger=logger)
 
         data = {"columnName": "Hello World"}  # Example
 
