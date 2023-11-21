@@ -3,19 +3,79 @@
     "catalog": {
         "streams": [
             {
-                "name": "TableName",
+                "name": "dbt_manifest",
                 "json_schema": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "properties": {
-                        "columnName": {
+                        "unique_id": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string",
+                            "examples": [
+                                "model.duckdb_sample_project.my_first_dbt_model",
+                                "test.duckdb_sample_project.unique_my_first_dbt_model_id.16e066b321"
+                            ]
+                        },
+                        "resource_type": {
+                            "type": "string",
+                            "examples": [
+                                "model",
+                                "test"
+                            ]
+                        },
+                        "language": {
+                            "type": "string",
+                            "examples": [
+                                "sql",
+                                "python"
+                            ]
+                        }
+                    }
+                },
+                "supported_sync_modes": [
+                    "full_refresh"
+                ],
+                "source_defined_cursor": true
+            },
+            {
+                "name": "dbt_run_results",
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                        "model_name": {
+                            "type": "string"
+                        },
+                        "result": {
                             "type": "string"
                         }
                     }
                 },
                 "supported_sync_modes": [
                     "full_refresh"
-                ]
+                ],
+                "source_defined_cursor": true
+            },
+            {
+                "name": "dbt_test_results",
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                        "test_name": {
+                            "type": "string"
+                        },
+                        "result": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "supported_sync_modes": [
+                    "full_refresh"
+                ],
+                "source_defined_cursor": true
             }
         ]
     }
