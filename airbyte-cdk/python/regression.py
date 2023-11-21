@@ -190,16 +190,17 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
             # Plotting table using matplotlib
 
             # Define a function to assign colors based on conditions
-            def color_cells(value):
-                if value > 0:
+            def color_cells(table, row, col):
+                value = table.loc[row, col]
+                if value > 0 and col != 'equal_count':
                     return 'red'
                 return 'white'  # Default color for other cells
 
             # Convert table data to a list for cell colors
-            cell_colors = [[color_cells(table.loc[row, col]) for col in table.columns] for row in table.index]
+            cell_colors = [[color_cells(table, row, col) for col in table.columns] for row in table.index]
 
             plt.figure(figsize=(6, 4))
-            plt.title(f"Stream: {stream}", y=1.2)
+            plt.title(f"Stream: {stream}", y=3.2)
             plt.table(cellText=table.values,
                       colLabels=table.columns,
                       rowLabels=table.index,
