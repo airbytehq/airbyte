@@ -17,6 +17,7 @@ from orchestrator.assets.registry_entry import (
     get_registry_status_lists,
     metadata_to_registry_entry,
     safe_parse_metadata_definition,
+    yaml_blob_to_dict,
 )
 from orchestrator.assets.registry_report import (
     all_destinations_dataframe,
@@ -64,11 +65,13 @@ def test_safe_parse_metadata_definition(blob_name, blob_content, expected_result
     mock_blob.name = blob_name
     mock_blob.download_as_string.return_value = blob_content.encode("utf-8")
 
+    metadata_dict = yaml_blob_to_dict(mock_blob)
+
     if expected_exception:
         with pytest.raises(expected_exception):
-            safe_parse_metadata_definition(mock_blob)
+            safe_parse_metadata_definition(mock_blob.name, metadata_dict)
     else:
-        result = safe_parse_metadata_definition(mock_blob)
+        result = safe_parse_metadata_definition(mock_blob.name, metadata_dict)
         # assert the name is set correctly
         assert result == expected_result
 

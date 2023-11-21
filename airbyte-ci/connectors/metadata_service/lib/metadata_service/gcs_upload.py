@@ -105,7 +105,7 @@ def compute_gcs_md5(file_name: str) -> str:
 
 def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_cache: bool = False) -> bool:
     """Uploads a file to the bucket."""
-    logging.info(f"Uploading {file_path} to {blob_to_save.name}...")
+    print(f"Uploading {file_path} to {blob_to_save.name}...")
 
     # Set Cache-Control header to no-cache to avoid caching issues
     # This is IMPORTANT because if we don't set this header, the metadata file will be cached by GCS
@@ -130,8 +130,8 @@ def upload_file_if_changed(
 
     remote_blob_md5_hash = remote_blob.md5_hash if remote_blob.exists() else None
 
-    logging.info(f"Local {local_file_path} md5_hash: {local_file_md5_hash}")
-    logging.info(f"Remote {blob_path} md5_hash: {remote_blob_md5_hash}")
+    print(f"Local {local_file_path} md5_hash: {local_file_md5_hash}")
+    print(f"Remote {blob_path} md5_hash: {remote_blob_md5_hash}")
 
     if local_file_md5_hash != remote_blob_md5_hash:
         uploaded = _save_blob_to_gcs(remote_blob, local_file_path, disable_cache=disable_cache)

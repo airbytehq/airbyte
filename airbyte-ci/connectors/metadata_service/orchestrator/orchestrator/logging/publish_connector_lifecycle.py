@@ -61,14 +61,32 @@ class PublishConnectorLifecycle:
         lifecycle_stage: PublishConnectorLifecycleStage,
         stage_status: StageStatus,
         message: str,
+        commit_sha: str = None,
+        user_identifier: str = None,
     ) -> str:
         emoji = stage_status.to_emoji()
-        return f"*{emoji} _{lifecycle_stage}_ {stage_status}*: {message}"
+        final_message = f"*{emoji} _{lifecycle_stage}_ {stage_status}*: {message}."
+
+        if user_identifier:
+            final_message += f" attn: {user_identifier}"
+
+        if commit_sha:
+            final_message += f" commit: ({commit_sha})"
+
+        return final_message
+
 
     @staticmethod
-    def log(context: OpExecutionContext, lifecycle_stage: PublishConnectorLifecycleStage, stage_status: StageStatus, message: str):
+    def log(
+        context: OpExecutionContext,
+        lifecycle_stage: PublishConnectorLifecycleStage,
+        stage_status: StageStatus,
+        message: str,
+        commit_sha: str = None,
+        user_identifier: str = None,
+    ):
         """Publish a connector notification log to logger and slack (if enabled)."""
-        message = PublishConnectorLifecycle.create_log_message(lifecycle_stage, stage_status, message)
+        message = PublishConnectorLifecycle.create_log_message(lifecycle_stage, stage_status, message, commit_sha, user_identifier)
 
         level = PublishConnectorLifecycle.stage_to_log_level(stage_status)
         log_method = getattr(context.log, level)
