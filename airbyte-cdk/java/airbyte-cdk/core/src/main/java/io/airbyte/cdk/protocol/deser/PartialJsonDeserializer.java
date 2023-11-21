@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -41,6 +40,7 @@ public class PartialJsonDeserializer {
                                   final Supplier<T> constructor,
                                   final Map<String, Consumer<T>> keyValueConsumers,
                                   final boolean exitParseEarly) {
+    skipWhitespace(data);
     final char firstChar = data.peek();
     if (firstChar == 'n') {
       skipExactString(data, "null");
