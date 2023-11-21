@@ -26,6 +26,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -81,27 +82,34 @@ public class IntegrationRunner {
   private final Source source;
   private final FeatureFlags featureFlags;
   private static JsonSchemaValidator validator;
+  private final ProtobufSource psource;
 
   public IntegrationRunner(final Destination destination) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null, null);
   }
 
   public IntegrationRunner(final Source source) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source);
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source, null);
+  }
+
+  public IntegrationRunner(final ProtobufSource psource) {
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, null, psource);
   }
 
   @VisibleForTesting
   IntegrationRunner(final IntegrationCliParser cliParser,
                     final Consumer<AirbyteMessage> outputRecordCollector,
                     final Destination destination,
-                    final Source source) {
-    Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
+                    final Source source,
+                    final ProtobufSource psource) {
+    Preconditions.checkState(destination != null ^ source != null ^ psource != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
     // integration iface covers the commands that are the same for both source and destination.
-    integration = source != null ? source : destination;
+    integration = source != null ? source : psource != null ? psource : destination;
     this.source = source;
     this.destination = destination;
+    this.psource = psource;
     this.featureFlags = new EnvVariableFeatureFlags();
     validator = new JsonSchemaValidator();
 
@@ -113,8 +121,9 @@ public class IntegrationRunner {
                     final Consumer<AirbyteMessage> outputRecordCollector,
                     final Destination destination,
                     final Source source,
+                    final ProtobufSource psource,
                     final JsonSchemaValidator jsonSchemaValidator) {
-    this(cliParser, outputRecordCollector, destination, source);
+    this(cliParser, outputRecordCollector, destination, source, psource);
     validator = jsonSchemaValidator;
   }
 
@@ -228,6 +237,13 @@ public class IntegrationRunner {
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
   }
 
+  private void produceProtoMessages(final AutoCloseableIterator<io.airbyte.protocol.protos.AirbyteMessage> messageIterator,
+                                    final Consumer<io.airbyte.protocol.protos.AirbyteMessage> recordCollector) {
+    messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Producing messages for stream {}...", s));
+    messageIterator.forEachRemaining(recordCollector);
+    messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Finished producing messages for stream {}..."));
+  }
+
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator, final Consumer<AirbyteMessage> recordCollector) {
     messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Producing messages for stream {}...", s));
     messageIterator.forEachRemaining(recordCollector);
@@ -268,14 +284,26 @@ public class IntegrationRunner {
   }
 
   private void readSerial(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
-    try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
-      produceMessages(messageIterator, outputRecordCollector);
-    } finally {
-      stopOrphanedThreads(EXIT_HOOK,
-          INTERRUPT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES,
-          EXIT_THREAD_DELAY_MINUTES,
-          TimeUnit.MINUTES);
+    if (psource != null) {
+      try (AutoCloseableIterator<io.airbyte.protocol.protos.AirbyteMessage> it = psource.read(config, catalog, stateOptional.orElse(null))) {
+        produceProtoMessages(it, IntegrationRunner::protobufOutputRecordCollector);
+      } finally {
+        stopOrphanedThreads(EXIT_HOOK,
+            INTERRUPT_THREAD_DELAY_MINUTES,
+            TimeUnit.MINUTES,
+            EXIT_THREAD_DELAY_MINUTES,
+            TimeUnit.MINUTES);
+      }
+    } else {
+      try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
+        produceMessages(messageIterator, outputRecordCollector);
+      } finally {
+        stopOrphanedThreads(EXIT_HOOK,
+            INTERRUPT_THREAD_DELAY_MINUTES,
+            TimeUnit.MINUTES,
+            EXIT_THREAD_DELAY_MINUTES,
+            TimeUnit.MINUTES);
+      }
     }
   }
 
@@ -420,6 +448,15 @@ public class IntegrationRunner {
 
     final String[] tokens = connectorImage.split(":");
     return tokens[tokens.length - 1];
+  }
+
+  static void protobufOutputRecordCollector(final io.airbyte.protocol.protos.AirbyteMessage message) {
+    try {
+      System.out.writeBytes(new byte[] {0});
+      message.writeDelimitedTo(System.out);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }
