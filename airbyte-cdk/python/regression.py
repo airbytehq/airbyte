@@ -8,6 +8,7 @@ import json
 import subprocess
 
 import matplotlib.pyplot as plt
+import os
 import pandas as pd
 import yaml
 from aiostream import stream
@@ -52,46 +53,19 @@ class StreamStats:
     def __repr__(self):
         return f"StreamStats({vars(self)})"
 
-
-async def main():
-    connector = "source-stripe"
-    config_path = "secrets/prod_config_recent_only.json"
-    regression_config_path = "regression_config.yaml"
-    with open(regression_config_path) as f:
-        regression_config = yaml.safe_load(f)
-
-    connector_version_left = regression_config["connector_version_left"]
-    connector_version_right = regression_config["connector_version_right"]
-
-    stream_configs = regression_config["streams"]
-    stream_to_stream_config = {stream_config["name"]: stream_config for stream_config in stream_configs}
-    stream_names = [stream_config["name"] for stream_config in stream_configs]
-    #FIXME uses left for the discover. this is somewhat arbitrary
-    discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version_left} discover --config /{config_path}"
-    discover_result = subprocess.run(discover_command, shell=True, check=True, stdout=subprocess.PIPE, text=True)
-    discover_output = discover_result.stdout
-    catalog = None
-    for discover_line in discover_output.split("\n"):
-        if "CATALOG" in discover_line:
-            discover_message = AirbyteMessage.parse_raw(discover_line)
-            catalog = discover_message.catalog
-            break
-    if not catalog:
-        print(f"Could not find catalog in {discover_output}")
-    streams = [stream for stream in catalog.streams if stream.name in stream_names]
-    configured_catalog = _configured_catalog(streams)
+async def compute_stream(connector, connector_version_left, connector_version_right, config_path, stream: AirbyteStream, stream_to_stream_config, streams_to_dataframe, streams_stats):
+    print(f"running for {stream.name}")
+    configured_catalog = _configured_catalog([stream])
+    os.remove(f"secrets/tmp_catalog.json")
     with open(f"secrets/tmp_catalog.json", "w") as f:
-        f.write(configured_catalog.json(exclude_unset=True))
+        f.write(_configured_catalog([stream]).json(exclude_unset=True))
     command_left = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version_left} read --config /{config_path} --catalog /secrets/tmp_catalog.json"
     command_right = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version_right} read --config /{config_path} --catalog /secrets/tmp_catalog.json"
 
+    configured_stream = configured_catalog.streams[0]
+
     subprocess_left = run_subprocess(command_left, "left")
     subprocess_right = run_subprocess(command_right, "right")
-
-    streams_stats = {}
-    #primary_key = "id"
-    # FIXME: need to get pk from catalog
-    streams_to_dataframe = {}
 
     while subprocess_left.__anext__() and subprocess_right.__anext__():
         try:
@@ -105,8 +79,9 @@ async def main():
                 print(right)
                 print(left.message.type == right.message.type)
                 return
-            if left.message.type == MessageType.RECORD:
-
+            if left.message.type != MessageType.RECORD:
+                continue
+            else:
                 assert left.message.record.stream == right.message.record.stream
                 if left.message.record.stream not in streams_stats:
                     streams_stats[left.message.record.stream] = StreamStats(left.message.record.stream, {}, {}, {}, {}, {}, {}, [], set(), [], [])
@@ -118,7 +93,7 @@ async def main():
 
                 stream_stats.record_count += 1
 
-                configured_stream: ConfiguredAirbyteStream = [stream for stream in configured_catalog.streams if stream.stream.name == left.message.record.stream][0]
+                #configured_stream: ConfiguredAirbyteStream = [stream for stream in configured_catalog.streams if stream.stream.name == left.message.record.stream][0]
                 primary_key = configured_stream.primary_key
                 if primary_key:
                     primary_key = primary_key[0][0]
@@ -135,6 +110,7 @@ async def main():
                         continue
                     else:
                         compare_records(left, right, stream_stats)
+                        stream_stats.record_count += 1
                 else:
                     #compare_records(left, right, stream_stats)
                     left_data_clone = copy.deepcopy(left.message.record.data)
@@ -161,13 +137,69 @@ async def main():
                         compare_records(stream_stats.left_rows_missing[left_key], stream_stats.right_rows_missing[left_key], stream_stats)
                         stream_stats.left_rows_missing.pop(left_key)
                         stream_stats.right_rows_missing.pop(left_key)
+                        stream_stats.record_count += 1
                     else:
                         print(f"did not find {left_key} in right")
         except StopAsyncIteration:
+            print("stop async")
+            pass
+        finally:
             # FIXME needd to do another check of missing
             # check missing
+            # FIXME this is copypasted
+            primary_key = configured_stream.primary_key
+            if primary_key:
+                primary_key = primary_key[0][0]
+            try:
+                while subprocess_left.__anext__():
+                    # FIXME need to handle case where there is no pk!
+                    left = await subprocess_left.__anext__()
+                    if left.message.type != MessageType.RECORD:
+                        continue
+                    if left.message.record.stream not in streams_stats:
+                        streams_stats[left.message.record.stream] = StreamStats(left.message.record.stream, {}, {}, {}, {}, {}, {}, [], set(), [], [])
+                        streams_stats[left.message.record.stream].fields_to_ignore = set(
+                            stream_to_stream_config[left.message.record.stream].get("ignore_fields", [])
+                        )
+                    stream_stats = streams_stats[left.message.record.stream]
+                    if primary_key:
+                        stream_stats.left_rows_missing[left.message.record.data[primary_key]] = left
+                    else:
+                        # need to remove ignored fields?
+                        for field in stream_stats.fields_to_ignore:
+                            left.message.record.data.pop(field, None)
+                        stream_stats.unmatched_left_no_pk.append(left.message.record.data)
+            except StopAsyncIteration:
+                pass
+            try:
+                while subprocess_right.__anext__():
+                    right = await subprocess_right.__anext__()
+                    if right.message.type != MessageType.RECORD:
+                        continue
+                    stream_stats = streams_stats[right.message.record.stream]
+                    if primary_key:
+                        if right.message.record.data[primary_key] in stream_stats.left_rows_missing:
+                            compare_records(stream_stats.left_rows_missing[right.message.record.data[primary_key]], right, stream_stats)
+                            stream_stats.left_rows_missing.pop(right.message.record.data[primary_key])
+                            stream_stats.record_count += 1
+                        else:
+                            stream_stats.right_rows_missing[right.message.record.data[primary_key]] = right
+                    else:
+                        # need to remove ignored fields?
+                        for field in stream_stats.fields_to_ignore:
+                            right.message.record.data.pop(field, None)
+                        stream_stats.unmatched_right_no_pk.append(right.message.record.data)
+            except StopAsyncIteration:
+                pass
             for stream_name, stream_stats in streams_stats.items():
-                configured_stream = [stream for stream in configured_catalog.streams if stream.stream.name == stream_name][0]
+                print(f"stream: {stream_name}")
+                print(configured_catalog)
+                configured_streams = [stream for stream in configured_catalog.streams if stream.stream.name == stream_name]
+                if len(configured_streams) == 0:
+                    return
+                configured_stream = configured_streams[0]
+                if stream_name != configured_stream.stream.name:
+                    continue
                 primary_key = configured_stream.primary_key
                 if primary_key:
                     left_keys = set(stream_stats.left_rows_missing.keys())
@@ -176,6 +208,7 @@ async def main():
                         if left_key in stream_stats.right_rows_missing:
                             print(f"found {left_key} in right")
                             compare_records(stream_stats.left_rows_missing[left_key], stream_stats.right_rows_missing[left_key], stream_stats)
+                            stream_stats.record_count += 1
                             stream_stats.left_rows_missing.pop(left_key)
                             stream_stats.right_rows_missing.pop(left_key)
                         else:
@@ -248,6 +281,40 @@ async def main():
                 print(len(stream_stats.right_rows_missing))
 
             break
+
+async def main():
+    connector = "source-stripe"
+    config_path = "secrets/prod_config_recent_only.json"
+    regression_config_path = "regression_config.yaml"
+    with open(regression_config_path) as f:
+        regression_config = yaml.safe_load(f)
+
+    connector_version_left = regression_config["connector_version_left"]
+    connector_version_right = regression_config["connector_version_right"]
+
+    stream_configs = regression_config["streams"]
+    stream_to_stream_config = {stream_config["name"]: stream_config for stream_config in stream_configs}
+    stream_names = [stream_config["name"] for stream_config in stream_configs]
+    #FIXME uses left for the discover. this is somewhat arbitrary
+    discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version_left} discover --config /{config_path}"
+    discover_result = subprocess.run(discover_command, shell=True, check=True, stdout=subprocess.PIPE, text=True)
+    discover_output = discover_result.stdout
+    catalog = None
+    for discover_line in discover_output.split("\n"):
+        if "CATALOG" in discover_line:
+            discover_message = AirbyteMessage.parse_raw(discover_line)
+            catalog = discover_message.catalog
+            break
+    if not catalog:
+        print(f"Could not find catalog in {discover_output}")
+    streams = [stream for stream in catalog.streams if stream.name in stream_names]
+
+    streams_stats = {}
+    streams_to_dataframe = {}
+    for stream in streams:
+        print(f"processing stream {stream.name}")
+        await compute_stream(connector, connector_version_left, connector_version_right, config_path, stream, stream_to_stream_config, streams_to_dataframe, streams_stats)
+        print(f"done processing stream {stream.name}")
     generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats)
 
 
