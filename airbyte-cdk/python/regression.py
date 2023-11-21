@@ -245,41 +245,6 @@ async def compute_stream(connector, connector_version_left, connector_version_ri
                     for index in sorted(right_indices_to_remove, reverse=True):
                         stream_stats.unmatched_right_no_pk.pop(index)
             # FIXME need to check if both are done
-            for stream_stats in streams_stats.values():
-                stats_rows = []
-                for column in stream_stats.columns_to_diff_count:
-                    stats_rows.append(
-                        {
-                            "stream": stream_stats.stream,
-                            "column": column,
-                            "metric": "diff_count",
-                            "value": stream_stats.columns_to_diff_count[column],
-                        }
-                    )
-                for column in stream_stats.columns_to_equal:
-                    stats_rows.append(
-                        {
-                            "stream": stream_stats.stream,
-                            "column": column,
-                            "metric": "equal_count",
-                            "value": stream_stats.columns_to_equal[column],
-                        }
-                    )
-                df = pd.DataFrame.from_records(stats_rows)
-                streams_to_dataframe[stream_stats.stream] = df
-                print(f"done processing {stream_stats.record_count} records")
-                print(f"columns_to_diff_count: {stream_stats.columns_to_diff_count}")
-                print(f"columns_to_right_missing: {stream_stats.columns_to_right_missing}")
-                print(f"columns_to_left_missing: {stream_stats.columns_to_left_missing}")
-                print(f"columns_to_equal: {stream_stats.columns_to_equal}")
-                # NEED TO VERIFY BOTH ARE DONE
-
-                print(f"left_rows_missing: {stream_stats.left_rows_missing}")
-                print(len(stream_stats.left_rows_missing))
-
-                print(f"right_rows_missing: {stream_stats.right_rows_missing}")
-                print(len(stream_stats.right_rows_missing))
-
             break
 
 async def main():
@@ -315,6 +280,42 @@ async def main():
         print(f"processing stream {stream.name}")
         await compute_stream(connector, connector_version_left, connector_version_right, config_path, stream, stream_to_stream_config, streams_to_dataframe, streams_stats)
         print(f"done processing stream {stream.name}")
+
+    for stream_stats in streams_stats.values():
+        stats_rows = []
+        for column in stream_stats.columns_to_diff_count:
+            stats_rows.append(
+                {
+                    "stream": stream_stats.stream,
+                    "column": column,
+                    "metric": "diff_count",
+                    "value": stream_stats.columns_to_diff_count[column],
+                }
+            )
+        for column in stream_stats.columns_to_equal:
+            stats_rows.append(
+                {
+                    "stream": stream_stats.stream,
+                    "column": column,
+                    "metric": "equal_count",
+                    "value": stream_stats.columns_to_equal[column],
+                }
+            )
+        df = pd.DataFrame.from_records(stats_rows)
+        streams_to_dataframe[stream_stats.stream] = df
+        print(f"done processing {stream_stats.record_count} records")
+        print(f"columns_to_diff_count: {stream_stats.columns_to_diff_count}")
+        print(f"columns_to_right_missing: {stream_stats.columns_to_right_missing}")
+        print(f"columns_to_left_missing: {stream_stats.columns_to_left_missing}")
+        print(f"columns_to_equal: {stream_stats.columns_to_equal}")
+        # NEED TO VERIFY BOTH ARE DONE
+
+        print(f"left_rows_missing: {stream_stats.left_rows_missing}")
+        print(len(stream_stats.left_rows_missing))
+
+        print(f"right_rows_missing: {stream_stats.right_rows_missing}")
+        print(len(stream_stats.right_rows_missing))
+
     generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats)
 
 
