@@ -69,8 +69,9 @@ class UnstructuredParser(FileTypeParser):
                 self._handle_unprocessable_file(file, format, logger)
 
             return {
-                "content": {"type": "string"},
-                "document_key": {"type": "string"},
+                "content": {"type": "string", "description": "Content of the file as markdown. Might be null if the file could not be parsed"},
+                "document_key": {"type": "string", "description": "Unique identifier of the document, e.g. the file path"},
+                "error": {"type": "string", "description": "Error message if the file could not be parsed even though the file is supported"},
             }
 
     def parse_records(
@@ -83,11 +84,25 @@ class UnstructuredParser(FileTypeParser):
     ) -> Iterable[Dict[str, Any]]:
         format = _extract_format(config)
         with stream_reader.open_file(file, self.file_read_mode, None, logger) as file_handle:
-            markdown = self._read_file(file_handle, file, format, logger)
-            if markdown is not None:
+            try:
+                markdown = self._read_file(file_handle, file, format, logger)
+                if markdown is not None:
+                    yield {
+                        "content": markdown,
+                        "document_key": file.uri,
+                        "error": None,
+                    }
+            except RecordParseError as e:
+                # pass explicitly raised RecordParseError through to be handled by the caller
+                raise e
+            except Exception as e:
+                exception_str = str(e)
+                logger.warn(f"File {file.uri} caused an error during parsing: {exception_str}.")
+                # catch unexpected exceptions during parsing and return them as part of the document
                 yield {
-                    "content": markdown,
+                    "content": None,
                     "document_key": file.uri,
+                    "error": exception_str,
                 }
 
     def _read_file(self, file_handle: IOBase, remote_file: RemoteFile, format: UnstructuredFormat, logger: logging.Logger) -> Optional[str]:

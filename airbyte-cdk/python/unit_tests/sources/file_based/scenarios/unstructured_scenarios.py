@@ -12,6 +12,21 @@ from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenari
 nltk.download("punkt")
 nltk.download("averaged_perceptron_tagger")
 
+json_schema = {
+                        "type": "object",
+                        "properties": {
+                "content": {"type": ["null", "string"], "description": "Content of the file as markdown. Might be null if the file could not be parsed"},
+                "document_key": {"type": ["null", "string"], "description": "Unique identifier of the document, e.g. the file path"},
+                "error": {"type": ["null", "string"], "description": "Error message if the file could not be parsed even though the file is supported"},
+                            "_ab_source_file_last_modified": {
+                                "type": "string",
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string",
+                            },
+                        }
+}
+
 simple_markdown_scenario = (
     TestScenarioBuilder()
     .set_name("simple_markdown_scenario")
@@ -55,23 +70,7 @@ simple_markdown_scenario = (
             "streams": [
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
-                    "json_schema": {
-                        "type": "object",
-                        "properties": {
-                            "document_key": {
-                                "type": ["null", "string"],
-                            },
-                            "content": {
-                                "type": ["null", "string"],
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string",
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string",
-                            },
-                        },
-                    },
+                    "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
@@ -87,6 +86,7 @@ simple_markdown_scenario = (
                     "content": "# Title 1\n\n## Title 2\n\n### Title 3\n\n#### Title 4\n\n##### Title 5\n\n###### Title 6\n\n",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.md",
+                    "error": None,
                 },
                 "stream": "stream1",
             },
@@ -96,6 +96,7 @@ simple_markdown_scenario = (
                     "content": "Just some text",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "b.md",
+                    "error": None,
                 },
                 "stream": "stream1",
             },
@@ -105,6 +106,8 @@ simple_markdown_scenario = (
                     "content": "Detected via mime type",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "c",
+                    "error": None,
+
                 },
                 "stream": "stream1",
             },
@@ -145,23 +148,7 @@ unstructured_invalid_file_type_discover_scenario_no_skip = (
             "streams": [
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
-                    "json_schema": {
-                        "type": "object",
-                        "properties": {
-                            "document_key": {
-                                "type": ["null", "string"],
-                            },
-                            "content": {
-                                "type": ["null", "string"],
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string",
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string",
-                            },
-                        },
-                    },
+                    "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
@@ -206,23 +193,7 @@ unstructured_invalid_file_type_discover_scenario_skip = (
             "streams": [
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
-                    "json_schema": {
-                        "type": "object",
-                        "properties": {
-                            "document_key": {
-                                "type": ["null", "string"],
-                            },
-                            "content": {
-                                "type": ["null", "string"],
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string",
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string",
-                            },
-                        },
-                    },
+                    "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
@@ -272,23 +243,7 @@ unstructured_invalid_file_type_read_scenario = (
             "streams": [
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
-                    "json_schema": {
-                        "type": "object",
-                        "properties": {
-                            "document_key": {
-                                "type": ["null", "string"],
-                            },
-                            "content": {
-                                "type": ["null", "string"],
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string",
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string",
-                            },
-                        },
-                    },
+                    "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
@@ -304,6 +259,7 @@ unstructured_invalid_file_type_read_scenario = (
                     "content": "A harmless markdown file",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.md",
+                    "error": None,
                 },
                 "stream": "stream1",
             },
@@ -366,23 +322,7 @@ simple_unstructured_scenario = (
             "streams": [
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
-                    "json_schema": {
-                        "type": "object",
-                        "properties": {
-                            "document_key": {
-                                "type": ["null", "string"],
-                            },
-                            "content": {
-                                "type": ["null", "string"],
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string",
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string",
-                            },
-                        },
-                    },
+                    "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
@@ -398,6 +338,7 @@ simple_unstructured_scenario = (
                     "content": "# Hello World",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "sample.pdf",
+                    "error": None,
                 },
                 "stream": "stream1",
             },
@@ -407,6 +348,7 @@ simple_unstructured_scenario = (
                     "content": "# Content",
                     "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z",
                     "_ab_source_file_url": "sample.docx",
+                    "error": None,
                 },
                 "stream": "stream1",
             },
@@ -416,6 +358,64 @@ simple_unstructured_scenario = (
                     "content": "# Title",
                     "_ab_source_file_last_modified": "2023-06-07T03:54:07.000000Z",
                     "_ab_source_file_url": "sample.pptx",
+                    "error": None,
+                },
+                "stream": "stream1",
+            },
+        ]
+    )
+).build()
+
+corrupted_file_scenario = (
+    TestScenarioBuilder()
+    .set_name("corrupted_file_scenario")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "format": {"filetype": "unstructured"},
+                    "globs": ["*"],
+                    "validation_policy": "Emit Record",
+                }
+            ]
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "sample.pdf": {
+                    # bytes that can't be parsed as pdf
+                    "contents": bytes("___ corrupted file ___", "utf-8"),
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("unstructured")
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": json_schema,
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {
+                "data": {
+                    "document_key": "sample.pdf",
+                    "content": None,
+                    "error": "No /Root object! - Is this really a PDF?",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "sample.pdf",
                 },
                 "stream": "stream1",
             },
@@ -466,23 +466,7 @@ no_file_extension_unstructured_scenario = (
             "streams": [
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
-                    "json_schema": {
-                        "type": "object",
-                        "properties": {
-                            "document_key": {
-                                "type": ["null", "string"],
-                            },
-                            "content": {
-                                "type": ["null", "string"],
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string",
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string",
-                            },
-                        },
-                    },
+                    "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
@@ -498,6 +482,7 @@ no_file_extension_unstructured_scenario = (
                     "content": "# Hello World",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "pdf_without_extension",
+                    "error": None,
                 },
                 "stream": "stream1",
             },
@@ -507,6 +492,7 @@ no_file_extension_unstructured_scenario = (
                     "content": "# Content",
                     "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z",
                     "_ab_source_file_url": "docx_without_extension",
+                    "error": None,
                 },
                 "stream": "stream1",
             },
@@ -515,7 +501,8 @@ no_file_extension_unstructured_scenario = (
                     "document_key": "pptx_without_extension",
                     "content": "# Title",
                     "_ab_source_file_last_modified": "2023-06-07T03:54:07.000000Z",
-                    "_ab_source_file_url": "sample.pptx",
+                    "_ab_source_file_url": "pptx_without_extension",
+                    "error": None,
                 },
                 "stream": "stream1",
             },
