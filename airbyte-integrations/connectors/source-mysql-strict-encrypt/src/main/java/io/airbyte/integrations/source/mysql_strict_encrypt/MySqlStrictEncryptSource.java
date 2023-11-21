@@ -45,10 +45,11 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
   }
 
   @Override
+  @SuppressWarnings("deprecation")
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties").get(SSL_MODE)).put("default", SSL_MODE_REQUIRED);
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").with(SSL_MODE)).put("default", SSL_MODE_REQUIRED);
     return spec;
   }
 
