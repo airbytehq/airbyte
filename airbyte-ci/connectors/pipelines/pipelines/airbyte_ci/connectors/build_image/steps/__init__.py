@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import platform
+import os
 
 import anyio
 from connector_ops.utils import ConnectorLanguage
@@ -45,13 +46,22 @@ async def run_connector_build_pipeline(context: ConnectorContext, semaphore: any
     Returns:
         ConnectorReport: The reports holding builds results.
     """
+    CUSTOM_DOCKER_ARCH_VAR = 'DOCKER_BUILD_ARCH'
+    custom_docker_arch = os.getenv(CUSTOM_DOCKER_ARCH_VAR)
+    docker_arch = LOCAL_BUILD_PLATFORM
+
+    if custom_docker_arch is not None:
+        print(f"===== Env var is set...")
+        docker_arch = custom_docker_arch
+
+    print(f"Running build for {context.connector.language} connector on {docker_arch}")
     step_results = []
     async with semaphore:
         async with context:
             build_result = await run_connector_build(context)
             step_results.append(build_result)
             if context.is_local and build_result.status is StepStatus.SUCCESS:
-                load_image_result = await LoadContainerToLocalDockerHost(context, LOCAL_BUILD_PLATFORM, build_result.output_artifact).run()
+                load_image_result = await LoadContainerToLocalDockerHost(context, docker_arch, build_result.output_artifact).run()
                 step_results.append(load_image_result)
             context.report = ConnectorReport(context, step_results, name="BUILD RESULTS")
         return context.report
