@@ -56,7 +56,7 @@ public class PostgresTestDatabase implements AutoCloseable {
 
   }
 
-  public enum PostgresImageLayer {
+  public enum PostgresContainerModifier {
 
     ASCII(ContainerFactory::withASCII),
     CONF(ContainerFactory::withConf),
@@ -67,7 +67,7 @@ public class PostgresTestDatabase implements AutoCloseable {
 
     final Consumer<ContainerFactory> method;
 
-    PostgresImageLayer(Consumer<ContainerFactory> method) {
+    PostgresContainerModifier(Consumer<ContainerFactory> method) {
       this.method = method;
     }
 
@@ -81,10 +81,10 @@ public class PostgresTestDatabase implements AutoCloseable {
    * @return a new {@link PostgresTestDatabase} instance which may reuse a shared
    *         {@link PostgreSQLContainer}.
    */
-  static public PostgresTestDatabase make(PostgresImage postgresImage, PostgresImageLayer... methods) {
+  static public PostgresTestDatabase make(PostgresImage postgresImage, PostgresContainerModifier... methods) {
     final String imageNamePlusMethods = Stream.concat(
         Stream.of(postgresImage.imageName),
-        Stream.of(methods).map(PostgresImageLayer::name))
+        Stream.of(methods).map(PostgresContainerModifier::name))
         .collect(Collectors.joining("+"));
     final ContainerFactory factory = ContainerFactory.LAZY.computeIfAbsent(imageNamePlusMethods, ContainerFactory::new);
     return new PostgresTestDatabase(factory.getOrCreateSharedContainer());
@@ -198,14 +198,14 @@ public class PostgresTestDatabase implements AutoCloseable {
     static private final ConcurrentHashMap<String, ContainerFactory> LAZY = new ConcurrentHashMap<>();
 
     final private String imageName;
-    final private List<PostgresImageLayer> imageLayers;
+    final private List<PostgresContainerModifier> imageLayers;
     private PostgreSQLContainer<?> sharedContainer;
     private RuntimeException containerCreationError;
 
     private ContainerFactory(String imageNamePlusMethods) {
       final String[] parts = imageNamePlusMethods.split("\\+");
       this.imageName = parts[0];
-      this.imageLayers = Arrays.stream(parts).skip(1).map(PostgresImageLayer::valueOf).toList();
+      this.imageLayers = Arrays.stream(parts).skip(1).map(PostgresContainerModifier::valueOf).toList();
     }
 
     private synchronized PostgreSQLContainer<?> getOrCreateSharedContainer() {
@@ -213,14 +213,15 @@ public class PostgresTestDatabase implements AutoCloseable {
         if (containerCreationError != null) {
           throw new RuntimeException(
               "Error during container creation for imageName=" + imageName + ", methods="
-                  + imageLayers.stream().map(PostgresImageLayer::name).toList(),
+                  + imageLayers.stream().map(PostgresContainerModifier::name).toList(),
               containerCreationError);
         }
-        LOGGER.info("Creating new shared container based on {} with {}.", imageName, imageLayers.stream().map(PostgresImageLayer::name).toList());
+        LOGGER.info("Creating new shared container based on {} with {}.", imageName, imageLayers.stream().map(
+            PostgresContainerModifier::name).toList());
         try {
           final var parsed = DockerImageName.parse(imageName).asCompatibleSubstituteFor("postgres");
           sharedContainer = new PostgreSQLContainer<>(parsed);
-          for (PostgresImageLayer imageLayer : imageLayers) {
+          for (PostgresContainerModifier imageLayer : imageLayers) {
             LOGGER.info("Calling {} on new shared container based on {}.", imageLayer.name(),
                 imageName);
             imageLayer.method.accept(this);

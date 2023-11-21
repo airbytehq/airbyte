@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
-import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImageLayer;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresContainerModifier;
 import io.airbyte.commons.json.Jsons;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,7 +36,7 @@ class PostgresSourceOperationsTest {
 
   @BeforeEach
   public void init() {
-    testdb = PostgresTestDatabase.make(PostgresImage.POSTGRES_16_BULLSEYE, PostgresImageLayer.CONF);
+    testdb = PostgresTestDatabase.make(PostgresImage.POSTGRES_16_BULLSEYE, PostgresContainerModifier.CONF);
   }
 
   @AfterEach

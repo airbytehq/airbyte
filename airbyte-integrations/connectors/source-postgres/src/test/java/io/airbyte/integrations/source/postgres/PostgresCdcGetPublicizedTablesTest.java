@@ -14,7 +14,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
-import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImageLayer;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresContainerModifier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.sql.SQLException;
@@ -37,7 +37,7 @@ class PostgresCdcGetPublicizedTablesTest {
 
   @BeforeEach
   void setup() throws Exception {
-    testdb = PostgresTestDatabase.make(PostgresImage.POSTGRES_16_BULLSEYE, PostgresImageLayer.CONF);
+    testdb = PostgresTestDatabase.make(PostgresImage.POSTGRES_16_BULLSEYE, PostgresContainerModifier.CONF);
     replicationSlot = testdb.withSuffix("replication_slot");
     publication = testdb.withSuffix("publication");
     testdb.database.query(ctx -> {

@@ -39,7 +39,7 @@ import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresReplicati
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
-import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImageLayer;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresContainerModifier;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
@@ -95,7 +95,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   protected void setup() throws SQLException {
     source = new PostgresSource();
     source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    testdb = PostgresTestDatabase.make(getServerImage(), PostgresImageLayer.CONF);
+    testdb = PostgresTestDatabase.make(getServerImage(), PostgresContainerModifier.CONF);
     fullReplicationSlot = testdb.withSuffix("debezium_slot");
     publication = testdb.withSuffix("publication");
     config = getConfig(testdb.dbName, testdb.userName, testdb.password);

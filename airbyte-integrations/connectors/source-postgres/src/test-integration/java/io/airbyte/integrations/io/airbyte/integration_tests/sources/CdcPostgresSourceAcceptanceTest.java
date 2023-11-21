@@ -14,7 +14,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImage;
-import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImageLayer;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresContainerModifier;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
@@ -55,7 +55,7 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.make(getServerImage(), PostgresImageLayer.CONF);
+    testdb = PostgresTestDatabase.make(getServerImage(), PostgresContainerModifier.CONF);
     slotName = testdb.withSuffix("debezium_slot");
     publication = testdb.withSuffix("publication");
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()

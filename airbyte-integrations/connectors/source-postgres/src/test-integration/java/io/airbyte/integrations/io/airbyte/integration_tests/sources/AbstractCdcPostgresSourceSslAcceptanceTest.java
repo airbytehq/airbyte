@@ -10,7 +10,7 @@ import io.airbyte.cdk.db.PostgresUtils;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.cdk.testutils.PostgresTestDatabase;
-import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresImageLayer;
+import io.airbyte.cdk.testutils.PostgresTestDatabase.PostgresContainerModifier;
 import io.airbyte.commons.json.Jsons;
 import java.util.List;
 
@@ -21,7 +21,7 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.make(getServerImage(), PostgresImageLayer.WAL_LEVEL_LOGICAL, PostgresImageLayer.CERT);
+    testdb = PostgresTestDatabase.make(getServerImage(), PostgresContainerModifier.WAL_LEVEL_LOGICAL, PostgresContainerModifier.CERT);
     certs = testdb.getCertificate();
     slotName = testdb.withSuffix("debezium_slot");
     publication = testdb.withSuffix("publication");
