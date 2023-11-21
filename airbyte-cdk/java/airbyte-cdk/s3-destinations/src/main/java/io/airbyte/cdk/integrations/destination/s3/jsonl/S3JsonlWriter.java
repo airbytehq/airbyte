@@ -69,12 +69,15 @@ public class S3JsonlWriter extends BaseS3Writer implements DestinationFileWriter
 
   @Override
   public void write(final UUID id, final PartialAirbyteRecordMessage recordMessage) {
-    final ObjectNode json = MAPPER.createObjectNode();
-    json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
-    json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
-    // TODO we can probably just manually construct a string here instead of fully deserializing stuff
-    json.set(JavaBaseConstants.COLUMN_NAME_DATA, Jsons.deserializeExact(recordMessage.getSerializedData()));
-    printWriter.println(Jsons.serialize(json));
+    // recordMessage.serializedData is a json string, so manually build this string.
+    // None of the column names contain interesting characters, nor does the id (because it's a UUID)
+    // so we don't need to worry about escaping.
+    printWriter.println(
+        "{\"" + JavaBaseConstants.COLUMN_NAME_AB_ID + "\":\"" + id
+            + "\",\"" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "\":" + recordMessage.getEmittedAt()
+            + ",\"" + JavaBaseConstants.COLUMN_NAME_DATA + "\":" + recordMessage.getSerializedData()
+            + "}"
+    );
   }
 
   @Override
