@@ -3,6 +3,6 @@
   "schema": "FIVE_STRING_COLUMNS",
   "terminationCondition": {
     "type": "MAX_RECORDS",
-    "max": "100"
+    "max": 2
   }
 }

@@ -92,8 +92,8 @@ public class IntegrationRunner {
     this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source,  null);
   }
 
-  public IntegrationRunner(final ProtobufSource psource) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, null, psource);
+  public IntegrationRunner(final Source source, final ProtobufSource psource) {
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source, psource);
   }
 
   @VisibleForTesting
@@ -102,11 +102,11 @@ public class IntegrationRunner {
                     final Destination destination,
                     final Source source,
                     final ProtobufSource psource) {
-    Preconditions.checkState(destination != null ^ source != null ^ psource != null, "can only pass in a destination or a source");
+    Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
     // integration iface covers the commands that are the same for both source and destination.
-    integration = source != null ? source : psource != null ? psource : destination;
+    integration = source != null ? source : destination;
     this.source = source;
     this.destination = destination;
     this.psource = psource;
@@ -454,6 +454,7 @@ public class IntegrationRunner {
     try {
       System.out.writeBytes(new byte[]{0});
       message.writeDelimitedTo(System.out);
+      System.out.println();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

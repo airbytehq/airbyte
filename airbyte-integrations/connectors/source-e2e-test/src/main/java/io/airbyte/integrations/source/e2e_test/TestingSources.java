@@ -65,8 +65,16 @@ public class TestingSources extends BaseConnector implements Source {
   }
 
   public static void main(final String[] args) throws Exception {
-    ProtobufSource source = new ProtobufSpeedBenchmarkSource();
-    new IntegrationRunner(source).run(args);
+
+    Source source = new SpeedBenchmarkSource();
+    ProtobufSource psource = new ProtobufSpeedBenchmarkSource();
+    new IntegrationRunner(source, psource).run(args);
+    // (
+    // new String[] {
+    // "--discover",
+    // "--config",
+    // "/Users/michel/Code/airbyte/airbyte-integrations/connectors/source-e2e-test/configs/config.json"
+    // });
   }
 
 }
