@@ -74,6 +74,7 @@ class SourceDbtDuckdb(Source):
             name=stream_name,
             json_schema=json_schema,
             supported_sync_modes=["full_refresh"],
+            source_defined_cursor=True,
         )
 
         streams.append(stream)
@@ -97,7 +98,7 @@ class SourceDbtDuckdb(Source):
         :param state: When a Airbyte reads data from a source, it might need to keep a checkpoint cursor to resume
             replication in the future from that saved checkpoint.
             This is the object that is provided with state from previous runs and avoid replicating the entire set of
-            data everytime.
+            data every time.
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """

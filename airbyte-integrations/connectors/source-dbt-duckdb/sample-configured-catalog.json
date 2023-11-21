@@ -1,8 +1,9 @@
 {
-    "type": "CATALOG",
-    "catalog": {
-        "streams": [
-            {
+    "streams": [
+        {
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "append",
+            "stream": {
                 "name": "TableName",
                 "json_schema": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -15,8 +16,8 @@
                 },
                 "supported_sync_modes": [
                     "full_refresh"
-                ]
+                ]        
             }
-        ]
-    }
+        }
+    ]
 }
