@@ -188,11 +188,22 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
             table = pd.pivot_table(group_data, values='value', index='column', columns='metric')
             print(f"table for {stream}:\n{table}")
             # Plotting table using matplotlib
+
+            # Define a function to assign colors based on conditions
+            def color_cells(value):
+                if value > 0:
+                    return 'red'
+                return 'white'  # Default color for other cells
+
+            # Convert table data to a list for cell colors
+            cell_colors = [[color_cells(table.loc[row, col]) for col in table.columns] for row in table.index]
+
             plt.figure(figsize=(6, 4))
             plt.title(f"Stream: {stream}", y=1.2)
             plt.table(cellText=table.values,
                       colLabels=table.columns,
                       rowLabels=table.index,
+                      cellColours=cell_colors,
                       loc='center')
             plt.axis('off')  # Hide axis
 
