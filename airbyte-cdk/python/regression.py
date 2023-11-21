@@ -5,10 +5,10 @@ import asyncio
 import copy
 import dataclasses
 import json
+import os
 import subprocess
 
 import matplotlib.pyplot as plt
-import os
 import pandas as pd
 import yaml
 from aiostream import stream
@@ -47,13 +47,23 @@ class StreamStats:
     right_rows_missing: dict[str, int]
     mismatch: list
     fields_to_ignore: set
-    unmatched_left_no_pk : list
-    unmatched_right_no_pk : list
+    unmatched_left_no_pk: list
+    unmatched_right_no_pk: list
 
     def __repr__(self):
         return f"StreamStats({vars(self)})"
 
-async def compute_stream(connector, connector_version_left, connector_version_right, config_path, stream: AirbyteStream, stream_to_stream_config, streams_to_dataframe, streams_stats):
+
+async def compute_stream(
+    connector,
+    connector_version_left,
+    connector_version_right,
+    config_path,
+    stream: AirbyteStream,
+    stream_to_stream_config,
+    streams_to_dataframe,
+    streams_stats,
+):
     print(f"running for {stream.name}")
     configured_catalog = _configured_catalog([stream])
     os.remove(f"secrets/tmp_catalog.json")
@@ -66,6 +76,14 @@ async def compute_stream(connector, connector_version_left, connector_version_ri
 
     subprocess_left = run_subprocess(command_left, "left")
     subprocess_right = run_subprocess(command_right, "right")
+
+    streams_stats[stream.name] = StreamStats(stream.name, {}, {}, {}, {}, {}, {}, [], set(), [], [])
+    streams_stats[stream.name].fields_to_ignore = set(stream_to_stream_config[stream.name].get("ignore_fields", []))
+    for c in configured_stream.stream.json_schema["properties"].keys():
+        streams_stats[stream.name].columns_to_diff_count[c] = 0
+        streams_stats[stream.name].columns_to_right_missing[c] = 0
+        streams_stats[stream.name].columns_to_left_missing[c] = 0
+        streams_stats[stream.name].columns_to_equal[c] = 0
 
     while subprocess_left.__anext__() and subprocess_right.__anext__():
         try:
@@ -83,17 +101,11 @@ async def compute_stream(connector, connector_version_left, connector_version_ri
                 continue
             else:
                 assert left.message.record.stream == right.message.record.stream
-                if left.message.record.stream not in streams_stats:
-                    streams_stats[left.message.record.stream] = StreamStats(left.message.record.stream, {}, {}, {}, {}, {}, {}, [], set(), [], [])
-                    streams_stats[left.message.record.stream].fields_to_ignore = set(
-                        stream_to_stream_config[left.message.record.stream].get("ignore_fields", [])
-                    )
-
                 stream_stats = streams_stats[left.message.record.stream]
 
                 stream_stats.record_count += 1
 
-                #configured_stream: ConfiguredAirbyteStream = [stream for stream in configured_catalog.streams if stream.stream.name == left.message.record.stream][0]
+                # configured_stream: ConfiguredAirbyteStream = [stream for stream in configured_catalog.streams if stream.stream.name == left.message.record.stream][0]
                 primary_key = configured_stream.primary_key
                 if primary_key:
                     primary_key = primary_key[0][0]
@@ -112,7 +124,7 @@ async def compute_stream(connector, connector_version_left, connector_version_ri
                         compare_records(left, right, stream_stats)
                         stream_stats.record_count += 1
                 else:
-                    #compare_records(left, right, stream_stats)
+                    # compare_records(left, right, stream_stats)
                     left_data_clone = copy.deepcopy(left.message.record.data)
                     right_data_clone = copy.deepcopy(right.message.record.data)
                     print(f"ignore fields: {stream_stats.fields_to_ignore}")
@@ -157,7 +169,9 @@ async def compute_stream(connector, connector_version_left, connector_version_ri
                     if left.message.type != MessageType.RECORD:
                         continue
                     if left.message.record.stream not in streams_stats:
-                        streams_stats[left.message.record.stream] = StreamStats(left.message.record.stream, {}, {}, {}, {}, {}, {}, [], set(), [], [])
+                        streams_stats[left.message.record.stream] = StreamStats(
+                            left.message.record.stream, {}, {}, {}, {}, {}, {}, [], set(), [], []
+                        )
                         streams_stats[left.message.record.stream].fields_to_ignore = set(
                             stream_to_stream_config[left.message.record.stream].get("ignore_fields", [])
                         )
@@ -207,7 +221,9 @@ async def compute_stream(connector, connector_version_left, connector_version_ri
                         print(f"missinh {left_key}")
                         if left_key in stream_stats.right_rows_missing:
                             print(f"found {left_key} in right")
-                            compare_records(stream_stats.left_rows_missing[left_key], stream_stats.right_rows_missing[left_key], stream_stats)
+                            compare_records(
+                                stream_stats.left_rows_missing[left_key], stream_stats.right_rows_missing[left_key], stream_stats
+                            )
                             stream_stats.record_count += 1
                             stream_stats.left_rows_missing.pop(left_key)
                             stream_stats.right_rows_missing.pop(left_key)
@@ -227,8 +243,8 @@ async def compute_stream(connector, connector_version_left, connector_version_ri
                             print(f"right: {right_dump}")
                             print(f"left == right: {left_dump == right_dump}")
                             if json.dumps(left_data) == json.dumps(right_data):
-                                #stream_stats.unmatched_left_no_pk.pop(left_index)
-                                #stream_stats.unmatched_right_no_pk.pop(right_index)
+                                # stream_stats.unmatched_left_no_pk.pop(left_index)
+                                # stream_stats.unmatched_right_no_pk.pop(right_index)
                                 left_indices_to_remove.append(left_index)
                                 right_indices_to_remove.append(right_index)
 
@@ -247,6 +263,7 @@ async def compute_stream(connector, connector_version_left, connector_version_ri
             # FIXME need to check if both are done
             break
 
+
 async def main():
     connector = "source-stripe"
     config_path = "secrets/prod_config_recent_only.json"
@@ -260,7 +277,7 @@ async def main():
     stream_configs = regression_config["streams"]
     stream_to_stream_config = {stream_config["name"]: stream_config for stream_config in stream_configs}
     stream_names = [stream_config["name"] for stream_config in stream_configs]
-    #FIXME uses left for the discover. this is somewhat arbitrary
+    # FIXME uses left for the discover. this is somewhat arbitrary
     discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version_left} discover --config /{config_path}"
     discover_result = subprocess.run(discover_command, shell=True, check=True, stdout=subprocess.PIPE, text=True)
     discover_output = discover_result.stdout
@@ -278,7 +295,16 @@ async def main():
     streams_to_dataframe = {}
     for stream in streams:
         print(f"processing stream {stream.name}")
-        await compute_stream(connector, connector_version_left, connector_version_right, config_path, stream, stream_to_stream_config, streams_to_dataframe, streams_stats)
+        await compute_stream(
+            connector,
+            connector_version_left,
+            connector_version_right,
+            config_path,
+            stream,
+            stream_to_stream_config,
+            streams_to_dataframe,
+            streams_stats,
+        )
         print(f"done processing stream {stream.name}")
 
     for stream_stats in streams_stats.values():
@@ -326,7 +352,7 @@ def _configured_catalog(streams):
                 stream=stream,
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.append,
-                primary_key=stream.source_defined_primary_key
+                primary_key=stream.source_defined_primary_key,
             )
             for stream in streams
         ]
@@ -343,12 +369,20 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
         # TODO
         summary_stats = []
         for stream_name, stream_stat in streams_stats.items():
-            any_diff = any([val > 0 for col, val in streams_stats[stream_name].columns_to_diff_count.items() if col not in streams_stats[stream_name].fields_to_ignore])
+            any_diff = any(
+                [
+                    val > 0
+                    for col, val in streams_stats[stream_name].columns_to_diff_count.items()
+                    if col not in streams_stats[stream_name].fields_to_ignore
+                ]
+            )
             print(f"diff for stream {stream_name}: {streams_stats[stream_name].columns_to_diff_count}")
             print(f"stream stat for {stream_name}: {streams_stats[stream_name]}")
             stat = {
                 "stream": stream_name,
-                "OK": not any_diff and len(streams_stats[stream_name].left_rows_missing) == 0 and len(streams_stats[stream_name].right_rows_missing) == 0,
+                "OK": not any_diff
+                and len(streams_stats[stream_name].left_rows_missing) == 0
+                and len(streams_stats[stream_name].right_rows_missing) == 0,
                 "diff_fields": sum([val for col, val in streams_stats[stream_name].columns_to_diff_count.items()]),
                 "record_count": streams_stats[stream_name].record_count,
                 "missing_left": len(streams_stats[stream_name].left_rows_missing) + len(streams_stats[stream_name].unmatched_left_no_pk),
@@ -368,16 +402,22 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
         summary_df = pd.DataFrame.from_records(summary_stats)
         # table = pd.pivot_table(summary_df, index='stream', columns=['equal', "record_count", "missing_left", "missing_right"], aggfunc=len, fill_value=0)
         # table = pd.pivot_table(summary_df, index='stream', columns=["record_count"], aggfunc=len, fill_value=0)
-        table = summary_df.pivot_table(values=["OK", "record_count", "diff_fields","missing_left", "missing_right"], index="stream", aggfunc="first")
+        table = summary_df.pivot_table(
+            values=["OK", "record_count", "diff_fields", "missing_left", "missing_right"], index="stream", aggfunc="first"
+        )
         plt.figure(figsize=(6, 4))
+
         def summary_color_cells(table, row, col):
             value = table.loc[row, col]
+            if col == "record_count" and value == 0:
+                return "yellow"
             if col == "OK":
                 if value:
                     return "green"
                 else:
                     return "red"
             return "white"  # Default color for other cells
+
         summary_cell_colors = [[summary_color_cells(table, row, col) for col in table.columns] for row in table.index]
         plt.table(cellText=table.values, colLabels=table.columns, rowLabels=table.index, loc="center", cellColours=summary_cell_colors)
         plt.title(f"Summary stats")
@@ -385,7 +425,10 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
         pdf.savefig(bbox_inches="tight", pad_inches=1)
         plt.close()
 
-        for stream, group_data in streams_to_dataframe.items():
+        ordered_streams = sorted(streams_to_dataframe.keys())
+        for stream in ordered_streams:
+            group_data = streams_to_dataframe[stream]
+            # for stream, group_data in streams_to_dataframe.items():
             # Generate per-stream tables
             print(f"group_data for stream {stream}\n{group_data}")
             table = pd.pivot_table(group_data, values="value", index="column", columns="metric")
@@ -394,6 +437,7 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
             # Define a function to assign colors based on conditions
             print(f"stream: {stream}")
             print(f"fields_to_ignore: {streams_stats[stream].fields_to_ignore}")
+
             def color_cells(table, row, col):
                 value = table.loc[row, col]
                 if value > 0 and col != "equal_count":
