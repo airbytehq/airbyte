@@ -387,12 +387,12 @@ class SegmentMembers(MailChimpListSubStream):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
-        segment_id = latest_record.get("segment_id")
+        segment_id = str(latest_record.get("segment_id"))
         latest_cursor_value = latest_record.get(self.cursor_field)
 
         # Get the current state value for this list, if it exists
-        list_state = current_stream_state.get(segment_id, {})
-        current_cursor_value = list_state.get(self.cursor_field, latest_cursor_value)
+        segment_state = current_stream_state.get(segment_id, {})
+        current_cursor_value = segment_state.get(self.cursor_field, latest_cursor_value)
 
         # Update the cursor value and set it in state
         updated_cursor_value = max(current_cursor_value, latest_cursor_value)
