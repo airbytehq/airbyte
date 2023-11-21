@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.protocol.deser;
 
-import io.airbyte.commons.json.Jsons;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,15 +62,14 @@ public class PartialJsonDeserializer {
     return parseObject(
         data,
         HashMap::new,
-        key -> output -> output.put(key, PartialJsonDeserializer.readSerializedValue(data))
-    );
+        key -> output -> output.put(key, PartialJsonDeserializer.readSerializedValue(data)));
   }
 
   /**
    * Perform some processing on each key/value pair in a JSON object. This method is only useful if
    * you don't already know all the keys that can be present in the object AND you need to handle all
-   * of the keys. If you know all the keys, you should use {@link #parseObject(StringIterator, Supplier, Map, boolean)}
-   * instead.
+   * of the keys. If you know all the keys, you should use
+   * {@link #parseObject(StringIterator, Supplier, Map, boolean)} instead.
    */
   public static <T> T parseObject(final StringIterator data,
                                   final Supplier<T> constructor,
@@ -80,11 +78,15 @@ public class PartialJsonDeserializer {
   }
 
   interface ParseHandler<T> {
+
     Consumer<T> getConsumer(String key);
+
     boolean isDone();
+
   }
 
-  private record MapParseHandler<T>(Map<String, Consumer<T>> consumers) implements ParseHandler<T> {
+  private record MapParseHandler<T> (Map<String, Consumer<T>> consumers) implements ParseHandler<T> {
+
     @Override
     public Consumer<T> getConsumer(final String key) {
       return consumers.remove(key);
@@ -94,9 +96,11 @@ public class PartialJsonDeserializer {
     public boolean isDone() {
       return consumers.isEmpty();
     }
+
   }
 
-  private record FunctionParseHandler<T>(Function<String, Consumer<T>> consumerFunction) implements ParseHandler<T> {
+  private record FunctionParseHandler<T> (Function<String, Consumer<T>> consumerFunction) implements ParseHandler<T> {
+
     @Override
     public Consumer<T> getConsumer(final String key) {
       return consumerFunction.apply(key);
@@ -106,12 +110,13 @@ public class PartialJsonDeserializer {
     public boolean isDone() {
       return false;
     }
+
   }
 
   private static <T> T parseObject(final StringIterator data,
-                                  final Supplier<T> constructor,
-                                  final ParseHandler<T> parseHandler,
-                                  final boolean exitParseEarly) {
+                                   final Supplier<T> constructor,
+                                   final ParseHandler<T> parseHandler,
+                                   final boolean exitParseEarly) {
     skipWhitespace(data);
     final char firstChar = data.peek();
     if (firstChar == 'n') {

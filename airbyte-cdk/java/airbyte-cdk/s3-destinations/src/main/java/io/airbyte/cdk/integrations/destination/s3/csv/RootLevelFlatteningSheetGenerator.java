@@ -12,11 +12,8 @@ import io.airbyte.cdk.protocol.deser.StringIterator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implements CsvSheetGenerator {

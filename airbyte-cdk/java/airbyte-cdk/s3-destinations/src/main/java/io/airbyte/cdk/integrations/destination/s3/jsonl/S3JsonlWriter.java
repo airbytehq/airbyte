@@ -8,7 +8,6 @@ import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3Format;
@@ -18,7 +17,6 @@ import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.jackson.MoreMappers;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -76,8 +74,7 @@ public class S3JsonlWriter extends BaseS3Writer implements DestinationFileWriter
         "{\"" + JavaBaseConstants.COLUMN_NAME_AB_ID + "\":\"" + id
             + "\",\"" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "\":" + recordMessage.getEmittedAt()
             + ",\"" + JavaBaseConstants.COLUMN_NAME_DATA + "\":" + recordMessage.getSerializedData()
-            + "}"
-    );
+            + "}");
   }
 
   @Override
