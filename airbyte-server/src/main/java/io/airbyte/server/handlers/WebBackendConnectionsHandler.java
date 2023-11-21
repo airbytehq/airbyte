@@ -36,10 +36,14 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AllArgsConstructor
 @Slf4j
 public class WebBackendConnectionsHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionsHandler.class);
 
   private static final Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(JobStatus.FAILED, JobStatus.SUCCEEDED, JobStatus.CANCELLED);
 
@@ -106,9 +110,14 @@ public class WebBackendConnectionsHandler {
     if (workspaceIdPageRequestBody.getPageCurrent() == null || workspaceIdPageRequestBody.getPageCurrent() == 0) {
       workspaceIdPageRequestBody.setPageCurrent(1);
     }
+    long startTime = System.nanoTime();
     for (final ConnectionRead connection : connectionsHandler.connectionPageReadList(workspaceIdPageRequestBody).getConnections()) {
       reads.add(buildWebBackendConnectionPageRead(connection));
     }
+    long elapsedTimeInNano = System.nanoTime() - startTime;
+    double elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
+    LOGGER.info("webBackendConnectionsPageForWorkspace spends {} milliseconds", elapsedTimeInMilli);
+
     return new WebBackendConnectionsPageReadList().connections(reads)
         .total(connectionsHandler.pageConnectionsForWorkspaceCount(workspaceIdPageRequestBody))
         .pageCurrent(workspaceIdPageRequestBody.getPageCurrent()).pageSize(workspaceIdPageRequestBody.getPageSize());

@@ -272,15 +272,12 @@ public class ConnectionsHandler {
       throws IOException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
-    long startTime = System.nanoTime();
     for (final StandardSync standardSync : configRepository.pageWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(),
         workspaceIdRequestBody.getSourceDefinitionId(), workspaceIdRequestBody.getDestinationDefinitionId(), workspaceIdRequestBody.getStatus(),
         workspaceIdRequestBody.getPageSize(), workspaceIdRequestBody.getPageCurrent())) {
       connectionReads.add(ApiPojoConverters.internalToConnectionPageRead(standardSync));
     }
-    long elapsedTimeInNano = System.nanoTime() - startTime;
-    double elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
-    LOGGER.info("connectionPageReadList spends {} milliseconds", elapsedTimeInMilli);
+
     return new ConnectionReadList().connections(connectionReads);
   }
 
