@@ -151,7 +151,7 @@ public class PartialJsonDeserializer {
       if (ch == '}') {
         return object;
       } else if (ch != ',') {
-        throw new RuntimeException("Unexpected '" + ch + "'" + " at index " + data.getIndex());
+        throw new RuntimeException("Unexpected '" + ch + "'" + " at index " + data.getIndex() + "; expected '}' or ','.");
       }
     }
     throw new RuntimeException("Unexpected end of string");
@@ -170,6 +170,10 @@ public class PartialJsonDeserializer {
     return data.substring(start, end);
   }
 
+  /**
+   * Read a JSON string into a Java string. Un-escapes characters and strips the surrounding quotes.
+   * Assumes the iterator is pointing at the opening quote.
+   */
   public static String readStringValue(final StringIterator data) {
     // TODO this is heavily copied from skipValue's string-handling branch, can we unify them?
     skipWhitespaceAndCharacter(data, '"');
@@ -212,6 +216,7 @@ public class PartialJsonDeserializer {
     throw new RuntimeException("Unexpected end of string");
   }
 
+  // TODO split this into readLong, readDouble, readBigInteger, readBigNumber
   public static Number readNumber(final StringIterator data) {
     final char firstChar = data.peek();
     if (firstChar == 'n') {
@@ -257,7 +262,7 @@ public class PartialJsonDeserializer {
       if (ch == ']') {
         return list;
       } else if (ch != ',') {
-        throw new RuntimeException("Unexpected '" + ch + "'" + " at index " + data.getIndex());
+        throw new RuntimeException("Unexpected '" + ch + "'" + " at index " + data.getIndex() + "; expected ']' or ','.");
       }
     }
 
@@ -339,7 +344,7 @@ public class PartialJsonDeserializer {
           if (ch == ']') {
             return;
           } else if (ch != ',') {
-            throw new RuntimeException("Unexpected '" + ch + "'" + " at index " + data.getIndex());
+            throw new RuntimeException("Unexpected '" + ch + "'" + " at index " + data.getIndex() + "; expected ']' or ','.");
           }
         }
       }
@@ -398,7 +403,7 @@ public class PartialJsonDeserializer {
         skipWhitespaceAndCharacter(data, ':');
         skipValue(data);
       } else {
-        throw new RuntimeException("Unexpected '" + ch + "'" + " at index " + data.getIndex());
+        throw new RuntimeException("Unexpected '" + ch + "'" + " at index " + data.getIndex() + ". Expected '}' or ','.");
       }
     }
     throw new RuntimeException("Unexpected end of string");
