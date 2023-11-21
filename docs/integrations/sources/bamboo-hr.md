@@ -9,7 +9,7 @@ This page contains the setup guide and reference information for the [BambooHR](
 ## Prerequisites
 
 * BambooHR Account
-* BambooHR [Api key](https://documentation.bamboohr.com/docs)
+* BambooHR [API key](https://documentation.bamboohr.com/docs)
 
 ## Setup Guide
 
