@@ -4,7 +4,9 @@
 
 package io.airbyte.cdk.protocol.deser;
 
+import io.airbyte.commons.json.Jsons;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,76 @@ public class PartialJsonDeserializer {
                                   final Supplier<T> constructor,
                                   final Map<String, Consumer<T>> keyValueConsumers,
                                   final boolean exitParseEarly) {
+    return parseObject(data, constructor, new MapParseHandler<>(keyValueConsumers), exitParseEarly);
+  }
+
+  /**
+   * Extract the serialized values for a set of keys from a JSON object.
+   */
+  public static Map<String, String> parseObject(final StringIterator data, final Collection<String> keysToExtract) {
+    final Map<String, Consumer<Map<String, String>>> consumers = new HashMap<>();
+    for (final String key : keysToExtract) {
+      consumers.put(key, output -> output.put(key, PartialJsonDeserializer.readSerializedValue(data)));
+    }
+    return parseObject(data, HashMap::new, consumers, true);
+  }
+
+  /**
+   * Extract all serialized values from a JSON object.
+   */
+  public static Map<String, String> parseObject(final StringIterator data) {
+    return parseObject(
+        data,
+        HashMap::new,
+        key -> output -> output.put(key, PartialJsonDeserializer.readSerializedValue(data))
+    );
+  }
+
+  /**
+   * Perform some processing on each key/value pair in a JSON object. This method is only useful if
+   * you don't already know all the keys that can be present in the object AND you need to handle all
+   * of the keys. If you know all the keys, you should use {@link #parseObject(StringIterator, Supplier, Map, boolean)}
+   * instead.
+   */
+  public static <T> T parseObject(final StringIterator data,
+                                  final Supplier<T> constructor,
+                                  final Function<String, Consumer<T>> keyValueConsumers) {
+    return parseObject(data, constructor, new FunctionParseHandler<>(keyValueConsumers), false);
+  }
+
+  interface ParseHandler<T> {
+    Consumer<T> getConsumer(String key);
+    boolean isDone();
+  }
+
+  private record MapParseHandler<T>(Map<String, Consumer<T>> consumers) implements ParseHandler<T> {
+    @Override
+    public Consumer<T> getConsumer(final String key) {
+      return consumers.remove(key);
+    }
+
+    @Override
+    public boolean isDone() {
+      return consumers.isEmpty();
+    }
+  }
+
+  private record FunctionParseHandler<T>(Function<String, Consumer<T>> consumerFunction) implements ParseHandler<T> {
+    @Override
+    public Consumer<T> getConsumer(final String key) {
+      return consumerFunction.apply(key);
+    }
+
+    @Override
+    public boolean isDone() {
+      return false;
+    }
+  }
+
+  private static <T> T parseObject(final StringIterator data,
+                                  final Supplier<T> constructor,
+                                  final ParseHandler<T> parseHandler,
+                                  final boolean exitParseEarly) {
     skipWhitespace(data);
     final char firstChar = data.peek();
     if (firstChar == 'n') {
@@ -51,7 +123,6 @@ public class PartialJsonDeserializer {
     skipWhitespace(data);
 
     final T object = constructor.get();
-    final Map<String, Consumer<T>> copiedKeyValueConsumers = new HashMap<>(keyValueConsumers);
 
     // handle empty object specially
     if (data.peek() == '}') {
@@ -64,10 +135,10 @@ public class PartialJsonDeserializer {
       skipWhitespaceAndCharacter(data, ':');
       skipWhitespace(data);
       // Pass to the appropriate consumer, or read past the value
-      final Consumer<T> consumer = copiedKeyValueConsumers.remove(key);
+      final Consumer<T> consumer = parseHandler.getConsumer(key);
       if (consumer != null) {
         consumer.accept(object);
-        if (exitParseEarly && copiedKeyValueConsumers.isEmpty()) {
+        if (exitParseEarly && parseHandler.isDone()) {
           return object;
         }
       } else {
@@ -154,6 +225,7 @@ public class PartialJsonDeserializer {
     if (numberStr.contains(".")) {
       return Double.parseDouble(numberStr);
     } else {
+      // TODO handle integer exponent syntax, e.g. parse 1e6 into 1000000
       return Long.parseLong(numberStr);
     }
   }

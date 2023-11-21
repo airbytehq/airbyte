@@ -7,10 +7,16 @@ package io.airbyte.cdk.integrations.destination.s3.csv;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.protocol.deser.PartialJsonDeserializer;
+import io.airbyte.cdk.protocol.deser.StringIterator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implements CsvSheetGenerator {
@@ -38,26 +44,25 @@ public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implem
    */
   @Override
   List<String> getRecordColumns(final String serializedJson) {
-    // TODO we can probably use the better json deserializer to only deserialize the top-level fields
-    final JsonNode json = Jsons.deserializeExact(serializedJson);
-    final List<String> values = new LinkedList<>();
+    final Map<String, String> fields = PartialJsonDeserializer.parseObject(new StringIterator(serializedJson), recordHeaders);
+
+    final List<String> output = new ArrayList<>();
     for (final String field : recordHeaders) {
-      final JsonNode value = json.get(field);
-      if (value == null) {
-        values.add("");
-      } else if (value.isValueNode()) {
-        // Call asText method on value nodes so that proper string
-        // representation of json values can be returned by Jackson.
-        // Otherwise, CSV printer will just call the toString method,
-        // which can be problematic (e.g. text node will have extra
-        // double quotation marks around its text value).
-        values.add(value.asText());
+      final String serializedValue = fields.getOrDefault(field, "");
+      if (serializedValue.startsWith("\"")) {
+        // Unwrap string values, i.e. we want to remove the double quotes,
+        // handle escape characters, etc.
+        // TODO it would be cool to do this within the deserializer, i.e. 1-pass processing
+        output.add(Jsons.deserialize(serializedValue).asText());
+      } else if ("null".equals(serializedValue)) {
+        // Write empty string instead of null
+        output.add("");
       } else {
-        values.add(Jsons.serialize(value));
+        // For other values (numbers, booleans, arrays, objects) just write the raw serialized value
+        output.add(serializedValue);
       }
     }
-
-    return values;
+    return output;
   }
 
 }
