@@ -1,5 +1,10 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 import asyncio
 import dataclasses
+
+from aiostream import stream
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -8,15 +13,15 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     SyncMode,
-    Type as MessageType
 )
+from airbyte_cdk.models import Type as MessageType
 
-from aiostream import stream
 
 @dataclasses.dataclass
 class Message:
     prefix: str
     message: AirbyteMessage
+
 
 @dataclasses.dataclass
 class StreamStats:
@@ -30,7 +35,6 @@ class StreamStats:
 
     left_rows_missing = {}
     right_rows_missing = {}
-
 
 
 async def main():
@@ -65,37 +69,21 @@ async def main():
                     stream_stats.left_rows_missing[left.message.record.data[primary_key]] = left
                     stream_stats.right_rows_missing[right.message.record.data[primary_key]] = right
 
-                for column, left_value in left.message.record.data.items():
-                    if column not in stream_stats.columns_to_diff_count:
-                        stream_stats.columns_to_diff_count[column] = 0
-                    if column not in stream_stats.columns_to_right_missing:
-                        stream_stats.columns_to_right_missing[column] = 0
-                    if column not in stream_stats.columns_to_left_missing:
-                        stream_stats.columns_to_left_missing[column] = 0
-                    if column not in stream_stats.columns_to_equal:
-                        stream_stats.columns_to_equal[column] = 0
-
-                    if column not in right.message.record.data:
-                        stream_stats.columns_to_right_missing[column] += 1
-                        continue
-                    elif left_value != right.message.record.data[column]:
-                        stream_stats.columns_to_diff_count[column] += 1
-                    else:
-                        stream_stats.columns_to_equal[column] += 1
-                for column, right_value in right.message.record.data.items():
-                    if column not in stream_stats.columns_to_diff_count:
-                        stream_stats.columns_to_diff_count[column] = 0
-                    if column not in stream_stats.columns_to_right_missing:
-                        stream_stats.columns_to_right_missing[column] = 0
-                    if column not in stream_stats.columns_to_left_missing:
-                        stream_stats.columns_to_left_missing[column] = 0
-                    if column not in stream_stats.columns_to_equal:
-                        stream_stats.columns_to_equal[column] = 0
-                    if column not in left.message.record.data:
-                        stream_stats.columns_to_left_missing[column] += 1
+                compare_records(left, right, stream_stats)
 
                 if left.message.record.data != right.message.record.data:
                     print(f"Data mismatch: {left.message.record.data} != {right.message.record.data}")
+
+                left_keys = set(stream_stats.left_rows_missing.keys())
+                for left_key in left_keys:
+                    print(f"missinh {left_key}")
+                    if left_key in stream_stats.right_rows_missing:
+                        print(f"found {left_key} in right")
+                        compare_records(stream_stats.left_rows_missing[left_key], stream_stats.right_rows_missing[left_key], stream_stats)
+                        stream_stats.left_rows_missing.pop(left_key)
+                        stream_stats.right_rows_missing.pop(left_key)
+                    else:
+                        print(f"did not find {left_key} in right")
         except StopAsyncIteration:
             print(f"done processing {stream_stats.record_count} records")
             print(f"columns_to_diff_count: {stream_stats.columns_to_diff_count}")
@@ -112,16 +100,46 @@ async def main():
 
             break
 
+
+def compare_records(left, right, stream_stats):
+    for column, left_value in left.message.record.data.items():
+        if column not in stream_stats.columns_to_diff_count:
+            stream_stats.columns_to_diff_count[column] = 0
+        if column not in stream_stats.columns_to_right_missing:
+            stream_stats.columns_to_right_missing[column] = 0
+        if column not in stream_stats.columns_to_left_missing:
+            stream_stats.columns_to_left_missing[column] = 0
+        if column not in stream_stats.columns_to_equal:
+            stream_stats.columns_to_equal[column] = 0
+
+        if column not in right.message.record.data:
+            stream_stats.columns_to_right_missing[column] += 1
+            continue
+        elif left_value != right.message.record.data[column]:
+            stream_stats.columns_to_diff_count[column] += 1
+        else:
+            stream_stats.columns_to_equal[column] += 1
+    for column, right_value in right.message.record.data.items():
+        if column not in stream_stats.columns_to_diff_count:
+            stream_stats.columns_to_diff_count[column] = 0
+        if column not in stream_stats.columns_to_right_missing:
+            stream_stats.columns_to_right_missing[column] = 0
+        if column not in stream_stats.columns_to_left_missing:
+            stream_stats.columns_to_left_missing[column] = 0
+        if column not in stream_stats.columns_to_equal:
+            stream_stats.columns_to_equal[column] = 0
+        if column not in left.message.record.data:
+            stream_stats.columns_to_left_missing[column] += 1
+
+
 async def is_next_item_available(generator):
     async for _ in asyncio.as_completed([generator.__anext__()]):
         return True
+
+
 async def run_subprocess(command, suffix):
     # Create a subprocess
-    process = await asyncio.create_subprocess_shell(
-        command,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
-    )
+    process = await asyncio.create_subprocess_shell(command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
 
     # Read lines from stdout asynchronously
     async def read_lines(stream):
@@ -138,6 +156,7 @@ async def run_subprocess(command, suffix):
 
     # # Wait for the process to finish
     # await process.wait()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
