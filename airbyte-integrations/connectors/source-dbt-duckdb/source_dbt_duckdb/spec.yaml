@@ -13,3 +13,20 @@ connectionSpecification:
       type: string
       description: Name of the profile to use.
       default: dev
+    env_var_settings:
+      type: object
+      description: >
+        Collection of environment variables to set before running dbt. Use this to send non-sensitive information to dbt.
+        For sensitive information, please instead use `env_var_secrets`.
+      additionalProperties: {
+        "type": "string",
+        "airbyte_secret": false
+      }
+    env_var_secrets:
+      type: object
+      description: >
+        Collection of environment variable secrets to set before running dbt. Use this to send sensitive information to dbt.
+      additionalProperties: {
+        "type": "string",
+        "airbyte_secret": true
+      }

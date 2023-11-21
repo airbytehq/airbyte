@@ -4,10 +4,10 @@ duckdb_sample_project:
   outputs:
     dev:
       type: duckdb
-      path: ./dev.duckdb
+      path: "{{ env_var('DUCKDB_DB_DIR') }}/dev.duckdb"
       threads: 1
 
     prod:
       type: duckdb
-      path: ./prod.duckdb
+      path: "{{ env_var('DUCKDB_DB_DIR') }}/prod.duckdb"
       threads: 4

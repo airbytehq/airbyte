@@ -1,4 +1,9 @@
 {
     "dbt_project_path": "./sample_dbt_project/",
-    "profile": "default"
+    "profile": "default",
+    "env_var_settings": {
+        "DUCKDB_DB_DIR": "./sample_dbt_project/dbs/"
+    },
+    "env_var_secrets": {
+    }
 }
