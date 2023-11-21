@@ -5,8 +5,10 @@ package io.airbyte.integrations.source_performance;
  */
 import static io.airbyte.protocol.models.AirbyteMessage.Type.RECORD;
 import static io.airbyte.protocol.models.AirbyteMessage.Type.STATE;
+import static io.airbyte.protocol.protos.AirbyteMessage.MessageCase.CONTROL;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.LineGobbler;
@@ -19,6 +21,7 @@ import io.airbyte.commons.protocol.ProtocolSerializer;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.protos.AirbyteRecordMessage;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
@@ -27,6 +30,11 @@ import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.process.IntegrationLauncher;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -35,6 +43,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,9 +109,15 @@ public class DefaultAirbyteSourceProto {
 
     // read protobuf from the source process
     final List<Type> acceptedMessageTypes = List.of(Type.RECORD, STATE, Type.TRACE, Type.CONTROL);
-    // messageIterator = streamFactory.(IOs.newBufferedReader(sourceProcess.getInputStream()))
-    // .filter(message -> acceptedMessageTypes.contains(message.getType()))
-    // .iterator();
+    // now we need to generate protobuf messages from the source process
+    // this needs to take in a buffered reader and return an iterator of protobuf message
+    messageIterator = toProtoAirbyteMessages(sourceProcess.getInputStream())
+        // .filter(message -> acceptedMessageTypes.contains(message.getType()))
+        .iterator();
+  }
+
+  private static Stream<io.airbyte.protocol.protos.AirbyteMessage> toProtoAirbyteMessages(InputStream stream) {
+    return Stream.of(io.airbyte.protocol.protos.AirbyteMessage.newBuilder().build());
   }
 
   @VisibleForTesting
@@ -178,6 +193,84 @@ public class DefaultAirbyteSourceProto {
     }
 
     LOGGER.info("source starting state | " + Jsons.serialize(sourceConfig.getState().getState()));
+  }
+
+  public static void main(String[] args) throws IOException {
+    // create 3 messages
+    var msgs = List.of(
+        AirbyteRecordMessage.newBuilder().setStream("a").build(),
+        AirbyteRecordMessage.newBuilder().setStream("b").build(),
+        AirbyteRecordMessage.newBuilder().setStream("c").build());
+
+    // write them to an input stream
+    var outputStream = new PipedOutputStream();
+    var inputStream = new PipedInputStream(outputStream);
+
+    msgs.forEach(msg -> {
+      try {
+        outputStream.write(new byte[] {0});
+        io.airbyte.protocol.protos.AirbyteMessage.newBuilder()
+            .setRecord(msg).build().writeDelimitedTo(outputStream);
+        outputStream.write("\n".getBytes(Charsets.UTF_8));
+        outputStream.write("random garbage \n".getBytes(Charsets.UTF_8));
+        outputStream.write(Jsons.serialize("random json garbage").getBytes(Charsets.UTF_8));
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    });
+    // consume them from the output stream
+
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream(); // this has an inbuilt buffer.
+    boolean isProtobufMessage = false;
+    int nextByte;
+    while ((nextByte = inputStream.read()) != -1) {
+      // whenever it's a protobuf message or a next line, we need to print the buffer.
+      if (nextByte == 0) {
+        if (buffer.size() > 0) {
+          System.out.println(buffer);
+          buffer.reset();
+        }
+        isProtobufMessage = true;
+      } else {
+        // store in the buffer and continue.
+        buffer.write(nextByte);
+        continue;
+      }
+
+      // after that we process the protobuf message.
+      if (isProtobufMessage) {
+        System.out.println("=== Processing protobuf message");
+        try {
+          io.airbyte.protocol.protos.AirbyteMessage message = io.airbyte.protocol.protos.AirbyteMessage.parseDelimitedFrom(inputStream);
+          if (message != null) {
+            switch (message.getMessageCase()) {
+              case RECORD:
+                System.out.println("Received Record Message: " + message.getRecord().getStream());
+                break;
+              case STATE:
+                System.out.println("Received State Message: " + message.getState().getData());
+                break;
+              case TRACE:
+                System.out.println("Received Trace Message: " + message.getTrace());
+                break;
+              case CONTROL:
+                System.out.println("Received Control Message: " + message.getControl().getType());
+                break;
+              default:
+                System.out.println("Received Unknown Message: " + message.getMessageCase());
+            }
+
+            System.out.println("Received Message: " + message.getMessageCase());
+          }
+        } catch (IOException e) {
+          // Handle parsing error
+          System.out.println(e);
+        } finally {
+          isProtobufMessage = false;
+        }
+      }
+    }
+
   }
 
 }
