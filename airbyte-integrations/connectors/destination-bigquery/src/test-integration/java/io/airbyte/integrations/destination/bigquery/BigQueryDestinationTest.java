@@ -30,6 +30,9 @@ import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteStateMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
@@ -41,8 +44,6 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -98,24 +99,24 @@ class BigQueryDestinationTest {
   private static final Instant NOW = Instant.now();
   protected static final String USERS_STREAM_NAME = "users";
   protected static final String TASKS_STREAM_NAME = "tasks";
-  protected static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+  protected static final PartialAirbyteMessage MESSAGE_USERS1 = new PartialAirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new PartialAirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  protected static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
+  protected static final PartialAirbyteMessage MESSAGE_USERS2 = new PartialAirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new PartialAirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "susan").put("id", "30").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  protected static final AirbyteMessage MESSAGE_TASKS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
+  protected static final PartialAirbyteMessage MESSAGE_TASKS1 = new PartialAirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new PartialAirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "announce the game.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  protected static final AirbyteMessage MESSAGE_TASKS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
+  protected static final PartialAirbyteMessage MESSAGE_TASKS2 = new PartialAirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+      .withRecord(new PartialAirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "ship some code.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  protected static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
-      .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
+  protected static final PartialAirbyteMessage MESSAGE_STATE = new PartialAirbyteMessage().withType(AirbyteMessage.Type.STATE)
+      .withState(new PartialAirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   private static final NamingConventionTransformer NAMING_RESOLVER = new BigQuerySQLNameTransformer();
 
@@ -307,13 +308,13 @@ class BigQueryDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    final List<JsonNode> usersActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(USERS_STREAM_NAME));
-    final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
+    final List<String> usersActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(USERS_STREAM_NAME));
+    final List<String> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getSerializedData(), MESSAGE_USERS2.getRecord().getSerializedData());
     assertEquals(expectedUsersJson.size(), usersActual.size());
     assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
 
-    final List<JsonNode> tasksActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(TASKS_STREAM_NAME));
-    final List<JsonNode> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
+    final List<String> tasksActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(TASKS_STREAM_NAME));
+    final List<String> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getSerializedData(), MESSAGE_TASKS2.getRecord().getSerializedData());
     assertEquals(expectedTasksJson.size(), tasksActual.size());
     assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));
 
@@ -403,7 +404,7 @@ class BigQueryDestinationTest {
         .noneMatch(tableName -> tmpTableNamePrefixes.stream().anyMatch(tableName::startsWith)));
   }
 
-  private List<JsonNode> retrieveRecords(final String tableName) throws Exception {
+  private List<String> retrieveRecords(final String tableName) throws Exception {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration.newBuilder(String.format("SELECT * FROM `%s.%s`;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
             .setUseLegacySql(false).build();
@@ -413,7 +414,6 @@ class BigQueryDestinationTest {
     return StreamSupport
         .stream(BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
         .map(v -> v.get(JavaBaseConstants.COLUMN_NAME_DATA).getStringValue())
-        .map(Jsons::deserialize)
         .collect(Collectors.toList());
   }
 
@@ -439,13 +439,13 @@ class BigQueryDestinationTest {
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    final List<JsonNode> usersActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(USERS_STREAM_NAME));
-    final List<JsonNode> expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getData(), MESSAGE_USERS2.getRecord().getData());
+    final List<String > usersActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(USERS_STREAM_NAME));
+    final List<String > expectedUsersJson = Lists.newArrayList(MESSAGE_USERS1.getRecord().getSerializedData(), MESSAGE_USERS2.getRecord().getSerializedData());
     assertEquals(expectedUsersJson.size(), usersActual.size());
     assertTrue(expectedUsersJson.containsAll(usersActual) && usersActual.containsAll(expectedUsersJson));
 
-    final List<JsonNode> tasksActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(TASKS_STREAM_NAME));
-    final List<JsonNode> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getData(), MESSAGE_TASKS2.getRecord().getData());
+    final List<String> tasksActual = retrieveRecords(NAMING_RESOLVER.getRawTableName(TASKS_STREAM_NAME));
+    final List<String> expectedTasksJson = Lists.newArrayList(MESSAGE_TASKS1.getRecord().getSerializedData(), MESSAGE_TASKS2.getRecord().getSerializedData());
     assertEquals(expectedTasksJson.size(), tasksActual.size());
     assertTrue(expectedTasksJson.containsAll(tasksActual) && tasksActual.containsAll(expectedTasksJson));
 
