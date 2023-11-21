@@ -16,6 +16,7 @@ gcloud = "^0.18.3"
 google-cloud-storage = "^2.8.0"
 pydash = "^6.0.2"
 semver = "^3.0.1"
+gitpython = "^3.1.40"
 
 
 [tool.poetry.group.test.dependencies]

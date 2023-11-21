@@ -7,9 +7,14 @@ import hashlib
 import json
 import os
 import re
+import tempfile
+import git
+import logging
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Tuple
+from pydash import set_
 
 import yaml
 from google.cloud import storage
@@ -22,6 +27,7 @@ from metadata_service.constants import (
     METADATA_FILE_NAME,
     METADATA_FOLDER,
 )
+from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
@@ -99,7 +105,7 @@ def compute_gcs_md5(file_name: str) -> str:
 
 def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_cache: bool = False) -> bool:
     """Uploads a file to the bucket."""
-    print(f"Uploading {file_path} to {blob_to_save.name}...")
+    logging.info(f"Uploading {file_path} to {blob_to_save.name}...")
 
     # Set Cache-Control header to no-cache to avoid caching issues
     # This is IMPORTANT because if we don't set this header, the metadata file will be cached by GCS
@@ -124,8 +130,8 @@ def upload_file_if_changed(
 
     remote_blob_md5_hash = remote_blob.md5_hash if remote_blob.exists() else None
 
-    print(f"Local {local_file_path} md5_hash: {local_file_md5_hash}")
-    print(f"Remote {blob_path} md5_hash: {remote_blob_md5_hash}")
+    logging.info(f"Local {local_file_path} md5_hash: {local_file_md5_hash}")
+    logging.info(f"Remote {blob_path} md5_hash: {remote_blob_md5_hash}")
 
     if local_file_md5_hash != remote_blob_md5_hash:
         uploaded = _save_blob_to_gcs(remote_blob, local_file_path, disable_cache=disable_cache)
@@ -172,27 +178,78 @@ def _doc_upload(
     return doc_uploaded, doc_blob_id
 
 
-def create_prerelease_metadata_file(metadata_file_path: Path, validator_opts: ValidatorOptions) -> Path:
-    metadata, error = validate_and_load(metadata_file_path, [], validator_opts)
-    if metadata is None:
-        raise ValueError(f"Metadata file {metadata_file_path} is invalid for uploading: {error}")
+def _apply_prerelease_overrides(metadata_dict: dict, validator_opts: ValidatorOptions) -> dict:
+    if validator_opts.prerelease_tag is None:
+        return metadata_dict
 
     # replace any dockerImageTag references with the actual tag
     # this includes metadata.data.dockerImageTag, metadata.data.registries[].dockerImageTag
     # where registries is a dictionary of registry name to registry object
-    metadata_dict = to_json_sanitized_dict(metadata, exclude_none=True)
     metadata_dict["data"]["dockerImageTag"] = validator_opts.prerelease_tag
     for registry in get(metadata_dict, "data.registries", {}).values():
         if "dockerImageTag" in registry:
             registry["dockerImageTag"] = validator_opts.prerelease_tag
 
-    # write metadata to yaml file in system tmp folder
-    tmp_metadata_file_path = Path("/tmp") / metadata.data.dockerRepository / validator_opts.prerelease_tag / METADATA_FILE_NAME
-    tmp_metadata_file_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(tmp_metadata_file_path, "w") as f:
-        yaml.dump(metadata_dict, f)
+    return metadata_dict
 
-    return tmp_metadata_file_path
+
+def _get_git_info_for_file(original_metadata_file_path: Path) -> Optional[GitInfo]:
+    """
+    Add additional information to the metadata file before uploading it to GCS.
+
+    e.g. The git commit hash, the date of the commit, the author of the commit, etc.
+
+    """
+    repo = git.Repo(search_parent_directories=True)
+    try:
+        # get the commit hash for the last commit that modified the metadata file
+        commit_sha = repo.git.log("-1", "--format=%H", str(original_metadata_file_path))
+        commit_timestamp = repo.git.log("-1", "--format=%ct", str(original_metadata_file_path))
+        commit_author = repo.git.log("-1", "--format=%an", str(original_metadata_file_path))
+        commit_author_email = repo.git.log("-1", "--format=%ae", str(original_metadata_file_path))
+
+        return GitInfo(
+            commit_author=commit_author,
+            commit_author_email=commit_author_email,
+            commit_timestamp=commit_timestamp,
+            commit_sha=commit_sha,
+        )
+    except git.exc.GitCommandError as e:
+        if "unknown revision or path not in the working tree" in str(e):
+            logging.warning(f"Metadata file {original_metadata_file_path} is not tracked by git, skipping author info attachment.")
+            return None
+        else:
+            raise e
+
+
+def _apply_author_info_to_metadata_file(metadata_dict: dict, original_metadata_file_path: Path) -> dict:
+    git_info = _get_git_info_for_file(original_metadata_file_path)
+    if git_info:
+        # Apply to the nested / optional field at metadata.data.ab_internal.git
+        git_info_dict = to_json_sanitized_dict(git_info, exclude_none=True)
+        metadata_dict = set_(metadata_dict, "data.ab_internal.git", git_info_dict)
+    return metadata_dict
+
+def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_file:
+        yaml.dump(metadata_dict, tmp_file)
+        return Path(tmp_file.name)
+
+def _apply_modifications_to_metadata_file(original_metadata_file_path: Path, validator_opts: ValidatorOptions) -> Path:
+    """Apply modifications to the metadata file before uploading it to GCS.
+
+    e.g. The git commit hash, the date of the commit, the author of the commit, etc.
+
+    """
+
+    metadata = yaml.safe_load(original_metadata_file_path.read_text())
+    if metadata is None:
+        raise ValueError(f"Metadata file {original_metadata_file_path} is invalid yaml.")
+
+    metadata = _apply_prerelease_overrides(metadata, validator_opts)
+    metadata = _apply_author_info_to_metadata_file(metadata, original_metadata_file_path)
+
+    return _write_metadata_to_tmp_file(metadata)
 
 
 def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator_opts: ValidatorOptions) -> MetadataUploadInfo:
@@ -209,11 +266,10 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     Returns:
         Tuple[bool, str]: Whether the metadata file was uploaded and its blob id.
     """
-    if validator_opts.prerelease_tag:
-        metadata_file_path = create_prerelease_metadata_file(metadata_file_path, validator_opts)
+
+    metadata_file_path = _apply_modifications_to_metadata_file(metadata_file_path, validator_opts)
 
     metadata, error = validate_and_load(metadata_file_path, POST_UPLOAD_VALIDATORS, validator_opts)
-
     if metadata is None:
         raise ValueError(f"Metadata file {metadata_file_path} is invalid for uploading: {error}")
 

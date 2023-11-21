@@ -21,3 +21,5 @@ properties:
       - 400
       - 500
       - 600
+  git:
+    "$ref": GitInfo.yaml
