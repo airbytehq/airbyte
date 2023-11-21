@@ -16,6 +16,8 @@ public final class S3Constants {
   public static final String SECRET_ACCESS_KEY = "secret_access_key";
   public static final String S_3_BUCKET_NAME = "s3_bucket_name";
   public static final String S_3_BUCKET_REGION = "s3_bucket_region";
+  public static final String ROLE_ARN = "role_arn";
+  public static final String EXTERNAL_ID = "external_id";
 
   // r2 requires account_id
   public static final String ACCOUNT_ID = "account_id";

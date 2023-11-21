@@ -35,6 +35,10 @@ dependencies {
         exclude group: 'org.slf4j', module: 'slf4j-reload4j'
     }
 
+
+    // This dep pulls in the AWS S3 SDK, maybe we should be explicit about that?
+    // This also uses the V1 SDK
+    implementation("com.amazonaws:aws-java-sdk-sts:1.12.592")
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}

@@ -6,7 +6,9 @@ package io.airbyte.cdk.integrations.destination.s3;
 
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.ACCESS_KEY_ID;
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.ACCOUNT_ID;
+import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.EXTERNAL_ID;
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.FILE_NAME_PATTERN;
+import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.ROLE_ARN;
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.SECRET_ACCESS_KEY;
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_NAME;
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_PATH;
@@ -24,6 +26,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.s3.credential.S3AWSDefaultProfileCredentialConfig;
 import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
+import io.airbyte.cdk.integrations.destination.s3.credential.S3AssumeRoleCredentialConfig;
 import io.airbyte.cdk.integrations.destination.s3.credential.S3CredentialConfig;
 import io.airbyte.cdk.integrations.destination.s3.credential.S3CredentialType;
 import java.util.Objects;
@@ -151,7 +154,9 @@ public class S3DestinationConfig {
     }
 
     final S3CredentialConfig credentialConfig;
-    if (config.has(ACCESS_KEY_ID)) {
+    if (config.has(ROLE_ARN)) {
+      credentialConfig = new S3AssumeRoleCredentialConfig(getProperty(config, ROLE_ARN));
+    } else if (config.has(ACCESS_KEY_ID)) {
       credentialConfig = new S3AccessKeyCredentialConfig(getProperty(config, ACCESS_KEY_ID), getProperty(config, SECRET_ACCESS_KEY));
     } else {
       credentialConfig = new S3AWSDefaultProfileCredentialConfig();
