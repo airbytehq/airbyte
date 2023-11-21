@@ -46,15 +46,14 @@ async def main():
     subprocess_left = run_subprocess(command, "left")
     subprocess_right = run_subprocess(command, "right")
 
+    streams_stats = {}
     primary_key = "id"
-    stream_stats = StreamStats(stream="customers")
 
     while subprocess_left.__anext__() and subprocess_right.__anext__():
         try:
             left = await subprocess_left.__anext__()
             right = await subprocess_right.__anext__()
 
-            stream_stats.record_count += 1
 
             if left.message.type != right.message.type:
                 print(f"Type mismatch: {left.message.type} != {right.message.type}")
@@ -65,6 +64,13 @@ async def main():
                 return
             if left.message.type == MessageType.RECORD:
 
+                assert left.message.record.stream == right.message.record.stream
+                if left.message.record.stream not in streams_stats:
+                    streams_stats[left.message.record.stream] = StreamStats(left.message.record.stream)
+
+                stream_stats = streams_stats[left.message.record.stream]
+
+                stream_stats.record_count += 1
                 if left.message.record.data[primary_key] != right.message.record.data[primary_key]:
                     stream_stats.left_rows_missing[left.message.record.data[primary_key]] = left
                     stream_stats.right_rows_missing[right.message.record.data[primary_key]] = right
@@ -85,18 +91,19 @@ async def main():
                     else:
                         print(f"did not find {left_key} in right")
         except StopAsyncIteration:
-            print(f"done processing {stream_stats.record_count} records")
-            print(f"columns_to_diff_count: {stream_stats.columns_to_diff_count}")
-            print(f"columns_to_right_missing: {stream_stats.columns_to_right_missing}")
-            print(f"columns_to_left_missing: {stream_stats.columns_to_left_missing}")
-            print(f"columns_to_equal: {stream_stats.columns_to_equal}")
-            # NEED TO VERIFY BOTH ARE DONE
+            for stream_stats in streams_stats.values():
+                print(f"done processing {stream_stats.record_count} records")
+                print(f"columns_to_diff_count: {stream_stats.columns_to_diff_count}")
+                print(f"columns_to_right_missing: {stream_stats.columns_to_right_missing}")
+                print(f"columns_to_left_missing: {stream_stats.columns_to_left_missing}")
+                print(f"columns_to_equal: {stream_stats.columns_to_equal}")
+                # NEED TO VERIFY BOTH ARE DONE
 
-            print(f"left_rows_missing: {stream_stats.left_rows_missing}")
-            print(len(stream_stats.left_rows_missing))
+                print(f"left_rows_missing: {stream_stats.left_rows_missing}")
+                print(len(stream_stats.left_rows_missing))
 
-            print(f"right_rows_missing: {stream_stats.right_rows_missing}")
-            print(len(stream_stats.right_rows_missing))
+                print(f"right_rows_missing: {stream_stats.right_rows_missing}")
+                print(len(stream_stats.right_rows_missing))
 
             break
 
