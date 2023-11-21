@@ -9,10 +9,10 @@ import logging
 import multiprocessing
 import os
 import sys
-from pathlib import Path
 from typing import List, Optional
 
 import asyncclick as click
+import dagger
 import docker
 import git
 from github import PullRequest
@@ -22,14 +22,9 @@ from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
 from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_PIPELINE_PACKAGE_PATH, CIContext
 from pipelines.helpers import github
-from pipelines.helpers.git import (
-    get_current_git_branch,
-    get_current_git_revision,
-    get_modified_files_in_branch,
-    get_modified_files_in_commit,
-    get_modified_files_in_pull_request,
-)
-from pipelines.helpers.utils import get_current_epoch_time, transform_strs_to_paths
+from pipelines.helpers.git import get_airbyte_repo_dir, get_target_repo_state
+from pipelines.helpers.utils import get_current_epoch_time
+from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 
 # HELPERS
 
@@ -93,90 +88,49 @@ def get_latest_version() -> str:
     raise Exception("Could not find version in pyproject.toml. Please ensure you are running from the root of the airbyte repo.")
 
 
-def _validate_airbyte_repo(repo: git.Repo) -> bool:
-    """Check if any of the remotes are the airbyte repo."""
-    expected_repo_name = "airbytehq/airbyte"
-    for remote in repo.remotes:
-        if expected_repo_name in remote.url:
-            return True
-
-    warning_message = f"""
-    ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
-
-    It looks like you are not running this command from the airbyte repo ({expected_repo_name}).
-
-    If this command is run from outside the airbyte repo, it will not work properly.
-
-    Please run this command your local airbyte project.
-
-    ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
-    """
-
-    logging.warning(warning_message)
-
-    return False
+def get_repo_dir_from_local_path(dagger_client, target_repo, airbyte_ci_ignore) -> dagger.Directory:
+    return dagger_client.host().directory(target_repo, exclude=airbyte_ci_ignore)
 
 
-def get_airbyte_repo() -> git.Repo:
-    """Get the airbyte repo."""
-    repo = git.Repo(search_parent_directories=True)
-    _validate_airbyte_repo(repo)
-    return repo
+def get_repo_dir_from_remote_url(dagger_client, target_url: str, branch: Optional[str] = None, commit: Optional[str] = None) -> git.Repo:
+    """Get the git repo from the target directory."""
+    if branch is None and commit is None:
+        raise click.UsageError("Either branch or commit must be set.")
+    if commit:
+        git_ref = dagger_client.git(target_url).commit(commit)
+    else:
+        git_ref = dagger_client.git(target_url).branch(branch)
+    return git_ref.tree()
 
 
-def get_airbyte_repo_path_with_fallback() -> Path:
-    """Get the path to the airbyte repo."""
-    try:
-        return get_airbyte_repo().working_tree_dir
-    except git.exc.InvalidGitRepositoryError:
-        logging.warning("Could not find the airbyte repo, falling back to the current working directory.")
-        path = Path.cwd()
-        logging.warning(f"Using {path} as the airbyte repo path.")
-        return path
+def get_repo_dir(
+    dagger_client, local_repo, target_repo, airbyte_ci_ignore: List[str], branch: Optional[str] = None, commit: Optional[str] = None
+) -> git.Repo:
+    if local_repo:
+        return get_repo_dir_from_local_path(dagger_client, target_repo, airbyte_ci_ignore)
+    else:
+        return get_repo_dir_from_remote_url(dagger_client, target_repo, branch, commit)
 
 
-def set_working_directory_to_root() -> None:
-    """Set the working directory to the root of the airbyte repo."""
-    working_dir = get_airbyte_repo_path_with_fallback()
-    logging.info(f"Setting working directory to {working_dir}")
+def set_working_directory_to_repo(repo: git.Repo) -> None:
+    """Set the working directory to the root of the repo found in the target directory."""
+    working_dir = repo.working_tree_dir
+    logging.info(f"Setting working directory to the root of the repo {working_dir}")
     os.chdir(working_dir)
-
-
-async def get_modified_files(
-    git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext, pull_request: PullRequest
-) -> List[str]:
-    """Get the list of modified files in the current git branch.
-    If the current branch is master, it will return the list of modified files in the head commit.
-    The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.
-    Pipelines like "publish on merge" are triggered on each new commit on master.
-
-    If the CI context is a pull request, it will return the list of modified files in the pull request, without using git diff.
-    If the current branch is not master, it will return the list of modified files in the current branch.
-    This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
-    """
-    if ci_context is CIContext.MASTER or ci_context is CIContext.NIGHTLY_BUILDS:
-        return await get_modified_files_in_commit(git_branch, git_revision, is_local)
-    if ci_context is CIContext.PULL_REQUEST and pull_request is not None:
-        return get_modified_files_in_pull_request(pull_request)
-    if ci_context is CIContext.MANUAL:
-        if git_branch == "master":
-            return await get_modified_files_in_commit(git_branch, git_revision, is_local)
-        else:
-            return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
-    return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
 
 
 def log_git_info(ctx: click.Context):
     main_logger.info("Running airbyte-ci in CI mode.")
     main_logger.info(f"CI Context: {ctx.obj['ci_context']}")
     main_logger.info(f"CI Report Bucket Name: {ctx.obj['ci_report_bucket_name']}")
-    main_logger.info(f"Git Branch: {ctx.obj['git_branch']}")
-    main_logger.info(f"Git Revision: {ctx.obj['git_revision']}")
+    main_logger.info(f"Git head sha: {ctx.obj['target_repo_state'].head_sha}")
+    main_logger.info(f"Diffed git ref: {ctx.obj['target_repo_state'].diffed_git_ref}")
+    main_logger.info(f"Is airbyte-repo: {ctx.obj['target_repo_state'].is_airbyte_repo}")
     main_logger.info(f"GitHub Workflow Run ID: {ctx.obj['gha_workflow_run_id']}")
     main_logger.info(f"GitHub Workflow Run URL: {ctx.obj['gha_workflow_run_url']}")
     main_logger.info(f"Pull Request Number: {ctx.obj['pull_request_number']}")
     main_logger.info(f"Pipeline Start Timestamp: {ctx.obj['pipeline_start_timestamp']}")
-    main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
+    main_logger.info(f"Modified Files: {ctx.obj['target_repo_state'].modified_files}")
 
 
 def _get_gha_workflow_run_url(ctx: click.Context) -> Optional[str]:
@@ -244,18 +198,6 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
     return called_with_dagger_run
 
 
-async def get_modified_files_str(ctx: click.Context):
-    modified_files = await get_modified_files(
-        ctx.obj["git_branch"],
-        ctx.obj["git_revision"],
-        ctx.obj["diffed_branch"],
-        ctx.obj["is_local"],
-        ctx.obj["ci_context"],
-        ctx.obj["pull_request"],
-    )
-    return transform_strs_to_paths(modified_files)
-
-
 # COMMANDS
 
 
@@ -272,11 +214,11 @@ async def get_modified_files_str(ctx: click.Context):
 @click.version_option(__installed_version__)
 @click.option("--enable-dagger-run/--disable-dagger-run", default=is_dagger_run_enabled_by_default)
 @click.option("--is-local/--is-ci", default=True)
-@click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
-@click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
+@click.option("--git-branch", envvar="CI_GIT_BRANCH")
+@click.option("--git-revision", envvar="CI_GIT_REVISION")
 @click.option(
-    "--diffed-branch",
-    help="Branch to which the git diff will happen to detect new or modified connectors",
+    "--diffed-git-ref",
+    help="Git reference to which the git diff will happen to detect new or modified connectors",
     default="origin/master",
     type=str,
 )
@@ -299,17 +241,20 @@ async def get_modified_files_str(ctx: click.Context):
 @click.option("--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str)
 @click.option("--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
+@click.option("--target-repo", default=".")
 @click_track_command
 @click_merge_args_into_context_obj
 @click_append_to_context_object("is_ci", lambda ctx: not ctx.obj["is_local"])
 @click_append_to_context_object("gha_workflow_run_url", _get_gha_workflow_run_url)
 @click_append_to_context_object("pull_request", _get_pull_request)
-@click_append_to_context_object("modified_files", get_modified_files_str)
 @click.pass_context
 @click_ignore_unused_kwargs
-async def airbyte_ci(ctx: click.Context):  # noqa D103
+@pass_pipeline_context
+async def airbyte_ci(ctx: click.Context, pipeline_context: ClickPipelineContext):  # noqa D103
+    dagger_client = await pipeline_context.get_dagger_client()
+    ctx.obj["airbyte_repo_dir"] = await get_airbyte_repo_dir(dagger_client)
+    ctx.obj["target_repo_state"] = await get_target_repo_state(dagger_client, ctx)
     display_welcome_message()
-
     if ctx.obj["enable_dagger_run"] and not is_current_process_wrapped_by_dagger_run():
         main_logger.debug("Re-Running airbyte-ci with dagger run.")
         from pipelines.cli.dagger_run import call_current_command_with_dagger_run
@@ -322,13 +267,12 @@ async def airbyte_ci(ctx: click.Context):  # noqa D103
         # In our CI the docker host used by the Dagger Engine is different from the one used by the runner.
         check_local_docker_configuration()
 
-    check_up_to_date(throw_as_error=ctx.obj["is_local"])
+    # TODO figure how to check up to date when running outside of airbyte repo
+    # check_up_to_date(throw_as_error=ctx.obj["is_local"])
 
     if not ctx.obj["is_local"]:
         log_git_info(ctx)
 
-
-set_working_directory_to_root()
 
 if __name__ == "__main__":
     airbyte_ci()

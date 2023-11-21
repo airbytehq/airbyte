@@ -106,20 +106,21 @@ class PytestStep(Step, ABC):
         Returns:
             Tuple[str, File]: The config file name and file to use for pytest.
         """
-        connector_dir = await self.context.get_connector_dir()
-        connector_dir_entries = await connector_dir.entries()
-        if self.PYTEST_INI_FILE_NAME in connector_dir_entries:
+        code_directory_entries = self.context.connector.code_directory_entries
+        if self.PYTEST_INI_FILE_NAME in code_directory_entries:
             config_file_name = self.PYTEST_INI_FILE_NAME
             test_config = (await self.context.get_connector_dir(include=[self.PYTEST_INI_FILE_NAME])).file(self.PYTEST_INI_FILE_NAME)
             self.logger.info(f"Found {self.PYTEST_INI_FILE_NAME}, using it for testing.")
-        elif self.PYPROJECT_FILE_NAME in connector_dir_entries:
+        elif self.PYPROJECT_FILE_NAME in code_directory_entries:
             config_file_name = self.PYPROJECT_FILE_NAME
             test_config = (await self.context.get_connector_dir(include=[self.PYPROJECT_FILE_NAME])).file(self.PYPROJECT_FILE_NAME)
             self.logger.info(f"Found {self.PYPROJECT_FILE_NAME} at connector level, using it for testing.")
         else:
             config_file_name = f"global_{self.PYPROJECT_FILE_NAME}"
-            test_config = (await self.context.get_repo_dir(include=[self.PYPROJECT_FILE_NAME])).file(self.PYPROJECT_FILE_NAME)
-            self.logger.info(f"Found {self.PYPROJECT_FILE_NAME} at repo level, using it for testing.")
+            test_config = await self.context.airbyte_repo_dir.file(self.PYPROJECT_FILE_NAME)
+            self.logger.info(
+                f"Did not find connector specific test configuration. Using airbyte's global {self.PYPROJECT_FILE_NAME} file for test configuration."
+            )
         return config_file_name, test_config
 
     async def install_testing_environment(
@@ -145,7 +146,6 @@ class PytestStep(Step, ABC):
                 self.context,
                 # Reset the entrypoint to run non airbyte commands
                 built_connector_container.with_entrypoint([]),
-                str(self.context.connector.code_directory),
                 additional_dependency_groups=extra_dependencies_names,
             )
         )
@@ -153,6 +153,7 @@ class PytestStep(Step, ABC):
             container_with_test_deps = container_with_test_deps.with_exec(
                 ["pip", "install", f'{" ".join(self.common_test_dependencies)}'], skip_entrypoint=True
             )
+
         return (
             container_with_test_deps
             # Mount the test config file
@@ -223,5 +224,4 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
             task_group.soonify(AcceptanceTests(context, context.concurrent_cat).run)(connector_container),
             task_group.soonify(CheckBaseImageIsUsed(context).run)(),
         ]
-
     return step_results + [task.value for task in tasks]

@@ -26,7 +26,7 @@ class TestGradleTask:
         return mocker.Mock(
             secrets_to_mask=[],
             dagger_client=dagger_client,
-            connector=pipelines.helpers.connectors.modifed.ConnectorWithModifiedFiles(
+            connector=pipelines.helpers.connectors.modifed.RepoConnector(
                 "source-postgres", frozenset({Path("airbyte-integrations/connectors/source-postgres/metadata.yaml")})
             ),
         )

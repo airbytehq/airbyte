@@ -45,23 +45,24 @@ class SimpleDockerStep(Step):
         self.env_variables = env_variables
         self.command = command
 
-    def _mount_paths(self, container: dagger.Container) -> dagger.Container:
+    async def _mount_paths(self, container: dagger.Container) -> dagger.Container:
         for path_to_mount in self.paths_to_mount:
-            if path_to_mount.optional and not path_to_mount.path.exists():
-                continue
-
-            path_string = str(path_to_mount)
-            destination_path = f"/{path_string}"
-            if path_to_mount.is_file:
-                file_to_load = self.context.get_repo_file(path_string)
-                container = container.with_mounted_file(destination_path, file_to_load)
-            else:
-                container = container.with_mounted_directory(destination_path, self.context.get_repo_dir(path_string))
+            destination_path = f"/{path_to_mount.path}"
+            try:
+                if path_to_mount.is_file:
+                    container = await container.with_mounted_file(destination_path, path_to_mount.resource)
+                else:
+                    container = await container.with_mounted_directory(destination_path, path_to_mount.resource)
+            except dagger.DaggerError as e:
+                if path_to_mount.optional:
+                    self.context.logger.info(f"Failed to mount {path_to_mount.path} as optional")
+                else:
+                    raise e
         return container
 
     async def _install_internal_tools(self, container: dagger.Container) -> dagger.Container:
         for internal_tool in self.internal_tools:
-            container = await with_installed_pipx_package(self.context, container, str(internal_tool))
+            container = await with_installed_pipx_package(self.context, container, str(internal_tool.path))
         return container
 
     def _set_workdir(self, container: dagger.Container) -> dagger.Container:
@@ -81,7 +82,7 @@ class SimpleDockerStep(Step):
         # TODO (ben): Replace with python base container when available
         container = with_python_base(self.context)
 
-        container = self._mount_paths(container)
+        container = await self._mount_paths(container)
         container = self._set_env_variables(container)
         container = self._set_secrets(container)
         container = await self._install_internal_tools(container)

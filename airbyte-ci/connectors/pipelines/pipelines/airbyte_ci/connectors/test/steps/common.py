@@ -13,7 +13,6 @@ from typing import ClassVar, List, Optional
 import requests
 import semver
 import yaml
-from connector_ops.utils import Connector
 from dagger import Container, Directory
 from pipelines import hacks
 from pipelines.consts import CIContext
@@ -103,7 +102,7 @@ class VersionIncrementCheck(VersionCheck):
     @property
     def should_run(self) -> bool:
         for filename in self.context.modified_files:
-            relative_path = str(filename).replace(str(self.context.connector.code_directory) + "/", "")
+            relative_path = str(filename).replace(str(self.context.connector.relative_connector_path) + "/", "")
             if not any([relative_path.startswith(to_bypass) for to_bypass in self.BYPASS_CHECK_FOR]):
                 return True
         return False
@@ -147,31 +146,14 @@ class QaChecks(Step):
             StepResult: Failure or success of the QA checks with stdout and stderr.
         """
         connector_ops = await internal_tools.with_connector_ops(self.context)
-        include = [
-            str(self.context.connector.code_directory),
-            str(self.context.connector.documentation_file_path),
-            str(self.context.connector.migration_guide_file_path),
-            str(self.context.connector.icon_path),
-        ]
-        if (
-            self.context.connector.technical_name.endswith("strict-encrypt")
-            or self.context.connector.technical_name == "source-file-secure"
-        ):
-            original_connector = Connector(self.context.connector.technical_name.replace("-strict-encrypt", "").replace("-secure", ""))
-            include += [
-                str(original_connector.code_directory),
-                str(original_connector.documentation_file_path),
-                str(original_connector.icon_path),
-                str(original_connector.migration_guide_file_path),
-            ]
-
-        filtered_repo = self.context.get_repo_dir(
-            include=include,
-        )
 
         qa_checks = (
-            connector_ops.with_mounted_directory("/airbyte", filtered_repo)
-            .with_workdir("/airbyte")
+            connector_ops.with_mounted_directory("/repo/docs", self.context.target_repo_dir.directory("docs"))
+            # TODO make QA checks not depend on the repo structure
+            .with_mounted_directory(
+                f"/repo/airbyte-integrations/connectors/{self.context.connector.technical_name}", self.context.connector.code_directory
+            )
+            .with_workdir("/repo")
             .with_exec(["run-qa-checks", f"connectors/{self.context.connector.technical_name}"])
         )
 
@@ -235,10 +217,9 @@ class AcceptanceTests(Step):
         Returns:
             StepResult: Failure or success of the acceptances tests with stdout and stderr.
         """
-
         if not self.context.connector.acceptance_test_config:
             return StepResult(self, StepStatus.SKIPPED)
-        connector_dir = await self.context.get_connector_dir()
+        connector_dir = self.context.connector_dir
         cat_container = await self._build_connector_acceptance_test(connector_under_test_container, connector_dir)
         cat_command = await self.get_cat_command(connector_dir)
         cat_container = cat_container.with_(hacks.never_fail_exec(cat_command))

@@ -20,6 +20,7 @@ async def find_local_dependencies_in_pyproject_toml(
     base_container: Container,
     pyproject_file_path: str,
     exclude: Optional[List] = None,
+    airbyte_tool: bool = False,
 ) -> list:
     """Find local dependencies of a python package in a pyproject.toml file.
 
@@ -30,7 +31,7 @@ async def find_local_dependencies_in_pyproject_toml(
     Returns:
         list: Paths to the local dependencies relative to the current directory.
     """
-    python_package = with_python_package(context, base_container, pyproject_file_path)
+    python_package = with_python_package(context, base_container, pyproject_file_path, airbyte_tool=airbyte_tool)
     pyproject_content_raw = await get_file_contents(python_package, "pyproject.toml")
     if not pyproject_content_raw:
         return []
@@ -47,7 +48,7 @@ async def find_local_dependencies_in_pyproject_toml(
             # Ensure we parse the child dependencies
             # TODO handle more than pyproject.toml
             child_local_dependencies = await find_local_dependencies_in_pyproject_toml(
-                context, base_container, local_dependency_path, exclude=exclude
+                context, base_container, local_dependency_path, exclude=exclude, airbyte_tool=airbyte_tool
             )
             local_dependency_paths += child_local_dependencies
 

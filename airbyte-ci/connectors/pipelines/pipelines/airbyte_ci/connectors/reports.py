@@ -60,8 +60,8 @@ class ConnectorReport(Report):
                 "pipeline_start_timestamp": self.pipeline_context.pipeline_start_timestamp,
                 "pipeline_end_timestamp": round(self.created_at.timestamp()),
                 "pipeline_duration": round(self.created_at.timestamp()) - self.pipeline_context.pipeline_start_timestamp,
-                "git_branch": self.pipeline_context.git_branch,
-                "git_revision": self.pipeline_context.git_revision,
+                "git": "TODO",
+                "git_revision": self.pipeline_context.head_sha,
                 "ci_context": self.pipeline_context.ci_context,
                 "cdk_version": self.pipeline_context.cdk_version,
                 "html_report_url": self.html_report_url,
@@ -70,6 +70,12 @@ class ConnectorReport(Report):
         )
 
     async def to_html(self) -> str:
+        icon_url = None
+        if self.pipeline_context.connector.icon:
+            local_icon_path = Path(f"/tmp/{self.pipeline_context.connector.technical_name}_icon.svg")
+            await self.pipeline_context.connector.icon.export(str(local_icon_path))
+            icon_url = local_icon_path.as_uri()
+
         env = Environment(
             loader=PackageLoader("pipelines.airbyte_ci.connectors.test.steps"),
             autoescape=select_autoescape(),
@@ -79,7 +85,7 @@ class ConnectorReport(Report):
         template = env.get_template("test_report.html.j2")
         template.globals["StepStatus"] = StepStatus
         template.globals["format_duration"] = format_duration
-        local_icon_path = await Path(f"{self.pipeline_context.connector.code_directory}/icon.svg").resolve()
+        local_icon_path = await Path(f"{self.pipeline_context.connector.relative_connector_path}/icon.svg").resolve()
         template_context = {
             "connector_name": self.pipeline_context.connector.technical_name,
             "step_results": self.steps_results,
@@ -88,10 +94,9 @@ class ConnectorReport(Report):
             "connector_version": self.pipeline_context.connector.version,
             "gha_workflow_run_url": None,
             "dagger_logs_url": None,
-            "git_branch": self.pipeline_context.git_branch,
-            "git_revision": self.pipeline_context.git_revision,
+            "git_revision": self.pipeline_context.head_sha,
             "commit_url": None,
-            "icon_url": local_icon_path.as_uri(),
+            "icon_url": icon_url,
         }
 
         if self.pipeline_context.is_ci:

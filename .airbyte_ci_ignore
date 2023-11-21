@@ -1,0 +1,14 @@
+.git
+**/build
+**/.venv
+**/secrets
+**/__pycache__
+**/*.egg-info
+**/.vscode
+**/.pytest_cache
+**/.eggs
+**/.mypy_cache
+**/.DS_Store
+**/airbyte_ci_logs
+**/.gradle
+airbyte-ci/*

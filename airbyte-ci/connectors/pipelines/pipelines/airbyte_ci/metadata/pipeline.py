@@ -26,22 +26,26 @@ class MetadataValidation(SimpleDockerStep):
             title=f"Validate metadata for {context.connector.technical_name}",
             context=context,
             paths_to_mount=[
-                MountPath(context.connector.metadata_file_path),
-                MountPath(DOCS_DIRECTORY_ROOT_PATH),
-                MountPath(context.connector.icon_path, optional=True),
+                MountPath("metadata.yaml", context.connector_dir.file("metadata.yaml")),
+                MountPath(DOCS_DIRECTORY_ROOT_PATH, context.target_repo_dir.directory(DOCS_DIRECTORY_ROOT_PATH)),
+                MountPath("icon.svg", context.connector_dir.file("icon.svg"), optional=True),
             ],
             internal_tools=[
-                MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
+                MountPath(
+                    INTERNAL_TOOL_PATHS.METADATA_SERVICE.value,
+                    context.airbyte_repo_dir.directory(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
+                ),
             ],
             command=[
                 "metadata_service",
                 "validate",
-                str(context.connector.metadata_file_path),
+                "metadata.yaml",
                 DOCS_DIRECTORY_ROOT_PATH,
             ],
         )
 
 
+# TODO update to use the new mountpath / internal tool structure
 class MetadataUpload(SimpleDockerStep):
     # When the metadata service exits with this code, it means the metadata is valid but the upload was skipped because the metadata is already uploaded
     skipped_exit_code = 5
@@ -92,6 +96,7 @@ class MetadataUpload(SimpleDockerStep):
         )
 
 
+# TODO update to use the new mountpath / internal tool structure
 class DeployOrchestrator(Step):
     title = "Deploy Metadata Orchestrator to Dagster Cloud"
     deploy_dagster_command = [
@@ -122,7 +127,7 @@ class DeployOrchestrator(Step):
         container_to_run = (
             python_with_dependencies.with_mounted_directory("/src", parent_dir)
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
-            .with_workdir(f"/src/orchestrator")
+            .with_workdir("/src/orchestrator")
             .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"])
             .with_exec(self.deploy_dagster_command)
         )

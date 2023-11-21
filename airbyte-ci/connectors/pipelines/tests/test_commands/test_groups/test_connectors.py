@@ -12,7 +12,7 @@ from pipelines.airbyte_ci.connectors import commands as connectors_commands
 from pipelines.airbyte_ci.connectors.build_image import commands as connectors_build_command
 from pipelines.airbyte_ci.connectors.publish import commands as connectors_publish_command
 from pipelines.airbyte_ci.connectors.test import commands as connectors_test_command
-from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+from pipelines.helpers.connectors.modifed import RepoConnector
 from tests.utils import pick_a_random_connector
 
 
@@ -34,7 +34,7 @@ def test_get_selected_connectors_by_name_no_file_modification():
     )
 
     assert len(selected_connectors) == 1
-    assert isinstance(selected_connectors[0], ConnectorWithModifiedFiles)
+    assert isinstance(selected_connectors[0], RepoConnector)
     assert selected_connectors[0].technical_name == connector.technical_name
     assert not selected_connectors[0].modified_files
 
@@ -81,7 +81,7 @@ def test_get_selected_connectors_by_name_with_file_modification():
     )
 
     assert len(selected_connectors) == 1
-    assert isinstance(selected_connectors[0], ConnectorWithModifiedFiles)
+    assert isinstance(selected_connectors[0], RepoConnector)
     assert selected_connectors[0].technical_name == connector.technical_name
     assert selected_connectors[0].modified_files == modified_files
 
@@ -221,7 +221,7 @@ def test_get_selected_connectors_with_metadata_query():
     )
 
     assert len(selected_connectors) == 1
-    assert isinstance(selected_connectors[0], ConnectorWithModifiedFiles)
+    assert isinstance(selected_connectors[0], RepoConnector)
     assert selected_connectors[0].technical_name == connector.technical_name
     assert not selected_connectors[0].modified_files
 

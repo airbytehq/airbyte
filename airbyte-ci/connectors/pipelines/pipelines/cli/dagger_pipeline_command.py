@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import sys
-from glob import glob
 from pathlib import Path
 from typing import Any
 
@@ -16,7 +15,6 @@ from pipelines import consts, main_logger
 from pipelines.consts import GCS_PUBLIC_DOMAIN, STATIC_REPORT_PREFIX
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.gcs import upload_to_gcs
-from pipelines.helpers.utils import slugify
 
 
 class DaggerPipelineCommand(click.Command):
@@ -76,13 +74,10 @@ class DaggerPipelineCommand(click.Command):
         subcommands are available at the time the context is created.
         """
 
-        git_branch = ctx.obj["git_branch"]
-        git_revision = ctx.obj["git_revision"]
+        head_sha = ctx.obj["target_repo_state"].head_sha
         pipeline_start_timestamp = ctx.obj["pipeline_start_timestamp"]
         ci_context = ctx.obj["ci_context"]
         ci_job_key = ctx.obj["ci_job_key"] if ctx.obj.get("ci_job_key") else ci_context
-
-        sanitized_branch = slugify(git_branch.replace("/", "_"))
 
         # get the command name for the current context, if a group then prepend the parent command name
         if ctx.command_path:
@@ -95,9 +90,8 @@ class DaggerPipelineCommand(click.Command):
         path_values = [
             cmd,
             ci_job_key,
-            sanitized_branch,
+            head_sha,
             pipeline_start_timestamp,
-            git_revision,
         ]
 
         # check all values are defined

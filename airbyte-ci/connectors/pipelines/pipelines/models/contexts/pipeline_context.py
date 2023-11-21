@@ -7,7 +7,6 @@
 import logging
 import os
 from datetime import datetime
-from glob import glob
 from types import TracebackType
 from typing import List, Optional
 
@@ -16,9 +15,9 @@ from dagger import Client, Directory, File, Secret
 from github import PullRequest
 from pipelines.consts import CIContext, ContextState
 from pipelines.helpers.gcs import sanitize_gcs_credentials
+from pipelines.helpers.git import TargetRepoState
 from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
-from pipelines.helpers.utils import AIRBYTE_REPO_URL
 from pipelines.models.reports import Report
 
 
@@ -27,28 +26,12 @@ class PipelineContext:
 
     PRODUCTION = bool(os.environ.get("PRODUCTION", False))  # Set this to True to enable production mode (e.g. to send PR comments)
 
-    DEFAULT_EXCLUDED_FILES = (
-        [".git", "airbyte-ci/connectors/pipelines/*"]
-        + glob("**/build", recursive=True)
-        + glob("**/.venv", recursive=True)
-        + glob("**/secrets", recursive=True)
-        + glob("**/__pycache__", recursive=True)
-        + glob("**/*.egg-info", recursive=True)
-        + glob("**/.vscode", recursive=True)
-        + glob("**/.pytest_cache", recursive=True)
-        + glob("**/.eggs", recursive=True)
-        + glob("**/.mypy_cache", recursive=True)
-        + glob("**/.DS_Store", recursive=True)
-        + glob("**/airbyte_ci_logs", recursive=True)
-        + glob("**/.gradle", recursive=True)
-    )
-
     def __init__(
         self,
         pipeline_name: str,
         is_local: bool,
-        git_branch: str,
-        git_revision: str,
+        target_repo_state: TargetRepoState,
+        airbyte_repo_dir: Directory,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
@@ -68,6 +51,8 @@ class PipelineContext:
         Args:
             pipeline_name (str): The pipeline name.
             is_local (bool): Whether the context is for a local run or a CI run.
+            target_repo_state (TargetRepoState): The target repo state.
+            airbyte_repo_dir (Directory): The airbyte repo directory.
             git_branch (str): The current git branch name.
             git_revision (str): The current git revision, commit hash.
             gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
@@ -81,8 +66,10 @@ class PipelineContext:
         """
         self.pipeline_name = pipeline_name
         self.is_local = is_local
-        self.git_branch = git_branch
-        self.git_revision = git_revision
+        self.target_repo_state = target_repo_state
+        self.head_sha = self.target_repo_state.head_sha
+        self.target_repo_dir = self.target_repo_state.repo_dir
+        self.airbyte_repo_dir = airbyte_repo_dir
         self.gha_workflow_run_url = gha_workflow_run_url
         self.dagger_logs_url = dagger_logs_url
         self.pipeline_start_timestamp = pipeline_start_timestamp
@@ -124,10 +111,6 @@ class PipelineContext:
         return self.ci_context == CIContext.PULL_REQUEST
 
     @property
-    def repo(self):  # noqa D102
-        return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
-
-    @property
     def report(self) -> Report:  # noqa D102
         return self._report
 
@@ -148,7 +131,7 @@ class PipelineContext:
         """Build a dictionary used as kwargs to the update_commit_status_check function."""
         target_url = self.report.html_report_url if self.report else self.gha_workflow_run_url
         return {
-            "sha": self.git_revision,
+            "sha": self.head_sha,
             "state": self.state.value["github_state"],
             "target_url": target_url,
             "description": self.state.value["description"],
@@ -201,16 +184,7 @@ class PipelineContext:
         Returns:
             Directory: The selected repo directory.
         """
-        if exclude is None:
-            exclude = self.DEFAULT_EXCLUDED_FILES
-        else:
-            exclude += self.DEFAULT_EXCLUDED_FILES
-            exclude = list(set(exclude))
-        exclude.sort()  # sort to make sure the order is always the same to not burst the cache. Casting exclude to set can change the order
-        if subdir != ".":
-            subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
-            exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
-        return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
+        return self.target_repo_dir.directory(subdir)
 
     def create_slack_message(self) -> str:
         raise NotImplementedError()

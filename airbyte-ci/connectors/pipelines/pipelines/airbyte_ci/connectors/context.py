@@ -8,14 +8,14 @@ from datetime import datetime
 from types import TracebackType
 from typing import Optional
 
-import yaml
 from anyio import Path
 from asyncer import asyncify
 from dagger import Directory, Secret
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.dagger.actions import secrets
-from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+from pipelines.helpers.connectors.modifed import RepoConnector
+from pipelines.helpers.git import TargetRepoState
 from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.utils import METADATA_FILE_NAME
@@ -30,10 +30,10 @@ class ConnectorContext(PipelineContext):
     def __init__(
         self,
         pipeline_name: str,
-        connector: ConnectorWithModifiedFiles,
+        connector: RepoConnector,
         is_local: bool,
-        git_branch: bool,
-        git_revision: bool,
+        target_repo_state: TargetRepoState,
+        airbyte_repo_dir: Directory,
         report_output_prefix: str,
         use_remote_secrets: bool = True,
         ci_report_bucket: Optional[str] = None,
@@ -90,7 +90,6 @@ class ConnectorContext(PipelineContext):
             concurrent_cat (bool, optional): Whether to run the CAT tests in parallel. Defaults to False.
         """
 
-        self.pipeline_name = pipeline_name
         self.connector = connector
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
@@ -114,8 +113,8 @@ class ConnectorContext(PipelineContext):
         super().__init__(
             pipeline_name=pipeline_name,
             is_local=is_local,
-            git_branch=git_branch,
-            git_revision=git_revision,
+            target_repo_state=target_repo_state,
+            airbyte_repo_dir=airbyte_repo_dir,
             gha_workflow_run_url=gha_workflow_run_url,
             dagger_logs_url=dagger_logs_url,
             pipeline_start_timestamp=pipeline_start_timestamp,
@@ -164,7 +163,7 @@ class ConnectorContext(PipelineContext):
 
     @property
     def connector_acceptance_test_source_dir(self) -> Directory:  # noqa D102
-        return self.get_repo_dir("airbyte-integrations/bases/connector-acceptance-test")
+        return self.airbyte_repo_dir.directory("airbyte-integrations/bases/connector-acceptance-test")
 
     @property
     def should_save_updated_secrets(self) -> bool:  # noqa D102
@@ -180,7 +179,7 @@ class ConnectorContext(PipelineContext):
 
     @property
     def metadata(self) -> dict:
-        return yaml.safe_load(self.metadata_path.read_text())["data"]
+        return self.connector.metadata
 
     @property
     def docker_repository(self) -> str:
@@ -206,6 +205,11 @@ class ConnectorContext(PipelineContext):
             return None
         return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
 
+    @property
+    def connector_dir(self) -> Directory:
+        return self.connector.code_directory
+
+    # TODO CLEAN UP - direct access to self.connector_dir should be used instead
     async def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.
 
@@ -216,8 +220,7 @@ class ConnectorContext(PipelineContext):
         Returns:
             Directory: The connector under test source code directory.
         """
-        vanilla_connector_dir = self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
-        return await vanilla_connector_dir.with_timestamps(1)
+        return self.connector_dir
 
     async def __aexit__(
         self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]

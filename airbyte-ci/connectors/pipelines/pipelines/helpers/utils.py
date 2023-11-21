@@ -30,6 +30,7 @@ METADATA_FILE_NAME = "metadata.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
 DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
 IGNORED_FILE_EXTENSIONS = [".md"]
+ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
@@ -281,7 +282,7 @@ async def export_container_to_tarball(
         Tuple[Optional[File], Optional[Path]]: A tuple with the file object holding the tar archive on the host and its path.
     """
     if tar_file_name is None:
-        tar_file_name = f"{context.connector.technical_name}_{context.git_revision}.tar"
+        tar_file_name = f"{context.connector.technical_name}_{context.target_repo_state.head_sha}.tar"
     tar_file_name = slugify(tar_file_name)
     local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
     export_success = await container.export(str(local_path), forced_compression=ImageLayerCompression.Gzip)

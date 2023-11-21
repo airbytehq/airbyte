@@ -25,9 +25,9 @@ async def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
         ConnectorContext(
             pipeline_name=f"Build connector {connector.technical_name}",
             connector=connector,
+            target_repo_state=ctx.obj["target_repo_state"],
+            airbyte_repo_dir=ctx.obj["airbyte_repo_dir"],
             is_local=ctx.obj["is_local"],
-            git_branch=ctx.obj["git_branch"],
-            git_revision=ctx.obj["git_revision"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],
             report_output_prefix=ctx.obj["report_output_prefix"],
             use_remote_secrets=ctx.obj["use_remote_secrets"],

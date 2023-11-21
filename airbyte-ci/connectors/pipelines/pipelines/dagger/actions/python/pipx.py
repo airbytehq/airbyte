@@ -42,11 +42,13 @@ async def with_installed_pipx_package(
         Container: A python environment container with the python package installed.
     """
     pipx_python_environment = with_pipx(python_environment)
-    container = with_python_package(context, pipx_python_environment, package_source_code_path, exclude=exclude)
 
-    local_dependencies = await find_local_dependencies_in_pyproject_toml(context, container, package_source_code_path, exclude=exclude)
+    container = with_python_package(context, pipx_python_environment, package_source_code_path, airbyte_tool=True)
+    local_dependencies = await find_local_dependencies_in_pyproject_toml(
+        context, container, package_source_code_path, exclude=exclude, airbyte_tool=True
+    )
     for dependency_directory in local_dependencies:
-        container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
+        container = container.with_mounted_directory("/" + dependency_directory, context.airbyte_repo_dir.directory(dependency_directory))
 
     container = container.with_exec(["pipx", "install", f"/{package_source_code_path}"])
 

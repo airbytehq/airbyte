@@ -6,11 +6,12 @@
 
 from typing import Optional
 
+import click
 from dagger import Secret
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import ContextState
-from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+from pipelines.helpers.connectors.modifed import RepoConnector
 from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.utils import format_duration
 
@@ -18,7 +19,7 @@ from pipelines.helpers.utils import format_duration
 class PublishConnectorContext(ConnectorContext):
     def __init__(
         self,
-        connector: ConnectorWithModifiedFiles,
+        connector: RepoConnector,
         pre_release: bool,
         spec_cache_gcs_credentials: str,
         spec_cache_bucket_name: str,

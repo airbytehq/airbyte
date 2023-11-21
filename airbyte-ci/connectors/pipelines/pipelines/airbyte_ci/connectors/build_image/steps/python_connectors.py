@@ -42,12 +42,9 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         Returns:
             Container: The builder container, with installed dependencies.
         """
-        ONLY_PYTHON_BUILD_FILES = ["setup.py", "requirements.txt", "pyproject.toml", "poetry.lock"]
         builder = await with_python_connector_installed(
             self.context,
             base_container,
-            str(self.context.connector.code_directory),
-            include=ONLY_PYTHON_BUILD_FILES,
         )
 
         return builder
@@ -96,7 +93,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         self.logger.warn(
             "This connector is built from its Dockerfile. This is now deprecated. Please set connectorBuildOptions.baseImage metadata field to use our new build process."
         )
-        container = self.dagger_client.container(platform=platform).build(await self.context.get_connector_dir())
+        container = self.dagger_client.container(platform=platform).build(self.context.connector_dir)
         container = await apply_python_development_overrides(self.context, container)
         return container
 

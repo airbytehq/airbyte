@@ -9,31 +9,30 @@ from typing import List, Optional
 from dagger import Container, Directory
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.dagger.containers.python import with_pip_cache, with_poetry_cache, with_python_base, with_testing_dependencies
-from pipelines.helpers.utils import check_path_in_workdir, get_file_contents
+from pipelines.dagger.containers.python import with_pip_cache, with_poetry_cache, with_python_base
+from pipelines.helpers.utils import get_file_contents
 
 
 def with_python_package(
     context: PipelineContext,
     python_environment: Container,
     package_source_code_path: str,
-    exclude: Optional[List] = None,
-    include: Optional[List] = None,
+    airbyte_tool: bool = False,
 ) -> Container:
     """Load a python package source code to a python environment container.
 
     Args:
-        context (PipelineContext): The current test context, providing the repository directory from which the python sources will be pulled.
+        repo_dir (Directory): The repository directory from which the python sources will be pulled.
         python_environment (Container): An existing python environment in which the package will be installed.
         package_source_code_path (str): The local path to the package source code.
-        additional_dependency_groups (Optional[List]): extra_requires dependency of setup.py to install. Defaults to None.
-        exclude (Optional[List]): A list of file or directory to exclude from the python package source code.
 
     Returns:
         Container: A python environment container with the python package source code.
     """
-    package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude, include=include)
+    target_repo = context.airbyte_repo_dir if airbyte_tool else context.target_repo_dir
+    package_source_code_directory: Directory = target_repo.directory(package_source_code_path)
     work_dir_path = f"/{package_source_code_path}"
+
     container = python_environment.with_mounted_directory(work_dir_path, package_source_code_directory).with_workdir(work_dir_path)
     return container
 
@@ -101,6 +100,7 @@ async def find_local_python_dependencies(
     package_source_code_path: str,
     search_dependencies_in_setup_py: bool = True,
     search_dependencies_in_requirements_txt: bool = True,
+    airbyte_tool: bool = False,
 ) -> List[str]:
     """Find local python dependencies of a python package. The dependencies are found in the setup.py and requirements.txt files.
 
@@ -114,7 +114,7 @@ async def find_local_python_dependencies(
         List[str]: Paths to the local dependencies relative to the airbyte repo.
     """
     python_environment = with_python_base(context)
-    container = with_python_package(context, python_environment, package_source_code_path)
+    container = with_python_package(context, python_environment, package_source_code_path, airbyte_tool=airbyte_tool)
 
     local_dependency_paths = []
     if search_dependencies_in_setup_py:
@@ -174,8 +174,7 @@ async def with_installed_python_package(
     python_environment: Container,
     package_source_code_path: str,
     additional_dependency_groups: Optional[List] = None,
-    exclude: Optional[List] = None,
-    include: Optional[List] = None,
+    airbyte_tool: bool = False,
 ) -> Container:
     """Install a python package in a python environment container.
 
@@ -189,15 +188,17 @@ async def with_installed_python_package(
     Returns:
         Container: A python environment container with the python package installed.
     """
-    container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude, include=include)
+    container = with_python_package(context, python_environment, package_source_code_path, airbyte_tool=airbyte_tool)
+
     local_dependencies = await find_local_python_dependencies(context, package_source_code_path)
 
     for dependency_directory in local_dependencies:
         container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
 
-    has_setup_py = await check_path_in_workdir(container, "setup.py")
-    has_requirements_txt = await check_path_in_workdir(container, "requirements.txt")
-    has_pyproject_toml = await check_path_in_workdir(container, "pyproject.toml")
+    workdir_entries = await container.directory(".").entries()
+    has_setup_py = "setup.py" in workdir_entries
+    has_requirements_txt = "requirements.txt" in workdir_entries
+    has_pyproject_toml = "pyproject.toml" in workdir_entries
 
     if has_pyproject_toml:
         container = with_poetry_cache(container, context.dagger_client)
@@ -210,20 +211,6 @@ async def with_installed_python_package(
         container = _install_python_dependencies_from_requirements_txt(container)
 
     return container
-
-
-def with_python_connector_source(context: ConnectorContext) -> Container:
-    """Load an airbyte connector source code in a testing environment.
-
-    Args:
-        context (ConnectorContext): The current test context, providing the repository directory from which the connector sources will be pulled.
-    Returns:
-        Container: A python environment container (with the connector source code).
-    """
-    connector_source_path = str(context.connector.code_directory)
-    testing_environment: Container = with_testing_dependencies(context)
-
-    return with_python_package(context, testing_environment, connector_source_path)
 
 
 async def apply_python_development_overrides(context: ConnectorContext, connector_container: Container) -> Container:
@@ -248,10 +235,7 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
 async def with_python_connector_installed(
     context: ConnectorContext,
     python_container: Container,
-    connector_source_path: str,
     additional_dependency_groups: Optional[List] = None,
-    exclude: Optional[List] = None,
-    include: Optional[List] = None,
 ) -> Container:
     """Install an airbyte python connectors  dependencies."""
 
@@ -261,10 +245,9 @@ async def with_python_connector_installed(
     container = await with_installed_python_package(
         context,
         python_container,
-        connector_source_path,
+        context.connector.relative_connector_path,
         additional_dependency_groups=additional_dependency_groups,
-        exclude=exclude,
-        include=include,
+        airbyte_tool=False,
     )
 
     container = await apply_python_development_overrides(context, container)

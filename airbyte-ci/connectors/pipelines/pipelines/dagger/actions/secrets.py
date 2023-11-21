@@ -46,7 +46,7 @@ async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "
     from pipelines.dagger.containers.internal_tools import with_ci_credentials
 
     gsm_secret = get_secret_host_variable(context.dagger_client, gcp_gsm_env_variable_name)
-    secrets_path = f"/{context.connector.code_directory}/secrets"
+    secrets_path = f"/airbyte-integrations/connectors/{context.connector.technical_name}/secrets"
     ci_credentials = await with_ci_credentials(context, gsm_secret)
     with_downloaded_secrets = (
         ci_credentials.with_exec(["mkdir", "-p", secrets_path])
@@ -85,7 +85,7 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
     from pipelines.dagger.containers.internal_tools import with_ci_credentials
 
     gsm_secret = get_secret_host_variable(context.dagger_client, gcp_gsm_env_variable_name)
-    secrets_path = f"/{context.connector.code_directory}/secrets"
+    secrets_path = f"/{context.connector.relative_connector_path}/secrets"
 
     ci_credentials = await with_ci_credentials(context, gsm_secret)
 
@@ -104,7 +104,7 @@ async def load_from_local(context: ConnectorContext) -> dict[str, Secret]:
         dict[str, Secret]: A dict mapping the secret file name to the dagger Secret object.
     """
     connector_secrets = {}
-    local_secrets_path = Path(context.connector.code_directory / "secrets")
+    local_secrets_path = Path(context.connector.relative_connector_path / "secrets")
     if not await local_secrets_path.is_dir():
         context.logger.warning(f"Local secrets directory {local_secrets_path} does not exist, no secrets will be loaded.")
         return connector_secrets

@@ -9,14 +9,12 @@ from abc import abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
 
 import anyio
 import asyncer
 import click
-from dagger import Container, DaggerError
-from pipelines import main_logger
+from dagger import Container, DaggerError, Directory, File
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.utils import format_duration, get_exec_result
 
@@ -30,31 +28,17 @@ from rich.style import Style
 
 @dataclass
 class MountPath:
-    path: Path
+    path: str
+    resource: Union[Directory, File]
     optional: bool = False
-
-    def _cast_fields(self):
-        self.path = Path(self.path)
-        self.optional = bool(self.optional)
-
-    def _check_exists(self):
-        if not self.path.exists():
-            message = f"{self.path} does not exist."
-            if self.optional:
-                main_logger.warning(message)
-            else:
-                raise FileNotFoundError(message)
-
-    def __post_init__(self):
-        self._cast_fields()
-        self._check_exists()
-
-    def __str__(self):
-        return str(self.path)
 
     @property
     def is_file(self) -> bool:
-        return self.path.is_file()
+        return isinstance(self.resource, File)
+
+    @property
+    def is_directory(self) -> bool:
+        return isinstance(self.resource, Directory)
 
 
 @dataclass(frozen=True)

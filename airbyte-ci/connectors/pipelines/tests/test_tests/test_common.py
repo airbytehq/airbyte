@@ -13,7 +13,7 @@ import yaml
 from freezegun import freeze_time
 from pipelines.airbyte_ci.connectors.test.steps import common
 from pipelines.dagger.actions.system import docker
-from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+from pipelines.helpers.connectors.modifed import RepoConnector
 from pipelines.models.steps import StepStatus
 
 pytestmark = [
@@ -40,7 +40,7 @@ class TestAcceptanceTests:
 
     @pytest.fixture
     def test_context(self, mocker, dagger_client):
-        return mocker.MagicMock(connector=ConnectorWithModifiedFiles("source-faker", frozenset()), dagger_client=dagger_client)
+        return mocker.MagicMock(connector=RepoConnector("source-faker", frozenset()), dagger_client=dagger_client)
 
     @pytest.fixture
     def dummy_connector_under_test_container(self, dagger_client) -> dagger.Container:
