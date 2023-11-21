@@ -160,11 +160,17 @@ public class WebBackendConnectionsHandler {
 
   private WebBackendConnectionPageRead buildWebBackendConnectionPageRead(final ConnectionRead connectionRead)
       throws IOException {
+    long startTime = System.nanoTime();
     StandardDestinationDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinationByDestinationId(connectionRead.getDestinationId());
     StandardDestinationDefinition sourceDefinition = configRepository.getStandardSourceDefinationBySourceId(connectionRead.getSourceId());
     final JobReadList syncJobReadList = getSyncJobs(connectionRead);
 
+    long elapsedTimeInNano = System.nanoTime() - startTime;
+    double elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
+    LOGGER.info("buildWebBackendConnectionPageRead part 1 spends {} milliseconds", elapsedTimeInMilli);
+
+    startTime = System.nanoTime();
     WebBackendConnectionPageRead webBackendConnectionPageRead = new WebBackendConnectionPageRead().connectionId(connectionRead.getConnectionId())
         .name(connectionRead.getName()).status(connectionRead.getStatus()).entityName(destinationDefinition.getName())
         .connectorName(sourceDefinition.getName())
@@ -173,11 +179,21 @@ public class WebBackendConnectionsHandler {
             .map(JobWithAttemptsRead::getJob)
             .anyMatch(WebBackendConnectionsHandler::isRunningJob));
 
+    elapsedTimeInNano = System.nanoTime() - startTime;
+    elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
+    LOGGER.info("buildWebBackendConnectionPageRead part 2 spends {} milliseconds", elapsedTimeInMilli);
+
+    startTime = System.nanoTime();
     syncJobReadList.getJobs().stream().map(JobWithAttemptsRead::getJob).findFirst()
         .ifPresent(job -> {
           webBackendConnectionPageRead.setLatestSyncJobCreatedAt(job.getCreatedAt());
           webBackendConnectionPageRead.setLatestSyncJobStatus(job.getStatus());
         });
+
+    elapsedTimeInNano = System.nanoTime() - startTime;
+    elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
+    LOGGER.info("webBackendConnectionsPageForWorkspace part 3 spends {} milliseconds", elapsedTimeInMilli);
+
     return webBackendConnectionPageRead;
   }
 
