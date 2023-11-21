@@ -23,6 +23,10 @@ from airbyte_cdk.sources import Source
 from .utils.dbt import run_dbt
 
 class SourceDbtDuckdb(Source):
+    """
+    This source will run dbt build operations using the dbt-duckdb adapter.
+    """
+
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
