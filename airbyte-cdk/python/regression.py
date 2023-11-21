@@ -18,6 +18,10 @@ from airbyte_cdk.models import Type as MessageType
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import json
+
 
 
 @dataclasses.dataclass
@@ -38,6 +42,7 @@ class StreamStats:
 
     left_rows_missing = {}
     right_rows_missing = {}
+    mismatch = []
 
 
 async def main():
@@ -85,6 +90,7 @@ async def main():
 
                 if left.message.record.data != right.message.record.data:
                     print(f"Data mismatch: {left.message.record.data} != {right.message.record.data}")
+                    stream_stats.mismatch.append((left, right))
 
                 # check missing
                 left_keys = set(stream_stats.left_rows_missing.keys())
@@ -151,6 +157,9 @@ async def main():
     generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats)
 
 def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, output_filename='plots_combined_per_metric.pdf'):
+    #diff_pdf_filename = "diff.pdf"
+    #diff_pdf = canvas.Canvas(diff_pdf_filename)
+    diff_filename = "diff_{stream}.jsonl"
     with PdfPages(output_filename) as pdf:
 
         # Generate summary
@@ -168,10 +177,20 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
             }
             print(f"stat:{stat}")
             summary_stats.append(stat)
+
+            with open(diff_filename.format(stream=stream_name), "w") as diff_file:
+                for left, right in stream_stat.mismatch:
+                    left_data_json = json.dumps({"left": left.message.record.data, "right": right.message.record.data})
+                    diff_file.write(left_data_json)
+
+        #diff_pdf.save()
+        #print(f"Diff saved to {diff_pdf_filename}")
         print(f"summary_stats:{summary_stats}")
         summary_df = pd.DataFrame.from_records(summary_stats)
         #table = pd.pivot_table(summary_df, index='stream', columns=['equal', "record_count", "missing_left", "missing_right"], aggfunc=len, fill_value=0)
-        table = pd.pivot_table(summary_df, index='stream', aggfunc=len, fill_value=0)
+        #table = pd.pivot_table(summary_df, index='stream', columns=["record_count"], aggfunc=len, fill_value=0)
+        table = summary_df.pivot_table(values=['equal', 'record_count', 'missing_left', 'missing_right'],
+                               index='stream', aggfunc='first')
         plt.figure(figsize=(6, 4))
         plt.table(cellText=table.values,
                   colLabels=table.columns,
