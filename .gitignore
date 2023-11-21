@@ -49,9 +49,6 @@ coverage.xml
 .pytest_cache/
 cover/
 
-# dbt
-profiles.yml
-
 # Terraform
 .terraform/
 crash.log

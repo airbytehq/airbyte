@@ -2,5 +2,4 @@
 target/
 dbt_packages/
 logs/
-!profiles.yml # Doesn't contain any secrets
 .user.yml

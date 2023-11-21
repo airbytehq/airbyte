@@ -1,0 +1,13 @@
+# Docs: https://docs.getdbt.com/reference/warehouse-profiles/duckdb-profile
+duckdb_sample_project:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ./dev.duckdb
+      threads: 1
+
+    prod:
+      type: duckdb
+      path: ./prod.duckdb
+      threads: 4
