@@ -5,11 +5,11 @@ package io.airbyte.integrations.source_performance;
  */
 import static io.airbyte.protocol.models.AirbyteMessage.Type.RECORD;
 import static io.airbyte.protocol.models.AirbyteMessage.Type.STATE;
-import static io.airbyte.protocol.protos.AirbyteMessage.MessageCase.CONTROL;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -44,8 +44,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
+
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.CheckForNull;
 
 /**
  * Default implementation of {@link AirbyteSource}.
@@ -111,14 +115,64 @@ public class DefaultAirbyteSourceProto {
     final List<Type> acceptedMessageTypes = List.of(Type.RECORD, STATE, Type.TRACE, Type.CONTROL);
     // now we need to generate protobuf messages from the source process
     // this needs to take in a buffered reader and return an iterator of protobuf message
-    messageIterator = toProtoAirbyteMessages(sourceProcess.getInputStream())
-        // .filter(message -> acceptedMessageTypes.contains(message.getType()))
-        .iterator();
+    messageIterator = new ProtoIterator(sourceProcess.getInputStream());
   }
 
-  private static Stream<io.airbyte.protocol.protos.AirbyteMessage> toProtoAirbyteMessages(InputStream stream) {
-    return Stream.of(io.airbyte.protocol.protos.AirbyteMessage.newBuilder().build());
+  @Slf4j
+  private static class ProtoIterator extends AbstractIterator<io.airbyte.protocol.protos.AirbyteMessage> {
+
+    private final ByteArrayOutputStream buffer = new ByteArrayOutputStream(); // this has an inbuilt buffer.
+    private final InputStream stream;
+    public ProtoIterator(InputStream stream) {
+      super();
+      this.stream = stream;
+    }
+
+    @CheckForNull
+    @Override
+    protected io.airbyte.protocol.protos.AirbyteMessage computeNext() {
+      boolean isProtobufMessage = false;
+      int nextByte;
+
+      while (true) {
+        try {
+          if ((nextByte = stream.read()) == -1) break;
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+
+        // whenever it's a protobuf message, print the buffer.
+        if (nextByte == 0) {
+          if (buffer.size() > 0) {
+            log.info(String.valueOf(buffer));
+            buffer.reset();
+          }
+          isProtobufMessage = true;
+        } else {
+          // store in the buffer and continue.
+          buffer.write(nextByte);
+          continue;
+        }
+
+        // after that we process the protobuf message.
+        if (isProtobufMessage) {
+          try {
+            io.airbyte.protocol.protos.AirbyteMessage message = io.airbyte.protocol.protos.AirbyteMessage.parseDelimitedFrom(stream);
+            if (message != null) {
+              return message;
+            }
+          } catch (IOException e) {
+            // Handle parsing error
+            System.out.println(e);
+          } finally {
+            isProtobufMessage = false;
+          }
+        }
+      }
+      return endOfData();
+    }
   }
+
 
   @VisibleForTesting
   static boolean shouldBeat(final AirbyteMessage.Type airbyteMessageType) {
@@ -195,31 +249,7 @@ public class DefaultAirbyteSourceProto {
     LOGGER.info("source starting state | " + Jsons.serialize(sourceConfig.getState().getState()));
   }
 
-  public static void main(String[] args) throws IOException {
-    // create 3 messages
-    var msgs = List.of(
-        AirbyteRecordMessage.newBuilder().setStream("a").build(),
-        AirbyteRecordMessage.newBuilder().setStream("b").build(),
-        AirbyteRecordMessage.newBuilder().setStream("c").build());
-
-    // write them to an input stream
-    var outputStream = new PipedOutputStream();
-    var inputStream = new PipedInputStream(outputStream);
-
-    msgs.forEach(msg -> {
-      try {
-        outputStream.write(new byte[] {0});
-        io.airbyte.protocol.protos.AirbyteMessage.newBuilder()
-            .setRecord(msg).build().writeDelimitedTo(outputStream);
-        outputStream.write("\n".getBytes(Charsets.UTF_8));
-        outputStream.write("random garbage \n".getBytes(Charsets.UTF_8));
-        outputStream.write(Jsons.serialize("random json garbage").getBytes(Charsets.UTF_8));
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    });
-    // consume them from the output stream
-
+  private static void readFromInput(PipedInputStream inputStream) throws IOException {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream(); // this has an inbuilt buffer.
     boolean isProtobufMessage = false;
     int nextByte;
@@ -270,6 +300,37 @@ public class DefaultAirbyteSourceProto {
         }
       }
     }
+  }
+
+  public static void main(String[] args) throws IOException {
+    // EXAMPLE WRITING AND READING FROM PROTOBUF
+    var msgs = List.of(
+        AirbyteRecordMessage.newBuilder().setStream("a").build(),
+        AirbyteRecordMessage.newBuilder().setStream("b").build(),
+        AirbyteRecordMessage.newBuilder().setStream("c").build());
+
+    // write them to an input stream
+    var outputStream = new PipedOutputStream();
+    var inputStream = new PipedInputStream(outputStream);
+
+    msgs.forEach(msg -> {
+      try {
+        outputStream.write(new byte[]{0});
+        io.airbyte.protocol.protos.AirbyteMessage.newBuilder()
+            .setRecord(msg).build().writeDelimitedTo(outputStream);
+        outputStream.write("\n".getBytes(Charsets.UTF_8));
+        outputStream.write("random garbage \n".getBytes(Charsets.UTF_8));
+        outputStream.write(Jsons.serialize("random json garbage").getBytes(Charsets.UTF_8));
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    });
+    outputStream.close();
+
+    // consume them from the output stream
+
+    //    readFromInput(inputStream);
+    new ProtoIterator(inputStream).forEachRemaining(System.out::println);
 
   }
 

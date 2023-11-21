@@ -116,10 +116,24 @@ public class PerformanceTest {
       // source to also return a protobuf message
       final Optional<io.airbyte.protocol.protos.AirbyteMessage> airbyteMessageOptional = source.attemptRead();
       if (airbyteMessageOptional.isPresent()) {
-        final io.airbyte.protocol.protos.AirbyteMessage airbyteMessage = airbyteMessageOptional.get();
-
-        totalBytes += airbyteMessage.getRecord().getData().getSerializedSize();
-        counter++;
+        final io.airbyte.protocol.protos.AirbyteMessage msg = airbyteMessageOptional.get();
+        switch (msg.getMessageCase()) {
+          case RECORD:
+            totalBytes += msg.getRecord().getData().getSerializedSize();
+            counter++;
+            break;
+          case STATE:
+            System.out.println("Received State Message: " + msg.getState().getData());
+            break;
+          case TRACE:
+            System.out.println("Received Trace Message: " + msg.getTrace());
+            break;
+          case CONTROL:
+            System.out.println("Received Control Message: " + msg.getControl().getType());
+            break;
+          default:
+            System.out.println("Received Unknown Message: " + msg.getMessageCase());
+        }
 
       }
 
