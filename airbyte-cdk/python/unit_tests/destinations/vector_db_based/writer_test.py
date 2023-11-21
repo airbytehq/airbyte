@@ -98,7 +98,6 @@ def test_write(omit_raw_text: bool):
                 else:
                     assert chunk.page_content is not None
 
-
     output_message = next(output_messages)
     assert output_message == post_sync_log_message
 
