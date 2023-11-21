@@ -16,6 +16,7 @@ import xmltodict
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -38,7 +39,6 @@ class AmazonSPStream(HttpStream, ABC):
         period_in_days: Optional[int],
         report_options: Optional[str],
         advanced_stream_options: Optional[str],
-        max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         *args,
         **kwargs,
@@ -132,6 +132,7 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
 
 
 class ReportsAmazonSPStream(HttpStream, ABC):
+    max_wait_seconds = 3600
     """
     API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reports_2020-09-04.md
     API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/reports-api-model/reports_2020-09-04.json
@@ -163,7 +164,6 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
-        max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         advanced_stream_options: Optional[str],
         *args,
@@ -176,7 +176,6 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self.marketplace_id = marketplace_id
         self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work as well
         self._report_options = report_options or "{}"
-        self.max_wait_seconds = max_wait_seconds
         self._advanced_stream_options = dict()
         self._http_method = "GET"
         if advanced_stream_options is not None:
@@ -250,11 +249,11 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         return report_payload
 
     @default_backoff_handler(factor=5, max_tries=5)
-    def download_and_decompress_report_document(self, url, payload):
+    def download_and_decompress_report_document(self, payload: dict) -> str:
         """
         Unpacks a report document
         """
-        report = requests.get(url)
+        report = requests.get(payload.get("url"))
         report.raise_for_status()
         if "compressionAlgorithm" in payload:
             return gzip.decompress(report.content).decode("iso-8859-1")
@@ -265,7 +264,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     ) -> Iterable[Mapping]:
         payload = response.json()
 
-        document = self.download_and_decompress_report_document(payload.get("url"), payload)
+        document = self.download_and_decompress_report_document(payload)
 
         document_records = self.parse_document(document)
         yield from document_records
@@ -320,7 +319,11 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         is_done = False
         start_time = pendulum.now("utc")
         seconds_waited = 0
-        report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
+        try:
+            report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
+        except DefaultBackoffException as e:
+            logger.warn(f"The report for stream '{self.name}' was cancelled due to several failed retry attempts. {e}")
+            return []
 
         # create and retrieve the report
         while not is_processed and seconds_waited < self.max_wait_seconds:
@@ -902,10 +905,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
 
         payload = response.json()
 
-        document = self.decompress_report_document(
-            payload.get("url"),
-            payload,
-        )
+        document = self.download_and_decompress_report_document(payload)
         document_records = self.parse_document(document)
 
         # Not all (partial) responses include the request date, so adding it manually here
