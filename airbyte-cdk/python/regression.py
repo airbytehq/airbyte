@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import asyncio
+import copy
 import dataclasses
 import json
 import subprocess
@@ -36,15 +37,20 @@ class StreamStats:
     stream: str
     record_count = 0
 
-    columns_to_diff_count = {}
-    columns_to_right_missing = {}
-    columns_to_left_missing = {}
-    columns_to_equal = {}
+    columns_to_diff_count: dict[str, int]
+    columns_to_right_missing: dict[str, int]
+    columns_to_left_missing: dict[str, int]
+    columns_to_equal: dict[str, int]
 
-    left_rows_missing = {}
-    right_rows_missing = {}
-    mismatch = []
-    fields_to_ignore = set()
+    left_rows_missing: dict[str, int]
+    right_rows_missing: dict[str, int]
+    mismatch: list
+    fields_to_ignore: set
+    unmatched_left_no_pk : list
+    unmatched_right_no_pk : list
+
+    def __repr__(self):
+        return f"StreamStats({vars(self)})"
 
 
 async def main():
@@ -64,22 +70,22 @@ async def main():
     catalog = None
     for discover_line in discover_output.split("\n"):
         if "CATALOG" in discover_line:
-            print(discover_line)
             discover_message = AirbyteMessage.parse_raw(discover_line)
             catalog = discover_message.catalog
             break
     if not catalog:
         print(f"Could not find catalog in {discover_output}")
     streams = [stream for stream in catalog.streams if stream.name in stream_names]
+    configured_catalog = _configured_catalog(streams)
     with open(f"secrets/tmp_catalog.json", "w") as f:
-        f.write(_configured_catalog(streams).json(exclude_unset=True))
+        f.write(configured_catalog.json(exclude_unset=True))
     command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version} read --config /{config_path} --catalog /secrets/tmp_catalog.json"
 
     subprocess_left = run_subprocess(command, "left")
     subprocess_right = run_subprocess(command, "right")
 
     streams_stats = {}
-    primary_key = "id"
+    #primary_key = "id"
     # FIXME: need to get pk from catalog
     streams_to_dataframe = {}
 
@@ -99,7 +105,7 @@ async def main():
 
                 assert left.message.record.stream == right.message.record.stream
                 if left.message.record.stream not in streams_stats:
-                    streams_stats[left.message.record.stream] = StreamStats(left.message.record.stream)
+                    streams_stats[left.message.record.stream] = StreamStats(left.message.record.stream, {}, {}, {}, {}, {}, {}, [], set(), [], [])
                     streams_stats[left.message.record.stream].fields_to_ignore = set(
                         stream_to_stream_config[left.message.record.stream].get("ignore_fields", [])
                     )
@@ -107,12 +113,36 @@ async def main():
                 stream_stats = streams_stats[left.message.record.stream]
 
                 stream_stats.record_count += 1
-                if left.message.record.data[primary_key] != right.message.record.data[primary_key]:
-                    stream_stats.left_rows_missing[left.message.record.data[primary_key]] = left
-                    stream_stats.right_rows_missing[right.message.record.data[primary_key]] = right
-                    continue
 
-                compare_records(left, right, stream_stats)
+                configured_stream: ConfiguredAirbyteStream = [stream for stream in configured_catalog.streams if stream.stream.name == left.message.record.stream][0]
+                primary_key = configured_stream.primary_key
+                if primary_key:
+                    primary_key = primary_key[0][0]
+
+                if primary_key:
+                    if left.message.record.data[primary_key] != right.message.record.data[primary_key]:
+                        stream_stats.left_rows_missing[left.message.record.data[primary_key]] = left
+
+                        right_stream_stats = streams_stats[right.message.record.stream]
+                        right_stream_stats.right_rows_missing[right.message.record.data[primary_key]] = right
+                        print(f"stream: {left.message.record.stream} and {right.message.record.stream}")
+                        print(f"left: {left.message.record.data}")
+                        print(f"right: {right.message.record.data}")
+                        continue
+                    else:
+                        compare_records(left, right, stream_stats)
+                else:
+                    #compare_records(left, right, stream_stats)
+                    left_data_clone = copy.deepcopy(left.message.record.data)
+                    right_data_clone = copy.deepcopy(right.message.record.data)
+                    print(f"ignore fields: {stream_stats.fields_to_ignore}")
+                    for field in stream_stats.fields_to_ignore:
+                        left_data_clone.pop(field, None)
+                        right_data_clone.pop(field, None)
+                    print(f"left: {left_data_clone}")
+                    print(f"right: {right_data_clone}")
+                    stream_stats.unmatched_left_no_pk.append(left_data_clone)
+                    stream_stats.unmatched_right_no_pk.append(right_data_clone)
 
                 if left.message.record.data != right.message.record.data:
                     print(f"Data mismatch: {left.message.record.data} != {right.message.record.data}")
@@ -133,16 +163,50 @@ async def main():
             # FIXME needd to do another check of missing
             # check missing
             for stream_name, stream_stats in streams_stats.items():
-                left_keys = set(stream_stats.left_rows_missing.keys())
-                for left_key in left_keys:
-                    print(f"missinh {left_key}")
-                    if left_key in stream_stats.right_rows_missing:
-                        print(f"found {left_key} in right")
-                        compare_records(stream_stats.left_rows_missing[left_key], stream_stats.right_rows_missing[left_key], stream_stats)
-                        stream_stats.left_rows_missing.pop(left_key)
-                        stream_stats.right_rows_missing.pop(left_key)
-                    else:
-                        print(f"did not find {left_key} in right")
+                configured_stream = [stream for stream in configured_catalog.streams if stream.stream.name == stream_name][0]
+                primary_key = configured_stream.primary_key
+                if primary_key:
+                    left_keys = set(stream_stats.left_rows_missing.keys())
+                    for left_key in left_keys:
+                        print(f"missinh {left_key}")
+                        if left_key in stream_stats.right_rows_missing:
+                            print(f"found {left_key} in right")
+                            compare_records(stream_stats.left_rows_missing[left_key], stream_stats.right_rows_missing[left_key], stream_stats)
+                            stream_stats.left_rows_missing.pop(left_key)
+                            stream_stats.right_rows_missing.pop(left_key)
+                        else:
+                            print(f"did not find {left_key} in right")
+                else:
+                    # no pk
+                    left_indices_to_remove = []
+                    right_indices_to_remove = []
+                    for left_index in range(len(stream_stats.unmatched_left_no_pk)):
+                        left_data = stream_stats.unmatched_left_no_pk[left_index]
+                        for right_index in range(len(stream_stats.unmatched_right_no_pk)):
+                            right_data = stream_stats.unmatched_right_no_pk[right_index]
+                            left_dump = json.dumps(left_data)
+                            right_dump = json.dumps(right_data)
+                            print(f"left: {left_dump}")
+                            print(f"right: {right_dump}")
+                            print(f"left == right: {left_dump == right_dump}")
+                            if json.dumps(left_data) == json.dumps(right_data):
+                                #stream_stats.unmatched_left_no_pk.pop(left_index)
+                                #stream_stats.unmatched_right_no_pk.pop(right_index)
+                                left_indices_to_remove.append(left_index)
+                                right_indices_to_remove.append(right_index)
+
+                                # FIXME this is sort of approximate
+                                # because it assumes the two dicts are exactly ewqual
+                                for c in left_data.keys():
+                                    if c not in stream_stats.columns_to_equal:
+                                        stream_stats.columns_to_equal[c] = 0
+                                    stream_stats.columns_to_equal[c] += 1
+                                stream_stats.record_count += 1
+                                break
+                    for index in sorted(left_indices_to_remove, reverse=True):
+                        stream_stats.unmatched_left_no_pk.pop(index)
+                    for index in sorted(right_indices_to_remove, reverse=True):
+                        stream_stats.unmatched_right_no_pk.pop(index)
             # FIXME need to check if both are done
             for stream_stats in streams_stats.values():
                 stats_rows = []
@@ -190,6 +254,7 @@ def _configured_catalog(streams):
                 stream=stream,
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.append,
+                primary_key=stream.source_defined_primary_key
             )
             for stream in streams
         ]
@@ -206,15 +271,16 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
         # TODO
         summary_stats = []
         for stream_name, stream_stat in streams_stats.items():
-            any_diff = any([val > 0 for col, val in stream_stat.columns_to_diff_count.items() if col not in stream_stat.fields_to_ignore])
-            print(f"diff for stream {stream_name}: {stream_stat.columns_to_diff_count}")
+            any_diff = any([val > 0 for col, val in streams_stats[stream_name].columns_to_diff_count.items() if col not in streams_stats[stream_name].fields_to_ignore])
+            print(f"diff for stream {stream_name}: {streams_stats[stream_name].columns_to_diff_count}")
+            print(f"stream stat for {stream_name}: {streams_stats[stream_name]}")
             stat = {
                 "stream": stream_name,
-                "OK": not any_diff and len(stream_stat.left_rows_missing) == 0 and len(stream_stat.right_rows_missing) == 0,
-                "diff_fields": sum([val for col, val in stream_stat.columns_to_diff_count.items()]),
-                "record_count": stream_stat.record_count,
-                "missing_left": len(stream_stat.left_rows_missing),
-                "missing_right": len(stream_stat.right_rows_missing),
+                "OK": not any_diff and len(streams_stats[stream_name].left_rows_missing) == 0 and len(streams_stats[stream_name].right_rows_missing) == 0,
+                "diff_fields": sum([val for col, val in streams_stats[stream_name].columns_to_diff_count.items()]),
+                "record_count": streams_stats[stream_name].record_count,
+                "missing_left": len(streams_stats[stream_name].left_rows_missing) + len(streams_stats[stream_name].unmatched_left_no_pk),
+                "missing_right": len(streams_stats[stream_name].right_rows_missing) + len(streams_stats[stream_name].unmatched_right_no_pk),
             }
             print(f"stat:{stat}")
             summary_stats.append(stat)
@@ -249,17 +315,22 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
 
         for stream, group_data in streams_to_dataframe.items():
             # Generate per-stream tables
+            print(f"group_data for stream {stream}\n{group_data}")
             table = pd.pivot_table(group_data, values="value", index="column", columns="metric")
             # Plotting table using matplotlib
 
             # Define a function to assign colors based on conditions
+            print(f"stream: {stream}")
+            print(f"fields_to_ignore: {streams_stats[stream].fields_to_ignore}")
             def color_cells(table, row, col):
                 value = table.loc[row, col]
                 if value > 0 and col != "equal_count":
                     s = table.loc[row].name
-                    if s in stream_stat.fields_to_ignore:
+                    if s in streams_stats[stream].fields_to_ignore:
+                        print(f"ignoring {s} for stream {stream}")
                         return "yellow"
                     else:
+                        print(f"not ignoring {s} for stream {stream}")
                         return "red"
                 return "white"  # Default color for other cells
 
