@@ -36,6 +36,10 @@ async def main():
     columns_to_left_missing = {}
     columns_to_equal = {}
 
+    left_rows_missing = {}
+    right_rows_missing = {}
+    primary_key = "id"
+
     while subprocess_left.__anext__() and subprocess_right.__anext__():
         try:
             left = await subprocess_left.__anext__()
@@ -51,6 +55,11 @@ async def main():
                 print(left.message.type == right.message.type)
                 return
             if left.message.type == MessageType.RECORD:
+
+                if left.message.record.data[primary_key] != right.message.record.data[primary_key]:
+                    left_rows_missing[left.message.record.data[primary_key]] = left
+                    right_rows_missing[right.message.record.data[primary_key]] = right
+
                 for column, left_value in left.message.record.data.items():
                     if column not in columns_to_diff_count:
                         columns_to_diff_count[column] = 0
@@ -89,6 +98,13 @@ async def main():
             print(f"columns_to_left_missing: {columns_to_left_missing}")
             print(f"columns_to_equal: {columns_to_equal}")
             # NEED TO VERIFY BOTH ARE DONE
+
+            print(f"left_rows_missing: {left_rows_missing}")
+            print(len(left_rows_missing))
+
+            print(f"right_rows_missing: {right_rows_missing}")
+            print(len(right_rows_missing))
+
             break
 
 async def is_next_item_available(generator):
