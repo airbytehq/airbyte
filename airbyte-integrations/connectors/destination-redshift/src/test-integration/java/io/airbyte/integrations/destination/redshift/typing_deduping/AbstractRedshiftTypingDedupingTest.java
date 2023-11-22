@@ -22,7 +22,8 @@ import javax.sql.DataSource;
 import org.jooq.impl.DSL;
 
 /**
- * This class is basically the same as {@link io.airbyte.integrations.destination.snowflake.typing_deduping.AbstractSnowflakeTypingDedupingTest}.
+ * This class is basically the same as
+ * {@link io.airbyte.integrations.destination.snowflake.typing_deduping.AbstractSnowflakeTypingDedupingTest}.
  * But (a) it uses jooq to construct the sql statements, and (b) it doesn't need to upcase anything.
  * At some point we might (?) want to do a refactor to combine them. At the very least, this class
  * is probably useful for other JDBC destination implementations.
