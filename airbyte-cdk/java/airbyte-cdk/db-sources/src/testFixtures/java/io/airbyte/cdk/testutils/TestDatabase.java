@@ -31,6 +31,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
+/**
+ * TestDatabase provides a convenient pattern for interacting with databases when testing SQL
+ * database sources. The basic idea is to share the same database testcontainer instance for all
+ * tests and to use SQL constructs such as DATABASE and USER to isolate each test case's state.
+ *
+ * @param <C> the type of the backing testcontainer.
+ * @param <T> itself
+ * @param <B> the type of the object returned by {@link #configBuilder()}
+ */
 abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends TestDatabase<C, T, B>, B extends TestDatabase.ConfigBuilder<T, B>>
     implements AutoCloseable {
 
@@ -54,6 +63,9 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     return (T) this;
   }
 
+  /**
+   * Adds a key-value pair to the JDBC URL's query parameters.
+   */
   public T withConnectionProperty(String key, String value) {
     if (isInitialized()) {
       throw new RuntimeException("TestDatabase instance is already initialized");
@@ -62,16 +74,27 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     return self();
   }
 
+  /**
+   * Enqueues a SQL statement to be executed when this object is closed.
+   */
   public T onClose(String fmtSql, Object... fmtArgs) {
     cleanupSQL.add(String.format(fmtSql, fmtArgs));
     return self();
   }
 
+  /**
+   * Executes a SQL statement after calling String.format on the arguments.
+   */
   public T with(String fmtSql, Object... fmtArgs) {
     execSQL(Stream.of(String.format(fmtSql, fmtArgs)));
     return self();
   }
 
+  /**
+   * Executes SQL statements as root to provide the necessary isolation for the lifetime of this
+   * object. This typically entails at least a CREATE DATABASE and a CREATE USER. Also Initializes the
+   * {@link DataSource} and {@link DSLContext} owned by this object.
+   */
   final public T initialized() {
     inContainerBootstrapCmd().forEach(this::execInContainer);
     this.dataSource = DataSourceFactory.create(
@@ -181,6 +204,9 @@ abstract public class TestDatabase<C extends JdbcDatabaseContainer<?>, T extends
     return getDatabase().transaction(transform);
   }
 
+  /**
+   * Returns a builder for the connector config object.
+   */
   public B configBuilder() {
     return new ConfigBuilder<T, B>(self()).self();
   }
