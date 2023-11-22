@@ -13,9 +13,9 @@ import sys
 
 parser = argparse.ArgumentParser(description='Bump CDK version for connectors')
 parser.add_argument('--selector', required=True, help='Connector selector')
-parser.add_argument('--pr', required=True, help='PR Number')
+parser.add_argument('--pr', required=False, help='PR Number')
 parser.add_argument('--version', required=True, help='New CDK version number')
-parser.add_argument('--changelog', required=True, help='Changelog entry')
+parser.add_argument('--changelog', required=False, help='Changelog entry')
 args = parser.parse_args()
 
 # store the selector in a variable
@@ -109,7 +109,8 @@ for connector in connectors_to_bump:
         setupFile.write(setupFileObject)
         setupFile.close()
 
-        # Bump version via airbyte-ci = airbyte-ci connectors --name={connector} bump_version patch {pr number from args} "Update CDK version: {changelog from args}"
-        subprocess.run(f"airbyte-ci connectors --name={connector} bump_version patch {args.pr} \"Update CDK version: {args.changelog}\"", shell=True)
+        if args.pr and args.changelog:
+            # Bump connector version via airbyte-ci = airbyte-ci connectors --name={connector} bump_version patch {pr number from args} "Update CDK version: {changelog from args}"
+            subprocess.run(f"airbyte-ci connectors --name={connector} bump_version patch {args.pr} \"Update CDK version: {args.changelog}\"", shell=True)
     else:
         print(f"No setup.py found, skipping {connector}")
