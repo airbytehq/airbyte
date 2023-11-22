@@ -16,6 +16,7 @@ import io.airbyte.api.model.generated.JobIdRequestBody;
 import io.airbyte.api.model.generated.JobInfoLightRead;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobListRequestBody;
+import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobReadList;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
 import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
@@ -100,6 +101,19 @@ public class JobHistoryHandler {
         .collect(Collectors.toList());
 
     return new JobReadList().jobs(jobReads).totalJobCount(totalJobCount);
+  }
+
+  public JobRead latestJobFor(final JobListRequestBody request) throws IOException {
+    Preconditions.checkNotNull(request.getConfigTypes(), "configType cannot be null.");
+    Preconditions.checkState(!request.getConfigTypes().isEmpty(), "Must include at least one configType.");
+
+    final Set<ConfigType> configTypes = request.getConfigTypes()
+        .stream()
+        .map(type -> Enums.convertTo(type, JobConfig.ConfigType.class))
+        .collect(Collectors.toSet());
+    final String configId = request.getConfigId();
+
+    return JobConverter.getJobRead(jobPersistence.latestJob(configTypes, configId));
   }
 
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
