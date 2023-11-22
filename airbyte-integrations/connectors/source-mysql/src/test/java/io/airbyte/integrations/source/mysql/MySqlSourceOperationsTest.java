@@ -15,6 +15,7 @@ import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.commons.json.Jsons;
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,14 +26,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.shaded.com.trilead.ssh2.crypto.Base64;
 
 public class MySqlSourceOperationsTest {
 
@@ -280,6 +284,69 @@ public class MySqlSourceOperationsTest {
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
       sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.TIMESTAMP, Instant.ofEpochSecond(1660298508L).toString());
 
+      try (final ResultSet resultSet = preparedStatement.executeQuery()) {
+        while (resultSet.next()) {
+          final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+          for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
+          }
+          actualRecords.add(jsonNode);
+        }
+      }
+    }
+    Assertions.assertEquals(3, actualRecords.size());
+  }
+
+  @Test
+  public void binaryColumnAsCursor() throws SQLException {
+    final String tableName = container.getDatabaseName() + ".table_with_binary";
+    final String cursorColumn = "cursor_column";
+    executeQuery("CREATE TABLE " + tableName + "(id INTEGER PRIMARY KEY, " + cursorColumn + " binary(20));");
+
+    final List<JsonNode> expectedRecords = new ArrayList<>();
+    for (int i = 1; i <= 4; i++) {
+      final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+      jsonNode.put("id", i);
+      final String binaryCursorValue = "000000000" + i;
+      jsonNode.put("cursor_column", binaryCursorValue);
+      executeQuery("INSERT INTO " + tableName + " VALUES (" + i + ", '" + binaryCursorValue + "');");
+      System.out.println("convertUUIDToBytes(cursorValue) - " + binaryCursorValue);
+      if (i >= 2) {
+        expectedRecords.add(jsonNode);
+      }
+    }
+
+    final List<JsonNode> actualRecords = new ArrayList<>();
+    try (final Connection connection = container.createConnection("")) {
+      final PreparedStatement preparedStatement = connection.prepareStatement(
+          "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
+      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.BINARY,
+          "MDAwMDAwMDAwMQAAAAAAAAAAAAA=");
+      System.out.println("preparedStatement in cursor: " + preparedStatement.toString());
+
+      try (final ResultSet resultSet = preparedStatement.executeQuery()) {
+        while (resultSet.next()) {
+          final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+          for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
+          }
+          actualRecords.add(jsonNode);
+        }
+      }
+    }
+
+    System.out.println("actualRecords - " + actualRecords);
+
+    Assertions.assertEquals(3, actualRecords.size());
+
+    // Test to check backward compatibility for connectors created before PR
+    // https://github.com/airbytehq/airbyte/pull/15504
+    actualRecords.clear();
+    try (final Connection connection = container.createConnection("")) {
+      final PreparedStatement preparedStatement = connection.prepareStatement(
+          "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
+      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.BINARY,
+          "MDAwMDAwMDAwMQAAAAAAAAAAAAA=");
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
