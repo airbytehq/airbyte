@@ -15,6 +15,7 @@ import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Source;
@@ -62,6 +63,9 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests that should be run on all Sources that extend the AbstractJdbcSource.
  */
+@SuppressFBWarnings(
+    value = {"MS_SHOULD_BE_FINAL"},
+    justification = "The static variables are updated in subclasses for convenience, and cannot be final.")
 abstract public class JdbcSourceTest<S extends Source, T extends TestDatabase<?, T, ?>> {
 
   static protected String SCHEMA_NAME = "jdbc_integration_test1";
