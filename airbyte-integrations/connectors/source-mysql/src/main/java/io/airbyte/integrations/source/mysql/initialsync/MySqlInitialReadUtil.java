@@ -17,7 +17,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlCdcPosition;
 import io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil;
@@ -84,7 +84,7 @@ public class MySqlInitialReadUtil {
                                                                                 final Instant emittedAt,
                                                                                 final String quoteString) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
+    final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
     LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
     // Determine the streams that need to be loaded via primary key sync.
     final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>();

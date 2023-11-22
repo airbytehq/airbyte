@@ -34,7 +34,7 @@ import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
-import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils;
@@ -182,7 +182,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       checkOperations.addAll(CdcConfigurationHelper.getCheckOperations());
 
       checkOperations.add(database -> {
-        FirstRecordWaitTimeUtil.checkFirstRecordWaitTime(config);
+        RecordWaitTimeUtil.checkFirstRecordWaitTime(config);
         CdcConfigurationHelper.checkServerTimeZoneConfig(config);
       });
     }
