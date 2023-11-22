@@ -44,7 +44,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit, value, placehold
         return {
           label: item.name,
           value: item.sourceId,
-          img: <ConnectorIcon icon={sourceDef?.icon} />,
+          img: <ConnectorIcon icon={`https://airbyte-icons.s3.amazonaws.com/${sourceDef?.icon}`} />,
         };
       });
     }
@@ -55,7 +55,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit, value, placehold
       return {
         label: item.name,
         value: item.destinationId,
-        img: <ConnectorIcon icon={destinationDef?.icon} />,
+        img: <ConnectorIcon icon={`https://airbyte-icons.s3.amazonaws.com/${destinationDef?.icon}`} />,
       };
     });
   }, [type]);

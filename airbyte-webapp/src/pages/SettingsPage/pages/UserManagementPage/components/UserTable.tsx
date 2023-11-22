@@ -1,8 +1,10 @@
+import { Box, Typography } from "@mui/material";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { DropDownRow } from "components";
+import { DropDownRow, Tooltip } from "components";
+import { QuestionIcon } from "components/icons/QuestionIcon";
 import { Row, Cell } from "components/SimpleTableComponents";
 
 import { User } from "core/domain/user";
@@ -46,7 +48,36 @@ const UserTable: React.FC<IProps> = React.memo(({ users, roles, onDelete, onChan
           <FormattedMessage id="user.heading.email" />
         </HeaderCell>
         <HeaderCell>
-          <FormattedMessage id="user.heading.role" />
+          <Tooltip
+            control={
+              <Box sx={{ display: "flex" }} pt={1}>
+                <FormattedMessage id="user.heading.role" />
+                <Box>
+                  <QuestionIcon />
+                </Box>
+              </Box>
+            }
+            placement="top"
+          >
+            <Box>
+              <Typography>
+                <FormattedMessage id="permission.owner" />
+              </Typography>
+              .<FormattedMessage id="permission.owner.roleone" />
+              <br />
+              .<FormattedMessage id="permission.owner.roletwo" />
+              <br />
+              .<FormattedMessage id="permission.owner.rolethree" />
+              <Typography>
+                <FormattedMessage id="permission.admin" />
+              </Typography>
+              .<FormattedMessage id="permission.admin.role" />
+              <Typography>
+                <FormattedMessage id="permission.user" />
+              </Typography>
+              .<FormattedMessage id="permission.user.role" />
+            </Box>
+          </Tooltip>
         </HeaderCell>
         <HeaderCell>
           <FormattedMessage id="user.heading.status" />

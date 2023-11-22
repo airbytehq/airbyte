@@ -277,6 +277,7 @@ public class ConnectionsHandler {
         workspaceIdRequestBody.getPageSize(), workspaceIdRequestBody.getPageCurrent())) {
       connectionReads.add(ApiPojoConverters.internalToConnectionPageRead(standardSync));
     }
+
     return new ConnectionReadList().connections(connectionReads);
   }
 

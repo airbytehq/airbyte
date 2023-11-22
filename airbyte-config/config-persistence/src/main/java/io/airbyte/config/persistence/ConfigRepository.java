@@ -701,6 +701,7 @@ public class ConfigRepository {
       return where.limit(pageSize)
           .offset(pageSize * (pageCurrent - 1));
     }).fetch();
+
     return getStandardSyncsWithoutOperationFromResult(result);
   }
 

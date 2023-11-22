@@ -7,6 +7,8 @@ package io.airbyte.scheduler.persistence;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -419,6 +421,25 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public Job latestJob(final Set<ConfigType> configTypes, final String configId) throws IOException {
+    return jobDatabase.query(ctx -> {
+      final Record latestJobRecord = ctx.select(field(name("id")).as("job_id"),
+          field(name("config_type")).as("config_type"),
+          field(name("scope")).as("scope"),
+          field(name("config")).as("config"),
+          field(name("status")).as("job_status"),
+          field(name("started_at")).as("job_started_at"),
+          field(name("created_at")).as("job_created_at"),
+          field(name("updated_at")).as("job_updated_at")).from(JOBS)
+          .where(JOBS.CONFIG_TYPE.in(Sqls.toSqlNames(configTypes)))
+          .and(JOBS.SCOPE.eq(configId))
+          .orderBy(JOBS.CREATED_AT.desc(), JOBS.ID.desc())
+          .limit(1).fetchOne();
+      return getJobFromRecord(latestJobRecord);
+    });
+  }
+
+  @Override
   public List<Job> listJobsIncludingId(final Set<ConfigType> configTypes, final String connectionId, final long includingJobId, final int pagesize)
       throws IOException {
     final Optional<OffsetDateTime> includingJobCreatedAt = jobDatabase.query(ctx -> ctx.select(JOBS.CREATED_AT).from(JOBS)
@@ -681,9 +702,9 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public String getConnectionName(UUID connectionId) throws IOException {
     return jobDatabase.query(ctx -> ctx.select()
-            .from(CONNECTION_TABLE)
-            .where(DSL.field("id").eq(connectionId))
-            .fetchOne("name", String.class));
+        .from(CONNECTION_TABLE)
+        .where(DSL.field("id").eq(connectionId))
+        .fetchOne("name", String.class));
   }
 
   @Override

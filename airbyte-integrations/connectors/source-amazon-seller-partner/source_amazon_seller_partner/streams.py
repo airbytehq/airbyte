@@ -258,7 +258,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         replication_start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=30))
 
         params = {
-            "reportType": self.name,
+            "reportType": self.report_type,
             "marketplaceIds": [self.marketplace_id],
             "dataStartTime": replication_start_date.strftime(DATE_TIME_FORMAT),
         }
@@ -404,6 +404,7 @@ class ReportsAmazonSPStream(Stream, ABC):
 
 class MerchantListingsReports(ReportsAmazonSPStream):
     name = "GET_MERCHANT_LISTINGS_ALL_DATA"
+    report_type = "GET_MERCHANT_LISTINGS_ALL_DATA"
 
 
 class FlatFileOrdersReports(ReportsAmazonSPStream):
@@ -412,6 +413,7 @@ class FlatFileOrdersReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
+    report_type = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
 
 class FbaInventoryPlanningReports(ReportsAmazonSPStream):
     """
@@ -421,12 +423,15 @@ class FbaInventoryPlanningReports(ReportsAmazonSPStream):
     primary_key = "sku"
     cursor_field = "sku"
     name = "GET_FBA_INVENTORY_PLANNING_DATA"
+    report_type = "GET_FBA_INVENTORY_PLANNING_DATA"
 
 class FBAInboundPerformanceReport(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_INBOUND_NONCOMPLIANCE_DATA"
+    report_type = "GET_FBA_FULFILLMENT_INBOUND_NONCOMPLIANCE_DATA"
 
 class FBAManageInventory(ReportsAmazonSPStream):
     name = "GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA"
+    report_type = "GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA"
 
 
 class LedgerDetailViewDataReports(ReportsAmazonSPStream):
@@ -435,6 +440,7 @@ class LedgerDetailViewDataReports(ReportsAmazonSPStream):
     """
 
     name = "GET_LEDGER_DETAIL_VIEW_DATA"
+    report_type = "GET_LEDGER_DETAIL_VIEW_DATA"
 
 
 class FbaInventoryReports(ReportsAmazonSPStream):
@@ -443,6 +449,7 @@ class FbaInventoryReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FBA_INVENTORY_AGED_DATA"
+    report_type = "GET_FBA_INVENTORY_AGED_DATA"
 
 
 class FbaStorageFeesReports(ReportsAmazonSPStream):
@@ -451,6 +458,7 @@ class FbaStorageFeesReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FBA_STORAGE_FEE_CHARGES_DATA"
+    report_type = "GET_FBA_STORAGE_FEE_CHARGES_DATA"
 
 
 class FulfilledShipmentsReports(ReportsAmazonSPStream):
@@ -459,10 +467,12 @@ class FulfilledShipmentsReports(ReportsAmazonSPStream):
     """
 
     name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
+    report_type = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
 
 
 class FlatFileOpenListingsReports(ReportsAmazonSPStream):
     name = "GET_FLAT_FILE_OPEN_LISTINGS_DATA"
+    report_type = "GET_FLAT_FILE_OPEN_LISTINGS_DATA"
 
 
 class FbaOrdersReports(ReportsAmazonSPStream):
@@ -471,6 +481,7 @@ class FbaOrdersReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
+    report_type = "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
 
 
 class FbaShipmentsReports(ReportsAmazonSPStream):
@@ -479,6 +490,7 @@ class FbaShipmentsReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA"
+    report_type = "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA"
 
 
 class FbaReplacementsReports(ReportsAmazonSPStream):
@@ -487,6 +499,7 @@ class FbaReplacementsReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA"
+    report_type = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA"
 
 
 class RestockInventoryReports(ReportsAmazonSPStream):
@@ -495,10 +508,12 @@ class RestockInventoryReports(ReportsAmazonSPStream):
     """
 
     name = "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT"
+    report_type = "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT"
 
 
 class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
+    report_type = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 
 
 class GetXmlBrowseTreeData(ReportsAmazonSPStream):
@@ -509,6 +524,7 @@ class GetXmlBrowseTreeData(ReportsAmazonSPStream):
         return parsed.get("Result", {}).get("Node", [])
 
     name = "GET_XML_BROWSE_TREE_DATA"
+    report_type = "GET_XML_BROWSE_TREE_DATA"
 
 
 class BrandAnalyticsStream(ReportsAmazonSPStream):
@@ -571,6 +587,7 @@ class BrandAnalyticsStream(ReportsAmazonSPStream):
 
 class BrandAnalyticsMarketBasketReports(BrandAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
+    report_type = "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
     result_key = "dataByAsin"
 
 
@@ -580,26 +597,31 @@ class BrandAnalyticsSearchTermsReports(BrandAnalyticsStream):
     """
 
     name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
+    report_type = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
     result_key = "dataByDepartmentAndSearchTerm"
 
 
 class BrandAnalyticsRepeatPurchaseReports(BrandAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
+    report_type = "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
     result_key = "dataByAsin"
 
 
 class BrandAnalyticsAlternatePurchaseReports(BrandAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
+    report_type = "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
     result_key = "dataByAsin"
 
 
 class BrandAnalyticsItemComparisonReports(BrandAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
+    report_type = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
     result_key = "dataByAsin"
 
 
 class SalesAndTrafficReports(ReportsAmazonSPStream):
     name = "GET_SALES_AND_TRAFFIC_REPORT"
+    report_type = "GET_SALES_AND_TRAFFIC_REPORT"
     
     def __init__(
         self,
@@ -746,6 +768,7 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
     NORMALIZED_FIELD_NAMES = ["date", "rating", "comments", "response", "order_id", "rater_email"]
 
     name = "GET_SELLER_FEEDBACK_DATA"
+    report_type = "GET_SELLER_FEEDBACK_DATA"
     cursor_field = "date"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
@@ -786,6 +809,7 @@ class FlatFileOrdersReportsByLastUpdate(IncrementalReportsAmazonSPStream):
     """
 
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL"
+    report_type = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL"
     cursor_field = "last-updated-date"
 
 
@@ -966,6 +990,7 @@ class ListFinancialEvents(FinanceStream):
 class FbaCustomerReturnsReports(ReportsAmazonSPStream):
 
     name = "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA"
+    report_type = "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA"
 
     def _report_data(
         self,
@@ -977,7 +1002,7 @@ class FbaCustomerReturnsReports(ReportsAmazonSPStream):
         replication_start_date = pendulum.parse(self._replication_start_date)
 
         data = {
-            "reportType": self.name,
+            "reportType": self.report_type,
             "marketplaceIds": [self.marketplace_id],
             "dataStartTime": replication_start_date.strftime(DATE_TIME_FORMAT),
         }
@@ -987,6 +1012,7 @@ class FbaCustomerReturnsReports(ReportsAmazonSPStream):
 class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
 
     name = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
+    report_type = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
 
     def _create_report(
         self,
@@ -1021,7 +1047,7 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
             end_date = pendulum.now("utc")
 
         params = {
-            "reportTypes": self.name,
+            "reportTypes": self.report_type,
             "pageSize": 100,
             "createdSince": create_date.strftime(DATE_TIME_FORMAT),
             "createdUntil": end_date.strftime(DATE_TIME_FORMAT),
@@ -1055,7 +1081,9 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
 
 
 class FBALongTermStorageFeeChargesReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_LONGTERM_STORAGE_FEE_CHARGES_DATA"
+    name = "LongTermStorageFeeCharges"
+    report_type = "GET_FBA_FULFILLMENT_LONGTERM_STORAGE_FEE_CHARGES_DATA"
     
 class FBAReimbursementsReport(ReportsAmazonSPStream):
     name = "GET_FBA_REIMBURSEMENTS_DATA"
+    report_type = "GET_FBA_REIMBURSEMENTS_DATA"
