@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from contextlib import nullcontext
 from unittest.mock import patch
 
 import pendulum
 import pytest
 import requests
-import json
 from airbyte_cdk.sources.streams.http import HttpStream
 from freezegun import freeze_time
 from source_twilio.auth import HttpBasicAuthenticator
@@ -23,9 +23,9 @@ from source_twilio.streams import (
     Messages,
     Recordings,
     TwilioNestedStream,
+    TwilioStream,
     UsageRecords,
     UsageTriggers,
-    TwilioStream
 )
 
 TEST_CONFIG = {
