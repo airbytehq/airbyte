@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from contextlib import nullcontext
 from unittest.mock import patch
 
