@@ -118,6 +118,8 @@ This source is capable of syncing the following tables and their data:
 - [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(only available in OSS\)
 - [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(only available in OSS\)
 - [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(only available in OSS\)
+- [FBA Amazon Fulfilled Inventory Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(incremental\)
+- [FBA Multi-Country Inventory Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(incremental\)
 
 ## Report options
 
@@ -142,6 +144,7 @@ So, for any value that exceeds the limit, the `period_in_days` will be automatic
 
 | Version  | Date       | Pull Request                                                | Subject                                                                                                                                                                             |
 |:---------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `2.3.0`  | 2023-11-22 | [\#32541](https://github.com/airbytehq/airbyte/pull/32541)  | Make `GET_AFN_INVENTORY_DATA`, `GET_AFN_INVENTORY_DATA_BY_COUNTRY`, and `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` streams incremental                                               |
 | `2.2.0`  | 2023-11-21 | [\#32639](https://github.com/airbytehq/airbyte/pull/32639)  | Make start date optional, if start date is not provided, date 2 years ago from today will be used                                                                                   |
 | `2.1.1`  | 2023-11-21 | [\#32560](https://github.com/airbytehq/airbyte/pull/32560)  | Silently exit sync if the retry attempts were unsuccessful                                                                                                                          |
 | `2.1.0`  | 2023-11-21 | [\#32591](https://github.com/airbytehq/airbyte/pull/32591)  | Add new fields to GET_LEDGER_DETAIL_VIEW_DATA, GET_FBA_INVENTORY_PLANNING_DATA and Orders schemas                                                                                   |
