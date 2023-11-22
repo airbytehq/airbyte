@@ -122,7 +122,7 @@ class IntegrationRunnerTest {
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(source.spec()).thenReturn(output);
 
-    new IntegrationRunner(cliParser, stdoutConsumer, null, source, (ProtobufSource) null).run(ARGS);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, (ProtobufSource) null).run(ARGS);
 
     verify(source).spec();
     verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.SPEC).withSpec(output));
@@ -136,7 +136,7 @@ class IntegrationRunnerTest {
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
     when(destination.spec()).thenReturn(output);
 
-    new IntegrationRunner(cliParser, stdoutConsumer, destination, null, (ProtobufSource) null).run(ARGS);
+    new IntegrationRunner(cliParser, stdoutConsumer, destination, null, null, (ProtobufSource) null).run(ARGS);
 
     verify(destination).spec();
     verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.SPEC).withSpec(output));
@@ -154,7 +154,7 @@ class IntegrationRunnerTest {
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
-    new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, jsonSchemaValidator).run(ARGS);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, null, jsonSchemaValidator).run(ARGS);
 
     verify(source).check(CONFIG);
     verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
@@ -175,7 +175,7 @@ class IntegrationRunnerTest {
 
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
-    new IntegrationRunner(cliParser, stdoutConsumer, destination, null, null, jsonSchemaValidator).run(ARGS);
+    new IntegrationRunner(cliParser, stdoutConsumer, destination, null, null, null, jsonSchemaValidator).run(ARGS);
 
     verify(destination).check(CONFIG);
     verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
@@ -196,7 +196,7 @@ class IntegrationRunnerTest {
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
-    new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, jsonSchemaValidator).run(ARGS);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, null, jsonSchemaValidator).run(ARGS);
 
     verify(source).discover(CONFIG);
     verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(output));
@@ -221,7 +221,7 @@ class IntegrationRunnerTest {
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
 
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
-    new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, jsonSchemaValidator).run(ARGS);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, null, jsonSchemaValidator).run(ARGS);
 
     // noinspection resource
     verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
@@ -245,7 +245,7 @@ class IntegrationRunnerTest {
 
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
     final Throwable throwable =
-        catchThrowable(() -> new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, jsonSchemaValidator).run(ARGS));
+        catchThrowable(() -> new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, null, jsonSchemaValidator).run(ARGS));
 
     assertThat(throwable).isInstanceOf(ConfigErrorException.class);
     // noinspection resource
@@ -266,7 +266,7 @@ class IntegrationRunnerTest {
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
-    new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, jsonSchemaValidator).run(ARGS);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, null, jsonSchemaValidator).run(ARGS);
 
     verify(source).check(CONFIG);
     verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
@@ -287,7 +287,7 @@ class IntegrationRunnerTest {
     when(source.spec()).thenReturn(expectedConnSpec);
     when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
-    new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, jsonSchemaValidator).run(ARGS);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, null, null, jsonSchemaValidator).run(ARGS);
 
     verify(source).check(CONFIG);
     verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
@@ -307,7 +307,7 @@ class IntegrationRunnerTest {
 
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
 
-    final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null, null, jsonSchemaValidator));
+    final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null, null, null, jsonSchemaValidator));
     runner.run(ARGS);
 
     verify(destination).getSerializedMessageConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer);

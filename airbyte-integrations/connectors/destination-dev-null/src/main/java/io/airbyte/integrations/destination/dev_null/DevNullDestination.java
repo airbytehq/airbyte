@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.ProtobufDestination;
 import io.airbyte.cdk.integrations.base.spec_modification.SpecModifyingDestination;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.e2e_test.TestingDestinations;
@@ -17,7 +18,7 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DevNullDestination extends SpecModifyingDestination implements Destination {
+public class DevNullDestination extends SpecModifyingDestination implements Destination, ProtobufDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DevNullDestination.class);
   private static final String DEV_NULL_DESTINATION_TITLE = "E2E Test (/dev/null) Destination Spec";
@@ -28,7 +29,7 @@ public class DevNullDestination extends SpecModifyingDestination implements Dest
 
   public static void main(final String[] args) throws Exception {
     LOGGER.info("Starting destination: {}", DevNullDestination.class);
-    new IntegrationRunner(new DevNullDestination()).run(args);
+    new IntegrationRunner(new DevNullDestination(), new DevNullDestination()).run(args);
     LOGGER.info("Completed destination: {}", DevNullDestination.class);
   }
 

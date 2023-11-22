@@ -24,6 +24,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -39,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.ThreadUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
@@ -83,25 +85,30 @@ public class IntegrationRunner {
   private final FeatureFlags featureFlags;
   private static JsonSchemaValidator validator;
   private final ProtobufSource psource;
+  private final ProtobufDestination pdestination;
 
   public IntegrationRunner(final Destination destination) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null, null);
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null, null, null);
+  }
+
+  public IntegrationRunner(final Destination destination, final ProtobufDestination pdestination) {
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null, pdestination, null);
   }
 
   public IntegrationRunner(final Source source) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source, null);
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source, null, null);
   }
 
   public IntegrationRunner(final Source source, final ProtobufSource psource) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source, psource);
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source, null, psource);
   }
 
-  @VisibleForTesting
-  IntegrationRunner(final IntegrationCliParser cliParser,
-                    final Consumer<AirbyteMessage> outputRecordCollector,
-                    final Destination destination,
-                    final Source source,
-                    final ProtobufSource psource) {
+  @VisibleForTesting IntegrationRunner(final IntegrationCliParser cliParser,
+                                       final Consumer<AirbyteMessage> outputRecordCollector,
+                                       final Destination destination,
+                                       final Source source,
+                                       final ProtobufDestination pdestination,
+                                       final ProtobufSource psource) {
     Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
@@ -110,20 +117,21 @@ public class IntegrationRunner {
     this.source = source;
     this.destination = destination;
     this.psource = psource;
+    this.pdestination = pdestination;
     this.featureFlags = new EnvVariableFeatureFlags();
     validator = new JsonSchemaValidator();
 
     Thread.setDefaultUncaughtExceptionHandler(new AirbyteExceptionHandler());
   }
 
-  @VisibleForTesting
-  IntegrationRunner(final IntegrationCliParser cliParser,
-                    final Consumer<AirbyteMessage> outputRecordCollector,
-                    final Destination destination,
-                    final Source source,
-                    final ProtobufSource psource,
-                    final JsonSchemaValidator jsonSchemaValidator) {
-    this(cliParser, outputRecordCollector, destination, source, psource);
+  @VisibleForTesting IntegrationRunner(final IntegrationCliParser cliParser,
+                                       final Consumer<AirbyteMessage> outputRecordCollector,
+                                       final Destination destination,
+                                       final Source source,
+                                       ProtobufDestination pdestination,
+                                       final ProtobufSource psource,
+                                       final JsonSchemaValidator jsonSchemaValidator) {
+    this(cliParser, outputRecordCollector, destination, source, pdestination, psource);
     validator = jsonSchemaValidator;
   }
 
@@ -193,7 +201,11 @@ public class IntegrationRunner {
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
 
           try (final SerializedAirbyteMessageConsumer consumer = destination.getSerializedMessageConsumer(config, catalog, outputRecordCollector)) {
-            consumeWriteStream(consumer);
+            if (pdestination != null) {
+              consumeWriteStream2(consumer);
+            } else {
+              consumeWriteStream(consumer);
+            }
           } finally {
             stopOrphanedThreads(EXIT_HOOK,
                 INTERRUPT_THREAD_DELAY_MINUTES,
@@ -202,6 +214,7 @@ public class IntegrationRunner {
                 TimeUnit.MINUTES);
           }
         }
+
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
     } catch (final Exception e) {
@@ -263,9 +276,7 @@ public class IntegrationRunner {
           partitionSize);
 
       // Submit each stream partition for concurrent execution
-      partitions.forEach(partition -> {
-        streamConsumer.accept(partition);
-      });
+      partitions.forEach(streamConsumer);
 
       // Check for any exceptions that were raised during the concurrent execution
       if (streamConsumer.getException().isPresent()) {
@@ -327,6 +338,47 @@ public class IntegrationRunner {
   }
 
   @VisibleForTesting
+  static void consumeWriteStream2(final SerializedAirbyteMessageConsumer consumer) throws Exception {
+    try (final BufferedInputStream bis = new BufferedInputStream(System.in);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+      consumeWriteStream2(consumer, bis, baos);
+    }
+  }
+
+  @VisibleForTesting
+  static void consumeWriteStream2(final SerializedAirbyteMessageConsumer consumer,
+                                  final BufferedInputStream bis,
+                                  final ByteArrayOutputStream baos)
+      throws Exception {
+    consumer.start();
+
+    int byteRead;
+    boolean isLine = false;
+
+    while ((byteRead = bis.read()) != -1) {
+      if (!isLine && byteRead == 0) {
+        io.airbyte.protocol.protos.AirbyteMessage.parseDelimitedFrom(bis);
+      } else {
+        if (byteRead == '\n' || byteRead == '\r') {
+          isLine = false;
+          if (baos.size() > 0) {
+            consumer.accept(baos.toString(StandardCharsets.UTF_8), baos.size());
+            baos.reset();
+          }
+        } else {
+          isLine = true;
+          baos.write(byteRead);
+        }
+      }
+    }
+
+    // Handle last line if there's one
+    if (baos.size() > 0) {
+      consumer.accept(baos.toString(StandardCharsets.UTF_8), baos.size());
+    }
+  }
+
+  @VisibleForTesting
   static void consumeWriteStream(final SerializedAirbyteMessageConsumer consumer,
                                  final BufferedInputStream bis,
                                  final ByteArrayOutputStream baos)
@@ -368,11 +420,11 @@ public class IntegrationRunner {
    * force exiting the process, so this mechanism serve as a fallback while surfacing warnings in logs
    * for maintainers to fix the code behavior instead.
    *
-   * @param exitHook The {@link Runnable} exit hook to execute for any orphaned threads.
+   * @param exitHook           The {@link Runnable} exit hook to execute for any orphaned threads.
    * @param interruptTimeDelay The time to delay execution of the orphaned thread interrupt attempt.
-   * @param interruptTimeUnit The time unit of the interrupt delay.
-   * @param exitTimeDelay The time to delay execution of the orphaned thread exit hook.
-   * @param exitTimeUnit The time unit of the exit delay.
+   * @param interruptTimeUnit  The time unit of the interrupt delay.
+   * @param exitTimeDelay      The time to delay execution of the orphaned thread exit hook.
+   * @param exitTimeUnit       The time unit of the exit delay.
    */
   @VisibleForTesting
   static void stopOrphanedThreads(final Runnable exitHook,
@@ -388,10 +440,10 @@ public class IntegrationRunner {
         .collect(Collectors.toList());
     if (!runningThreads.isEmpty()) {
       LOGGER.warn("""
-                  The main thread is exiting while children non-daemon threads from a connector are still active.
-                  Ideally, this situation should not happen...
-                  Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
-                  The main thread is: {}""", dumpThread(currentThread));
+          The main thread is exiting while children non-daemon threads from a connector are still active.
+          Ideally, this situation should not happen...
+          Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
+          The main thread is: {}""", dumpThread(currentThread));
       final ScheduledExecutorService scheduledExecutorService = Executors
           .newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder()
               // this thread executor will create daemon threads, so it does not block exiting if all other active
