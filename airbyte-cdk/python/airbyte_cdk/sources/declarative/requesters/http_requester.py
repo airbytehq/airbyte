@@ -114,7 +114,7 @@ class HttpRequester(Requester):
                 sqlite_path = str(Path(cache_dir) / self.cache_filename)
             else:
                 sqlite_path = "file::memory:?cache=shared"
-            return requests_cache.CachedSession(sqlite_path, backend="sqlite")
+            return requests_cache.CachedSession(sqlite_path, backend="sqlite")  # type: ignore # there are no typeshed stubs for requests_cache
         else:
             return requests.Session()
 
