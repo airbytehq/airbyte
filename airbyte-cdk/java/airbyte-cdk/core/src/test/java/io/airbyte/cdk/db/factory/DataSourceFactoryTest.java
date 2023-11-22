@@ -103,7 +103,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
           mssqlServerContainer.getPassword(),
           mssqlServerContainer.getDriverClassName(),
           mssqlServerContainer.getJdbcUrl(),
-          Map.of("loginTimeout", "5000"));
+          Map.of("loginTimeout", "5"));
       assertNotNull(dataSource);
       assertEquals(HikariDataSource.class, dataSource.getClass());
       assertEquals(5000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());

@@ -18,15 +18,27 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 
+/**
+ * ContainerFactory is the companion interface to {@link TestDatabase} for providing it with
+ * suitable testcontainer instances.
+ */
 public interface ContainerFactory<C extends JdbcDatabaseContainer<?>> {
 
+  /**
+   * Creates a new, unshared testcontainer instance. This usually wraps the default constructor for
+   * the testcontainer type.
+   */
   C createNewContainer(DockerImageName imageName);
 
+  /**
+   * Returns the class object of the testcontainer.
+   */
   Class<?> getContainerClass();
 
-  default C shared(
-                   String imageName,
-                   String... methods) {
+  /**
+   * Returns a shared instance of the testcontainer.
+   */
+  default C shared(String imageName, String... methods) {
     final String mapKey = Stream.concat(
         Stream.of(imageName, this.getClass().getCanonicalName()),
         Stream.of(methods))
@@ -34,14 +46,17 @@ public interface ContainerFactory<C extends JdbcDatabaseContainer<?>> {
     return Singleton.getOrCreate(mapKey, this);
   }
 
+  /**
+   * This class is exclusively used by {@link #shared(String, String...)}. It wraps a specific shared
+   * testcontainer instance, which is created exactly once.
+   */
   class Singleton<C extends JdbcDatabaseContainer<?>> {
 
     static private final Logger LOGGER = LoggerFactory.getLogger(Singleton.class);
     static private final ConcurrentHashMap<String, Singleton<?>> LAZY = new ConcurrentHashMap<>();
 
     @SuppressWarnings("unchecked")
-    static private <C extends JdbcDatabaseContainer<?>> C getOrCreate(String mapKey,
-                                                                      ContainerFactory<C> factory) {
+    static private <C extends JdbcDatabaseContainer<?>> C getOrCreate(String mapKey, ContainerFactory<C> factory) {
       final Singleton<?> singleton = LAZY.computeIfAbsent(mapKey, Singleton<C>::new);
       return ((Singleton<C>) singleton).getOrCreate(factory);
     }
@@ -77,10 +92,7 @@ public interface ContainerFactory<C extends JdbcDatabaseContainer<?>> {
       return sharedContainer;
     }
 
-    private void create(
-                        String imageName,
-                        ContainerFactory<C> factory,
-                        List<String> methodNames) {
+    private void create(String imageName, ContainerFactory<C> factory, List<String> methodNames) {
       LOGGER.info("Creating new shared container based on {} with {}.", imageName, methodNames);
       try {
         final var parsed = DockerImageName.parse(imageName);
