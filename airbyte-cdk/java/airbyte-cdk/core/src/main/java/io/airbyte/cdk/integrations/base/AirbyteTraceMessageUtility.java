@@ -16,7 +16,15 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public final class AirbyteTraceMessageUtility {
 
+  private static final Consumer<AirbyteMessage> outputRecordCollector = IntegrationRunner.getOutputRecordCollector();
+
   private AirbyteTraceMessageUtility() {}
+
+  public static void close() throws Exception {
+    if (outputRecordCollector instanceof AutoCloseable) {
+      ((AutoCloseable)outputRecordCollector).close();
+    }
+  }
 
   public static void emitSystemErrorTrace(final Throwable e, final String displayMessage) {
     emitErrorTrace(e, displayMessage, FailureType.SYSTEM_ERROR);
@@ -66,9 +74,6 @@ public final class AirbyteTraceMessageUtility {
   // public void emitMetricTrace() {}
 
   private static void emitMessage(final AirbyteMessage message) {
-    // Not sure why defaultOutputRecordCollector is under Destination specifically,
-    // but this matches usage elsewhere in base-java
-    final Consumer<AirbyteMessage> outputRecordCollector = Destination::defaultOutputRecordCollector;
     outputRecordCollector.accept(message);
   }
 

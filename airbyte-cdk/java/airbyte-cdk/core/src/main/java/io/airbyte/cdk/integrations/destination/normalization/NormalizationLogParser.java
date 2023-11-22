@@ -6,6 +6,9 @@ package io.airbyte.cdk.integrations.destination.normalization;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.io.SocketOutputRecordCollector;
 import io.airbyte.cdk.integrations.destination.normalization.SentryExceptionHelper.ErrorMapKeys;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
@@ -22,8 +25,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static io.airbyte.cdk.integrations.base.IntegrationRunner.CONNECTION_RETRY_BACKOFF_MS;
+import static io.airbyte.cdk.integrations.base.IntegrationRunner.PLATFORM_SERVER_ENABLED;
+import static io.airbyte.cdk.integrations.base.IntegrationRunner.PLATFORM_SERVER_HOST;
+import static io.airbyte.cdk.integrations.base.IntegrationRunner.PLATFORM_SERVER_PORT;
 
 /**
  * A simple wrapper for base-normalization logs. Reads messages off of stdin and sticks them into
@@ -37,6 +48,8 @@ import org.apache.logging.log4j.util.Strings;
  * process emits any trace messages, they are passed through immediately.
  */
 public class NormalizationLogParser {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationLogParser.class);
 
   private final List<String> dbtErrors = new ArrayList<>();
 
@@ -150,4 +163,18 @@ public class NormalizationLogParser {
     }
   }
 
+  private static Consumer<io.airbyte.protocol.models.AirbyteMessage> getOutputRecordCollector() {
+    final boolean socketOutputEnabled = Boolean.TRUE.equals(Boolean.valueOf(System.getenv(PLATFORM_SERVER_ENABLED)));
+    if (socketOutputEnabled) {
+      LOGGER.info("Using socket-based output record collector.");
+      final SocketOutputRecordCollector<AirbyteMessage> socketOutputRecordCollector =
+              new SocketOutputRecordCollector<>(System.getenv(PLATFORM_SERVER_HOST),
+                Integer.parseInt(System.getenv(PLATFORM_SERVER_PORT)), CONNECTION_RETRY_BACKOFF_MS);
+      socketOutputRecordCollector.connect();
+      return socketOutputRecordCollector;
+    } else {
+      LOGGER.info("Using default (stdout) output record collector.");
+      return System.out::println;
+    }
+  }
 }

@@ -1,7 +1,6 @@
 package io.airbyte.cdk.integrations.base.io;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +9,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.function.Consumer;
 
-public class SocketOutputRecordCollector implements Consumer<AirbyteMessage>, AutoCloseable {
+public class SocketOutputRecordCollector<T> implements Consumer<T>, AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SocketOutputRecordCollector.class);
 
@@ -47,7 +46,7 @@ public class SocketOutputRecordCollector implements Consumer<AirbyteMessage>, Au
     }
 
     @Override
-    public void accept(final AirbyteMessage airbyteMessage) {
+    public void accept(final T airbyteMessage) {
         final String messageAsJson = Jsons.serialize(airbyteMessage);
         if (writer != null) {
             writer.println(messageAsJson);
@@ -60,6 +59,7 @@ public class SocketOutputRecordCollector implements Consumer<AirbyteMessage>, Au
     @Override
     public void close() throws Exception {
         if (writer != null) {
+            writer.flush();
             writer.close();
         }
         if (socket != null && !socket.isClosed()) {

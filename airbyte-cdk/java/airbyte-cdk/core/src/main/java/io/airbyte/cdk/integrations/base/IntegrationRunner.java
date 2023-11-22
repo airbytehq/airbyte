@@ -71,6 +71,9 @@ public class IntegrationRunner {
   public static final int INTERRUPT_THREAD_DELAY_MINUTES = 60;
   public static final int EXIT_THREAD_DELAY_MINUTES = 70;
   public static final int CONNECTION_RETRY_BACKOFF_MS = Long.valueOf(TimeUnit.SECONDS.toMillis(1)).intValue();
+  public static final String PLATFORM_SERVER_ENABLED = "PLATFORM_SERVER_ENABLED";
+  public static final String PLATFORM_SERVER_HOST = "PLATFORM_SERVER_HOST";
+  public static final String PLATFORM_SERVER_PORT = "PLATFORM_SERVER_PORT";
 
   public static final int FORCED_EXIT_CODE = 2;
 
@@ -84,12 +87,13 @@ public class IntegrationRunner {
   private final FeatureFlags featureFlags;
   private static JsonSchemaValidator validator;
 
-  private static Consumer<AirbyteMessage> getOutputRecordCollector() {
-    final boolean socketOutputEnabled = Boolean.TRUE.equals(Boolean.valueOf(System.getenv("PLATFORM_SERVER_ENABLED")));
+  public static Consumer<AirbyteMessage> getOutputRecordCollector() {
+    final boolean socketOutputEnabled = Boolean.TRUE.equals(Boolean.valueOf(System.getenv(PLATFORM_SERVER_ENABLED)));
     if (socketOutputEnabled) {
       LOGGER.info("Using socket-based output record collector.");
-      final SocketOutputRecordCollector socketOutputRecordCollector = new SocketOutputRecordCollector(System.getenv("PLATFORM_SERVER_HOST"),
-              Integer.parseInt(System.getenv("PLATFORM_SERVER_PORT")), CONNECTION_RETRY_BACKOFF_MS);
+      final SocketOutputRecordCollector<AirbyteMessage> socketOutputRecordCollector =
+              new SocketOutputRecordCollector<>(System.getenv(PLATFORM_SERVER_HOST),
+                Integer.parseInt(System.getenv(PLATFORM_SERVER_PORT)), CONNECTION_RETRY_BACKOFF_MS);
       socketOutputRecordCollector.connect();
       return socketOutputRecordCollector;
     } else {
@@ -104,7 +108,6 @@ public class IntegrationRunner {
 
   public IntegrationRunner(final Source source) {
     this(new IntegrationCliParser(), getOutputRecordCollector(), null, source);
-    //this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source);
   }
 
   @VisibleForTesting
@@ -142,6 +145,11 @@ public class IntegrationRunner {
       runInternal(parsed);
     } catch (final Exception e) {
       throw e;
+    } finally {
+      AirbyteTraceMessageUtility.close();
+      if (outputRecordCollector instanceof AutoCloseable) {
+        ((AutoCloseable) outputRecordCollector).close();
+      }
     }
   }
 
@@ -276,7 +284,7 @@ public class IntegrationRunner {
       LOGGER.error("Unable to perform concurrent read.", e);
       throw e;
     } finally {
-      stopOrphanedThreads(EXIT_HOOK,
+        stopOrphanedThreads(EXIT_HOOK,
           INTERRUPT_THREAD_DELAY_MINUTES,
           TimeUnit.MINUTES,
           EXIT_THREAD_DELAY_MINUTES,
