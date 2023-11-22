@@ -8,11 +8,11 @@
 # Step 1: Get the connector selector from the command line
 
 import argparse
+import datetime
 import os
 import re
 import subprocess
 import sys
-import datetime
 
 parser = argparse.ArgumentParser(description="Bump CDK version for connectors")
 parser.add_argument("--selector", required=True, help="Connector selector")
@@ -139,7 +139,7 @@ for connector in connectors_to_bump:
                 # write back
                 manifestFile = open(manifestFilePath, "w")
                 manifestFile.write(manifestFileObject)
-                manifestFile.close() 
+                manifestFile.close()
 
                 # if there is a Dockerfile, bump the version there too (line starts with LABEL io.airbyte.version=)
                 dockerFilePath = f"./airbyte-integrations/connectors/{connector}/Dockerfile"
@@ -151,7 +151,7 @@ for connector in connectors_to_bump:
                     # write back
                     dockerFile = open(dockerFilePath, "w")
                     dockerFile.write(dockerFileObject)
-                    dockerFile.close() 
+                    dockerFile.close()
             else:
                 print(f"No dockerImageTag found, skipping bumping tag for {connector}")
 
@@ -163,9 +163,11 @@ for connector in connectors_to_bump:
 
             # Get the documentation file path
             just_the_name = connector.replace("source-", "").replace("destination-", "")
-            documentationFilePath = f"./docs/integrations/sources/{just_the_name}.md" if os.path.exists(
+            documentationFilePath = (
                 f"./docs/integrations/sources/{just_the_name}.md"
-            ) else f"./docs/integrations/destinations/{just_the_name}.md"
+                if os.path.exists(f"./docs/integrations/sources/{just_the_name}.md")
+                else f"./docs/integrations/destinations/{just_the_name}.md"
+            )
 
             documentationFile = open(documentationFilePath, "r")
             documentationFileObject = documentationFile.read()
@@ -181,7 +183,7 @@ for connector in connectors_to_bump:
                 )
             else:
                 print(f"No changelog table found, skipping adding changelog entry for {connector}")
-            
+
             # write back
             documentationFile = open(documentationFilePath, "w")
             documentationFile.write(documentationFileObject)
