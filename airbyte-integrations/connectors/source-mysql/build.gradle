@@ -7,9 +7,9 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.4.1'
+    cdkVersionRequired = '0.5.0'
     features = ['db-sources']
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 configurations.all {
