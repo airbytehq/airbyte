@@ -116,7 +116,6 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                               |
 |:--------| :--------- |:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------|
-| 3.0.1   | 2023-11-22 | [\#32656](https://github.com/airbytehq/airbyte/pull/32656) | Adopt java CDK version 0.5.0.                                                                         |
 | 0.2.0   | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
 | 0.1.25  | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                                   |
 | 0.1.24  | 2023-06-05 | [\#27034](https://github.com/airbytehq/airbyte/pull/27034) | Internal code change for future development (install normalization packages inside connector)       |
