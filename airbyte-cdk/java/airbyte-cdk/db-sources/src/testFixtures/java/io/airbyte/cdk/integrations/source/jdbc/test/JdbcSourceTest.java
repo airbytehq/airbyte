@@ -64,8 +64,8 @@ import org.junit.jupiter.api.Test;
  * Tests that should be run on all Sources that extend the AbstractJdbcSource.
  */
 @SuppressFBWarnings(
-    value = {"MS_SHOULD_BE_FINAL"},
-    justification = "The static variables are updated in subclasses for convenience, and cannot be final.")
+                    value = {"MS_SHOULD_BE_FINAL"},
+                    justification = "The static variables are updated in subclasses for convenience, and cannot be final.")
 abstract public class JdbcSourceTest<S extends Source, T extends TestDatabase<?, T, ?>> {
 
   static protected String SCHEMA_NAME = "jdbc_integration_test1";
