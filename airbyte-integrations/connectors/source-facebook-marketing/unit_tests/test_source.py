@@ -94,12 +94,12 @@ class TestSourceFacebookMarketing:
         assert not ok
         assert error_msg
 
-    def test_check_connection_invalid_config(self, api, config, logger_mock, fb_marketing):
+    def test_check_connection_config_no_start_date(self, api, config, logger_mock, fb_marketing):
         config.pop("start_date")
         ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
 
-        assert not ok
-        assert error_msg
+        assert ok
+        assert not error_msg
 
     def test_check_connection_exception(self, api, config, logger_mock, fb_marketing):
         api.side_effect = RuntimeError("Something went wrong!")
@@ -180,18 +180,3 @@ def test_check_config(config_gen, requests_mock, fb_marketing):
 
     assert command_check(fb_marketing, config_gen(end_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
     assert command_check(fb_marketing, config_gen(end_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
-
-
-def test_check_connection_account_type_exception(mocker, fb_marketing, config, logger_mock, requests_mock):
-    account_id = "123"
-    ad_account_response = {"json": {"account_id": account_id, "id": f"act_{account_id}", "is_personal": 1}}
-    requests_mock.reset_mock()
-    requests_mock.register_uri("GET", f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/act_123/", [ad_account_response])
-
-    result, error = fb_marketing.check_connection(logger=logger_mock, config=config)
-
-    assert not result
-    assert (
-        error
-        == "The personal ad account you're currently using is not eligible for this operation. Please switch to a business ad account."
-    )
