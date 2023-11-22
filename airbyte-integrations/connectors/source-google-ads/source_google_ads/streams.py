@@ -50,8 +50,8 @@ class GoogleAdsStream(Stream, ABC):
         customer_id = stream_slice["customer_id"]
         try:
             response_records = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=customer_id)
-            for response in response_records:
-                yield from self.parse_records_with_backoff(response, stream_slice)
+
+            yield from self.parse_records_with_backoff(response_records, stream_slice)
         except GoogleAdsException as exception:
             if exception.error.args[0].code == StatusCode.PERMISSION_DENIED:
                 logger.warning(f"GOOGLE ADS EXCEPTION: customer {customer_id} is not activated or is disabled")

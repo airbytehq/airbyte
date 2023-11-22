@@ -373,9 +373,8 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-        ) -> MutableMapping[str, Any]:
-        params = super().request_params(next_page_token=next_page_token)
-        params["page_size"] = self.page_size
+    ) -> MutableMapping[str, Any]:
+        params = {"page_size": self.page_size}
         # include_deleted should not be launched for reports streams
         if self.include_deleted and self.name in ('ads', 'ad_groups', 'campaigns'):
             prefix = self.name.upper().replace("_", "")[:-1] # ad_groups -> ADGROUP for example
