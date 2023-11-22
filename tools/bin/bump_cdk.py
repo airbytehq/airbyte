@@ -177,7 +177,7 @@ for connector in connectors_to_bump:
                 # Add a new line with the new version, date, and changelog entry
                 new_changelog_entry = f"| {new_version} | {datetime.datetime.now().strftime('%Y-%m-%d')} | [{args.pr}](https://github.com/airbytehq/airbyte/pull/{args.pr}) | {args.changelog} |\n"
                 documentationFileObject = documentationFileObject.replace(
-                    changelog_table.group(), f"{changelog_table.group()}\n{new_changelog_entry}"
+                    changelog_table.group(), f"{changelog_table.group()}{new_changelog_entry}"
                 )
             else:
                 print(f"No changelog table found, skipping adding changelog entry for {connector}")
