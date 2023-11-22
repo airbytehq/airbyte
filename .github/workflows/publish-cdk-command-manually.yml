@@ -431,7 +431,7 @@ jobs:
     name: Stop Build EC2 Runner
     needs:
       - start-publish-docker-image-runner-0 # required to get output from the start-runner job
-      - publish-docker-image # required to wait when the main job is done
+      - bump-connectors # required to wait when the main job is done
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
