@@ -56,18 +56,20 @@ public class AirbyteDebeziumHandler<T> {
   private final JsonNode config;
   private final CdcTargetPosition<T> targetPosition;
   private final boolean trackSchemaHistory;
-  private final Duration firstRecordWaitTime;
+  private final Duration firstRecordWaitTime, subsequentRecordWaitTime;
   private final OptionalInt queueSize;
 
   public AirbyteDebeziumHandler(final JsonNode config,
                                 final CdcTargetPosition<T> targetPosition,
                                 final boolean trackSchemaHistory,
                                 final Duration firstRecordWaitTime,
+                                final Duration subsequentRecordWaitTime,
                                 final OptionalInt queueSize) {
     this.config = config;
     this.targetPosition = targetPosition;
     this.trackSchemaHistory = trackSchemaHistory;
     this.firstRecordWaitTime = firstRecordWaitTime;
+    this.subsequentRecordWaitTime = subsequentRecordWaitTime;
     this.queueSize = queueSize;
   }
 
@@ -96,7 +98,8 @@ public class AirbyteDebeziumHandler<T> {
         targetPosition,
         tableSnapshotPublisher::hasClosed,
         new DebeziumShutdownProcedure<>(queue, tableSnapshotPublisher::close, tableSnapshotPublisher::hasClosed),
-        firstRecordWaitTime);
+        firstRecordWaitTime,
+        subsequentRecordWaitTime);
 
     return AutoCloseableIterators.concatWithEagerClose(AutoCloseableIterators
         .transform(
@@ -136,7 +139,8 @@ public class AirbyteDebeziumHandler<T> {
         targetPosition,
         publisher::hasClosed,
         new DebeziumShutdownProcedure<>(queue, publisher::close, publisher::hasClosed),
-        firstRecordWaitTime);
+        firstRecordWaitTime,
+        subsequentRecordWaitTime);
 
     final Duration syncCheckpointDuration =
         config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())
