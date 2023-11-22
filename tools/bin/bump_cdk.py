@@ -12,6 +12,7 @@ import os
 import re
 import subprocess
 import sys
+import datetime
 
 parser = argparse.ArgumentParser(description="Bump CDK version for connectors")
 parser.add_argument("--selector", required=True, help="Connector selector")
@@ -108,15 +109,82 @@ for connector in connectors_to_bump:
             print(f"Updated {connector}")
         else:
             print(f"No airbyte-cdk dependency found, skipping {connector}")
+            continue
         # Write the setup file
         setupFile = open(setupFilePath, "w")
         setupFile.write(setupFileObject)
         setupFile.close()
 
         if args.pr and args.changelog:
-            # Bump version via airbyte-ci = airbyte-ci connectors --name={connector} bump_version patch {pr number from args} "Update CDK version: {changelog from args}"
-            subprocess.run(
-                f'airbyte-ci connectors --name={connector} bump_version patch {args.pr} "Update CDK version: {args.changelog}"', shell=True
-            )
+            # Bump version in metadata.yaml:
+            # * Read metadata.yaml
+            # * Get current version (field is dockerImageTag: )
+            # * Bump the patch version
+            # * Write metadata.yaml back
+
+            # Get the manifest file path
+            manifestFilePath = f"./airbyte-integrations/connectors/{connector}/metadata.yaml"
+            manifestFile = open(manifestFilePath, "r")
+            manifestFileObject = manifestFile.read()
+            manifestFile.close()
+
+            # Get the current version
+            current_version = re.search(r"dockerImageTag: (?P<version>[0-9]*\.[0-9]*\.[0-9]*)", manifestFileObject)
+            if current_version is not None:
+                # Split by ., then bump the last number
+                version_numbers = current_version.group("version").split(".")
+                version_numbers[-1] = str(int(version_numbers[-1]) + 1)
+                new_version = ".".join(version_numbers)
+                manifestFileObject = manifestFileObject.replace(current_version.group(), f"dockerImageTag: {new_version}")
+                # write back
+                manifestFile = open(manifestFilePath, "w")
+                manifestFile.write(manifestFileObject)
+                manifestFile.close() 
+
+                # if there is a Dockerfile, bump the version there too (line starts with LABEL io.airbyte.version=)
+                dockerFilePath = f"./airbyte-integrations/connectors/{connector}/Dockerfile"
+                if os.path.exists(dockerFilePath):
+                    dockerFile = open(dockerFilePath, "r")
+                    dockerFileObject = dockerFile.read()
+                    dockerFile.close()
+                    dockerFileObject = re.sub(r"LABEL io.airbyte.version=.*", f"LABEL io.airbyte.version={new_version}", dockerFileObject)
+                    # write back
+                    dockerFile = open(dockerFilePath, "w")
+                    dockerFile.write(dockerFileObject)
+                    dockerFile.close() 
+            else:
+                print(f"No dockerImageTag found, skipping bumping tag for {connector}")
+
+            # Add changelog entry in documentation file:
+            # * Read documentation file (docs/source|destination/{connector-name}.md)
+            # * Find the changelog table (line with "| Version | Date")
+            # * Add a new line with the new version, date, and changelog entry
+            # * Write documentation file back
+
+            # Get the documentation file path
+            just_the_name = connector.replace("source-", "").replace("destination-", "")
+            documentationFilePath = f"./docs/integrations/sources/{just_the_name}.md" if os.path.exists(
+                f"./docs/integrations/sources/{just_the_name}.md"
+            ) else f"./docs/integrations/destinations/{just_the_name}.md"
+
+            documentationFile = open(documentationFilePath, "r")
+            documentationFileObject = documentationFile.read()
+            documentationFile.close()
+
+            # Find the changelog table
+            changelog_table = re.search(r"\| Version \| Date.*\n.*\n", documentationFileObject)
+            if changelog_table is not None:
+                # Add a new line with the new version, date, and changelog entry
+                new_changelog_entry = f"| {new_version} | {datetime.datetime.now().strftime('%Y-%m-%d')} | [{args.pr}](https://github.com/airbytehq/airbyte/pull/{args.pr}) | {args.changelog} |\n"
+                documentationFileObject = documentationFileObject.replace(
+                    changelog_table.group(), f"{changelog_table.group()}\n{new_changelog_entry}"
+                )
+            else:
+                print(f"No changelog table found, skipping adding changelog entry for {connector}")
+            
+            # write back
+            documentationFile = open(documentationFilePath, "w")
+            documentationFile.write(documentationFileObject)
+            documentationFile.close()
     else:
         print(f"No setup.py found, skipping {connector}")
