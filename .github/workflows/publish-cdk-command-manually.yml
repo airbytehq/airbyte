@@ -411,10 +411,10 @@ jobs:
       - name: Update CDK version
         run: |
           pipx install --editable --force airbyte-ci/connectors/pipelines/
-          python ./tools/bin/bump_cdk.py --pr ${{ steps.cpr.outputs.pull-request-number }} --selector=${{github.event.inputs.connector-selector}} --changelog="${{github.event.inputs.changelog-message}}"" --version="${{needs.bump-version.outputs.new_cdk_version}}"
+          python ./tools/bin/bump_cdk.py --pr ${{ steps.create-pull-request.outputs.pull-request-number }} --selector=${{github.event.inputs.connector-selector}} --changelog="${{github.event.inputs.changelog-message}}"" --version="${{needs.bump-version.outputs.new_cdk_version}}"
       # Run create-pull-request again to update the PR with the changes (need to do like this because we need the PR number to create this)
       - name: Update Pull Request
-        id: create-pull-request
+        id: update-pull-request
         uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
