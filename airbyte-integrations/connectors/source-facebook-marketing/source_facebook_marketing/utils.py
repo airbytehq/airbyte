@@ -54,7 +54,7 @@ def validate_start_date(start_date: DateOrDateTime) -> DateOrDateTime:
 
 
 def validate_end_date(start_date: DateOrDateTime, end_date: DateOrDateTime) -> DateOrDateTime:
-    if start_date > end_date:
+    if end_date and start_date > end_date:
         message = f"The end date must be after start date. Set end date to {start_date}."
         logger.warning(message)
         return start_date
