@@ -7,6 +7,8 @@ import dataclasses
 import json
 import os
 import subprocess
+from typing import Optional
+from datetime import datetime
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -49,6 +51,10 @@ class StreamStats:
     fields_to_ignore: set
     unmatched_left_no_pk: list
     unmatched_right_no_pk: list
+    min_date_left: Optional[str] = None
+    max_date_left: Optional[str] = None
+    min_date_right: Optional[str] = None
+    max_date_right: Optional[str] = None
 
     def __repr__(self):
         return f"StreamStats({vars(self)})"
@@ -73,6 +79,9 @@ async def compute_stream(
     command_right = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version_right} read --config /{config_path} --catalog /secrets/tmp_catalog.json"
 
     configured_stream = configured_catalog.streams[0]
+    cursor_field = configured_stream.cursor_field
+    if cursor_field:
+        cursor_field = cursor_field[0]
 
     subprocess_left = run_subprocess(command_left, "left")
     subprocess_right = run_subprocess(command_right, "right")
@@ -104,6 +113,20 @@ async def compute_stream(
                 stream_stats = streams_stats[left.message.record.stream]
 
                 stream_stats.record_count += 1
+
+                if cursor_field:
+                    if stream_stats.min_date_left is None:
+                        stream_stats.min_date_left = left.message.record.data[cursor_field]
+                    if stream_stats.max_date_left is None:
+                        stream_stats.max_date_left = left.message.record.data[cursor_field]
+                    stream_stats.min_date_left = min(stream_stats.min_date_left, left.message.record.data[cursor_field])
+                    stream_stats.max_date_left = max(stream_stats.max_date_left, left.message.record.data[cursor_field])
+                    if stream_stats.min_date_right is None:
+                        stream_stats.min_date_right = right.message.record.data[cursor_field]
+                    if stream_stats.max_date_right is None:
+                        stream_stats.max_date_right = right.message.record.data[cursor_field]
+                    stream_stats.min_date_right = min(stream_stats.min_date_right, right.message.record.data[cursor_field])
+                    stream_stats.max_date_right = max(stream_stats.max_date_right, right.message.record.data[cursor_field])
 
                 # configured_stream: ConfiguredAirbyteStream = [stream for stream in configured_catalog.streams if stream.stream.name == left.message.record.stream][0]
                 primary_key = configured_stream.primary_key
@@ -176,6 +199,13 @@ async def compute_stream(
                             stream_to_stream_config[left.message.record.stream].get("ignore_fields", [])
                         )
                     stream_stats = streams_stats[left.message.record.stream]
+                    if cursor_field:
+                        if stream_stats.min_date_left is None:
+                            stream_stats.min_date_left = left.message.record.data[cursor_field]
+                        if stream_stats.max_date_left is None:
+                            stream_stats.max_date_left = left.message.record.data[cursor_field]
+                        stream_stats.min_date_left = min(stream_stats.min_date_left, left.message.record.data[cursor_field])
+                        stream_stats.max_date_left = max(stream_stats.max_date_left, left.message.record.data[cursor_field])
                     if primary_key:
                         stream_stats.left_rows_missing[left.message.record.data[primary_key]] = left
                     else:
@@ -191,6 +221,15 @@ async def compute_stream(
                     if right.message.type != MessageType.RECORD:
                         continue
                     stream_stats = streams_stats[right.message.record.stream]
+                    if cursor_field:
+                        cursor_time = right.message.record.data.get(cursor_field)
+                        if cursor_time:
+                            if stream_stats.min_date_right is None:
+                                stream_stats.min_date_right = cursor_time
+                            if stream_stats.max_date_right is None:
+                                stream_stats.max_date_right = cursor_time
+                            stream_stats.min_date_right = min(stream_stats.min_date_right, cursor_time)
+                            stream_stats.max_date_right = max(stream_stats.max_date_right, cursor_time)
                     if primary_key:
                         if right.message.record.data[primary_key] in stream_stats.left_rows_missing:
                             compare_records(stream_stats.left_rows_missing[right.message.record.data[primary_key]], right, stream_stats)
@@ -268,6 +307,10 @@ async def main():
     connector = "source-stripe"
     config_path = "secrets/prod_config_recent_only.json"
     regression_config_path = "regression_config.yaml"
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+    execution_time = datetime.now()
+    start_time = config["start_date"]
     with open(regression_config_path) as f:
         regression_config = yaml.safe_load(f)
 
@@ -342,7 +385,7 @@ async def main():
         print(f"right_rows_missing: {stream_stats.right_rows_missing}")
         print(len(stream_stats.right_rows_missing))
 
-    generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats)
+    generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, connector, connector_version_left, connector_version_right, start_time, execution_time)
 
 
 def _configured_catalog(streams):
@@ -353,13 +396,14 @@ def _configured_catalog(streams):
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.append,
                 primary_key=stream.source_defined_primary_key,
+                cursor_field=stream.default_cursor_field,
             )
             for stream in streams
         ]
     )
 
 
-def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, output_filename="plots_combined_per_metric.pdf"):
+def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, source_name, left_version, right_version, start_time, execution_time, output_filename="plots_combined_per_metric.pdf"):
     # diff_pdf_filename = "diff.pdf"
     # diff_pdf = canvas.Canvas(diff_pdf_filename)
     diff_filename = "diff_{stream}.jsonl"
@@ -385,8 +429,12 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
                 and len(streams_stats[stream_name].right_rows_missing) == 0,
                 "diff_fields": sum([val for col, val in streams_stats[stream_name].columns_to_diff_count.items()]),
                 "record_count": streams_stats[stream_name].record_count,
-                "missing_left": len(streams_stats[stream_name].left_rows_missing) + len(streams_stats[stream_name].unmatched_left_no_pk),
-                "missing_right": len(streams_stats[stream_name].right_rows_missing) + len(streams_stats[stream_name].unmatched_right_no_pk),
+                "left_additional_records": len(streams_stats[stream_name].left_rows_missing) + len(streams_stats[stream_name].unmatched_left_no_pk),
+                "right_additional_records": len(streams_stats[stream_name].right_rows_missing) + len(streams_stats[stream_name].unmatched_right_no_pk),
+                "min_date_left": datetime.utcfromtimestamp(streams_stats[stream_name].min_date_left,).strftime('%Y-%m-%d %H:%M:%S') if streams_stats[stream_name].min_date_left else None,
+                "max_date_left": datetime.utcfromtimestamp(streams_stats[stream_name].max_date_left,).strftime('%Y-%m-%d %H:%M:%S') if streams_stats[stream_name].max_date_left else None,
+                "min_date_right": datetime.utcfromtimestamp(streams_stats[stream_name].min_date_right,).strftime('%Y-%m-%d %H:%M:%S') if streams_stats[stream_name].min_date_right else None,
+                "max_date_right": datetime.utcfromtimestamp(streams_stats[stream_name].max_date_right,).strftime('%Y-%m-%d %H:%M:%S' )if streams_stats[stream_name].max_date_right else None,
             }
             print(f"stat:{stat}")
             summary_stats.append(stat)
@@ -400,10 +448,11 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
         # print(f"Diff saved to {diff_pdf_filename}")
         print(f"summary_stats:{summary_stats}")
         summary_df = pd.DataFrame.from_records(summary_stats)
+        print(summary_df)
         # table = pd.pivot_table(summary_df, index='stream', columns=['equal', "record_count", "missing_left", "missing_right"], aggfunc=len, fill_value=0)
         # table = pd.pivot_table(summary_df, index='stream', columns=["record_count"], aggfunc=len, fill_value=0)
         table = summary_df.pivot_table(
-            values=["OK", "record_count", "diff_fields", "missing_left", "missing_right"], index="stream", aggfunc="first"
+            values=["OK", "record_count", "diff_fields", "left_additional_records", "right_additional_records", "min_date_left", "max_date_left", "min_date_right", "max_date_right"], index="stream", aggfunc="first"
         )
         plt.figure(figsize=(6, 4))
 
@@ -411,6 +460,8 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
             value = table.loc[row, col]
             if col == "record_count" and value == 0:
                 return "yellow"
+            if col in ["left_additional_records", "right_additional_records"] and value > 0:
+                return "red"
             if col == "OK":
                 if value:
                     return "green"
@@ -420,7 +471,7 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, ou
 
         summary_cell_colors = [[summary_color_cells(table, row, col) for col in table.columns] for row in table.index]
         plt.table(cellText=table.values, colLabels=table.columns, rowLabels=table.index, loc="center", cellColours=summary_cell_colors)
-        plt.title(f"Summary stats")
+        plt.title(f"Summary stats for {source_name}\nleft: {left_version}\tright:{right_version}\nstart_time:{start_time}\nexecution_time:{execution_time}", y=2)
         plt.axis("off")  # Hide axis
         pdf.savefig(bbox_inches="tight", pad_inches=1)
         plt.close()

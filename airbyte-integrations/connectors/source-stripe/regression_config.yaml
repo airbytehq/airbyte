@@ -2,8 +2,6 @@ connector_version_left: "4.5.4"
 connector_version_right: "5.0.1-dev.e4339d53e7"
 streams:
   - name: accounts
-  - name: application_fees
-  - name: application_fees_refunds
   - name: authorizations
   - name: balance_transactions
   - name: bank_accounts
@@ -25,8 +23,6 @@ streams:
     ignore_fields:
       - hosted_invoice_url
       - invoice_pdf
-  - name: external_account_bank_accounts
-  - name: external_account_cards
   - name: file_links
   - name: files
   - name: invoice_items
@@ -52,6 +48,4 @@ streams:
   - name: subscriptions
   - name: top_ups
   - name: transactions
-  - name: transfer_reversals
-  - name: transfers
   - name: usage_records
