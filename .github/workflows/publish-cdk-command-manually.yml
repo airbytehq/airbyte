@@ -399,7 +399,7 @@ jobs:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Update CDK version
         run: |
-          python ./tools/bin/bump_cdk.py --selector=${{github.event.inputs.connector-selector}} --version="x.y.z"
+          python ./tools/bin/bump_cdk.py --selector=${{github.event.inputs.connector-selector}} --version="0.0.0"
       - name: Create Pull Request
         id: create-pull-request
         uses: peter-evans/create-pull-request@v4
