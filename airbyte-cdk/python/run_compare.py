@@ -35,21 +35,21 @@ def main(connector, left, right, config, start, end, stream, mode):
     print(f"right: {right}")
     print(f"config: {config}")
 
-    with open(f"secrets/tmp_catalog.json", "w") as f:
-        f.write(_configured_catalog(stream).json(exclude_unset=True))
 
-    discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:latest discover --config /secrets/buck_mason_oc_config.json"
+    discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:latest discover --config /{config}"
     #discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{left} discover --config /secrets/buck_mason_oc_config.json"
     discover_result = subprocess.run(discover_command, shell=True, check=True, stdout=subprocess.PIPE, text=True)
     discover_output = discover_result.stdout
     print(discover_output)
     discover_message = AirbyteMessage.parse_raw(discover_output)
     catalog = discover_message.catalog
-    compare_df  = None
+    compare_df = None
 
     for airbyte_stream in catalog.streams:
         if stream and airbyte_stream.name != stream:
             continue
+        with open(f"secrets/tmp_catalog.json", "w") as f:
+            f.write(_configured_catalog(airbyte_stream.name).json(exclude_unset=True))
 
         try:
 
