@@ -21,10 +21,10 @@
       "type": ["object", "null"]
     },
     "deleted": {
-      "type": "null"
+      "type": ["string", "null"]
     },
     "id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "matching_downtimes": {
       "items": {
@@ -34,11 +34,11 @@
             "type": ["integer", "null"]
           },
           "id": {
-            "type": "integer"
+            "type": ["integer", "null"]
           },
           "scope": {
             "items": {
-              "type": "string"
+              "type": ["string", "null"]
             },
             "type": ["array", "null"]
           },
@@ -46,7 +46,7 @@
             "type": ["integer", "null"]
           }
         },
-        "type": "object"
+        "type": ["object", "null"]
       },
       "type": ["array", "null"]
     },
@@ -70,7 +70,7 @@
           "properties": {
             "groupBy": {
               "items": {
-                "type": "string"
+                "type": ["string", "null"]
               },
               "type": ["array", "null"]
             },
@@ -85,7 +85,7 @@
         },
         "device_ids": {
           "items": {
-            "type" : "string"
+            "type" : ["string", "null"]
           },
           "type": ["array", "null"]
         },
@@ -130,7 +130,7 @@
         },
         "notify_by": {
           "items": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "type": ["array", "null"]
         },
@@ -148,7 +148,7 @@
         },
         "renotify_statuses": {
           "items": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "type": ["array", "null"]
         },
@@ -233,7 +233,7 @@
                 "additionalProperties": true,
                 "properties": {
                   "aggregation": {
-                    "type": "string"
+                    "type": ["string", "null"]
                   },
                   "interval": {
                     "type": ["integer", "null"]
@@ -242,17 +242,17 @@
                     "type": ["string", "null"]
                   }
                 },
-                "type": "object"
+                "type": ["object", "null"]
               },
               "data_source": {
-                "type": "string"
+                "type": ["string", "null"]
               },
               "group_by": {
                 "items": {
                   "additionalProperties": true,
                   "properties": {
                     "facet": {
-                      "type": "string"
+                      "type": ["string", "null"]
                     },
                     "limit": {
                       "type": ["integer", "null"]
@@ -261,7 +261,7 @@
                       "additionalProperties": true,
                       "properties": {
                         "aggregation": {
-                          "type": "string"
+                          "type": ["string", "null"]
                         },
                         "metric": {
                           "type": ["string", "null"]
@@ -273,30 +273,30 @@
                       "type": ["object", "null"]
                     }
                   },
-                  "type": "object"
+                  "type": ["object", "null"]
                 },
                 "type": ["array", "null"]
               },
               "indexes": {
                 "items": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "type": ["array", "null"]
               },
               "name": {
-                "type": "string"
+                "type": ["string", "null"]
               },
               "search": {
                 "additionalProperties": true,
                 "properties": {
                   "query": {
-                    "type": "string"
+                    "type": ["string", "null"]
                   }
                 },
                 "type": ["object", "null"]
               }
             },
-            "type": "object"
+            "type": ["object", "null"]
           },
           "type": ["array", "null"]
         }
@@ -314,7 +314,7 @@
     },
     "restricted_roles": {
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "type": ["array", "null"]
     },
@@ -353,7 +353,7 @@
     },
     "tags": {
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "type": ["array", "null"]
     },
@@ -361,5 +361,5 @@
       "type": ["string", "null"]
     }
   },
-  "type": "object"
+  "type": ["object", "null"]
 }

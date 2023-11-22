@@ -25,46 +25,46 @@
     },
     "groups": {
       "items":{
-        "type": "string"
+        "type": ["string", "null"]
       },
       "type": ["array", "null"]
     },
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "modified_at": {
       "type": ["integer", "null"]
     },
     "monitor_ids": {
       "items": {
-        "type": "integer"
+        "type": ["integer", "null"]
       },
       "type": ["array", "null"]
     },
     "monitor_tags": {
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "type": ["array", "null"]
     },
     "name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "query": {
       "additionalProperties": true,
       "properties": {
         "denominator": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "numerator": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       },
       "type": ["object", "null"]
     },
     "tags": {
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "type": ["array", "null"]
     },
@@ -76,13 +76,13 @@
         "additionalProperties": true,
         "properties": {
           "target": {
-            "type": "number"
+            "type": ["number", "null"]
           },
           "target_display": {
             "type": ["string", "null"]
           },
           "timeframe": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "warning": {
             "type": ["number", "null"]
@@ -91,15 +91,15 @@
             "type": ["string", "null"]
           }
         },
-        "type": "object"
+        "type": ["object", "null"]
       },
-      "type": "array"
+      "type": ["array", "null"]
     },
     "timeframe": {
       "type": ["string", "null"]
     },
     "type": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "type_id": {
       "type": ["integer", "null"]
@@ -108,5 +108,5 @@
       "type": ["number", "null"]
     }
   },
-  "type": "object"
+  "type": ["object", "null"]
 }
