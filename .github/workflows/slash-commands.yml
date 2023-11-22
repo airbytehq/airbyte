@@ -15,9 +15,9 @@ jobs:
           echo ref="$(echo $pr_info | jq -r '.head.ref')" >> $GITHUB_OUTPUT
           echo repo="$(echo $pr_info | jq -r '.head.repo.full_name')" >> $GITHUB_OUTPUT
 
-      - name: Slash Command Dispatch
+      - name: Slash Command Dispatch (Workflow)
         id: scd
-        uses: peter-evans/slash-command-dispatch@v2
+        uses: peter-evans/slash-command-dispatch@v3
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           permission: write
@@ -34,6 +34,16 @@ jobs:
             gitref=${{ steps.getref.outputs.ref }}
             comment-id=${{ github.event.comment.id }}
           dispatch-type: workflow
+
+      - name: Slash Command Dispatch (Repository)
+        id: scdr
+        uses: peter-evans/slash-command-dispatch@v3
+        with:
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          permission: write
+          commands: |
+            approve-and-merge-demo
+          dispatch-type: repository
 
       - name: Edit comment with error message
         if: steps.scd.outputs.error-message

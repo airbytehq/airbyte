@@ -56,6 +56,7 @@ Make sure your Chroma database can be accessed by Airbyte. If your database is w
 You should now have all the requirements needed to configure Chroma as a destination in the UI. You'll need the following information to configure the Chroma destination:
 
 - (Required) **Text fields to embed**
+- (Optional) **Text splitter** Options around configuring the chunking process provided by the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
 - (Required) **Fields to store as metadata**
 - (Required) **Collection** The name of the collection in Chroma db to store your data 
 - (Required) Authentication method 

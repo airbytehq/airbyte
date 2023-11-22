@@ -42,8 +42,8 @@ connectionSpecification:
       description: >-
         When set, the connector will always re-export data from the past N days,
         where N is the value set here. This is useful if your data is frequently updated
-        after creation. Applies only to streams that do not support event-based incremental syncs: CheckoutSessionLineItems, 
-        Events, SetupAttempts, ShippingRates, BalanceTransactions, Files, FileLinks. More info <a
+        after creation. The Lookback Window only applies to streams that do not support event-based incremental syncs: Events,
+        SetupAttempts, ShippingRates, BalanceTransactions, Files, FileLinks, Refunds. More info <a
         href="https://docs.airbyte.com/integrations/sources/stripe#requirements">here</a>
       order: 3
     slice_range:
