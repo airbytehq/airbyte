@@ -81,7 +81,6 @@ class SourceAmazonSellerPartner(AbstractSource):
             "marketplace_id": marketplace_id,
             "period_in_days": config.get("period_in_days", 90),
             "report_options": config.get("report_options"),
-            "max_wait_seconds": config.get("max_wait_seconds", 500),
             "replication_end_date": config.get("replication_end_date"),
             "advanced_stream_options": config.get("advanced_stream_options"),
         }
