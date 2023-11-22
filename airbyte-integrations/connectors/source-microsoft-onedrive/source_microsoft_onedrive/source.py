@@ -6,15 +6,15 @@ from typing import Any
 from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, OAuthConfigSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
-from source_microsoft_onedrive.spec import SourceMicrosoftOnedriveSpec
-from source_microsoft_onedrive.stream_reader import SourceMicrosoftOnedriveStreamReader
+from source_microsoft_onedrive.spec import SourceMicrosoftOneDriveSpec
+from source_microsoft_onedrive.stream_reader import SourceMicrosoftOneDriveStreamReader
 
 
-class SourceMicrosoftOnedrive(FileBasedSource):
+class SourceMicrosoftOneDrive(FileBasedSource):
     def __init__(self, catalog_path: str):
         super().__init__(
-            stream_reader=SourceMicrosoftOnedriveStreamReader(),
-            spec_class=SourceMicrosoftOnedriveSpec,
+            stream_reader=SourceMicrosoftOneDriveStreamReader(),
+            spec_class=SourceMicrosoftOneDriveSpec,
             catalog_path=catalog_path,
             cursor_cls=DefaultFileBasedCursor,
         )

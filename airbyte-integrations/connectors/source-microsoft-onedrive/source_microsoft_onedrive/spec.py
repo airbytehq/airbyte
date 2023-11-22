@@ -62,10 +62,10 @@ class ServiceCredentials(BaseModel):
         airbyte_secret=True,
     )
 
-
-class SourceMicrosoftOnedriveSpec(AbstractFileBasedSpec, BaseModel):
+# TODO: Add filtration by folder name in stream config
+class SourceMicrosoftOneDriveSpec(AbstractFileBasedSpec, BaseModel):
     """
-    SourceMicrosoftOnedriveSpec class for Microsoft OneDrive Source Specification.
+    SourceMicrosoftOneDriveSpec class for Microsoft OneDrive Source Specification.
     This class combines the authentication details with additional configuration for the OneDrive API.
     """
 

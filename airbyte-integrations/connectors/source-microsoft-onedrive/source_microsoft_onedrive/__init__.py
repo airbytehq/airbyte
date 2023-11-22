@@ -3,6 +3,6 @@
 #
 
 
-from .source import SourceMicrosoftOnedrive
+from .source import SourceMicrosoftOneDrive
 
-__all__ = ["SourceMicrosoftOnedrive"]
+__all__ = ["SourceMicrosoftOneDrive"]
