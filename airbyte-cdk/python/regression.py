@@ -471,7 +471,7 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, so
 
         summary_cell_colors = [[summary_color_cells(table, row, col) for col in table.columns] for row in table.index]
         plt.table(cellText=table.values, colLabels=table.columns, rowLabels=table.index, loc="center", cellColours=summary_cell_colors)
-        plt.title(f"Summary stats for {source_name}\nleft: {left_version}\tright:{right_version}\nstart_time:{start_time}\nexecution_time:{execution_time}", y=2)
+        plt.title(f"Summary stats for {source_name}\nleft: {left_version} ---- right:{right_version}\nstart_time:{start_time}\nexecution_time:{execution_time}", y=2)
         plt.axis("off")  # Hide axis
         pdf.savefig(bbox_inches="tight", pad_inches=1)
         plt.close()
