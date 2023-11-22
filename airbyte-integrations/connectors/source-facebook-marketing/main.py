@@ -2,11 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from gevent import monkey
+monkey.patch_all(httplib=True, request=True, thread=False, select=True)
 
 import sys
-
-from gevent import monkey
-monkey.patch_all()
 
 from airbyte_cdk.entrypoint import launch
 from source_facebook_marketing import SourceFacebookMarketing
