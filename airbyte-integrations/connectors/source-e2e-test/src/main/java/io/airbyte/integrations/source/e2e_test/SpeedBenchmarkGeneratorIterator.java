@@ -13,8 +13,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.protos.AirbyteStreamState;
 import io.airbyte.protocol.protos.StreamDescriptor;
-import io.airbyte.protocol.protos.Value;
-
 import java.time.Instant;
 import javax.annotation.CheckForNull;
 

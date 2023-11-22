@@ -70,8 +70,8 @@ public class TestingSources extends BaseConnector implements Source {
     ProtobufSource psource = new ProtobufSpeedBenchmarkSource();
     new IntegrationRunner(source, psource).run(args);
 
-//    Source source = new SpeedBenchmarkSource();
-//    new IntegrationRunner(source).run(args);
+    // Source source = new SpeedBenchmarkSource();
+    // new IntegrationRunner(source).run(args);
 
   }
 

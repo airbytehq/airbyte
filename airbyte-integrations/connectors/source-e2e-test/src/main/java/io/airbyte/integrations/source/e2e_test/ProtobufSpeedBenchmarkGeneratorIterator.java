@@ -62,7 +62,8 @@ class ProtobufSpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMe
       data.putData(LONG_INT_BASE + j, Value.newBuilder().setIntValue(Integer.MAX_VALUE).build());
       data.putData(SHORT_FLOAT_BASE + j, Value.newBuilder().setFloatValue(1.0).build());
       data.putData(LONG_FLOAT_BASE + j, Value.newBuilder().setFloatValue(9999999.999999999999999).build());
-//      data.putData(BINARY_INT_BASE + j, Value.newBuilder().setStringValue(VALUE_BASE + numRecordsEmitted % 10).build());
+      // data.putData(BINARY_INT_BASE + j, Value.newBuilder().setStringValue(VALUE_BASE +
+      // numRecordsEmitted % 10).build());
     }
 
     AirbyteRecordMessage.Builder record = AirbyteRecordMessage.newBuilder()
