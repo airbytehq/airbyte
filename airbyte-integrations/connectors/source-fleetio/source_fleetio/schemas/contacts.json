@@ -2,69 +2,69 @@
     "$schema": "http://json-schema.org/schema#",
     "properties": {
       "comments_count": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "created_at": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "custom_fields": {
         "properties": {
           "birthday": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "certification": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "checkbox": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "dropdown": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "out_of_network_mechanic": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "pronouns": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "t-shirt_size": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "test_restricted_custom_fields": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "type": "object"
       },
       "documents_count": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "email": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "employee": {
         "type": "boolean"
       },
       "first_name": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "group_id": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "group_name": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "id": {
         "type": "number"
       },
       "images_count": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "last_name": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "name": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "technician": {
         "type": "boolean"

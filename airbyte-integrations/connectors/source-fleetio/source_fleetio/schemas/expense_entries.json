@@ -7,64 +7,64 @@
       "custom_fields": {
         "properties": {
           "expense_status": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "juan_reason_for_entry_field": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "otr_expenses": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "test_checkbox": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "test_date": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "test_dropdown": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "test_text": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "xylophone": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "type": "object"
       },
       "expense_entry_type_id": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "expense_entry_type_name": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "id": {
         "type": "number"
       },
       "notes": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "occurred_at": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "total_amount": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "updated_at": {
         "type": "string"
       },
       "vehicle_id": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "vehicle_name": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "vendor_id": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "vendor_name": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     },
     "type": "object"

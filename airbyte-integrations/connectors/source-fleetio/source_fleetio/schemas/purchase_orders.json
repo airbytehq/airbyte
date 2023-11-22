@@ -2,13 +2,13 @@
     "$schema": "http://json-schema.org/schema#",
     "properties": {
       "approved_at": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "approved_by": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "comments_count": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "created_at": {
         "type": "string"
@@ -19,46 +19,46 @@
       "custom_fields": {
         "properties": {
           "fet": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "po_custom_field_date": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "type": "object"
       },
       "description": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "discount": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "discount_percentage": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "discount_type": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "documents_count": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "id": {
         "type": "number"
       },
       "label_list": {
         "items": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "type": "array"
       },
       "number": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "part_location_id": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "part_location_name": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "purchase_order_line_items": {
         "items": {
@@ -96,43 +96,43 @@
         "type": "array"
       },
       "shipping": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "state": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "subtotal": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "tax_1": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "tax_1_percentage": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "tax_1_type": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "tax_2": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "tax_2_percentage": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "tax_2_type": {
-        "type": "string"
+        "type": ["string", "null"]
       },
       "total_amount": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "updated_at": {
         "type": "string"
       },
       "vendor_id": {
-        "type": "number"
+        "type": ["number", "null"]
       },
       "vendor_name": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     },
     "type": "object"
