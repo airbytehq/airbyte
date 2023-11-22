@@ -13,6 +13,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.protos.AirbyteStreamState;
 import io.airbyte.protocol.protos.StreamDescriptor;
+import io.airbyte.protocol.protos.Value;
+
 import java.time.Instant;
 import javax.annotation.CheckForNull;
 
@@ -23,8 +25,12 @@ import javax.annotation.CheckForNull;
  */
 class SpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
 
-  private static final String fieldBase = "field";
-  private static final String valueBase = "valuevaluevaluevaluevalue";
+  private static final String STR_BASE = "str";
+  private static final String SHORT_INT_BASE = "sint";
+  private static final String LONG_INT_BASE = "lint";
+  private static final String SHORT_FLOAT_BASE = "sfl";
+  private static final String LONG_FLOAT_BASE = "lfl";
+  private static final String VALUE_BASE = "valuevaluevaluevaluevalue";
   private static final AirbyteMessage message = new AirbyteMessage()
       .withType(Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withEmittedAt(Instant.EPOCH.toEpochMilli()).withStream("stream1"));
@@ -49,7 +55,11 @@ class SpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
 
     for (int j = 1; j <= 5; ++j) {
       // do % 10 so that all records are same length.
-      ((ObjectNode) jsonNode).put(fieldBase + j, valueBase + numRecordsEmitted % 10);
+      ((ObjectNode) jsonNode).put(STR_BASE + j, VALUE_BASE + numRecordsEmitted % 10);
+      ((ObjectNode) jsonNode).put(SHORT_INT_BASE + j, 1);
+      ((ObjectNode) jsonNode).put(LONG_INT_BASE + j, Integer.MAX_VALUE);
+      ((ObjectNode) jsonNode).put(SHORT_FLOAT_BASE + j, 1.0);
+      ((ObjectNode) jsonNode).put(LONG_FLOAT_BASE + j, 9999999.999999999999999);
     }
 
     message.getRecord().withData(jsonNode);

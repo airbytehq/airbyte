@@ -20,7 +20,13 @@ import javax.annotation.CheckForNull;
  */
 class ProtobufSpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
 
-  private static final String FIELD_BASE = "field";
+  private static final String STR_BASE = "str";
+  private static final String SHORT_INT_BASE = "sint";
+  private static final String LONG_INT_BASE = "lint";
+  private static final String SHORT_FLOAT_BASE = "sfl";
+  private static final String LONG_FLOAT_BASE = "lfl";
+  private static final String BINARY_INT_BASE = "binary";
+
   private static final String VALUE_BASE = "valuevaluevaluevaluevalue";
   private static final String STREAM_NAME = "stream1";
   private static final Timestamp EMITTED_AT = Timestamp.newBuilder()
@@ -51,7 +57,12 @@ class ProtobufSpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMe
 
     for (int j = 1; j <= entryCount; ++j) {
       // do % 10 so that all records are same length.
-      data.putData(FIELD_BASE + j, Value.newBuilder().setStringValue(VALUE_BASE + numRecordsEmitted % 10).build());
+      data.putData(STR_BASE + j, Value.newBuilder().setStringValue(VALUE_BASE + numRecordsEmitted % 10).build());
+      data.putData(SHORT_INT_BASE + j, Value.newBuilder().setIntValue(1).build());
+      data.putData(LONG_INT_BASE + j, Value.newBuilder().setIntValue(Integer.MAX_VALUE).build());
+      data.putData(SHORT_FLOAT_BASE + j, Value.newBuilder().setFloatValue(1.0).build());
+      data.putData(LONG_FLOAT_BASE + j, Value.newBuilder().setFloatValue(9999999.999999999999999).build());
+//      data.putData(BINARY_INT_BASE + j, Value.newBuilder().setStringValue(VALUE_BASE + numRecordsEmitted % 10).build());
     }
 
     AirbyteRecordMessage.Builder record = AirbyteRecordMessage.newBuilder()
