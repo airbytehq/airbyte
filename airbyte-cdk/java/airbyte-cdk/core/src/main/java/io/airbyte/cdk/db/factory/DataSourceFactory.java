@@ -205,11 +205,11 @@ public class DataSourceFactory {
      * @return DataSourceBuilder class used to create dynamic fields for DataSource
      */
     private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties, String driverClassName) {
-      // TODO: the usage of CONNECT_TIMEOUT is Postgres specific, may need to extend for other databases
       final Optional<Duration> parsedConnectionTimeout = switch (DatabaseDriver.findByDriverClassName(driverClassName)) {
         case POSTGRESQL -> maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT.getName()), ChronoUnit.SECONDS)
             .or(() -> maybeParseDuration(CONNECT_TIMEOUT.getDefaultValue(), ChronoUnit.SECONDS));
         case MYSQL -> maybeParseDuration(connectionProperties.get("connectTimeout"), ChronoUnit.MILLIS);
+        case MSSQLSERVER -> maybeParseDuration(connectionProperties.get("loginTimeout"), ChronoUnit.SECONDS);
         default -> maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT_KEY), ChronoUnit.SECONDS)
             // Enforce minimum timeout duration for unspecified data sources.
             .filter(d -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0);
