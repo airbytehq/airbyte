@@ -166,17 +166,6 @@ public class PostgresCdcCtidInitializer {
           targetPosition, false, firstRecordWaitTime, queueSize);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
 
-      final boolean canShortCircuitDebeziumEngine = savedOffset.isPresent() &&
-      // Until the need presents itself in production, short-circuiting should only be done in tests.
-          sourceConfig.has("is_test") && sourceConfig.get("is_test").asBoolean() &&
-          !postgresDebeziumStateUtil.maybeReplicationStreamIntervalHasRecords(
-              database.getDatabaseConfig(),
-              sourceConfig.get("replication_method").get("replication_slot").asText(),
-              sourceConfig.get("replication_method").get("publication").asText(),
-              PostgresUtils.getPluginValue(sourceConfig.get("replication_method")),
-              savedOffset.getAsLong(),
-              targetPosition.targetLsn.asLong());
-
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
           catalog,
           new PostgresCdcSavedInfoFetcher(stateToBeUsed),
@@ -185,8 +174,7 @@ public class PostgresCdcCtidInitializer {
           PostgresCdcProperties.getDebeziumDefaultProperties(database),
           DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt,
-          false,
-          canShortCircuitDebeziumEngine);
+          false);
 
       if (initialSyncCtidIterators.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
