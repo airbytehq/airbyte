@@ -3,7 +3,6 @@
 #
 
 import base64
-import itertools
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Set
 
@@ -134,6 +133,7 @@ class AdRuleLibraries(FBMarketingIncrementalStream):
     def get_ad_rule_libraries(account: FBAdAccount, **kwargs):
         return account.get_ad_rules_library(**kwargs)
 
+
 class AdSets(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/ad-campaign"""
 
@@ -217,18 +217,14 @@ class AdAccounts(FBMarketingStream):
     fields_exceptions = [
         "capabilities",
         "failed_delivery_checks",
-        "funding_source",
         "has_migrated_permissions",
         "business_street",
         "business_street2",
-        "tax_id",
-        "tax_id_status",
-        "tax_id_type",
         "failed_delivery_checks",
         "extended_credit_invoice_group",
+        "funding_source",
         "funding_source_details",
         "offsite_pixels_tos_accepted",
-        "rf_spec",
         "tos_accepted",
         "user_tasks",
         "user_tos_accepted",
