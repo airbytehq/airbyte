@@ -5,7 +5,7 @@
 import re
 import time
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime,date
 from typing import Any, Callable, Generator, Iterable, MutableMapping, Optional, Tuple, Type, Union
 
 import pendulum
@@ -234,13 +234,10 @@ def chunk_date_range(
     start_date = start_date.subtract(days=conversion_window)
     slice_start = start_date
 
-    while slice_start <= end_date:
-        slice_end = min(end_date, slice_start + slice_duration)
-        yield {
-            "start_date": slice_start.format(time_format),
-            "end_date": slice_end.format(time_format),
-        }
-        slice_start = slice_end + slice_step
+    return [{
+        "start_date": slice_start.format(time_format),
+        "end_date": today.format(time_format),
+    }]
 
 
 @dataclass(repr=False, eq=False, frozen=True)

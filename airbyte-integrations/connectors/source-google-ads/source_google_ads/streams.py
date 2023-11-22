@@ -36,8 +36,17 @@ class GoogleAdsStream(Stream, ABC):
         return query
 
     def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
+        latest_records = {}
+        primary_key = ' '.join(self.primary_key)
         for result in response:
-            yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
+            record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
+            campaign_id = record.get(primary_key)
+            if (latest_records.get(campaign_id) is None
+                    or record.get("segments_date") is None
+                    or pendulum.parse(latest_records[campaign_id]["segments.date"]) < pendulum.parse(record.get("segments.date"))):
+                latest_records[campaign_id] = record
+
+        yield from latest_records.values()
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:
@@ -50,7 +59,6 @@ class GoogleAdsStream(Stream, ABC):
         customer_id = stream_slice["customer_id"]
         try:
             response_records = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=customer_id)
-
             yield from self.parse_records_with_backoff(response_records, stream_slice)
         except GoogleAdsException as exception:
             if exception.error.args[0].code == StatusCode.PERMISSION_DENIED:
@@ -215,7 +223,7 @@ class Customer(IncrementalGoogleAdsStream):
     Customer stream: https://developers.google.com/google-ads/api/fields/v11/customer
     """
 
-    primary_key = ["customer.id", "segments.date"]
+    primary_key = ["customer.id"]
 
     def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
         for record in super().parse_response(response):
@@ -247,7 +255,7 @@ class Campaign(IncrementalGoogleAdsStream):
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["campaign.id", "segments.date", "segments.hour", "segments.ad_network_type"]
+    primary_key = ["campaign.id"]
 
 
 class CampaignBudget(IncrementalGoogleAdsStream):
@@ -259,9 +267,6 @@ class CampaignBudget(IncrementalGoogleAdsStream):
     primary_key = [
         "customer.id",
         "campaign_budget.id",
-        "segments.date",
-        "segments.budget_campaign_association_status.campaign",
-        "segments.budget_campaign_association_status.status",
     ]
 
 
@@ -288,7 +293,7 @@ class AdGroup(IncrementalGoogleAdsStream):
     AdGroup stream: https://developers.google.com/google-ads/api/fields/v11/ad_group
     """
 
-    primary_key = ["ad_group.id", "segments.date"]
+    primary_key = ["ad_group.id"]
 
 
 class AdGroupLabel(GoogleAdsStream):
@@ -323,7 +328,7 @@ class AdGroupAd(IncrementalGoogleAdsStream):
     Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad
     """
 
-    primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date"]
+    primary_key = ["ad_group.id", "ad_group_ad.ad.id"]
 
 
 class AdGroupAdLabel(GoogleAdsStream):
