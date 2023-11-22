@@ -1,4 +1,12 @@
 data:
+  allowedHosts:
+    hosts:
+      - https://sellingpartnerapi-eu.amazon.com
+      - https://sellingpartnerapi-fe.amazon.com
+      - https://sellingpartnerapi-na.amazon.com
+      - https://sandbox.sellingpartnerapi-eu.amazon.com
+      - https://sandbox.sellingpartnerapi-fe.amazon.com
+      - https://sandbox.sellingpartnerapi-na.amazon.com
   ab_internal:
     ql: 200
     sl: 100
@@ -20,6 +28,12 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  suggestedStreams:
+    streams:
+      - Orders
+      - OrderItems
+      - ListFinancialEvents
+      - ListFinancialEventGroups
   releases:
     breakingChanges:
       2.0.0:

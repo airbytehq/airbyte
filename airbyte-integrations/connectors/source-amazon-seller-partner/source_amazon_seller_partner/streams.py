@@ -365,6 +365,18 @@ class MerchantListingsReports(ReportsAmazonSPStream):
     name = "GET_MERCHANT_LISTINGS_ALL_DATA"
 
 
+class NetPureProductMarginReport(ReportsAmazonSPStream):
+    name = "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT"
+
+
+class RapidRetailAnalyticsInventoryReport(ReportsAmazonSPStream):
+    name = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
+
+
+class VendorTrafficReport(ReportsAmazonSPStream):
+    name = "GET_VENDOR_TRAFFIC_REPORT"
+
+
 class FlatFileOrdersReports(ReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
@@ -419,7 +431,12 @@ class OrderReportDataShipping(ReportsAmazonSPStream):
     name = "GET_ORDER_REPORT_DATA_SHIPPING"
 
     def parse_document(self, document):
-        parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message"})
+        try:
+            parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message"})
+        except Exception as e:
+            self.logger.warning(f"Unable to parse the report for the stream {self.name}, error: {str(e)}")
+            return []
+
         reports = parsed.get("AmazonEnvelope", {}).get("Message", {})
         result = []
         for report in reports:
@@ -454,9 +471,14 @@ class RestockInventoryReports(ReportsAmazonSPStream):
 
 class GetXmlBrowseTreeData(ReportsAmazonSPStream):
     def parse_document(self, document):
-        parsed = xmltodict.parse(
-            document, dict_constructor=dict, attr_prefix="", cdata_key="text", force_list={"attribute", "id", "refinementField"}
-        )
+        try:
+            parsed = xmltodict.parse(
+                document, dict_constructor=dict, attr_prefix="", cdata_key="text", force_list={"attribute", "id", "refinementField"}
+            )
+        except Exception as e:
+            self.logger.warning(f"Unable to parse the report for the stream {self.name}, error: {str(e)}")
+            return []
+
         return parsed.get("Result", {}).get("Node", [])
 
     name = "GET_XML_BROWSE_TREE_DATA"
@@ -488,7 +510,12 @@ class StrandedInventoryUiReport(ReportsAmazonSPStream):
 
 class XmlAllOrdersDataByOrderDataGeneral(ReportsAmazonSPStream):
     def parse_document(self, document):
-        parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message", "OrderItem"})
+        try:
+            parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message", "OrderItem"})
+        except Exception as e:
+            self.logger.warning(f"Unable to parse the report for the stream {self.name}, error: {str(e)}")
+            return []
+
         orders = parsed.get("AmazonEnvelope", {}).get("Message", [])
         result = []
         if isinstance(orders, list):

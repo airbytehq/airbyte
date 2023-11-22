@@ -50,9 +50,11 @@ from source_amazon_seller_partner.streams import (
     MerchantListingsReport,
     MerchantListingsReportBackCompat,
     MerchantListingsReports,
+    NetPureProductMarginReport,
     OrderItems,
     OrderReportDataShipping,
     Orders,
+    RapidRetailAnalyticsInventoryReport,
     RestockInventoryReports,
     SellerAnalyticsSalesAndTrafficReports,
     SellerFeedbackReports,
@@ -60,12 +62,14 @@ from source_amazon_seller_partner.streams import (
     VendorDirectFulfillmentShipping,
     VendorInventoryReports,
     VendorSalesReports,
+    VendorTrafficReport,
     XmlAllOrdersDataByOrderDataGeneral,
 )
 
 
 class SourceAmazonSellerPartner(AbstractSource):
-    def _get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+    @staticmethod
+    def _get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
         endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
         auth = AWSAuthenticator(
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
@@ -182,6 +186,9 @@ class SourceAmazonSellerPartner(AbstractSource):
                 SellerAnalyticsSalesAndTrafficReports(**stream_kwargs),
                 VendorSalesReports(**stream_kwargs),
                 VendorInventoryReports(**stream_kwargs),
+                NetPureProductMarginReport(**stream_kwargs),
+                RapidRetailAnalyticsInventoryReport(**stream_kwargs),
+                VendorTrafficReport(**stream_kwargs),
             ]
             streams += brand_analytics_reports
         return streams
