@@ -128,7 +128,6 @@ public class IntegrationRunner {
     } catch (final Exception e) {
       throw e;
     } finally {
-      AirbyteTraceMessageUtility.close();
       if (outputRecordCollector instanceof AutoCloseable) {
         ((AutoCloseable) outputRecordCollector).close();
       }
