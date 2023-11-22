@@ -138,6 +138,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         .with("GRANT SELECT ON SCHEMA :: [%s] TO %s", modelsSchema(), testUserName())
         .with("GRANT SELECT ON SCHEMA :: [%s] TO %s", randomSchema(), testUserName())
         .with("GRANT SELECT ON SCHEMA :: [cdc] TO %s", testUserName())
+        .with("GRANT VIEW SERVER STATE TO %s", testUserName())
         .with("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testUserName());
 
     testDataSource = DataSourceFactory.create(
@@ -211,11 +212,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   @Test
   void testAssertSqlServerAgentRunning() {
-    testdb
-        .with("USE master")
-        .with("GRANT VIEW SERVER STATE TO %s", testUserName())
-        .withAgentStopped()
-        .withWaitUntilAgentStopped();
+    testdb.withAgentStopped().withWaitUntilAgentStopped();
     // assert expected failure if sql server agent stopped
     assertThrows(RuntimeException.class, () -> source().assertSqlServerAgentRunning(testDatabase()));
     // assert success if sql server agent running
@@ -264,11 +261,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
     // assertSqlServerAgentRunning
 
-    testdb
-        .with("USE master")
-        .with("GRANT VIEW SERVER STATE TO %s", testUserName())
-        .withAgentStopped()
-        .withWaitUntilAgentStopped();
+    testdb.withAgentStopped().withWaitUntilAgentStopped();
     status = source().check(config());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
     testdb.withAgentStarted().withWaitUntilAgentRunning();
