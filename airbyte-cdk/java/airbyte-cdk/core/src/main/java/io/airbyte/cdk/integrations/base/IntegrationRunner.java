@@ -9,6 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import datadog.trace.api.Trace;
+import io.airbyte.cdk.integrations.base.io.OutputRecordCollectorFactory;
 import io.airbyte.cdk.integrations.base.io.SocketOutputRecordCollector;
 import io.airbyte.cdk.integrations.util.ApmTraceUtils;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
@@ -70,11 +71,6 @@ public class IntegrationRunner {
 
   public static final int INTERRUPT_THREAD_DELAY_MINUTES = 60;
   public static final int EXIT_THREAD_DELAY_MINUTES = 70;
-  public static final int CONNECTION_RETRY_BACKOFF_MS = Long.valueOf(TimeUnit.SECONDS.toMillis(1)).intValue();
-  public static final String PLATFORM_SERVER_ENABLED = "PLATFORM_SERVER_ENABLED";
-  public static final String PLATFORM_SERVER_HOST = "PLATFORM_SERVER_HOST";
-  public static final String PLATFORM_SERVER_PORT = "PLATFORM_SERVER_PORT";
-
   public static final int FORCED_EXIT_CODE = 2;
 
   private static final Runnable EXIT_HOOK = () -> System.exit(FORCED_EXIT_CODE);
@@ -87,27 +83,13 @@ public class IntegrationRunner {
   private final FeatureFlags featureFlags;
   private static JsonSchemaValidator validator;
 
-  public static Consumer<AirbyteMessage> getOutputRecordCollector() {
-    final boolean socketOutputEnabled = Boolean.TRUE.equals(Boolean.valueOf(System.getenv(PLATFORM_SERVER_ENABLED)));
-    if (socketOutputEnabled) {
-      LOGGER.info("Using socket-based output record collector.");
-      final SocketOutputRecordCollector<AirbyteMessage> socketOutputRecordCollector =
-              new SocketOutputRecordCollector<>(System.getenv(PLATFORM_SERVER_HOST),
-                Integer.parseInt(System.getenv(PLATFORM_SERVER_PORT)), CONNECTION_RETRY_BACKOFF_MS);
-      socketOutputRecordCollector.connect();
-      return socketOutputRecordCollector;
-    } else {
-      LOGGER.info("Using default (stdout) output record collector.");
-      return Destination::defaultOutputRecordCollector;
-    }
-  }
 
   public IntegrationRunner(final Destination destination) {
-    this(new IntegrationCliParser(),getOutputRecordCollector(), destination, null);
+    this(new IntegrationCliParser(), OutputRecordCollectorFactory.getOutputRecordCollector(), destination, null);
   }
 
   public IntegrationRunner(final Source source) {
-    this(new IntegrationCliParser(), getOutputRecordCollector(), null, source);
+    this(new IntegrationCliParser(), OutputRecordCollectorFactory.getOutputRecordCollector(), null, source);
   }
 
   @VisibleForTesting
