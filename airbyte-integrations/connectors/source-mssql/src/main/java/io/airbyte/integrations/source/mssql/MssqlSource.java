@@ -88,8 +88,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
   private List<String> schemas;
 
-  public static Source sshWrappedSource() {
-    return new SshWrappedSource(new MssqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  public static Source sshWrappedSource(MssqlSource source) {
+    return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public MssqlSource() {
@@ -570,7 +570,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   public static void main(final String[] args) throws Exception {
-    final Source source = MssqlSource.sshWrappedSource();
+    final Source source = MssqlSource.sshWrappedSource(new MssqlSource());
     LOGGER.info("starting source: {}", MssqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MssqlSource.class);
