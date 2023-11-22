@@ -7,8 +7,8 @@ import dataclasses
 import json
 import os
 import subprocess
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -385,7 +385,9 @@ async def main():
         print(f"right_rows_missing: {stream_stats.right_rows_missing}")
         print(len(stream_stats.right_rows_missing))
 
-    generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, connector, connector_version_left, connector_version_right, start_time, execution_time)
+    generate_plots_single_pdf_per_metric(
+        streams_to_dataframe, streams_stats, connector, connector_version_left, connector_version_right, start_time, execution_time
+    )
 
 
 def _configured_catalog(streams):
@@ -403,7 +405,16 @@ def _configured_catalog(streams):
     )
 
 
-def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, source_name, left_version, right_version, start_time, execution_time, output_filename="plots_combined_per_metric.pdf"):
+def generate_plots_single_pdf_per_metric(
+    streams_to_dataframe,
+    streams_stats,
+    source_name,
+    left_version,
+    right_version,
+    start_time,
+    execution_time,
+    output_filename="plots_combined_per_metric.pdf",
+):
     # diff_pdf_filename = "diff.pdf"
     # diff_pdf = canvas.Canvas(diff_pdf_filename)
     diff_filename = "diff_{stream}.jsonl"
@@ -429,12 +440,30 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, so
                 and len(streams_stats[stream_name].right_rows_missing) == 0,
                 "diff_fields": sum([val for col, val in streams_stats[stream_name].columns_to_diff_count.items()]),
                 "record_count": streams_stats[stream_name].record_count,
-                "left_additional_records": len(streams_stats[stream_name].left_rows_missing) + len(streams_stats[stream_name].unmatched_left_no_pk),
-                "right_additional_records": len(streams_stats[stream_name].right_rows_missing) + len(streams_stats[stream_name].unmatched_right_no_pk),
-                "min_date_left": datetime.utcfromtimestamp(streams_stats[stream_name].min_date_left,).strftime('%Y-%m-%d %H:%M:%S') if streams_stats[stream_name].min_date_left else None,
-                "max_date_left": datetime.utcfromtimestamp(streams_stats[stream_name].max_date_left,).strftime('%Y-%m-%d %H:%M:%S') if streams_stats[stream_name].max_date_left else None,
-                "min_date_right": datetime.utcfromtimestamp(streams_stats[stream_name].min_date_right,).strftime('%Y-%m-%d %H:%M:%S') if streams_stats[stream_name].min_date_right else None,
-                "max_date_right": datetime.utcfromtimestamp(streams_stats[stream_name].max_date_right,).strftime('%Y-%m-%d %H:%M:%S' )if streams_stats[stream_name].max_date_right else None,
+                "left_additional_records": len(streams_stats[stream_name].left_rows_missing)
+                + len(streams_stats[stream_name].unmatched_left_no_pk),
+                "right_additional_records": len(streams_stats[stream_name].right_rows_missing)
+                + len(streams_stats[stream_name].unmatched_right_no_pk),
+                "min_date_left": datetime.utcfromtimestamp(
+                    streams_stats[stream_name].min_date_left,
+                ).strftime("%Y-%m-%d %H:%M:%S")
+                if streams_stats[stream_name].min_date_left
+                else None,
+                "max_date_left": datetime.utcfromtimestamp(
+                    streams_stats[stream_name].max_date_left,
+                ).strftime("%Y-%m-%d %H:%M:%S")
+                if streams_stats[stream_name].max_date_left
+                else None,
+                "min_date_right": datetime.utcfromtimestamp(
+                    streams_stats[stream_name].min_date_right,
+                ).strftime("%Y-%m-%d %H:%M:%S")
+                if streams_stats[stream_name].min_date_right
+                else None,
+                "max_date_right": datetime.utcfromtimestamp(
+                    streams_stats[stream_name].max_date_right,
+                ).strftime("%Y-%m-%d %H:%M:%S")
+                if streams_stats[stream_name].max_date_right
+                else None,
             }
             print(f"stat:{stat}")
             summary_stats.append(stat)
@@ -452,7 +481,19 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, so
         # table = pd.pivot_table(summary_df, index='stream', columns=['equal', "record_count", "missing_left", "missing_right"], aggfunc=len, fill_value=0)
         # table = pd.pivot_table(summary_df, index='stream', columns=["record_count"], aggfunc=len, fill_value=0)
         table = summary_df.pivot_table(
-            values=["OK", "record_count", "diff_fields", "left_additional_records", "right_additional_records", "min_date_left", "max_date_left", "min_date_right", "max_date_right"], index="stream", aggfunc="first"
+            values=[
+                "OK",
+                "record_count",
+                "diff_fields",
+                "left_additional_records",
+                "right_additional_records",
+                "min_date_left",
+                "max_date_left",
+                "min_date_right",
+                "max_date_right",
+            ],
+            index="stream",
+            aggfunc="first",
         )
         plt.figure(figsize=(6, 4))
 
@@ -471,7 +512,10 @@ def generate_plots_single_pdf_per_metric(streams_to_dataframe, streams_stats, so
 
         summary_cell_colors = [[summary_color_cells(table, row, col) for col in table.columns] for row in table.index]
         plt.table(cellText=table.values, colLabels=table.columns, rowLabels=table.index, loc="center", cellColours=summary_cell_colors)
-        plt.title(f"Summary stats for {source_name}\nleft: {left_version} ---- right:{right_version}\nstart_time:{start_time}\nexecution_time:{execution_time}", y=2)
+        plt.title(
+            f"Summary stats for {source_name}\nleft: {left_version} ---- right:{right_version}\nstart_time:{start_time}\nexecution_time:{execution_time}",
+            y=2,
+        )
         plt.axis("off")  # Hide axis
         pdf.savefig(bbox_inches="tight", pad_inches=1)
         plt.close()

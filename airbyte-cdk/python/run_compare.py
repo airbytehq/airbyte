@@ -16,8 +16,8 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     SyncMode,
-    Type as MessageType
 )
+from airbyte_cdk.models import Type as MessageType
 
 
 @click.command()
@@ -35,9 +35,8 @@ def main(connector, left, right, config, start, end, stream, mode):
     print(f"right: {right}")
     print(f"config: {config}")
 
-
     discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:latest discover --config /{config}"
-    #discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{left} discover --config /secrets/buck_mason_oc_config.json"
+    # discover_command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{left} discover --config /secrets/buck_mason_oc_config.json"
     discover_result = subprocess.run(discover_command, shell=True, check=True, stdout=subprocess.PIPE, text=True)
     discover_output = discover_result.stdout
     print(discover_output)
@@ -61,15 +60,15 @@ def main(connector, left, right, config, start, end, stream, mode):
                 right_df = create_df_from_file(right, stream)
 
             print("left")
-            #print(left_df.head())
+            # print(left_df.head())
             print("right")
-            #print(right_df.head())
+            # print(right_df.head())
 
             if compare_df is None:
                 compare_df = compare_dataframes(left_df, right_df, "id")
             else:
                 compare_df = compare_df.append(compare_dataframes(left_df, right_df, "id"))
-            #print(compare_df)
+            # print(compare_df)
             print(f"compared {stream}")
         except Exception as e:
             print(f"failed to compare {stream}. {e}")
@@ -79,6 +78,7 @@ def main(connector, left, right, config, start, end, stream, mode):
 def create_df(connector, connector_version, config_path, stream):
     records = [m.record for m in read_messages(connector, connector_version, config_path) if m.record]
     return to_stream_to_dataframe(records)[stream]
+
 
 def create_df_from_file(path, stream):
     with open(path) as f:
@@ -91,9 +91,11 @@ def create_df_from_file(path, stream):
             except Exception as e:
                 print(e)
                 print(line)
-        #messages = [AirbyteMessage.parse_raw(line) for line in f.readlines()]
+        # messages = [AirbyteMessage.parse_raw(line) for line in f.readlines()]
         records = [m.record for m in messages if m.record]
         return to_stream_to_dataframe(records)[stream]
+
+
 def read_messages(connector, connector_version, config_path):
     command = f"docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/{connector}:{connector_version} read --config /{config_path} --catalog /secrets/tmp_catalog.json"
     for line in subprocess_stdout_generator(command):
@@ -131,6 +133,7 @@ def extract_json_to_dataframe(df, json_column, cursor_field="updated_at"):
         raise ValueError(f"Unexpected cursor type for {df[cursor_field].iloc[0]}")
     return df
 
+
 def convert_to_datetime(value):
     if isinstance(value, pd.Timestamp):
         return value.to_pydatetime()
@@ -159,7 +162,6 @@ def compare_dataframes(left, right, primary_key):
             diff_values = pd.merge(left_subset, right_subset, on=primary_key, suffixes=("_left", "_right"), how="inner")
             diff_values = diff_values.dropna(subset=[f"{column}_left", f"{column}_right"])
 
-
             if len(diff_values) == 0 and False:
                 # FIXME should be an empty df, not an empty list..
                 diff_values = []
@@ -182,25 +184,27 @@ def compare_dataframes(left, right, primary_key):
 
     return pd.DataFrame(comparison_results)
 
+
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-def generate_plots_single_pdf_per_metric(dataframe, output_filename='plots_combined_per_metric.pdf'):
-    unique_columns = dataframe['column'].unique()
-    metrics = ['missing_right', 'missing_left', 'diff_count', 'equal_count']
+
+def generate_plots_single_pdf_per_metric(dataframe, output_filename="plots_combined_per_metric.pdf"):
+    unique_columns = dataframe["column"].unique()
+    metrics = ["missing_right", "missing_left", "diff_count", "equal_count"]
 
     with PdfPages(output_filename) as pdf:
         for col_value in unique_columns:
             plt.figure(figsize=(8, 6))
 
             for metric in metrics:
-                subset = dataframe[(dataframe['column'] == col_value)]
+                subset = dataframe[(dataframe["column"] == col_value)]
 
-                plt.plot(subset['cursor_day'], subset[metric], label=metric)
+                plt.plot(subset["cursor_day"], subset[metric], label=metric)
 
-                plt.xlabel('Cursor Day')
-                plt.ylabel('Values')
-                plt.title(f'Plot for Column Value: {col_value}')
+                plt.xlabel("Cursor Day")
+                plt.ylabel("Values")
+                plt.title(f"Plot for Column Value: {col_value}")
                 plt.legend()
                 plt.grid(True)
 
@@ -208,6 +212,7 @@ def generate_plots_single_pdf_per_metric(dataframe, output_filename='plots_combi
                 plt.close()
 
     print(f"All plots saved in {output_filename}")
+
 
 def subprocess_stdout_generator(command):
     process = subprocess.Popen(
