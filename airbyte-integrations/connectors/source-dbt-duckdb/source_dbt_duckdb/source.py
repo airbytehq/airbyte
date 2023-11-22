@@ -4,6 +4,7 @@
 
 
 import json
+import os
 from datetime import datetime
 from typing import Dict, Generator
 
@@ -20,8 +21,8 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 
-from .utils.dbt import get_dbt_manifest, invoke_dbt
-
+from .utils.dbt import AirbyteDbtRunner
+from dbt.cli.main import RunExecutionResult
 
 class SourceDbtDuckDB(Source):
     """This source will run dbt build operations using the dbt-duckdb adapter."""
@@ -38,9 +39,14 @@ class SourceDbtDuckDB(Source):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
+        env_vars = self._get_env_vars(config)
+        dbt_runner = AirbyteDbtRunner(
+            project_dir=config["dbt_project_path"],
+            logger=logger,
+            env_vars=env_vars,
+        )
         try:
-            # Not Implemented
-            invoke_dbt("debug", project_dir=config["dbt_project_path"], logger=logger)
+            dbt_runner.invoke_dbt("compile")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
@@ -105,7 +111,7 @@ class SourceDbtDuckDB(Source):
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "properties": {
-                        "model_name": {"type": "string"},
+                        "name": {"type": "string"},
                         "result": {"type": "string"},
                     },
                 },
@@ -122,7 +128,7 @@ class SourceDbtDuckDB(Source):
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "properties": {
-                        "test_name": {"type": "string"},
+                        "name": {"type": "string"},
                         "result": {"type": "string"},
                     },
                 },
@@ -157,10 +163,16 @@ class SourceDbtDuckDB(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        dbt_project_dir = config["dbt_project_path"]
+        env_vars = self._get_env_vars(config)
+        dbt_runner = AirbyteDbtRunner(
+            project_dir=config["dbt_project_path"],
+            logger=logger,
+            env_vars=env_vars,
+        )
+        results_list: list[RunExecutionResult] = []
 
         # Get dbt manifest
-        manifest = get_dbt_manifest(project_dir=dbt_project_dir, logger=logger)
+        manifest = dbt_runner.generate_manifest()
         for node in manifest.nodes.values():
             yield AirbyteMessage(
                 type=Type.RECORD,
@@ -175,49 +187,96 @@ class SourceDbtDuckDB(Source):
                     emitted_at=int(datetime.now().timestamp()) * 1000,
                 ),
             )
+        if config.get("enabled_steps", {}).get("deps", True):
+            dbt_runner.invoke("deps")
 
-        # Run dbt models
-        results_list: list[dict] = []
-        dbt_runner_result = invoke_dbt(
-            "run",
-            project_dir=dbt_project_dir,
-            manifest=manifest,
-            logger=logger,
-        )
-        for result_item in dbt_runner_result.result:
-            yield AirbyteMessage(
-                type=Type.RECORD,
-                record=AirbyteRecordMessage(
+        if config.get("enabled_steps", {}).get("seed", False):
+            for result in dbt_runner.run_with_results("seed"):
+                yield self._airbyte_record_message_from_result(
                     stream="dbt_run_results",
-                    data={
-                        "model_name": result_item.node.name,
-                        "status": result_item.status,
-                    },
-                    emitted_at=int(datetime.now().timestamp()) * 1000,
-                ),
-            )
-            results_list.append(result_item.to_dict())
-        yield AirbyteMessage(
-            type=Type.STATE,
-            state={"results": results_list},
+                    result=result,
+                )
+                results_list.append(result)
+
+        if config.get("enabled_steps", {}).get("source_freshness", False):
+            for result in dbt_runner.run_with_results("source freshness"):
+                yield self._airbyte_record_message_from_result(
+                    stream="dbt_run_results",
+                    result=result,
+                )
+                results_list.append(result)
+
+        if config.get("enabled_steps", {}).get("docs_generate", False):
+            dbt_runner.generate_docs()
+
+        if config.get("enabled_steps", {}).get("snapshot", False):
+            for result in dbt_runner.run_with_results("snapshot"):
+                yield self._airbyte_record_message_from_result(
+                    stream="dbt_run_results",
+                    result=result,
+                )
+                results_list.append(result)
+
+        if config.get("enabled_steps", {}).get("run", True):
+            for result in dbt_runner.run_with_results("run"):
+                yield self._airbyte_record_message_from_result(
+                    stream="dbt_run_results",
+                    result=result,
+                )
+                results_list.append(result)
+
+        if config.get("enabled_steps", {}).get("test", True):
+            for result in dbt_runner.run_with_results("test"):
+                yield self._airbyte_record_message_from_result(
+                    stream="dbt_test_results",
+                    result=result,
+                )
+                results_list.append(result)
+        
+        yield self._airbyte_state_message_from_results(
+            stream="dbt_run_results",
+            results=results_list,
         )
 
-        # Optionally run dbt tests
-        if config.get("run_tests"):
-            dbt_runner_result = invoke_dbt(
-                "test",
-                project_dir=dbt_project_dir,
-                logger=logger,
-            )
-            for result_item in dbt_runner_result.result:
-                yield AirbyteMessage(
-                    type=Type.RECORD,
-                    record=AirbyteRecordMessage(
-                        stream="dbt_test_results",
-                        data={
-                            "model_name": result_item.node.name,
-                            "status": result_item.status,
-                        },
-                        emitted_at=int(datetime.now().timestamp()) * 1000,
-                    ),
-                )
+
+    def _get_env_vars(self, config: json) -> dict[str, str]:
+        env_var_settings = config.get("env_var_settings", [])
+        env_var_secrets = config.get("env_var_secrets", [])
+        env_vars = {
+            **os.environ,
+            **{setting["name"]: setting["value"] for setting in env_var_settings},
+            **{secret["name"]: secret["value"] for secret in env_var_secrets},
+        }
+        return env_vars
+
+    def _airbyte_record_message_from_result(
+        self,
+        stream: str,
+        result: RunExecutionResult,
+    ) -> AirbyteMessage:
+        return AirbyteMessage(
+            type=Type.RECORD,
+            record=AirbyteRecordMessage(
+                stream=stream,
+                data={
+                    "name": result.node.name,
+                    "result": result.status.value,
+                },
+                emitted_at=int(datetime.now().timestamp()) * 1000,
+            ),
+    )
+
+
+    def _airbyte_state_message_from_results(
+        self,
+        stream: str,
+        results: list[RunExecutionResult],
+    ) -> AirbyteMessage:
+        return AirbyteMessage(
+            type=Type.STATE,
+            record=AirbyteRecordMessage(
+                stream=stream,
+                data={"results": [result.to_dict() for result in results]},
+                emitted_at=int(datetime.now().timestamp()) * 1000,
+            ),
+        )

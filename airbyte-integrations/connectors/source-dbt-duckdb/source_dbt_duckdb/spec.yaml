@@ -5,22 +5,98 @@ connectionSpecification:
   type: object
   required:
     - dbt_project_path
+    - env_var_settings
+    - env_var_secrets
   properties:
     dbt_project_path:
       type: string
       description: Path to the dbt project directory.
-    profile:
-      type: string
-      description: Name of the profile to use.
-      default: dev
+      order: 1
+    # profile:
+    #   type: string
+    #   description: Name of the profile to use.
+    #   order: 2
+    #   default: dev
     env_var_settings:
-      type: object
+      type: array
       description: >
-        Collection of environment variables to set before running dbt. Use this to send non-sensitive information to dbt.
+        Collection of environment variables to set before running dbt.
+        Use this to send non-sensitive information to dbt.
         For sensitive information, please instead use `env_var_secrets`.
-      additionalProperties: { "type": "string", "airbyte_secret": false }
+      order: 4
+      items:
+        type: "object"
+        required:
+          - name
+          - value
+        properties:
+          name:
+            type: string
+            description: Name of the environment variable.
+          value:
+            type: string
+            description: Value of the environment variable.
     env_var_secrets:
-      type: object
+      type: array
+      airbyte_secret: true
+      order: 5
       description: >
-        Collection of environment variable secrets to set before running dbt. Use this to send sensitive information to dbt.
-      additionalProperties: { "type": "string", "airbyte_secret": true }
+        Collection of environment variable secrets to set before running dbt.
+        Use this to send sensitive information to dbt via environment variables.
+      items:
+        type: "object"
+        airbyte_secret: true
+        required:
+          - name
+          - value
+        properties:
+          name:
+            type: string
+            description: Name of the environment variable.
+          value:
+            type: string
+            airbyte_secret: true
+            description: Value of the environment variable.
+    enabled_steps:
+      type: object
+      description: Path to the dbt project directory.
+      order: 6
+      required:
+        - run
+        - test
+      properties:
+        deps:
+          type: boolean
+          description: Whether to run the `dbt deps` command.
+          order: 1
+          default: true
+        docs_generate:
+          type: boolean
+          description: Whether to run the `dbt docs generate` command.
+          order: 2
+          default: false
+        source_freshness:
+          type: boolean
+          description: Whether to run the `dbt source freshness` command.
+          order: 3
+          default: false
+        seed:
+          type: boolean
+          description: Whether to run the `dbt seed` command.
+          order: 4
+          default: true
+        snapshot:
+          type: boolean
+          description: Whether to run the `dbt snapshot` command.
+          order: 5
+          default: false
+        run:
+          type: boolean
+          description: Whether to run the `dbt run` command.
+          order: 6
+          default: true
+        test:
+          type: boolean
+          description: Whether to run the `dbt test` command.
+          order: 7
+          default: true

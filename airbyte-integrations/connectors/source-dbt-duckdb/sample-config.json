@@ -1,11 +1,24 @@
 {
-    "dbt_project_path": "./sample_dbt_project/",
+    "dbt_project_path": "/tmp/airbyte_local/sample_dbt_project",
     "profile": "default",
-    "env_var_settings": {
-        "DUCKDB_DB_DIR": "./sample_dbt_project/dbs/"
-    },
-    "env_var_secrets": {
-        "DUCKDB_DB_PASSWORD": "you'll never know"
-    },
-    "run_tests": true
+    "env_var_settings": [
+        {
+            "name": "DUCKDB_DB_DIR",
+            "value": "/tmp/airbyte_local/sample_dbt_project"
+        }
+    ],
+    "env_var_secrets": [
+        {
+            "name": "DUCKDB_DB_PASSWORD",
+            "value": "you'll never know"
+        }
+    ],
+    "enabled_steps": {
+        "run": true,
+        "test": true,
+        "seed": true,
+        "snapshot": true,
+        "source_freshness": true,
+        "docs_generate": true
+    }
 }
