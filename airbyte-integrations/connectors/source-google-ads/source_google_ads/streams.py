@@ -40,11 +40,11 @@ class GoogleAdsStream(Stream, ABC):
         primary_key = ' '.join(self.primary_key)
         for result in response:
             record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
-            campaign_id = record.get(primary_key)
-            if (latest_records.get(campaign_id) is None
+            id = record.get(primary_key)
+            if (latest_records.get(id) is None
                     or record.get("segments_date") is None
-                    or pendulum.parse(latest_records[campaign_id]["segments.date"]) < pendulum.parse(record.get("segments.date"))):
-                latest_records[campaign_id] = record
+                    or pendulum.parse(latest_records[id]["segments.date"]) < pendulum.parse(record.get("segments.date"))):
+                latest_records[id] = record
 
         yield from latest_records.values()
 
