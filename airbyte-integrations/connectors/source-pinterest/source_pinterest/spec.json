@@ -17,7 +17,7 @@
       },
       "status": {
         "title": "Status",
-        "description": "Entity statuses based off of campaigns, ad_groups, and ads. If you do not have a status set, it will be ignored completely.",
+        "description": "For the ads, ad_groups, and campaigns streams, specifying a status will filter out records that do not match the specified ones. If a status is not specified, the source will default to records with a status of either ACTIVE or PAUSED.",
         "type": ["array", "null"],
         "items": {
           "type": "string",
