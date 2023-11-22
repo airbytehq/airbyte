@@ -62,6 +62,7 @@ class ServiceCredentials(BaseModel):
         airbyte_secret=True,
     )
 
+
 # TODO: Add filtration by folder name in stream config
 class SourceMicrosoftOneDriveSpec(AbstractFileBasedSpec, BaseModel):
     """

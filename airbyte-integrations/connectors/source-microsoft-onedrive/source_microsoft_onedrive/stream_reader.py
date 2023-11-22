@@ -118,11 +118,17 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
         drives.add_child(my_drive)
 
         files = self.get_files(drives)
-        yield from self.filter_files_by_globs_and_start_date([
-            MicrosoftOneDriveRemoteFile(uri=file.name, download_url=file.properties["@microsoft.graph.downloadUrl"],
-                                        last_modified=file.properties["lastModifiedDateTime"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
-            for file in files
-        ], globs)
+        yield from self.filter_files_by_globs_and_start_date(
+            [
+                MicrosoftOneDriveRemoteFile(
+                    uri=file.name,
+                    download_url=file.properties["@microsoft.graph.downloadUrl"],
+                    last_modified=file.properties["lastModifiedDateTime"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                )
+                for file in files
+            ],
+            globs,
+        )
 
     @contextmanager
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
