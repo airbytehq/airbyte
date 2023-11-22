@@ -408,7 +408,7 @@ jobs:
           commit-message: Updating CDK version following release
           title: Updating CDK version following release
           body: This is an automatically generated PR triggered by a CDK release
-          branch: flash1293/auto-bump-${{needs.bump-version.outputs.new_cdk_version}}-${{github.event.inputs.connector-selector}}
+          branch: flash1293/auto-bump-${{needs.bump-version.outputs.new_cdk_version}}
           base: flash1293/auto-bump
           delete-branch: true
       - name: Checkout Airbyte
@@ -416,7 +416,7 @@ jobs:
         with:
           repository: airbytehq/airbyte
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          ref: flash1293/auto-bump-${{needs.bump-version.outputs.new_cdk_version}}-${{github.event.inputs.connector-selector}}
+          ref: flash1293/auto-bump-${{needs.bump-version.outputs.new_cdk_version}}
       - name: Bump connector versions and changelog
         run: |
           python ./tools/bin/bump_cdk.py --pr ${{ steps.create-pull-request.outputs.pull-request-number }} --selector=${{github.event.inputs.connector-selector}} --changelog="${{github.event.inputs.changelog-message}}" --version="${{needs.bump-version.outputs.new_cdk_version}}"
@@ -429,7 +429,7 @@ jobs:
           commit-message: Updating CDK version following release
           title: Updating CDK version following release
           body: This is an automatically generated PR triggered by a CDK release
-          branch: flash1293/auto-bump-${{needs.bump-version.outputs.new_cdk_version}}-${{github.event.inputs.connector-selector}}
+          branch: flash1293/auto-bump-${{needs.bump-version.outputs.new_cdk_version}}
           base: flash1293/auto-bump
           delete-branch: true
 
