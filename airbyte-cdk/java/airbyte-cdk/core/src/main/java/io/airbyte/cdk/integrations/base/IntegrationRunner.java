@@ -24,7 +24,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -40,7 +39,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.ThreadUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
@@ -103,12 +101,13 @@ public class IntegrationRunner {
     this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source, null, psource);
   }
 
-  @VisibleForTesting IntegrationRunner(final IntegrationCliParser cliParser,
-                                       final Consumer<AirbyteMessage> outputRecordCollector,
-                                       final Destination destination,
-                                       final Source source,
-                                       final ProtobufDestination pdestination,
-                                       final ProtobufSource psource) {
+  @VisibleForTesting
+  IntegrationRunner(final IntegrationCliParser cliParser,
+                    final Consumer<AirbyteMessage> outputRecordCollector,
+                    final Destination destination,
+                    final Source source,
+                    final ProtobufDestination pdestination,
+                    final ProtobufSource psource) {
     Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
@@ -124,13 +123,14 @@ public class IntegrationRunner {
     Thread.setDefaultUncaughtExceptionHandler(new AirbyteExceptionHandler());
   }
 
-  @VisibleForTesting IntegrationRunner(final IntegrationCliParser cliParser,
-                                       final Consumer<AirbyteMessage> outputRecordCollector,
-                                       final Destination destination,
-                                       final Source source,
-                                       ProtobufDestination pdestination,
-                                       final ProtobufSource psource,
-                                       final JsonSchemaValidator jsonSchemaValidator) {
+  @VisibleForTesting
+  IntegrationRunner(final IntegrationCliParser cliParser,
+                    final Consumer<AirbyteMessage> outputRecordCollector,
+                    final Destination destination,
+                    final Source source,
+                    ProtobufDestination pdestination,
+                    final ProtobufSource psource,
+                    final JsonSchemaValidator jsonSchemaValidator) {
     this(cliParser, outputRecordCollector, destination, source, pdestination, psource);
     validator = jsonSchemaValidator;
   }
@@ -420,11 +420,11 @@ public class IntegrationRunner {
    * force exiting the process, so this mechanism serve as a fallback while surfacing warnings in logs
    * for maintainers to fix the code behavior instead.
    *
-   * @param exitHook           The {@link Runnable} exit hook to execute for any orphaned threads.
+   * @param exitHook The {@link Runnable} exit hook to execute for any orphaned threads.
    * @param interruptTimeDelay The time to delay execution of the orphaned thread interrupt attempt.
-   * @param interruptTimeUnit  The time unit of the interrupt delay.
-   * @param exitTimeDelay      The time to delay execution of the orphaned thread exit hook.
-   * @param exitTimeUnit       The time unit of the exit delay.
+   * @param interruptTimeUnit The time unit of the interrupt delay.
+   * @param exitTimeDelay The time to delay execution of the orphaned thread exit hook.
+   * @param exitTimeUnit The time unit of the exit delay.
    */
   @VisibleForTesting
   static void stopOrphanedThreads(final Runnable exitHook,
@@ -440,10 +440,10 @@ public class IntegrationRunner {
         .collect(Collectors.toList());
     if (!runningThreads.isEmpty()) {
       LOGGER.warn("""
-          The main thread is exiting while children non-daemon threads from a connector are still active.
-          Ideally, this situation should not happen...
-          Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
-          The main thread is: {}""", dumpThread(currentThread));
+                  The main thread is exiting while children non-daemon threads from a connector are still active.
+                  Ideally, this situation should not happen...
+                  Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
+                  The main thread is: {}""", dumpThread(currentThread));
       final ScheduledExecutorService scheduledExecutorService = Executors
           .newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder()
               // this thread executor will create daemon threads, so it does not block exiting if all other active
