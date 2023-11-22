@@ -417,6 +417,11 @@ jobs:
           repository: airbytehq/airbyte
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           ref: flash1293/auto-bump-${{needs.bump-version.outputs.new_cdk_version}}
+      # This is required because airbyte-ci is using origin/master to check for changed files
+      - name: Set Origin
+        run: |
+          git remote add origin https://github.com/airbytehq/airbyte.git
+          git fetch origin master --depth=1
       - name: Bump connector versions and changelog
         run: |
           pipx install --editable --force airbyte-ci/connectors/pipelines/
