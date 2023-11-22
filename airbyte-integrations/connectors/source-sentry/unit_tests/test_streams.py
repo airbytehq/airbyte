@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pendulum as pdm
 import pytest
+import requests
 from source_sentry.streams import Events, Issues, ProjectDetail, Projects, SentryStreamPagination
 
 INIT_ARGS = {"hostname": "sentry.io", "organization": "test-org", "project": "test-project"}
@@ -109,6 +110,23 @@ def test_project_detail_request_params():
     stream = ProjectDetail(**INIT_ARGS)
     expected = {}
     assert stream.request_params(stream_state=None, next_page_token=None) == expected
+
+def test_issues_parse_response(mocker):
+    with patch('source_sentry.streams.Issues._get_cursor_value') as mock_get_cursor_value:
+      stream = Issues(**INIT_ARGS)
+      mock_get_cursor_value.return_value = "time"
+      state = {}
+      response = requests.Response()
+      mocker.patch.object(response, "json", return_value=[{"id": "1"}])
+      result = list(stream.parse_response(response, state))
+      assert result[0] == {"id": "1"}
+
+def test_project_detail_parse_response(mocker):
+    stream = ProjectDetail(organization="test_org", project="test_proj", hostname="sentry.io")
+    response = requests.Response()
+    response.json = Mock(return_value={"id": "1"})
+    result = list(stream.parse_response(response))
+    assert result[0] == {"id": "1"}
 
 
 @pytest.mark.parametrize(
