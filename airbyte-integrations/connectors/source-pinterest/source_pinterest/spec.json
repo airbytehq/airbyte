@@ -26,40 +26,34 @@
         "uniqueItems": true
       },
       "credentials": {
-        "title": "Authorization Method",
+        "title": "OAuth2.0",
         "type": "object",
-        "oneOf": [
-          {
-            "type": "object",
-            "title": "OAuth2.0",
-            "required": ["auth_method", "refresh_token"],
-            "properties": {
-              "auth_method": {
-                "type": "string",
-                "const": "oauth2.0",
-                "order": 0
-              },
-              "client_id": {
-                "type": "string",
-                "title": "Client ID",
-                "description": "The Client ID of your OAuth application",
-                "airbyte_secret": true
-              },
-              "client_secret": {
-                "type": "string",
-                "title": "Client Secret",
-                "description": "The Client Secret of your OAuth application.",
-                "airbyte_secret": true
-              },
-              "refresh_token": {
-                "type": "string",
-                "title": "Refresh Token",
-                "description": "Refresh Token to obtain new Access Token, when it's expired.",
-                "airbyte_secret": true
-              }
-            }
+        "required": ["auth_method", "refresh_token"],
+        "properties": {
+          "auth_method": {
+            "type": "string",
+            "const": "oauth2.0",
+            "order": 0
+          },
+          "client_id": {
+            "type": "string",
+            "title": "Client ID",
+            "description": "The Client ID of your OAuth application",
+            "airbyte_secret": true
+          },
+          "client_secret": {
+            "type": "string",
+            "title": "Client Secret",
+            "description": "The Client Secret of your OAuth application.",
+            "airbyte_secret": true
+          },
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token",
+            "description": "Refresh Token to obtain new Access Token, when it's expired.",
+            "airbyte_secret": true
           }
-        ]
+        }
       },
       "custom_reports": {
         "title": "Custom Reports",
