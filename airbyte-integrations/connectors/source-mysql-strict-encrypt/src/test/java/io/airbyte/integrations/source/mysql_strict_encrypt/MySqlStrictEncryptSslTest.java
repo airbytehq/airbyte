@@ -57,7 +57,8 @@ public class MySqlStrictEncryptSslTest {
               .build())
           .build();
       final AirbyteConnectionStatus actual = new MySqlStrictEncryptSource().check(config);
-      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, actual.getStatus());
+      assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
+      assertTrue(actual.getMessage().contains("Unsecured connection not allowed"), actual.getMessage());
     }
   }
 
