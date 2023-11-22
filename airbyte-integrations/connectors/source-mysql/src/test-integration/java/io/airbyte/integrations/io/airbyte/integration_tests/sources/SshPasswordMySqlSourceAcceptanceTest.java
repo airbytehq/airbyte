@@ -49,7 +49,7 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
     final MySQLContainer<?> db = startTestContainers(bastion, network);
     config = bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, bastion.getBasicDbConfigBuider(db, List.of("public")), true);
     bastion.stopAndClose();
-    final Source sshWrappedSource = MySqlSource.sshWrappedSource();
+    final Source sshWrappedSource = MySqlSource.sshWrappedSource(new MySqlSource());
     final Exception exception = assertThrows(ConfigErrorException.class, () -> sshWrappedSource.discover(config));
 
     final String expectedMessage = "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again.";
