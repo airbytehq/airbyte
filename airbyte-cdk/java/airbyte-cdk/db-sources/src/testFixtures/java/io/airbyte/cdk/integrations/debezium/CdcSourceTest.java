@@ -176,7 +176,7 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
   }
 
   @AfterEach
-  void tearDown() {
+  protected void tearDown() {
     testdb.close();
   }
 
