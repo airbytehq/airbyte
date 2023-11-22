@@ -6,6 +6,7 @@ import json
 import logging
 import pkgutil
 import re
+from copy import deepcopy
 from importlib import metadata
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -91,14 +92,35 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(self._source_config)})
+        stream_configs = self._stream_configs(self._source_config)
 
         source_streams = [
             self._constructor.create_component(
                 DeclarativeStreamModel, stream_config, config, emit_connector_builder_messages=self._emit_connector_builder_messages
             )
-            for stream_config in self._stream_configs(self._source_config)
+            for stream_config in self._initialize_cache_for_parent_streams(deepcopy(stream_configs))
         ]
+
         return source_streams
+
+    @staticmethod
+    def _initialize_cache_for_parent_streams(stream_configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        parent_streams = set()
+
+        for stream_config in stream_configs:
+            if stream_config.get("incremental_sync", {}).get("parent_stream"):
+                parent_streams.add(stream_config["incremental_sync"]["parent_stream"]["name"])
+                stream_config["incremental_sync"]["parent_stream"]["retriever"]["requester"]["use_cache"] = True
+            elif stream_config.get("retriever", {}).get("partition_router", {}).get("parent_stream_configs"):
+                for parent_config in stream_config["retriever"]["partition_router"]["parent_stream_configs"]:
+                    parent_streams.add(parent_config["stream"]["name"])
+                    parent_config["stream"]["retriever"]["requester"]["use_cache"] = True
+
+        for stream_config in stream_configs:
+            if stream_config["name"] in parent_streams:
+                stream_config["retriever"]["requester"]["use_cache"] = True
+
+        return stream_configs
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         """
