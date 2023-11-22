@@ -103,7 +103,7 @@ for connector in connectors_to_bump:
         # If there is no airbyte-cdk dependency, add the version
         if airbyte_cdk_dependency is not None:
 
-            new_version = f"airbyte_cdk{airbyte_cdk_dependency.group('extra') or ''}=={current_cdk_version}"
+            new_version = f"airbyte-cdk{airbyte_cdk_dependency.group('extra') or ''}=={current_cdk_version}"
             setupFileObject = setupFileObject.replace(airbyte_cdk_dependency.group(), new_version)
             print(f"Updated {connector}")
         else:
