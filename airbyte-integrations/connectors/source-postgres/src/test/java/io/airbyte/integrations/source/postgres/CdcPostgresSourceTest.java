@@ -37,7 +37,6 @@ import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresReplicationConnection;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
-import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
@@ -93,15 +92,15 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   protected void setup() throws SQLException {
     source = new PostgresSource();
     source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    testdb = PostgresTestDatabase.make(getServerImageName(), "withConf");
-    fullReplicationSlot = testdb.withSuffix("debezium_slot");
-    publication = testdb.withSuffix("publication");
-    config = getConfig(testdb.dbName, testdb.userName, testdb.password);
-    cleanUserSuperName = testdb.withSuffix("super_user");
-    cleanUserReplicationName = testdb.withSuffix("replication_user");
-    cleanUserVanillaName = testdb.withSuffix("vanilla_user");
+    testdb = PostgresTestDatabase.in(getServerImageName(), "withConf");
+    fullReplicationSlot = testdb.withNamespace("debezium_slot");
+    publication = testdb.withNamespace("publication");
+    config = getConfig(testdb.getDatabaseName(), testdb.getUserName(), testdb.getPassword());
+    cleanUserSuperName = testdb.withNamespace("super_user");
+    cleanUserReplicationName = testdb.withNamespace("replication_user");
+    cleanUserVanillaName = testdb.withNamespace("vanilla_user");
     super.setup();
-    testdb.database.query(ctx -> {
+    testdb.query(ctx -> {
       ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + getPluginName() + "');");
       ctx.execute("CREATE PUBLICATION " + publication + " FOR ALL TABLES;");
       ctx.execute("CREATE USER " + cleanUserSuperName + " PASSWORD '" + cleanUserPassword + "';");
@@ -115,7 +114,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @AfterEach
   protected void tearDown() throws SQLException {
-    testdb.database.query(ctx -> {
+    testdb.query(ctx -> {
       ctx.execute("DROP USER " + cleanUserVanillaName + ";");
       ctx.execute("DROP USER " + cleanUserReplicationName + ";");
       ctx.execute("DROP USER " + cleanUserSuperName + ";");
@@ -129,8 +128,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   private JsonNode getConfig(final String dbName, final String userName, final String userPassword) {
     final JsonNode replicationMethod = getReplicationMethod(dbName);
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, testdb.container.getHost())
-        .put(JdbcUtils.PORT_KEY, testdb.container.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, testdb.getContainer().getHost())
+        .put(JdbcUtils.PORT_KEY, testdb.getContainer().getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.SCHEMAS_KEY, List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
         .put(JdbcUtils.USERNAME_KEY, userName)
@@ -155,21 +154,21 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Test
   void testCheckReplicationAccessSuperUserPrivilege() throws Exception {
-    final JsonNode test_config = getConfig(testdb.dbName, cleanUserSuperName, cleanUserPassword);
+    final JsonNode test_config = getConfig(testdb.getDatabaseName(), cleanUserSuperName, cleanUserPassword);
     final AirbyteConnectionStatus status = source.check(test_config);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, status.getStatus());
   }
 
   @Test
   void testCheckReplicationAccessReplicationPrivilege() throws Exception {
-    final JsonNode test_config = getConfig(testdb.dbName, cleanUserReplicationName, cleanUserPassword);
+    final JsonNode test_config = getConfig(testdb.getDatabaseName(), cleanUserReplicationName, cleanUserPassword);
     final AirbyteConnectionStatus status = source.check(test_config);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, status.getStatus());
   }
 
   @Test
   void testCheckWithoutReplicationPermission() throws Exception {
-    final JsonNode test_config = getConfig(testdb.dbName, cleanUserVanillaName, cleanUserPassword);
+    final JsonNode test_config = getConfig(testdb.getDatabaseName(), cleanUserVanillaName, cleanUserPassword);
     final AirbyteConnectionStatus status = source.check(test_config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertEquals(String.format(ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE,
@@ -179,18 +178,18 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Test
   void testCheckWithoutPublication() throws Exception {
-    testdb.database.query(ctx -> ctx.execute("DROP PUBLICATION " + publication + ";"));
+    testdb.query(ctx -> ctx.execute("DROP PUBLICATION " + publication + ";"));
     final AirbyteConnectionStatus status = source.check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
-    testdb.database.query(ctx -> ctx.execute("CREATE PUBLICATION " + publication + " FOR ALL TABLES;"));
+    testdb.query(ctx -> ctx.execute("CREATE PUBLICATION " + publication + " FOR ALL TABLES;"));
   }
 
   @Test
   void testCheckWithoutReplicationSlot() throws Exception {
-    testdb.database.query(ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
+    testdb.query(ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
     final AirbyteConnectionStatus status = source.check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
-    testdb.database.query(ctx -> ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + getPluginName() + "');"));
+    testdb.query(ctx -> ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + getPluginName() + "');"));
   }
 
   @Override
@@ -522,7 +521,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Override
   protected Database getDatabase() {
-    return testdb.database;
+    return testdb.getDatabase();
   }
 
   @Override
@@ -544,8 +543,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     // for one of the tests and assert that both streams end up in the catalog. However, the stream that
     // is not associated with
     // a publication should only have SyncMode.FULL_REFRESH as a supported sync mode.
-    testdb.database.query(ctx -> ctx.execute("DROP PUBLICATION " + publication + ";"));
-    testdb.database.query(ctx -> ctx.execute(String.format("CREATE PUBLICATION " + publication + " FOR TABLE %s.%s", MODELS_SCHEMA, "models")));
+    testdb.query(ctx -> ctx.execute("DROP PUBLICATION " + publication + ";"));
+    testdb.query(ctx -> ctx.execute(String.format("CREATE PUBLICATION " + publication + " FOR TABLE %s.%s", MODELS_SCHEMA, "models")));
 
     final AirbyteCatalog catalog = source.discover(getConfig());
     assertEquals(catalog.getStreams().size(), 2);
@@ -565,8 +564,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(streamNotInPublication.getSupportedSyncModes(), List.of(SyncMode.FULL_REFRESH));
     assertTrue(streamNotInPublication.getSourceDefinedPrimaryKey().isEmpty());
     assertFalse(streamNotInPublication.getSourceDefinedCursor());
-    testdb.database.query(ctx -> ctx.execute("DROP PUBLICATION " + publication + ";"));
-    testdb.database.query(ctx -> ctx.execute("CREATE PUBLICATION " + publication + " FOR ALL TABLES"));
+    testdb.query(ctx -> ctx.execute("DROP PUBLICATION " + publication + ";"));
+    testdb.query(ctx -> ctx.execute("CREATE PUBLICATION " + publication + " FOR ALL TABLES"));
   }
 
   @Test
