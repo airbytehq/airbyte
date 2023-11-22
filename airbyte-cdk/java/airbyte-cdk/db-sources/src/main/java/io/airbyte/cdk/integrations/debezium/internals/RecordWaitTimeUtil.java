@@ -10,9 +10,9 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FirstRecordWaitTimeUtil {
+public class RecordWaitTimeUtil {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FirstRecordWaitTimeUtil.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RecordWaitTimeUtil.class);
 
   public static final Duration MIN_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(2);
   public static final Duration MAX_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(20);
