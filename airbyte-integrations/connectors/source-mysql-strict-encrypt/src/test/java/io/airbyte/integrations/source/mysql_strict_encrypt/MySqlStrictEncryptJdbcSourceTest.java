@@ -138,34 +138,34 @@ class MySqlStrictEncryptJdbcSourceTest extends JdbcSourceTest<MySqlStrictEncrypt
     final String streamOneName = TABLE_NAME + "one";
     // Create a fresh first table
     testdb.with("""
-            CREATE TABLE %s (
-                id int PRIMARY KEY,
-                name VARCHAR(200) NOT NULL,
-                updated_at VARCHAR(200) NOT NULL
-            );""", streamOneName)
-            .with("INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')",
-              getFullyQualifiedTableName(streamOneName))
-                .with("INSERT INTO %s(id, name, updated_at) VALUES (2, 'crusher', '2005-10-19')",
-              getFullyQualifiedTableName(streamOneName))
+                CREATE TABLE %s (
+                    id int PRIMARY KEY,
+                    name VARCHAR(200) NOT NULL,
+                    updated_at VARCHAR(200) NOT NULL
+                );""", streamOneName)
+        .with("INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')",
+            getFullyQualifiedTableName(streamOneName))
+        .with("INSERT INTO %s(id, name, updated_at) VALUES (2, 'crusher', '2005-10-19')",
+            getFullyQualifiedTableName(streamOneName))
         .with("INSERT INTO %s(id, name, updated_at) VALUES (3, 'vash', '2006-10-19')",
-              getFullyQualifiedTableName(streamOneName));
+            getFullyQualifiedTableName(streamOneName));
 
     // Create a fresh second table
     final String streamTwoName = TABLE_NAME + "two";
     final String streamTwoFullyQualifiedName = getFullyQualifiedTableName(streamTwoName);
     // Insert records into second table
     testdb.with("""
-        CREATE TABLE %s (
-            id int PRIMARY KEY,
-            name VARCHAR(200) NOT NULL,
-            updated_at DATE NOT NULL
-        );""", streamTwoName)
-            .with("INSERT INTO %s(id, name, updated_at) VALUES (40,'Jean Luc','2006-10-19')",
-              streamTwoFullyQualifiedName)
+                CREATE TABLE %s (
+                    id int PRIMARY KEY,
+                    name VARCHAR(200) NOT NULL,
+                    updated_at DATE NOT NULL
+                );""", streamTwoName)
+        .with("INSERT INTO %s(id, name, updated_at) VALUES (40,'Jean Luc','2006-10-19')",
+            streamTwoFullyQualifiedName)
         .with("INSERT INTO %s(id, name, updated_at) VALUES (41, 'Groot', '2006-10-19')",
-              streamTwoFullyQualifiedName)
+            streamTwoFullyQualifiedName)
         .with("INSERT INTO %s(id, name, updated_at) VALUES (42, 'Thanos','2006-10-19')",
-              streamTwoFullyQualifiedName);
+            streamTwoFullyQualifiedName);
     // Create records list that we expect to see in the state message
     final List<AirbyteMessage> streamTwoExpectedRecords = Arrays.asList(
         createRecord(streamTwoName, namespace, ImmutableMap.of(
@@ -291,9 +291,9 @@ class MySqlStrictEncryptJdbcSourceTest extends JdbcSourceTest<MySqlStrictEncrypt
     // Add some data to each table and perform a third read.
     // Expect to see all records be synced via cursorBased method and not primaryKey
     testdb.with("INSERT INTO %s(id, name, updated_at) VALUES (4,'Hooper','2006-10-19')",
-              getFullyQualifiedTableName(streamOneName))
+        getFullyQualifiedTableName(streamOneName))
         .with("INSERT INTO %s(id, name, updated_at) VALUES (43, 'Iron Man', '2006-10-19')",
-              streamTwoFullyQualifiedName);
+            streamTwoFullyQualifiedName);
 
     final List<AirbyteMessage> messagesFromThirdSync = MoreIterators
         .toList(source().read(config, configuredCatalog,
