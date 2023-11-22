@@ -20,9 +20,10 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
+from dbt.cli.main import RunExecutionResult
 
 from .utils.dbt import AirbyteDbtRunner
-from dbt.cli.main import RunExecutionResult
+
 
 class SourceDbtDuckDB(Source):
     """This source will run dbt build operations using the dbt-duckdb adapter."""
@@ -232,12 +233,11 @@ class SourceDbtDuckDB(Source):
                     result=result,
                 )
                 results_list.append(result)
-        
+
         yield self._airbyte_state_message_from_results(
             stream="dbt_run_results",
             results=results_list,
         )
-
 
     def _get_env_vars(self, config: json) -> dict[str, str]:
         env_var_settings = config.get("env_var_settings", [])
@@ -264,8 +264,7 @@ class SourceDbtDuckDB(Source):
                 },
                 emitted_at=int(datetime.now().timestamp()) * 1000,
             ),
-    )
-
+        )
 
     def _airbyte_state_message_from_results(
         self,
