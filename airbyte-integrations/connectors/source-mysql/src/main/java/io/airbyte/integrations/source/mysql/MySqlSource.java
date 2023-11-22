@@ -46,8 +46,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -116,15 +114,12 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       "useSSL=true",
       "requireSSL=true");
 
-  private final FeatureFlags featureFlags;
-
   public static Source sshWrappedSource(MySqlSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public MySqlSource() {
     super(DRIVER_CLASS, MySqlStreamingQueryConfig::new, new MySqlSourceOperations());
-    this.featureFlags = new EnvVariableFeatureFlags();
   }
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
