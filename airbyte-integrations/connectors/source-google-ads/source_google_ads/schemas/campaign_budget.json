@@ -66,12 +66,6 @@
       "type": ["null", "string"],
       "format": "date"
     },
-    "segments.budget_campaign_association_status.campaign": {
-      "type": ["null", "string"]
-    },
-    "segments.budget_campaign_association_status.status": {
-      "type": ["null", "string"]
-    },
     "metrics.all_conversions": {
       "type": ["null", "number"]
     },
