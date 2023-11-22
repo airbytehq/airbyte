@@ -1,81 +1,97 @@
 # Weaviate
 
-## Features
+## Overview
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | No |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Deduped History | No |  |
-| Namespaces | No |  |
-| Provide vector | Yes |  |
+This page guides you through the process of setting up the [Weaviate](https://weaviate.io/) destination connector.
 
-#### Output Schema
+There are three parts to this:
+* Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
+* Embedding - convert the text into a vector representation using a pre-trained model (Currently, OpenAI's `text-embedding-ada-002` and Cohere's `embed-english-light-v2.0` are supported.)
+* Indexing - store the vectors in a vector database for similarity search
 
-Each stream will be output into its [own class](https://weaviate.io/developers/weaviate/current/core-knowledge/basics.html#class-collections) in [Weaviate](https://weaviate.io). The record fields will be stored as fields
-in the Weaviate class.
-
-**Uploading Vectors:** Use the vectors configuration if you want to upload
-vectors from a source database into Weaviate. You can do this by specifying
-the stream name and vector field name in the following format:
-```
-<stream_name>.<vector_field_name>, <stream_name2>.<vector_field_name>
-```
-For example, if you have a table named `my_table` and the vector is stored using the column `vector` then
-you should use the following `vectors`configuration: `my_table.vector`.
-
-Dynamic Schema: Weaviate will automatically create a schema for the stream if no class was defined unless
-you have disabled the Dynamic Schema feature in Weaviate. You can also create the class in Weaviate in advance
-if you need more control over the schema in Weaviate. 
-
-IDs: If your source table has an int based id stored as field name `id` then the
-ID will automatically be converted to a UUID. Weaviate only supports the ID to be a UUID.
-For example, if the record has `id=1` then this would become a uuid of
-`00000000-0000-0000-0000-000000000001`.
-
-Any field name starting with an upper case letter will be converted to lower case. For example,
-if you have a field name `USD` then that field will become `uSD`. This is due to a limitation
-in Weaviate, see [this issue in Weaviate](https://github.com/semi-technologies/weaviate/issues/2438).
-
-## Getting Started
-
-Airbyte Cloud only supports connecting to your Weaviate Instance instance with TLS encryption and with a username and
-password.
-
-## Getting Started \(Airbyte Open-Source\)
-
-#### Requirements
+## Prerequisites
 
 To use the Weaviate destination, you'll need:
 
-* A Weaviate cluster version 21.8.10.19 or above
+* Access to a running Weaviate instance (either self-hosted or via Weaviate Cloud Services), minimum version 1.21.2
+* Either
+  * An account with API access for OpenAI or Cohere (depending on which embedding method you want to use)
+  * Pre-calculated embeddings stored in a field in your source database
 
-#### Configure Network Access
+You'll need the following information to configure the destination:
 
-Make sure your Weaviate database can be accessed by Airbyte. If your database is within a VPC, you may need to allow access from the IP you're using to expose Airbyte.
+- **Embedding service API Key** - The API key for your OpenAI or Cohere account
+- **Weaviate cluster URL** - The URL of the Weaviate cluster to load data into. Airbyte Cloud only supports connecting to your Weaviate Instance instance with TLS encryption.
+- **Weaviate credentials** - The credentials for your Weaviate instance (either API token or username/password)
 
-#### **Permissions**
+## Features
 
-You need a Weaviate user or use a Weaviate instance that's accessible to all
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                   |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | Yes                   | Deleting records via CDC is not supported (see issue [#29827](https://github.com/airbytehq/airbyte/issues/29827))  |
+| Namespaces                     | No                   |       |
+| Provide vector                 | Yes                  | Either from field are calculated during the load process |
 
+## Data type mapping
 
-### Setup the Weaviate Destination in Airbyte
+All fields specified as metadata fields will be stored as properties in the object can be used for filtering. The following data types are allowed for metadata fields:
+* String
+* Number (integer or floating point, gets converted to a 64 bit floating point)
+* Booleans (true, false)
+* List of String
 
-You should now have all the requirements needed to configure Weaviate as a destination in the UI. You'll need the following information to configure the Weaviate destination:
+All other fields are serialized into their JSON representation.
 
-* **URL** for example http://localhost:8080 or https://my-wcs.semi.network
-* **Username** (Optional)
-* **Password** (Optional)
-* **Batch Size** (Optional, defaults to 100)
-* **Vectors** a comma separated list of `<stream_name.vector_field_name>` to specify the field
-* **ID Schema** a comma separated list of `<stream_name.id_field_name>` to specify the field
-  name that contains the ID of a record
+## Configuration
 
+### Processing
+
+Each record will be split into text fields and metadata fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Options around configuring the chunking process use the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
+
+When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.
+
+The chunk length is measured in tokens produced by the `tiktoken` library. The maximum is 8191 tokens, which is the maximum length supported by the `text-embedding-ada-002` model.
+
+The stream name gets added as a metadata field `_ab_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are indexed. It is added as the `_ab_record_id` metadata field.
+
+### Embedding
+
+The connector can use one of the following embedding methods:
+
+1. OpenAI - using [OpenAI API](https://beta.openai.com/docs/api-reference/text-embedding) , the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.com/docs/guides/rate-limits/overview).
+
+2. Cohere - using the [Cohere API](https://docs.cohere.com/reference/embed), the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**. 
+
+3. From field - if you have pre-calculated embeddings stored in a field in your source database, you can use the `From field` integration to load them into Weaviate. The field must be a JSON array of numbers, e.g. `[0.1, 0.2, 0.3]`.
+
+4. No embedding - if you don't want to use embeddings or have configured a [vectorizer](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules) for your class, you can use the `No embedding` integration.
+
+For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.com/docs/modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
+
+### Indexing
+
+All streams will be indexed into separate classes derived from the stream name. 
+If a class doesn't exist in the schema of the cluster, it will be created using the configure vectorizer configuration. In this case, dynamic schema has to be enabled on the server.
+
+You can also create the class in Weaviate in advance if you need more control over the schema in Weaviate. In this case, the text properies `_ab_stream` and `_ab_record_id` need to be created for bookkeeping reasons. In case a sync is run in `Overwrite` mode, the class will be deleted and recreated.
+
+As properties have to start will a lowercase letter in Weaviate, field names might be updated during the loading process. The field names `id`, `_id` and `_additional` are reserved keywords in Weaviate, so they will be renamed to `raw_id`, `raw__id` and `raw_additional` respectively.
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                      |
-|:--------|:-----------| :--- |:---------------------------------------------|
+| Version | Date       | Pull Request                                               | Subject                                                                                                                          |
+| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.9 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
+| 0.2.8   | 2023-11-03 | [#32134](https://github.com/airbytehq/airbyte/pull/32134) | Improve test coverage |
+| 0.2.7   | 2023-11-03 | [#32134](https://github.com/airbytehq/airbyte/pull/32134) | Upgrade weaviate client library |
+| 0.2.6   | 2023-11-01 | [#32038](https://github.com/airbytehq/airbyte/pull/32038) | Retry failed object loads |
+| 0.2.5   | 2023-10-24 | [#31953](https://github.com/airbytehq/airbyte/pull/31953) | Fix memory leak |
+| 0.2.4   | 2023-10-23 | [#31563](https://github.com/airbytehq/airbyte/pull/31563) | Add field mapping option, improve append+dedupe sync performance and remove unnecessary retry logic |
+| 0.2.3 | 2023-10-19 | [#31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.2   | 2023-10-15 | [#31329](https://github.com/airbytehq/airbyte/pull/31329) | Add OpenAI-compatible embedder option |
+| 0.2.1   | 2023-10-04 | [#31075](https://github.com/airbytehq/airbyte/pull/31075) | Fix OpenAI embedder batch size and conflict field name handling |
+| 0.2.0   | 2023-09-22 | [#30151](https://github.com/airbytehq/airbyte/pull/30151) | Add embedding capabilities, overwrite and dedup support and API key auth mode, make certified. 🚨 Breaking changes - check migrations guide. |
 | 0.1.1   | 2022-02-08 | [\#22527](https://github.com/airbytehq/airbyte/pull/22527) | Multiple bug fixes: Support String based IDs, arrays of uknown type and additionalProperties of type object and array of objects |
-| 0.1.0   | 2022-12-06 | [\#20094](https://github.com/airbytehq/airbyte/pull/20094) | Add Weaviate destination |
-
+| 0.1.0   | 2022-12-06 | [\#20094](https://github.com/airbytehq/airbyte/pull/20094) | Add Weaviate destination                                                                                                         |

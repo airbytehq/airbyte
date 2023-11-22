@@ -104,5 +104,9 @@ def test_min_max_datetime_lazy_eval():
     }
 
     assert datetime.datetime(2022, 1, 10, 0, 0, tzinfo=datetime.timezone.utc) == MinMaxDatetime(**kwargs, parameters={}).get_datetime({})
-    assert datetime.datetime(2022, 1, 20, 0, 0, tzinfo=datetime.timezone.utc) == MinMaxDatetime(**kwargs, parameters={"min_datetime": "2022-01-20T00:00:00"}).get_datetime({})
-    assert datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc) == MinMaxDatetime(**kwargs, parameters={"max_datetime": "2021-01-01T00:00:00"}).get_datetime({})
+    assert datetime.datetime(2022, 1, 20, 0, 0, tzinfo=datetime.timezone.utc) == MinMaxDatetime(
+        **kwargs, parameters={"min_datetime": "2022-01-20T00:00:00"}
+    ).get_datetime({})
+    assert datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc) == MinMaxDatetime(
+        **kwargs, parameters={"max_datetime": "2021-01-01T00:00:00"}
+    ).get_datetime({})

@@ -3,27 +3,21 @@
 #
 
 import csv
+import gzip
 import json as json_lib
 import time
-import zlib
 from abc import ABC, abstractmethod
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
-from urllib.parse import urljoin
 
 import pendulum
 import requests
 import xmltodict
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException
-from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from source_amazon_seller_partner.auth import AWSSignature
 
 REPORTS_API_VERSION = "2021-06-30"  # 2020-09-04
 ORDERS_API_VERSION = "v0"
@@ -39,13 +33,11 @@ class AmazonSPStream(HttpStream, ABC):
     def __init__(
         self,
         url_base: str,
-        aws_signature: AWSSignature,
         replication_start_date: str,
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
         advanced_stream_options: Optional[str],
-        max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         *args,
         **kwargs,
@@ -56,7 +48,6 @@ class AmazonSPStream(HttpStream, ABC):
         self._replication_start_date = replication_start_date
         self._replication_end_date = replication_end_date
         self.marketplace_id = marketplace_id
-        self._session.auth = aws_signature
 
     @property
     def url_base(self) -> str:
@@ -139,7 +130,8 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
         return {self.cursor_field: latest_benchmark}
 
 
-class ReportsAmazonSPStream(Stream, ABC):
+class ReportsAmazonSPStream(HttpStream, ABC):
+    max_wait_seconds = 3600
     """
     API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reports_2020-09-04.md
     API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/reports-api-model/reports_2020-09-04.json
@@ -167,37 +159,41 @@ class ReportsAmazonSPStream(Stream, ABC):
     def __init__(
         self,
         url_base: str,
-        aws_signature: AWSSignature,
         replication_start_date: str,
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
-        max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         advanced_stream_options: Optional[str],
-        authenticator: HttpAuthenticator = None,
+        *args,
+        **kwargs,
     ):
-        self._authenticator = authenticator
-        self._session = requests.Session()
+        super().__init__(*args, **kwargs)
         self._url_base = url_base.rstrip("/") + "/"
-        self._session.auth = aws_signature
         self._replication_start_date = replication_start_date
         self._replication_end_date = replication_end_date
         self.marketplace_id = marketplace_id
         self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work as well
         self._report_options = report_options or "{}"
-        self.max_wait_seconds = max_wait_seconds
         self._advanced_stream_options = dict()
+        self._http_method = "GET"
         if advanced_stream_options is not None:
             self._advanced_stream_options = json_lib.loads(advanced_stream_options)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    @property
+    def http_method(self) -> str:
+        return self._http_method
+
+    @http_method.setter
+    def http_method(self, value: str):
+        self._http_method = value
 
     @property
     def url_base(self) -> str:
         return self._url_base
-
-    @property
-    def authenticator(self) -> HttpAuthenticator:
-        return self._authenticator
 
     def request_params(self) -> MutableMapping[str, Any]:
         return {"MarketplaceIds": self.marketplace_id}
@@ -207,37 +203,6 @@ class ReportsAmazonSPStream(Stream, ABC):
 
     def path(self, document_id: str) -> str:
         return f"{self.path_prefix}/documents/{document_id}"
-
-    def should_retry(self, response: requests.Response) -> bool:
-        return response.status_code == 429 or 500 <= response.status_code < 600
-
-    @default_backoff_handler(max_tries=5, factor=5)
-    def _send_request(self, request: requests.PreparedRequest) -> requests.Response:
-        response: requests.Response = self._session.send(request)
-        if self.should_retry(response):
-            raise DefaultBackoffException(request=request, response=response)
-        else:
-            response.raise_for_status()
-        return response
-
-    def _create_prepared_request(
-        self, path: str, http_method: str = "GET", headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
-    ) -> requests.PreparedRequest:
-        """
-        Override to make http_method configurable per method call
-        """
-        args = {"method": http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
-        if http_method.upper() in BODY_REQUEST_METHODS:
-            if json and data:
-                raise RequestBodyException(
-                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
-                )
-            elif json:
-                args["json"] = json
-            elif data:
-                args["data"] = data
-
-        return self._session.prepare_request(requests.Request(**args))
 
     def _report_data(
         self,
@@ -261,13 +226,14 @@ class ReportsAmazonSPStream(Stream, ABC):
     ) -> Mapping[str, Any]:
         request_headers = self.request_headers()
         report_data = self._report_data(sync_mode, cursor_field, stream_slice, stream_state)
+        self.http_method = "POST"
         create_report_request = self._create_prepared_request(
-            http_method="POST",
             path=f"{self.path_prefix}/reports",
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
             data=json_lib.dumps(report_data),
         )
-        report_response = self._send_request(create_report_request)
+        report_response = self._send_request(create_report_request, {})
+        self.http_method = "GET"  # rollback
         return report_response.json()
 
     def _retrieve_report(self, report_id: str) -> Mapping[str, Any]:
@@ -276,26 +242,28 @@ class ReportsAmazonSPStream(Stream, ABC):
             path=f"{self.path_prefix}/reports/{report_id}",
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
         )
-        retrieve_report_response = self._send_request(retrieve_report_request)
+        retrieve_report_response = self._send_request(retrieve_report_request, {})
         report_payload = retrieve_report_response.json()
 
         return report_payload
 
-    def decompress_report_document(self, url, payload):
+    @default_backoff_handler(factor=5, max_tries=5)
+    def download_and_decompress_report_document(self, payload: dict) -> str:
         """
         Unpacks a report document
         """
-        report = requests.get(url).content
+        report = requests.get(payload.get("url"))
+        report.raise_for_status()
         if "compressionAlgorithm" in payload:
-            return zlib.decompress(bytearray(report), 15 + 32).decode("iso-8859-1")
-        return report.decode("iso-8859-1")
+            return gzip.decompress(report.content).decode("iso-8859-1")
+        return report.content.decode("iso-8859-1")
 
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         payload = response.json()
 
-        document = self.decompress_report_document(payload.get("url"), payload)
+        document = self.download_and_decompress_report_document(payload)
 
         document_records = self.parse_document(document)
         yield from document_records
@@ -371,7 +339,7 @@ class ReportsAmazonSPStream(Stream, ABC):
                 headers=dict(request_headers, **self.authenticator.get_auth_header()),
                 params=self.request_params(),
             )
-            response = self._send_request(request)
+            response = self._send_request(request, {})
             yield from self.parse_response(response, stream_state, stream_slice)
         elif is_fatal:
             raise Exception(f"The report for stream '{self.name}' was aborted due to a fatal error")
@@ -441,6 +409,31 @@ class FbaOrdersReports(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
 
 
+class FlatFileActionableOrderDataShipping(ReportsAmazonSPStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_flat_file_actionable_order_data_shipping
+    """
+
+    name = "GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING"
+
+
+class OrderReportDataShipping(ReportsAmazonSPStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_order_report_data_shipping
+    """
+
+    name = "GET_ORDER_REPORT_DATA_SHIPPING"
+
+    def parse_document(self, document):
+        parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message"})
+        reports = parsed.get("AmazonEnvelope", {}).get("Message", {})
+        result = []
+        for report in reports:
+            result.append(report.get("OrderReport", {}))
+
+        return result
+
+
 class FbaShipmentsReports(ReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100
@@ -479,24 +472,8 @@ class FbaEstimatedFbaFeesTxtReport(ReportsAmazonSPStream):
     name = "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA"
 
 
-class FbaFulfillmentCurrentInventoryReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_CURRENT_INVENTORY_DATA"
-
-
 class FbaFulfillmentCustomerShipmentPromotionReport(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA"
-
-
-class FbaFulfillmentInventoryAdjustReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_INVENTORY_ADJUSTMENTS_DATA"
-
-
-class FbaFulfillmentInventoryReceiptsReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_INVENTORY_RECEIPTS_DATA"
-
-
-class FbaFulfillmentInventorySummaryReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_INVENTORY_SUMMARY_DATA"
 
 
 class FbaMyiUnsuppressedInventoryReport(ReportsAmazonSPStream):
@@ -535,10 +512,6 @@ class MerchantListingsReportBackCompat(ReportsAmazonSPStream):
 
 class MerchantCancelledListingsReport(ReportsAmazonSPStream):
     name = "GET_MERCHANT_CANCELLED_LISTINGS_DATA"
-
-
-class FbaFulfillmentMonthlyInventoryReport(ReportsAmazonSPStream):
-    name = "GET_FBA_FULFILLMENT_MONTHLY_INVENTORY_DATA"
 
 
 class MerchantListingsFypReport(ReportsAmazonSPStream):
@@ -772,6 +745,7 @@ class Orders(IncrementalAmazonSPStream):
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
     default_backoff_time = 60
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return f"orders/{ORDERS_API_VERSION}/orders"
@@ -794,6 +768,80 @@ class Orders(IncrementalAmazonSPStream):
             return 1 / float(rate_limit)
         else:
             return self.default_backoff_time
+
+
+class OrderItems(AmazonSPStream, ABC):
+    """
+    API docs: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems
+    API model: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#orderitemslist
+    """
+
+    name = "OrderItems"
+    primary_key = "OrderItemId"
+    cursor_field = "LastUpdateDate"
+    parent_cursor_field = "LastUpdateDate"
+    next_page_token_field = "NextToken"
+    stream_slice_cursor_field = "AmazonOrderId"
+    page_size_field = None
+    default_backoff_time = 10
+    default_stream_slice_delay_time = 1
+    cached_state: Dict = {}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stream_kwargs = kwargs
+
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
+        return f"orders/{ORDERS_API_VERSION}/orders/{stream_slice[self.stream_slice_cursor_field]}/orderItems"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        if next_page_token:
+            return dict(next_page_token)
+        return {}
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        orders = Orders(**self.stream_kwargs)
+        for order_record in orders.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state):
+            self.cached_state[self.parent_cursor_field] = order_record[self.parent_cursor_field]
+            self.logger.info(f"OrderItems stream slice for order {order_record[self.stream_slice_cursor_field]}")
+            time.sleep(self.default_stream_slice_delay_time)
+            yield {
+                self.stream_slice_cursor_field: order_record[self.stream_slice_cursor_field],
+                self.parent_cursor_field: order_record[self.parent_cursor_field],
+            }
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        latest_benchmark = self.cached_state[self.parent_cursor_field]
+        if current_stream_state.get(self.parent_cursor_field):
+            return {self.parent_cursor_field: max(latest_benchmark, current_stream_state[self.parent_cursor_field])}
+        return {self.parent_cursor_field: latest_benchmark}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        stream_data = response.json()
+        next_page_token = stream_data.get("payload").get(self.next_page_token_field)
+        if next_page_token:
+            return {self.next_page_token_field: next_page_token}
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        rate_limit = response.headers.get("x-amzn-RateLimit-Limit", 0)
+        if rate_limit:
+            return 1 / float(rate_limit)
+        else:
+            return self.default_backoff_time
+
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+        order_items_list = response.json().get(self.data_field, {})
+        self.logger.info(f"order_items_list efim {order_items_list}")
+        if order_items_list.get(self.next_page_token_field) is None:
+            self.cached_state[self.parent_cursor_field] = stream_slice[self.parent_cursor_field]
+        for order_item in order_items_list.get(self.name, []):
+            order_item[self.cursor_field] = stream_slice.get(self.parent_cursor_field)
+            order_item[self.stream_slice_cursor_field] = order_items_list.get(self.stream_slice_cursor_field)
+            yield order_item
 
 
 class LedgerDetailedViewReports(IncrementalReportsAmazonSPStream):
@@ -852,10 +900,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
 
         payload = response.json()
 
-        document = self.decompress_report_document(
-            payload.get("url"),
-            payload,
-        )
+        document = self.download_and_decompress_report_document(payload)
         document_records = self.parse_document(document)
 
         # Not all (partial) responses include the request date, so adding it manually here
@@ -1122,12 +1167,11 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
 
             request_headers = self.request_headers()
             get_reports = self._create_prepared_request(
-                http_method="GET",
                 path=f"{self.path_prefix}/reports",
                 headers=dict(request_headers, **self.authenticator.get_auth_header()),
                 params=params,
             )
-            report_response = self._send_request(get_reports)
+            report_response = self._send_request(get_reports, {})
             response = report_response.json()
             data = response.get("reports", list())
             records = [e.get("reportId") for e in data if e and e.get("reportId") not in unique_records]

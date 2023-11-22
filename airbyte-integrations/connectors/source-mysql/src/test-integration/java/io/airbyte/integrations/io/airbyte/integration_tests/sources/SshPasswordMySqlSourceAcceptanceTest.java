@@ -7,13 +7,13 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.ssh.SshBastionContainer;
-import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.source.mysql.MySqlSource;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Test;

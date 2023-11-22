@@ -739,6 +739,89 @@
     "type": {
       "enum": ["custom", "express", "standard"],
       "type": ["null", "string"]
+    },
+    "future_requirements": {
+      "type": ["null", "object"],
+      "properties": {
+        "alternatives": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "alternative_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "original_fields_due": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "current_deadline": {
+          "type": ["null", "integer"]
+        },
+        "currently_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "disabled_reason": {
+          "type": ["null", "string"]
+        },
+        "errors": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "code": {
+                "type": ["null", "string"]
+              },
+              "reason": {
+                "type": ["null", "string"]
+              },
+              "requirement": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "eventually_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "past_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "pending_verification": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "controller": {
+      "type": ["null", "object"],
+      "properties": {
+        "is_controller": {
+          "type": ["null", "boolean"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }

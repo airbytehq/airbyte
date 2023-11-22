@@ -18,7 +18,11 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
+        empty_streams:
+          - name: customer_usage
+            bypass_reason: "Sandbox account can't seed this stream"
+          - name: wallets
+            bypass_reason: "Sandbox account can't seed this stream"
   # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
   #        expect_records:
   #          path: "integration_tests/expected_records.jsonl"

@@ -1,44 +1,54 @@
 # Set up a Connection
 
-When we create the connection, we can select which data stream we want to replicate. We can also select if we want an incremental replication, although it isn't currently offered for this source. The replication will run at the specified sync frequency.
+Now that you've learned how to [deploy Airbyte locally](https://docs.airbyte.com/quickstart/deploy-airbyte) and set up your first [source](https://docs.airbyte.com/quickstart/add-a-source) and [destination](https://docs.airbyte.com/quickstart/add-a-destination), it's time to finish the job by creating your very first connection!
 
-To set it up, just follow the instructions on the screenshot below.
+On the left side of your main Airbyte dashboard, select **Connections**. You will be prompted to choose which source and destination to use for this connection. As an example, we'll use the **Google Sheets** source and **Local JSON** destination.
 
-![](../.gitbook/assets/getting-started-connection.png)
+## Configure the connection
 
-## Check the logs of your first sync
+Once you've chosen your source and destination, you'll be able to configure the connection. You can refer to [this page](https://docs.airbyte.com/cloud/managing-airbyte-cloud/configuring-connections) for more information on each available configuration. For this demo, we'll simply set the **Replication frequency** to a 24 hour interval and leave the other fields at their default values.
 
-After you've completed the onboarding, you will be redirected to the source list and will see the source you just added. Click on it to find more information about it. You will now see all the destinations connected to that source. Click on it and you will see the sync history.
+![Connection config](../.gitbook/assets/set-up-a-connection/getting-started-connection-config.png)
 
-From there, you can look at the logs, download them, force a sync and adjust the configuration of your connection.
+Next, you can toggle which streams you want to replicate, as well as setting up the desired sync mode for each stream. For more information on the nature of each sync mode supported by Airbyte, see [this page](https://docs.airbyte.com/understanding-airbyte/connections/#sync-modes).
 
-![](../.gitbook/assets/getting-started-logs.png)
+Our test data consists of a single stream cleverly named `Test Data`, which we've enabled and set to `Full Refresh - Overwrite` sync mode.
 
-## Check the data of your first sync
+![Stream config](../.gitbook/assets/set-up-a-connection/getting-started-connection-streams.png)
 
-Now let's verify that this worked:
+Click **Set up connection** to complete your first connection. Your first sync is about to begin!
+
+## Connector Dashboard
+
+Once you've finished setting up the connection, you will be automatically redirected to a dashboard containing all the tools you need to keep track of your connection.
+
+![Connection dashboard](../.gitbook/assets/set-up-a-connection/getting-started-connection-success.png)
+
+Here's a basic overview of the tabs and their use:
+
+1. The **Status** tab shows you an overview of your connector's sync schedule and health.
+2. The **Job History** tab allows you to check the logs for each sync. If you encounter any errors or unexpected behaviors during a sync, checking the logs is always a good first step to finding the cause and solution.
+3. The **Replication** tab allows you to modify the configurations you chose during the connection setup.
+4. The **Settings** tab contains additional settings, and the option to delete the connection if you no longer wish to use it.
+
+### Check the data from your first sync
+
+If you followed along and created your own connection using a `Local JSON` destination, you can use this command to check the file's contents to make sure the replication worked as intended (be sure to replace YOUR_PATH with the path you chose in your destination setup, and YOUR_STREAM_NAME with the name of an actual stream you replicated):
 
 ```bash
-cat /tmp/airbyte_local/json_data/_airbyte_raw_pokemon.jsonl
+cat /tmp/airbyte_local/YOUR_PATH/_airbyte_raw_YOUR_STREAM_NAME.jsonl
 ```
 
-You should see a large JSON object with the response from the API, giving you a lot of information about the selected Pokemon.
+You should see a list of JSON objects, each containing a unique `airbyte_ab_id`, an `emitted_at` timestamp, and `airbyte_data` containing the extracted record.
 
-If you have [`jq`](https://stedolan.github.io/jq/) installed, let's look at some of the data that we have replicated about `charizard`. We'll pull its abilities and weight:
+:::tip 
+If you are using Airbyte on Windows with WSL2 and Docker, refer to [this guide](https://docs.airbyte.com/operator-guides/locating-files-local-destination) to locate the replicated folder and file.
+:::
 
-```bash
-cat _airbyte_raw_pokemon.jsonl | 
-jq '._airbyte_data | {abilities: .abilities, weight: .weight}'
-```
+## What's next?
 
-And there you have it. You've pulled data from an API directly into a file, with all of the actual configuration for this replication only taking place in the UI.
+Congratulations on successfully setting up your first connection using Airbyte Open Source! We hope that this will be just the first step on your journey with us. We support a large, ever-growing [catalog of sources and destinations](https://docs.airbyte.com/integrations/), and you can even [contribute your own](https://docs.airbyte.com/connector-development/).
 
-Note: If you are using Airbyte on Windows with WSL2 and Docker, refer to [this tutorial](../operator-guides/locating-files-local-destination.md) or [this section](../integrations/destinations/local-json.md#access-replicated-data-files) in the local-json destination guide to locate the replicated folder and file.
+If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). If you would like to see a missing feature or connector added, please create an issue on our [Github](https://github.com/airbytehq/airbyte). Our community's participation is invaluable in helping us grow and improve every day, and we always welcome your feedback.
 
-## That's it!
-
-This is just the beginning of using Airbyte. We support a large collection of sources and destinations. You can even contribute your own.
-
-If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). We’re still in alpha, so if you see any rough edges or want to request a connector you need, please create an issue on our [Github](https://github.com/airbytehq/airbyte) or leave a thumbs up on an existing issue.
-
-Thank you and we hope you enjoy using Airbyte.
+Thank you, and we hope you enjoy using Airbyte!

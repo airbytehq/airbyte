@@ -1,48 +1,33 @@
 {
-  "$schema" : "http://json-schema.org/draft-07/schema#",
-  "type" : "object",
-  "properties" : {
-    "audience.description" : {
-      "type" : [
-        "null",
-        "string"
-      ]
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "customer.id": {
+      "type": ["null", "integer"]
     },
-    "audience.dimensions" : {
-      "type" : [
-        "null",
-        "array"
-      ]
+    "audience.description": {
+      "type": ["null", "string"]
     },
-    "audience.exclusion_dimension" : {
-      "type" : [
-        "null",
-        "string"
-      ]
+    "audience.dimensions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
-    "audience.id" : {
-      "type" : [
-        "null",
-        "integer"
-      ]
+    "audience.exclusion_dimension": {
+      "type": ["null", "string"]
     },
-    "audience.name" : {
-      "type" : [
-        "null",
-        "string"
-      ]
+    "audience.id": {
+      "type": ["null", "integer"]
     },
-    "audience.resource_name" : {
-      "type" : [
-        "null",
-        "string"
-      ]
+    "audience.name": {
+      "type": ["null", "string"]
     },
-    "audience.status" : {
-      "type" : [
-        "null",
-        "string"
-      ]
+    "audience.resource_name": {
+      "type": ["null", "string"]
+    },
+    "audience.status": {
+      "type": ["null", "string"]
     }
   }
 }

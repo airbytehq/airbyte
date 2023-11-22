@@ -32,7 +32,7 @@ In order to replicate Zoom data, we will need to use [Airbyte’s Zoom connector
 
 `docker-compose up`
 
-You can find more details about this in the [Getting Started FAQ](https://discuss.airbyte.io/c/faq/15) on our Discourse Forum.
+You can find more details about this in the [Getting Started FAQ](https://discuss.airbyte.io/c/faq/15) on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 This will start up Airbyte on `localhost:8000`; open that address in your browser to access the Airbyte dashboard.
 

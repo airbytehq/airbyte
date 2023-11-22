@@ -2,12 +2,12 @@
 
 ## Features
 
-| Feature                       | Supported?\(Yes/No\) | Notes                                                                                        |
-| :---------------------------- | :------------------- | :------------------------------------------------------------------------------------------- |
-| Full Refresh Sync             | Yes                  |                                                                                              |
-| Incremental - Append Sync     | Yes                  |                                                                                              |
-| Incremental - Deduped History | No                   | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces                    | Yes                  |                                                                                              |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | Yes                  |       |
+| Namespaces                     | Yes                  |       |
 
 ## Output Schema
 
@@ -26,12 +26,12 @@ Each stream will be output into its own table in SQL Server. Each table will con
 
 Airbyte Cloud only supports connecting to your MSSQL instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
 
-| Feature                       | Supported?\(Yes/No\) | Notes |
-| :---------------------------- | :------------------- | :---- |
-| Full Refresh Sync             | Yes                  |       |
-| Incremental - Append Sync     | Yes                  |       |
-| Incremental - Deduped History | Yes                  |       |
-| Namespaces                    | Yes                  |       |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | Yes                  |       |
+| Namespaces                     | Yes                  |       |
 
 ## Getting Started \(Airbyte Open-Source\)
 

@@ -1,9 +1,0 @@
-plugins {
-    id "java-library"
-}
-
-dependencies {
-    implementation 'commons-cli:commons-cli:1.4'
-}
-
-Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

@@ -64,8 +64,68 @@
         }
       }
     },
+    "counters_open": {
+      "type": ["null", "integer"]
+    },
+    "counters_processed": {
+      "type": ["null", "integer"]
+    },
+    "counters_sent": {
+      "type": ["null", "integer"]
+    },
+    "counters_deferred": {
+      "type": ["null", "integer"]
+    },
+    "counters_unsubscribed": {
+      "type": ["null", "integer"]
+    },
+    "counters_statuschange": {
+      "type": ["null", "integer"]
+    },
+    "counters_bounce": {
+      "type": ["null", "integer"]
+    },
+    "counters_mta_dropped": {
+      "type": ["null", "integer"]
+    },
+    "counters_dropped": {
+      "type": ["null", "integer"]
+    },
+    "counters_suppressed": {
+      "type": ["null", "integer"]
+    },
+    "counters_click": {
+      "type": ["null", "integer"]
+    },
+    "counters_delivered": {
+      "type": ["null", "integer"]
+    },
+    "counters_forward": {
+      "type": ["null", "integer"]
+    },
+    "counters_print": {
+      "type": ["null", "integer"]
+    },
+    "counters_reply": {
+      "type": ["null", "integer"]
+    },
+    "counters_spamreport": {
+      "type": ["null", "integer"]
+    },
     "id": {
       "type": ["null", "integer"]
+    },
+    "lastProcessingFinishedAt": {
+      "type": ["null", "integer"]
+    },
+    "lastProcessingStateChangeAt": {
+      "type": ["null", "integer"]
+    },
+    "lastProcessingStartedAt": {
+      "type": ["null", "integer"]
+    },
+    "processingState": {
+      "type": ["null", "string"]
     },
     "name": {
       "type": ["null", "string"]

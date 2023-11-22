@@ -2,11 +2,20 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+# mypy: ignore-errors
+
 import datetime
 
 import pytest
+from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
-from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator, SessionTokenAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import (
+    ApiKeyAuthenticator,
+    BasicHttpAuthenticator,
+    BearerAuthenticator,
+    LegacySessionTokenAuthenticator,
+)
+from airbyte_cdk.sources.declarative.auth.token_provider import SessionTokenProvider
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
@@ -194,7 +203,7 @@ spec:
     assert isinstance(stream, DeclarativeStream)
     assert stream.primary_key == "id"
     assert stream.name == "lists"
-    assert stream.stream_cursor_field.string == "created"
+    assert stream._stream_cursor_field.string == "created"
 
     assert isinstance(stream.schema_loader, JsonFileSchemaLoader)
     assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
@@ -233,13 +242,13 @@ spec:
     assert stream.retriever.paginator.pagination_strategy.page_size == 10
 
     assert isinstance(stream.retriever.requester, HttpRequester)
-    assert stream.retriever.requester.http_method == HttpMethod.GET
+    assert stream.retriever.requester._http_method == HttpMethod.GET
     assert stream.retriever.requester.name == stream.name
-    assert stream.retriever.requester.path.string == "{{ next_page_token['next_page_url'] }}"
-    assert stream.retriever.requester.path.default == "{{ next_page_token['next_page_url'] }}"
+    assert stream.retriever.requester._path.string == "{{ next_page_token['next_page_url'] }}"
+    assert stream.retriever.requester._path.default == "{{ next_page_token['next_page_url'] }}"
 
     assert isinstance(stream.retriever.requester.authenticator, BearerAuthenticator)
-    assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
+    assert stream.retriever.requester.authenticator.token_provider.get_token() == "verysecrettoken"
 
     assert isinstance(stream.retriever.requester.request_options_provider, InterpolatedRequestOptionsProvider)
     assert stream.retriever.requester.request_options_provider.request_parameters.get("unit") == "day"
@@ -299,8 +308,38 @@ def test_interpolate_config():
     assert authenticator.get_refresh_request_body() == {"body_field": "yoyoyo", "interpolated_body_field": "verysecrettoken"}
 
 
+def test_interpolate_config_with_token_expiry_date_format():
+    content = """
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "some_client_id"
+      client_secret: "some_client_secret"
+      token_refresh_endpoint: "https://api.sendgrid.com/v3/auth"
+      refresh_token: "{{ config['apikey'] }}"
+      token_expiry_date_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+    """
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    authenticator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["authenticator"], {})
+
+    authenticator = factory.create_component(
+        model_type=OAuthAuthenticatorModel, component_definition=authenticator_manifest, config=input_config
+    )
+
+    assert isinstance(authenticator, DeclarativeOauth2Authenticator)
+    assert authenticator.token_expiry_date_format == "%Y-%m-%d %H:%M:%S.%f+00:00"
+    assert authenticator.token_expiry_is_time_of_expiration
+    assert authenticator.client_id.eval(input_config) == "some_client_id"
+    assert authenticator.client_secret.string == "some_client_secret"
+    assert authenticator.token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
+
+
 def test_single_use_oauth_branch():
-    single_use_input_config = {"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"], "credentials": {"access_token": "access_token", "token_expiry_date": "1970-01-01"}}
+    single_use_input_config = {
+        "apikey": "verysecrettoken",
+        "repos": ["airbyte", "airbyte-cloud"],
+        "credentials": {"access_token": "access_token", "token_expiry_date": "1970-01-01"},
+    }
 
     content = """
     authenticator:
@@ -675,9 +714,7 @@ incremental_sync:
 
     with pytest.raises(ValueError):
         factory.create_component(
-            model_type=DatetimeBasedCursorModel,
-            component_definition=datetime_based_cursor_definition,
-            config=input_config
+            model_type=DatetimeBasedCursorModel, component_definition=datetime_based_cursor_definition, config=input_config
         )
 
 
@@ -704,7 +741,9 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     selector_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["selector"], {})
 
-    selector = factory.create_component(model_type=RecordSelectorModel, component_definition=selector_manifest, transformations=[], config=input_config)
+    selector = factory.create_component(
+        model_type=RecordSelectorModel, component_definition=selector_manifest, transformations=[], config=input_config
+    )
 
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector.extractor, DpathExtractor)
@@ -787,10 +826,10 @@ requester:
     )
 
     assert isinstance(selector, HttpRequester)
-    assert selector._method == HttpMethod.GET
+    assert selector._http_method == HttpMethod.GET
     assert selector.name == "name"
-    assert selector.path.string == "/v3/marketing/lists"
-    assert selector.url_base.string == "https://api.sendgrid.com"
+    assert selector._path.string == "/v3/marketing/lists"
+    assert selector._url_base.string == "https://api.sendgrid.com"
 
     assert isinstance(selector.error_handler, DefaultErrorHandler)
     assert len(selector.error_handler.backoff_strategies) == 1
@@ -805,7 +844,7 @@ requester:
     assert selector._request_options_provider._headers_interpolator._interpolator.mapping["header"] == "header_value"
 
 
-def test_create_request_with_session_authenticator():
+def test_create_request_with_leacy_session_authenticator():
     content = """
 requester:
   type: HttpRequester
@@ -814,7 +853,7 @@ requester:
     name: 'lists'
   url_base: "https://api.sendgrid.com"
   authenticator:
-    type: "SessionTokenAuthenticator"
+    type: "LegacySessionTokenAuthenticator"
     username: "{{ parameters.name}}"
     password: "{{ config.apikey }}"
     login_url: "login"
@@ -836,10 +875,63 @@ requester:
     )
 
     assert isinstance(selector, HttpRequester)
-    assert isinstance(selector.authenticator, SessionTokenAuthenticator)
+    assert isinstance(selector.authenticator, LegacySessionTokenAuthenticator)
     assert selector.authenticator._username.eval(input_config) == "lists"
     assert selector.authenticator._password.eval(input_config) == "verysecrettoken"
     assert selector.authenticator._api_url.eval(input_config) == "https://api.sendgrid.com"
+
+
+def test_create_request_with_session_authenticator():
+    content = """
+requester:
+  type: HttpRequester
+  path: "/v3/marketing/lists"
+  $parameters:
+    name: 'lists'
+  url_base: "https://api.sendgrid.com"
+  authenticator:
+    type: SessionTokenAuthenticator
+    expiration_duration: P10D
+    login_requester:
+      path: /session
+      type: HttpRequester
+      url_base: 'https://api.sendgrid.com'
+      http_method: POST
+      request_body_json:
+        password: '{{ config.apikey }}'
+        username: '{{ parameters.name }}'
+    session_token_path:
+      - id
+    request_authentication:
+      type: ApiKey
+      inject_into:
+        type: RequestOption
+        field_name: X-Metabase-Session
+        inject_into: header
+  request_parameters:
+    a_parameter: "something_here"
+  request_headers:
+    header: header_value
+    """
+    name = "name"
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
+
+    selector = factory.create_component(
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+    )
+
+    assert isinstance(selector.authenticator, ApiKeyAuthenticator)
+    assert isinstance(selector.authenticator.token_provider, SessionTokenProvider)
+    assert selector.authenticator.token_provider.session_token_path == ["id"]
+    assert isinstance(selector.authenticator.token_provider.login_requester, HttpRequester)
+    assert selector.authenticator.token_provider.session_token_path == ["id"]
+    assert selector.authenticator.token_provider.login_requester._url_base.eval(input_config) == "https://api.sendgrid.com"
+    assert selector.authenticator.token_provider.login_requester.get_request_body_json() == {
+        "username": "lists",
+        "password": "verysecrettoken",
+    }
 
 
 def test_create_composite_error_handler():
@@ -936,10 +1028,10 @@ def test_config_with_defaults():
     assert stream.schema_loader.file_path.default == "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
 
     assert isinstance(stream.retriever.requester, HttpRequester)
-    assert stream.retriever.requester.http_method == HttpMethod.GET
+    assert stream.retriever.requester._http_method == HttpMethod.GET
 
     assert isinstance(stream.retriever.requester.authenticator, BearerAuthenticator)
-    assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
+    assert stream.retriever.requester.authenticator.token_provider.get_token() == "verysecrettoken"
 
     assert isinstance(stream.retriever.record_selector, RecordSelector)
     assert isinstance(stream.retriever.record_selector.extractor, DpathExtractor)
@@ -1270,7 +1362,7 @@ class TestCreateTransformations:
         expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]], parameters={})]
         assert stream.retriever.record_selector.transformations == expected
 
-    def test_add_fields(self):
+    def test_add_fields_no_value_type(self):
         content = f"""
         the_stream:
             type: DeclarativeStream
@@ -1282,6 +1374,134 @@ class TestCreateTransformations:
                         - path: ["field1"]
                           value: "static_value"
         """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="static_value", default="static_value", parameters={}),
+                        value_type=None,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def test_add_fields_value_type_is_string(self):
+        content = f"""
+        the_stream:
+            type: DeclarativeStream
+            $parameters:
+                {self.base_parameters}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "static_value"
+                          value_type: string
+        """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="static_value", default="static_value", parameters={}),
+                        value_type=str,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def test_add_fields_value_type_is_number(self):
+        content = f"""
+        the_stream:
+            type: DeclarativeStream
+            $parameters:
+                {self.base_parameters}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "1"
+                          value_type: number
+        """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="1", default="1", parameters={}),
+                        value_type=float,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def test_add_fields_value_type_is_integer(self):
+        content = f"""
+        the_stream:
+            type: DeclarativeStream
+            $parameters:
+                {self.base_parameters}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "1"
+                          value_type: integer
+        """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="1", default="1", parameters={}),
+                        value_type=int,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def test_add_fields_value_type_is_boolean(self):
+        content = f"""
+        the_stream:
+            type: DeclarativeStream
+            $parameters:
+                {self.base_parameters}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: False
+                          value_type: boolean
+        """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="False", default="False", parameters={}),
+                        value_type=bool,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def _test_add_fields(self, content, expected):
         parsed_manifest = YamlDeclarativeSource._parse(content)
         resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
         resolved_manifest["type"] = "DeclarativeSource"
@@ -1290,18 +1510,6 @@ class TestCreateTransformations:
         stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
         assert isinstance(stream, DeclarativeStream)
-        expected = [
-            AddFields(
-                fields=[
-                    AddedFieldDefinition(
-                        path=["field1"],
-                        value=InterpolatedString(string="static_value", default="static_value", parameters={}),
-                        parameters={},
-                    )
-                ],
-                parameters={},
-            )
-        ]
         assert stream.retriever.record_selector.transformations == expected
 
     def test_default_schema_loader(self):
@@ -1478,30 +1686,23 @@ def test_simple_retriever_emit_log_messages():
     )
 
     assert isinstance(retriever, SimpleRetrieverTestReadDecorator)
+    assert connector_builder_factory._message_repository._log_level == Level.DEBUG
 
 
 def test_ignore_retry():
     requester_model = {
-        "type": "SimpleRetriever",
-        "record_selector": {
-            "type": "RecordSelector",
-            "extractor": {
-                "type": "DpathExtractor",
-                "field_path": [],
-            },
-        },
-        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+        "type": "HttpRequester",
+        "name": "list",
+        "url_base": "orange.com",
+        "path": "/v1/api",
     }
 
     connector_builder_factory = ModelToComponentFactory(disable_retries=True)
-    retriever = connector_builder_factory.create_component(
-        model_type=SimpleRetrieverModel,
+    requester = connector_builder_factory.create_component(
+        model_type=HttpRequesterModel,
         component_definition=requester_model,
         config={},
         name="Test",
-        primary_key="id",
-        stream_slicer=None,
-        transformations=[]
     )
 
-    assert retriever.max_retries == 0
+    assert requester.max_retries == 0

@@ -6,14 +6,15 @@ package io.airbyte.integrations.destination.redpanda;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -51,7 +52,7 @@ public class RedpandaDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     this.redpandaNameTransformer = new RedpandaNameTransformer();
     this.adminClient = AdminClient.create(Map.of(
         AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, redpandaContainer.getBootstrapServers(),
@@ -61,8 +62,8 @@ public class RedpandaDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) throws ExecutionException, InterruptedException {
-    var topics = adminClient.listTopics().listings().get().stream()
+  protected void tearDown(final TestDestinationEnv testEnv) throws ExecutionException, InterruptedException {
+    final var topics = adminClient.listTopics().listings().get().stream()
         .filter(tl -> !tl.isInternal())
         .map(TopicListing::name)
         .collect(Collectors.toSet());
@@ -131,15 +132,15 @@ public class RedpandaDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema) {
-    List<JsonNode> records = new ArrayList<>();
-    String bootstrapServers = redpandaContainer.getBootstrapServers();
-    String groupId = redpandaNameTransformer.getIdentifier(namespace + "-" + streamName);
-    try (RedpandaConsumer<String, JsonNode> redpandaConsumer = RedpandaConsumerFactory.getInstance(bootstrapServers, groupId)) {
-      String topicName = redpandaNameTransformer.topicName(namespace, streamName);
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema) {
+    final List<JsonNode> records = new ArrayList<>();
+    final String bootstrapServers = redpandaContainer.getBootstrapServers();
+    final String groupId = redpandaNameTransformer.getIdentifier(namespace + "-" + streamName);
+    try (final RedpandaConsumer<String, JsonNode> redpandaConsumer = RedpandaConsumerFactory.getInstance(bootstrapServers, groupId)) {
+      final String topicName = redpandaNameTransformer.topicName(namespace, streamName);
       redpandaConsumer.subscribe(Collections.singletonList(topicName));
       redpandaConsumer.poll(Duration.ofSeconds(5)).iterator()
           .forEachRemaining(r -> records.add(r.value().get(JavaBaseConstants.COLUMN_NAME_DATA)));

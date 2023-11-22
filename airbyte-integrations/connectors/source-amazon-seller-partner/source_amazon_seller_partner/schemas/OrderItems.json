@@ -1,0 +1,290 @@
+{
+  "title": "Order Items",
+  "description": "All order items that were updated after a specified date",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "AmazonOrderId": {
+      "type": ["null", "string"]
+    },
+    "ASIN": {
+      "type": ["null", "string"]
+    },
+    "OrderItemId": {
+      "type": ["null", "string"]
+    },
+    "SellerSKU": {
+      "type": ["null", "string"]
+    },
+    "Title": {
+      "type": ["null", "string"]
+    },
+    "QuantityOrdered": {
+      "type": ["null", "integer"]
+    },
+    "ProductInfo": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "NumberOfItems": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "QuantityShipped": {
+      "type": ["null", "integer"]
+    },
+    "PointsGranted": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "PointsNumber": {
+          "type": ["null", "integer"]
+        },
+        "PointsMonetaryValue": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "CurrencyCode": {
+              "type": ["null", "string"]
+            },
+            "Amount": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "ItemPrice": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "CurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "Amount": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "PromotionIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "ItemTax": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "CurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "Amount": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "ShippingPrice": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "CurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "Amount": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "ShippingTax": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "CurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "Amount": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "ShippingDiscount": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "CurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "Amount": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "ShippingDiscountTax": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "CurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "Amount": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "PromotionDiscount": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "CurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "Amount": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "PromotionDiscountTax": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "CurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "Amount": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "ScheduledDeliveryEndDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "ScheduledDeliveryStartDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "CODFee": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "CurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "Amount": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "IsGift": {
+      "type": ["null", "string"]
+    },
+    "ConditionNote": {
+      "type": ["null", "string"]
+    },
+    "ConditionId": {
+      "type": ["null", "string"]
+    },
+    "ConditionSubtypeId": {
+      "type": ["null", "string"]
+    },
+    "CODFeeDiscount": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "CurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "Amount": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "TaxCollection": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "Model": {
+          "type": ["null", "string"]
+        },
+        "ResponsibleParty": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "IsTransparency": {
+      "type": ["null", "boolean"]
+    },
+    "IossNumber": {
+      "type": ["null", "string"]
+    },
+    "SerialNumberRequired": {
+      "type": ["null", "boolean"]
+    },
+    "StoreChainStoreId": {
+      "type": ["null", "string"]
+    },
+    "DeemedResellerCategory": {
+      "type": ["null", "string"]
+    },
+    "PriceDesignation": {
+      "type": ["null", "string"]
+    },
+    "BuyerInfo": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "BuyerCustomizedInfo": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "CustomizedURL": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "GiftMessageText": {
+          "type": ["null", "string"]
+        },
+        "GiftWrapPrice": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "CurrencyCode": {
+              "type": ["null", "string"]
+            },
+            "Amount": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "GiftWrapLevel": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "BuyerRequestedCancel": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "IsBuyerRequestedCancel": {
+          "type": ["null", "string"]
+        },
+        "BuyerCancelReason": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "SerialNumbers": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "LastUpdateDate": {
+      "type": ["null", "string"]
+    }
+  }
+}

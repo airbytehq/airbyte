@@ -1,18 +1,18 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import json
 import re
-from google.cloud import storage
-from google.oauth2 import service_account
-
-from dagster import StringSource, InitResourceContext, Noneable, resource
-from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
-
 import uuid
 from typing import Optional
-import dagster._check as check
-from dagster._core.storage.file_manager import (
-    check_file_like_obj,
-)
 
+import dagster._check as check
+from dagster import InitResourceContext, Noneable, StringSource, resource
+from dagster._core.storage.file_manager import check_file_like_obj
+from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
+from google.cloud import storage
+from google.oauth2 import service_account
 from orchestrator.config import get_public_url_for_gcs_file
 
 

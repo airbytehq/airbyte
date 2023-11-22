@@ -2,12 +2,12 @@
 
 ## Features
 
-| Feature                       | Supported?\(Yes/No\) | Notes                                                                                        |
-| :---------------------------- | :------------------- | :------------------------------------------------------------------------------------------- |
-| Full Refresh Sync             | Yes                  |                                                                                              |
-| Incremental - Append Sync     | Yes                  |                                                                                              |
-| Incremental - Deduped History | No                   | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces                    | Yes                  |                                                                                              |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | No                   |       |
+| Namespaces                     | Yes                  |       |
 
 ## Prerequisites
 

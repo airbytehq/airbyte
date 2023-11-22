@@ -213,7 +213,7 @@
       "type": ["null", "string"]
     },
     "shopify_variant_id_not_found": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "status": {
       "type": ["null", "string"]

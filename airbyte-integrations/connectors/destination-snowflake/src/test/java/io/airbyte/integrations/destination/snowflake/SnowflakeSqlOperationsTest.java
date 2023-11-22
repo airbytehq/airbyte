@@ -11,31 +11,47 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SnowflakeSqlOperationsTest {
 
-  SnowflakeSqlOperations snowflakeSqlOperations = new SnowflakeSqlOperations();
+  private SnowflakeSqlOperations snowflakeSqlOperations;
   public static String SCHEMA_NAME = "schemaName";
   public static final String TABLE_NAME = "tableName";
   JdbcDatabase db = mock(JdbcDatabase.class);
 
+  @BeforeEach
+  public void setup() {
+    DestinationConfig.initialize(Jsons.emptyObject());
+    snowflakeSqlOperations = new SnowflakeSqlOperations();
+  }
+
   @Test
   void createTableQuery() {
-    String expectedQuery = String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-            + "%s VARCHAR PRIMARY KEY,\n"
-            + "%s VARIANT,\n"
-            + "%s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
-            + ") data_retention_time_in_days = 0;",
-        SCHEMA_NAME, TABLE_NAME, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    String actualQuery = snowflakeSqlOperations.createTableQuery(db, SCHEMA_NAME, TABLE_NAME);
+    final String expectedQuery = String.format(
+        """
+        CREATE TABLE IF NOT EXISTS "%s"."%s" (
+          "%s" VARCHAR PRIMARY KEY,
+          "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
+          "%s" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+          "%s" VARIANT
+        ) data_retention_time_in_days = 0;""",
+        SCHEMA_NAME,
+        TABLE_NAME,
+        JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+        JavaBaseConstants.COLUMN_NAME_DATA);
+    final String actualQuery = snowflakeSqlOperations.createTableQuery(db, SCHEMA_NAME, TABLE_NAME);
     assertEquals(expectedQuery, actualQuery);
   }
 

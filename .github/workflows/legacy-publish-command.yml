@@ -248,18 +248,18 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
       - name: Install Pyenv
         run: |
-          python3 -m pip install --quiet virtualenv==16.7.9 --user
+          python3 -m pip install --quiet virtualenv --user
           rm -r venv || echo "no pre-existing venv"
           python3 -m virtualenv venv
           source venv/bin/activate
       - name: Install CI scripts
-        # all CI python packages have the prefix "ci_"
         run: |
           source venv/bin/activate
-          pip install --quiet -e ./tools/ci_*
+          pip install --quiet -e ./airbyte-ci/connectors/ci_credentials
+          pip install --quiet -e ./airbyte-ci/connectors/connector_ops
       - name: Write Integration Test Credentials for ${{ matrix.connector }}
         run: |
           source venv/bin/activate

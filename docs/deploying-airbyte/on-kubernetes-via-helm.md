@@ -1,4 +1,4 @@
-# Deploy Airbyte on Kubernetes using Helm (Beta)
+# Deploy Airbyte on Kubernetes using Helm
 
 ## Overview
 
@@ -16,10 +16,10 @@ Alternatively, you can deploy Airbyte on [Restack](https://www.restack.io) to pr
 
 For local testing we recommend following one of the following setup guides:
 
-* [Docker Desktop \(Mac\)](https://docs.docker.com/desktop/kubernetes)
-* [Minikube](https://minikube.sigs.k8s.io/docs/start)
-  * NOTE: Start Minikube with at least 4gb RAM with `minikube start --memory=4000`
-* [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
+- [Docker Desktop \(Mac\)](https://docs.docker.com/desktop/kubernetes)
+- [Minikube](https://minikube.sigs.k8s.io/docs/start)
+  - NOTE: Start Minikube with at least 4gb RAM with `minikube start --memory=4000`
+- [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
 For testing on GKE you can [create a cluster with the command line or the Cloud Console UI](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-zonal-cluster).
 
@@ -40,7 +40,7 @@ For GKE:
 1. Configure `gcloud` with `gcloud auth login`.
 2. On the Google Cloud Console, the cluster page will have a `Connect` button, which will give a command to run locally that looks like
 
-    `gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE_NAME --project $PROJECT_NAME`.
+   `gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE_NAME --project $PROJECT_NAME`.
 
 3. Use `kubectl config get-contexts` to show the contexts available.
 4. Run `kubectl config use-context $GKE_CONTEXT` to access the cluster from `kubectl`.
@@ -58,8 +58,8 @@ For EKS:
 To install helm simply run:
 
 For MacOS:
-  
-  `brew install helm`
+
+`brew install helm`
 
 For Linux:
 
@@ -79,17 +79,21 @@ After adding the repo, perform the repo indexing process by running `helm repo u
 
 After this you can browse all charts uploaded to repository by running `helm search repo airbyte`
 
-It'll produce the output below:
+It'll produce output similar to below:
 
 ```text
-NAME                            CHART VERSION   APP VERSION     DESCRIPTION                             
-airbyte-oss/airbyte             0.30.23         0.39.37-alpha   Helm chart to deploy airbyte            
-airbyte-oss/airbyte-bootloader  0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-bootloader 
-airbyte-oss/pod-sweeper         0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-pod-sweeper
-airbyte-oss/server              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-server     
-airbyte-oss/temporal            0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-temporal   
-airbyte-oss/webapp              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-webapp     
-airbyte-oss/worker              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-worker  
+NAME                            	CHART VERSION	APP VERSION	DESCRIPTION
+airbyte/airbyte                 	0.49.9       	0.50.33    	Helm chart to deploy airbyte
+airbyte/airbyte-api-server      	0.49.9       	0.50.33    	Helm chart to deploy airbyte-api-server
+airbyte/airbyte-bootloader      	0.49.9       	0.50.33    	Helm chart to deploy airbyte-bootloader
+airbyte/connector-builder-server	0.49.9       	0.50.33    	Helm chart to deploy airbyte-connector-builder-...
+airbyte/cron                    	0.49.9       	0.50.33    	Helm chart to deploy airbyte-cron
+airbyte/metrics                 	0.49.9       	0.50.33    	Helm chart to deploy airbyte-metrics
+airbyte/pod-sweeper             	0.49.9       	0.50.33    	Helm chart to deploy airbyte-pod-sweeper
+airbyte/server                  	0.49.9       	0.50.33    	Helm chart to deploy airbyte-server
+airbyte/temporal                	0.49.9       	0.50.33    	Helm chart to deploy airbyte-temporal
+airbyte/webapp                  	0.49.9       	0.50.33    	Helm chart to deploy airbyte-webapp
+airbyte/worker                  	0.49.9       	0.50.33    	Helm chart to deploy airbyte-worker
 ```
 
 ## Deploy Airbyte
@@ -98,10 +102,13 @@ airbyte-oss/worker              0.30.23         0.39.37-alpha   Helm chart to de
 
 If you don't intend to customise your deployment, you can deploy airbyte as is with default values.
 
-In order to do so, run the command: 
+In order to do so, run the command:
+
 ```
 helm install %release_name% airbyte/airbyte
 ```
+
+**Note**: `release_name` should only contain lowercase letters and optionally dashes (`release_name` must start with a letter).
 
 ### Custom deployment
 
@@ -128,12 +135,15 @@ Since the latest release of bitnami/minio chart, they've changed the way of sett
 Going forward in new version you need to specify the following values in values yaml for user/password instead old one
 
 Before:
+
 ```text
 minio:
   rootUser: airbyte-user
   rootPassword: airbyte-password-123
 ```
+
 After:
+
 ```text
 minio:
   auth:
@@ -144,9 +154,9 @@ minio:
 
 Before upgrading the chart update values.yaml as stated above and then run:
 
-* Get the old rootPassword by running `export ROOT_PASSWORD=$(kubectl get secret --namespace "default" %release_name%-minio -o jsonpath="{.data.root-password}" | base64 -d)`
-* Perform upgrade of chart by running `helm upgrade %release_name% airbyte/airbyte --set auth.rootPassword=$ROOT_PASSWORD`
-  * If you get an error about setting the auth.rootPassword, then you forgot to update the `values.yaml` file
+- Get the old rootPassword by running `export ROOT_PASSWORD=$(kubectl get secret --namespace "default" %release_name%-minio -o jsonpath="{.data.root-password}" | base64 -d)`
+- Perform upgrade of chart by running `helm upgrade %release_name% airbyte/airbyte --set auth.rootPassword=$ROOT_PASSWORD`
+  - If you get an error about setting the auth.rootPassword, then you forgot to update the `values.yaml` file
 
 ### Custom logging and jobs configuration
 
@@ -162,7 +172,8 @@ global:
         %your_jobs_options_here%
 ```
 
-After updating `values.yaml` simply upgrade your chart by running command: 
+After updating `values.yaml` simply upgrade your chart by running command:
+
 ```shell
 helm upgrade -f path/to/values.yaml %release_name% airbyte/airbyte
 ```
@@ -179,7 +190,8 @@ If you're using external DB secrets, then provide them in `values.yaml` under gl
     port: "5432"
 ```
 
-And upgrade the chart by running: 
+And upgrade the chart by running:
+
 ```shell
 helm upgrade -f path/to/values.yaml %release_name% airbyte/airbyte
 ```

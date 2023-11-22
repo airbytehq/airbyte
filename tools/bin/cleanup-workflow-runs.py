@@ -1,14 +1,19 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import argparse
 import os
-import subprocess
 import re
+import subprocess
 from datetime import datetime, timedelta
+
 from github import Github
 
 DAYS_TO_KEEP_ORPHANED_JOBS = 90
 
 
-'''
+"""
 
 This script is intended to be run in conjuction with identify-dormant-workflows.py to keep GH actions clean.
 
@@ -23,14 +28,21 @@ We need to clean up the runs because even if a workflow is deleted, the runs lin
 We don't want to delete workflow runs newer than 90 days on GH actions, even if the workflow doesn't exist.
 it's possible that people might test things off the master branch and we don't want to delete their recent runs
 
-'''
+"""
 
 # Initiate the parser
 parser = argparse.ArgumentParser()
 
 # Add long and short argument
 parser.add_argument("--pat", "-p", help="Set github personal access token")
-parser.add_argument("--delete", "-d", action='store', nargs='*', help="By default, the script will only print runs that will be deleted. Pass --delete to actually delete them")
+parser.add_argument(
+    "--delete",
+    "-d",
+    action="store",
+    nargs="*",
+    help="By default, the script will only print runs that will be deleted. Pass --delete to actually delete them",
+)
+
 
 def main():
     # Read arguments from the command line
@@ -43,19 +55,19 @@ def main():
     if args.pat:
         token = args.pat
     else:
-        token = os.getenv('GITHUB_TOKEN')
+        token = os.getenv("GITHUB_TOKEN")
     if not token:
         raise Exception("Github personal access token not provided via args and not available in GITHUB_TOKEN variable")
 
     g = Github(token)
 
-    git_url = subprocess.run(["git", "config", "--get", "remote.origin.url"], check=True, capture_output=True)  
+    git_url = subprocess.run(["git", "config", "--get", "remote.origin.url"], check=True, capture_output=True)
 
     # will match both forms (git and https url) of github e.g.
     # git@github.com:airbytehq/airbyte.git
     # https://github.com/airbytehq/airbyte.git
 
-    git_url_regex = re.compile(r'(?:git@|https://)github\.com[:/](.*?)(\.git|$)') 
+    git_url_regex = re.compile(r"(?:git@|https://)github\.com[:/](.*?)(\.git|$)")
     re_match = git_url_regex.match(git_url.stdout.decode("utf-8"))
 
     repo = g.get_repo(re_match.group(1))
@@ -64,22 +76,24 @@ def main():
     runs_to_delete = []
 
     for workflow in workflows:
-        if not os.path.exists(workflow.path): # it's not in the current branch 
+        if not os.path.exists(workflow.path):  # it's not in the current branch
             runs = workflow.get_runs()
             for run in runs:
-                if run.updated_at > datetime.now() - timedelta(days=DAYS_TO_KEEP_ORPHANED_JOBS): 
-                    break # don't clean up if it has a run newer than 90 days
+                if run.updated_at > datetime.now() - timedelta(days=DAYS_TO_KEEP_ORPHANED_JOBS):
+                    break  # don't clean up if it has a run newer than 90 days
                 if args.delete is not None:
                     print("Deleting run id " + str(run.id))
-                    run._requester.requestJson("DELETE", run.url) # normally we would use run.delete() but even though it's been merged it's not yet in pypi: https://github.com/PyGithub/PyGithub/pull/2078
+                    run._requester.requestJson(
+                        "DELETE", run.url
+                    )  # normally we would use run.delete() but even though it's been merged it's not yet in pypi: https://github.com/PyGithub/PyGithub/pull/2078
                 else:
                     runs_to_delete.append((workflow.name, run.id, run.created_at.strftime("%m/%d/%Y, %H:%M:%S")))
-                
+
     if args.delete is None:
         print("[DRY RUN] A total of " + str(len(runs_to_delete)) + " runs would be deleted: ")
         for run in runs_to_delete:
             print(run)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

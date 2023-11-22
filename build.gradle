@@ -1,52 +1,22 @@
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import com.github.spotbugs.snom.SpotBugsTask
 
 // The buildscript block defines dependencies in order for .gradle file evaluation.
 // This is separate from application dependencies.
 // See https://stackoverflow.com/questions/17773817/purpose-of-buildscript-block-in-gradle.
 buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
     dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:8.0.0'
-        // 6.x version of OpenApi generator is only compatible with jackson-core 2.13.x onwards.
-        // This conflicts with the jackson depencneis the bmuschko plugin is pulling in.
-        // Since api generation is only used in the airbyte-api module and the base gradle files
-        // are loaded in first, Gradle is not able to intelligently resolve this before loading in
-        // the bmuschko plugin and thus placing an older jackson version on the class path.
-        // The alternative is to import the openapi plugin for all modules.
-        // This might need to be updated when we change openapi plugin versions.
-        classpath 'com.fasterxml.jackson.core:jackson-core:2.13.0'
-
-        classpath 'org.codehaus.groovy:groovy-yaml:3.0.3'
+        classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.20.0'
     }
 }
 
 plugins {
     id 'base'
-    id 'pmd'
-    id 'com.diffplug.spotless' version '6.12.0'
-    id 'com.github.hierynomus.license' version '0.16.1'
+    id 'com.github.node-gradle.node' version '3.5.1'
     id 'com.github.spotbugs' version '5.0.13'
-    // The distribution plugin has been added to address the an issue with the copyGeneratedTar
-    // task depending on "distTar". When that dependency has been refactored away, this plugin
-    // can be removed.
-    id 'distribution'
     id 'version-catalog'
-    id 'maven-publish'
+    id 'ru.vyarus.use-python'
 }
 
-apply from: "$rootDir/publish-repositories.gradle"
-
-repositories {
-    mavenCentral()
-    maven {
-        url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
-    }
-}
 
 Properties env = new Properties()
 rootProject.file('gradle.properties').withInputStream { env.load(it) }
@@ -62,144 +32,23 @@ if (!env.containsKey('VERSION')) {
 ext {
     version = System.getenv("VERSION") ?: env.VERSION
     image_tag = System.getenv("VERSION") ?: 'dev'
+    skipSlowTests = (System.getProperty('skipSlowTests', 'false') != 'false')
+}
+// Pyenv support.
+try {
+    def pyenvRoot = "pyenv root".execute()
+    if (pyenvRoot.waitFor() == 0) {
+        ext.pyenvRoot = pyenvRoot.text.trim()
+    }
+} catch (IOException _) {
+    // Swallow exception if pyenv is not installed.
 }
 
-def createLicenseWith = { File license, String startComment, String endComment, String lineComment, boolean isPython ->
-    /*
-    In java, we don't have a second linter/styling tool other than spotless so it doesn't really
-    matter if we write a newline or not for startComment/endComment.
-
-    However, in python, we are using black that double-checks and reformats the code.
-    Thus, writing an extra empty newline (not removed by trimTrailingWhitespace() is actually a
-    big deal and would be reformatted (removed) because of black's specs.
-    */
-    def tmp = File.createTempFile('tmp', '.tmp')
-    tmp.withWriter {
-        def w = it
-        if (startComment.length() > 0 || !isPython) {
-            w.writeLine(startComment)
-        }
-        license.eachLine {
-            w << lineComment
-            w.writeLine(it)
-        }
-        if (endComment.length() > 0 || !isPython) {
-            w.writeLine(endComment)
-        }
-        w.writeLine("")
-        if (isPython) {
-            w.writeLine("")
-        }
+def isConnectorProject = { Project project ->
+    if (project.parent == null || project.parent.name != 'connectors') {
+        return false
     }
-    return tmp
-}
-
-def createPythonLicenseWith = { license ->
-    return createLicenseWith(license, '', '', '', true)
-}
-
-def createJavaLicenseWith = { license ->
-    return createLicenseWith(license, '/*', ' */', ' * ', false)
-}
-
-// We are the spotless exclusions rules using file tree. It seems the excludeTarget option is super finicky in a
-// monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
-def createSpotlessTarget = { pattern ->
-    def excludes = [
-            '.gradle',
-            'node_modules',
-            '.eggs',
-            '.mypy_cache',
-            '.venv',
-            '*.egg-info',
-            'build',
-            'dbt-project-template',
-            'dbt-project-template-mssql',
-            'dbt-project-template-mysql',
-            'dbt-project-template-oracle',
-            'dbt-project-template-clickhouse',
-            'dbt-project-template-snowflake',
-            'dbt-project-template-tidb',
-            'dbt-project-template-duckdb',
-            'dbt_test_config',
-            'normalization_test_output',
-            'tools',
-            'secrets',
-            'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
-            'resources/seed/*_catalog.json', // Do not remove - this is also necessary to prevent diffs in our github workflows
-            'resources/seed/*_registry.json', // Do not remove - this is also necessary to prevent diffs in our github workflows
-            'airbyte-integrations/connectors/source-amplitude/unit_tests/api_data/zipped.json', // Zipped file presents as non-UTF-8 making spotless sad
-            'airbyte-webapp', // The webapp module uses its own auto-formatter, so spotless is not necessary here
-            'airbyte-webapp-e2e-tests', // This module also uses its own auto-formatter
-            'airbyte-connector-builder-server/connector_builder/generated', // autogenerated code doesn't need to be formatted
-    ]
-
-    if (System.getenv().containsKey("SUB_BUILD")) {
-        excludes.add("airbyte-integrations/connectors")
-    }
-
-    return fileTree(dir: rootDir, include: pattern, exclude: excludes.collect { "**/${it}" })
-}
-
-spotless {
-    java {
-        target createSpotlessTarget('**/*.java')
-
-        importOrder()
-
-        eclipse('4.21.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
-
-        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
-        removeUnusedImports()
-        trimTrailingWhitespace()
-    }
-    groovyGradle {
-        target createSpotlessTarget('**/*.gradle')
-    }
-    sql {
-        target createSpotlessTarget('**/*.sql')
-
-        dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
-    }
-    format 'styling', {
-        target createSpotlessTarget(['**/*.yaml', '**/*.json'])
-
-        prettier()
-    }
-}
-check.dependsOn 'spotlessApply'
-
-@SuppressWarnings('GroovyAssignabilityCheck')
-def Task getPublishArtifactsTask(String buildVersion, Project subproject) {
-    // generate a unique task name based on the directory name.
-    return task("publishArtifact-$subproject.name" {
-        apply plugin: 'maven-publish'
-        publishing {
-            repositories {
-                publications {
-                    "$subproject.name"(MavenPublication) {
-                        from subproject.components.java
-
-                        // use the subproject group and name with the assumption there are no identical subproject
-                        // names, group names or subproject group/name combination.
-                        groupId = "$subproject.group"
-                        artifactId = "$subproject.name"
-                        version = "$buildVersion"
-                        repositories.add(rootProject.repositories.getByName('cloudrepo'))
-                    }
-                }
-            }
-        }
-    })
-}
-
-allprojects {
-    apply plugin: 'com.bmuschko.docker-remote-api'
-
-    task copyDocker(type: Sync) {
-        from "${project.projectDir}/Dockerfile"
-        into "build/docker/"
-    }
+    return project.name.startsWith("source-") || project.name.startsWith("destination-")
 }
 
 allprojects {
@@ -209,103 +58,208 @@ allprojects {
     // projects clobber each other in an environments with subprojects when projects are in directories named identically.
     def sub = rootDir.relativePath(projectDir.parentFile).replace('/', '.')
     group = "io.${rootProject.name}${sub.isEmpty() ? '' : ".$sub"}"
-    project.archivesBaseName = "${project.group}-${project.name}"
+    project.base.archivesName = "${project.group}-${project.name}"
 
     version = rootProject.ext.version
 }
 
-// Java projects common configurations
+// python is required by the root project to run CAT tests for connectors
+python {
+    envPath = '.venv'
+    minPythonVersion = '3.10' // should be 3.10 for local development
+
+    // Amazon Linux support.
+    // The airbyte-ci tool runs gradle tasks in AL2023-based containers.
+    // In AL2023, `python3` is necessarily v3.9, and later pythons need to be installed and named explicitly.
+    // See https://github.com/amazonlinux/amazon-linux-2023/issues/459 for details.
+    try {
+        if ("python3.11 --version".execute().waitFor() == 0) {
+            // python3.11 definitely exists at this point, use it instead of 'python3'.
+            pythonBinary "python3.11"
+        }
+    } catch (IOException _) {
+        // Swallow exception if python3.11 is not installed.
+    }
+    // Pyenv support.
+    try {
+        def pyenvRoot = "pyenv root".execute()
+        def pyenvLatest = "pyenv latest ${minPythonVersion}".execute()
+        // Pyenv definitely exists at this point: use 'python' instead of 'python3' in all cases.
+        pythonBinary "python"
+        if (pyenvRoot.waitFor() == 0 && pyenvLatest.waitFor() == 0) {
+            pythonPath "${pyenvRoot.text.trim()}/versions/${pyenvLatest.text.trim()}/bin"
+        }
+    } catch (IOException _) {
+        // Swallow exception if pyenv is not installed.
+    }
+
+    scope = 'VIRTUALENV'
+    installVirtualenv = true
+    // poetry is required for installing and running airbyte-ci
+    pip 'poetry:1.5.1'
+}
+
+def cleanPythonVenv = rootProject.tasks.register('cleanPythonVenv', Exec) {
+    commandLine 'rm'
+    args '-rf', "${rootProject.projectDir.absolutePath}/.venv"
+}
+rootProject.tasks.named('clean').configure {
+    dependsOn cleanPythonVenv
+}
+
+// format tasks per project
+allprojects {
+
+    def createFormatTarget = { pattern ->
+        ArrayList<String> excludes = [
+            '**/build', // Ignore new build files as well as the ones ignored when running this through airbyte-ci
+            '.gradle' // Ignore the gradle version that is downloaded in the container
+        ]
+        // Build the FileTree.
+        return fileTree(dir: projectDir, include: pattern, exclude: excludes)
+    }
+
+    // Apply spotless formatting.
+    apply plugin: 'com.diffplug.spotless'
+    spotless {
+        def javaTarget = createFormatTarget('**/*.java')
+        if (!javaTarget.isEmpty()) {
+            java {
+                target javaTarget
+                importOrder()
+                eclipse('4.21').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
+                removeUnusedImports()
+                trimTrailingWhitespace()
+            }
+        }
+        def groovyGradleTarget = createFormatTarget('**/*.gradle')
+        if (!groovyGradleTarget.isEmpty()) {
+            groovyGradle {
+                target groovyGradleTarget
+            }
+        }
+    }
+
+    if (rootProject.ext.skipSlowTests) {
+        // Format checks should be run via airbyte-ci.
+        tasks.matching { it.name =~ /spotless.*Check/ }.configureEach {
+            enabled = false
+        }
+    }
+}
+
+
+def getCDKTargetVersion() {
+    def props = new Properties()
+    file("airbyte-cdk/java/airbyte-cdk/src/main/resources/version.properties").withInputStream { props.load(it) }
+    return props.getProperty('version')
+}
+static def getLatestFileModifiedTimeFromFiles(files) {
+    if (files.isEmpty()) {
+        return null
+    }
+    return files.findAll { it.isFile() }
+        .collect { it.lastModified() }
+        .max()
+}
+def checkCDKJarExists(requiredSnapshotVersion) {
+    if (requiredSnapshotVersion == null) {
+        // Connector does not require CDK snapshot.
+        return
+    }
+    final boolean checkFileChanges = true
+    final cdkTargetVersion = getCDKTargetVersion()
+    if (requiredSnapshotVersion != cdkTargetVersion) {
+        if (!cdkTargetVersion.contains("-SNAPSHOT")) {
+            throw new GradleException(
+                "CDK JAR version is not publishing snapshot but connector requires version ${requiredSnapshotVersion}.\n" +
+                "Please check that the version in the CDK properties file matches the connector build.gradle."
+            )
+        }
+        throw new GradleException(
+            "CDK JAR version ${cdkTargetVersion} does not match connector's required version ${requiredSnapshotVersion}.\n" +
+            "Please check that the version in the CDK properties file matches the connector build.gradle."
+        )
+    }
+
+    def cdkJar = file("${System.properties['user.home']}/.m2/repository/io/airbyte/airbyte-cdk/${cdkTargetVersion}/airbyte-cdk-${cdkTargetVersion}.jar")
+    if (!cdkJar.exists()) {
+        println("WARNING: CDK JAR does not exist at ${cdkJar.path}.\nPlease run './gradlew :airbyte-cdk:java:airbyte-cdk:build'.")
+    }
+    if (checkFileChanges) {
+        def latestJavaFileTimestamp = getLatestFileModifiedTimeFromFiles(file("${rootDir}/airbyte-cdk/java/airbyte-cdk/src").listFiles().findAll { it.isFile() })
+        if (cdkJar.lastModified() < latestJavaFileTimestamp) {
+            throw new GradleException("CDK JAR is out of date. Please run './gradlew :airbyte-cdk:java:airbyte-cdk:build'.")
+        }
+    }
+}
+static def getCDKSnapshotRequirement(dependenciesList) {
+    def cdkSnapshotRequirement = dependenciesList.find {
+        it.requested instanceof ModuleComponentSelector &&
+        it.requested.group == 'io.airbyte' &&
+        it.requested.module == 'airbyte-cdk' &&
+        it.requested.version.endsWith('-SNAPSHOT')
+    }
+    if (cdkSnapshotRequirement == null) {
+        return null
+    } else {
+        return cdkSnapshotRequirement.requested.version
+    }
+}
+
+// Common configurations for 'assemble'.
+allprojects {
+
+    tasks.withType(Tar).configureEach {
+        duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
+
+    tasks.withType(Zip).configureEach {
+        duplicatesStrategy DuplicatesStrategy.INCLUDE
+        // Disabling distZip causes the build to break for some reason, so: instead of disabling it, make it fast.
+        entryCompression ZipEntryCompression.STORED
+    }
+}
+
+// Java projects common configurations.
 subprojects { subproj ->
 
-
-    configurations {
-        runtimeClasspath
-    }
-
-
-    // Common Docker Configuration:
-    // If subprojects have the dockerImageName property configured in their gradle.properties file,
-    // register:
-    // 1) A copyGeneratedTar task to copy generated TARs. Subprojects that produce TARs can use this
-    //    to copy the produced tar into the docker image.
-    // 2) A buildDockerImage task to build the docker image.
-    // 3) Make the docker image task depend on the default assemble task.
-    if (subproj.hasProperty('dockerImageName')) {
-        project.logger.lifecycle("configuring docker task for $subproj.name")
-
-        // Although this task is defined for every subproject with the dockerImageName property,
-        // It is not necessarily used for all subprojects. Non-TAR producing projects can ignore this.
-        tasks.register("copyGeneratedTar", Copy) {
-            dependsOn copyDocker
-            dependsOn distTar
-            from('build/distributions') {
-                // Assume that tars are named <parent-project-name>-<child-project-name>-*.tar.
-                // Because we only have a handle to the child project, and to keep things simple,
-                // use a * regex to catch all prefixes.
-                include "*$subproj.name-*.tar"
-            }
-            into 'build/docker/bin'
-        }
-
-        tasks.register("buildDockerImage", DockerBuildImage) {
-            // This is currently only used for connectors.
-            def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.4'
-
-            def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
-            def isArm64 = arch == "aarch64" || arch == "arm64"
-            def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
-            def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
-            def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
-            def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:alpine' : 'amd64/nginx:alpine'
-
-            // Used by the platform -- Must be an Amazon Corretto-based image for build to work without modification to Dockerfile instructions
-            def openjdkImage = System.getenv('JDK_IMAGE') ?: "airbyte/airbyte-base-java-image:1.0"
-
-            platform = buildPlatform
-            images.add("airbyte/$subproj.dockerImageName:$rootProject.ext.image_tag")
-            buildArgs.put('JDK_VERSION', jdkVersion)
-            buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
-            buildArgs.put('ALPINE_IMAGE', alpineImage)
-            buildArgs.put('NGINX_IMAGE', nginxImage)
-            buildArgs.put('JDK_IMAGE', openjdkImage)
-            buildArgs.put('VERSION', rootProject.ext.version)
-
-        }
-
-        tasks.named("assemble") {
-            dependsOn buildDockerImage
-        }
-    }
-
-    if (subproj.name == 'airbyte-webapp' || subproj.name == 'airbyte-webapp-e2e-tests') {
+    if (!subproj.file('src/main/java').directory) {
         return
     }
 
     apply plugin: 'java'
     apply plugin: 'jacoco'
     apply plugin: 'com.github.spotbugs'
-    apply plugin: 'pmd'
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-
-    repositories {
-        mavenCentral()
-        maven {
-            url 'https://jitpack.io'
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        compileJava {
+            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing"]
         }
-        maven {
-            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+        compileTestJava {
+            //rawtypes and unchecked are necessary for mockito
+            //deprecation and removal are removed from error since we should still test those constructs.
+            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing,-rawtypes,-unchecked,-deprecation,-removal"]
         }
     }
 
-    pmd {
-        consoleOutput = true
-        ignoreFailures = false
-        rulesMinimumPriority = 5
-        ruleSets = []
-        ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
-        toolVersion = '6.51.0'
+    if (isConnectorProject(subproj)) {
+        // This is a Java connector project.
+
+        // Evaluate CDK project before evaluating the connector.
+        evaluationDependsOn(':airbyte-cdk:java:airbyte-cdk')
+
+        if (!gradle.startParameter.taskNames.any { it.contains(':airbyte-cdk:') } &&
+            gradle.startParameter.taskNames.any { it.contains(':source-') || it.contains(':destination-') }) {
+            // We are building a connector. Warn if the CDK JAR is missing or out of date.
+            final String cdkRelativePath = 'airbyte-cdk/java/airbyte-cdk'
+            afterEvaluate {
+                def cdkVersionNeeded = getCDKSnapshotRequirement(configurations.compileClasspath.incoming.resolutionResult.allDependencies)
+                checkCDKJarExists(cdkVersionNeeded)
+            }
+        }
     }
 
     jacoco {
@@ -313,12 +267,15 @@ subprojects { subproj ->
     }
 
     jacocoTestReport {
-        dependsOn test
         reports {
             html.required = true
             xml.required = true
             csv.required = false
         }
+    }
+    def jacocoTestReportTask = tasks.named('jacocoTestReport')
+    jacocoTestReportTask.configure {
+        dependsOn tasks.named('test')
     }
 
     jacocoTestCoverageVerification {
@@ -339,85 +296,95 @@ subprojects { subproj ->
         }
     }
 
-    // make tag accessible in submodules.
-    ext {
-        cloudStorageTestTagName = 'cloud-storage'
-        numberThreads = project.hasProperty('numberThreads') ? project.getProperty('numberThreads') as int : Runtime.runtime.availableProcessors() ?: 1
-    }
-
     spotbugs {
         ignoreFailures = false
         effort = 'max'
-        excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
+        excludeFilter.set rootProject.file('spotbugs-exclude-filter-file.xml')
         reportLevel = 'high'
         showProgress = false
         toolVersion = '4.7.3'
+        if (rootProject.ext.skipSlowTests && isConnectorProject(subproj)) {
+            effort = 'min'
+        }
     }
 
     test {
-        //This allows to set up a `gradle.properties` file inside the connector folder to reduce number of threads and reduce parallelization.
-        //Specially useful for connectors that shares resources (like Redshift or Snowflake).
-        maxParallelForks = numberThreads
-        jacoco {
-            enabled = true
-            excludes = ['**/*Test*', '**/generated*']
-        }
-        useJUnitPlatform {
-            excludeTags(cloudStorageTestTagName)
-        }
-        testLogging() {
-            events "passed", "skipped", "failed"
-            exceptionFormat 'full'
-            // uncomment to get the full log output
-            // showStandardStreams = true
-        }
-        finalizedBy jacocoTestReport
-    }
-
-    task allTests(type: Test) {
         useJUnitPlatform()
         testLogging() {
-            events "passed", "failed", "started"
+            events 'skipped', 'started', 'passed', 'failed'
             exceptionFormat 'full'
-            // uncomment to get the full log output
-            // showStandardStreams = true
+            // Swallow the logs when running in airbyte-ci, rely on test reports instead.
+            showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
         }
-        finalizedBy jacocoTestReport
+
+        // Set the timezone to UTC instead of picking up the host machine's timezone,
+        // which on a developer's laptop is more likely to be PST.
+        systemProperty 'user.timezone', 'UTC'
+
+        // Enable parallel test execution in JUnit by default.
+        // This is to support @Execution(ExecutionMode.CONCURRENT) annotations
+        // See https://junit.org/junit5/docs/current/user-guide/#writing-tests-parallel-execution for details.
+        systemProperty 'junit.jupiter.execution.parallel.enabled', 'true'
+        // Concurrency takes place at the class level.
+        systemProperty 'junit.jupiter.execution.parallel.mode.classes.default', 'concurrent'
+        // Within a class, the test methods are still run serially on the same thread.
+        systemProperty 'junit.jupiter.execution.parallel.mode.default', 'same_thread'
+        // Effectively disable JUnit concurrency by running tests in only one thread by default.
+        systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'fixed'
+        systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', 1
+
+        if (!subproj.hasProperty('testExecutionConcurrency')) {
+            // By default, let gradle spawn as many independent workers as it wants.
+            maxParallelForks = Runtime.runtime.availableProcessors()
+            maxHeapSize = '3G'
+        } else {
+            // Otherwise, run tests within the same JVM.
+            // Let gradle spawn only one worker.
+            maxParallelForks = 1
+            maxHeapSize = '8G'
+            // Manage test execution concurrency in JUnit.
+            String concurrency = subproj.property('testExecutionConcurrency').toString()
+            if (concurrency.isInteger() && (concurrency as int) > 0) {
+                // Define a fixed number of threads when the property is set to a positive integer.
+                systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', concurrency
+            } else {
+                // Otherwise let JUnit manage the concurrency dynamically.
+                systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'dynamic'
+            }
+        }
+
+        // Exclude all connector unit tests upon request.
+        if (rootProject.ext.skipSlowTests) {
+            exclude '**/io/airbyte/integrations/source/**'
+            exclude '**/io/airbyte/integrations/destination/**'
+        }
+
+        jacoco {
+            enabled = !rootProject.ext.skipSlowTests
+            excludes = ['**/*Test*', '**/generated*']
+        }
+        finalizedBy jacocoTestReportTask
     }
 
-    dependencies {
-        if (subproj.name != 'airbyte-commons') {
-            implementation project(':airbyte-commons')
-        }
+    // TODO: These should be added to the CDK or to the individual projects that need them:
 
+    dependencies {
         implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
 
-
         // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
         implementation libs.bundles.jackson
-
         implementation libs.guava
-
         implementation libs.commons.io
-
         implementation libs.bundles.apache
-
         implementation libs.slf4j.api
-
 
         // SLF4J as a facade over Log4j2 required dependencies
         implementation libs.bundles.log4j
+        implementation libs.appender.log4j2
 
         // Bridges from other logging implementations to SLF4J
         implementation libs.bundles.slf4j
-
-        // Dependencies for logging to cloud storage, as well as the various clients used to do so.
-        implementation libs.appender.log4j2
-        implementation libs.aws.java.sdk.s3
-        implementation libs.google.cloud.storage
-
-        implementation libs.s3
 
         // Lombok dependencies
         compileOnly libs.lombok
@@ -435,17 +402,12 @@ subprojects { subproj ->
         // adds owasp plugin
         spotbugsPlugins libs.findsecbugs.plugin
         implementation libs.spotbugs.annotations
+
+        // Airbyte dependencies.
+        implementation libs.airbyte.protocol
     }
 
-    tasks.withType(Tar) {
-        duplicatesStrategy DuplicatesStrategy.INCLUDE
-    }
-
-    tasks.withType(Zip) {
-        duplicatesStrategy DuplicatesStrategy.INCLUDE
-    }
-
-    tasks.withType(SpotBugsTask) {
+    tasks.withType(SpotBugsTask).configureEach {
         // Reports can be found under each subproject in build/spotbugs/
         reports {
             xml.required = false
@@ -453,88 +415,109 @@ subprojects { subproj ->
         }
     }
 
-    tasks.withType(Pmd) {
-        exclude '**/generated/**'
-        exclude '**/jooq/**'
-    }
-
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
-    check.dependsOn 'jacocoTestCoverageVerification'
 }
 
-task('generate') {
-    dependsOn subprojects.collect { it.getTasksByName('generateComponentManifestClassFiles', true) }
-    dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
-}
-
-task('format') {
-    dependsOn generate
-    dependsOn spotlessApply
-    dependsOn subprojects.collect { it.getTasksByName('airbytePythonFormat', true) }
-}
-
-// add licenses for python projects.
-subprojects {
-    def pythonFormatTask = project.tasks.findByName('blackFormat')
-
-    if (pythonFormatTask != null) {
-        apply plugin: "com.github.hierynomus.license"
-        license {
-            header rootProject.file("LICENSE_SHORT")
-        }
-        task licenseFormatPython(type: com.hierynomus.gradle.license.tasks.LicenseFormat) {
-            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
-            source = fileTree(dir: projectDir)
-                    .include("**/*.py")
-                    .exclude(".venv/**/*.py")
-                    .exclude("**/airbyte_api_client/**/*.py")
-                    .exclude("**/__init__.py")
-            strictCheck = true
-        }
-        def licenseTask = project.tasks.findByName('licenseFormatPython')
-        def isortFormatTask = project.tasks.findByName('isortFormat')
-        if (isortFormatTask != null) {
-            isortFormat.dependsOn licenseTask
-        }
-        def flakeCheckTask = project.tasks.findByName('flakeCheck')
-        if (flakeCheckTask != null) {
-            flakeCheck.dependsOn licenseTask
-        }
-        blackFormat.dependsOn licenseTask
-
-        def generateManifestFilesTask = project.tasks.findByName('generateComponentManifestClassFiles')
-        if (generateManifestFilesTask != null) {
-            licenseTask.dependsOn generateManifestFilesTask
+// integration and performance test tasks per project
+allprojects {
+    tasks.register('integrationTest') {
+        dependsOn tasks.matching {
+            [
+                    'integrationTestJava',
+                    'integrationTestPython',
+            ].contains(it.name)
         }
     }
-    task listAllDependencies(type: DependencyReportTask) {}
+
+    tasks.register('performanceTest') {
+        dependsOn tasks.matching {
+            [
+                    'performanceTestJava',
+            ].contains(it.name)
+        }
+    }
+}
+
+
+// convenience task to list all dependencies per project
+subprojects {
+    tasks.register('listAllDependencies', DependencyReportTask) {}
+}
+
+// airbyte-ci tasks for local development
+def poetryInstallAirbyteCI = tasks.register('poetryInstallAirbyteCI', Exec) {
+    workingDir rootProject.file('airbyte-ci/connectors/pipelines')
+    commandLine rootProject.file('.venv/bin/python').absolutePath
+    args "-m", "poetry", "install", "--no-cache"
+}
+poetryInstallAirbyteCI.configure {
+    dependsOn tasks.named('pipInstall')
+}
+def poetryCleanVirtualenv = tasks.register('cleanVirtualenv', Exec) {
+    workingDir rootProject.file('airbyte-ci/connectors/pipelines')
+    commandLine rootProject.file('.venv/bin/python').absolutePath
+    args "-m", "poetry", "env", "remove", "--all"
+    onlyIf {
+        rootProject.file('.venv/bin/python').exists()
+    }
+}
+cleanPythonVenv.configure {
+    dependsOn poetryCleanVirtualenv
+}
+
+subprojects {
+    if (!isConnectorProject(project)) {
+        return
+    }
+    def airbyteCIConnectorsTask = { String taskName, String... connectorsArgs ->
+        def task = tasks.register(taskName, Exec) {
+            workingDir rootDir
+            environment "CI", "1" // set to use more suitable logging format
+            commandLine rootProject.file('.venv/bin/python').absolutePath
+            args "-m", "poetry"
+            args "--directory", "${rootProject.file('airbyte-ci/connectors/pipelines').absolutePath}"
+            args "run"
+            args "airbyte-ci", "connectors", "--name=${project.name}"
+            args connectorsArgs
+            // Forbid these kinds of tasks from running concurrently.
+            // We can induce serial execution by giving them all a common output directory.
+            outputs.dir rootProject.file("${rootProject.buildDir}/airbyte-ci-lock")
+            outputs.upToDateWhen { false }
+        }
+        task.configure { dependsOn poetryInstallAirbyteCI }
+        return task
+    }
+
+    // Build connector image as part of 'assemble' task.
+    // This is required for local 'integrationTest' execution.
+    def buildConnectorImage = airbyteCIConnectorsTask(
+            'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar')
+    buildConnectorImage.configure {
+        // Images for java projects always rely on the distribution tarball.
+        dependsOn tasks.matching { it.name == 'distTar' }
+        // Ensure that all files exist beforehand.
+        dependsOn tasks.matching { it.name == 'generate' }
+    }
+    tasks.named('assemble').configure {
+        // We may revisit the dependency on assemble but the dependency should always be on a base task.
+        dependsOn buildConnectorImage
+    }
+
+    // Convenience tasks for local airbyte-ci execution.
+    airbyteCIConnectorsTask('airbyteCIConnectorBuild', 'build')
+    airbyteCIConnectorsTask('airbyteCIConnectorTest', 'test')
 }
 
 // produce reproducible archives
 // (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
-tasks.withType(AbstractArchiveTask) {
+tasks.withType(AbstractArchiveTask).configureEach {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 }
 
-// definition for publishing
+// pin dependency versions according to ./deps.toml
 catalog {
     versionCatalog {
         from(files("deps.toml"))
     }
-}
-
-publishing {
-    publications {
-        // This block is present for dependency catalog publishing.
-        maven(MavenPublication) {
-            groupId = 'io.airbyte'
-            artifactId = 'oss-catalog'
-
-            from components.versionCatalog
-            // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-            // e.g. the subproject :airbyte-example:example-models is imported at io.airbyte.airbyte-config-oss:config-persistence:<version-number>.
-        }
-    }
-    repositories.add(rootProject.repositories.getByName('cloudrepo'))
 }

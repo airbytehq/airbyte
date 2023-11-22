@@ -6,9 +6,9 @@ package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.debezium.internals.mssql.MSSQLConverter;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.debezium.internals.mssql.MSSQLConverter;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -120,8 +120,8 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static SnapshotIsolation getSnapshotIsolationConfig(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(REPLICATION_FIELD)) {
-      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
+      final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
       final JsonNode snapshotIsolation = replicationConfig.get(CDC_SNAPSHOT_ISOLATION_FIELD);
       return SnapshotIsolation.from(snapshotIsolation.asText());
     }
@@ -131,8 +131,8 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static DataToSync getDataToSyncConfig(final JsonNode config) {
     // new replication method config since version 0.4.0
-    if (config.hasNonNull(REPLICATION_FIELD)) {
-      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
+      final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
       final JsonNode dataToSync = replicationConfig.get(CDC_DATA_TO_SYNC_FIELD);
       return DataToSync.from(dataToSync.asText());
     }

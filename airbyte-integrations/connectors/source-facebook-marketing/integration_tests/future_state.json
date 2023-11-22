@@ -335,5 +335,17 @@
         "name": "ads_insights_demographics_gender"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_start": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": {
+        "name": "customcustom_insight_stream"
+      }
+    }
   }
 ]

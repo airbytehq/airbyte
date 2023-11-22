@@ -1,6 +1,8 @@
-import pytest
 import os
-from typing import List
+from typing import Callable, List
+
+import pytest
+from metadata_service.constants import DOC_FILE_NAME
 
 
 def list_all_paths_in_fixture_directory(folder_name: str) -> List[str]:
@@ -27,3 +29,11 @@ def valid_metadata_upload_files() -> List[str]:
 @pytest.fixture(scope="session")
 def invalid_metadata_upload_files() -> List[str]:
     return list_all_paths_in_fixture_directory("metadata_upload/invalid")
+
+
+@pytest.fixture(scope="session")
+def get_fixture_path() -> Callable[[str], str]:
+    def _get_fixture_path(fixture_name: str) -> str:
+        return os.path.join(os.path.dirname(__file__), fixture_name)
+
+    return _get_fixture_path

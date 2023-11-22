@@ -1,5 +1,5 @@
 {
-  "property_id": "1",
+  "property_id": ["1"],
   "json_credentials": "wrong",
   "report_name": "crash_report",
   "dimensions": "date, operatingSystem, streamId",

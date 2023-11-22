@@ -26,26 +26,26 @@
     "group": {
       "type": ["null", "object"],
       "properties": {
-        "closed": {"type": ["null", "boolean"]},
-        "createdAt": {"type": ["null", "string"], "format": "date-time"},
-        "description": {"type": ["null", "string"]},
-        "descriptionHtml": {"type": ["null", "string"]},
-        "descriptionTranslationId": {"type": ["null", "string"]},
-        "id": {"type": ["null", "string"]},
-        "importedFromStatuspage": {"type": ["null", "boolean"]},
-        "name": {"type": ["null", "string"]},
-        "nameHtml": {"type": ["null", "string"]},
-        "nameHtmlTranslationId": {"type": ["null", "string"]},
-        "order": {"type": ["null", "integer"]},
-        "showUptime": {"type": ["null", "boolean"]},
-        "siteId": {"type": ["null", "string"]},
-        "titled": {"type": ["null", "boolean"]},
-        "updatedAt": {"type": ["null", "string"], "format": "date-time"},
+        "closed": { "type": ["null", "boolean"] },
+        "createdAt": { "type": ["null", "string"], "format": "date-time" },
+        "description": { "type": ["null", "string"] },
+        "descriptionHtml": { "type": ["null", "string"] },
+        "descriptionTranslationId": { "type": ["null", "string"] },
+        "id": { "type": ["null", "string"] },
+        "importedFromStatuspage": { "type": ["null", "boolean"] },
+        "name": { "type": ["null", "string"] },
+        "nameHtml": { "type": ["null", "string"] },
+        "nameHtmlTranslationId": { "type": ["null", "string"] },
+        "order": { "type": ["null", "integer"] },
+        "showUptime": { "type": ["null", "boolean"] },
+        "siteId": { "type": ["null", "string"] },
+        "titled": { "type": ["null", "boolean"] },
+        "updatedAt": { "type": ["null", "string"], "format": "date-time" },
         "translations": {
           "type": ["null", "object"],
           "properties": {
-            "name": {"type": ["null", "string"]},
-            "description": {"type": ["null", "string"]}
+            "name": { "type": ["null", "string"] },
+            "description": { "type": ["null", "string"] }
           }
         }
       }
@@ -55,18 +55,18 @@
       "items": {
         "type": ["null", "object"],
         "properties": {
-          "id": {"type": ["null", "string"]},
-          "name": {"type": ["null", "string"]},
-          "started": {"type": ["null", "string"], "format": "date-time"},
-          "status": {"type": ["null", "string"]},
+          "id": { "type": ["null", "string"] },
+          "name": { "type": ["null", "string"] },
+          "started": { "type": ["null", "string"], "format": "date-time" },
+          "status": { "type": ["null", "string"] },
           "components": {
             "items": {
               "type": ["null", "object"],
               "properties": {
-                "id": {"type": ["null", "string"]},
-                "name": {"type": ["null", "string"]},
-                "status": {"type": ["null", "string"]},
-                "showUptime": {"type": ["null", "boolean"]}
+                "id": { "type": ["null", "string"] },
+                "name": { "type": ["null", "string"] },
+                "status": { "type": ["null", "string"] },
+                "showUptime": { "type": ["null", "boolean"] }
               }
             }
           }
@@ -76,11 +76,11 @@
     "updates": {
       "type": ["null", "object"],
       "properties": {
-        "id": {"type": ["null", "string"]},
-        "message": {"type": ["null", "string"]},
-        "messageHtml": {"type": ["null", "string"]},
-        "status": {"type": ["null", "string"]},
-        "started": {"type": ["null", "string"], "format": "date-time"}
+        "id": { "type": ["null", "string"] },
+        "message": { "type": ["null", "string"] },
+        "messageHtml": { "type": ["null", "string"] },
+        "status": { "type": ["null", "string"] },
+        "started": { "type": ["null", "string"], "format": "date-time" }
       }
     }
   }

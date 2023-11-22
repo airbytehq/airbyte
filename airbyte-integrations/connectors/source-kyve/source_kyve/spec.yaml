@@ -13,17 +13,18 @@ connectionSpecification:
       description: The IDs of the KYVE storage pool you want to archive. (Comma separated)
       order: 0
       examples:
-        - '0'
-        - '0,1'
+        - "0"
+        - "0,1"
     start_ids:
       type: string
       title: Bundle-Start-IDs
-      description: The start-id defines, from which bundle id the pipeline should
+      description:
+        The start-id defines, from which bundle id the pipeline should
         start to extract the data (Comma separated)
       order: 1
       examples:
-        - '0'
-        - '0,0'
+        - "0"
+        - "0,0"
     url_base:
       type: string
       title: KYVE-API URL Base
@@ -35,13 +36,15 @@ connectionSpecification:
         - https://api.beta.kyve.network/
     max_pages:
       type: integer
-      description: The maximum amount of pages to go trough. Set to 'null' for all
+      description:
+        The maximum amount of pages to go trough. Set to 'null' for all
         pages.
       order: 3
       airbyte_hidden: true
     page_size:
       type: integer
-      description: The pagesize for pagination, smaller numbers are used in integration
+      description:
+        The pagesize for pagination, smaller numbers are used in integration
         tests.
       default: 100
       order: 4

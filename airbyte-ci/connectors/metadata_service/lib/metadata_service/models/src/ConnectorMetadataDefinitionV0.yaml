@@ -25,6 +25,7 @@ properties:
       - githubIssueLabel
       - connectorSubtype
       - releaseStage
+    additionalProperties: false
     properties:
       name:
         type: string
@@ -33,6 +34,8 @@ properties:
       definitionId:
         type: string
         format: uuid
+      connectorBuildOptions:
+        "$ref": ConnectorBuildOptions.yaml
       connectorType:
         type: string
         enum:
@@ -68,17 +71,16 @@ properties:
         enum:
           - api
           - database
+          - datalake
           - file
           - custom
           - message_queue
           - unknown
+          - vectorstore
       releaseStage:
-        type: string
-        enum:
-          - alpha
-          - beta
-          - generally_available
-          - source
+        "$ref": ReleaseStage.yaml
+      supportLevel:
+        "$ref": SupportLevel.yaml
       tags:
         type: array
         description: "An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
@@ -107,3 +109,5 @@ properties:
         "$ref": SuggestedStreams.yaml
       resourceRequirements:
         "$ref": ActorDefinitionResourceRequirements.yaml
+      ab_internal:
+        "$ref": AirbyteInternal.yaml

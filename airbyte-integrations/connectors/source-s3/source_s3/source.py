@@ -3,13 +3,11 @@
 #
 
 
-from typing import Any, Mapping, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from .source_files_abstract.source import SourceFilesAbstract
 from .source_files_abstract.spec import SourceFilesAbstractSpec
-from .stream import IncrementalFileStreamS3
 
 
 class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
@@ -29,6 +27,7 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
             description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
             "permissions. If accessing publicly available data, this field is not necessary.",
             airbyte_secret=True,
+            always_show=True,
             order=1,
         )
         aws_secret_access_key: Optional[str] = Field(
@@ -37,6 +36,7 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
             description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
             "permissions. If accessing publicly available data, this field is not necessary.",
             airbyte_secret=True,
+            always_show=True,
             order=2,
         )
         path_prefix: str = Field(
@@ -58,15 +58,3 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
         )
 
     provider: S3Provider
-
-
-class SourceS3(SourceFilesAbstract):
-    stream_class = IncrementalFileStreamS3
-    spec_class = SourceS3Spec
-    documentation_url = "https://docs.airbyte.com/integrations/sources/s3"
-
-    def read_config(self, config_path: str) -> Mapping[str, Any]:
-        config: Mapping[str, Any] = super().read_config(config_path)
-        if config.get("format", {}).get("delimiter") == r"\t":
-            config["format"]["delimiter"] = "\t"
-        return config

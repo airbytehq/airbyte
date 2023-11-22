@@ -18,10 +18,10 @@ from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimePar
             datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
         ),
         (
-                "test_parse_date_iso_with_timezone_not_utc",
-                "2021-01-01T00:00:00.000000+0400",
-                "%Y-%m-%dT%H:%M:%S.%f%z",
-                datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone(datetime.timedelta(seconds=14400))),
+            "test_parse_date_iso_with_timezone_not_utc",
+            "2021-01-01T00:00:00.000000+0400",
+            "%Y-%m-%dT%H:%M:%S.%f%z",
+            datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone(datetime.timedelta(seconds=14400))),
         ),
         (
             "test_parse_timestamp",
@@ -29,7 +29,13 @@ from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimePar
             "%s",
             datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
         ),
-        ("test_parse_date_number", "20210101", "%Y%m%d", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)),
+        (
+            "test_parse_timestamp",
+            "1609459200001",
+            "%ms",
+            datetime.datetime(2021, 1, 1, 0, 0, 0, 1000, tzinfo=datetime.timezone.utc),
+        ),
+        ("test_parse_date_ms", "20210101", "%Y%m%d", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)),
     ],
 )
 def test_parse_date(test_name, input_date, date_format, expected_output_date):
@@ -42,6 +48,7 @@ def test_parse_date(test_name, input_date, date_format, expected_output_date):
     "test_name, input_dt, datetimeformat, expected_output",
     [
         ("test_format_timestamp", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%s", "1609459200"),
+        ("test_format_timestamp_ms", datetime.datetime(2021, 1, 1, 0, 0, 0, 1000, tzinfo=datetime.timezone.utc), "%ms", "1609459200001"),
         ("test_format_string", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%Y-%m-%d", "2021-01-01"),
         ("test_format_to_number", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%Y%m%d", "20210101"),
     ],

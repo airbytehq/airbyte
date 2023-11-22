@@ -175,12 +175,12 @@ A data sync may create multiple files as the output files can be partitioned by 
 
 ## Supported sync modes
 
-| Feature                       | Support | Notes                                                                                        |
-| :---------------------------- | :-----: | :------------------------------------------------------------------------------------------- |
-| Full Refresh Sync             |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.         |
-| Incremental - Append Sync     |   ✅    |                                                                                              |
-| Incremental - Deduped History |   ❌    | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces                    |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                  |
+| Feature                        | Support | Notes                                                                                                                                                                                               |
+| :----------------------------- | :-----: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                |
+| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/understanding-airbyte/connections/incremental-append#inclusive-cursors) |
+| Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                     |
+| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                         |
 
 The Airbyte S3 destination allows you to sync data to AWS S3 or Minio S3. Each stream is written to its own directory under the bucket.
 ⚠️ Please note that under "Full Refresh Sync" mode, data in the configured bucket and path will be wiped out before each sync. We recommend you to provision a dedicated S3 resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
@@ -244,12 +244,12 @@ Output files can be compressed. The default option is GZIP compression. If compr
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                                                 |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
 | 0.1.7   | 2023-05-01 | [25724](https://github.com/airbytehq/airbyte/pull/25724) | Fix decimal type creation syntax to avoid overflow                                      |
 | 0.1.6   | 2023-04-13 | [25178](https://github.com/airbytehq/airbyte/pull/25178) | Fix decimal precision and scale to allow for a wider range of numeric values            |
 | 0.1.5   | 2023-04-11 | [25048](https://github.com/airbytehq/airbyte/pull/25048) | Fix config schema to support new JSONL flattening configuration interface               |
 | 0.1.4   | 2023-03-10 | [23950](https://github.com/airbytehq/airbyte/pull/23950) | Fix schema syntax error for struct fields and handle missing `items` in array fields    |
-| 0.1.3   | 2023-02-10 | [22822](https://github.com/airbytehq/airbyte/pull/22822) | Fix data type for _ab_emitted_at column in table definition                             |
+| 0.1.3   | 2023-02-10 | [22822](https://github.com/airbytehq/airbyte/pull/22822) | Fix data type for \_ab_emitted_at column in table definition                            |
 | 0.1.2   | 2023-02-01 | [22220](https://github.com/airbytehq/airbyte/pull/22220) | Fix race condition in test, table metadata, add Airbyte sync fields to table definition |
 | 0.1.1   | 2022-12-13 | [19907](https://github.com/airbytehq/airbyte/pull/19907) | Fix parsing empty object in schema                                                      |
 | 0.1.0   | 2022-11-17 | [18695](https://github.com/airbytehq/airbyte/pull/18695) | Initial Commit                                                                          |

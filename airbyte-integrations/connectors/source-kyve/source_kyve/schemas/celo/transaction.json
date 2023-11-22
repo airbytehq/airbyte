@@ -34,10 +34,7 @@
           "type": ["null", "string"]
         }
       },
-      "required": [
-        "type",
-        "hex"
-      ]
+      "required": ["type", "hex"]
     },
     "gasLimit": {
       "type": ["null", "object"],
@@ -49,10 +46,7 @@
           "type": ["null", "string"]
         }
       },
-      "required": [
-        "type",
-        "hex"
-      ]
+      "required": ["type", "hex"]
     },
     "to": {
       "type": ["null", "string"]
@@ -67,10 +61,7 @@
           "type": ["null", "string"]
         }
       },
-      "required": [
-        "type",
-        "hex"
-      ]
+      "required": ["type", "hex"]
     },
     "nonce": {
       "type": ["null", "integer"]

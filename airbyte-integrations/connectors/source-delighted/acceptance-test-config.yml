@@ -23,11 +23,14 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
   incremental:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        future_state:
-          future_state_path: "integration_tests/abnormal_state.json"
+    # tests:
+    #   - config_path: "secrets/config.json"
+    #     configured_catalog_path: "integration_tests/configured_catalog.json"
+    #     future_state:
+    #       future_state_path: "integration_tests/abnormal_state.json"
+    bypass_reason: >
+      "Incrremental tests are disabled until CAT works with cursor data-types directly,
+      relatated slack thread: https://airbyte-globallogic.slack.com/archives/C02U9R3AF37/p1690810513681859"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

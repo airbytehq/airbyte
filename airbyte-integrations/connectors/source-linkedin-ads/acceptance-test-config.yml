@@ -5,39 +5,54 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "source_linkedin_ads/spec.json"
+      - spec_path: "source_linkedin_ads/spec.json"
+        config_path: "secrets/config_oauth.json"
   connection:
     tests:
-    - config_path: "secrets/config_oauth.json"
-      status: "succeed"
-      timeout_seconds: 60
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+      - config_path: "secrets/config_oauth.json"
+        status: "succeed"
+        timeout_seconds: 60
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+      - config_path: "integration_tests/invalid_config_custom_report.json"
+        status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config_oauth.json"
-      backward_compatibility_tests_config:
-        disable_for_version: 0.1.16 # migration to May 2023 Api Version; schema changes; stream removed
-      timeout_seconds: 60
+      - config_path: "secrets/config_oauth.json"
+        timeout_seconds: 60
   basic_read:
     tests:
-    - config_path: "secrets/config_oauth.json"
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
-      fail_on_extra_columns: false
+      - config_path: "secrets/config_oauth.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        fail_on_extra_columns: true
+        timeout_seconds: 3600
+        ignored_fields:
+          campaign_groups:
+            - name: "lastModified"
+              bypass_reason: "Volatile data"
+          ad_campaign_analytics:
+            - name: "costInLocalCurrency"
+              bypass_reason: "Data changes too often"
+            - name: "costInUsd"
+              bypass_reason: "Data changes too often"
+          ad_creative_analytics:
+            - name: "costInLocalCurrency"
+              bypass_reason: "Data changes too often"
+            - name: "costInUsd"
+              bypass_reason: "Data changes too often"
   incremental:
     tests:
-    - config_path: "secrets/config_oauth.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state:
-        future_state_path: "integration_tests/abnormal_state.json"
-        missing_streams:
-        - name: accounts
-          bypass_reason: "This stream is Full-Refresh only"
-      timeout_seconds: 3600
+      - config_path: "secrets/config_oauth.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+          missing_streams:
+            - name: accounts
+              bypass_reason: "This stream is Full-Refresh only"
+        timeout_seconds: 3600
   full_refresh:
     tests:
-    - config_path: "secrets/config_oauth.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 3600
-
+      - config_path: "secrets/config_oauth.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 3600
