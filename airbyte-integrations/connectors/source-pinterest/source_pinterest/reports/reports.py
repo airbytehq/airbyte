@@ -203,13 +203,13 @@ class CampaignTargetingReport(PinterestAnalyticsTargetingReportStream):
         return "CAMPAIGN_TARGETING"
 
 
-class AdvertizerReport(PinterestAnalyticsReportStream):
+class AdvertiserReport(PinterestAnalyticsReportStream):
     @property
     def level(self):
         return "ADVERTISER"
 
 
-class AdvertizerTargetingReport(PinterestAnalyticsTargetingReportStream):
+class AdvertiserTargetingReport(PinterestAnalyticsTargetingReportStream):
     @property
     def level(self):
         return "ADVERTISER_TARGETING"
