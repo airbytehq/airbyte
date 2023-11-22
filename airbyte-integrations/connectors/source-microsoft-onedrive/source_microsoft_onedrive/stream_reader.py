@@ -54,7 +54,6 @@ class MicrosoftOneDriveClient:
         scope = ["https://graph.microsoft.com/.default"]
         refresh_token = self.config.credentials.refresh_token
 
-        result = None
         if refresh_token:
             result = self.msal_app.acquire_token_by_refresh_token(refresh_token, scopes=scope)
         else:
