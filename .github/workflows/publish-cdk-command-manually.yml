@@ -416,7 +416,7 @@ jobs:
         with:
           repository: airbytehq/airbyte
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          branch: flash1293/auto-bump-${{needs.bump-version.outputs.new_cdk_version}}
+          ref: flash1293/auto-bump-${{needs.bump-version.outputs.new_cdk_version}}
       - name: Bump connector versions and changelog
         run: |
           pipx install --editable --force airbyte-ci/connectors/pipelines/
