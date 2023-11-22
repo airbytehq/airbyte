@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="INFO">
-
+  <Properties>
+    <Property name="enabledAppender">${env:CONNECTOR_LOG4J_APPENDER:-ConsoleJSONAppender}</Property>
+  </Properties>
   <Appenders>
     <Console name="ConsoleJSONAppender" target="SYSTEM_OUT">
       <!--#30781 - we set log4j's ConsoleAppender to use a buffer of 32KB. In order to ensure that the log write out is atomic-->
@@ -8,10 +10,23 @@
       <!-- this will ensure that we stay below 32768 characters-->
       <JsonTemplateLayout eventTemplateUri="classpath:AirbyteLogMessageTemplate.json" maxStringLength="16000"/>
     </Console>
+    <appender name="RELAY" class="org.apache.log4j.net.SocketAppender">
+      <param name="Port" value="${env:PLATFORM_LOGGING_SERVER_PORT:-80}" />
+      <param name="RemoteHost" value="${env:PLATFORM_SERVER_HOST:-localhost}" />
+      <param name="ReconnectionDelay" value="${env:PLATFORM_SERVER_RECONNECT_DELAY:-10000}" />
+      <param name="Threshold" value="${env:LOG_LEVEL:-INFO}" />
+    </appender>
+<!--    <appender name="RELAY_ERROR" class="org.apache.log4j.net.SocketAppender">-->
+<!--      <param name="Port" value="${env:PLATFORM_LOGGING_ERROR_SERVER_PORT:-80}" />-->
+<!--      <param name="RemoteHost" value="${env:PLATFORM_SERVER_HOST:-localhost}" />-->
+<!--      <param name="ReconnectionDelay" value="${env:PLATFORM_SERVER_RECONNECT_DELAY:-10000}" />-->
+<!--      <param name="Threshold" value="ERROR}" />-->
+<!--    </appender>-->
   </Appenders>
   <Loggers>
     <Root level="INFO" additivity="false">
-      <AppenderRef ref="ConsoleJSONAppender"/>
+      <AppenderRef ref="${enabledAppender}"/>
+<!--      <AppenderRef ref="RELAY_ERROR" />-->
     </Root>
   </Loggers>
 </Configuration>
