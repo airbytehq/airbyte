@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import List, Union
+from typing import Any, List, Union
 
 from airbyte_cdk.models import AirbyteMessage, FailureType
 from airbyte_cdk.utils import AirbyteTracedException
@@ -48,7 +48,7 @@ class FileBasedErrorsCollector:
 
     errors: List[AirbyteMessage] = []
 
-    def yield_and_raise_collected(self) -> Union[AirbyteMessage, AirbyteTracedException]:
+    def yield_and_raise_collected(self) -> Any:
         if self.errors:
             # emit the collected messages
             yield from self._yield_and_clean()
