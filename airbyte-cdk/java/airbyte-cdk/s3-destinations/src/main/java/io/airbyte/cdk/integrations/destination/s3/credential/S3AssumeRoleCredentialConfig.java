@@ -6,10 +6,8 @@ package io.airbyte.cdk.integrations.destination.s3.credential;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
 import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
 
@@ -48,9 +46,7 @@ public class S3AssumeRoleCredentialConfig implements S3CredentialConfig {
         new BasicSessionCredentials(
             credentials.getAccessKeyId(),
             credentials.getSecretAccessKey(),
-            credentials.getSessionToken()
-        )
-    );
+            credentials.getSessionToken()));
   }
 
 }
