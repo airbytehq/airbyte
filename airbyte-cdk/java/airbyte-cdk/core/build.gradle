@@ -36,6 +36,8 @@ dependencies {
     // SSH dependencies
     implementation 'net.i2p.crypto:eddsa:0.3.0'
 
+    implementation group: 'io.netty', name: 'netty-all', version: '4.1.86.Final'
+
     // First party test dependencies
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:db-sources'))

@@ -9,6 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import datadog.trace.api.Trace;
+import io.airbyte.cdk.integrations.base.DestinationListener.DestinationListenerHandler;
 import io.airbyte.cdk.integrations.util.ApmTraceUtils;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.cdk.integrations.util.concurrent.ConcurrentStreamConsumer;
@@ -26,6 +27,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -182,10 +184,14 @@ public class IntegrationRunner {
           // save config to singleton
           DestinationConfig.initialize(config);
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-
+          DestinationListener destinationListener = null;
           try (final SerializedAirbyteMessageConsumer consumer = destination.getSerializedMessageConsumer(config, catalog, outputRecordCollector)) {
-            consumeWriteStream(consumer);
+            String portString = System.getenv("DESTINATION_PORT");
+            int port = portString != null ? Integer.parseInt(portString) : 5678;
+            destinationListener = startServer(consumer, port);
+            destinationListener.run();
           } finally {
+            destinationListener.stop();
             stopOrphanedThreads(EXIT_HOOK,
                 INTERRUPT_THREAD_DELAY_MINUTES,
                 TimeUnit.MINUTES,
@@ -298,12 +304,24 @@ public class IntegrationRunner {
     }
   }
 
+  static DestinationListener startServer(final SerializedAirbyteMessageConsumer consumer, final int port) throws Exception {
+//    consumer.start();
+    final DestinationListenerHandler handler = new DestinationListenerHandler(inputStream -> {
+      try {
+        consumeWriteStream(consumer, inputStream, new ByteArrayOutputStream());
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }, consumer);
+    final DestinationListener destinationListener = new DestinationListener(port, handler);
+    return destinationListener;
+  }
+
   @VisibleForTesting
   static void consumeWriteStream(final SerializedAirbyteMessageConsumer consumer,
-                                 final BufferedInputStream bis,
+                                 final InputStream bis,
                                  final ByteArrayOutputStream baos)
       throws Exception {
-    consumer.start();
 
     final byte[] buffer = new byte[8192]; // 8K buffer
     int bytesRead;
