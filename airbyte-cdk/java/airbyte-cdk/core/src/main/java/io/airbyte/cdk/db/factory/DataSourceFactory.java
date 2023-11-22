@@ -11,6 +11,8 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.io.Closeable;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
@@ -203,24 +205,36 @@ public class DataSourceFactory {
      * @return DataSourceBuilder class used to create dynamic fields for DataSource
      */
     private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties, String driverClassName) {
-      final Optional<Duration> connectionTimeout = switch (DatabaseDriver.findByDriverClassName(driverClassName)) {
-        case POSTGRESQL -> getConnectionTimeoutValue(connectionProperties, CONNECT_TIMEOUT.getName())
-            .or(() -> Optional.ofNullable(CONNECT_TIMEOUT.getDefaultValue()).map(Long::parseLong))
-            .map(Duration::ofSeconds);
-        case MYSQL -> getConnectionTimeoutValue(connectionProperties, "connectTimeout").map(Duration::ofMillis);
-        case MSSQLSERVER -> getConnectionTimeoutValue(connectionProperties, "loginTimeout").map(Duration::ofSeconds);
-        default -> Optional.ofNullable(connectionProperties.get(CONNECT_TIMEOUT_KEY))
-            .map(Long::parseLong)
-            .map(Duration::ofSeconds)
-            .filter(d -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0);
+      final Optional<Duration> parsedConnectionTimeout = switch (DatabaseDriver.findByDriverClassName(driverClassName)) {
+        case POSTGRESQL ->
+            maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT.getName()), ChronoUnit.SECONDS)
+                .or(() -> maybeParseDuration(CONNECT_TIMEOUT.getDefaultValue(), ChronoUnit.SECONDS));
+        case MYSQL ->
+            maybeParseDuration(connectionProperties.get("connectTimeout"), ChronoUnit.MILLIS);
+        case MSSQLSERVER ->
+            maybeParseDuration(connectionProperties.get("loginTimeout"), ChronoUnit.SECONDS);
+        default ->
+            maybeParseDuration(connectionProperties.get(CONNECT_TIMEOUT_KEY), ChronoUnit.SECONDS)
+                // Enforce minimum timeout duration for unspecified data sources.
+                .filter(d -> d.compareTo(CONNECT_TIMEOUT_DEFAULT) >= 0);
       };
-      return connectionTimeout.orElse(CONNECT_TIMEOUT_DEFAULT).toMillis();
+      return parsedConnectionTimeout.orElse(CONNECT_TIMEOUT_DEFAULT).toMillis();
     }
 
-    private static Optional<Long> getConnectionTimeoutValue(final Map<String, String> connectionProperties, final String key) {
-      return Optional.ofNullable(connectionProperties.get(key))
-          .map(Long::parseLong)
-          .filter(v -> v >= 0);
+    private static Optional<Duration> maybeParseDuration(final String stringValue, TemporalUnit unit) {
+      if (stringValue == null) {
+        return Optional.empty();
+      }
+      final long seconds;
+      try {
+        seconds = Long.parseLong(stringValue);
+      } catch (NumberFormatException __) {
+        return Optional.empty();
+      }
+      if (seconds < 0) {
+        return Optional.empty();
+      }
+      return Optional.of(Duration.of(seconds, unit));
     }
 
     public DataSourceBuilder withConnectionProperties(final Map<String, String> connectionProperties) {
