@@ -138,7 +138,9 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
         .with("GRANT SELECT ON SCHEMA :: [%s] TO %s", modelsSchema(), testUserName())
         .with("GRANT SELECT ON SCHEMA :: [%s] TO %s", randomSchema(), testUserName())
         .with("GRANT SELECT ON SCHEMA :: [cdc] TO %s", testUserName())
+        .with("USE [master]")
         .with("GRANT VIEW SERVER STATE TO %s", testUserName())
+        .with("USE [%s]", testdb.getDatabaseName())
         .with("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testUserName());
 
     testDataSource = DataSourceFactory.create(
