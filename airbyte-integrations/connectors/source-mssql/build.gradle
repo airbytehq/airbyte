@@ -15,7 +15,7 @@ configurations.all {
     }
 }
 
-airbyteJavaConnector.addCdkDependencies()
+
 
 application {
     mainClass = 'io.airbyte.integrations.source.mssql.MssqlSource'
