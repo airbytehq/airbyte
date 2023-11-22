@@ -120,7 +120,7 @@ More formats \(e.g. Apache Avro\) will be supported in the future.
 
 | Version | Date       | Pull Request                                              | Subject                       |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------- |
-| 0.1.3   | 2023-11-22 |  | Password field no longer throws exception when empty |
+| 0.1.3   | 2023-11-22 | [#32719](https://github.com/airbytehq/airbyte/pull/32719) | Password field no longer throws exception when empty |
 | 0.1.2   | 2023-04-19 | [#19224](https://github.com/airbytehq/airbyte/pull/19224) | Support custom CSV separators |
 | 0.1.1   | 2023-03-17 | [#24180](https://github.com/airbytehq/airbyte/pull/24180) | Fix field order               |
 | 0.1.0   | 2021-24-05 |                                                           | Initial version               |
