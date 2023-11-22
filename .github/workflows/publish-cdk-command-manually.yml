@@ -399,7 +399,6 @@ jobs:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Update CDK version
         run: |
-          pipx install --editable --force airbyte-ci/connectors/pipelines/
           python ./tools/bin/bump_cdk.py --selector=${{github.event.inputs.connector-selector}} --version="${{needs.bump-version.outputs.new_cdk_version}}"
       - name: Create Pull Request
         id: create-pull-request
@@ -412,6 +411,12 @@ jobs:
           branch: flash1293/auto-bump-${{needs.bump-version.outputs.new_cdk_version}}
           base: flash1293/auto-bump
           delete-branch: true
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: airbytehq/airbyte
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          branch: flash1293/auto-bump-${{needs.bump-version.outputs.new_cdk_version}}
       - name: Bump connector versions and changelog
         run: |
           pipx install --editable --force airbyte-ci/connectors/pipelines/
