@@ -170,7 +170,6 @@ public class WebBackendConnectionsHandler {
     LOGGER.info("buildWebBackendConnectionPageRead part 0 spends {} milliseconds", elapsedTimeInMilli);
 
     startTime = System.nanoTime();
-    final JobRead jobRead = getLatestSyncJob(connectionRead);
 
     elapsedTimeInNano = System.nanoTime() - startTime;
     elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
@@ -179,16 +178,19 @@ public class WebBackendConnectionsHandler {
     startTime = System.nanoTime();
     WebBackendConnectionPageRead webBackendConnectionPageRead = new WebBackendConnectionPageRead().connectionId(connectionRead.getConnectionId())
         .name(connectionRead.getName()).status(connectionRead.getStatus()).entityName(destinationDefinition.getName())
-        .connectorName(sourceDefinition.getName())
-        .isSyncing(!TERMINAL_STATUSES.contains(jobRead.getStatus()));
+        .connectorName(sourceDefinition.getName());
 
     elapsedTimeInNano = System.nanoTime() - startTime;
     elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
     LOGGER.info("buildWebBackendConnectionPageRead part 2 spends {} milliseconds", elapsedTimeInMilli);
 
     startTime = System.nanoTime();
-    webBackendConnectionPageRead.setLatestSyncJobCreatedAt(jobRead.getCreatedAt());
-    webBackendConnectionPageRead.setLatestSyncJobStatus(jobRead.getStatus());
+    final JobRead jobRead = getLatestSyncJob(connectionRead);
+    if (jobRead != null) {
+      webBackendConnectionPageRead.isSyncing(!TERMINAL_STATUSES.contains(jobRead.getStatus()));
+      webBackendConnectionPageRead.setLatestSyncJobCreatedAt(jobRead.getCreatedAt());
+      webBackendConnectionPageRead.setLatestSyncJobStatus(jobRead.getStatus());
+    }
 
     elapsedTimeInNano = System.nanoTime() - startTime;
     elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
@@ -286,8 +288,8 @@ public class WebBackendConnectionsHandler {
 
   private JobRead getLatestSyncJob(final ConnectionRead connectionRead) throws IOException {
     final JobListRequestBody jobRequestBody = new JobListRequestBody()
-            .configId(connectionRead.getConnectionId().toString())
-            .configTypes(Collections.singletonList(JobConfigType.SYNC));
+        .configId(connectionRead.getConnectionId().toString())
+        .configTypes(Collections.singletonList(JobConfigType.SYNC));
     return jobHistoryHandler.latestJobFor(jobRequestBody);
   }
 
