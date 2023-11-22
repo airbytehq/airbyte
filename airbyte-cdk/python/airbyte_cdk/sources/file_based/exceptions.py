@@ -3,8 +3,9 @@
 #
 
 from enum import Enum
-from typing import Union
+from typing import List, Union
 
+from airbyte_cdk.models import AirbyteMessage, FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -38,6 +39,35 @@ class FileBasedSourceError(Enum):
     MISSING_SCHEMA = "Expected `json_schema` in the configured catalog but it is missing."
     UNDEFINED_PARSER = "No parser is defined for this file type."
     UNDEFINED_VALIDATION_POLICY = "The validation policy defined in the config does not exist for the source."
+
+
+class FileBasedErrorsCollector:
+    """
+    The placeholder for all errors collected.
+    """
+
+    errors: List[AirbyteMessage] = []
+
+    def yield_and_raise_collected(self) -> Union[AirbyteMessage, AirbyteTracedException]:
+        if self.errors:
+            # emit the collected messages
+            yield from self._yield_and_clean()
+            # raising the single exception
+            raise AirbyteTracedException(
+                internal_message="Some errors occured while reading from the source.",
+                message="Please check the logged errors for more information.",
+                failure_type=FailureType.config_error,
+            )
+
+    def collect(self, logged_error: AirbyteMessage) -> None:
+        self.errors.append(logged_error)
+
+    def _yield_and_clean(self) -> AirbyteMessage:
+        for error in range(len(self.errors)):
+            # emit the logged message first
+            yield self.errors[error]
+            # clean the emitted logged message using index
+            self.errors.pop(error)
 
 
 class BaseFileBasedSourceError(Exception):

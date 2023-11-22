@@ -11,6 +11,7 @@ import pytest
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
+from airbyte_cdk.sources.file_based.exceptions import FileBasedErrorsCollector
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -89,6 +90,7 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
             parsers={MockFormat: self._parser},
             validation_policy=self._validation_policy,
             cursor=self._cursor,
+            errors_collector=FileBasedErrorsCollector(),
         )
 
     def test_when_read_records_from_slice_then_return_records(self) -> None:

@@ -729,9 +729,19 @@ invalid_csv_scenario: TestScenario[InMemoryFilesSource] = (
     )
     .set_expected_records([])
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_logs(
+        {
+            "read": [
+                {
+                    "level": "ERROR",
+                    "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.csv line_no=1 n_skipped=0",
+                },
+            ]
+        }
+    )
     .set_expected_read_error(
         AirbyteTracedException,
-        f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.csv line_no=1 n_skipped=0",
+        "Please check the logged errors for more information.",
     )
 ).build()
 
@@ -2056,6 +2066,10 @@ csv_newline_in_values_not_quoted_scenario: TestScenario[InMemoryFilesSource] = (
         f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.csv line_no=2 n_skipped=0",
     )
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_read_error(
+        AirbyteTracedException,
+        "Please check the logged errors for more information.",
+    )
 ).build()
 
 csv_escape_char_is_set_scenario: TestScenario[InMemoryFilesSource] = (

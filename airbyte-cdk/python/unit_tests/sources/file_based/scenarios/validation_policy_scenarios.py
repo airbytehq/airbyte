@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
+
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
@@ -275,7 +275,7 @@ skip_record_scenario_single_stream = (
     )
     .set_expected_read_error(
         AirbyteTracedException,
-        f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=c.csv line_no=2 n_skipped=0",
+        "Please check the logged errors for more information.",
     )
 ).build()
 
@@ -423,7 +423,7 @@ skip_record_scenario_multi_stream = (
     )
     .set_expected_read_error(
         AirbyteTracedException,
-        f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a/a3.csv line_no=2 n_skipped=0",
+        "Please check the logged errors for more information.",
     )
 ).build()
 
@@ -503,7 +503,7 @@ emit_record_scenario_single_stream = (
     )
     .set_expected_read_error(
         AirbyteTracedException,
-        f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=c.csv line_no=2 n_skipped=0",
+        "Please check the logged errors for more information.",
     )
 ).build()
 
@@ -641,7 +641,7 @@ emit_record_scenario_multi_stream = (
     )
     .set_expected_read_error(
         AirbyteTracedException,
-        f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a/a3.csv line_no=2 n_skipped=0",
+        "Please check the logged errors for more information.",
     )
 ).build()
 
