@@ -60,11 +60,11 @@ class PublishConnectorLifecycle:
     def _commit_link(commit_sha: str) -> str:
         """Create a markdown link to a commit."""
         commit_url = f"{REPO_URL}/commit/{commit_sha}"
-        return f" commit: <{commit_url}|{commit_sha}>"
+        return f"\ncommit: <{commit_url}|{commit_sha}>"
 
     def _user_mention(user_identifier: str) -> str:
         """Create a markdown link to a user."""
-        return f" author: {user_identifier}"
+        return f"\nauthor: {user_identifier}"
 
     @staticmethod
     def create_log_message(
@@ -75,7 +75,7 @@ class PublishConnectorLifecycle:
         user_identifier: str = None,
     ) -> str:
         emoji = stage_status.to_emoji()
-        final_message = f"*{emoji} _{lifecycle_stage}_ {stage_status}*: {message}."
+        final_message = f"*{emoji} _{lifecycle_stage}_ {stage_status}*:\n{message}"
 
         if user_identifier:
             final_message += PublishConnectorLifecycle._user_mention(user_identifier)

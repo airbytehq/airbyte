@@ -551,7 +551,7 @@ def registry_entry(
             context,
             PublishConnectorLifecycleStage.REGISTRY_ENTRY_GENERATION,
             StageStatus.SUCCESS,
-            f"Successfully generated {registry_name} registry entry for {metadata_entry.file_path} at {registry_url}",
+            f"Successfully generated {registry_name} registry entry for {metadata_entry.file_path} at {registry_url}.\n\n*This new Connector will be available for use in the platform on the next release (1-3 min)*",
             user_identifier=user_identifier,
             commit_sha=commit_sha,
         )
