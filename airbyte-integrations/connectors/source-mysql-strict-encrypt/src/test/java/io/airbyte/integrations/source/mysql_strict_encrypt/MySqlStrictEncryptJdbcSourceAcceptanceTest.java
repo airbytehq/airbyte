@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
@@ -78,6 +79,11 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .withConnectionProperty("useSSL", "true")
         .withConnectionProperty("requireSSL", "true")
         .initialized();
+  }
+
+  @Override
+  protected void maybeSetShorterConnectionTimeout(final JsonNode config) {
+    ((ObjectNode) config).put(JdbcUtils.JDBC_URL_PARAMS_KEY, "connectTimeout=1000");
   }
 
   // MySql does not support schemas in the way most dbs do. Instead we namespace by db name.
