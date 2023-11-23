@@ -3,7 +3,9 @@
 #
 
 import copy
+import json
 import xml.etree.ElementTree as ET
+from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 from urllib.parse import urlparse
 
@@ -11,9 +13,10 @@ import _csv
 import pendulum
 import pytest
 import source_bing_ads
+from airbyte_cdk.models import SyncMode
 from bingads.service_info import SERVICE_INFO_DICT_V13
-from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
 from bingads.v13.internal.reporting.row_report import _RowReport
+from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
 from source_bing_ads.base_streams import Accounts
 from source_bing_ads.report_streams import (
     AccountImpressionPerformanceReportDaily,
@@ -48,11 +51,7 @@ from source_bing_ads.report_streams import (
     UserLocationPerformanceReportHourly,
 )
 from source_bing_ads.source import SourceBingAds
-from airbyte_cdk.models import SyncMode
 from suds import WebFault
-from pathlib import Path
-import json
-
 
 TEST_CONFIG = {
     "developer_token": "developer_token",

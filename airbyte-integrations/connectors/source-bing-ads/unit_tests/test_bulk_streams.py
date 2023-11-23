@@ -11,7 +11,7 @@ import source_bing_ads
 from freezegun import freeze_time
 from pendulum import UTC, DateTime
 from source_bing_ads.base_streams import Accounts
-from source_bing_ads.bulk_streams import AppInstallAds, AppInstallAdLabels
+from source_bing_ads.bulk_streams import AppInstallAdLabels, AppInstallAds
 
 
 @patch.object(source_bing_ads.source, "Client")
