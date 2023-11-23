@@ -55,6 +55,11 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
     return true;
   }
 
+  @Override
+  protected void maybeSetShorterConnectionTimeout(final JsonNode config) {
+    ((ObjectNode) config).put(JdbcUtils.JDBC_URL_PARAMS_KEY, "loginTimeout=1");
+  }
+
   @Test
   void testCheckIncorrectPasswordFailure() throws Exception {
     final var config = config();
