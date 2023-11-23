@@ -10,11 +10,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 import responses
-from airbyte_cdk.models import SyncMode, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException, UserDefinedBackoffException
 from requests import HTTPError
 from responses import matchers
-from source_github import constants, SourceGithub
+from source_github import SourceGithub, constants
 from source_github.streams import (
     Branches,
     Collaborators,
