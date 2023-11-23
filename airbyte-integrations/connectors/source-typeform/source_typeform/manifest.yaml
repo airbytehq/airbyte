@@ -32,6 +32,14 @@ definitions:
     http_method: GET
     request_parameters: {}
     request_headers: {}
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - http_codes: [499]
+              action: FAIL
+              error_message: "Source Typeform was waiting to long time for response from Typeform API, please retry later."
     authenticator:
       class_name: source_typeform.components.TypeformAuthenticator
       token_auth: "#/definitions/token_auth"
