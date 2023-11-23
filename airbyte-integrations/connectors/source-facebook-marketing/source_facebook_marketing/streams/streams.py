@@ -215,6 +215,7 @@ class AdAccounts(FBMarketingStream):
 
     enable_deleted = False
     fields_exceptions = [
+        "owner",
         "capabilities",
         "failed_delivery_checks",
         "has_migrated_permissions",
