@@ -1,14 +1,17 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+from dataclasses import InitVar, dataclass
+from json.decoder import JSONDecodeError
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+
 import pendulum
 import requests
-import datetime
-from dataclasses import InitVar, dataclass
-from airbyte_cdk.sources.declarative.types import Config
-from typing import Any, Iterable, Mapping, Optional, Union, List, Tuple, MutableMapping
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from json.decoder import JSONDecodeError
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 DEFAULT_END_DATE = pendulum.yesterday().date()
 DEFAULT_CAMPAIGN_STATUS = "deleted,active,archived,dirty"
@@ -46,8 +49,8 @@ class ShortLivedTokenAuthenticator(DeclarativeAuthenticator):
                         params={
                             "client_id": self.config.get("credentials").get("client_id"),
                             "client_secret": self.config.get("credentials").get("client_secret"),
-                            "grant_type": "client_credentials"
-                        }
+                            "grant_type": "client_credentials",
+                        },
                     )
                     response.raise_for_status()
                     self._token = response.json().get("access_token")
@@ -56,12 +59,7 @@ class ShortLivedTokenAuthenticator(DeclarativeAuthenticator):
 
     def validate_token(self, access_token: str) -> bool:
         validate_url_auth = "https://oauth.audiencereport.com/oauth/validate_token"
-        response = requests.post(
-            url=validate_url_auth,
-            params={
-                "access_token": access_token
-            }
-        )
+        response = requests.post(url=validate_url_auth, params={"access_token": access_token})
         if response.status_code == 200:
             authorization = response.json().get("authorized")
             if not authorization:
@@ -81,8 +79,7 @@ class ShortLivedTokenAuthenticator(DeclarativeAuthenticator):
 
     @staticmethod
     def _get_time_interval(
-            starting_date: Union[pendulum.datetime, str],
-            ending_date: Union[pendulum.datetime, str]
+        starting_date: Union[pendulum.datetime, str], ending_date: Union[pendulum.datetime, str]
     ) -> Iterable[Tuple[pendulum.datetime, pendulum.datetime]]:
         if isinstance(starting_date, str):
             start_date = pendulum.parse(starting_date).date()
@@ -98,11 +95,11 @@ class ShortLivedTokenAuthenticator(DeclarativeAuthenticator):
         return start_date, end_date
 
     def get_request_params(
-            self,
-            *,
-            stream_state: Optional[StreamState] = None,
-            stream_slice: Optional[StreamSlice] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {"type": "all", "sortDirection": "asc"}
         params.update({"status": DEFAULT_CAMPAIGN_STATUS})
@@ -124,9 +121,7 @@ class CampaignsStreamPagination(PageIncrement):
         self.start_from_page = self.start
 
     def next_page_token(
-            self,
-            response: requests.Response,
-            last_records: List[Mapping[str, Any]]
+        self, response: requests.Response, last_records: List[Mapping[str, Any]]
     ) -> Optional[Tuple[Optional[int], Optional[int]]]:
         self.start_from_page += self.max_records
         record_len = len(last_records)

@@ -7,7 +7,9 @@
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append_dedup"
+      "destination_sync_mode": "append_dedup",
+      "cursor_field": [],
+      "primary_key": []
     },
     {
       "stream": {
@@ -205,7 +207,9 @@
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append_dedup"
+      "destination_sync_mode": "append_dedup",
+      "cursor_field": [],
+      "primary_key": []
     },
     {
       "stream": {
@@ -419,7 +423,9 @@
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append_dedup"
+      "destination_sync_mode": "append_dedup",
+      "cursor_field": [],
+      "primary_key": []
     },
     {
       "stream": {
@@ -581,7 +587,9 @@
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append_dedup"
+      "destination_sync_mode": "append_dedup",
+      "cursor_field": [],
+      "primary_key": []
     },
     {
       "stream": {
@@ -812,7 +820,9 @@
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append_dedup"
+      "destination_sync_mode": "append_dedup",
+      "cursor_field": [],
+      "primary_key": []
     }
   ]
 }
