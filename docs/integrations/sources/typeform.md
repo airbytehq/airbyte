@@ -90,7 +90,7 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
-| 1.1.3   | 2023-11-23 |                                                          | Add 499 status code handling                                                                    |
+| 1.1.3   | 2023-11-23 | [32775](https://github.com/airbytehq/airbyte/pull/32775) | Add 499 status code handling                                                                    |
 | 1.1.2   | 2023-10-27 | [31914](https://github.com/airbytehq/airbyte/pull/31914) | Fix pagination for stream Responses                                                             |
 | 1.1.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                 |
 | 1.1.0   | 2023-09-04 | [29916](https://github.com/airbytehq/airbyte/pull/29916) | Migrate to Low-Code Framework                                                                   |
