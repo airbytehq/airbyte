@@ -2,22 +2,25 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import traceback
 import unittest
 from datetime import datetime, timezone
 from typing import Any, Iterable, Iterator, Mapping
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import Level
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import FileBasedErrorsCollector
+from airbyte_cdk.sources.file_based.exceptions import FileBasedErrorsCollector, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.default_file_based_stream import DefaultFileBasedStream
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 class MockFormat:
@@ -166,3 +169,37 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
             if isinstance(item, Exception):
                 raise item
             yield item
+
+
+class TestFileBasedErrorCollector:
+
+    test_error_collector: FileBasedErrorsCollector = FileBasedErrorsCollector()
+
+    @pytest.mark.parametrize(
+        "stream, file, line_no, n_skipped",
+        (
+            ("stream_1", "test.csv", 1, 1),
+        ),
+    )
+    def test_collect_parsing_error(self, stream, file, line_no, n_skipped) -> None:
+        test_error_pattern = "Error parsing record."
+        # format the error body
+        test_error = AirbyteMessage(
+            type=MessageType.LOG,
+            log=AirbyteLogMessage(
+                level=Level.ERROR,
+                message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={stream} file={file} line_no={line_no} n_skipped={n_skipped}",
+                stack_trace=traceback.format_exc(),
+            ),
+        ),
+        # collecting the error
+        self.test_error_collector.collect(test_error)
+        # check for the patern presence for the collected errors
+        for error in self.test_error_collector.errors:
+            assert test_error_pattern in error[0].log.message
+
+    def test_yield_and_raise_collected(self) -> None:
+        # we expect the following method will raise the AirbyteTracedException
+        with pytest.raises(AirbyteTracedException) as parse_error:
+            list(self.test_error_collector.yield_and_raise_collected())
+        assert parse_error.value.message == "Please check the logged errors for more information."
