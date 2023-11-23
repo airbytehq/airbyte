@@ -359,7 +359,7 @@ class SegmentMembers(MailChimpListSubStream):
         SegmentMember records may contain multiple fields that are returned as empty strings, which causes validation issues for fields with declared "datetime" formats.
         Since all fields are nullable, replacing any string value of "" with None is a safe way to handle these edge cases.
 
-        :param element: A single SegmentMember record, dictionary or list
+        :param element: A SegmentMember record, dictionary or list
         """
 
         if isinstance(element, dict):
@@ -367,10 +367,10 @@ class SegmentMembers(MailChimpListSubStream):
             # replacing the empty string value with None.
             return {k: self.nullify_empty_string_fields(v) if v != "" else None for k, v in element.items()}
         elif isinstance(element, list):
-            # If the element is a list, apply the method recursively to each element in the list.
+            # If the element is a list, apply the method recursively to each item in the list.
             return [self.nullify_empty_string_fields(v) for v in element]
         else:
-            # If the element is not a dictionary or list, return the element as is.
+            # Otherwise, return it as is.
             return element
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
