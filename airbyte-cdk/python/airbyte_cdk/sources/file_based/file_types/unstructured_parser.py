@@ -2,18 +2,20 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
+import requests
+import dpath.util
 from io import BytesIO, IOBase
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat
+from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat, APIProcessingConfigModel, APIParameterConfigModel
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
 from unstructured.documents.elements import Formula, ListItem, Title
-from unstructured.file_utils.filetype import STR_TO_FILETYPE, FileType, detect_filetype
+from unstructured.file_utils.filetype import STR_TO_FILETYPE, FILETYPE_TO_MIMETYPE, FileType, detect_filetype
 
 unstructured_partition_pdf = None
 unstructured_partition_docx = None
@@ -91,6 +93,59 @@ class UnstructuredParser(FileTypeParser):
                 }
 
     def _read_file(self, file_handle: IOBase, remote_file: RemoteFile, format: UnstructuredFormat, logger: logging.Logger) -> Optional[str]:
+        filetype = self._get_filetype(file_handle, remote_file)
+
+        if filetype == FileType.MD:
+            file_content: bytes = file_handle.read()
+            decoded_content: str = unstructured_optional_decode(file_content)
+            return decoded_content
+        if filetype not in self._supported_file_types():
+            self._handle_unprocessable_file(remote_file, format.skip_unprocessable_file_types, logger)
+            return None
+        if format.processing.mode == "local":
+            return self._read_file_locally(file_handle, filetype)
+        elif format.processing.mode == "api":
+            return self._read_file_remotely(file_handle, format.processing, filetype)
+    
+    def _params_to_dict(self, params: List[APIParameterConfigModel]) -> Dict[str, str]:
+        result_dict = {}
+        for item in params:
+            key = item["name"]
+            value = item["value"]
+            if key in result_dict:
+                # If the key already exists, append the new value to its list
+                if isinstance(result_dict[key], list):
+                    result_dict[key].append(value)
+                else:
+                    result_dict[key] = [result_dict[key], value]
+            else:
+                # If the key doesn't exist, add it to the dictionary
+                result_dict[key] = value
+        
+        return result_dict
+
+
+    def _read_file_remotely(self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType) -> Optional[str]:
+        headers = {
+            'accept': 'application/json',
+            'unstructured-api-key': format.api_key
+        }
+
+        data = self._params_to_dict(format.parameters)
+
+        file_data = {'files': ("filename", file_handle, FILETYPE_TO_MIMETYPE[filetype])}
+        # print(requests.Request('POST', 'http://example.com', files=file_data).prepare().body)
+
+        response = requests.post(f"{format.api_url}/general/v0/general", headers=headers, data=data, files=file_data)
+
+        json_response = response.json()
+
+        if response.status_code == 200:
+            return self._render_markdown(json_response)
+        else:
+            raise Exception(f"Unstructured API returned an error: {json_response}")
+
+    def _read_file_locally(self, file_handle: IOBase, filetype: FileType) -> Optional[str]:
         _import_unstructured()
         if (
             (not unstructured_partition_pdf)
@@ -100,16 +155,6 @@ class UnstructuredParser(FileTypeParser):
         ):
             # check whether unstructured library is actually available for better error message and to ensure proper typing (can't be None after this point)
             raise Exception("unstructured library is not available")
-
-        filetype = self._get_filetype(file_handle, remote_file)
-
-        if filetype == FileType.MD:
-            file_content: bytes = file_handle.read()
-            decoded_content: str = unstructured_optional_decode(file_content)
-            return decoded_content
-        if filetype not in self._supported_file_types():
-            self._handle_unprocessable_file(remote_file, format, logger)
-            return None
 
         file: Any = file_handle
         if filetype == FileType.PDF:
@@ -123,10 +168,10 @@ class UnstructuredParser(FileTypeParser):
         elif filetype == FileType.PPTX:
             elements = unstructured_partition_pptx(file=file)
 
-        return self._render_markdown(elements)
+        return self._render_markdown([element.to_dict() for element in elements])
 
-    def _handle_unprocessable_file(self, remote_file: RemoteFile, format: UnstructuredFormat, logger: logging.Logger) -> None:
-        if format.skip_unprocessable_file_types:
+    def _handle_unprocessable_file(self, remote_file: RemoteFile, skip_unprocessable_file_types: bool, logger: logging.Logger) -> None:
+        if skip_unprocessable_file_types:
             logger.warn(f"File {remote_file.uri} cannot be parsed. Skipping it.")
         else:
             raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=remote_file.uri)
@@ -166,19 +211,19 @@ class UnstructuredParser(FileTypeParser):
     def _supported_file_types(self) -> List[Any]:
         return [FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX]
 
-    def _render_markdown(self, elements: List[Any]) -> str:
+    def _render_markdown(self, elements: List[Dict[str, Any]]) -> str:
         return "\n\n".join((self._convert_to_markdown(el) for el in elements))
 
-    def _convert_to_markdown(self, el: Any) -> str:
-        if isinstance(el, Title):
-            heading_str = "#" * (el.metadata.category_depth or 1)
-            return f"{heading_str} {el.text}"
-        elif isinstance(el, ListItem):
-            return f"- {el.text}"
-        elif isinstance(el, Formula):
-            return f"```\n{el.text}\n```"
+    def _convert_to_markdown(self, el: Dict[str, Any]) -> str:
+        if dpath.util.get(el, "type") == "Title":  
+            heading_str = "#" * (dpath.util.get(el, "metadata.category_depth", default=1))
+            return f"{heading_str} {dpath.util.get(el, 'text')}"
+        elif dpath.util.get(el, "type") == "ListItem":  
+            return f"- {dpath.util.get(el, 'text')}"
+        elif dpath.util.get(el, "type") == "Formula":  
+            return f"```\n{dpath.util.get(el, 'text')}\n```"
         else:
-            return str(el.text) if hasattr(el, "text") else ""
+            return dpath.util.get(el, 'text', default="")
 
     @property
     def file_read_mode(self) -> FileReadMode:
