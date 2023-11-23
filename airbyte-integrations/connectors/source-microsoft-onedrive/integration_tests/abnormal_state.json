@@ -1,5 +1,16 @@
-{
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "test_stream"
+      },
+      "stream_state": {
+        "_ab_source_file_last_modified": "2023-12-23T06:49:25.000000Z_TestFileOneDrive.csv",
+        "history": {
+          "TestFileOneDrive.csv": "2023-12-23T06:49:25.000000Z"
+        }
+      }
+    }
   }
-}
+]

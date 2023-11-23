@@ -2,7 +2,7 @@
   "documentationUrl" : "https://docs.airbyte.com/integrations/sources/one-drive",
   "connectionSpecification" : {
     "title" : "Microsoft OneDrive Source Spec",
-    "description" : "Used during spec; allows the developer to configure the cloud provider specific options\nthat are needed when users configure a file-based source.",
+    "description" : "SourceMicrosoftOneDriveSpec class for Microsoft OneDrive Source Specification.\nThis class combines the authentication details with additional configuration for the OneDrive API.",
     "type" : "object",
     "properties" : {
       "start_date" : {
@@ -347,6 +347,7 @@
         "oneOf" : [
           {
             "title" : "Authenticate via Microsoft (OAuth)",
+            "description" : "OAuthCredentials class to hold authentication details for Microsoft OAuth authentication.\nThis class uses pydantic for data validation and settings management.",
             "type" : "object",
             "properties" : {
               "auth_type" : {
@@ -360,7 +361,7 @@
               },
               "tenant_id" : {
                 "title" : "Tenant ID",
-                "description" : "Directory (tenant) ID",
+                "description" : "Tenant ID of the Microsoft OneDrive user",
                 "type" : "string"
               },
               "client_id" : {
@@ -390,7 +391,8 @@
             ]
           },
           {
-            "title" : "Service Account Key Authentication",
+            "title" : "Service Key Authentication",
+            "description" : "ServiceCredentials class for service key authentication.\nThis class is structured similarly to OAuthCredentials but for a different authentication method.",
             "type" : "object",
             "properties" : {
               "auth_type" : {
@@ -402,22 +404,43 @@
                 ],
                 "type" : "string"
               },
-              "service_account_info" : {
-                "title" : "Service Account Information",
+              "tenant_id" : {
+                "title" : "Tenant ID",
+                "description" : "Tenant ID of the Microsoft OneDrive user",
+                "type" : "string"
+              },
+              "client_id" : {
+                "title" : "Client ID",
+                "description" : "Client ID of your Microsoft developer application",
+                "airbyte_secret" : true,
+                "type" : "string"
+              },
+              "client_secret" : {
+                "title" : "Client Secret",
+                "description" : "Client Secret of your Microsoft developer application",
                 "airbyte_secret" : true,
                 "type" : "string"
               }
             },
             "required" : [
-              "service_account_info"
+              "tenant_id",
+              "client_id",
+              "client_secret"
             ]
           }
         ]
+      },
+      "drive_name" : {
+        "title" : "Drive Name",
+        "description" : "Name of the Microsoft OneDrive drive where the file(s) exist.",
+        "order" : 1,
+        "type" : "string"
       }
     },
     "required" : [
       "streams",
-      "credentials"
+      "credentials",
+      "drive_name"
     ]
   },
   "advanced_auth" : {

@@ -11,6 +11,7 @@ from typing import Iterable, List, Optional
 import smart_open
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from msal import ConfidentialClientApplication
 from msal.exceptions import MsalServiceError
 from office365.graph_client import GraphClient
@@ -104,10 +105,12 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
                 found_items.extend(self.list_directories_and_files(item))
         return found_items
 
-    def get_files(self, drives):
-        """Yields files from the specified drives."""
+    def get_files_by_drive_name(self, drives, drive_name):
+        """Yields files from the specified drive."""
         for drive in drives:
-            yield from self.list_directories_and_files(drive.root)
+            is_onedrive = drive.drive_type in ["personal", "business"]
+            if drive.name == drive_name and is_onedrive:
+                yield from self.list_directories_and_files(drive.root)
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
@@ -117,12 +120,40 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
         drives = self.one_drive_client.drives.get().execute_query()
         drives.add_child(my_drive)
 
-        files = self.get_files(drives)
-        yield from self.filter_files_by_globs_and_start_date([
-            MicrosoftOneDriveRemoteFile(uri=file.name, download_url=file.properties["@microsoft.graph.downloadUrl"],
-                                        last_modified=file.properties["lastModifiedDateTime"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"))
-            for file in files
-        ], globs)
+        files = self.get_files_by_drive_name(drives, self.config.drive_name)
+
+        try:
+            first_file = next(files)
+            yield from self.filter_files_by_globs_and_start_date(
+                [
+                    MicrosoftOneDriveRemoteFile(
+                        uri=first_file.name,
+                        download_url=first_file.properties["@microsoft.graph.downloadUrl"],
+                        last_modified=first_file.properties["lastModifiedDateTime"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    )
+                ],
+                globs,
+            )
+
+        except StopIteration as e:
+            raise AirbyteTracedException(
+                internal_message=str(e),
+                message=f"Drive '{self.config.drive_name}' is empty or does not exist.",
+                failure_type=FailureType.config_error,
+                exception=e,
+            )
+
+        yield from self.filter_files_by_globs_and_start_date(
+            [
+                MicrosoftOneDriveRemoteFile(
+                    uri=file.name,
+                    download_url=file.properties["@microsoft.graph.downloadUrl"],
+                    last_modified=file.properties["lastModifiedDateTime"].strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                )
+                for file in files
+            ],
+            globs,
+        )
 
     @contextmanager
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:

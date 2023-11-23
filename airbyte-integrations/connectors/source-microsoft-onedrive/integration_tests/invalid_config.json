@@ -1,3 +1,20 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "credentials" : {
+    "auth_type": "Client",
+    "client_id" : "client_id",
+    "tenant_id" : "tenant_id",
+    "client_secret" : "client_secret",
+    "refresh_token" : "refresh_token"
+  },
+  "drive_name": "Name",
+  "streams" : [
+    {
+      "name" : "test_stream",
+      "globs" : ["*.csv"],
+      "validation_policy" : "Emit Record",
+      "format" : {
+        "filetype" : "csv"
+      }
+    }
+  ]
 }
