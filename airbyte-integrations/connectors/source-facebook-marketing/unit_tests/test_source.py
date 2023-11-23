@@ -54,6 +54,13 @@ def api_fixture(mocker):
     return api_mock
 
 
+@pytest.fixture(name="api_find_account")
+def api_fixture_find_account(mocker):
+    api_mock = mocker.patch("source_facebook_marketing.source.API._find_account")
+    api_mock.return_value = "1234"
+    return api_mock
+
+
 @pytest.fixture(name="logger_mock")
 def logger_mock_fixture(mocker):
     return mocker.patch("source_facebook_marketing.source.logger")
@@ -68,6 +75,15 @@ class TestSourceFacebookMarketing:
     def test_check_connection_ok(self, config, logger_mock, fb_marketing):
         ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
 
+        assert ok
+        assert not error_msg
+
+    def test_check_connection_find_account_was_called(self, api_find_account, config, logger_mock, fb_marketing):
+        """Check if _find_account was called to validate credentials"""
+        ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+        api_find_account.assert_called_once_with(config["account_id"])
+        logger_mock.info.assert_called_once_with("Select account 1234")
         assert ok
         assert not error_msg
 
