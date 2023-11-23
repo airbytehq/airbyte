@@ -189,11 +189,11 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     // Redshift SUPER can silently cast an array type to struct and vice versa.
     return switch (type.getTypeName()) {
       case Struct.TYPE, UnsupportedOneOf.TYPE -> field(CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
-                                                       jsonTypeOf(field).eq("object"),
-                                                       cast(field, getStructType())).as(field.getName());
+          jsonTypeOf(field).eq("object"),
+          cast(field, getStructType())).as(field.getName());
       case Array.TYPE -> field(CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
-                               jsonTypeOf(field).eq("array"),
-                               cast(field, getArrayType())).as(field.getName());
+          jsonTypeOf(field).eq("array"),
+          cast(field, getArrayType())).as(field.getName());
       // No nested Unions supported so this will definitely not result in infinite recursion.
       case Union.TYPE -> castedField(field, ((Union) type).chooseType());
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
@@ -235,8 +235,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     final Field<?> field = field(quotedName(COLUMN_NAME_DATA, column.name()));
     final Condition typeCheckCondition = typeCheckCondition(field, type);
     return field(CASE_STATEMENT_SQL_TEMPLATE,
-                 field.isNotNull().and(castedField(field, type).isNull()),
-                 function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT.formatted(column.name()))), field("ARRAY()"));
+        field.isNotNull().and(castedField(field, type).isNull()),
+        function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT.formatted(column.name()))), field("ARRAY()"));
   }
 
   // Sadly can't reuse the toDialectType because it returns Generics of DataType<?>
