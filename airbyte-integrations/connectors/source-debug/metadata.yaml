@@ -1,0 +1,29 @@
+data:
+  allowedHosts:
+    hosts: []
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:9a1835a40f221aac8bae19f8422132949ff045164a0d448a60750c5370bffc9f
+  connectorSubtype: api
+  connectorType: source
+  definitionId: a2bb18db-5944-4a69-a066-c92b4774395d
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-debug
+  githubIssueLabel: source-debug
+  icon: debug.svg
+  license: MIT
+  name: Debug
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/debug
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
