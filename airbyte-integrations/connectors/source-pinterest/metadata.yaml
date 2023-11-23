@@ -22,7 +22,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: "This release updates the date-time fields to use the Airbyte format `timestamp_without_timezone`. This change affects all streams where date-time fields are present, ensuring more accurate and standardized time representations: BoardPins, BoardSectionPins, Boards, Catalogs, and CatalogFeeds. Users will need to refresh the source schema and reset affected streams after upgrading."
+        message: "This release updates the date-time fields to use the Airbyte format `timestamp_without_timezone`. This change affects all streams where date-time fields are present, ensuring more accurate and standardized time representations: BoardPins, BoardSectionPins, Boards, Catalogs, and CatalogFeeds. Additionally, the stream names AdvertizerReport and AdvertizerTargetingReport have been renamed to AdvertiserReport and AdvertiserTargetingReport, respectively. Users will need to refresh the source schema and reset affected streams after upgrading."
         upgradeDeadline: "2023-12-14"
   suggestedStreams:
     streams:
