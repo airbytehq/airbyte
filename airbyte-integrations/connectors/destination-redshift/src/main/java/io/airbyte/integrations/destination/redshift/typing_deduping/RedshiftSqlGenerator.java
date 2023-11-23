@@ -70,6 +70,8 @@ import org.jooq.impl.SQLDataType;
 
 public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
+  public static final String CASE_STATEMENT_SQL_TEMPLATE = "CASE WHEN {0} THEN {1} ELSE {2} END ";
+  public static final String CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE = "CASE WHEN {0} THEN {1} END ";
   private static final Map<String, String> REDSHIFT_TYPE_NAME_TO_JDBC_TYPE = ImmutableMap.of(
       "float8", "float",
       "int8", "bigint",
@@ -174,10 +176,36 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     final List<Field<?>> dataFields = columns
         .entrySet()
         .stream()
-        .map(column -> cast(field(quotedName(COLUMN_NAME_DATA, column.getKey().name())), toDialectType(column.getValue())))
+        .map(column -> castedField(field(quotedName(COLUMN_NAME_DATA, column.getKey().name())), column.getValue()))
         .collect(Collectors.toList());
     dataFields.addAll(fields);
     return dataFields;
+  }
+
+  private Field<?> castedField(final Field<?> field, final AirbyteType type) {
+    if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
+      return castedField(field, airbyteProtocolType);
+    }
+    // Redshift SUPER can silently cast an array type to struct and vice versa.
+    return switch (type.getTypeName()) {
+      case Struct.TYPE, UnsupportedOneOf.TYPE -> field(CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
+                                                       jsonTypeOf(field).eq("object"),
+                                                       cast(field, getStructType())).as(field.getName());
+      case Array.TYPE -> field(CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
+                               jsonTypeOf(field).eq("array"),
+                               cast(field, getArrayType())).as(field.getName());
+      // No nested Unions supported so this will definitely not result in infinite recursion.
+      case Union.TYPE -> castedField(field, ((Union) type).chooseType());
+      default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
+    };
+  }
+
+  private Field<?> castedField(final Field<?> field, final AirbyteProtocolType type) {
+    return cast(field, toDialectType(type));
+  }
+
+  private Field<String> jsonTypeOf(final Field<?> field) {
+    return function("JSON_TYPEOF", SQLDataType.VARCHAR, field);
   }
 
   /**
@@ -204,12 +232,11 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   Field<?> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
-    final String caseStatementSqlTemplate = "CASE WHEN {0} THEN {1} ELSE {2} END ";
     final Field<?> field = field(quotedName(COLUMN_NAME_DATA, column.name()));
     final Condition typeCheckCondition = typeCheckCondition(field, type);
-    return field(caseStatementSqlTemplate,
-        field.isNotNull().and(typeCheckCondition).and(cast(field, toDialectType(type)).isNull()),
-        function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT.formatted(column.name()))), field("ARRAY()"));
+    return field(CASE_STATEMENT_SQL_TEMPLATE,
+                 field.isNotNull().and(castedField(field, type).isNull()),
+                 function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT.formatted(column.name()))), field("ARRAY()"));
   }
 
   // Sadly can't reuse the toDialectType because it returns Generics of DataType<?>
@@ -218,8 +245,8 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
       return typeCheckCondition(field, airbyteProtocolType);
     }
     return switch (type.getTypeName()) {
-      case Struct.TYPE, UnsupportedOneOf.TYPE -> function("JSON_TYPEOF", SQLDataType.VARCHAR, field).eq("object");
-      case Array.TYPE -> function("JSON_TYPEOF", SQLDataType.VARCHAR, field).eq("array");
+      case Struct.TYPE, UnsupportedOneOf.TYPE -> jsonTypeOf(field).eq("object");
+      case Array.TYPE -> jsonTypeOf(field).eq("array");
       // No nested Unions supported so this will definitely not result in infinite recursion.
       case Union.TYPE -> typeCheckCondition(field, ((Union) type).chooseType());
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);

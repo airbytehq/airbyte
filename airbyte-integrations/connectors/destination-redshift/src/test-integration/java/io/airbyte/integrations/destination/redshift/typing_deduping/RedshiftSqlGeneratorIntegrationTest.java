@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
+import static io.airbyte.cdk.db.jdbc.DateTimeConverter.putJavaSQLTime;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_ID;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT;
@@ -17,8 +18,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition;
@@ -31,7 +35,13 @@ import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.JDBCType;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -48,6 +58,69 @@ import org.junit.jupiter.api.Test;
 
 public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<TableDefinition> {
 
+  public static class RedshiftSourceOperations extends JdbcSourceOperations {
+
+    @Override
+    public void copyToJsonField(ResultSet resultSet, int colIndex, ObjectNode json) throws SQLException {
+      final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
+      final String columnName = resultSet.getMetaData().getColumnName(colIndex);
+      final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
+      final JDBCType columnType = safeGetJdbcType(columnTypeInt);
+
+      switch (columnTypeName) {
+        case "super" -> json.set(columnName, Jsons.deserializeExact(resultSet.getString(colIndex)));
+        case "timetz" -> putTimeWithTimezone(json, columnName, resultSet, colIndex);
+        case "timestamptz" -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
+        default -> super.copyToJsonField(resultSet, colIndex, json);
+      }
+    }
+
+    protected void putTimeWithTimezone(final ObjectNode node,
+                                     final String columnName,
+                                     final ResultSet resultSet,
+                                     final int index) throws SQLException {
+      Object object = resultSet.getObject(index);
+      if (object == null) {
+        object = resultSet.getTime(index);
+        return;
+      }
+
+      final OffsetTime offsetTime = resultSet.getTimestamp(index).toInstant().atOffset(ZoneOffset.UTC).toOffsetTime();
+      node.put(columnName, DateTimeConverter.convertToTimeWithTimezone(offsetTime));
+    }
+
+    @Override
+    protected void putTime(final ObjectNode node,
+                           final String columnName,
+                           final ResultSet resultSet,
+                           final int index)
+        throws SQLException {
+      putJavaSQLTime(node, columnName, resultSet, index);
+    }
+
+    @Override
+    protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+        throws SQLException {
+      try {
+        super.putTimestampWithTimezone(node, columnName, resultSet, index);
+      } catch (final Exception e) {
+        final Instant instant = resultSet.getTimestamp(index).toInstant();
+        node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(instant));
+      }
+    }
+
+    // Base class is converting to Instant which assumes the base timezone is UTC and resolves the local value to system's timezone.
+    @Override
+    protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+      try {
+        node.put(columnName, DateTimeConverter.convertToTimestamp(getObject(resultSet, index, LocalDateTime.class)));
+      } catch (Exception e) {
+        final LocalDateTime localDateTime = resultSet.getTimestamp(index).toLocalDateTime();
+        node.put(columnName,  DateTimeConverter.convertToTimestamp(localDateTime));
+      }
+    }
+  }
+
   private static DataSource dataSource;
   private static JdbcDatabase database;
   private static String databaseName;
@@ -62,7 +135,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     // static methods.
     final RedshiftInsertDestination insertDestination = new RedshiftInsertDestination();
     dataSource = insertDestination.getDataSource(config);
-    database = insertDestination.getDatabase(dataSource);
+    database = insertDestination.getDatabase(dataSource, new RedshiftSourceOperations());
   }
 
   @AfterAll

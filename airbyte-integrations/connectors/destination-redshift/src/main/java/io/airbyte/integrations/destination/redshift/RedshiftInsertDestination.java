@@ -11,6 +11,7 @@ import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
@@ -57,6 +58,10 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   @Override
   public JdbcDatabase getDatabase(final DataSource dataSource) {
     return new DefaultJdbcDatabase(dataSource);
+  }
+
+  public JdbcDatabase getDatabase(final DataSource dataSource, final JdbcSourceOperations sourceOperations) {
+    return new DefaultJdbcDatabase(dataSource, sourceOperations);
   }
 
   @Override
