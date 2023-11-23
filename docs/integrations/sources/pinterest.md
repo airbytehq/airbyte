@@ -4,7 +4,27 @@ This page contains the setup guide and reference information for the Pinterest s
 
 ## Prerequisites
 
+<!-- env:cloud -->
+
+When setting up the Pinterest source connector with Airbyte Cloud, be aware that Pinterest does not allow configuring permissions during the OAuth authentication process. Therefore, the following permissions will be requested during authentication:
+
+- See all of your advertising data, including ads, ad groups, campaigns, etc. 
+- See your public boards, including group boards you join. 
+- See your secret boards. 
+- See all of your catalogs data. 
+- See your public Pins. 
+- See your secret Pins. 
+- See your user accounts and followers.
+
+For more information on the scopes required for Pinterest OAuth, please refer to the [Pinterest API Scopes documentation](https://developers.pinterest.com/docs/getting-started/scopes/#Read%20scopes).
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
 To set up the Pinterest source connector with Airbyte Open Source, you'll need your Pinterest [App ID and secret key](https://developers.pinterest.com/docs/getting-started/set-up-app/) and the [refresh token](https://developers.pinterest.com/docs/getting-started/authentication/#Refreshing%20an%20access%20token).
+
+<!-- /env:oss -->
 
 ## Setup guide
 
@@ -18,7 +38,10 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 4. Enter the name for the Pinterest connector.
 5. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data. As per Pinterest API restriction, the date cannot be more than 90 days in the past.
 6. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Pinterest account**. Log in and authorize your Pinterest account.
-7. Click **Set up source**.
+7. (Optional) Enter a Start Date using the provided date picker, or by manually entering the date in YYYY-MM-DD format. Data added on and after this date will be replicated. If no date is set, it will default to the latest allowed date by the report API (913 days from today).
+8. (Optional) Select one or multiple status values from the dropdown menu. For the ads, ad_groups, and campaigns streams, specifying a status will filter out records that do not match the specified ones. If a status is not specified, the source will default to records with a status of either ACTIVE or PAUSED.
+9. (Optional) Add custom reports if needed. For more information, refer to the corresponding section. 
+10. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -31,7 +54,10 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 4. Enter the name for the Pinterest connector.
 5. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data. As per Pinterest API restriction, the date cannot be more than 90 days in the past.
 6. The **OAuth2.0** authorization method is selected by default. For **Client ID** and **Client Secret**, enter your Pinterest [App ID and secret key](https://developers.pinterest.com/docs/getting-started/set-up-app/). For **Refresh Token**, enter your Pinterest [Refresh Token](https://developers.pinterest.com/docs/getting-started/authentication/#Refreshing%20an%20access%20token).
-7. Click **Set up source**.
+7. (Optional) Enter a Start Date using the provided date picker, or by manually entering the date in YYYY-MM-DD format. Data added on and after this date will be replicated. If no date is set, it will default to the latest allowed date by the report API (913 days from today).
+8. (Optional) Select one or multiple status values from the dropdown menu. For the ads, ad_groups, and campaigns streams, specifying a status will filter out records that do not match the specified ones. If a status is not specified, the source will default to records with a status of either ACTIVE or PAUSED.
+9. (Optional) Add custom reports if needed. For more information, refer to the corresponding section.
+10. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -78,6 +104,23 @@ The Pinterest source connector supports the following [sync modes](https://docs.
 - [Product Item Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report) \(Incremental\)
 - [Keyword Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report) \(Incremental\)
 
+## Custom reports
+
+Custom reports in the Pinterest connector allow you to create personalized analytics reports for your account. You can tailor these reports to your specific needs by choosing from various properties:
+
+1. **Name**: A unique identifier for the report. 
+2. **Level**: Specifies the data aggregation level, with options like ADVERTISER, CAMPAIGN, AD_GROUP, etc. The default level is ADVERTISER. 
+3. **Granularity**: Determines the data granularity, such as TOTAL, DAY, HOUR, etc. The default is TOTAL, where metrics are aggregated over the specified date range. 
+4. **Columns**: Identifies the data columns to be included in the report. 
+5. **Click Window Days (Optional)**: The number of days used for conversion attribution from a pin click action. This applies to Pinterest Tag conversion metrics. Defaults to 30 days if not specified. 
+6. **Engagement Window Days (Optional)**: The number of days used for conversion attribution from an engagement action. Engagements include saves, closeups, link clicks, and carousel card swipes. This applies to Pinterest Tag conversion metrics. Defaults to 30 days if not specified. 
+7. **View Window Days (Optional)**: The number of days used as the conversion attribution window for a view action. This applies to Pinterest Tag conversion metrics. Defaults to 1 day if not specified. 
+8. **Conversion Report Time (Optional)**: Indicates the date by which the conversion metrics returned will be reported. There are two dates associated with a conversion event: the date of ad interaction and the date of conversion event completion. The default is TIME_OF_AD_ACTION. 
+9. **Attribution Types (Optional)**: Lists the types of attribution for the report, such as INDIVIDUAL or HOUSEHOLD. 
+10. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the latest allowed date by the report API (913 days from today).
+
+For more detailed information and guidelines on creating custom reports, please refer to the [Pinterest API documentation](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report).
+
 ## Performance considerations
 
 The connector is restricted by the Pinterest [requests limitation](https://developers.pinterest.com/docs/reference/ratelimits/).
@@ -86,7 +129,8 @@ The connector is restricted by the Pinterest [requests limitation](https://devel
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.0   | 2023-11-16 | [32595](https://github.com/airbytehq/airbyte/pull/32595) | Added airbyte_type: timestamp_without_timezone to date-time fields across all streams. Rename `Advertizer*` streams to `Advertiser*`                                                                                                                                                                                                                                                                                                                     |
+| 1.1.0   | 2023-11-22 | [32747](https://github.com/airbytehq/airbyte/pull/32747) | Update docs and spec. Add missing `placement_traffic_type` field to AdGroups stream                                                                                                                                                                                                                                                                                                                                                                     |
+| 1.0.0   | 2023-11-16 | [32595](https://github.com/airbytehq/airbyte/pull/32595) | Add airbyte_type: timestamp_without_timezone to date-time fields across all streams. Rename `Advertizer*` streams to `Advertiser*`                                                                                                                                                                                                                                                                                                                      |
 | 0.8.2   | 2023-11-20 | [32672](https://github.com/airbytehq/airbyte/pull/32672) | Fix backoff waiting time                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | 0.8.1   | 2023-11-16 | [32601](https://github.com/airbytehq/airbyte/pull/32601) | added ability to create custom reports                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | 0.8.0   | 2023-11-16 | [32592](https://github.com/airbytehq/airbyte/pull/32592) | Make start_date optional; add suggested streams; add missing fields                                                                                                                                                                                                                                                                                                                                                                                     |
