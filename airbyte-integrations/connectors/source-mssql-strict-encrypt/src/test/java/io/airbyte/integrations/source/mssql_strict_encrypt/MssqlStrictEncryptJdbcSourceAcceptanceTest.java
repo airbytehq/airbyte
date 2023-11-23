@@ -7,6 +7,8 @@ package io.airbyte.integrations.source.mssql_strict_encrypt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
@@ -33,6 +35,10 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
   }
 
   @Override
+  protected void maybeSetShorterConnectionTimeout(final JsonNode config) {
+    ((ObjectNode) config).put(JdbcUtils.JDBC_URL_PARAMS_KEY, "loginTimeout=1");
+  }
+
   protected JsonNode config() {
     return testdb.testConfigBuilder()
         .withSsl(Map.of("ssl_method", "encrypted_trust_server_certificate"))
