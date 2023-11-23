@@ -1,5 +1,7 @@
 const fetch = require("node-fetch");
 const visit = require("unist-util-visit");
+const jsf = require("json-schema-faker");
+
 
 const CHECK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><title>Available</title><path fill="currentColor" d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z"/></svg>`;
 const CROSS_ICON = `<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><title>Not available</title><path fill="currentColor" d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z"/></svg>`;
@@ -16,6 +18,8 @@ const fetchCatalog = async () => {
 
 const catalog = fetchCatalog();
 
+const pascal_to_snake = str => str[0].toLowerCase() + str.slice(1, str.length).replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+
 const plugin = () => {
   const transformer = async (ast, vfile) => {
     if (!isDocsPage(vfile)) return;
@@ -23,10 +27,13 @@ const plugin = () => {
     const pathParts = vfile.path.split("/");
     const connectorName = pathParts.pop().split(".")[0];
     const connectorType = pathParts.pop();
-    const dockerRepository = `airbyte/${connectorType.replace(
+    const type = connectorType.replace(
       /s$/,
       ""
-    )}-${connectorName}`;
+    );
+    const packageName = `airbyte-${type}-${connectorName}`;
+    const moduleName = `${type}_${pascal_to_snake(connectorName)}`;
+    const dockerRepository = `airbyte/${type}-${connectorName}`;
 
     const registry = await catalog;
 
@@ -35,6 +42,15 @@ const plugin = () => {
     );
 
     if (!registryEntry) return;
+
+    let example = undefined;
+    try {
+      schema = registryEntry.spec_oss.connectionSpecification;
+      delete schema.additionalProperties;
+      example = jsf.generate(schema);
+    } catch {
+
+    }
 
     visit(ast, "heading", (node) => {
       if (node.depth === 1 && node.children.length === 1) {
@@ -46,7 +62,12 @@ const plugin = () => {
         node.value = buildConnectorHTMLContent(
           registryEntry,
           originalTitle,
-          originalId
+          originalId,
+          example,
+          packageName,
+          moduleName,
+          type,
+          connectorName
         );
       }
     });
@@ -57,8 +78,16 @@ const plugin = () => {
 const buildConnectorHTMLContent = (
   registryEntry,
   originalTitle,
-  originalId
+  originalId,
+  example,
+  packageName,
+  moduleName,
+  type,
+  connectorName
 ) => {
+  // normalize connector name: remove spaces and dashes
+  const normalizedConnectorName = originalTitle.replace(/-| /g, "");
+
   // note - you can't have any leading whitespace here
   const htmlContent = `<div>
     <dl class="connectorMetadata">
@@ -92,6 +121,43 @@ const buildConnectorHTMLContent = (
     <div class="header">
       <img src="${registryEntry.iconUrl_oss}" alt="" class="connectorIcon"  />
       <h1 id="${originalId}">${originalTitle}</h1>
+    </div>
+    <div>
+          <h2>Usage with airbyte_lib</h2>
+          <p>This connector can be used with from within Python via airbyte_lib:</p>
+          <pre><code class="language-python">pip install airbyte-lib ${packageName}</code></pre>
+          <p>Then, you can use the connector as follows:</p>
+          <pre><code class="language-python">${type === "source" ? `from airbyte_lib import from_source
+from ${moduleName} import ${normalizedConnectorName}Source
+
+pipeline = from_source(${normalizedConnectorName}Source, 
+  ${example ? JSON.stringify(example, null, 2).replace(/"/g, "'").replace(/'/g, '"') : "..."}}).to_dataframes()
+
+# run to extract data into local panda dataframes
+dfs = pipeline.run()
+
+# configure destination to load somewhere
+pipeline.to_destination(...).run()` : `from airbyte_lib import from_dataframe
+from ${moduleName} import ${normalizedConnectorName}Destination
+
+rows = [
+  ('A', 1),
+  ('B', 2),
+  ('C', 3),
+  ('D', 4)
+]
+
+# Creating a DataFrame from the row-wise data
+df = pd.DataFrame(rows, columns=['a', 'b'])
+
+pipeline = from_dataframe(df, "test_data").to_destination(${normalizedConnectorName}Destination, ${example ? JSON.stringify(example, null, 2).replace(/"/g, "'").replace(/'/g, '"') : "..."}})
+
+# load data into destination
+pipeline.run()
+
+# configure source to extract data from somewhere
+pipeline.from_source(...).run()`}
+          </code></pre>
     </div>
   </div>`;
 

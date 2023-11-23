@@ -1,0 +1,17 @@
+$schema: http://json-schema.org/draft-07/schema#
+type: object
+required: []
+properties:
+  id:
+    title: Unique ID for specific source target
+    type: string
+    desciption: Optional, For a specific ID
+    order: 0
+  options:
+    title: Configuration options for endpoints
+    type: string
+    desciption: >-
+      Optional, Possible values for an endpoint. Example values for
+      launches-latest, upcoming, past
+    order: 1
+additionalProperties: true
