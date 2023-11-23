@@ -19,7 +19,9 @@ from .streams import (
     AccountMetadata,
     Visitor,
     Account,
-    PageEvents
+    PageEvents,
+    FeatureEvents,
+    GuideEvents
 )
 
 
@@ -58,5 +60,7 @@ class SourcePendoPython(AbstractSource):
             AccountMetadata(authenticator=auth),
             Visitor(authenticator=auth),
             Account(authenticator=auth),
-            PageEvents(authenticator=auth)
+            PageEvents(authenticator=auth),
+            FeatureEvents(authenticator=auth),
+            GuideEvents(authenticator=auth)
         ]
