@@ -4,7 +4,7 @@ acceptance_tests:
     tests:
       - spec_path: "source_amazon_seller_partner/spec.json"
         backward_compatibility_tests_config:
-          disable_for_version: "1.5.1"
+          disable_for_version: "2.0.1"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -24,6 +24,22 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         timeout_seconds: 2400
+        ignored_fields:
+          GET_MERCHANT_LISTINGS_ALL_DATA:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
+          GET_FLAT_FILE_OPEN_LISTINGS_DATA:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
+          GET_MERCHANTS_LISTINGS_FYP_REPORT:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
+          GET_MERCHANT_LISTINGS_DATA:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
+          GET_MERCHANT_LISTINGS_INACTIVE_DATA:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no

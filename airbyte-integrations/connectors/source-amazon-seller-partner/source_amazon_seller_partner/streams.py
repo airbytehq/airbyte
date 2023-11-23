@@ -16,8 +16,10 @@ import xmltodict
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 REPORTS_API_VERSION = "2021-06-30"  # 2020-09-04
 ORDERS_API_VERSION = "v0"
@@ -25,6 +27,7 @@ VENDORS_API_VERSION = "v1"
 FINANCES_API_VERSION = "v0"
 
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+DATE_FORMAT = "%Y-%m-%d"
 
 
 class AmazonSPStream(HttpStream, ABC):
@@ -274,7 +277,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
         end_date = pendulum.now()
-        if self._replication_end_date and sync_mode == SyncMode.full_refresh:
+        if self._replication_end_date:
             # if replication_start_date is older than 90 days(from current date), we are overriding the value above.
             # when replication_end_date is present, we should use the user provided replication_start_date.
             # user may provide a date range which is older than 90 days.
@@ -306,21 +309,27 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         Decrypt and parse the report is its fully proceed, then yield the report document records.
         """
         report_payload = {}
+        stream_slice = stream_slice or {}
         is_processed = False
-        is_done = False
         start_time = pendulum.now("utc")
         seconds_waited = 0
-        report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
+        try:
+            report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
+        except DefaultBackoffException as e:
+            logger.warn(f"The report for stream '{self.name}' was cancelled due to several failed retry attempts. {e}")
+            return []
 
         # create and retrieve the report
         while not is_processed and seconds_waited < self.max_wait_seconds:
             report_payload = self._retrieve_report(report_id=report_id)
             seconds_waited = (pendulum.now("utc") - start_time).seconds
             is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]
-            is_done = report_payload.get("processingStatus") == "DONE"
-            is_cancelled = report_payload.get("processingStatus") == "CANCELLED"
-            is_fatal = report_payload.get("processingStatus") == "FATAL"
             time.sleep(self.sleep_seconds)
+
+        is_done = report_payload.get("processingStatus") == "DONE"
+        is_cancelled = report_payload.get("processingStatus") == "CANCELLED"
+        is_fatal = report_payload.get("processingStatus") == "FATAL"
+        report_end_date = pendulum.parse(report_payload.get("dataEndTime", stream_slice.get("dataEndTime")))
 
         if is_done:
             # retrieve and decrypt the report document
@@ -332,9 +341,12 @@ class ReportsAmazonSPStream(HttpStream, ABC):
                 params=self.request_params(),
             )
             response = self._send_request(request, {})
-            yield from self.parse_response(response, stream_state, stream_slice)
+            for record in self.parse_response(response, stream_state, stream_slice):
+                if report_end_date:
+                    record["dataEndTime"] = report_end_date.strftime(DATE_FORMAT)
+                yield record
         elif is_fatal:
-            raise Exception(f"The report for stream '{self.name}' was aborted due to a fatal error")
+            raise AirbyteTracedException(f"The report for stream '{self.name}' was not created - skip reading")
         elif is_cancelled:
             logger.warn(f"The report for stream '{self.name}' was cancelled or there is no data to return")
         else:
@@ -351,24 +363,6 @@ class FlatFileOrdersReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
-
-
-class FbaAfnInventoryReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
-    Report does seem to have an long-running issue (sometimes failing without a reason): https://github.com/amzn/selling-partner-api-docs/issues/2231
-    """
-
-    name = "GET_AFN_INVENTORY_DATA"
-
-
-class FbaAfnInventoryByCountryReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
-    Report does seem to have an long-running issue (sometimes failing without a reason): https://github.com/amzn/selling-partner-api-docs/issues/2231
-    """
-
-    name = "GET_AFN_INVENTORY_DATA_BY_COUNTRY"
 
 
 class FbaStorageFeesReports(ReportsAmazonSPStream):
@@ -712,6 +706,26 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
             raise ValueError("Original and normalized header field count does not match")
 
         return reader
+
+
+class FbaAfnInventoryReports(IncrementalReportsAmazonSPStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
+    Report has a long-running issue (fails when requested frequently): https://github.com/amzn/selling-partner-api-docs/issues/2231
+    """
+
+    name = "GET_AFN_INVENTORY_DATA"
+    cursor_field = "dataEndTime"
+
+
+class FbaAfnInventoryByCountryReports(IncrementalReportsAmazonSPStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
+    Report has a long-running issue (fails when requested frequently): https://github.com/amzn/selling-partner-api-docs/issues/2231
+    """
+
+    name = "GET_AFN_INVENTORY_DATA_BY_COUNTRY"
+    cursor_field = "dataEndTime"
 
 
 class FlatFileOrdersReportsByLastUpdate(IncrementalReportsAmazonSPStream):
@@ -1102,9 +1116,10 @@ class FbaCustomerReturnsReports(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA"
 
 
-class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
+class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
 
     name = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
+    cursor_field = "dataEndTime"
 
     def _create_report(
         self,
@@ -1118,7 +1133,7 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
         return {"reportId": stream_slice.get("report_id")}
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         From https://developer-docs.amazon.com/sp-api/docs/report-type-values
@@ -1130,9 +1145,14 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
         """
 
         strict_start_date = pendulum.now("utc").subtract(days=90)
+        utc_now = pendulum.now("utc").date().to_date_string()
 
         create_date = max(pendulum.parse(self._replication_start_date), strict_start_date)
-        end_date = pendulum.parse(self._replication_end_date or pendulum.now("utc").date().to_date_string())
+        end_date = pendulum.parse(self._replication_end_date or utc_now)
+
+        stream_state = stream_state or {}
+        if cursor_value := stream_state.get(self.cursor_field):
+            create_date = pendulum.parse(min(cursor_value, utc_now))
 
         if end_date < strict_start_date:
             end_date = pendulum.now("utc")
@@ -1147,7 +1167,6 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
         complete = False
 
         while not complete:
-
             request_headers = self.request_headers()
             get_reports = self._create_prepared_request(
                 path=f"{self.path_prefix}/reports",
