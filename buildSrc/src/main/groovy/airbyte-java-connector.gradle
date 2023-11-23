@@ -50,11 +50,17 @@ class AirbyteJavaConnectorExtension {
         project.dependencies {
             def dep = { useLocalCdk ? project.project(projectName(it)) : jarName(it) }
             def testFixturesDep = { useLocalCdk ? testFixtures(project.project(projectName(it))) : "${jarName(it)}:test-fixtures" }
-            IMPLEMENTATION.each {implementation dep(it) }
+
+            IMPLEMENTATION.each {
+                implementation dep(it)
+                testFixturesImplementation dep(it)
+            }
             TEST_IMPLEMENTATION.each {testImplementation dep(it) }
             INTEGRATION_TEST_IMPLEMENTATION.each {integrationTestJavaImplementation dep(it) }
             (["core"] + features).each {
                 implementation dep(it)
+                testFixturesImplementation dep(it)
+                testFixturesImplementation testFixturesDep(it)
                 testImplementation dep(it)
                 testImplementation testFixturesDep(it)
                 integrationTestJavaImplementation dep(it)
