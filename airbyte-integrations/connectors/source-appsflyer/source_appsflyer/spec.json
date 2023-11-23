@@ -52,12 +52,19 @@
           "30"
         ]
       },
+      "should_load_today": {
+        "order": 6,
+        "type": "boolean",
+        "title": "Load today",
+        "description": "If set to true – today data will be loaded. If not set – today data will be skipped",
+        "default": true
+      },
       "chunked_reports_config": {
         "title": "Split Download Into Chunks",
         "description": "Connector can split data replication into several logs instead of only one. You can choice days count on every chunk.",
         "default": {},
         "type": "object",
-        "order": 6,
+        "order": 9,
         "oneOf": [
           {
             "title": "Don't Split",
@@ -115,7 +122,7 @@
         "description": "Use to filter by a specific media source. Applied for InAppEvents and Installs streams.",
         "default": "no_filter",
         "type": "object",
-        "order": 6,
+        "order": 10,
         "oneOf": [
           {
             "title": "Facebook",
@@ -182,7 +189,7 @@
         ]
       },
       "timezone": {
-        "order": 5,
+        "order": 11,
         "type": "string",
         "description": "Time zone in which date times are stored. The project timezone may be found in the App settings in the AppsFlyer console.",
         "default": "UTC",
@@ -192,7 +199,7 @@
         ]
       },
       "in_app_events_event_name_filter": {
-        "order": 6,
+        "order": 12,
         "type": "string",
         "title": "In-App Events Filter",
         "description": "Filter in-app events by specified events. Select multiple events by using a comma-separated list.",
