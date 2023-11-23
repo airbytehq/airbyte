@@ -215,17 +215,18 @@ class AdAccounts(FBMarketingStream):
 
     enable_deleted = False
     fields_exceptions = [
-        "owner",
+        "business",
+        "business_street",
+        "business_street2",
         "capabilities",
         "failed_delivery_checks",
         "has_migrated_permissions",
-        "business_street",
-        "business_street2",
-        "failed_delivery_checks",
         "extended_credit_invoice_group",
+        "failed_delivery_checks",
         "funding_source",
         "funding_source_details",
         "offsite_pixels_tos_accepted",
+        "owner",
         "tos_accepted",
         "user_tasks",
         "user_tos_accepted",
