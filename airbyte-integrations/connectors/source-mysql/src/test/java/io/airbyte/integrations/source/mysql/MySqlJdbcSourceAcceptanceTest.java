@@ -81,6 +81,11 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
     return MySQLTestDatabase.in("mysql:8.0");
   }
 
+  @Override
+  protected void maybeSetShorterConnectionTimeout(final JsonNode config) {
+    ((ObjectNode) config).put(JdbcUtils.JDBC_URL_PARAMS_KEY, "connectTimeout=1000");
+  }
+
   // MySql does not support schemas in the way most dbs do. Instead we namespace by db name.
   @Override
   protected boolean supportsSchemas() {
