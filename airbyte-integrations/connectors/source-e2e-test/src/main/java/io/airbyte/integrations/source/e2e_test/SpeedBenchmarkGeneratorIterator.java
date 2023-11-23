@@ -53,7 +53,7 @@ class SpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
 
     for (int j = 1; j <= 5; ++j) {
       // do % 10 so that all records are same length.
-      ((ObjectNode) jsonNode).put(STR_BASE + j, VALUE_BASE + numRecordsEmitted % 10);
+//      ((ObjectNode) jsonNode).put(STR_BASE + j, VALUE_BASE + numRecordsEmitted % 10);
       ((ObjectNode) jsonNode).put(SHORT_INT_BASE + j, 1);
       ((ObjectNode) jsonNode).put(LONG_INT_BASE + j, Integer.MAX_VALUE);
       ((ObjectNode) jsonNode).put(SHORT_FLOAT_BASE + j, 1.0);

@@ -198,7 +198,6 @@ public class Jsons {
   }
 
   public static Set<String> keys(final JsonNode jsonNode) {
-    if (jsonNode.isObject()) {
       return Jsons.object(jsonNode, new TypeReference<Map<String, Object>>() {}).keySet();
     } else {
       return new HashSet<>();

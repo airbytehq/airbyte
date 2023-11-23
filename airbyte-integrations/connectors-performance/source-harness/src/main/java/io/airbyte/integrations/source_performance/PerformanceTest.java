@@ -22,8 +22,10 @@ import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.internal.DefaultAirbyteSource;
 import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.KubePortManagerSingleton;
@@ -96,8 +98,8 @@ public class PerformanceTest {
     final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
     final var integrationLauncher =
         new AirbyteIntegrationLauncher("1", 0, this.imageName, processFactory, resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags());
-    // final var source = new DefaultAirbyteSource(integrationLauncher, new EnvVariableFeatureFlags(),
-    // heartbeatMonitor);
+//     final var source = new DefaultAirbyteSource(integrationLauncher, new EnvVariableFeatureFlags(),
+//     heartbeatMonitor);
     final var source = new DefaultAirbyteSourceProto(integrationLauncher, new EnvVariableFeatureFlags(), heartbeatMonitor);
     final var jobRoot = "/";
     final WorkerSourceConfig sourceConfig = new WorkerSourceConfig()
@@ -136,6 +138,16 @@ public class PerformanceTest {
         }
 
       }
+
+//      final Optional<AirbyteMessage> airbyteMessageOptional = source.attemptRead();
+//      if (airbyteMessageOptional.isPresent()) {
+//        final AirbyteMessage airbyteMessage = airbyteMessageOptional.get();
+//
+//        if (airbyteMessage.getRecord() != null) {
+//          totalBytes += Jsons.getEstimatedByteSize(airbyteMessage.getRecord().getData());
+//          counter++;
+//        }
+//      }
 
       if (counter > 0 && counter % MEGABYTE == 0) {
         log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),

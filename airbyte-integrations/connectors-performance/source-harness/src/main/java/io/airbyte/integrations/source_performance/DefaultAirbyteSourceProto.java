@@ -143,7 +143,7 @@ public class DefaultAirbyteSourceProto {
         // whenever it's a protobuf message, print the buffer.
         if (nextByte == 0) {
           if (buffer.size() > 0) {
-            log.info(String.valueOf(buffer));
+//            log.info(String.valueOf(buffer));
             buffer.reset();
           }
           isProtobufMessage = true;
