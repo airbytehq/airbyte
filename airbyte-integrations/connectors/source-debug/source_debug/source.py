@@ -7,13 +7,7 @@ import json
 from typing import Dict, Generator
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    ConfiguredAirbyteCatalog,
-    Status,
-)
+from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from airbyte_cdk.sources import Source
 
 
@@ -24,7 +18,7 @@ class SourceDebug(Source):
             for message_line in message["text"].split("\n"):
                 if message_line.strip() != "":
                     yield AirbyteMessage.parse_obj(json.loads(message_line))
-    
+
     def _load_catalog(self, config: json) -> AirbyteCatalog:
         return AirbyteCatalog.parse_obj(json.loads(config["catalog"]))
 
