@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   version="1.1"
+   id="svg2"
+   width="400"
+   height="400"
+   viewBox="0 0 400 400"
+   sodipodi:docname="audienceproject_mark_black.eps"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs6" />
+  <sodipodi:namedview
+     id="namedview4"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <g
+     id="g8"
+     inkscape:groupmode="layer"
+     inkscape:label="ink_ext_XXXXXX"
+     transform="matrix(1.3333333,0,0,-1.3333333,0,400)">
+    <g
+       id="g10"
+       transform="scale(0.1)">
+      <path
+         d="M 3000,0 H 0 V 3000 H 3000 V 0"
+         style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="path12" />
+      <path
+         d="m 1220,1260 h -200 l 240,240 -240,240 h 200 l 240,-240 -240,-240"
+         style="fill:#18191b;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="path14" />
+      <path
+         d="m 1980,1580 h -520 v 160 h 520 v -160"
+         style="fill:#18191b;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="path16" />
+      <path
+         d="m 1980,1260 h -520 v 160 h 520 v -160"
+         style="fill:#18191b;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         id="path18" />
+    </g>
+  </g>
+</svg>

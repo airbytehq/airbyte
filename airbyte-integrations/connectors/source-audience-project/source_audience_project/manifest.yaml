@@ -6,7 +6,7 @@ definitions:
     url_base: "https://campaign-api.audiencereport.com"
     http_method: "GET"
     authenticator:
-      class_name: source_audience_project.streams.ShortLivedTokenAuthenticator
+      class_name: source_audience_project.components.ShortLivedTokenAuthenticator
       url: "https://oauth.audiencereport.com/oauth/access_token"
       client_id: "{{ config['credentials']['client_id'] }}"
       secret_key: "{{ config['credentials']['client_secret'] }}"
@@ -32,7 +32,7 @@ definitions:
   double_paginator:
     $ref: "#/definitions/default_paginator"
     pagination_strategy:
-      class_name: "source_audience_project.streams.CampaignsStreamPagination"
+      class_name: "source_audience_project.components.CampaignsStreamPagination"
       type: "CustomPaginationStrategy"
       page_size: 100
 
