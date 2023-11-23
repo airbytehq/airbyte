@@ -76,9 +76,10 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     }
 
     protected void putTimeWithTimezone(final ObjectNode node,
-                                     final String columnName,
-                                     final ResultSet resultSet,
-                                     final int index) throws SQLException {
+                                       final String columnName,
+                                       final ResultSet resultSet,
+                                       final int index)
+        throws SQLException {
       final OffsetTime offsetTime = resultSet.getTimestamp(index).toInstant().atOffset(ZoneOffset.UTC).toOffsetTime();
       node.put(columnName, DateTimeConverter.convertToTimeWithTimezone(offsetTime));
     }
@@ -103,16 +104,18 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
       }
     }
 
-    // Base class is converting to Instant which assumes the base timezone is UTC and resolves the local value to system's timezone.
+    // Base class is converting to Instant which assumes the base timezone is UTC and resolves the local
+    // value to system's timezone.
     @Override
     protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
       try {
         node.put(columnName, DateTimeConverter.convertToTimestamp(getObject(resultSet, index, LocalDateTime.class)));
       } catch (Exception e) {
         final LocalDateTime localDateTime = resultSet.getTimestamp(index).toLocalDateTime();
-        node.put(columnName,  DateTimeConverter.convertToTimestamp(localDateTime));
+        node.put(columnName, DateTimeConverter.convertToTimestamp(localDateTime));
       }
     }
+
   }
 
   private static DataSource dataSource;
