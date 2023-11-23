@@ -298,6 +298,37 @@ def test_segment_members_parse_response(auth, stream_state, records, expected):
     assert parsed_records == expected, f"Expected: {expected}, Actual: {parsed_records}"
 
 
+@pytest.mark.parametrize(
+    "record, expected_record",
+    [
+        (
+            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": ""},
+            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": None}
+        ),
+        (
+            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": "", "ADDRESS": "", "PHONE": ""}},
+            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": None, "ADDRESS": None, "PHONE": None}}
+        ),
+        (
+            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": "Bobson", "ADDRESS": "101 Bob Ln", "PHONE": "111-111-1111"}},
+            {"id": 1, "email_address": "a@gmail.com", "email_type": "html", "opt_timestamp": "2022-01-01T00:00:00.000Z", "merge_fields": {"FNAME": "Bob", "LNAME": "Bobson", "ADDRESS": "101 Bob Ln", "PHONE": "111-111-1111"}}
+        )
+    ],
+    ids=[
+        "Replace empty string with None",
+        "Replace empty strings with None in nested fields",
+        "Leave non-empty string fields unchanged"
+    ]
+)
+def test_segment_members_nullify_empty_string_fields(auth, record, expected_record):
+    """
+    Tests that empty string values in SegmentMembers stream are converted to None
+    """
+    stream = SegmentMembers(authenticator=auth)
+    
+    assert stream.nullify_empty_string_fields(record) == expected_record
+
+
 def test_unsubscribes_stream_slices(requests_mock, unsubscribes_stream, campaigns_stream, mock_campaigns_response):
     campaigns_url = campaigns_stream.url_base + campaigns_stream.path()
     requests_mock.register_uri("GET", campaigns_url, json={"campaigns": mock_campaigns_response})

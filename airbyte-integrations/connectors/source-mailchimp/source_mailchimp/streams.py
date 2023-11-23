@@ -353,6 +353,28 @@ class SegmentMembers(MailChimpListSubStream):
     cursor_field = "last_changed"
     data_field = "members"
 
+    def nullify_empty_string_fields(self, element: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        SegmentMember records may contain multiple fields that are returned as empty strings, which causes validation issues for fields with declared "datetime" formats.
+        Since all fields are nullable, replacing any string value of "" with None is a safe way to handle these edge cases. 
+        
+        :param element: A single SegmentMember record, dictionary or list
+        """
+
+        if isinstance(element, dict):
+            # If the element is a dictionary, apply the method recursively to each value,
+            # replacing the empty string value with None.
+            return {
+                k: self.nullify_empty_string_fields(v) if v != "" else None
+                for k, v in element.items()
+            }
+        elif isinstance(element, list):
+            # If the element is a list, apply the method recursively to each element in the list.
+            return [self.nullify_empty_string_fields(v) for v in element]
+        else:
+            # If the element is not a dictionary or list, return the element as is.
+            return element
+
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Each slice consists of a list_id and segment_id pair
@@ -380,10 +402,10 @@ class SegmentMembers(MailChimpListSubStream):
             # Add the segment_id foreign_key to each record
             record["segment_id"] = stream_slice.get("segment_id")
 
-            current_cursor_value = stream_state.get(record.get("segment_id"), {}).get(self.cursor_field)
+            current_cursor_value = stream_state.get(str(record.get("segment_id")), {}).get(self.cursor_field)
             record_cursor_value = record.get(self.cursor_field)
             if current_cursor_value is None or record_cursor_value >= current_cursor_value:
-                yield record
+                yield self.nullify_empty_string_fields(record)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
