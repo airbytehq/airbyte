@@ -49,6 +49,10 @@ class FBMarketingStream(Stream, ABC):
         self.page_size = page_size if page_size is not None else 100
         self._include_deleted = include_deleted if self.enable_deleted else False
 
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        return 500
+
     @cached_property
     def fields(self) -> List[str]:
         """List of fields that we want to query, for now just all properties from stream's schema"""

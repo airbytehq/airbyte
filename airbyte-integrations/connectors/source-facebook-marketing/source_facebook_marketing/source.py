@@ -62,7 +62,6 @@ UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 
 class SourceFacebookMarketing(AbstractSource):
-
     # Skip exceptions on missing streams
     raise_exception_on_missing_stream = False
 
@@ -96,7 +95,8 @@ class SourceFacebookMarketing(AbstractSource):
                 return False, "End date must be equal or after start date."
 
             account_id_list = config.account_ids.split(',') if config.account_ids else []
-            api = API(account_ids=account_id_list, access_token=config.access_token, page_size=config.page_size)
+            api = API(account_ids=account_id_list, access_token=config.access_token, page_size=config.page_size,
+                      parallelism=config.parallelism)
 
             record_iterator = AdAccounts(api=api).read_records(sync_mode=SyncMode.full_refresh, stream_state={})
             for account_info in list(record_iterator):

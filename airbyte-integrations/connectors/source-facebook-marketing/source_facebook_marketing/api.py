@@ -184,7 +184,7 @@ class API:
         # reference issue: https://github.com/airbytehq/airbyte/issues/25383
         setattr(self.api, "default_page_size", page_size)
         # set the default API client to Facebook lib.
-        adapter = requests.adapters.HTTPAdapter(pool_connections=parallelism, pool_maxsize=parallelism, pool_block=True)
+        adapter = requests.adapters.HTTPAdapter(pool_connections=parallelism, pool_maxsize=parallelism, pool_block=False)
         MyFacebookAdsApi.get_default_api()._session.requests.mount('https://graph.facebook.com', adapter)
         FacebookAdsApi.set_default_api(self.api)
         self.me = User(fbid='me')
