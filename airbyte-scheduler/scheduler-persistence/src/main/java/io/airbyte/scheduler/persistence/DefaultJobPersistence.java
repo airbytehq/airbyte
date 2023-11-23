@@ -60,6 +60,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.ObjectUtils;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.InsertValuesStepN;
@@ -435,6 +436,9 @@ public class DefaultJobPersistence implements JobPersistence {
           .and(JOBS.SCOPE.eq(configId))
           .orderBy(JOBS.CREATED_AT.desc(), JOBS.ID.desc())
           .limit(1).fetchOne();
+      if (ObjectUtils.isEmpty(latestJobRecord)) {
+        return null;
+      }
       return getJobFromRecord(latestJobRecord);
     });
   }
