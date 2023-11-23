@@ -4,18 +4,14 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
-import org.jooq.DSLContext;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
-  protected static MSSQLServerContainer<?> container;
-  protected JsonNode config;
-  protected DSLContext dslContext;
+  protected MsSQLTestDatabase testdb;
 
   @Override
   protected String getNameSpace() {
@@ -28,14 +24,11 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
   }
 
   @Override
-  protected JsonNode getConfig() {
-    return config;
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    testdb.close();
   }
 
-  protected static final String DB_NAME = "comprehensive";
-
-  protected static final String CREATE_TABLE_SQL =
-      "USE " + DB_NAME + "\nCREATE TABLE %1$s(%2$s INTEGER PRIMARY KEY, %3$s %4$s)";
+  protected static final String CREATE_TABLE_SQL = "CREATE TABLE %1$s(%2$s INTEGER PRIMARY KEY, %3$s %4$s)";
 
   @Override
   protected void initTests() {
