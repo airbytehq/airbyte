@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.scaffold_java_jdbc;
 
 import io.airbyte.cdk.db.factory.DatabaseDriver;
