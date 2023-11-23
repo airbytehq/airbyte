@@ -2,7 +2,7 @@
 
 ## General
 
-The Airbyte Luzmo (Formerly Cumul.io) destination connector allows you to stream data into Luzmo from [any Airbyte Source](https://airbyte.io/connectors?connector-type=Sources).
+The Airbyte Luzmo destination connector allows you to stream data into Luzmo from [any Airbyte Source](https://airbyte.io/connectors?connector-type=Sources).
 
 Luzmo is an **[Embedded analytics SaaS solution](https://luzmo.com/product/embedded-analytics)** that enables other SaaS companies to grow with an **engaging customer analytics experience**, seamlessly embedded in their product. Luzmo's intuitive, low-code interface empowers business users with insight-driven actions in record time **without straining engineering resources from the core product**.
 
@@ -19,7 +19,7 @@ To set up the destination connector in Airbyte, you'll need to provide the follo
 As soon as you've connected a source and the **first stream synchronization** has **succeeded**, the desired **Dataset(s)** will be **available in Luzmo to build dashboards on** (Luzmo's ["Getting started" Academy course](https://academy.luzmo.com/course/a0bf5530-edfb-441e-901b-e1fcb95dfac7) might be interesting to get familiar with its platform).
 Depending on the **synchronization mode** set up, the **next synchronizations** will either **replace/append data in/to these datasets**!
 
-_If you have any questions or want to get started with Luzmo, don't hesitate to reach out via [our contact page](https://luzmo.com/contact)._
+_If you have any questions or want to get started with Luzmo, don't hesitate to reach out via [our contact page](https://www.luzmo.com/book-a-demo)._
 
 ## Connector overview
 
