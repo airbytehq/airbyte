@@ -350,24 +350,22 @@ class SegmentMembers(MailChimpListSubStream):
     Get information about members in a specific segment.
     Docs link: https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/
     """
+
     cursor_field = "last_changed"
     data_field = "members"
 
     def nullify_empty_string_fields(self, element: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         SegmentMember records may contain multiple fields that are returned as empty strings, which causes validation issues for fields with declared "datetime" formats.
-        Since all fields are nullable, replacing any string value of "" with None is a safe way to handle these edge cases. 
-        
+        Since all fields are nullable, replacing any string value of "" with None is a safe way to handle these edge cases.
+
         :param element: A single SegmentMember record, dictionary or list
         """
 
         if isinstance(element, dict):
             # If the element is a dictionary, apply the method recursively to each value,
             # replacing the empty string value with None.
-            return {
-                k: self.nullify_empty_string_fields(v) if v != "" else None
-                for k, v in element.items()
-            }
+            return {k: self.nullify_empty_string_fields(v) if v != "" else None for k, v in element.items()}
         elif isinstance(element, list):
             # If the element is a list, apply the method recursively to each element in the list.
             return [self.nullify_empty_string_fields(v) for v in element]
@@ -391,7 +389,7 @@ class SegmentMembers(MailChimpListSubStream):
         list_id = stream_slice.get("list_id")
         segment_id = stream_slice.get("segment_id")
         return f"lists/{list_id}/segments/{segment_id}/members"
-    
+
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice, **kwargs) -> Iterable[Mapping]:
         """
         SegmentMembers endpoint does not support sorting, so we need to filter out records that are older than the current state
@@ -420,6 +418,7 @@ class SegmentMembers(MailChimpListSubStream):
         updated_cursor_value = max(current_cursor_value, latest_cursor_value)
         current_stream_state[segment_id] = {self.cursor_field: updated_cursor_value}
         return current_stream_state
+
 
 class Segments(MailChimpListSubStream):
     """
