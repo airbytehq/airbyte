@@ -32,6 +32,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
@@ -131,17 +132,19 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return new SshWrappedSource(new MySqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
-  private ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
+  private ConnectorSpecification modifySpecForCloud(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
+    // Remove the SSL options
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+    // Set SSL_MODE to required by default
     ((ObjectNode) spec.getConnectionSpecification().get("properties").get(SSL_MODE)).put("default", SSL_MODE_REQUIRED);
     return spec;
   }
 
   @Override
   public ConnectorSpecification spec() throws Exception {
-    if (MODE != null && MODE.equalsIgnoreCase("cloud")) {
-      return modifySpec(super.spec());
+    if (cloudDeploymentMode()) {
+      return modifySpecForCloud(super.spec());
     }
     return super.spec();
   }
@@ -150,7 +153,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
     // and not over SSH tunnel
-    if (MODE != null && MODE.equalsIgnoreCase("cloud")) {
+    if (cloudDeploymentMode()) {
       if (config.has(TUNNEL_METHOD)
           && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
           && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
@@ -506,6 +509,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   private String toSslJdbcParam(final SslMode sslMode) {
     return toSslJdbcParamInternal(sslMode);
+  }
+
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
   }
 
   @Override
