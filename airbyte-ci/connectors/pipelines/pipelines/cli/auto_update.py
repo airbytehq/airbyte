@@ -31,7 +31,7 @@ def _get_os_name():
         return "macos"
 
 
-def _is_upgrade_available(version: str, is_dev: bool) -> bool:
+def _is_version_available(version: str, is_dev: bool) -> bool:
     """
     Check if an upgrade is available for the given version.
     """
@@ -47,7 +47,7 @@ def _is_upgrade_available(version: str, is_dev: bool) -> bool:
     url = f"{release_url}/{os_name}/{version}/airbyte-ci"
 
     # Just check if the URL exists, but dont download it
-    return requests.head(url).status_code == 200
+    return requests.head(url).ok
 
 
 def _get_latest_version() -> str:
