@@ -92,6 +92,9 @@
     "Recommended action": {
       "type": ["null", "string"]
     },
+    "Unit storage size": {
+      "type": ["null", "string"]
+    },
     "dataEndTime": {
       "type": ["null", "string"],
       "format": "date"
