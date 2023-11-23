@@ -13,14 +13,18 @@ class LocalProcessingConfigModel(BaseModel):
 
     class Config(OneOfOptionConfig):
         title = "Local"
-        description = (
-            "Process files locally, supporting `fast` and `ocr` modes. This is the default option."
-        )
+        description = "Process files locally, supporting `fast` and `ocr` modes. This is the default option."
         discriminator = "mode"
 
+
 class APIParameterConfigModel(BaseModel):
-    name: str = Field(title="Parameter name", description="The name of the unstructured API parameter to use", examples=["include_page_breaks", "strategy"])
+    name: str = Field(
+        title="Parameter name",
+        description="The name of the unstructured API parameter to use",
+        examples=["include_page_breaks", "strategy"],
+    )
     value: str = Field(title="Value", description="The value of the parameter", examples=["true", "hi_res"])
+
 
 class APIProcessingConfigModel(BaseModel):
     mode: Literal["api"] = Field("api", const=True)
@@ -40,7 +44,6 @@ class APIProcessingConfigModel(BaseModel):
         examples=["https://api.unstructured.com"],
     )
 
-
     parameters: Optional[List[APIParameterConfigModel]] = Field(
         default=[],
         title="Parameters",
@@ -49,10 +52,9 @@ class APIProcessingConfigModel(BaseModel):
 
     class Config(OneOfOptionConfig):
         title = "via API"
-        description = (
-            "Process files via an API, using the `hi_res` mode. This option is useful for increased performance and accuracy, but requires an API key and a hosted instance of unstructured."
-        )
+        description = "Process files via an API, using the `hi_res` mode. This option is useful for increased performance and accuracy, but requires an API key and a hosted instance of unstructured."
         discriminator = "mode"
+
 
 class UnstructuredFormat(BaseModel):
     class Config(OneOfOptionConfig):
@@ -72,7 +74,10 @@ class UnstructuredFormat(BaseModel):
         always_show=True,
     )
 
-    processing: Union[
-        LocalProcessingConfigModel,
-        APIProcessingConfigModel,
-    ] = Field(default=LocalProcessingConfigModel(mode="local"), title="Processing", description="Processing configuration", discriminator="mode", type="object")
+    processing: Union[LocalProcessingConfigModel, APIProcessingConfigModel,] = Field(
+        default=LocalProcessingConfigModel(mode="local"),
+        title="Processing",
+        description="Processing configuration",
+        discriminator="mode",
+        type="object",
+    )
