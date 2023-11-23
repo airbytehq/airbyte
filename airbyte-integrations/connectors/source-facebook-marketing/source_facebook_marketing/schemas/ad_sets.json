@@ -113,6 +113,9 @@
           "updated_time": { "type": "string", "format": "date-time" }
         }
       }
+    },
+    "optimization_goal": {
+      "type": ["null", "string"]
     }
   }
 }
