@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "accountIds": {
+      "type": ["null", "array"]
+    },
+    "browserTime": {
+      "type": ["null", "integer"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "elementPath": {
+      "type": ["null", "string"]
+    },
+    "eventId": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "guideId": {
+      "type": ["null", "string"]
+    },
+    "guideSeenReason": {
+      "type": ["null", "string"]
+    },
+    "guideStepId": {
+      "type": ["null", "string"]
+    },
+    "guideTimestamp": {
+      "type": ["null", "integer"]
+    },
+    "latitude": {
+      "type": ["null", "number"]
+    },
+    "loadTime": {
+      "type": ["null", "integer"]
+    },
+    "longitude": {
+      "type": ["null", "number"]
+    },
+    "oldVisitorId": {
+      "type": ["null", "string"]
+    },
+    "region": {
+      "type": ["null", "string"]
+    },
+    "remoteIp": {
+      "type": ["null", "string"]
+    },
+    "serverName": {
+      "type": ["null", "string"]
+    },
+    "tabId": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "userAgent": {
+      "type": ["null", "string"]
+    },
+    "visitorId": {
+      "type": ["null", "string"]
+    },
+    "appId": {
+      "type": ["null", "integer"]
+    },
+    "accountId": {
+      "type": ["null", "string"]
+    }
+  }
+}

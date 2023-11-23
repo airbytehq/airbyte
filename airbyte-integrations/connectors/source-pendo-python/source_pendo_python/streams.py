@@ -104,6 +104,9 @@ class PendoAggregationStream(PendoPythonStream):
         return request_body
 
 
+# class PendoEventsStream(PendoAggregationStream):
+#     TODO: Create A Class for the Event Streams feature, page, guide
+
 class Feature(PendoPythonStream):
     name = "feature"
 
@@ -266,3 +269,121 @@ class Account(PendoAggregationStream):
     ) -> Optional[Mapping[str, Any]]:
         source = {"accounts": {}}
         return self.build_request_body("account-list", source, next_page_token)
+
+
+class PageEvents(PendoAggregationStream):
+    name = "page_events"
+    page_size = 2
+    primary_key = ["pageId", "day", "visitorId", "accountId", "server", "remoteIp", "userAgent"]
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        data = response.json().get("results", [])
+        if len(data) < self.page_size:
+            return None
+        lastRecord = data[-1]
+        token = []
+        for key in self.primary_key:
+            token.append(lastRecord[key])
+        return token
+
+    # Build /aggregation endpoint payload with pagination for a given source and requestId
+    def build_request_body(self, requestId, source, next_page_token) -> Optional[Mapping[str, Any]]:
+        request_body = {
+            "response": {"mimeType": "application/json"},
+            "request": {
+                "requestId": requestId,
+                "pipeline": [
+                    {"source": source},
+                    {"sort": self.primary_key},
+                    {"limit": self.page_size},
+                ],
+            },
+        }
+
+        if next_page_token is not None:
+            filters = f"{self.primary_key[0]} >= \"{next_page_token[0]}\" && {self.primary_key[1]} >= {next_page_token[1]} && {self.primary_key[2]} >= \"{next_page_token[2]}\" && {self.primary_key[3]} >= \"{next_page_token[3]}\" && {self.primary_key[4]} >= \"{next_page_token[4]}\" && {self.primary_key[5]} >= \"{next_page_token[5]}\" && {self.primary_key[6]} > \"{next_page_token[6]}\""
+            request_body["request"]["pipeline"].insert(
+                2, {"filter": filters}
+            )
+        print(request_body)
+        return request_body
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping[str, Any]]:
+        source = {
+            "pageEvents": None,
+            "timeSeries": {
+                "first": "1700613740000",
+                "count": -30,
+                "period": "dayRange"
+            }
+        }
+        return self.build_request_body("page-events", source, next_page_token)
+
+
+class FeatureEvents(PendoAggregationStream):
+    name = "feature_events"
+    page_size = 10000
+    primary_key = []
+    prev_day = None
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        data = response.json().get("results", [])
+        if len(data) < self.page_size:
+            return None
+        last_day = data[-1]["day"]
+        self.prev_day = last_day
+        return last_day
+
+    # Build /aggregation endpoint payload with pagination for a given source and requestId
+    def build_request_body(self, requestId, source, next_page_token) -> Optional[Mapping[str, Any]]:
+        start = 1700613740000
+        if self.prev_day is not None:
+            start = self.prev_day
+
+        request_body = {
+            "response": {"mimeType": "application/json"},
+            "request": {
+                "requestId": requestId,
+                "pipeline": [
+                    {
+                        "source": {
+                            "featureEvents": None,
+                            "timeSeries": {
+                                "first": start,
+                                "count": -1,
+                                "period": "dayRange"
+                            }
+                        }
+                    },
+                    {"limit": self.page_size},
+                ],
+            },
+        }
+
+        print(request_body)
+        return request_body
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping[str, Any]]:
+        source = {
+            "featureEvents": None,
+            "timeSeries": {
+                "first": 1700613740000,
+                "count": -30,
+                "period": "dayRange"
+            }
+        }
+        return self.build_request_body("page-events", source, next_page_token)
+
+
+# class GuideEvents(PendoAggregationStream):
+# TODO:

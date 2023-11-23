@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "accountId": {
+      "type": ["null", "string"]
+    },
+    "appId": {
+      "type": ["null", "integer"]
+    },
+    "day": {
+      "type": ["null", "integer"]
+    },
+    "featureId": {
+      "type": ["null", "string"]
+    },
+    "numEvents": {
+      "type": ["null", "integer"]
+    },
+    "numMinutes": {
+      "type": ["null", "integer"]
+    },
+    "lastKeyFrameTimestamp": {
+      "type": ["null", "integer"]
+    },
+    "lastTime": {
+      "type": ["null", "integer"]
+    },
+    "remoteIp": {
+      "type": ["null", "string"]
+    },
+    "server": {
+      "type": ["null", "string"]
+    },
+    "userAgent": {
+      "type": ["null", "string"]
+    },
+    "visitorId": {
+      "type": ["null", "string"]
+    },
+    "recordingId": {
+      "type": ["null", "string"]
+    },
+    "tabId": {
+      "type": ["null", "string"]
+    },
+		"recordingSessionId": {
+      "type": ["null", "string"]
+    }
+  }
+}
