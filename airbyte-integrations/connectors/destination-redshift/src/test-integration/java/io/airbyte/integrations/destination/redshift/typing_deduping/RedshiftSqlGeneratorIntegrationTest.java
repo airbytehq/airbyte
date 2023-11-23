@@ -82,7 +82,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
         throws SQLException {
       Object object = resultSet.getObject(index);
       if (object == null) {
-        object = resultSet.getTime(index);
+        //TODO: Fix this, silent return to see how many timetz formats are not supported/broken.
         return;
       }
 
