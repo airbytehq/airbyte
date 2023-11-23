@@ -16,10 +16,10 @@ import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import { ConnectionForm, ConnectionFormProps } from "views/Connection/ConnectionForm";
 
-import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
-import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 import styles from "./CreateConnectionContent.module.scss";
+import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
+import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 
 interface CreateConnectionContentProps {
   source: SourceRead;
@@ -77,17 +77,17 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   };
 
   const onSelectFrequency = (item: IDataItem | null) => {
-    const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
+    const enabledStreams = connection?.syncCatalog?.streams?.filter((stream) => stream?.config?.selected)?.length;
 
     if (item) {
       analyticsService.track(Namespace.CONNECTION, Action.FREQUENCY, {
         actionDescription: "Frequency selected",
-        frequency: item.label,
+        frequency: item?.label,
         connector_source_definition: source?.sourceName,
         connector_source_definition_id: source?.sourceDefinitionId,
         connector_destination_definition: destination?.destinationName,
         connector_destination_definition_id: destination?.destinationDefinitionId,
-        available_streams: connection.syncCatalog.streams.length,
+        available_streams: connection?.syncCatalog?.streams?.length,
         enabled_streams: enabledStreams,
       });
     }
