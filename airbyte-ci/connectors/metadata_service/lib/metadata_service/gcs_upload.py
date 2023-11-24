@@ -238,6 +238,7 @@ def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
         yaml.dump(metadata_dict, tmp_file)
         return Path(tmp_file.name)
 
+
 def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
     try:
         metadata = yaml.safe_load(metadata_file_path.read_text())
