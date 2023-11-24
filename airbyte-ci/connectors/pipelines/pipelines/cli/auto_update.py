@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 # HELPERS
 
 import importlib
@@ -9,42 +11,25 @@ import asyncclick as click
 import requests
 from pipelines import main_logger
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH
+from pipelines.external_scripts.airbyte_ci_install import RELEASE_URL, get_airbyte_os_name
 
 __installed_version__ = importlib.metadata.version("pipelines")
 
-BINARY_UPGRADE_COMMAND = "make tools.airbyte-ci.install"
-DEV_UPGRADE_COMMAND = "make tools.airbyte-ci-dev.install"
-
-
-def _get_os_name():
-    """
-    Returns 'ubuntu' if the system is Linux or 'macos' if the system is macOS.
-    """
-    OS = os.uname().sysname
-    if OS == "Linux":
-        return "ubuntu"
-    elif OS == "Darwin":
-        return "macos"
-    else:
-        # Default to macos as this is just a check, if they are not supported they will find
-        # out at install time.
-        return "macos"
+PROD_COMMAND = "airbyte-ci"
+DEV_COMMAND = "airbyte-ci-dev"
 
 
 def _is_version_available(version: str, is_dev: bool) -> bool:
     """
-    Check if an upgrade is available for the given version.
+    Check if an given version is available.
     """
 
     # Given that they can install from source, we don't need to check for upgrades
     if is_dev:
         return True
 
-    # Get RELEASE_URL from the environment if it exists, otherwise use the default
-    # "https://connectors.airbyte.com/files/airbyte-ci/releases"
-    release_url = os.getenv("RELEASE_URL", "https://connectors.airbyte.com/files/airbyte-ci/releases")
-    os_name = _get_os_name()
-    url = f"{release_url}/{os_name}/{version}/airbyte-ci"
+    os_name = get_airbyte_os_name()
+    url = f"{RELEASE_URL}/{os_name}/{version}/airbyte-ci"
 
     # Just check if the URL exists, but dont download it
     return requests.head(url).ok
@@ -63,28 +48,41 @@ def _get_latest_version() -> str:
     raise Exception("Could not find version in pyproject.toml. Please ensure you are running from the root of the airbyte repo.")
 
 
+def is_dev_command() -> bool:
+    """
+    Check if the current command is the dev version of the command
+    """
+    current_command = " ".join(sys.argv)
+    return DEV_COMMAND in current_command
+
+
 def check_for_upgrade(
-    require_update=True,
-    enable_auto_update=True,
+    require_update: bool = True,
+    enable_auto_update: bool = True,
 ):
     """Check if the installed version of pipelines is up to date."""
     current_command = " ".join(sys.argv)
     latest_version = _get_latest_version()
     is_out_of_date = latest_version != __installed_version__
-    is_dev_version = "airbyte-ci-dev" in current_command
-
-    upgrade_command = DEV_UPGRADE_COMMAND if is_dev_version else f"{BINARY_UPGRADE_COMMAND} VERSION={latest_version}"
-
     if not is_out_of_date:
         main_logger.info(f"airbyte-ci is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
         return
 
-    upgrade_available = _is_upgrade_available(latest_version, is_dev_version)
+    is_dev_version = is_dev_command()
+    upgrade_available = _is_version_available(latest_version, is_dev_version)
     if not upgrade_available:
         main_logger.warning(
             f"airbyte-ci is out of date, but no upgrade is available yet. This likely means that a release is still being built. Installed version: {__installed_version__}. Latest version: {latest_version}"
         )
         return
+
+    parent_command = DEV_COMMAND if is_dev_version else PROD_COMMAND
+    upgrade_command = f"{parent_command} update"
+
+    # Tack on the specific version if it is not the latest version and it is not the dev version
+    # This is because the dev version always corresponds to the version in the local repository
+    if not is_dev_version:
+        upgrade_command = f"{upgrade_command} --version {latest_version}"
 
     upgrade_error_message = f"""
     🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
@@ -95,7 +93,9 @@ def check_for_upgrade(
     Local Repository Version: {latest_version}
 
     Please upgrade your local airbyte repository to the latest version using the following command:
-    {upgrade_command}
+    $ {upgrade_command}
+
+    Alternatively you can skip this with the `--disable-update-check` flag.
 
     🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
     """

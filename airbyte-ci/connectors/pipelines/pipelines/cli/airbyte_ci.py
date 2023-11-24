@@ -206,6 +206,7 @@ async def get_modified_files_str(ctx: click.Context):
         "format": "pipelines.airbyte_ci.format.commands.format_code",
         "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
         "test": "pipelines.airbyte_ci.test.commands.test",
+        "update": "pipelines.airbyte_ci.update.commands.update",
     },
 )
 @click.version_option(__installed_version__)
@@ -249,6 +250,14 @@ async def get_modified_files_str(ctx: click.Context):
 @click.pass_context
 @click_ignore_unused_kwargs
 async def airbyte_ci(ctx: click.Context):  # noqa D103
+    # Check that the command being run is not upgrade
+    is_update_command = ctx.invoked_subcommand == "update"
+    if ctx.obj["enable_update_check"] and not is_update_command:
+        check_for_upgrade(
+            require_update=ctx.obj["is_local"],
+            enable_auto_update=ctx.obj["is_local"] and ctx.obj["enable_auto_update"],
+        )
+
     if ctx.obj["enable_dagger_run"] and not is_current_process_wrapped_by_dagger_run():
         main_logger.debug("Re-Running airbyte-ci with dagger run.")
         from pipelines.cli.dagger_run import call_current_command_with_dagger_run
@@ -260,12 +269,6 @@ async def airbyte_ci(ctx: click.Context):  # noqa D103
         # This check is meaningful only when running locally
         # In our CI the docker host used by the Dagger Engine is different from the one used by the runner.
         check_local_docker_configuration()
-
-    if ctx.obj["enable_update_check"]:
-        check_for_upgrade(
-            require_update=ctx.obj["is_local"],
-            enable_auto_update=ctx.obj["is_local"] and ctx.obj["enable_auto_update"],
-        )
 
     if not ctx.obj["is_local"]:
         log_git_info(ctx)
