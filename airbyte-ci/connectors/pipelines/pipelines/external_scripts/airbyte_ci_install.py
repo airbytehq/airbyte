@@ -48,6 +48,7 @@ def main(version="latest"):
         tmp_file = os.path.join(tmp_dir, "airbyte-ci")
 
         # Download the file using urllib.request
+        print(f"Downloading from {url}")
         with urllib.request.urlopen(url) as response, open(tmp_file, "wb") as out_file:
             shutil.copyfileobj(response, out_file)
 
