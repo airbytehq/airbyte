@@ -156,8 +156,6 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                final String tableName,
                                                                final CursorInfo cursorInfo,
                                                                final StandardSQLTypeName cursorFieldType) {
-    // set dataset name to create temporary tables.
-    database.setDatasetName(schemaName);
     return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
         RelationalDbQueryUtils.enquoteIdentifierList(columnNames, getQuoteString()),
         getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()),
@@ -175,8 +173,6 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                   final SyncMode syncMode,
                                                                   final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    // set dataset name to create temporary tables.
-    database.setDatasetName(schemaName);
      // This corresponds to the initial sync for in INCREMENTAL_MODE, where the ordering of the records matters
     // as intermediate state messages are emitted (if the connector emits intermediate state).
     if (syncMode.equals(SyncMode.INCREMENTAL)) {
@@ -205,8 +201,6 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                final String tableName,
                                                                final QueryParameterValue... params) {
     final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
-    // set dataset name to create temporary tables.
-    database.setDatasetName(schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.query(sqlQuery, params);

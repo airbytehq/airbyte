@@ -143,13 +143,6 @@ public class BigQueryDatabase extends SqlDatabase {
   }
 
   public QueryJobConfiguration getQueryConfig(final String sql, final String jobId, final List<QueryParameterValue> params) {
-    // check and create temp dataset in project 
-    if (bigQuery.getDataset(DatasetId.of(datasetName))==null){
-      bigQuery.create( DatasetInfo.newBuilder(datasetName).build()).getDatasetId().getDataset();
-      LOGGER.info("dataset {} created",datasetName);
-    }else{
-      LOGGER.info("dataset {} already exist",datasetName);
-    }
     return QueryJobConfiguration
         .newBuilder(sql)
         .setUseLegacySql(false)
