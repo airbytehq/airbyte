@@ -72,6 +72,7 @@ def setup_upload_mocks(
 
     mocker.patch.object(gcs_upload.service_account.Credentials, "from_service_account_info", mocker.Mock(return_value=mock_credentials))
     mocker.patch.object(gcs_upload.storage, "Client", mocker.Mock(return_value=mock_storage_client))
+    mocker.patch.object(gcs_upload, "_write_metadata_to_tmp_file", mocker.Mock(return_value=metadata_file_path))
 
     # Mock md5 hash
     def side_effect_compute_gcs_md5(file_path):
