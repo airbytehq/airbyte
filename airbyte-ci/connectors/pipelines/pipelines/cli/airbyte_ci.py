@@ -10,7 +10,7 @@ import multiprocessing
 import os
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional, Set
 
 import asyncclick as click
 import docker
@@ -141,7 +141,7 @@ def set_working_directory_to_root() -> None:
     os.chdir(working_dir)
 
 
-async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext) -> List[str]:
+async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext) -> Set[str]:
     """Get the list of modified files in the current git branch.
     If the current branch is master, it will return the list of modified files in the head commit.
     The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.
