@@ -27,7 +27,7 @@ def get_docker_hub_auth_token() -> str:
     return token
 
 
-def is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] = None, retries: int = 0) -> bool:
+def is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] = None, retries: int = 0, wait_sec: int = 30) -> bool:
     """Check if a given image and version exists on Docker Hub.
 
     Args:
@@ -35,6 +35,7 @@ def is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] 
         version (str): The version of the image to check.
         digest (str, optional): The digest of the image to check. Defaults to None.
         retries (int, optional): The number of times to retry the request. Defaults to 0.
+        wait_sec (int, optional): The number of seconds to wait between retries. Defaults to 30.
     Returns:
         bool: True if the image and version exists on Docker Hub, False otherwise.
     """
@@ -48,10 +49,12 @@ def is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] 
         response = requests.get(tag_url, headers=headers)
         if response.ok:
             break
-        time.sleep(30)
+        time.sleep(wait_sec)
 
     if not response.ok:
+        response.raise_for_status()
         return False
+
     # If a digest is provided, check that it matches the digest of the image on Docker Hub.
     if digest is not None:
         return f"sha256:{digest}" == response.json()["digest"]
