@@ -31,12 +31,10 @@ async def get_modified_files_in_branch_remote(
     return set(modified_files.split("\n"))
 
 
-def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch: str = "master") -> Set[str]:
-    """Use git diff and git status to spot the modified files on the local branch."""
+def get_modified_files_local(current_git_revision: str, diffed: str = "master") -> Set[str]:
+    """Use git diff and git status to spot the modified files in the local repo."""
     airbyte_repo = git.Repo()
-    modified_files = airbyte_repo.git.diff(
-        f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_revision}"
-    ).split("\n")
+    modified_files = airbyte_repo.git.diff(f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed}...{current_git_revision}").split("\n")
     status_output = airbyte_repo.git.status("--porcelain")
     for not_committed_change in status_output.split("\n"):
         file_path = not_committed_change.strip().split(" ")[-1]
@@ -50,7 +48,7 @@ async def get_modified_files_in_branch(
 ) -> Set[str]:
     """Retrieve the list of modified files on the branch."""
     if is_local:
-        return get_modified_files_in_branch_local(current_git_revision, diffed_branch)
+        return get_modified_files_local(current_git_revision, diffed_branch)
     else:
         return await get_modified_files_in_branch_remote(current_git_branch, current_git_revision, diffed_branch)
 
