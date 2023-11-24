@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from os import getenv
 from typing import Any, List, Mapping, Optional, Tuple
 
@@ -102,6 +103,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         Show error message in case of request exception or unexpected response.
         """
         try:
+            self.validate_replication_dates(config)
             self.validate_stream_report_options(config)
             stream_kwargs = self._get_stream_kwargs(config)
             orders_stream = Orders(**stream_kwargs)
@@ -113,8 +115,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             if isinstance(e, StopIteration):
                 return True, None
 
-            # Additional check, since Vendor-only accounts within Amazon Seller API
-            # will not pass the test without this exception
+            # Additional check, since Vendor-only accounts within Amazon Seller API will not pass the test without this exception
             if "403 Client Error" in str(e):
                 stream_to_check = VendorSalesReports(**stream_kwargs)
                 next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
@@ -189,15 +190,25 @@ class SourceAmazonSellerPartner(AbstractSource):
             stream_list += brand_analytics_reports
 
         for stream in stream_list:
-            streams.append(stream(**stream_kwargs, report_options=self.get_stream_report_options(stream.name, config)))
+            streams.append(stream(**stream_kwargs, report_options=self.get_stream_report_options_list(stream.name, config)))
         return streams
 
-    def validate_stream_report_options(self, config: Mapping[str, Any]):
+    @staticmethod
+    def validate_replication_dates(config: Mapping[str, Any]) -> None:
+        if (
+            "replication_start_date" in config
+            and "replication_end_date" in config
+            and config["replication_end_date"] < config["replication_start_date"]
+        ):
+            raise AmazonConfigException(message="End Date should be greater than or equal to Start Date")
+
+    @staticmethod
+    def validate_stream_report_options(config: Mapping[str, Any]) -> None:
         if len([x.get("stream_name") for x in config.get("report_options_list", [])]) != len(
             set(x.get("stream_name") for x in config.get("report_options_list", []))
         ):
             raise AmazonConfigException(message="Stream name should be unique among all Report options list")
-        for stream_report_option in config.get("report_options_list"):
+        for stream_report_option in config.get("report_options_list", []):
             if len([x.get("option_name") for x in stream_report_option.get("options_list")]) != len(
                 set(x.get("option_name") for x in stream_report_option.get("options_list"))
             ):
@@ -205,7 +216,7 @@ class SourceAmazonSellerPartner(AbstractSource):
                     message=f"Option names should be unique for `{stream_report_option.get('stream_name')}` report options"
                 )
 
-    def get_stream_report_options(self, report_name: str, config: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
+    @staticmethod
+    def get_stream_report_options_list(report_name: str, config: Mapping[str, Any]) -> Optional[List[Mapping[str, Any]]]:
         if any(x for x in config.get("report_options_list", []) if x.get("stream_name") == report_name):
             return [x.get("options_list") for x in config.get("report_options_list") if x.get("stream_name") == report_name][0]
-        return {}

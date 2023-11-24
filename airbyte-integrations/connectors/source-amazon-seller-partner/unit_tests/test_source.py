@@ -23,32 +23,40 @@ def connector_config_with_report_options():
             {
                 "stream_name": "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA",
                 "options_list": [
-                    {
-                        "option_name": "some_name_1",
-                        "option_value": "some_value_1"
-                    },
-
-                    {
-                        "option_name": "some_name_2",
-                        "option_value": "some_value_2"
-                    }
-                ]
-            }
+                    {"option_name": "some_name_1", "option_value": "some_value_1"},
+                    {"option_name": "some_name_2", "option_value": "some_value_2"},
+                ],
+            },
         ],
     }
 
 
-NOT_SUPPORTED_STREAMS_REPORT_OPTIONS = ["VendorDirectFulfillmentShipping", "Orders", "OrderItems", "ListFinancialEventGroups", "ListFinancialEvents"]
+@pytest.fixture
+def connector_config_without_start_date():
+    return {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+    }
 
 
-def test_config_report_options(connector_config_with_report_options):
-    streams = SourceAmazonSellerPartner().streams(connector_config_with_report_options)
-    fba_fulfilment_stream = [x for x in streams if x.name == "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA"][0]
-    assert fba_fulfilment_stream.report_options() == {"option_name": "some_name_2", "option_value": "some_value_2"}
-    all_other_streams = (x for x in streams if
-                         x.name not in ["GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA", *NOT_SUPPORTED_STREAMS_REPORT_OPTIONS])
-    for streams in all_other_streams:
-        assert not streams.report_options()
+@pytest.mark.parametrize(
+    ("report_name", "options_list"),
+    (
+        (
+            "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA",
+            [
+                {"option_name": "some_name_1", "option_value": "some_value_1"},
+                {"option_name": "some_name_2", "option_value": "some_value_2"},
+            ],
+        ),
+        ("SOME_OTHER_STREAM", None),
+    ),
+)
+def test_get_stream_report_options_list(connector_config_with_report_options, report_name, options_list):
+    assert SourceAmazonSellerPartner().get_stream_report_options_list(report_name, connector_config_with_report_options) == options_list
 
 
 def test_config_report_options_validation_error_duplicated_streams(connector_config_with_report_options):
@@ -59,29 +67,38 @@ def test_config_report_options_validation_error_duplicated_streams(connector_con
 
 
 def test_config_report_options_validation_error_duplicated_options(connector_config_with_report_options):
-    connector_config_with_report_options["report_options_list"][0]['options_list'].append(connector_config_with_report_options["report_options_list"][0]['options_list'][0])
+    connector_config_with_report_options["report_options_list"][0]["options_list"].append(
+        connector_config_with_report_options["report_options_list"][0]["options_list"][0]
+    )
     with pytest.raises(AmazonConfigException) as e:
         SourceAmazonSellerPartner().validate_stream_report_options(connector_config_with_report_options)
     assert e.value.message == "Option names should be unique for `GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA` report options"
 
 
-@pytest.fixture
-def connector_config_without_start_date():
-    return {
-        "refresh_token": "Atzr|IwEBIP-abc123",
-        "app_id": "amzn1.sp.solution.2cfa6ca8-2c35-123-456-78910",
-        "lwa_app_id": "amzn1.application-oa2-client.abc123",
-        "lwa_client_secret": "abc123",
-        "aws_environment": "SANDBOX",
-        "region": "US",
-    }
-
-
-def test_streams(connector_source, connector_config):
-    for stream in connector_source.streams(connector_config):
+def test_streams(connector_config_without_start_date):
+    for stream in SourceAmazonSellerPartner().streams(connector_config_without_start_date):
         assert isinstance(stream, Stream)
 
 
-def test_streams_connector_config_without_start_date(connector_source, connector_config_without_start_date):
-    for stream in connector_source.streams(connector_config_without_start_date):
+def test_streams_connector_config_without_start_date(connector_config_without_start_date):
+    for stream in SourceAmazonSellerPartner().streams(connector_config_without_start_date):
         assert isinstance(stream, Stream)
+
+
+@pytest.mark.parametrize(
+    ("config", "should_raise"),
+    (
+        ({"replication_start_date": "2022-09-01T00:00:00Z", "replication_end_date": "2022-08-01T00:00:00Z"}, True),
+        ({"replication_start_date": "2022-09-01T00:00:00Z", "replication_end_date": "2022-10-01T00:00:00Z"}, False),
+        ({"replication_end_date": "2022-10-01T00:00:00Z"}, False),
+        ({"replication_start_date": "2022-09-01T00:00:00Z"}, False),
+        ({}, False),
+    ),
+)
+def test_replication_dates_validation(config, should_raise):
+    if should_raise:
+        with pytest.raises(AmazonConfigException) as e:
+            SourceAmazonSellerPartner().validate_replication_dates(config)
+        assert e.value.message == "End Date should be greater than or equal to Start Date"
+    else:
+        assert SourceAmazonSellerPartner().validate_replication_dates(config) is None

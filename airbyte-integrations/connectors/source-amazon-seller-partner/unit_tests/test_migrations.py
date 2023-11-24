@@ -24,7 +24,7 @@ def load_config(config_path: str = TEST_NOT_MIGRATED_CONFIG_PATH) -> Mapping[str
 
 def test_migrate_config(capsys):
     config = load_config(TEST_NOT_MIGRATED_CONFIG_PATH)
-    assert "acount_type" not in config
+    assert "account_type" not in config
     migration_instance = MigrateAccountType()
     migration_instance.migrate([CMD, "--config", TEST_NOT_MIGRATED_CONFIG_PATH], SOURCE)
     control_msg = json.loads(capsys.readouterr().out)

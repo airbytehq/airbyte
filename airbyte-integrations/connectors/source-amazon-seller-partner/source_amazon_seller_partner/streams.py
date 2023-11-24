@@ -164,7 +164,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         replication_start_date: str,
         marketplace_id: str,
         period_in_days: Optional[int],
-        report_options: Optional[Mapping[str, Any]],
+        report_options: Optional[List[Mapping[str, Any]]],
         replication_end_date: Optional[str],
         *args,
         **kwargs,
@@ -270,13 +270,13 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         return csv.DictReader(StringIO(document), delimiter="\t")
 
     def report_options(self) -> Optional[Mapping[str, Any]]:
-        return {key: value for d in self._report_options for key, value in d.items()} if self._report_options else None
+        return {option.get("option_name"): option.get("option_value") for option in self._report_options} if self._report_options else None
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
-        end_date = pendulum.now()
+        end_date = pendulum.now("utc")
         if self._replication_end_date:
             # if replication_start_date is older than 90 days(from current date), we are overriding the value above.
             # when replication_end_date is present, we should use the user provided replication_start_date.
@@ -316,7 +316,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         try:
             report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
         except DefaultBackoffException as e:
-            logger.warn(f"The report for stream '{self.name}' was cancelled due to several failed retry attempts. {e}")
+            logger.warning(f"The report for stream '{self.name}' was cancelled due to several failed retry attempts. {e}")
             return []
 
         # create and retrieve the report
@@ -348,7 +348,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         elif is_fatal:
             raise AirbyteTracedException(f"The report for stream '{self.name}' was not created - skip reading")
         elif is_cancelled:
-            logger.warn(f"The report for stream '{self.name}' was cancelled or there is no data to return")
+            logger.warning(f"The report for stream '{self.name}' was cancelled or there is no data to return")
         else:
             raise Exception(f"Unknown response for stream `{self.name}`. Response body {report_payload}")
 
@@ -930,7 +930,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         start_date = pendulum.parse(self._replication_start_date)
-        end_date = pendulum.now().subtract(days=self.availability_sla_days)
+        end_date = pendulum.now("utc").subtract(days=self.availability_sla_days)
 
         if self._replication_end_date:
             end_date = pendulum.parse(self._replication_end_date)

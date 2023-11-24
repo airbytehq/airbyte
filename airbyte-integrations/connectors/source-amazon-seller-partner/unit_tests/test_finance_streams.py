@@ -200,6 +200,7 @@ def test_financial_events_stream_parse_response(mocker, list_financial_events_st
             "AdjustmentEventList"
         )
 
+
 def test_reports_read_records_exit_on_backoff(mocker, requests_mock, caplog):
     mocker.patch("time.sleep", lambda x: None)
     requests_mock.post("https://test.url/reports/2021-06-30/reports", status_code=429)
@@ -212,7 +213,6 @@ def test_reports_read_records_exit_on_backoff(mocker, requests_mock, caplog):
         authenticator=None,
         period_in_days=0,
         report_options=None,
-        advanced_stream_options=None,
     )
     assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == []
     assert "The report for stream 'GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT' was cancelled due to several failed retry attempts." in caplog.messages[-1]
