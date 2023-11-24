@@ -322,13 +322,13 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                             "type": "object",
                                                             "properties": {
                                                                 "mode": {
-                                                                "title": "Mode",
-                                                                "default": "local",
-                                                                "const": "local",
-                                                                "enum": [
-                                                                    "local"
-                                                                ],
-                                                                "type": "string"
+                                                                    "title": "Mode",
+                                                                    "default": "local",
+                                                                    "const": "local",
+                                                                    "enum": [
+                                                                        "local"
+                                                                    ],
+                                                                    "type": "string"
                                                                 }
                                                             },
                                                             "description": "Process files locally, supporting `fast` and `ocr` modes. This is the default option.",
