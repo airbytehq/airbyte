@@ -1,6 +1,8 @@
 # A list of URLs that should be redirected to new pathes
 - from: /airbyte-pro
-  to: /airbyte-enterprise
+  to: /enterprise-setup/self-managed/
+- from: /airbyte-enterprise
+  to: /enterprise-setup/self-managed/
 - from: /upgrading-airbyte
   to: /operator-guides/upgrading-airbyte
 - from: /catalog
