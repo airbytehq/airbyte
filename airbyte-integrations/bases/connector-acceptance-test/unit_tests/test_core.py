@@ -6,7 +6,6 @@ from unittest import mock
 from unittest.mock import MagicMock, patch
 
 import pytest
-from jsonschema.exceptions import SchemaError
 from _pytest.outcomes import Failed
 from airbyte_protocol.models import (
     AirbyteErrorTraceMessage,
@@ -24,6 +23,7 @@ from airbyte_protocol.models import (
 )
 from connector_acceptance_test.config import BasicReadTestConfig, Config, ExpectedRecordsConfig, IgnoredFieldsConfiguration
 from connector_acceptance_test.tests import test_core
+from jsonschema.exceptions import SchemaError
 
 from .conftest import does_not_raise
 
