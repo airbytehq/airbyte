@@ -2,14 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, Dict
+from unittest.mock import patch
+
 import pendulum
 import pytest
 import requests
-
 from airbyte_cdk.models import SyncMode
 from source_amazon_seller_partner.streams import IncrementalReportsAmazonSPStream, ReportsAmazonSPStream
-from typing import Any, Dict
-from unittest.mock import patch
 
 
 class SomeReportStream(ReportsAmazonSPStream):

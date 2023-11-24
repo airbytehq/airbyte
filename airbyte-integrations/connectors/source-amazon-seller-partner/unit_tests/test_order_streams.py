@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from unittest import mock
+
 import pytest
 import requests
 from source_amazon_seller_partner.streams import OrderItems, Orders
-from unittest import mock
 
 
 @pytest.fixture
