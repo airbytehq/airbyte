@@ -79,7 +79,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @SystemStub
-  private EnvironmentVariables environmentVariables;
+  protected EnvironmentVariables environmentVariables;
 
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
   protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
