@@ -19,6 +19,8 @@ import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
+import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableId;
 import com.google.common.base.Charsets;
@@ -40,12 +42,12 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
-
+import java.util.concurrent.TimeUnit;
 public class BigQueryDatabase extends SqlDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDatabase.class);
   private static final String AGENT_TEMPLATE = "%s (GPN: Airbyte; staging)";
-
+  private  String datasetName ="temp";
   private final BigQuery bigQuery;
   private final BigQuerySourceOperations sourceOperations;
 
@@ -89,12 +91,19 @@ public class BigQueryDatabase extends SqlDatabase {
         .replace("airbyte/", EMPTY).replace(":", "/");
   }
 
+  public void setDatasetName(String datasetName) {
+    this.datasetName = datasetName;
+}
   @Override
   public void execute(final String sql) throws SQLException {
-    final ImmutablePair<Job, String> result = executeQuery(bigQuery, getQueryConfig(sql, Collections.emptyList()));
+    final String jobId = UUID.randomUUID().toString();
+    final ImmutablePair<Job, String> result = executeQuery(bigQuery,jobId, getQueryConfig(sql,jobId,Collections.emptyList()));
     if (result.getLeft() == null) {
       throw new SQLException("BigQuery request is failed with error: " + result.getRight() + ". SQL: " + sql);
     }
+    // add expiration time of one day to the table created for query results
+    bigQuery.update(bigQuery.getTable(datasetName, jobId).toBuilder().setExpirationTime(TimeUnit.MILLISECONDS.convert(7, TimeUnit.DAYS) + System.currentTimeMillis()).build());
+
     LOGGER.info("BigQuery successfully finished execution SQL: " + sql);
   }
 
@@ -119,10 +128,13 @@ public class BigQueryDatabase extends SqlDatabase {
   }
 
   public Stream<JsonNode> query(final String sql, final List<QueryParameterValue> params) throws Exception {
-    final ImmutablePair<Job, String> result = executeQuery(bigQuery, getQueryConfig(sql, params));
+    final String jobId = UUID.randomUUID().toString();
+    final ImmutablePair<Job, String> result = executeQuery(bigQuery,jobId, getQueryConfig(sql,jobId,params));
 
     if (result.getLeft() != null) {
       final FieldList fieldList = result.getLeft().getQueryResults().getSchema().getFields();
+      // add expiration time of one week to the table created for query results
+      bigQuery.update(bigQuery.getTable(datasetName, jobId).toBuilder().setExpirationTime(TimeUnit.MILLISECONDS.convert(7, TimeUnit.DAYS) + System.currentTimeMillis()).build());
       return Streams.stream(result.getLeft().getQueryResults().iterateAll())
           .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fieldList)));
     } else
@@ -130,19 +142,25 @@ public class BigQueryDatabase extends SqlDatabase {
           "Failed to execute query " + sql + (params != null && !params.isEmpty() ? " with params " + params : "") + ". Error: " + result.getRight());
   }
 
-  public QueryJobConfiguration getQueryConfig(final String sql, final List<QueryParameterValue> params) {
+  public QueryJobConfiguration getQueryConfig(final String sql, final String jobId, final List<QueryParameterValue> params) {
+    // check and create temp dataset in project 
+    if (bigQuery.getDataset(DatasetId.of(datasetName))==null){
+      bigQuery.create( DatasetInfo.newBuilder(datasetName).build()).getDatasetId().getDataset();
+      LOGGER.info("dataset {} created",datasetName);
+    }else{
+      LOGGER.info("dataset {} already exist",datasetName);
+    }
     return QueryJobConfiguration
         .newBuilder(sql)
         .setUseLegacySql(false)
         .setPositionalParameters(params)
-        .setDestinationTable(TableId.of("temp", UUID.randomUUID().toString()))
+        .setDestinationTable(TableId.of(datasetName,jobId))
         .setAllowLargeResults(true)
         .build();
   }
 
-  public ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
-    final JobId jobId = JobId.of(UUID.randomUUID().toString());
-    final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
+  public ImmutablePair<Job, String> executeQuery(final BigQuery bigquery,final String jobId, final QueryJobConfiguration queryConfig) {
+    final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(JobId.of(jobId)).build());
     return executeQuery(queryJob);
   }
 
