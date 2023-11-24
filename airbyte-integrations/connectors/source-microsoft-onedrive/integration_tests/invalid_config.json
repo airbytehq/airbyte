@@ -6,7 +6,8 @@
     "client_secret" : "client_secret",
     "refresh_token" : "refresh_token"
   },
-  "drive_name": "Name",
+  "drive_name": "drive_name",
+  "folder_path": "folder_path",
   "streams" : [
     {
       "name" : "test_stream",
