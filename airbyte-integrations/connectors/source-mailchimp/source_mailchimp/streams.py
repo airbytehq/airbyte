@@ -369,7 +369,7 @@ class SegmentMembers(MailChimpListSubStream):
         elif isinstance(element, list):
             # If the element is a list, apply the method recursively to each item in the list.
             element = [self.nullify_empty_string_fields(v) for v in element]
-            
+
         return element
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
