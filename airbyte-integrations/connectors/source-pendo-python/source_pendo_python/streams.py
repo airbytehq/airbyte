@@ -49,6 +49,59 @@ class PendoPythonStream(HttpStream, ABC):
 # Airbyte Streams using the Pendo /aggregation endpoint (Currently only Account and Visitor)
 class PendoAggregationStream(PendoPythonStream):
     json_schema = None  # Field to store dynamically built Airbyte Stream Schema
+    page_size = 100
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "aggregation"
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"Content-Type": "application/json"}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        data = response.json().get("results", [])
+        if len(data) < self.page_size:
+            return None
+        return data[-1][self.primary_key]
+
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss
+    ) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        yield from response.json().get("results", [])
+
+    # Build /aggregation endpoint payload with pagination for a given source and requestId
+    def build_request_body(self, requestId, source, next_page_token) -> Optional[Mapping[str, Any]]:
+        request_body = {
+            "response": {"mimeType": "application/json"},
+            "request": {
+                "requestId": requestId,
+                "pipeline": [
+                    {"source": source},
+                    {"sort": [self.primary_key]},
+                    {"limit": self.page_size},
+                ],
+            },
+        }
+
+        if next_page_token is not None:
+            request_body["request"]["pipeline"].insert(2, {"filter": f'{self.primary_key} > "{next_page_token}"'})
+
+        return request_body
+
+
+# Airbyte Streams using the Pendo /aggregation endpoint (Currently only Account and Visitor)
+class PendoTimeSeriesAggregationStream(PendoPythonStream):
+    json_schema = None  # Field to store dynamically built Airbyte Stream Schema
     MAX_DAYS = -730  # Two Years TODO : Start the window relative to the ingest start date.
     DAY_PAGE_SIZE = 21
     current_day = MAX_DAYS
@@ -202,7 +255,7 @@ class Visitor(PendoAggregationStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping[str, Any]]:
-        source = {"visitors": {"identified": True}, "timeSeries": {"first": "", "count": self.DAY_PAGE_SIZE, "period": "dayRange"}}
+        source = {"visitors": {"identified": True}}
         return self.build_request_body("visitor-list", source, next_page_token)
 
 
@@ -243,13 +296,13 @@ class Account(PendoAggregationStream):
         self,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
-        next_page_token: int = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping[str, Any]]:
-        source = {"accounts": {}, "timeSeries": {"first": "", "count": self.DAY_PAGE_SIZE, "period": "dayRange"}}
+        source = {"accounts": {}}
         return self.build_request_body("account-list", source, next_page_token)
 
 
-class PageEvents(PendoAggregationStream):
+class PageEvents(PendoTimeSeriesAggregationStream):
     name = "page_events"
     primary_key = ["pageId", "day", "visitorId", "accountId", "server", "remoteIp", "userAgent"]
 
@@ -266,7 +319,7 @@ class PageEvents(PendoAggregationStream):
         return self.build_request_body("page-events", source, next_page_token)
 
 
-class FeatureEvents(PendoAggregationStream):
+class FeatureEvents(PendoTimeSeriesAggregationStream):
     name = "feature_events"
 
     def request_body_json(
@@ -280,7 +333,7 @@ class FeatureEvents(PendoAggregationStream):
         return self.build_request_body("feature_events", source, next_page_token)
 
 
-class GuideEvents(PendoAggregationStream):
+class GuideEvents(PendoTimeSeriesAggregationStream):
     name = "guide_events"
 
     def request_body_json(
