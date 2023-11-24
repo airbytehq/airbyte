@@ -11,6 +11,7 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.utils.transform import TypeTransformer
 
 
 @dataclass
@@ -28,6 +29,7 @@ class RecordSelector(HttpSelector):
     extractor: RecordExtractor
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+    schema_normalization: TypeTransformer
     record_filter: Optional[RecordFilter] = None
     transformations: List[RecordTransformation] = field(default_factory=lambda: [])
 
@@ -40,11 +42,27 @@ class RecordSelector(HttpSelector):
         stream_state: StreamState,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
+        records_schema: Optional[Mapping[str, Any]] = None,
     ) -> List[Record]:
+        """
+        Selects records from the response
+        :param response: The response to select the records from
+        :param stream_state: The stream state
+        :param stream_slice: The stream slice
+        :param next_page_token: The paginator token
+        :param records_schema: json schema of records to return
+        :return: List of Records selected from the response
+        """
         all_data = self.extractor.extract_records(response)
         filtered_data = self._filter(all_data, stream_state, stream_slice, next_page_token)
         self._transform(filtered_data, stream_state, stream_slice)
+        self._normalize_by_schema(filtered_data, schema=records_schema)
         return [Record(data, stream_slice) for data in filtered_data]
+
+    def _normalize_by_schema(self, records: List[Mapping[str, Any]], schema: Optional[Mapping[str, Any]]):
+        if schema:
+            return [self.schema_normalization.transform(record, schema) for record in records]
+        return records
 
     def _filter(
         self,

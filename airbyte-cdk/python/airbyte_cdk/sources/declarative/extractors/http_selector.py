@@ -24,6 +24,7 @@ class HttpSelector:
         stream_state: StreamState,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
+        records_schema: Optional[Mapping[str, Any]] = None,
     ) -> List[Record]:
         """
         Selects records from the response
@@ -31,6 +32,7 @@ class HttpSelector:
         :param stream_state: The stream state
         :param stream_slice: The stream slice
         :param next_page_token: The paginator token
+        :param records_schema: json schema of records to return
         :return: List of Records selected from the response
         """
         pass

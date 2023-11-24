@@ -1011,6 +1011,20 @@ class ListPartitionRouter(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class NoSchemaNormalization(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['NoSchemaNormalization']
+
+
+class DefaultSchemaNormalization(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal['DefaultSchemaNormalization']
+
+
 class RecordSelector(BaseModel):
     type: Literal['RecordSelector']
     extractor: Union[CustomRecordExtractor, DpathExtractor]
@@ -1020,6 +1034,11 @@ class RecordSelector(BaseModel):
         title='Record Filter',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+    schema_normalization: Optional[Union[NoSchemaNormalization, DefaultSchemaNormalization]] = Field(
+        NoSchemaNormalization,
+        description='Normalization that needs to applied to the values based on schema',
+        title='Schema Normalization'
+    )
 
 
 class Spec(BaseModel):
