@@ -40,7 +40,6 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends MySqlSslJdbcSourceAccep
   private static final SshBastionContainer bastion = new SshBastionContainer();
   private static final Network network = Network.newNetwork();
 
-
   @BeforeEach
   @Override
   public void setup() throws Exception {
@@ -60,7 +59,6 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends MySqlSslJdbcSourceAccep
         SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_cloud_spec.json"), ConnectorSpecification.class));
     assertEquals(expected, actual);
   }
-
 
   @Test
   void testStrictSSLUnsecuredNoTunnel() throws Exception {
@@ -177,6 +175,5 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends MySqlSslJdbcSourceAccep
       bastion.stopAndClose();
     }
   }
-
 
 }
