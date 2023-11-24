@@ -141,7 +141,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 start_date = self._start_date
                 logger.info("Start date from 'else")
             else:
-                start_date = '2021-01-01'
+                start_date = '2023-11-20'
                 logger.warning("self._start_date is None, this shouldn't be happening")
 
             logger.info("Final start date " + start_date)
