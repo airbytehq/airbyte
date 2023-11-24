@@ -77,6 +77,14 @@ acceptance_tests:
             bypass_reason: "Campaign is still in progress"
           - name: account_impression_performance_report_monthly
             bypass_reason: "Campaign is still in progress"
+        ignored_fields:
+          ad_group_performance_report_daily:
+            - name: Impressions
+              bypass_reason: "dynamic field"
+            - name: Ctr
+              bypass_reason: "dynamic field"
+            - name: AverageCpm
+              bypass_reason: "dynamic field"
         timeout_seconds: 7200
   full_refresh:
     tests:
