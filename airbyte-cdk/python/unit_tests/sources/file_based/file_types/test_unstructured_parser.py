@@ -207,6 +207,7 @@ def test_parse_records(
     else:
         assert list(UnstructuredParser().parse_records(config, fake_file, stream_reader, logger, MagicMock())) == expected_records
 
+
 @pytest.mark.parametrize(
     "format_config, raises_for_status, json_response, is_ok, expected_error",
     [
@@ -399,7 +400,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
 )
 @patch("airbyte_cdk.sources.file_based.file_types.unstructured_parser.requests")
 @patch("airbyte_cdk.sources.file_based.file_types.unstructured_parser.detect_filetype")
-@patch('time.sleep', side_effect = lambda _: None)
+@patch('time.sleep', side_effect=lambda _: None)
 def test_parse_records_remotely(
     time_mock,
     mock_detect_filetype,

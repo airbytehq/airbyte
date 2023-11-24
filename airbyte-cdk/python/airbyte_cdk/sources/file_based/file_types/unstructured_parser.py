@@ -22,7 +22,6 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
-from unstructured.documents.elements import Formula, ListItem, Title
 from unstructured.file_utils.filetype import FILETYPE_TO_MIMETYPE, STR_TO_FILETYPE, FileType, detect_filetype
 
 unstructured_partition_pdf = None
@@ -165,7 +164,7 @@ class UnstructuredParser(FileTypeParser):
 
         try:
             self._read_file_remotely(BytesIO(b"# Airbyte source connection test"), format_config.processing, FileType.MD)
-        except:
+        except Exception:
             return False, "".join(traceback.format_exc())
 
         return True, None
