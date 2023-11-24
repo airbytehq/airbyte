@@ -166,7 +166,7 @@ class SourceGoogleAds(AbstractSource):
             AdListingGroupCriterion(**default_config),
             Audience(**default_config),
             CampaignBiddingStrategy(**incremental_config),
-            CampaignCriterion(**default_config),
+            CampaignCriterion(**incremental_config),
             CampaignLabel(google_api, customers=customers),
             ClickView(**incremental_config),
             Customer(**incremental_config),
