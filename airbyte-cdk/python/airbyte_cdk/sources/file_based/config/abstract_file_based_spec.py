@@ -3,10 +3,10 @@
 #
 
 import copy
-import dpath.util
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
+import dpath.util
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
 from pydantic import AnyUrl, BaseModel, Field

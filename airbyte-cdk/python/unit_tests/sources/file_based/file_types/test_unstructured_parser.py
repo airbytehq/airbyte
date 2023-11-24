@@ -7,11 +7,10 @@ from datetime import datetime
 from unittest import mock
 from unittest.mock import MagicMock, call, mock_open, patch
 
-import requests
-
 import pytest
+import requests
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat, APIProcessingConfigModel, APIParameterConfigModel
+from airbyte_cdk.sources.file_based.config.unstructured_format import APIParameterConfigModel, APIProcessingConfigModel, UnstructuredFormat
 from airbyte_cdk.sources.file_based.exceptions import RecordParseError
 from airbyte_cdk.sources.file_based.file_types import UnstructuredParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
