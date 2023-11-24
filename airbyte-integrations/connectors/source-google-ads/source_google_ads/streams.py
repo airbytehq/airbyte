@@ -40,11 +40,11 @@ class GoogleAdsStream(Stream, ABC):
         primary_key = ' '.join(self.primary_key)
         for result in response:
             record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
-            id = record.get(primary_key)
-            if (latest_records.get(id) is None
+            record_id = record.get(primary_key)
+            if (latest_records.get(record_id) is None
                     or record.get("segments_date") is None
-                    or pendulum.parse(latest_records[id]["segments.date"]) < pendulum.parse(record.get("segments.date"))):
-                latest_records[id] = record
+                    or pendulum.parse(latest_records[record_id]["segments.date"]) < pendulum.parse(record.get("segments.date"))):
+                latest_records[record_id] = record
 
         yield from latest_records.values()
 
@@ -121,23 +121,27 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         for customer in self.customers:
             stream_state = stream_state or {}
-            logger.info("Start date: " + str(self._start_date))
-            logger.info("Stream state: " + str(stream_state))
-            logger.info("Customer id: " + str(customer.id))
-            logger.info("Cursor field: " + str(self.cursor_field))
-            logger.info("Customers: " + str(self.customers))
-            logger.info("Value: " + str(stream_state.get(self.cursor_field)))
+            logger.info(
+                "Start date: " + str(self._start_date) +
+                ", Stream state: " + str(stream_state) +
+                ", Customer id: " + str(customer.id) +
+                ", Cursor field: " + str(self.cursor_field) +
+                ", Customers: " + str(self.customers) +
+                ", State cursor field value: " + str(stream_state.get(self.cursor_field))
+            )
             if stream_state.get(customer.id):
                 start_date = stream_state[customer.id].get(self.cursor_field) or self._start_date
-                logger.info("DEBUG 1 " + str(start_date))
+                logger.info("Start date from 'stream_state.get(customer.id)'")
 
             # We should keep backward compatibility with the previous version
             elif stream_state.get(self.cursor_field) and len(self.customers) > 0:
                 start_date = stream_state.get(self.cursor_field) or self._start_date
-                logger.info("DEBUG 2 " + str(start_date))
+                logger.info("Start date from 'stream_state.get(self.cursor_field) and len(self.customers) > 0'")
             else:
                 start_date = self._start_date
-                logger.info("DEBUG 3 " + str(start_date))
+                logger.info("Start date from 'else")
+
+            logger.info("Final start date " + start_date)
 
             end_date = self._end_date
 
