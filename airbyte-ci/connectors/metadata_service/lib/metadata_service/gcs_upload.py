@@ -233,9 +233,19 @@ def _apply_author_info_to_metadata_file(metadata_dict: dict, original_metadata_f
 
 
 def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
+    """Write the metadata to a temporary file."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_file:
         yaml.dump(metadata_dict, tmp_file)
         return Path(tmp_file.name)
+
+def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
+    try:
+        metadata = yaml.safe_load(metadata_file_path.read_text())
+        if metadata is None or not isinstance(metadata, dict):
+            raise ValueError(f"Validation error: Metadata file {metadata_file_path} is invalid yaml.")
+        return metadata
+    except Exception as e:
+        raise ValueError(f"Validation error: Metadata file {metadata_file_path} is invalid yaml: {e}")
 
 
 def _apply_modifications_to_metadata_file(original_metadata_file_path: Path, validator_opts: ValidatorOptions) -> Path:
@@ -244,11 +254,7 @@ def _apply_modifications_to_metadata_file(original_metadata_file_path: Path, val
     e.g. The git commit hash, the date of the commit, the author of the commit, etc.
 
     """
-
-    metadata = yaml.safe_load(original_metadata_file_path.read_text())
-    if metadata is None:
-        raise ValueError(f"Metadata file {original_metadata_file_path} is invalid yaml.")
-
+    metadata = _safe_load_metadata_file(original_metadata_file_path)
     metadata = _apply_prerelease_overrides(metadata, validator_opts)
     metadata = _apply_author_info_to_metadata_file(metadata, original_metadata_file_path)
 

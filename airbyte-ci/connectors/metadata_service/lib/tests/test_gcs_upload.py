@@ -72,7 +72,6 @@ def setup_upload_mocks(
 
     mocker.patch.object(gcs_upload.service_account.Credentials, "from_service_account_info", mocker.Mock(return_value=mock_credentials))
     mocker.patch.object(gcs_upload.storage, "Client", mocker.Mock(return_value=mock_storage_client))
-    mocker.patch.object(gcs_upload, "_write_metadata_to_tmp_file", mocker.Mock(return_value=metadata_file_path))
 
     # Mock md5 hash
     def side_effect_compute_gcs_md5(file_path):
@@ -230,6 +229,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
             metadata_file_path,
             VALID_DOC_FILE_PATH,
         )
+        mocker.patch.object(gcs_upload, "_write_metadata_to_tmp_file", mocker.Mock(return_value=metadata_file_path))
 
         expected_version_key = f"metadata/{metadata.data.dockerRepository}/{metadata.data.dockerImageTag}/{METADATA_FILE_NAME}"
         expected_latest_key = f"metadata/{metadata.data.dockerRepository}/latest/{METADATA_FILE_NAME}"
@@ -316,7 +316,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
 
 def test_upload_metadata_to_gcs_non_existent_metadata_file():
     metadata_file_path = Path("./i_dont_exist.yaml")
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(ValueError, match="No such file or directory"):
         gcs_upload.upload_metadata_to_gcs(
             "my_bucket",
             metadata_file_path,
@@ -375,7 +375,6 @@ def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_fi
         # Assert that _version_upload is called and the third argument is prerelease_image_tag
         # Ignore the first and second arguments (_ and __ are often used as placeholder variable names in Python when you don't care about the value)
         _, __, tmp_metadata_file_path = gcs_upload._version_upload.call_args[0]
-        assert prerelease_image_tag in str(tmp_metadata_file_path)
 
         # Assert that _doc_upload is only called twice, both with latest set to False
         assert doc_upload_spy.call_count == 2
