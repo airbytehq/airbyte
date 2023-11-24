@@ -47,7 +47,7 @@ class AbstractFileBasedSpec(BaseModel):
         Generates the mapping comprised of the config fields
         """
         schema = super().schema(*args, **kwargs)
-        transformed_schema = copy.deepcopy(schema)
+        transformed_schema: Dict[str, Any] = copy.deepcopy(schema)
         schema_helpers.expand_refs(transformed_schema)
         cls.replace_enum_allOf_and_anyOf(transformed_schema)
         cls.remove_discriminator(transformed_schema)

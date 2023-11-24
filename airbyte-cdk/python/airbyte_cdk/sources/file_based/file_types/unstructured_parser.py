@@ -126,7 +126,8 @@ class UnstructuredParser(FileTypeParser):
         if format.processing.mode == "local":
             return self._read_file_locally(file_handle, filetype)
         elif format.processing.mode == "api":
-            return self._read_file_remotely_with_retries(file_handle, format.processing, filetype)
+            result: Optional[str] = self._read_file_remotely_with_retries(file_handle, format.processing, filetype)
+            return result
 
     def _params_to_dict(self, params: Optional[List[APIParameterConfigModel]]) -> Dict[str, Union[str, List[str]]]:
         result_dict: Dict[str, Union[str, List[str]]] = {}
