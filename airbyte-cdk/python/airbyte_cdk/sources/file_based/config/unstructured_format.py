@@ -36,6 +36,7 @@ class APIProcessingConfigModel(BaseModel):
     api_url: str = Field(
         default="https://api.unstructured.io",
         title="API URL",
+        always_show=True,
         description="The URL of the unstructured API to use",
         examples=["https://api.unstructured.com"],
     )
@@ -43,6 +44,7 @@ class APIProcessingConfigModel(BaseModel):
 
     parameters: Optional[List[APIParameterConfigModel]] = Field(
         default=[],
+        always_show=True,
         title="Parameters",
         description="List of parameters send to the API",
     )

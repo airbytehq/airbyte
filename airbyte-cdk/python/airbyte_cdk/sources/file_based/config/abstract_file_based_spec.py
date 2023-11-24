@@ -3,6 +3,7 @@
 #
 
 import copy
+import dpath.util
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
@@ -49,8 +50,14 @@ class AbstractFileBasedSpec(BaseModel):
         transformed_schema = copy.deepcopy(schema)
         schema_helpers.expand_refs(transformed_schema)
         cls.replace_enum_allOf_and_anyOf(transformed_schema)
+        cls.remove_discriminator(transformed_schema)
 
         return transformed_schema
+
+    @staticmethod
+    def remove_discriminator(schema: Dict[str, Any]) -> None:
+        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
+        dpath.util.delete(schema, "properties/**/discriminator")
 
     @staticmethod
     def replace_enum_allOf_and_anyOf(schema: Dict[str, Any]) -> Dict[str, Any]:

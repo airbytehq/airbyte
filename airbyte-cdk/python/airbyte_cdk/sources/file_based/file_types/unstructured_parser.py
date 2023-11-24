@@ -2,13 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
+import os
+import traceback
+import backoff
 import requests
 import dpath.util
 from io import BytesIO, IOBase
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat, APIProcessingConfigModel, APIParameterConfigModel
+from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat, APIProcessingConfigModel, APIParameterConfigModel, LocalProcessingConfigModel
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -20,17 +23,18 @@ from unstructured.file_utils.filetype import STR_TO_FILETYPE, FILETYPE_TO_MIMETY
 unstructured_partition_pdf = None
 unstructured_partition_docx = None
 unstructured_partition_pptx = None
-unstructured_optional_decode = None
 
+def optional_decode(contents: Union[str, bytes]) -> str:
+    if isinstance(contents, bytes):
+        return contents.decode("utf-8")
+    return contents
 
 def _import_unstructured() -> None:
     """Dynamically imported as needed, due to slow import speed."""
     global unstructured_partition_pdf
     global unstructured_partition_docx
     global unstructured_partition_pptx
-    global unstructured_optional_decode
     from unstructured.partition.docx import partition_docx
-    from unstructured.partition.md import optional_decode
     from unstructured.partition.pdf import partition_pdf
     from unstructured.partition.pptx import partition_pptx
 
@@ -38,8 +42,16 @@ def _import_unstructured() -> None:
     unstructured_partition_pdf = partition_pdf
     unstructured_partition_docx = partition_docx
     unstructured_partition_pptx = partition_pptx
-    unstructured_optional_decode = optional_decode
 
+def user_error(e: Exception) -> bool:
+    """
+    Return True if this exception is caused by user error, False otherwise.
+    """
+    if not isinstance(e, requests.exceptions.RequestException):
+        return False
+    return bool(e.response and 400 <= e.response.status_code < 500)
+
+CLOUD_DEPLOYMENT_MODE = "cloud"
 
 class UnstructuredParser(FileTypeParser):
     @property
@@ -68,7 +80,7 @@ class UnstructuredParser(FileTypeParser):
             filetype = self._get_filetype(file_handle, file)
 
             if filetype not in self._supported_file_types():
-                self._handle_unprocessable_file(file, format, logger)
+                self._handle_unprocessable_file(file, format.skip_unprocessable_file_types, logger)
 
             return {
                 "content": {"type": "string"},
@@ -97,7 +109,7 @@ class UnstructuredParser(FileTypeParser):
 
         if filetype == FileType.MD:
             file_content: bytes = file_handle.read()
-            decoded_content: str = unstructured_optional_decode(file_content)
+            decoded_content: str = optional_decode(file_content)
             return decoded_content
         if filetype not in self._supported_file_types():
             self._handle_unprocessable_file(remote_file, format.skip_unprocessable_file_types, logger)
@@ -105,25 +117,58 @@ class UnstructuredParser(FileTypeParser):
         if format.processing.mode == "local":
             return self._read_file_locally(file_handle, filetype)
         elif format.processing.mode == "api":
-            return self._read_file_remotely(file_handle, format.processing, filetype)
+            return self._read_file_remotely_with_retries(file_handle, format.processing, filetype)
     
-    def _params_to_dict(self, params: List[APIParameterConfigModel]) -> Dict[str, str]:
-        result_dict = {}
+    def _params_to_dict(self, params: Optional[List[APIParameterConfigModel]]) -> Dict[str, Union[str, List[str]]]:
+        result_dict: Dict[str, Union[str, List[str]]] = {}
+        if params is None:
+            return result_dict
         for item in params:
-            key = item["name"]
-            value = item["value"]
+            key = item.name
+            value = item.value
             if key in result_dict:
+                existing_value = result_dict[key]
                 # If the key already exists, append the new value to its list
-                if isinstance(result_dict[key], list):
-                    result_dict[key].append(value)
+                if isinstance(existing_value, list):
+                    existing_value.append(value)
                 else:
-                    result_dict[key] = [result_dict[key], value]
+                    result_dict[key] = [existing_value, value]
             else:
                 # If the key doesn't exist, add it to the dictionary
                 result_dict[key] = value
         
         return result_dict
 
+    def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
+        """
+        Perform a connection check for the parser config:
+        - Verify that encryption is enabled if the API is hosted on a cloud instance.
+        - Verify that the API can extract text from a file.
+        """
+        format_config = _extract_format(config)
+        if isinstance(format_config.processing, LocalProcessingConfigModel):
+            return True, None
+
+        deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
+        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not format_config.processing.api_url.startswith("https://"):
+            return False, "Base URL must start with https://"
+
+        try:
+            self._read_file_remotely(BytesIO(b"# Airbyte source connection test"), format_config.processing, FileType.MD)
+        except:
+            return False, "".join(traceback.format_exc())
+        
+        return True, None
+
+    @backoff.on_exception(backoff.expo,
+        requests.exceptions.RequestException,
+        max_tries=5,
+        giveup=user_error)
+    def _read_file_remotely_with_retries(self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType) -> Optional[str]:
+        """
+        Read a file remotely, retrying up to 5 times if the error is not caused by user error. This is useful for transient network errors or the API server being overloaded temporarily.
+        """
+        return self._read_file_remotely(file_handle, format, filetype)
 
     def _read_file_remotely(self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType) -> Optional[str]:
         headers = {
@@ -133,17 +178,15 @@ class UnstructuredParser(FileTypeParser):
 
         data = self._params_to_dict(format.parameters)
 
-        file_data = {'files': ("filename", file_handle, FILETYPE_TO_MIMETYPE[filetype])}
-        # print(requests.Request('POST', 'http://example.com', files=file_data).prepare().body)
+        file_data = {'file': ("filename", file_handle, FILETYPE_TO_MIMETYPE[filetype])}
 
+        print("Try request!")
         response = requests.post(f"{format.api_url}/general/v0/general", headers=headers, data=data, files=file_data)
+        response.raise_for_status()
 
         json_response = response.json()
 
-        if response.status_code == 200:
-            return self._render_markdown(json_response)
-        else:
-            raise Exception(f"Unstructured API returned an error: {json_response}")
+        return self._render_markdown(json_response)
 
     def _read_file_locally(self, file_handle: IOBase, filetype: FileType) -> Optional[str]:
         _import_unstructured()
@@ -151,7 +194,6 @@ class UnstructuredParser(FileTypeParser):
             (not unstructured_partition_pdf)
             or (not unstructured_partition_docx)
             or (not unstructured_partition_pptx)
-            or (not unstructured_optional_decode)
         ):
             # check whether unstructured library is actually available for better error message and to ensure proper typing (can't be None after this point)
             raise Exception("unstructured library is not available")
@@ -170,7 +212,7 @@ class UnstructuredParser(FileTypeParser):
 
         return self._render_markdown([element.to_dict() for element in elements])
 
-    def _handle_unprocessable_file(self, remote_file: RemoteFile, skip_unprocessable_file_types: bool, logger: logging.Logger) -> None:
+    def _handle_unprocessable_file(self, remote_file: RemoteFile, skip_unprocessable_file_types: Optional[bool], logger: logging.Logger) -> None:
         if skip_unprocessable_file_types:
             logger.warn(f"File {remote_file.uri} cannot be parsed. Skipping it.")
         else:
@@ -216,14 +258,14 @@ class UnstructuredParser(FileTypeParser):
 
     def _convert_to_markdown(self, el: Dict[str, Any]) -> str:
         if dpath.util.get(el, "type") == "Title":  
-            heading_str = "#" * (dpath.util.get(el, "metadata.category_depth", default=1))
+            heading_str = "#" * (dpath.util.get(el, "metadata/category_depth", default=1) or 1)
             return f"{heading_str} {dpath.util.get(el, 'text')}"
         elif dpath.util.get(el, "type") == "ListItem":  
             return f"- {dpath.util.get(el, 'text')}"
         elif dpath.util.get(el, "type") == "Formula":  
             return f"```\n{dpath.util.get(el, 'text')}\n```"
         else:
-            return dpath.util.get(el, 'text', default="")
+            return str(dpath.util.get(el, 'text', default=""))
 
     @property
     def file_read_mode(self) -> FileReadMode:
