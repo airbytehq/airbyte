@@ -74,6 +74,11 @@ async def get_modified_files_in_commit(current_git_branch: str, current_git_revi
         return await get_modified_files_in_commit_remote(current_git_branch, current_git_revision)
 
 
+async def get_modified_files_since(current_git_branch: str, current_git_revision: str, since: str, is_local: bool = True) -> Set[str]:
+    # TODO: implement
+    return await get_modified_files_in_commit(current_git_branch, current_git_revision, is_local)
+
+
 async def checked_out_git_container(
     dagger_client: Client,
     current_git_branch: str,

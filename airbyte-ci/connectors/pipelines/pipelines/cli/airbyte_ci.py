@@ -27,6 +27,7 @@ from pipelines.helpers.git import (
     get_current_git_revision,
     get_modified_files_in_branch,
     get_modified_files_in_commit,
+    get_modified_files_since,
 )
 from pipelines.helpers.utils import get_current_epoch_time, transform_strs_to_paths
 
@@ -151,12 +152,17 @@ async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: 
     If the current branch is not master, it will return the list of modified files in the current branch.
     This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
     """
-    if (
-        ci_context is CIContext.MASTER
-        or ci_context is CIContext.NIGHTLY_BUILDS
-        or (ci_context is CIContext.MANUAL and git_branch == "master")
-    ):
+    # Handle cases where we're interested in the diff within the one commit at the HEAD of `master`.
+    if ci_context is CIContext.MASTER or (ci_context is CIContext.MANUAL and git_branch == "master"):
         return await get_modified_files_in_commit(git_branch, git_revision, is_local)
+
+    # Handle cases where we're interested in the diff within a commit range up to a point back in time.
+    if ci_context is CIContext.NIGHTLY_BUILDS:
+        return await get_modified_files_since(git_branch, git_revision, "1 day ago", is_local)
+    elif ci_context is CIContext.WEEKLY_BUILDS:
+        return await get_modified_files_since(git_branch, git_revision, "1 week ago", is_local)
+
+    # Handle the default case.
     return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
 
 
