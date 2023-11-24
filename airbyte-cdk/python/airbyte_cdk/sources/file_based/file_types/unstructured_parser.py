@@ -10,6 +10,8 @@ import dpath.util
 from io import BytesIO, IOBase
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
+import dpath.util
+import requests
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat, APIProcessingConfigModel, APIParameterConfigModel, LocalProcessingConfigModel
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
@@ -18,7 +20,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
 from unstructured.documents.elements import Formula, ListItem, Title
-from unstructured.file_utils.filetype import STR_TO_FILETYPE, FILETYPE_TO_MIMETYPE, FileType, detect_filetype
+from unstructured.file_utils.filetype import FILETYPE_TO_MIMETYPE, STR_TO_FILETYPE, FileType, detect_filetype
 
 unstructured_partition_pdf = None
 unstructured_partition_docx = None
@@ -136,7 +138,7 @@ class UnstructuredParser(FileTypeParser):
             else:
                 # If the key doesn't exist, add it to the dictionary
                 result_dict[key] = value
-        
+
         return result_dict
 
     def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
@@ -171,10 +173,7 @@ class UnstructuredParser(FileTypeParser):
         return self._read_file_remotely(file_handle, format, filetype)
 
     def _read_file_remotely(self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType) -> Optional[str]:
-        headers = {
-            'accept': 'application/json',
-            'unstructured-api-key': format.api_key
-        }
+        headers = {"accept": "application/json", "unstructured-api-key": format.api_key}
 
         data = self._params_to_dict(format.parameters)
 
@@ -260,9 +259,9 @@ class UnstructuredParser(FileTypeParser):
         if dpath.util.get(el, "type") == "Title":  
             heading_str = "#" * (dpath.util.get(el, "metadata/category_depth", default=1) or 1)
             return f"{heading_str} {dpath.util.get(el, 'text')}"
-        elif dpath.util.get(el, "type") == "ListItem":  
+        elif dpath.util.get(el, "type") == "ListItem":
             return f"- {dpath.util.get(el, 'text')}"
-        elif dpath.util.get(el, "type") == "Formula":  
+        elif dpath.util.get(el, "type") == "Formula":
             return f"```\n{dpath.util.get(el, 'text')}\n```"
         else:
             return str(dpath.util.get(el, 'text', default=""))
