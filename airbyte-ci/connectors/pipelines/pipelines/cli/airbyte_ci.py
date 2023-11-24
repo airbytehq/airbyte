@@ -252,7 +252,7 @@ async def get_modified_files_str(ctx: click.Context):
 async def airbyte_ci(ctx: click.Context):  # noqa D103
     # Check that the command being run is not upgrade
     is_update_command = ctx.invoked_subcommand == "update"
-    if ctx.obj["enable_update_check"] and not is_update_command:
+    if ctx.obj["enable_update_check"] and ctx.obj["is_local"] and not is_update_command:
         check_for_upgrade(
             require_update=ctx.obj["is_local"],
             enable_auto_update=ctx.obj["is_local"] and ctx.obj["enable_auto_update"],
