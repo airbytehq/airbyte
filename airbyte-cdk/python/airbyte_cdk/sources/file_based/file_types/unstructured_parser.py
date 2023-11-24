@@ -4,16 +4,19 @@
 import logging
 import os
 import traceback
-import backoff
-import requests
-import dpath.util
 from io import BytesIO, IOBase
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
+import backoff
 import dpath.util
 import requests
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat, APIProcessingConfigModel, APIParameterConfigModel, LocalProcessingConfigModel
+from airbyte_cdk.sources.file_based.config.unstructured_format import (
+    APIParameterConfigModel,
+    APIProcessingConfigModel,
+    LocalProcessingConfigModel,
+    UnstructuredFormat,
+)
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -26,10 +29,12 @@ unstructured_partition_pdf = None
 unstructured_partition_docx = None
 unstructured_partition_pptx = None
 
+
 def optional_decode(contents: Union[str, bytes]) -> str:
     if isinstance(contents, bytes):
         return contents.decode("utf-8")
     return contents
+
 
 def _import_unstructured() -> None:
     """Dynamically imported as needed, due to slow import speed."""
@@ -45,6 +50,7 @@ def _import_unstructured() -> None:
     unstructured_partition_docx = partition_docx
     unstructured_partition_pptx = partition_pptx
 
+
 def user_error(e: Exception) -> bool:
     """
     Return True if this exception is caused by user error, False otherwise.
@@ -53,7 +59,9 @@ def user_error(e: Exception) -> bool:
         return False
     return bool(e.response and 400 <= e.response.status_code < 500)
 
+
 CLOUD_DEPLOYMENT_MODE = "cloud"
+
 
 class UnstructuredParser(FileTypeParser):
     @property
@@ -120,7 +128,7 @@ class UnstructuredParser(FileTypeParser):
             return self._read_file_locally(file_handle, filetype)
         elif format.processing.mode == "api":
             return self._read_file_remotely_with_retries(file_handle, format.processing, filetype)
-    
+
     def _params_to_dict(self, params: Optional[List[APIParameterConfigModel]]) -> Dict[str, Union[str, List[str]]]:
         result_dict: Dict[str, Union[str, List[str]]] = {}
         if params is None:
@@ -159,13 +167,10 @@ class UnstructuredParser(FileTypeParser):
             self._read_file_remotely(BytesIO(b"# Airbyte source connection test"), format_config.processing, FileType.MD)
         except:
             return False, "".join(traceback.format_exc())
-        
+
         return True, None
 
-    @backoff.on_exception(backoff.expo,
-        requests.exceptions.RequestException,
-        max_tries=5,
-        giveup=user_error)
+    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=5, giveup=user_error)
     def _read_file_remotely_with_retries(self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType) -> Optional[str]:
         """
         Read a file remotely, retrying up to 5 times if the error is not caused by user error. This is useful for transient network errors or the API server being overloaded temporarily.
@@ -177,7 +182,7 @@ class UnstructuredParser(FileTypeParser):
 
         data = self._params_to_dict(format.parameters)
 
-        file_data = {'file': ("filename", file_handle, FILETYPE_TO_MIMETYPE[filetype])}
+        file_data = {"file": ("filename", file_handle, FILETYPE_TO_MIMETYPE[filetype])}
 
         print("Try request!")
         response = requests.post(f"{format.api_url}/general/v0/general", headers=headers, data=data, files=file_data)
@@ -189,11 +194,7 @@ class UnstructuredParser(FileTypeParser):
 
     def _read_file_locally(self, file_handle: IOBase, filetype: FileType) -> Optional[str]:
         _import_unstructured()
-        if (
-            (not unstructured_partition_pdf)
-            or (not unstructured_partition_docx)
-            or (not unstructured_partition_pptx)
-        ):
+        if (not unstructured_partition_pdf) or (not unstructured_partition_docx) or (not unstructured_partition_pptx):
             # check whether unstructured library is actually available for better error message and to ensure proper typing (can't be None after this point)
             raise Exception("unstructured library is not available")
 
@@ -211,7 +212,9 @@ class UnstructuredParser(FileTypeParser):
 
         return self._render_markdown([element.to_dict() for element in elements])
 
-    def _handle_unprocessable_file(self, remote_file: RemoteFile, skip_unprocessable_file_types: Optional[bool], logger: logging.Logger) -> None:
+    def _handle_unprocessable_file(
+        self, remote_file: RemoteFile, skip_unprocessable_file_types: Optional[bool], logger: logging.Logger
+    ) -> None:
         if skip_unprocessable_file_types:
             logger.warn(f"File {remote_file.uri} cannot be parsed. Skipping it.")
         else:
@@ -256,7 +259,7 @@ class UnstructuredParser(FileTypeParser):
         return "\n\n".join((self._convert_to_markdown(el) for el in elements))
 
     def _convert_to_markdown(self, el: Dict[str, Any]) -> str:
-        if dpath.util.get(el, "type") == "Title":  
+        if dpath.util.get(el, "type") == "Title":
             heading_str = "#" * (dpath.util.get(el, "metadata/category_depth", default=1) or 1)
             return f"{heading_str} {dpath.util.get(el, 'text')}"
         elif dpath.util.get(el, "type") == "ListItem":
@@ -264,7 +267,7 @@ class UnstructuredParser(FileTypeParser):
         elif dpath.util.get(el, "type") == "Formula":
             return f"```\n{dpath.util.get(el, 'text')}\n```"
         else:
-            return str(dpath.util.get(el, 'text', default=""))
+            return str(dpath.util.get(el, "text", default=""))
 
     @property
     def file_read_mode(self) -> FileReadMode:
