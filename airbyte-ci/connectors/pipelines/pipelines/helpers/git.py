@@ -3,11 +3,10 @@
 #
 
 import functools
-from typing import List, Set
+from typing import Set
 
 import git
 from dagger import Connection
-from github import PullRequest
 from pipelines.dagger.containers.git import checked_out_git_container
 from pipelines.helpers.utils import DAGGER_CONFIG, DIFF_FILTER
 
@@ -74,11 +73,6 @@ async def get_modified_files_in_commit(current_git_branch: str, current_git_revi
         return get_modified_files_in_commit_local(current_git_revision)
     else:
         return await get_modified_files_in_commit_remote(current_git_branch, current_git_revision)
-
-
-def get_modified_files_in_pull_request(pull_request: PullRequest) -> List[str]:
-    """Retrieve the list of modified files in a pull request."""
-    return [f.filename for f in pull_request.get_files()]
 
 
 @functools.cache
