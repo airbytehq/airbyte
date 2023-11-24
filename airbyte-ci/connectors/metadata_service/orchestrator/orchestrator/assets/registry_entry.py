@@ -357,6 +357,9 @@ def safe_parse_metadata_definition(file_name: str, metadata_dict: dict) -> Optio
 
 
 def safe_get_slack_user_identifier(airbyte_slack_users: pd.DataFrame, metadata_dict: Union[dict, BaseModel]) -> Optional[str]:
+    """
+    Safely get the slack user identifier from the given git info in the metadata file.
+    """
     if isinstance(metadata_dict, BaseModel):
         metadata_dict = to_json_sanitized_dict(metadata_dict)
 
@@ -375,6 +378,9 @@ def safe_get_slack_user_identifier(airbyte_slack_users: pd.DataFrame, metadata_d
     # if the user is not found, return the author name or none
     slack_user = airbyte_slack_users[airbyte_slack_users["email"] == commit_author_email]
     if slack_user.empty:
+        slack_user = airbyte_slack_users[airbyte_slack_users["real_name"] == commit_author]
+
+    if slack_user.empty:
         return commit_author
 
     # if the user is found, return the slack real_name and id e.g. "John Doe (U12345678)"
@@ -384,6 +390,9 @@ def safe_get_slack_user_identifier(airbyte_slack_users: pd.DataFrame, metadata_d
 
 
 def safe_get_commit_sha(metadata_dict: Union[dict, BaseModel]) -> Optional[str]:
+    """
+    Safely get the git commit sha from the given git info in the metadata file.
+    """
     if isinstance(metadata_dict, BaseModel):
         metadata_dict = to_json_sanitized_dict(metadata_dict)
 
