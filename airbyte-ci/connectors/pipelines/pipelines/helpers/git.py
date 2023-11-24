@@ -3,10 +3,10 @@
 #
 
 import functools
-from typing import List, Set
+from typing import List, Optional, Set
 
 import git
-from dagger import Connection
+from dagger import Client, Connection, Container
 from github import PullRequest
 from pipelines.helpers.utils import AIRBYTE_REPO_URL, DAGGER_CONFIG, DIFF_FILTER
 
@@ -24,29 +24,10 @@ async def get_modified_files_in_branch_remote(
 ) -> Set[str]:
     """Use git diff to spot the modified files on the remote branch."""
     async with Connection(DAGGER_CONFIG) as dagger_client:
-        modified_files = await (
-            dagger_client.container()
-            .from_("alpine/git:latest")
-            .with_workdir("/repo")
-            .with_exec(["init"])
-            .with_env_variable("CACHEBUSTER", current_git_revision)
-            .with_exec(
-                [
-                    "remote",
-                    "add",
-                    "--fetch",
-                    "--track",
-                    diffed_branch.split("/")[-1],
-                    "--track",
-                    current_git_branch,
-                    "origin",
-                    AIRBYTE_REPO_URL,
-                ]
-            )
-            .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
-            .with_exec(["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_revision}"])
-            .stdout()
-        )
+        container = await checked_out_git_container(dagger_client, current_git_branch, current_git_revision, diffed_branch)
+        modified_files = await container.with_exec(
+            ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_revision}"]
+        ).stdout()
     return set(modified_files.split("\n"))
 
 
@@ -76,27 +57,8 @@ async def get_modified_files_in_branch(
 
 async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str) -> Set[str]:
     async with Connection(DAGGER_CONFIG) as dagger_client:
-        modified_files = await (
-            dagger_client.container()
-            .from_("alpine/git:latest")
-            .with_workdir("/repo")
-            .with_exec(["init"])
-            .with_env_variable("CACHEBUSTER", current_git_revision)
-            .with_exec(
-                [
-                    "remote",
-                    "add",
-                    "--fetch",
-                    "--track",
-                    current_git_branch,
-                    "origin",
-                    AIRBYTE_REPO_URL,
-                ]
-            )
-            .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
-            .with_exec(["diff-tree", "--no-commit-id", "--name-only", current_git_revision, "-r"])
-            .stdout()
-        )
+        container = await checked_out_git_container(dagger_client, current_git_branch, current_git_revision)
+        modified_files = await container.with_exec(["diff-tree", "--no-commit-id", "--name-only", current_git_revision, "-r"]).stdout()
     return set(modified_files.split("\n"))
 
 
@@ -116,6 +78,37 @@ async def get_modified_files_in_commit(current_git_branch: str, current_git_revi
 def get_modified_files_in_pull_request(pull_request: PullRequest) -> List[str]:
     """Retrieve the list of modified files in a pull request."""
     return [f.filename for f in pull_request.get_files()]
+
+
+async def checked_out_git_container(
+    dagger_client: Client,
+    current_git_branch: str,
+    current_git_revision: str,
+    diffed_branch: Optional[str] = None,
+) -> Container:
+    current_git_branch = current_git_branch.removeprefix("origin/")
+    diffed_branch = current_git_branch if diffed_branch is None else diffed_branch.removeprefix("origin/")
+    return await (
+        dagger_client.container()
+        .from_("alpine/git:latest")
+        .with_workdir("/repo")
+        .with_exec(["init"])
+        .with_env_variable("CACHEBUSTER", current_git_revision)
+        .with_exec(
+            [
+                "remote",
+                "add",
+                "--fetch",
+                "--track",
+                current_git_branch,
+                "--track",
+                diffed_branch if diffed_branch is not None else current_git_branch,
+                "origin",
+                AIRBYTE_REPO_URL,
+            ]
+        )
+        .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
+    )
 
 
 @functools.cache
