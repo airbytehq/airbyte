@@ -19,7 +19,7 @@ public class MySqlStrictEncryptSslFullCertificateSourceAcceptanceTest extends Ab
   protected ConnectorSpecification getSpec() throws Exception {
     return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_cloud_spec.json"), ConnectorSpecification.class));
   }
-  
+
   @Override
   public MySqlUtils.Certificate getCertificates() throws IOException, InterruptedException {
     return MySqlUtils.getCertificate(container, true);
