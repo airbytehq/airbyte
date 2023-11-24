@@ -153,7 +153,6 @@ async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: 
     """
     if (
         ci_context is CIContext.MASTER
-        or ci_context is CIContext.NIGHTLY_BUILDS
         or (ci_context is CIContext.MANUAL and git_branch == "master")
     ):
         return await get_modified_files_in_commit(git_branch, git_revision, is_local)
