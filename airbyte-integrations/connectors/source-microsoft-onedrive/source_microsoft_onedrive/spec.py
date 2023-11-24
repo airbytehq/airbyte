@@ -84,9 +84,7 @@ class SourceMicrosoftOneDriveSpec(AbstractFileBasedSpec, BaseModel):
 
     drive_name: str = Field(title="Drive Name", description="Name of the Microsoft OneDrive drive where the file(s) exist.", order=1)
     folder_path: str = Field(
-        title="Folder Path",
-        description="Path to folder of the Microsoft OneDrive drive where the file(s) exist.",
-        order=1
+        title="Folder Path", description="Path to folder of the Microsoft OneDrive drive where the file(s) exist.", order=1
     )
 
     @classmethod
