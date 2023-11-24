@@ -137,9 +137,11 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
             elif stream_state.get(self.cursor_field) and len(self.customers) > 0:
                 start_date = stream_state.get(self.cursor_field) or self._start_date
                 logger.info("Start date from 'stream_state.get(self.cursor_field) and len(self.customers) > 0'")
-            else:
+            elif self._start_date is not None:
                 start_date = self._start_date
                 logger.info("Start date from 'else")
+            else:
+                start_date = '2021-01-01'
 
             logger.info("Final start date " + start_date)
 
