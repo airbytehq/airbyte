@@ -37,7 +37,8 @@ class GoogleAdsStream(Stream, ABC):
 
     def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
         latest_records = {}
-        primary_key = ' '.join(self.primary_key)
+        logger.info("Primary key: " + str(self.primary_key) + " Name " + str(self.name))
+        primary_key = ' '.join(list(self.primary_key))
         for result in response:
             record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
             record_id = record.get(primary_key)
