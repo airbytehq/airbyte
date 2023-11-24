@@ -31,11 +31,27 @@ CI Credentials package (which Airbyte CI uses under the hood) README's
 instructions.
 
 ### Updating the airbyte-ci tool
-To reinstall airbyte-ci, run the following command again:
+To reinstall airbyte-ci, run the following command:
+```sh
+airbyte-ci update
+```
 
+or if that fails, you can reinstall it with the following command:
 ```sh
 # from the root of the airbyte repository
 make tools.airbyte-ci.install
+```
+
+## Checking the airbyte-ci install
+To check that airbyte-ci is installed correctly, run the following command:
+```sh
+make tools.airbyte-ci.check
+```
+
+## Cleaning the airbyte-ci install
+To clean the airbyte-ci install, run the following command:
+```sh
+make tools.airbyte-ci.clean
 ```
 
 ## Installation for development
