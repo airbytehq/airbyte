@@ -21,7 +21,7 @@ class OAuthCredentials(BaseModel):
 
     # Fields for the OAuth authentication, including tenant_id, client_id, client_secret, and refresh_token
     auth_type: Literal["Client"] = Field("Client", const=True)
-    tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft OneDrive user")
+    tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft OneDrive user", airbyte_secret=True)
     client_id: str = Field(
         title="Client ID",
         description="Client ID of your Microsoft developer application",
@@ -50,7 +50,7 @@ class ServiceCredentials(BaseModel):
 
     # Fields for the Service authentication, similar to OAuthCredentials
     auth_type: Literal["Service"] = Field("Service", const=True)
-    tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft OneDrive user")
+    tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft OneDrive user", airbyte_secret=True)
     client_id: str = Field(
         title="Client ID",
         description="Client ID of your Microsoft developer application",
@@ -83,6 +83,11 @@ class SourceMicrosoftOneDriveSpec(AbstractFileBasedSpec, BaseModel):
     )
 
     drive_name: str = Field(title="Drive Name", description="Name of the Microsoft OneDrive drive where the file(s) exist.", order=1)
+    folder_path: str = Field(
+        title="Folder Path",
+        description="Path to folder of the Microsoft OneDrive drive where the file(s) exist.",
+        order=1
+    )
 
     @classmethod
     def documentation_url(cls) -> str:

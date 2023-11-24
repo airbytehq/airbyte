@@ -105,12 +105,16 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
                 found_items.extend(self.list_directories_and_files(item))
         return found_items
 
-    def get_files_by_drive_name(self, drives, drive_name):
+    def get_files_by_drive_name(self, drives, drive_name, folder_path):
         """Yields files from the specified drive."""
+        path_levels = [level for level in folder_path.split("/") if level]
+        folder_path = "/".join(path_levels)
+
         for drive in drives:
             is_onedrive = drive.drive_type in ["personal", "business"]
             if drive.name == drive_name and is_onedrive:
-                yield from self.list_directories_and_files(drive.root)
+                folder = drive.root.get_by_path(folder_path).get().execute_query()
+                yield from self.list_directories_and_files(folder)
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
@@ -120,7 +124,7 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
         drives = self.one_drive_client.drives.get().execute_query()
         drives.add_child(my_drive)
 
-        files = self.get_files_by_drive_name(drives, self.config.drive_name)
+        files = self.get_files_by_drive_name(drives, self.config.drive_name, self.config.folder_path)
 
         try:
             first_file = next(files)
