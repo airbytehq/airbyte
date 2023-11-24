@@ -365,13 +365,12 @@ class SegmentMembers(MailChimpListSubStream):
         if isinstance(element, dict):
             # If the element is a dictionary, apply the method recursively to each value,
             # replacing the empty string value with None.
-            return {k: self.nullify_empty_string_fields(v) if v != "" else None for k, v in element.items()}
+            element = {k: self.nullify_empty_string_fields(v) if v != "" else None for k, v in element.items()}
         elif isinstance(element, list):
             # If the element is a list, apply the method recursively to each item in the list.
-            return [self.nullify_empty_string_fields(v) for v in element]
-        else:
-            # Otherwise, return it as is.
-            return element
+            element = [self.nullify_empty_string_fields(v) for v in element]
+            
+        return element
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """
