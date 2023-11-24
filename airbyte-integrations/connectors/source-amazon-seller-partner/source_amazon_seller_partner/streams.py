@@ -373,10 +373,6 @@ class RapidRetailAnalyticsInventoryReport(ReportsAmazonSPStream):
     name = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
 
 
-class VendorTrafficReport(ReportsAmazonSPStream):
-    name = "GET_VENDOR_TRAFFIC_REPORT"
-
-
 class FlatFileOrdersReports(ReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
@@ -654,6 +650,10 @@ class VendorInventoryReports(AnalyticsStream):
     name = "GET_VENDOR_INVENTORY_REPORT"
     result_key = "inventoryByAsin"
     availability_sla_days = 3
+
+
+class VendorTrafficReport(AnalyticsStream):
+    name = "GET_VENDOR_TRAFFIC_REPORT"
 
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
