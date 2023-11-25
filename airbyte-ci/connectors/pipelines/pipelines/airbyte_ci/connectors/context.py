@@ -11,7 +11,7 @@ from typing import List, Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
-from dagger import Directory, Secret, Platform
+from dagger import Directory, Platform, Secret
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.dagger.actions import secrets

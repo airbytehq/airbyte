@@ -95,7 +95,7 @@ async def test(
             docker_hub_username=ctx.obj.get("docker_hub_username"),
             docker_hub_password=ctx.obj.get("docker_hub_password"),
             concurrent_cat=concurrent_cat,
-            build_platforms=[LOCAL_BUILD_PLATFORM]
+            build_platforms=[LOCAL_BUILD_PLATFORM],
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
