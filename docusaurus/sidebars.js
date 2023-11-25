@@ -320,11 +320,6 @@ const contributeToAirbyte = {
 };
 
 const airbyteCloud = [
-  {
-    type: "doc",
-    label: "Getting Started",
-    id: "cloud/getting-started-with-airbyte-cloud",
-  },
   "cloud/core-concepts",
   {
     type: "category",
@@ -514,13 +509,25 @@ module.exports = {
     // airbyteSelfManaged,
     // -- end legacy
     sectionHeader("Using Airbyte"),
-    ossGettingStarted,
+    {
+      type: "category",
+      label: "Getting Started",
+      link: {
+        type: "doc",
+        id: "using-airbyte/getting-started/readme",
+      },
+      items: [
+        "using-airbyte/getting-started/add-a-source",
+        "using-airbyte/getting-started/add-a-destination",
+        "using-airbyte/getting-started/set-up-a-connection",
+      ],
+    },
     ...airbyteCloud,
     "troubleshooting",
-    sectionHeader("Managing Airbyte"),
+    sectionHeader("Operating Airbyte"),
     deployAirbyte,
     managingAirbyte,
-    "managing-airbyte/security",
+    "operating-airbyte/security",
     {
       type: "category",
       label: "Airbyte Enterprise",

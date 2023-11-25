@@ -1,5 +1,7 @@
 # Configuring Sync Notifications
 
+// TODO: merge into other notification doc
+
 ## Overview
 
 You can set up Airbyte to notify you when syncs have **failed** or **succeeded**. This is achieved through a webhook, a URL that you can input into other applications to get real time data from Airbyte.

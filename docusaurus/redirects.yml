@@ -60,4 +60,16 @@
     - /project-overview/security
     - /operator-guides/securing-airbyte
     - /operator-guides/security
-  to: /managing-airbyte/security
+  to: /operating-airbyte/security
+- from: /cloud/getting-started-with-airbyte-cloud
+  to: /using-airbyte/getting-started
+- from:
+    - /quickstart/deploy-airbyte
+    - /category/getting-started
+  to: /using-airbyte/getting-started/
+- from: /quickstart/add-a-source
+  to: /using-airbyte/getting-started/add-a-source
+- from: /quickstart/add-a-destination
+  to: /using-airbyte/getting-started/add-a-destination
+- from: /quickstart/set-up-a-connection
+  to: /using-airbyte/getting-started/set-up-a-connection
