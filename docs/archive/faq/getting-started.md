@@ -30,7 +30,7 @@ We don’t. Airbyte is to be self-hosted in your own private cloud.
 
 ## Can I set a start time for my integration?
 
-[Here](../../understanding-airbyte/connections#sync-schedules) is the link to the docs on scheduling syncs.
+[Here](/using-airbyte/core-concepts/sync-modes#sync-schedules) is the link to the docs on scheduling syncs.
 
 ## **Can I disable analytics in Airbyte?**
 

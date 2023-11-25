@@ -118,4 +118,4 @@ select * from table where cursor_field > 'last_sync_max_cursor_field_value'
 
 **Note**:
 
-Previous versions of Airbyte destinations supported SCD tables, which would sore every entry seen for a record. This was removed with Destinations V2 and [Typing and Deduplication](/understanding-airbyte/typing-deduping.md).
+Previous versions of Airbyte destinations supported SCD tables, which would sore every entry seen for a record. This was removed with Destinations V2 and [Typing and Deduplication](../typing-deduping.md).

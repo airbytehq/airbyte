@@ -16,7 +16,7 @@ This article will illustrate how to use `AirbyteCatalog` via a series of example
   * [Dynamic Streams Example](#dynamic-streams-example)
 * [Nested Schema Example](#nested-schema-example)
 
-In order to understand in depth how to configure incremental data replication, head over to the [incremental replication docs](connections/incremental-append.md).
+In order to understand in depth how to configure incremental data replication, head over to the [incremental replication docs](/using-airbyte/core-concepts/sync-modes/incremental-append.md).
 
 ## Database Example
 
