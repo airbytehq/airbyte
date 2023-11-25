@@ -1,6 +1,6 @@
 # Set up a Connection
 
-Now that you've learned how to [deploy Airbyte locally](./deploy-airbyte) and set up your first [source](./add-a-source) and [destination](./add-a-destination), it's time to finish the job by creating your very first connection!
+Now that you've learned how to [deploy Airbyte locally](./readme.md) and set up your first [source](./add-a-source) and [destination](./add-a-destination), it's time to finish the job by creating your very first connection!
 
 On the left side of your main Airbyte dashboard, select **Connections**. You will be prompted to choose which source and destination to use for this connection. As an example, we'll use the **Google Sheets** source and **Local JSON** destination.
 
