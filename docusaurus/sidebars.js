@@ -479,7 +479,7 @@ module.exports = {
     },
     {
       type: "category",
-      label: "Managing your Account",
+      label: "Managing your workspace",
       items: [
         "cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace",
         // TODO: merge with operator-guides/configure-sync-notifications
@@ -489,7 +489,6 @@ module.exports = {
       ]
     },
     "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
-    "troubleshooting",
     sectionHeader("Operating Airbyte"),
     deployAirbyte,
     {
@@ -566,8 +565,7 @@ module.exports = {
       ],
     },
     sectionHeader("Community"),
-    // TODO: Write a "getting in touch or overview doc"
-    "community/airbyte-support",
+    "community/getting-support",
     "community/code-of-conduct",
     "community/slack-code-of-conduct",
     sectionHeader("Product Updates"),

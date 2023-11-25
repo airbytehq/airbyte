@@ -442,7 +442,7 @@ This interim patch period mostly contained stability changes for Airbyte Cloud, 
 * **Incremental - Append"**
   * We now allow sources to replicate only new or modified data. This enables to avoid re-fetching data that you have already replicated from a source.
   * The delta from a sync will be _appended_ to the existing data in the data warehouse.
-  * Here are [all the details of this feature](../../understanding-airbyte/connections/incremental-append.md).
+  * Here are [all the details of this feature](/using-airbyte/core-concepts/sync-modes/incremental-append.md).
   * It has been released for 15 connectors, including Postgres, MySQL, Intercom, Zendesk, Stripe, Twilio, Marketo, Shopify, GitHub, and all the destination connectors. We will expand it to all the connectors in the next couple of weeks.
 * **Other features:**
   * Improve interface for writing python sources \(should make writing new python sources easier and clearer\).

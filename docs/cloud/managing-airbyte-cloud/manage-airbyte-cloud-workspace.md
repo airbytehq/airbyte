@@ -1,6 +1,8 @@
 # Manage your workspace
 
-An Airbyte Cloud workspace allows you to collaborate with other users and manage connections under a shared billing account.
+A workspace in Airbyte allows you to collaborate with other users and manage connections together. On Airbyte Cloud it will allow you to share billing details for a workspace.
+
+<AppliesTo cloud selfManagedEnterprise />
 
 :::info
 Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and cannot be transferred between workspaces.
@@ -10,7 +12,7 @@ Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and ca
 
 To add a user to your workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
+1. Go to the **Settings** via the side navigation in Airbyte.
 
 2. Click **Access Management**.
 
@@ -28,7 +30,7 @@ To add a user to your workspace:
 
 To remove a user from your workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
+1. Go to the **Settings** via the side navigation in Airbyte.
 
 2. Click **Access Management**.
 
@@ -40,7 +42,7 @@ To remove a user from your workspace:
 
 To rename a workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
+1. Go to the **Settings** via the side navigation in Airbyte.
 
 2. Click **General Settings**.
 
@@ -52,7 +54,7 @@ To rename a workspace:
 
 To delete a workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
+1. Go to the **Settings** via the side navigation in Airbyte.
 
 2. Click **General Settings**.
 
@@ -78,6 +80,6 @@ You can use one or multiple workspaces with Airbyte Cloud, which gives you flexi
 
 To switch between workspaces:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
+1. Click the current workspace name under the Airbyte logo in the navigation bar.
 
 2. Search for the workspace or click the name of the workspace you want to switch to.

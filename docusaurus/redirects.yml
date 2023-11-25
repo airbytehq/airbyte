@@ -1,8 +1,4 @@
 # A list of URLs that should be redirected to new pathes
-- from: /airbyte-pro
-  to: /enterprise-setup/self-managed/
-- from: /airbyte-enterprise
-  to: /enterprise-setup/self-managed/
 - from: /upgrading-airbyte
   to: /operator-guides/upgrading-airbyte
 - from: /catalog
@@ -15,12 +11,6 @@
   to: /category/release-notes
 - from: /connector-development/config-based/understanding-the-yaml-file/stream-slicers/
   to: /connector-development/config-based/understanding-the-yaml-file/partition-router
-- from: /cloud/managing-airbyte-cloud
-  to: /category/using-airbyte-cloud
-- from: /category/managing-airbyte-cloud
-  to: /category/using-airbyte-cloud
-- from: /category/airbyte-open-source-quick-start
-  to: /category/getting-started
 - from: /cloud/dbt-cloud-integration
   to: /cloud/managing-airbyte-cloud/dbt-cloud-integration
 - from: /cloud/managing-airbyte-cloud/review-sync-summary
@@ -34,23 +24,24 @@
     - /project-overview/product-support-levels
     - /project-overview/product-release-stages
   to: /integrations/connector-support-levels
-- from: /operator-guides/contact-support
-  to: /community/airbyte-support
 - from: /project-overview/code-of-conduct
   to: /community/code-of-conduct
 - from: /project-overview/slack-code-of-conduct
   to: /community/slack-code-of-conduct
 - from : /project-overview/licenses/
-  to: /developer-guides/licences/
+  to: /developer-guides/licenses/
 - from: /project-overview/licenses/license-faq
-  to: /developer-guides/licences/license-faq
+  to: /developer-guides/licenses/license-faq
 - from: /project-overview/licenses/elv2-license
-  to: /developer-guides/licences/elv2-license
+  to: /developer-guides/licenses/elv2-license
 - from: /project-overview/licenses/mit-license
-  to: /developer-guides/licences/mit-license
+  to: /developer-guides/licenses/mit-license
 - from: /project-overview/licenses/examples
-  to: /developer-guides/licences/examples
-- from: /enterprise-setup/self-managed/
+  to: /developer-guides/licenses/examples
+- from:
+    - /enterprise-setup/self-managed/
+    - /airbyte-pro
+    - /airbyte-enterprise
   to: /enterprise-setup/
 - from: /enterprise-setup/self-managed/implementation-guide
   to: /enterprise-setup/implementation-guide
@@ -61,11 +52,11 @@
     - /operator-guides/securing-airbyte
     - /operator-guides/security
   to: /operating-airbyte/security
-- from: /cloud/getting-started-with-airbyte-cloud
-  to: /using-airbyte/getting-started
 - from:
+    - /cloud/getting-started-with-airbyte-cloud
     - /quickstart/deploy-airbyte
     - /category/getting-started
+    - /category/airbyte-open-source-quick-start
   to: /using-airbyte/getting-started/
 - from: /quickstart/add-a-source
   to: /using-airbyte/getting-started/add-a-source
@@ -74,20 +65,24 @@
 - from: /quickstart/set-up-a-connection
   to: /using-airbyte/getting-started/set-up-a-connection
 - from: /cloud/core-concepts
-  to: /using-airbyte/core-concepts
+  to: /using-airbyte/core-concepts/
 - from: /understanding-airbyte/namespaces
   to: /using-airbyte/core-concepts/namespaces
 - from: /understanding-airbyte/connections/
   to: /using-airbyte/core-concepts/sync-modes/
 - from: /understanding-airbyte/connections/full-refresh-overwrite
-  to: /using-airbyte/core-concepts/full-refresh-overwrite
+  to: /using-airbyte/core-concepts/sync-modes/full-refresh-overwrite
 - from: /understanding-airbyte/connections/full-refresh-append
-  to: /using-airbyte/core-concepts/full-refresh-append
+  to: /using-airbyte/core-concepts/sync-modes/full-refresh-append
 - from: /understanding-airbyte/connections/incremental-append
-  to: /using-airbyte/core-concepts/incremental-append
+  to: /using-airbyte/core-concepts/sync-modes/incremental-append
 - from: /understanding-airbyte/connections/incremental-append-deduped
-  to: /using-airbyte/core-concepts/incremental-append-deduped
+  to: /using-airbyte/core-concepts/sync-modes/incremental-append-deduped
 - from: /understanding-airbyte/basic-normalization
   to: /using-airbyte/core-concepts/basic-normalization
 - from: /understanding-airbyte/typing-deduping
   to: /using-airbyte/core-concepts/typing-deduping
+- from:
+    - /troubleshooting
+    - /operator-guides/contact-support
+  to: /community/getting-support
