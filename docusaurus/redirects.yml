@@ -73,3 +73,21 @@
   to: /using-airbyte/getting-started/add-a-destination
 - from: /quickstart/set-up-a-connection
   to: /using-airbyte/getting-started/set-up-a-connection
+- from: /cloud/core-concepts
+  to: /using-airbyte/core-concepts
+- from: /understanding-airbyte/namespaces
+  to: /using-airbyte/core-concepts/namespaces
+- from: /understanding-airbyte/connections/
+  to: /using-airbyte/core-concepts/sync-modes/
+- from: /understanding-airbyte/connections/full-refresh-overwrite
+  to: /using-airbyte/core-concepts/full-refresh-overwrite
+- from: /understanding-airbyte/connections/full-refresh-append
+  to: /using-airbyte/core-concepts/full-refresh-append
+- from: /understanding-airbyte/connections/incremental-append
+  to: /using-airbyte/core-concepts/incremental-append
+- from: /understanding-airbyte/connections/incremental-append-deduped
+  to: /using-airbyte/core-concepts/incremental-append-deduped
+- from: /understanding-airbyte/basic-normalization
+  to: /using-airbyte/core-concepts/basic-normalization
+- from: /understanding-airbyte/typing-deduping
+  to: /using-airbyte/core-concepts/typing-deduping

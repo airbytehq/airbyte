@@ -4,13 +4,13 @@ A connection is a configuration for syncing data between a source and a destinat
 
 - Sync schedule: when to trigger a sync of the data.
 - Destination [Namespace](../namespaces.md) and stream names: where the data will end up being written.
-- A catalog selection: which [streams and fields](../airbyte-protocol.md#catalog) to replicate from the source
+- A catalog selection: which [streams and fields](../../../understanding-airbyte/airbyte-protocol.md#catalog) to replicate from the source
 - Sync mode: how streams should be replicated \(read and write\):
 - Optional transformations: how to convert Airbyte protocol messages \(raw JSON blob\) data into some other data representations.
 
 ## Sync schedules
 
-Sync schedules are explained below. For information about catalog selections, see [AirbyteCatalog & ConfiguredAirbyteCatalog](../airbyte-protocol.md#catalog).
+Sync schedules are explained below. For information about catalog selections, see [AirbyteCatalog & ConfiguredAirbyteCatalog](../../../understanding-airbyte/airbyte-protocol.md#catalog).
 
 Syncs will be triggered by either:
 
@@ -38,7 +38,7 @@ Stream names refer to table names in a typical RDBMS. But it can also be the nam
 
 ## Stream-specific customization
 
-All the customization of namespace and stream names described above will be equally applied to all streams selected for replication in a catalog per connection. If you need more granular customization, stream by stream, for example, or with different logic rules, then you could follow the tutorial on [customizing transformations with dbt](../../operator-guides/transformation-and-normalization/transformations-with-dbt.md).
+All the customization of namespace and stream names described above will be equally applied to all streams selected for replication in a catalog per connection. If you need more granular customization, stream by stream, for example, or with different logic rules, then you could follow the tutorial on [customizing transformations with dbt](../../../operator-guides/transformation-and-normalization/transformations-with-dbt.md).
 
 ## Sync modes
 
@@ -47,7 +47,7 @@ A sync mode governs how Airbyte reads from a source and writes to a destination.
 1. The first part of the name denotes how the source connector reads data from the source:
    1. Incremental: Read records added to the source since the last sync job. \(The first sync using Incremental is equivalent to a Full Refresh\)
       - Method 1: Using a cursor. Generally supported by all connectors whose data source allows extracting records incrementally.
-      - Method 2: Using change data capture. Only supported by some sources. See [CDC](../cdc.md) for more info.
+      - Method 2: Using change data capture. Only supported by some sources. See [CDC](../../../understanding-airbyte/cdc.md) for more info.
    2. Full Refresh: Read everything in the source.
 2. The second part of the sync mode name denotes how the destination connector writes data. This is not affected by how the source connector produced the data:
    1. Overwrite: Overwrite by first deleting existing data in the destination.
@@ -56,23 +56,19 @@ A sync mode governs how Airbyte reads from a source and writes to a destination.
 
 A sync mode is therefore, a combination of a source and destination mode together. The UI exposes the following options, whenever both source and destination connectors are capable to support it for the corresponding stream:
 
-- [Full Refresh Overwrite](full-refresh-overwrite.md): Sync the whole stream and replace data in destination by overwriting it.
-- [Full Refresh Append](full-refresh-append.md): Sync the whole stream and append data in destination.
-- [Incremental Append](incremental-append.md): Sync new records from stream and append data in destination.
-- [Incremental Append + Deduped](incremental-append-deduped.md): Sync new records from stream and append data in destination, also provides a de-duplicated view mirroring the state of the stream in the source.
+- [Full Refresh Overwrite](./full-refresh-overwrite.md): Sync the whole stream and replace data in destination by overwriting it.
+- [Full Refresh Append](./full-refresh-append.md): Sync the whole stream and append data in destination.
+- [Incremental Append](./incremental-append.md): Sync new records from stream and append data in destination.
+- [Incremental Append + Deduped](./incremental-append-deduped.md): Sync new records from stream and append data in destination, also provides a de-duplicated view mirroring the state of the stream in the source.
 
 ## Optional operations
 
 ### Typing and Deduping
 
-As described by the [Airbyte Protocol from the Airbyte Specifications](../airbyte-protocol.md), replication is composed of source connectors that are transmitting data in a JSON format. It is then written as such by the destination connectors. On top of this replication, Airbyte's database and datawarehous destinations can provide converstions from the raw JSON data into type-cast relational columns. Learn more [here](/understanding-airbyte/typing-deduping).
+As described by the [Airbyte Protocol from the Airbyte Specifications](../../../understanding-airbyte/airbyte-protocol.md), replication is composed of source connectors that are transmitting data in a JSON format. It is then written as such by the destination connectors. On top of this replication, Airbyte's database and datawarehous destinations can provide converstions from the raw JSON data into type-cast relational columns. Learn more [here](/understanding-airbyte/typing-deduping).
 
 :::note
 
 Typing and Deduping may cause an increase in your destination's compute cost. This cost will vary depending on the amount of data that is transformed and is not related to Airbyte credit usage.
 
 :::
-
-### Custom sync operations
-
-Further operations can be included in a sync on top of Airbyte basic normalization \(or even to replace it completely\). See [operations](../operations.md) for more details.

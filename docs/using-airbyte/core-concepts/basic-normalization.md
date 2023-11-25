@@ -78,7 +78,7 @@ Additional metadata columns can be added on some tables depending on the usage:
   - On de-duplicated (and SCD) tables:
   - `_airbyte_unique_key`: hash of primary keys used to de-duplicate the final table.
 
-The [normalization rules](basic-normalization.md#Rules) are _not_ configurable. They are designed to pick a reasonable set of defaults to hit the 80/20 rule of data normalization. We respect that normalization is a detail-oriented problem and that with a fixed set of rules, we cannot normalize your data in such a way that covers all use cases. If this feature does not meet your normalization needs, we always put the full json blob in destination as well, so that you can parse that object however best meets your use case. We will be adding more advanced normalization functionality shortly. Airbyte is focused on the EL of ELT. If you need a really featureful tool for the transformations then, we suggest trying out dbt.
+The [normalization rules](#Rules) are _not_ configurable. They are designed to pick a reasonable set of defaults to hit the 80/20 rule of data normalization. We respect that normalization is a detail-oriented problem and that with a fixed set of rules, we cannot normalize your data in such a way that covers all use cases. If this feature does not meet your normalization needs, we always put the full json blob in destination as well, so that you can parse that object however best meets your use case. We will be adding more advanced normalization functionality shortly. Airbyte is focused on the EL of ELT. If you need a really featureful tool for the transformations then, we suggest trying out dbt.
 
 Airbyte places the json blob version of your data in a table called `_airbyte_raw_<stream name>`. If basic normalization is turned on, it will place a separate copy of the data in a table called `<stream name>`. Under the hood, Airbyte is using dbt, which means that the data only ingresses into the data store one time. The normalization happens as a query within the datastore. This implementation avoids extra network time and costs.
 
@@ -94,7 +94,7 @@ Airbyte runs this step before handing the final data over to other tools that wi
 
 To summarize, we can represent the ELT process in the diagram below. These are steps that happens between your "Source Database or API" and the final "Replicated Tables" with examples of implementation underneath:
 
-![](../.gitbook/assets/connecting-EL-with-T-4.png)
+![](../../.gitbook/assets/connecting-EL-with-T-4.png)
 
 In Airbyte, the current normalization option is implemented using a dbt Transformer composed of:
 
@@ -103,14 +103,14 @@ In Airbyte, the current normalization option is implemented using a dbt Transfor
 
 ## Destinations that Support Basic Normalization
 
-- [BigQuery](../integrations/destinations/bigquery.md)
-- [MS Server SQL](../integrations/destinations/mssql.md)
-- [MySQL](../integrations/destinations/mysql.md)
+- [BigQuery](../../integrations/destinations/bigquery.md)
+- [MS Server SQL](../../integrations/destinations/mssql.md)
+- [MySQL](../../integrations/destinations/mysql.md)
   - The server must support the `WITH` keyword.
   - Require MySQL &gt;= 8.0, or MariaDB &gt;= 10.2.1.
-- [Postgres](../integrations/destinations/postgres.md)
-- [Redshift](../integrations/destinations/redshift.md)
-- [Snowflake](../integrations/destinations/snowflake.md)
+- [Postgres](../../integrations/destinations/postgres.md)
+- [Redshift](../../integrations/destinations/redshift.md)
+- [Snowflake](../../integrations/destinations/snowflake.md)
 
 Basic Normalization can be configured when you're creating the connection between your Connection Setup and after in the Transformation Tab.
 Select the option: **Normalized tabular data**.
@@ -131,8 +131,8 @@ Airbyte uses the types described in the catalog to determine the correct type fo
 | `bit`                                  | boolean                 |                                               |
 | `boolean`                              | boolean                 |                                               |
 | `string` with format label `date-time` | timestamp with timezone |                                               |
-| `array`                                | new table               | see [nesting](basic-normalization.md#Nesting) |
-| `object`                               | new table               | see [nesting](basic-normalization.md#Nesting) |
+| `array`                                | new table               | see [nesting](#Nesting) |
+| `object`                               | new table               | see [nesting](#Nesting) |
 
 ### Nesting
 
@@ -326,11 +326,11 @@ As mentioned in the overview:
 
 To enable basic normalization \(which is optional\), you can toggle it on or disable it in the "Normalization and Transformation" section when setting up your connection:
 
-![](../.gitbook/assets/basic-normalization-configuration.png)
+![](../../.gitbook/assets/basic-normalization-configuration.png)
 
 ## Incremental runs
 
-When the source is configured with sync modes compatible with incremental transformations (using append on destination) such as ( [full_refresh_append](connections/full-refresh-append.md), [incremental append](connections/incremental-append.md) or [incremental deduped history](connections/incremental-append-deduped.md)), only rows that have changed in the source are transferred over the network and written by the destination connector.
+When the source is configured with sync modes compatible with incremental transformations (using append on destination) such as ( [full_refresh_append](./sync-modes/full-refresh-append.md), [incremental append](./sync-modes/incremental-append.md) or [incremental deduped history](./sync-modes/incremental-append-deduped.md)), only rows that have changed in the source are transferred over the network and written by the destination connector.
 Normalization will then try to build the normalized tables incrementally as the rows in the raw tables that have been created or updated since the last time dbt ran. As such, on each dbt run, the models get built incrementally. This limits the amount of data that needs to be transformed, vastly reducing the runtime of the transformations. This improves warehouse performance and reduces compute costs.
 Because normalization can be either run incrementally and, or, in full refresh, a technical column `_airbyte_normalized_at` can serve to track when was the last time a record has been transformed and written by normalization.
 This may greatly diverge from the `_airbyte_emitted_at` value as the normalized tables could be totally re-built at a latter time from the data stored in the `_airbyte_raw` tables.
@@ -342,15 +342,15 @@ Normalization produces tables that are partitioned, clustered, sorted or indexed
 In general, normalization needs to do lookup on the last emitted_at column to know if a record is freshly produced and need to be
 incrementally processed or not. But in certain models, such as SCD tables for example, we also need to retrieve older data to update their type 2 SCD end_date and active_row flags, thus a different partitioning scheme is used to optimize that use case.
 
-On Postgres destination, an additional table suffixed with `_stg` for every stream replicated in [incremental deduped history](connections/incremental-append-deduped.md) needs to be persisted (in a different staging schema) for incremental transformations to work because of a [limitation](https://github.com/dbt-labs/docs.getdbt.com/issues/335#issuecomment-694199569).
+On Postgres destination, an additional table suffixed with `_stg` for every stream replicated in [incremental deduped history](./sync-modes/incremental-append-deduped.md) needs to be persisted (in a different staging schema) for incremental transformations to work because of a [limitation](https://github.com/dbt-labs/docs.getdbt.com/issues/335#issuecomment-694199569).
 
 ## Extending Basic Normalization
 
 Note that all the choices made by Normalization as described in this documentation page in terms of naming (and more) could be overridden by your own custom choices. To do so, you can follow the following tutorials:
 
-- to build a [custom SQL view](../operator-guides/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
-- to export, edit and run [custom dbt normalization](../operator-guides/transformation-and-normalization/transformations-with-dbt.md) yourself
-- or further, you can configure the use of a custom dbt project within Airbyte by following [this guide](../operator-guides/transformation-and-normalization/transformations-with-airbyte.md).
+- to build a [custom SQL view](../../operator-guides/transformation-and-normalization/transformations-with-sql.md) with your own naming conventions
+- to export, edit and run [custom dbt normalization](../../operator-guides/transformation-and-normalization/transformations-with-dbt.md) yourself
+- or further, you can configure the use of a custom dbt project within Airbyte by following [this guide](../../operator-guides/transformation-and-normalization/transformations-with-airbyte.md).
 
 ## CHANGELOG
 

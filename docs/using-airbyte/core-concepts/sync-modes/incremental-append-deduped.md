@@ -69,19 +69,19 @@ In the final de-duplicated table:
 
 ## Source-Defined Cursor
 
-Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../../integrations/sources/exchange-rates.md), the source knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
+Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../../../integrations/sources/exchange-rates.md), the source knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
 
-![](../../.gitbook/assets/incremental_source_defined.png)
+![](../../../.gitbook/assets/incremental_source_defined.png)
 
-\(You can find a more technical details about the configuration data model [here](../airbyte-protocol.md#catalog)\).
+\(You can find a more technical details about the configuration data model [here](../../../understanding-airbyte/airbyte-protocol.md#catalog)\).
 
 ## User-Defined Cursor
 
-Some sources cannot define the cursor without user input. For example, in the [postgres source](../../integrations/sources/postgres.md), the user needs to choose which column in a database table they want to use as the `cursor field`. In these cases, select the column in the sync settings dropdown that should be used as the `cursor field`.
+Some sources cannot define the cursor without user input. For example, in the [postgres source](../../../integrations/sources/postgres.md), the user needs to choose which column in a database table they want to use as the `cursor field`. In these cases, select the column in the sync settings dropdown that should be used as the `cursor field`.
 
-![](../../.gitbook/assets/incremental_user_defined.png)
+![](../../../.gitbook/assets/incremental_user_defined.png)
 
-\(You can find a more technical details about the configuration data model [here](../airbyte-protocol.md#catalog)\).
+\(You can find a more technical details about the configuration data model [here](../../../understanding-airbyte/airbyte-protocol.md#catalog)\).
 
 ## Source-Defined Primary key
 
@@ -91,7 +91,7 @@ Some sources are able to determine the primary key that they use without any use
 
 Some sources cannot define the cursor without user input or the user may want to specify their own primary key on the destination that is different from the source definitions. In these cases, select the column in the sync settings dropdown that should be used as the `primary key` or `composite primary keys`.
 
-![](../../.gitbook/assets/primary_key_user_defined.png)
+![](../../../.gitbook/assets/primary_key_user_defined.png)
 
 In this example, we selected both the `campaigns.id` and `campaigns.name` as the composite primary key of our `campaigns` table.
 

@@ -34,7 +34,7 @@ Depending on your use-case, it may still be valuable to consider rows with error
 
 ## Destinations V2 Example
 
-Consider the following [source schema](https://docs.airbyte.com/integrations/sources/faker) for stream `users`:
+Consider the following [source schema](/integrations/sources/faker) for stream `users`:
 
 ```json
 {
@@ -58,7 +58,7 @@ The data from one stream will now be mapped to one table in your schema as below
 | Failed typing that didn’t break other rows ⟶ | yyy-yyy-yyy      | 2022-01-01 12:00:00    | { errors: {[“fish” is not a valid integer for column “age”]} | 2   | evan       | NULL | { city: “Menlo Park”, zip: “94002” }    |
 | Not-yet-typed ⟶                              |                  |                        |                                                              |     |            |      |                                         |
 
-In legacy normalization, columns of [Airbyte type](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) `Object` in the Destination were "unnested" into separate tables. In this example, with Destinations V2, the previously unnested `public.users_address` table with columns `city` and `zip` will no longer be generated.
+In legacy normalization, columns of [Airbyte type](/understanding-airbyte/supported-data-types/#the-types) `Object` in the Destination were "unnested" into separate tables. In this example, with Destinations V2, the previously unnested `public.users_address` table with columns `city` and `zip` will no longer be generated.
 
 #### Destination Table Name: _airbyte.raw_public_users_ (`airbyte.{namespace}_{stream}`)
 
@@ -70,4 +70,4 @@ In legacy normalization, columns of [Airbyte type](https://docs.airbyte.com/unde
 
 You also now see the following changes in Airbyte-provided columns:
 
-![Airbyte Destinations V2 Column Changes](../release_notes/assets/updated_table_columns.png)
+![Airbyte Destinations V2 Column Changes](../../release_notes/assets/updated_table_columns.png)

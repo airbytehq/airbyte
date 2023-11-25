@@ -2,7 +2,7 @@
 
 ## Overview
 
-Airbyte supports syncing data in **Incremental Append** mode i.e: syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source. If the sync is running for the first time, it is equivalent to a [Full Refresh](full-refresh-append.md) since all data will be considered as _new_.
+Airbyte supports syncing data in **Incremental Append** mode i.e: syncing only replicate _new_ or _modified_ data. This prevents re-fetching data that you have already replicated from a source. If the sync is running for the first time, it is equivalent to a [Full Refresh](./full-refresh-append.md) since all data will be considered as _new_.
 
 In this flavor of incremental, records in the warehouse destination will never be deleted or mutated. A copy of each new or updated record is _appended_ to the data in the warehouse. This means you can find multiple copies of the same record in the destination warehouse. We provide an "at least once" guarantee of replicating each record that is present when the sync runs.
 
@@ -62,25 +62,25 @@ The output we expect to see in the warehouse is as follows:
 
 ## Source-Defined Cursor
 
-Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../../integrations/sources/exchange-rates.md), the source knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
+Some sources are able to determine the cursor that they use without any user input. For example, in the [exchange rates source](../../../integrations/sources/exchange-rates.md), the source knows that the date field should be used to determine the last record that was synced. In these cases, simply select the incremental option in the UI.
 
-![](../../.gitbook/assets/incremental_source_defined.png)
+![](../../../.gitbook/assets/incremental_source_defined.png)
 
-\(You can find a more technical details about the configuration data model [here](../airbyte-protocol.md#catalog)\).
+\(You can find a more technical details about the configuration data model [here](../../../understanding-airbyte/airbyte-protocol.md#catalog)\).
 
 ## User-Defined Cursor
 
-Some sources cannot define the cursor without user input. For example, in the [postgres source](../../integrations/sources/postgres.md), the user needs to choose which column in a database table they want to use as the `cursor field`. In these cases, select the column in the sync settings dropdown that should be used as the `cursor field`.
+Some sources cannot define the cursor without user input. For example, in the [postgres source](../../../integrations/sources/postgres.md), the user needs to choose which column in a database table they want to use as the `cursor field`. In these cases, select the column in the sync settings dropdown that should be used as the `cursor field`.
 
-![](../../.gitbook/assets/incremental_user_defined.png)
+![](../../../.gitbook/assets/incremental_user_defined.png)
 
-\(You can find a more technical details about the configuration data model [here](../airbyte-protocol.md#catalog)\).
+\(You can find a more technical details about the configuration data model [here](../../../understanding-airbyte/airbyte-protocol.md#catalog)\).
 
 ## Getting the Latest Snapshot of data
 
 As demonstrated in the examples above, with **Incremental Append,** a record which was updated in the source will be appended to the destination rather than updated in-place. This means that if data in the source uses a primary key \(e.g: `user_id` in the `users` table\), then the destination will end up having multiple records with the same primary key value.
 
-However, some use cases require only the latest snapshot of the data. This is available by using other flavors of sync modes such as [Incremental - Append + Deduped](incremental-append-deduped.md) instead.
+However, some use cases require only the latest snapshot of the data. This is available by using other flavors of sync modes such as [Incremental - Append + Deduped](./incremental-append-deduped.md) instead.
 
 Note that in **Incremental Append**, the size of the data in your warehouse increases monotonically since an updated record in the source is appended to the destination rather than updated in-place.
 
@@ -122,7 +122,7 @@ At the end of the second incremental sync, the data warehouse would still contai
 
 Similarly, if multiple modifications are made during the same day to the same records. If the frequency of the sync is not granular enough \(for example, set for every 24h\), then intermediate modifications to the data are not going to be detected and emitted. Only the state of data at the time the sync runs will be reflected in the destination.
 
-Those concerns could be solved by using a different incremental approach based on binary logs, Write-Ahead-Logs \(WAL\), or also called [Change Data Capture \(CDC\)](../cdc.md).
+Those concerns could be solved by using a different incremental approach based on binary logs, Write-Ahead-Logs \(WAL\), or also called [Change Data Capture \(CDC\)](../../../understanding-airbyte/cdc.md).
 
 The current behavior of **Incremental** is not able to handle source schema changes yet, for example, when a column is added, renamed or deleted from an existing table etc. It is recommended to trigger a [Full refresh - Overwrite](full-refresh-overwrite.md) to correctly replicate the data to the destination with the new schema changes.
 
