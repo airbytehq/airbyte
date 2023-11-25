@@ -1,0 +1,17 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "campaign_criterion"
+      },
+      "stream_state": {
+        "change_status": {
+          "7997580584": {
+            "change_status.last_change_date_time": "2023-11-20 13:20:01.003295"
+          }
+        }
+      }
+    }
+  }
+]
