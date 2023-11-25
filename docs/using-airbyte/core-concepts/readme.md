@@ -46,6 +46,23 @@ Examples of fields:
 - A column in the table in a relational database
 - A field in an API response
 
+## Sync schedules
+
+Syncs will be triggered by either:
+
+- A manual request \(i.e: clicking the "Sync Now" button in the UI or through the API\)
+- A schedule
+- CRON schedule
+
+When a scheduled connection is first created, a sync is executed as soon as possible. After that, a sync is run once the time since the last sync \(whether it was triggered manually or due to a schedule\) has exceeded the schedule interval. For example, consider the following illustrative scenario:
+
+- **October 1st, 2pm**, a user sets up a connection to sync data every 24 hours.
+- **October 1st, 2:01pm**: sync job runs
+- **October 2nd, 2:01pm:** 24 hours have passed since the last sync, so a sync is triggered.
+- **October 2nd, 5pm**: The user manually triggers a sync from the UI
+- **October 3rd, 2:01pm:** since the last sync was less than 24 hours ago, no sync is run
+- **October 3rd, 5:01pm:** It has been more than 24 hours since the last sync, so a sync is run
+
 ## Namespace
 
 Namespace is a method of grouping streams in a source or destination. Namespaces are used to generally organize data, segregate tests and production data, and enforce permissions. In a relational database system, this is known as a schema.
@@ -56,9 +73,11 @@ Airbyte supports the following configuration options for a connection:
 
    | Destination Namepsace | Description                |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Destination default | All streams will be replicated to the single default namespace defined by the Destination. For more details, see <a href="/understanding-airbyte/namespaces#--destination-connector-settings"> ​​Destination Connector Settings</a> |
+| Destination default | All streams will be replicated to the single default namespace defined by the Destination. |
 | Mirror source structure | Some sources (for example, databases) provide namespace information for a stream. If a source provides namespace information, the destination will mirror the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option.  |
-| Custom format | All streams will be replicated to a single user-defined namespace. See<a href="/understanding-airbyte/namespaces#--custom-format"> Custom format</a> for more details | 
+| Custom format | All streams will be replicated to a single user-defined namespace. |
+
+For more details, see our [Namespace documentation](/using-airbyte/namespaces).
 
 ## Connection sync modes
 
@@ -68,6 +87,8 @@ A sync mode governs how Airbyte reads from a source and writes to a destination.
 - **Full Refresh | Append:** Sync all records from the source and add them to the destination without deleting any data. This creates a historical copy of all records each sync.
 - **Incremental Sync | Append:** Sync new records from the source and add them to the destination without deleting any data. This enables efficient historical tracking over time of data. 
 - **Incremental Sync | Append + Deduped:** Sync new records from the source and add them to the destination. Also provides a de-duplicated view mirroring the state of the stream in the source. This is the most common replication use case. 
+
+Read more about each [sync mode](using-airbyte/core-concepts/sync-modes) and how they differ. 
 
 ## Normalization
 
@@ -92,6 +113,16 @@ After a sync is complete, Airbyte normalizes the data. When setting up a connect
 :::note
 
 Normalizing data may cause an increase in your destination's compute cost. This cost will vary depending on the amount of data that is normalized and is not related to Airbyte credit usage.
+
+:::
+
+### Typing and Deduping
+
+As described by the [Airbyte Protocol from the Airbyte Specifications](../../../understanding-airbyte/airbyte-protocol.md), replication is composed of source connectors that are transmitting data in a JSON format. It is then written as such by the destination connectors. On top of this replication, Airbyte's database and datawarehous destinations can provide converstions from the raw JSON data into type-cast relational columns. Learn more [here](/understanding-airbyte/typing-deduping).
+
+:::note
+
+Typing and Deduping may cause an increase in your destination's compute cost. This cost will vary depending on the amount of data that is transformed and is not related to Airbyte credit usage.
 
 :::
 

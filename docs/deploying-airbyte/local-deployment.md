@@ -21,8 +21,8 @@ cd airbyte
 ./run-ab-platform.sh
 ```
 
-- In your browser, just visit [http://localhost:8000](http://localhost:8000)
-- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy Airbyte to your servers, be sure to change these:
+- In your browser, visit [http://localhost:8000](http://localhost:8000)
+- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy Airbyte to your servers, be sure to change these in your `.env` file:
 
 ```yaml
 # Proxy Configuration
@@ -67,4 +67,10 @@ bash run-ab-platform.sh
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [troubleshooting](../troubleshooting.md) section in our docs for common problems.
+If you have any questions about the local setup and deployment process, head over to our [Getting Started FAQ](https://github.com/airbytehq/airbyte/discussions/categories/questions) on our Airbyte Forum that answers the following questions and more:
+
+- How long does it take to set up Airbyte?
+- Where can I see my data once I've run a sync?
+- Can I set a start time for my sync?
+
+We also have a [troubleshooting](../troubleshooting.md) section in our docs for common problems. If there are any questions that we couldn't answer here, we'd love to help you get started. [Join our Slack](https://airbytehq.slack.com/ssb/redirect) for additional community support.
