@@ -1,4 +1,4 @@
-# Airbyte Security
+# Security
 
 Airbyte is committed to keeping your data safe by following industry-standard practices for securing physical deployments, setting access policies, and leveraging the security features of leading Cloud providers.
 

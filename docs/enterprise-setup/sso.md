@@ -6,7 +6,7 @@ Airbyte Self Managed currently supports SSO via OIDC with [Okta](https://www.okt
 
 The following instructions walk you through:
 1. [Setting up the Okta OIDC App Integration to be used by your Airbyte instance](#setting-up-okta-for-sso)
-2. [Configuring Airbyte Self-Managed to use SSO](#deploying-airbyte-enterprise-with-okta)
+2. [Configuring Airbyte Enterprise to use SSO](#deploying-airbyte-enterprise-with-okta)
 
 ### Setting up Okta for SSO
 
@@ -14,13 +14,13 @@ You will need to create a new Okta OIDC App Integration for your Airbyte instanc
 
 You should create an app integration with **OIDC - OpenID Connect** as the sign-in method and **Web Application** as the application type:
 
-![Screenshot of Okta app integration creation modal](../assets/okta-create-new-app-integration.png)
+![Screenshot of Okta app integration creation modal](./assets/okta-create-new-app-integration.png)
 
 #### App integration name
 
 Please choose a URL-friendly app integraiton name without spaces or special characters, such as `my-airbyte-app`:
 
-![Screenshot of Okta app integration name](../assets/okta-app-integration-name.png)
+![Screenshot of Okta app integration name](./assets/okta-app-integration-name.png)
 
 Spaces or special characters in this field could result in invalid redirect URIs.
 
@@ -40,13 +40,13 @@ Sign-out redirect URIs
 <your-airbyte-domain>/auth/realms/airbyte/broker/<app-integration-name>/endpoint/logout_response
 ```
 
-![Okta app integration name screenshot](../assets/okta-login-redirect-uris.png)
+![Okta app integration name screenshot](./assets/okta-login-redirect-uris.png)
 
 _Example values_
 
 `<your-airbyte-domain>` should point to where your Airbyte instance will be available, including the http/https protocol.
 
-## Deploying Airbyte Self-Managed with Okta
+## Deploying Airbyte Enterprise with Okta
 
 Once your Okta app is set up, you're ready to deploy Airbyte with SSO. Take note of the following configuration values, as you will need them to configure Airbyte to use your new Okta SSO app integration:
 

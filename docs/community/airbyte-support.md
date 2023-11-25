@@ -6,13 +6,25 @@ Hold up! Have you looked at [our docs](https://docs.airbyte.com/) yet? We recomm
 
 Running Airbyte Open Source and have questions that our docs could not clear up? Post your questions on our [Github Discussions](https://github.com/airbytehq/airbyte/discussions?_gl=1*70s0c6*_ga*MTc1OTkyOTYzNi4xNjQxMjQyMjA0*_ga_HDBMVFQGBH*MTY4OTY5MDQyOC4zNDEuMC4xNjg5NjkwNDI4LjAuMC4w) and also join our community Slack to connect with other Airbyte users.
 
+### Community Slack
 
 **Join our Slack community** [HERE](https://slack.airbyte.com/?_gl=1*1h8mjfe*_gcl_au*MTc4MjAxMDQzOS4xNjgyOTczMDYy*_ga*MTc1OTkyOTYzNi4xNjQxMjQyMjA0*_ga_HDBMVFQGBH*MTY4Nzg4OTQ4MC4zMjUuMS4xNjg3ODkwMjE1LjAuMC4w&_ga=2.58571491.813788522.1687789276-1759929636.1641242204)!
 
-Ask your questions first in the #ask-ai channel and if our bot can not assist you, reach out to our community in the #ask-community-for-troubleshooting channel.  
-
+Ask your questions first in the #ask-ai channel and if our bot can not assist you, reach out to our community in the #ask-community-for-troubleshooting channel.
 
 If you require personalized support, reach out to our sales team to inquire about [Airbyte Enterprise](https://airbyte.com/airbyte-enterprise).
+
+### Airbyte Forum
+
+We are driving our community support from our [forum](https://github.com/airbytehq/airbyte/discussions) on GitHub.
+
+### Office Hour
+
+Airbyte provides a [Daily Office Hour](https://airbyte.com/daily-office-hour) to discuss issues. 
+It is a 45 minute meeting, the first 20 minutes are reserved to a weekly topic presentation about Airbyte concepts and the others 25 minutes are for general questions. The schedule is:
+* Monday, Wednesday and Fridays: 1 PM PST/PDT 
+* Tuesday and Thursday: 4 PM CEST
+
 
 ## Airbyte Cloud Support
 
@@ -59,5 +71,4 @@ Although we strive to offer our utmost assistance, there are certain requests th
 * Curating unique documentation and training materials
 * Configuring Airbyte to meet security requirements
 
-If you think you will need asssitance when upgrading, we recommend upgrading during our support hours, Monday-Friday 7AM - 7PM ET so we can assist if support is needed. If you upgrade outside of support hours, please submit a ticket and we will assist when we are back online. 
-
+If you think you will need assistance when upgrading, we recommend upgrading during our support hours, Monday-Friday 7AM - 7PM ET so we can assist if support is needed. If you upgrade outside of support hours, please submit a ticket and we will assist when we are back online. 

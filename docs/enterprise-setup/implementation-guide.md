@@ -3,15 +3,15 @@ import TabItem from '@theme/TabItem';
 
 # Implementation Guide
 
-[Airbyte Self-Managed](./README.md) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Self Managed license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
+[Airbyte Enterprise](./README.md) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Enterprise license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
 
-Airbyte Self Managed must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
+Airbyte Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
 
 ## Prerequisites
 
-There are three prerequisites to deploying Self-Managed: installing [helm](https://helm.sh/docs/intro/install/), a Kubernetes cluster, and having configured `kubectl` to connect to the cluster.
+There are three prerequisites to deploying Enterprise: installing [helm](https://helm.sh/docs/intro/install/), a Kubernetes cluster, and having configured `kubectl` to connect to the cluster.
 
-For production, we recommend deploying to EKS, GKE or AKS. If you are doing some local testing, follow the cluster setup instructions outlined [here](../../deploying-airbyte/on-kubernetes-via-helm.md#cluster-setup).
+For production, we recommend deploying to EKS, GKE or AKS. If you are doing some local testing, follow the cluster setup instructions outlined [here](/deploying-airbyte/on-kubernetes-via-helm.md#cluster-setup).
 
 To install `kubectl`, please follow [these instructions](https://kubernetes.io/docs/tasks/tools/). To configure `kubectl` to connect to your cluster by using `kubectl use-context my-cluster-name`, see the following:
 
@@ -38,7 +38,7 @@ To install `kubectl`, please follow [these instructions](https://kubernetes.io/d
     </Tabs>
 </details>
 
-## Deploy Airbyte Self-Managed
+## Deploy Airbyte Enterprise
 
 ### Add Airbyte Helm Repository
 
@@ -60,7 +60,7 @@ cp configs/airbyte.sample.yml configs/airbyte.yml
 
 3. Add your Airbyte Enterprise license key to your `airbyte.yml`. 
 
-4. Add your [auth details](/enterprise-setup/self-managed/sso) to your `airbyte.yml`. Auth configurations aren't easy to modify after Airbyte is installed, so please double check them to make sure they're accurate before proceeding.
+4. Add your [auth details](/enterprise-setup/sso) to your `airbyte.yml`. Auth configurations aren't easy to modify after Airbyte is installed, so please double check them to make sure they're accurate before proceeding.
 
 <details>
     <summary>Configuring auth in your airbyte.yml file</summary>
@@ -81,7 +81,7 @@ To configure basic auth (deploy without SSO), remove the entire `auth:` section 
 
 </details>
 
-### Install Airbyte Self Managed
+### Install Airbyte Enterprise
 
 Install Airbyte Enterprise on helm using the following command:
 
@@ -92,7 +92,7 @@ Install Airbyte Enterprise on helm using the following command:
 The default release name is `airbyte-pro`. You can change this via the `RELEASE_NAME` environment
 variable.
 
-### Customizing your Airbyte Self Managed Deployment
+### Customizing your Airbyte Enterprise Deployment
 
 In order to customize your deployment, you need to create `values.yaml` file in a local folder and populate it with default configuration override values. A `values.yaml` example can be located in [charts/airbyte](https://github.com/airbytehq/airbyte-platform/blob/main/charts/airbyte/values.yaml) folder of the Airbyte repository.
 

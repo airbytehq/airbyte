@@ -418,20 +418,7 @@ const deployAirbyte = {
   ],
 };
 
-const airbyteSelfManaged = {
-  type: "category",
-  label: "Airbyte Self-Managed",
-  link: {
-    type: "doc",
-    id: "enterprise-setup/self-managed/README",
-  },
-  items: [
-    "enterprise-setup/self-managed/implementation-guide",
-    "enterprise-setup/self-managed/sso",
-  ]
-}
-
-const operatorGuide = {
+const managingAirbyte = {
   type: "category",
   label: "Manage Airbyte",
   link: {
@@ -501,16 +488,6 @@ const understandingAirbyte = {
   ],
 };
 
-const security = {
-  type: "doc",
-  id: "operator-guides/security",
-};
-
-const support = {
-  type: "doc",
-  id: "operator-guides/contact-support",
-};
-
 module.exports = {
   mySidebar: [
     {
@@ -521,18 +498,41 @@ module.exports = {
     sectionHeader("Airbyte Connectors"),
     connectorCatalog,
     buildAConnector,
-    sectionHeader("Airbyte Cloud"),
-    ...airbyteCloud,
-    sectionHeader("Airbyte Open Source (OSS)"),
+    "integrations/connector-support-levels",
+    // -- begin legacy
+    // sectionHeader("Airbyte Cloud"),
+    // ...airbyteCloud,
+    // sectionHeader("Airbyte Open Source (OSS)"),
+    // ossGettingStarted,
+    // deployAirbyte,
+    // operatorGuide,
+    // {
+    //   type: "doc",
+    //   id: "troubleshooting",
+    // },
+    // sectionHeader("Enterprise Setup"),
+    // airbyteSelfManaged,
+    // -- end legacy
+    sectionHeader("Using Airbyte"),
     ossGettingStarted,
+    ...airbyteCloud,
+    "troubleshooting",
+    sectionHeader("Managing Airbyte"),
     deployAirbyte,
-    operatorGuide,
+    managingAirbyte,
+    "managing-airbyte/security",
     {
-      type: "doc",
-      id: "troubleshooting",
+      type: "category",
+      label: "Airbyte Enterprise",
+      link: {
+        type: "doc",
+        id: "enterprise-setup/README",
+      },
+      items: [
+        "enterprise-setup/implementation-guide",
+        "enterprise-setup/sso",
+      ]
     },
-    sectionHeader("Enterprise Setup"),
-    airbyteSelfManaged,
     sectionHeader("Developer Guides"),
     {
       type: "doc",
@@ -548,41 +548,30 @@ module.exports = {
     },
     understandingAirbyte,
     contributeToAirbyte,
-    sectionHeader("Resources"),
-    support,
-    security,
     {
       type: "category",
-      label: "Project Overview",
+      label: "Licenses",
+      link: {
+        type: "doc",
+        id: "developer-guides/licenses/README",
+      },
       items: [
-        {
-          type: "link",
-          label: "Roadmap",
-          href: "https://go.airbyte.com/roadmap",
-        },
-        "project-overview/product-support-levels",
-        "project-overview/slack-code-of-conduct",
-        "project-overview/code-of-conduct",
-        {
-          type: "link",
-          label: "Airbyte Repository",
-          href: "https://github.com/airbytehq/airbyte",
-        },
-        {
-          type: "category",
-          label: "Licenses",
-          link: {
-            type: "doc",
-            id: "project-overview/licenses/README",
-          },
-          items: [
-            "project-overview/licenses/license-faq",
-            "project-overview/licenses/elv2-license",
-            "project-overview/licenses/mit-license",
-            "project-overview/licenses/examples",
-          ],
-        },
+        "developer-guides/licenses/license-faq",
+        "developer-guides/licenses/elv2-license",
+        "developer-guides/licenses/mit-license",
+        "developer-guides/licenses/examples",
       ],
+    },
+    sectionHeader("Community"),
+    // TODO: Write a "getting in touch or overview doc"
+    "community/airbyte-support",
+    "community/code-of-conduct",
+    "community/slack-code-of-conduct",
+    sectionHeader("Product Updates"),
+    {
+      type: "link",
+      label: "Roadmap",
+      href: "https://go.airbyte.com/roadmap",
     },
     {
       type: "category",

@@ -9,10 +9,6 @@
   to: /understanding-airbyte/airbyte-protocol
 - from: /integrations/sources/appstore-singer
   to: /integrations/sources/appstore
-- from:
-    - /project-overview/security
-    - /operator-guides/securing-airbyte
-  to: /operator-guides/security
 - from: /connector-development/config-based/
   to: /connector-development/config-based/low-code-cdk-overview
 - from: /project-overview/changelog
@@ -33,5 +29,35 @@
   to: /cloud/managing-airbyte-cloud/manage-connection-state
 - from: /cloud/managing-airbyte-cloud/edit-stream-configuration
   to: /cloud/managing-airbyte-cloud/configuring-connections
-- from: /project-overview/product-release-stages
-  to: /project-overview/product-support-levels
+# November 2023 documentation restructure:
+- from: 
+    - /project-overview/product-support-levels
+    - /project-overview/product-release-stages
+  to: /integrations/connector-support-levels
+- from: /operator-guides/contact-support
+  to: /community/airbyte-support
+- from: /project-overview/code-of-conduct
+  to: /community/code-of-conduct
+- from: /project-overview/slack-code-of-conduct
+  to: /community/slack-code-of-conduct
+- from : /project-overview/licenses/
+  to: /developer-guides/licences/
+- from: /project-overview/licenses/license-faq
+  to: /developer-guides/licences/license-faq
+- from: /project-overview/licenses/elv2-license
+  to: /developer-guides/licences/elv2-license
+- from: /project-overview/licenses/mit-license
+  to: /developer-guides/licences/mit-license
+- from: /project-overview/licenses/examples
+  to: /developer-guides/licences/examples
+- from: /enterprise-setup/self-managed/
+  to: /enterprise-setup/
+- from: /enterprise-setup/self-managed/implementation-guide
+  to: /enterprise-setup/implementation-guide
+- from: /enterprise-setup/self-managed/sso
+  to: /enterprise-setup/sso
+- from:
+    - /project-overview/security
+    - /operator-guides/securing-airbyte
+    - /operator-guides/security
+  to: /managing-airbyte/security
