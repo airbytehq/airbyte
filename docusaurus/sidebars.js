@@ -319,44 +319,6 @@ const contributeToAirbyte = {
   ],
 };
 
-const airbyteCloud = [
-  "cloud/core-concepts",
-  {
-    type: "category",
-    label: "Using Airbyte Cloud",
-    link: {
-      type: "generated-index",
-    },
-    items: [
-      "cloud/managing-airbyte-cloud/configuring-connections",
-      "cloud/managing-airbyte-cloud/review-connection-status",
-      "cloud/managing-airbyte-cloud/review-sync-history",
-      "cloud/managing-airbyte-cloud/manage-schema-changes",
-      "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
-      "cloud/managing-airbyte-cloud/manage-data-residency",
-      "cloud/managing-airbyte-cloud/dbt-cloud-integration",
-      "cloud/managing-airbyte-cloud/manage-credits",
-      "cloud/managing-airbyte-cloud/manage-connection-state",
-      "cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace",
-      "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
-    ],
-  },
-];
-
-const ossGettingStarted = {
-  type: "category",
-  label: "Getting Started",
-  link: {
-    type: "generated-index",
-  },
-  items: [
-    "quickstart/deploy-airbyte",
-    "quickstart/add-a-source",
-    "quickstart/add-a-destination",
-    "quickstart/set-up-a-connection",
-  ],
-};
-
 const deployAirbyte = {
   type: "category",
   label: "Deploy Airbyte",
@@ -410,31 +372,6 @@ const deployAirbyte = {
       label: "On DigitalOcean",
       id: "deploying-airbyte/on-digitalocean-droplet",
     },
-  ],
-};
-
-const managingAirbyte = {
-  type: "category",
-  label: "Manage Airbyte",
-  link: {
-    type: "generated-index",
-  },
-  items: [
-    "operator-guides/upgrading-airbyte",
-    "operator-guides/reset",
-    "operator-guides/configuring-airbyte-db",
-    "operator-guides/configuring-connector-resources",
-    "operator-guides/browsing-output-logs",
-    "operator-guides/using-the-airflow-airbyte-operator",
-    "operator-guides/using-prefect-task",
-    "operator-guides/using-dagster-integration",
-    "operator-guides/using-kestra-plugin",
-    "operator-guides/locating-files-local-destination",
-    "operator-guides/collecting-metrics",
-    "operator-guides/configuring-airbyte",
-    "operator-guides/using-custom-connectors",
-    "operator-guides/scaling-airbyte",
-    "operator-guides/configuring-sync-notifications",
   ],
 };
 
@@ -517,6 +454,16 @@ module.exports = {
         "cloud/managing-airbyte-cloud/manage-schema-changes",
         "cloud/managing-airbyte-cloud/manage-data-residency",
         "cloud/managing-airbyte-cloud/manage-connection-state",
+        {
+          type: "category",
+          label: "Transformations",
+          items: [
+            "cloud/managing-airbyte-cloud/dbt-cloud-integration",
+            "operator-guides/transformation-and-normalization/transformations-with-sql",
+            "operator-guides/transformation-and-normalization/transformations-with-dbt",
+            "operator-guides/transformation-and-normalization/transformations-with-airbyte",
+          ]
+        },
       ]
     },
     {
@@ -541,22 +488,10 @@ module.exports = {
         "operator-guides/using-custom-connectors",
       ]
     },
-    {
-      type: "category",
-      label: "Transformations",
-      items: [
-        "cloud/managing-airbyte-cloud/dbt-cloud-integration",
-        "operator-guides/transformation-and-normalization/transformations-with-sql",
-        "operator-guides/transformation-and-normalization/transformations-with-dbt",
-        "operator-guides/transformation-and-normalization/transformations-with-airbyte",
-      ]
-    },
     "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
     "troubleshooting",
     sectionHeader("Operating Airbyte"),
     deployAirbyte,
-    managingAirbyte,
-    "operating-airbyte/security",
     {
       type: "category",
       label: "Airbyte Enterprise",
@@ -568,6 +503,38 @@ module.exports = {
         "enterprise-setup/implementation-guide",
         "enterprise-setup/sso",
       ]
+    },
+    "operator-guides/upgrading-airbyte",
+    {
+      type: "category",
+      label: "Configuring Airbyte",
+      link: {
+        type: "doc",
+        id: "operator-guides/configuring-airbyte",
+      },
+      items: [
+        "operator-guides/configuring-airbyte-db",
+        "operator-guides/configuring-connector-resources",
+      ]
+    },
+    {
+      type: "category",
+      label: "Airbyte at Scale",
+      items: [
+        "operator-guides/collecting-metrics",
+        "operator-guides/scaling-airbyte",
+      ]
+    },
+    "operating-airbyte/security",
+    {
+      type: "category",
+      label: "Integrating with Airbyte",
+      items: [
+        "operator-guides/using-the-airflow-airbyte-operator",
+        "operator-guides/using-prefect-task",
+        "operator-guides/using-dagster-integration",
+        "operator-guides/using-kestra-plugin",
+      ],
     },
     sectionHeader("Developer Guides"),
     {
