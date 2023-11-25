@@ -24,8 +24,6 @@
     - /project-overview/product-support-levels
     - /project-overview/product-release-stages
   to: /integrations/connector-support-levels
-- from: /operator-guides/contact-support
-  to: /community/airbyte-support
 - from: /project-overview/code-of-conduct
   to: /community/code-of-conduct
 - from: /project-overview/slack-code-of-conduct
@@ -84,3 +82,7 @@
   to: /using-airbyte/core-concepts/basic-normalization
 - from: /understanding-airbyte/typing-deduping
   to: /using-airbyte/core-concepts/typing-deduping
+- from:
+    - /troubleshooting
+    - /operator-guides/contact-support
+  to: /community/getting-support

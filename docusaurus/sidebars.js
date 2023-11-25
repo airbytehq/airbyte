@@ -489,7 +489,6 @@ module.exports = {
       ]
     },
     "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
-    "troubleshooting",
     sectionHeader("Operating Airbyte"),
     deployAirbyte,
     {

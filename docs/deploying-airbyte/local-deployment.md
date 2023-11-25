@@ -67,4 +67,5 @@ bash run-ab-platform.sh
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [troubleshooting](../troubleshooting.md) section in our docs for common problems.
+If you encounter any issues, check out [Getting Support](/community/getting-support) documentation
+for options how to get in touch with the community or us.
