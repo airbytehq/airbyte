@@ -22,8 +22,8 @@ class BuildConnectorImagesBase(Step, ABC):
     def title(self):
         return f"Build {self.context.connector.technical_name} docker image for platform(s) {', '.join(self.build_platforms)}"
 
-    def __init__(self, context: ConnectorContext, *build_platforms: List[Platform]) -> None:
-        self.build_platforms = build_platforms if build_platforms else BUILD_PLATFORMS
+    def __init__(self, context: ConnectorContext) -> None:
+        self.build_platforms = context.build_platforms if context.build_platforms else BUILD_PLATFORMS.values()
         super().__init__(context)
 
     async def _run(self, *args) -> StepResult:

@@ -91,7 +91,7 @@ class PullConnectorImageFromRegistry(Step):
         We want to make sure that the image we are about to release is compatible with all docker versions.
         We use crane to inspect the manifest of the image and check if it only has gzip layers.
         """
-        for platform in consts.BUILD_PLATFORMS:
+        for platform in consts.BUILD_PLATFORMS.values():
             inspect = docker.with_crane(self.context).with_exec(
                 ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image}"]
             )

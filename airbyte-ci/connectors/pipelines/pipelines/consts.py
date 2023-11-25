@@ -19,15 +19,20 @@ CONNECTOR_TESTING_REQUIREMENTS = [
     "pytest-custom_exit_code",
 ]
 
-BUILD_PLATFORMS = [Platform("linux/amd64"), Platform("linux/arm64")]
+BUILD_PLATFORMS = {
+    "amd64": Platform("linux/amd64"),
+    "arm64": Platform("linux/arm64"),
+}
 
 PLATFORM_MACHINE_TO_DAGGER_PLATFORM = {
-    "x86_64": Platform("linux/amd64"),
-    "arm64": Platform("linux/arm64"),
-    "aarch64": Platform("linux/amd64"),
-    "amd64": Platform("linux/amd64"),
+    "x86_64": "amd64",
+    "arm64": "arm64",
+    "aarch64": "amd64",
+    "amd64": "amd64",
 }
-LOCAL_BUILD_PLATFORM = PLATFORM_MACHINE_TO_DAGGER_PLATFORM[platform.machine()]
+LOCAL_BUILD_PLATFORM_STRING = PLATFORM_MACHINE_TO_DAGGER_PLATFORM[platform.machine()]
+LOCAL_BUILD_PLATFORM = BUILD_PLATFORMS[LOCAL_BUILD_PLATFORM_STRING]
+
 AMAZONCORRETTO_IMAGE = "amazoncorretto:17.0.8-al2023"
 NODE_IMAGE = "node:18.18.0-slim"
 GO_IMAGE = "golang:1.17"

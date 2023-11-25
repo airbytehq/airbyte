@@ -263,6 +263,9 @@ Build certified connectors:
 Build connectors changed on the current branch:
 `airbyte-ci connectors --modified build`
 
+Build connectors with a specific architecture:
+`airbyte-ci connectors --name=source-pokeapi build --arch=arm64 --arch=amd64`
+
 #### What it runs
 
 For Python and Low Code connectors:
@@ -433,6 +436,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2.7.1   | [#TODO](https://github.com/airbytehq/airbyte/pull/TODO)  | Add `--arch`` to airbyte-ci build                                                                 |
 | 2.7.0   | [#31930](https://github.com/airbytehq/airbyte/pull/31930)  | Merge airbyte-ci-internal into airbyte-ci                                                                 |
 | 2.6.0   | [#31831](https://github.com/airbytehq/airbyte/pull/31831)  | Add `airbyte-ci format` commands, remove connector-specific formatting check                              |
 | 2.5.9   | [#32427](https://github.com/airbytehq/airbyte/pull/32427)  | Re-enable caching for source-postgres                                                                     |

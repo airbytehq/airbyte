@@ -2,11 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import List
 import asyncclick as click
 from pipelines.airbyte_ci.connectors.build_image.steps import run_connector_build_pipeline
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.consts import BUILD_PLATFORMS, LOCAL_BUILD_PLATFORM_STRING, BUILD_PLATFORMS
 
 
 @click.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
@@ -17,9 +19,17 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
     default=False,
     type=bool,
 )
+@click.option(
+    "--arch",
+    help="Architecture to build connector images for. Defaults to your local architecture.",
+    default=[LOCAL_BUILD_PLATFORM_STRING],
+    type=click.Choice(BUILD_PLATFORMS.keys()),
+    multiple=True,
+)
 @click.pass_context
-async def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
+async def build(ctx: click.Context, use_host_gradle_dist_tar: bool, arch: List[str]) -> bool:
     """Runs a build pipeline for the selected connectors."""
+    build_platforms = [BUILD_PLATFORMS[a] for a in arch]
 
     connectors_contexts = [
         ConnectorContext(
@@ -41,6 +51,7 @@ async def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
             use_host_gradle_dist_tar=use_host_gradle_dist_tar,
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
             s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
+            build_platforms = build_platforms,
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]

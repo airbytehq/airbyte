@@ -56,7 +56,7 @@ async def run_connector_build(context: ConnectorContext) -> StepResult:
         # Special case: use a local dist tar to speed up local development.
         dist_dir = await context.dagger_client.host().directory(dist_tar_directory_path(context), include=["*.tar"])
         # Speed things up by only building for the local platform.
-        return await BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run(dist_dir)
+        return await BuildConnectorImages(context).run(dist_dir)
 
     # Default case: distribution tar is built by the dagger pipeline.
     build_connector_tar_result = await BuildConnectorDistributionTar(context).run()
