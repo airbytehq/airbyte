@@ -1,4 +1,4 @@
-# Understand Airbyte Cloud limits
+# Airbyte Cloud limits
 
 Understanding the following limitations will help you more effectively manage Airbyte Cloud.
 

@@ -431,15 +431,6 @@ const managingAirbyte = {
     "operator-guides/using-kestra-plugin",
     "operator-guides/locating-files-local-destination",
     "operator-guides/collecting-metrics",
-    {
-      type: "category",
-      label: "Transformations and Normalization",
-      items: [
-        "operator-guides/transformation-and-normalization/transformations-with-sql",
-        "operator-guides/transformation-and-normalization/transformations-with-dbt",
-        "operator-guides/transformation-and-normalization/transformations-with-airbyte",
-      ],
-    },
     "operator-guides/configuring-airbyte",
     "operator-guides/using-custom-connectors",
     "operator-guides/scaling-airbyte",
@@ -476,20 +467,6 @@ module.exports = {
     connectorCatalog,
     buildAConnector,
     "integrations/connector-support-levels",
-    // -- begin legacy
-    // sectionHeader("Airbyte Cloud"),
-    // ...airbyteCloud,
-    // sectionHeader("Airbyte Open Source (OSS)"),
-    // ossGettingStarted,
-    // deployAirbyte,
-    // operatorGuide,
-    // {
-    //   type: "doc",
-    //   id: "troubleshooting",
-    // },
-    // sectionHeader("Enterprise Setup"),
-    // airbyteSelfManaged,
-    // -- end legacy
     sectionHeader("Using Airbyte"),
     {
       type: "category",
@@ -532,7 +509,49 @@ module.exports = {
         "using-airbyte/core-concepts/typing-deduping",
       ],
     },
-    // ...airbyteCloud,
+    {
+      type: "category",
+      label: "Managing Connections",
+      items: [
+        "cloud/managing-airbyte-cloud/configuring-connections",
+        "cloud/managing-airbyte-cloud/manage-schema-changes",
+        "cloud/managing-airbyte-cloud/manage-data-residency",
+        "cloud/managing-airbyte-cloud/manage-connection-state",
+      ]
+    },
+    {
+      type: "category",
+      label: "Managing Syncs",
+      items: [
+        "operator-guides/reset",
+        "cloud/managing-airbyte-cloud/review-connection-status",
+        "cloud/managing-airbyte-cloud/review-sync-history",
+        "operator-guides/browsing-output-logs",
+        "operator-guides/locating-files-local-destination",
+      ],
+    },
+    {
+      type: "category",
+      label: "Managing your Account",
+      items: [
+        "cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace",
+        // TODO: merge with operator-guides/configure-sync-notifications
+        "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
+        "cloud/managing-airbyte-cloud/manage-credits",
+        "operator-guides/using-custom-connectors",
+      ]
+    },
+    {
+      type: "category",
+      label: "Transformations",
+      items: [
+        "cloud/managing-airbyte-cloud/dbt-cloud-integration",
+        "operator-guides/transformation-and-normalization/transformations-with-sql",
+        "operator-guides/transformation-and-normalization/transformations-with-dbt",
+        "operator-guides/transformation-and-normalization/transformations-with-airbyte",
+      ]
+    },
+    "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
     "troubleshooting",
     sectionHeader("Operating Airbyte"),
     deployAirbyte,
