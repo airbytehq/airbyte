@@ -13,5 +13,5 @@ Step 4: Open a Github ticket. If you're still unable to resolve the issue after 
 Airbyte is an open source project with a vibrant community that fosters collaboration and mutual support. To ensure accessible troubleshooting guidance, Airbyte offers multiple platforms for users to ask and discuss issues, including the Airbyte Github, Airbyte Community Slack (which is over 10,000 users), and the Airbyte Forum. In addition, Airbyte hosts daily office hours that include topic demonstrations and dedicated space for issue discussion in Zoom meetings. In addition to these community resources, Airbyte also offers premium support packages for users who require additional assistance beyond what is provided by the community. 
 
 :::info
-You can check all your [support options](./community/airbyte-support).
+In case you're not able to solve your issue, have a look at all your [support options](./community/airbyte-support).
 :::
