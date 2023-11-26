@@ -88,3 +88,5 @@
   to: /community/getting-support
 - from: /cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace
   to: /using-airbyte/workspaces
+- from: /operator-guides/locating-files-local-destination
+  to: /integrations/locating-files-local-destination

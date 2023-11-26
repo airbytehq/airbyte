@@ -48,7 +48,7 @@ cat /tmp/airbyte_local/YOUR_PATH/_airbyte_raw_YOUR_STREAM_NAME.jsonl
 You should see a list of JSON objects, each containing a unique `airbyte_ab_id`, an `emitted_at` timestamp, and `airbyte_data` containing the extracted record.
 
 :::tip 
-If you are using Airbyte on Windows with WSL2 and Docker, refer to [this guide](/operator-guides/locating-files-local-destination) to locate the replicated folder and file.
+If you are using Airbyte on Windows with WSL2 and Docker, refer to [this guide](/integrations/locating-files-local-destination.md) to locate the replicated folder and file.
 :::
 
 ## What's next?

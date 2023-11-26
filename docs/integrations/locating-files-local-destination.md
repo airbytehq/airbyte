@@ -1,3 +1,7 @@
+---
+displayed_sidebar: docs
+---
+
 # Windows - Browsing Local File Output
 
 ## Overview

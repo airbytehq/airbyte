@@ -469,7 +469,6 @@ module.exports = {
         "cloud/managing-airbyte-cloud/review-connection-status",
         "cloud/managing-airbyte-cloud/review-sync-history",
         "operator-guides/browsing-output-logs",
-        "operator-guides/locating-files-local-destination",
       ],
     },
     {
