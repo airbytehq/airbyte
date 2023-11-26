@@ -425,6 +425,7 @@ module.exports = {
         id: "using-airbyte/core-concepts/readme"
       },
       items: [
+        "using-airbyte/core-concepts/sync-schedules",
         "using-airbyte/core-concepts/namespaces",
         {
           type: "category",
