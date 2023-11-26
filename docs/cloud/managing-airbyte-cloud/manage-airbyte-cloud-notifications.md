@@ -21,7 +21,7 @@ This page provides guidance on how to manage notifications for Airbyte, allowing
 
 To set up email notifications:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings** and navigate to **Notifications**.
+1. In the Airbyte UI, click **Settings** and navigate to **Notifications**.
 
 2. Toggle which messages you'd like to receive from Airbyte. All email notifications will be sent by default to the creator of the workspace. To change the recipient, edit and save the **notification email recipient**. If you would like to send email notifications to more than one recipient, you can enter an email distribution list (ie Google Group) as the recipient.
 

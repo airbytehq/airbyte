@@ -8,7 +8,7 @@ Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resou
 
 To buy credits:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Billing** in the navigation bar.
+1. In the Airbyte UI, click **Billing** in the navigation bar.
 
 2. If you are unsure of how many credits you need, use our [Cost Estimator](https://www.airbyte.com/pricing) or click **Talk to Sales** to find the right amount for your team.
 
@@ -65,7 +65,7 @@ If you are enrolled and want to change your limits or cancel your enrollment, [e
 
 ## View invoice history
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Billing** in the navigation bar.
+1. In the Airbyte UI, click **Billing** in the navigation bar.
 
 2. Click **Invoice History**. You will be redirected to a Stripe portal.
 
