@@ -276,16 +276,7 @@ Eagle-eyed readers may note that _all_ markdown should support this feature sinc
 
 ### Adding a redirect
 
-To add a redirect, open the [`docusaurus.config.js`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/docusaurus.config.js#L22) file and locate the following commented section:
-
-```js
-//                        {
-//                         from: '/some-lame-path',
-//                         to: '/a-much-cooler-uri',
-//                        },
-```
-
-Copy this section, replace the values, and [test the changes locally](#editing-on-your-local-machine) by going to the path you created a redirect for and verify that the address changes to the new one.
+To add a redirect, open the [`docusaurus/redirects.yml`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/redirects.yml) file and add an entry from which old path to which new path a redirect should happen.
 
 :::note 
 Your path **needs** a leading slash `/` to work
