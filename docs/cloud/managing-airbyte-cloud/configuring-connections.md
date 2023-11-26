@@ -25,9 +25,9 @@ You can configure the following settings:
 | Setting                              | Description                                                                         |
 |--------------------------------------|-------------------------------------------------------------------------------------|
 | Replication frequency                | How often the data syncs                                                            |
-| [Destination namespace](/using-airbyte/namespaces.md)                | Where the replicated data is written                                                |
+| [Destination namespace](/using-airbyte/core-concepts/namespaces.md)                | Where the replicated data is written                                                |
 | Destination stream prefix            | How you identify streams from different connectors                                  |
-| [Detect and propagate schema changes](/using-airbyte/manage-schema-changes.md) | How Airbyte handles syncs when it detects schema changes in the source |
+| [Detect and propagate schema changes](/cloud/managing-airbyte-cloud/manage-schema-changes.md) | How Airbyte handles syncs when it detects schema changes in the source |
 | Connection Data Residency | Where data will be processed |
 
 To use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html):

@@ -38,7 +38,7 @@ Click `Copy.`
 
 **Add the webhook to Airbyte.**
 
-Assuming you have a [running instance of Airbyte](../deploying-airbyte/README.md), we can navigate to the UI. Click on Settings and then click on `Notifications`.
+Assuming you have a [running instance of Airbyte](/deploying-airbyte/), we can navigate to the UI. Click on Settings and then click on `Notifications`.
 
 ![](../.gitbook/assets/notifications_airbyte_settings.png)
 

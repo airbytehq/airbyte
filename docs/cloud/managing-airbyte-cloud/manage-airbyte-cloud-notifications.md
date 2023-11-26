@@ -1,6 +1,6 @@
 # Manage notifications
 
-This page provides guidance on how to manage notifications for Airbyte Cloud, allowing you to stay up-to-date on the activities in your workspace. 
+This page provides guidance on how to manage notifications for Airbyte, allowing you to stay up-to-date on the activities in your workspace. 
 
 ## Notification Event Types
 
@@ -17,6 +17,8 @@ This page provides guidance on how to manage notifications for Airbyte Cloud, al
 |
 
 ## Configure Notification Settings
+
+
 
 To set up email notifications:
 
