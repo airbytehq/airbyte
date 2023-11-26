@@ -130,6 +130,7 @@ public class BulkConsumer implements AirbyteMessageConsumer {
 
   @Override
   public void accept(final AirbyteMessage message) throws Exception {
+    LOGGER.info("AtDest: {}", message);
     if (message.getType() == Type.STATE) {
       LOGGER.info("Emitting state: {}", message);
       outputRecordCollector.accept(message);
