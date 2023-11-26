@@ -49,20 +49,14 @@ Examples of fields:
 
 ## Sync Schedule
 
-You have three options when scheduling a connection's sync to run:
+There are three options for scheduling a sync to run: 
 - Scheduled (ie. every 24 hours, every 2 hours)
 - [CRON schedule](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
 - Manual \(i.e: clicking the "Sync Now" button in the UI or through the API\)
 
-
 When a scheduled connection is first created, a sync is executed as soon as possible. After that, a sync is run once the time since the last sync \(whether it was triggered manually or due to a schedule\) has exceeded the schedule interval. For example:
 
-- **October 1st, 2pm**, a user sets up a connection to sync data every 24 hours.
-- **October 1st, 2:01pm**: sync job runs
-- **October 2nd, 2:01pm:** 24 hours have passed since the last sync, so a sync is triggered.
-- **October 2nd, 5pm**: The user manually triggers a sync from the UI
-- **October 3rd, 2:01pm:** since the last sync was less than 24 hours ago, no sync is run
-- **October 3rd, 5:01pm:** It has been more than 24 hours since the last sync, so a sync is run
+For more details, see our [Sync Schedules documentation](sync-schedules.md).
 
 ## Destination Namespace
 
@@ -76,7 +70,7 @@ A sync mode governs how Airbyte reads from a source and writes to a destination.
 
 Read more about each [sync mode](using-airbyte/core-concepts/sync-modes) and how they differ. 
 
-### Typing and Deduping
+## Typing and Deduping
 
 Typing and deduping ensures the data emitted from sources is written into the correct type-cast relational columns and only contains unique records. Typing and deduping is only relevant for the following relational database & warehouse destinations:
 
