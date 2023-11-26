@@ -1,6 +1,8 @@
 import React from "react";
 import { useEffect, useState } from "react";
 
+import styles from "./ConnectorRegistry.module.css";
+
 const registry_url =
   "https://connectors.airbyte.com/files/generated_reports/connector_registry_report.json";
 
@@ -46,7 +48,6 @@ export default function ConnectorRegistry({ type }) {
         <thead>
           <tr>
             <th>Connector Name</th>
-            <th>Icon</th>
             <th>Links</th>
             <th>Support Level</th>
             <th>OSS</th>
@@ -64,14 +65,12 @@ export default function ConnectorRegistry({ type }) {
             return (
               <tr key={`${connector.definitionId}`}>
                 <td>
-                  <strong>
+                  <div className={styles.connectorName}>
+                    {connector.iconUrl_oss && (
+                      <img src={connector.iconUrl_oss} style={iconStyle} />
+                    )}
                     <a href={docsLink}>{connector.name_oss}</a>
-                  </strong>
-                </td>
-                <td>
-                  {connector.iconUrl_oss ? (
-                    <img src={connector.iconUrl_oss} style={iconStyle} />
-                  ) : null}
+                  </div>
                 </td>
                 {/* min width to prevent wrapping */}
                 <td style={{ minWidth: 75 }}>
