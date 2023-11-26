@@ -4,6 +4,7 @@ You can specify for each connection how Airbyte should handle any change of sche
 
 Airbyte checks for any changes in your source schema immediately before syncing, at most once every 24 hours.
 
+## Detection and Propagate Schema Changes
 Based on your configured settings for **Detect and propagate schema changes**, Airbyte will automatically sync those changes or ignore them: 
 
 | Setting              | Description                                                                                                         |
@@ -13,6 +14,7 @@ Based on your configured settings for **Detect and propagate schema changes**, A
 | Ignore | Schema changes will be detected, but not propagated. Syncs will continue running with the schema you've set up. To propagate the detected schema changes, you will need to approve the changes manually | 
 | Pause Connection | Connections will be automatically disabled as soon as any schema changes are detected |
 
+## Types of Schema Changes
 When propagation is enabled, your data in the destination will automatically shift to bring in the new changes. 
 
 | Type of Schema Change              | Propagation Behavior                                                                                                         |
@@ -22,6 +24,10 @@ When propagation is enabled, your data in the destination will automatically shi
 | New stream | The first sync will create the new stream in the destination and fill all data in as if it is a historical sync. | 
 | Removal of stream | The stream will stop updating, and any existing data in the destination will remain. |
 | Column data type changes | The data in the destination will remain the same. Any new or updated rows with incompatible data types will result in a row error in the raw Airbyte tables. You will need to refresh the schema and do a full resync to ensure the data types are consistent. 
+
+:::tip
+Ensure you receive webhook notifications for your connection by enabling `Schema update notifications` in the connection's settings.
+:::
 
 In all cases, if a breaking schema change is detected, the connection will be paused immediately for manual review to prevent future syncs from failing. Breaking schema changes occur when:
 * An existing primary key is removed from the source
@@ -81,6 +87,3 @@ In addition to Airbyte Cloud’s automatic schema change detection, you can manu
  3. In the **Activate the streams you want to sync** table, click **Refresh source schema** to fetch the schema of your data source.
 
  4. If there are changes to the schema, you can review them in the **Refreshed source schema** dialog.
-
-## Manage Schema Change Notifications
-[Refer to our notification documentation](manage-airbyte-cloud-notifications.md) to understand how to stay updated on any schema updates to your connections.

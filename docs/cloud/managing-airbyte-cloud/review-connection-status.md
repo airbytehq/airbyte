@@ -2,9 +2,9 @@
 The connection status displays information about the connection and of each stream being synced. Reviewing this summary allows you to assess the connection's current status and understand when the next sync will be run.
  
 To review the connection status:
-1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections**.   
+1. In the Airbyte UI, click **Connections**.   
 
-2. Click a connection in the list to view its status.
+2. Click a connection in the list to view its status. 
 
 | Status           | Description                                                                                                         |
 |------------------|---------------------------------------------------------------------------------------------------------------------|
