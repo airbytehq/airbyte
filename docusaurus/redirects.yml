@@ -20,7 +20,7 @@
 - from: /cloud/managing-airbyte-cloud/edit-stream-configuration
   to: /cloud/managing-airbyte-cloud/configuring-connections
 # November 2023 documentation restructure:
-- from: 
+- from:
     - /project-overview/product-support-levels
     - /project-overview/product-release-stages
   to: /integrations/connector-support-levels
@@ -28,7 +28,7 @@
   to: /community/code-of-conduct
 - from: /project-overview/slack-code-of-conduct
   to: /community/slack-code-of-conduct
-- from : /project-overview/licenses/
+- from: /project-overview/licenses/
   to: /developer-guides/licenses/
 - from: /project-overview/licenses/license-faq
   to: /developer-guides/licenses/license-faq
