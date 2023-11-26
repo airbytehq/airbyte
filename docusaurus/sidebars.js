@@ -476,7 +476,7 @@ module.exports = {
       type: "category",
       label: "Workspace Management",
       items: [
-        "cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace",
+        "using-airbyte/workspaces",
         "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
         "cloud/managing-airbyte-cloud/manage-credits",
         "operator-guides/using-custom-connectors",

@@ -86,3 +86,5 @@
     - /troubleshooting
     - /operator-guides/contact-support
   to: /community/getting-support
+- from: /cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace
+  to: /using-airbyte/workspaces
