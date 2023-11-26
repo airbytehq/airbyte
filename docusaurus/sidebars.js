@@ -336,7 +336,11 @@ const deployAirbyte = {
       label: "On AWS EC2",
       id: "deploying-airbyte/on-aws-ec2",
     },
-
+    {
+      type: "doc",
+      label: "On AWS ECS",
+      id: "deploying-airbyte/on-aws-ecs",
+    },
     {
       type: "doc",
       label: "On Azure",

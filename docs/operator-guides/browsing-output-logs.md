@@ -33,7 +33,9 @@ You can also access the download log button from the in-app log viewer.
 If a sync was completed across multiple attempts, downloading the logs will union all the logs for all attempts for that job. 
 :::
 
-## Exploring Local Logs (Open Source only)
+## Exploring Local Logs
+
+<AppliesTo oss />
 
 ### Establish the folder directory
 
