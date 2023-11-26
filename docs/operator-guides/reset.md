@@ -12,13 +12,13 @@ To perform a reset, select `Reset your data` in the UI on a connection's status 
 Similarly to a sync job, a reset can be completed as successful, failed, or cancelled. To resolve a failed reset, you should manually drop the tables in the destination so that Airbyte can continue syncing accurately into the destination. 
 
 ## Reset behavior
-When a reset is successfully completed, all the records are deleted from your destination tables (and files, if using local JSON or local CSV as the destination))
+When a reset is successfully completed, all the records are deleted from your destination tables (and files, if using local JSON or local CSV as the destination).
 
 :::info
-If you are using destinations that are on the Destinations v2 framework, only raw tables will be cleared of their data. Final tables will retain all records from the last sync. 
+If you are using destinations that are on the [Destinations v2](/release_notes/upgrading_to_destinations_v2.md) framework, only raw tables will be cleared of their data. Final tables will retain all records from the last sync. 
 :::
 
-A reset **DOES NOT** delete any destination tables or file itself. The schema is retained but will not contain any rows.
+A reset **DOES NOT** delete any destination tables or files itself. The schema is retained but will not contain any rows.
 
 :::tip
 If you have any orphaned tables or files that are no longer being synced to, they should be cleaned up separately, as Airbyte will not clean them up for you. This can occur when the `Destination Namespace` or `Stream Prefix` connection configuration is changed for an existing connection.
