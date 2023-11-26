@@ -2,8 +2,6 @@
 
 The following table describes the support levels of Airbyte connectors.
 
-<span style="font-size: var(--font-size-xs); border-radius: 500px; text-transform: uppercase;padding: 3px 5px; display: inline-block; line-height: 1; white-space: nowrap; font-weight: 500;">Certified<>
-
 |                                      | Certified                                 | Community                                                                                              | Custom                                                                                                                                                                                                                                                             |
 | ------------------------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Availability**                     | Available to all users                    | Available to all users                                                                                 | Available to all users                                                                                                                                                                                                                                             |
