@@ -5,7 +5,7 @@
 Airbyte records the full logs as a part of each sync. These logs can be used to understand the underlying operations Airbyte performs to read data from the source and write to the destination as a part of the [Airbyte Protocol](/understanding-airbyte/airbyte-protocol.md). The logs includes many details, including any errors that can be helpful when troubleshooting sync errors. 
 
 :::info
-When using Airbyte Open-Source, you can also access additional logs outside of the UI. This is useful if you need to browse the Docker volumes where extra output files of Airbyte server and workers are stored.
+When using Airbyte Open Source, you can also access additional logs outside of the UI. This is useful if you need to browse the Docker volumes where extra output files of Airbyte server and workers are stored.
 :::
 
 To find the logs for a connection, navigate to a connection's `Job History` tab to see the latest syncs. 
@@ -33,7 +33,7 @@ You can also access the download log button from the in-app log viewer.
 If a sync was completed across multiple attempts, downloading the logs will union all the logs for all attempts for that job. 
 :::
 
-## Exploring Local Logs (Open-Source only)
+## Exploring Local Logs (Open Source only)
 
 ### Establish the folder directory
 

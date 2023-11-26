@@ -24,7 +24,7 @@ This source uses the fully open [PokéAPI](https://pokeapi.co/docs/v2#info) to s
 
 Currently, only one output stream is available from this source, which is the Pokémon output stream. This schema is defined [here](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-pokeapi/source_pokeapi/schemas/pokemon.json).
 
-## Rate Limiting & Performance Considerations \(Airbyte Open-Source\)
+## Rate Limiting & Performance Considerations \(Airbyte Open Source\)
 
 According to the API's [fair use policy](https://pokeapi.co/docs/v2#fairuse), please make sure to cache resources retrieved from the PokéAPI wherever possible. That said, the PokéAPI does not perform rate limiting.
 
