@@ -24,7 +24,8 @@
         "description": "Start date for collecting time logs",
         "examples": ["%Y-%m-%d", "2016-01-01"],
         "type": "string",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "format": "date"
       },
       "logs_batch_size": {
         "title": "Time logs batch size",
