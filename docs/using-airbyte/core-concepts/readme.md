@@ -118,7 +118,7 @@ Normalizing data may cause an increase in your destination's compute cost. This 
 
 ### Typing and Deduping
 
-As described by the [Airbyte Protocol from the Airbyte Specifications](../../../understanding-airbyte/airbyte-protocol.md), replication is composed of source connectors that are transmitting data in a JSON format. It is then written as such by the destination connectors. On top of this replication, Airbyte's database and datawarehous destinations can provide converstions from the raw JSON data into type-cast relational columns. Learn more [here](/understanding-airbyte/typing-deduping).
+As described by the [Airbyte Protocol from the Airbyte Specifications](/understanding-airbyte/airbyte-protocol.md), replication is composed of source connectors that are transmitting data in a JSON format. It is then written as such by the destination connectors. On top of this replication, Airbyte's database and datawarehous destinations can provide converstions from the raw JSON data into type-cast relational columns. Learn more [here](/understanding-airbyte/typing-deduping).
 
 Note that typing and deduping is only relevant for the following relational database & warehouse destinations:
 

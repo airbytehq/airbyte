@@ -14,7 +14,7 @@ If you signed up using your email address, Airbyte will send you an email with a
     If you have been invited to an existing workspace, you cannot use the Google login option to create a new Airbyte account. Use email instead. 
     :::
 
-To start setting up a data pipeline, see how to [set up a source](/add-a-source/).
+To start setting up a data pipeline, see how to [set up a source](./add-a-source.md).
 
     :::info
     Depending on your data residency, you may need to [allowlist IP addresses](/operating-airbyte/security) to enable access to Airbyte.
@@ -24,13 +24,13 @@ To start setting up a data pipeline, see how to [set up a source](/add-a-source/
 
 To use Airbyte Open-Source, you can use on the following options to deploy it on your infrastructure.
 
-- [Local Deployment](local-deployment.md) (recommended when trying out Airbyte)
-- [On Aws](on-aws-ec2.md)
-- [On Azure VM Cloud Shell](on-azure-vm-cloud-shell.md)
-- [On Digital Ocean Droplet](on-digitalocean-droplet.md)
-- [On GCP.md](on-gcp-compute-engine.md)
-- [On Kubernetes](on-kubernetes-via-helm.md)
-- [On OCI VM](on-oci-vm.md)
-- [On Restack](on-restack.md)
-- [On Plural](on-plural.md)
-- [On AWS ECS](on-aws-ecs.md)  (Spoiler alert: it doesn't work)
+- [Local Deployment](/deploying-airbyte/local-deployment.md) (recommended when trying out Airbyte)
+- [On Aws](/deploying-airbyte/on-aws-ec2.md)
+- [On Azure VM Cloud Shell](/deploying-airbyte/on-azure-vm-cloud-shell.md)
+- [On Digital Ocean Droplet](/deploying-airbyte/on-digitalocean-droplet.md)
+- [On GCP.md](/deploying-airbyte/on-gcp-compute-engine.md)
+- [On Kubernetes](/deploying-airbyte/on-kubernetes-via-helm.md)
+- [On OCI VM](/deploying-airbyte/on-oci-vm.md)
+- [On Restack](/deploying-airbyte/on-restack.md)
+- [On Plural](/deploying-airbyte/on-plural.md)
+- [On AWS ECS](/deploying-airbyte/on-aws-ecs.md)  (Spoiler alert: it doesn't work)
