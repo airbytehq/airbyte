@@ -1,8 +1,10 @@
 # Getting Started
 
-Getting started with Airbyte takes only a few steps! This page guides you through the initial steps to get started.
+Getting started with Airbyte takes only a few steps! This page guides you through the initial steps to get started and you'll learn how to setup your first connection on the following pages.
 
-## Sign Up for Airbyte (Cloud)
+You have two options to run Airbyte: Use **Airbyte Cloud** (recommended) or **self-host Airbyte** in your infrastructure.
+
+## Sign Up for Airbyte Cloud
 
 To use Airbyte Cloud, [sign up](https://cloud.airbyte.io/signup) with your email address, Google login, or GitHub login. Upon signing up, you'll be taken to your workspace, which lets you collaborate with team members and share resources across your team under a shared billing account.
 
