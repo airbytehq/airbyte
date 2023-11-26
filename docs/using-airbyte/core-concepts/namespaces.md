@@ -2,7 +2,7 @@
 
 ## High-Level Overview
 
-Namespaces allow you to organize and separate your data into groups. In most cases, namespaces are schemas in the database you're replicating to.
+Namespaces are used to generally organize data, segregate tests and production data, and enforce permissions. In most cases, namespaces are schemas in the database you're replicating to.
 
 As a part of connection setup, you select where in the destination you want to write your data. Note: The default configuration is **Destination default**.
 
@@ -16,9 +16,11 @@ Most of our destinations support this feature. To learn if your connector suppor
 
 ## What is a Namespace?
 
-Technical systems often group their underlying data into namespaces with each namespace's data isolated from another namespace. This isolation allows for better organisation and flexibility, leading to better usability.
+Systems often group their underlying data into namespaces with each namespace's data isolated from another namespace. This isolation allows for better organisation and flexibility, leading to better usability.
 
 An example of a namespace is the RDMS's `schema` concept. Some common use cases for schemas are enforcing permissions, segregating test and production data and general data organisation.
+
+In a source, the namespace is the location from where the data is replicated to the destination. In a destination, the namespace is the location where the replicated data is stored in the destination. 
 
 Airbyte supports namespaces and allows Sources to define namespaces, and Destinations to write to various namespaces. In Airbyte, the following options are available and are set on each individual connection.
 

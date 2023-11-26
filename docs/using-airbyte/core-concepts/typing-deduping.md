@@ -1,6 +1,6 @@
 # Typing and Deduping
 
-This page refers to new functionality added by [Destinations V2](/release_notes/upgrading_to_destinations_v2/). Typing and deduping is the default method of transforming datasets within data warehouse and database destinations after they've been replicated. Please check each destination to learn if Typing and deduping is supported.
+This page refers to new functionality added by [Destinations V2](/release_notes/upgrading_to_destinations_v2/). Typing and deduping is the default method of transforming datasets within data warehouse and database destinations after they've been replicated. Please check each destination to learn if Typing and Deduping is supported.
 
 ## What is Destinations V2?
 
@@ -10,6 +10,12 @@ This page refers to new functionality added by [Destinations V2](/release_notes/
 - Improved per-row error handling with `_airbyte_meta`: Airbyte will now populate typing errors in the `_airbyte_meta` column instead of failing your sync. You can query these results to audit misformatted or unexpected data.
 - Internal Airbyte tables in the `airbyte_internal` schema: Airbyte will now generate all raw tables in the `airbyte_internal` schema. We no longer clutter your desired schema with raw data tables.
 - Incremental delivery for large syncs: Data will be incrementally delivered to your final tables when possible. No more waiting hours to see the first rows in your destination table.
+
+:::note
+
+Typing and Deduping may cause an increase in your destination's compute cost. This cost will vary depending on the amount of data that is transformed and is not related to Airbyte credit usage.
+
+:::
 
 ## `_airbyte_meta` Errors
 
