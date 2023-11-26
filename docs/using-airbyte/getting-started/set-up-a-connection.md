@@ -6,12 +6,12 @@ On the left side of your main Airbyte dashboard, select **Connections**. You wil
 
 ## Configure the connection
 
-Once you've chosen your source and destination, you'll be able to configure the connection. You can refer to [this page](/using-airbyte/configuring-connections) for more information on each available configuration. For this demo, we'll simply set the **Replication frequency** to a 24 hour interval and leave the other fields at their default values.
+Once you've chosen your source and destination, you'll be able to configure the connection. You can refer to [this page](/cloud/managing-airbyte-cloud/configuring-connections.md) for more information on each available configuration. For this demo, we'll simply set the **Replication frequency** to a 24 hour interval and leave the other fields at their default values.
 
 ![Connection config](../../.gitbook/assets/set-up-a-connection/getting-started-connection-config.png)
 
 :::note
-By default, data will sync to the default defined in the destination. To ensure your data is synced to the correct place, see our examples for [Destination Namespace](/using-airbyte/core-concepts/namespaces)
+By default, data will sync to the default defined in the destination. To ensure your data is synced to the correct place, see our examples for [Destination Namespace](/using-airbyte/core-concepts/namespaces.md)
 :::
 
 Next, you can toggle which streams you want to replicate, as well as setting up the desired sync mode for each stream. For more information on the nature of each sync mode supported by Airbyte, see [this page](/using-airbyte/core-concepts/sync-modes).

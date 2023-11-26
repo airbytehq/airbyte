@@ -8,21 +8,15 @@ To use Airbyte Cloud, [sign up](https://cloud.airbyte.io/signup) with your email
 
 Airbyte Cloud offers a 14-day free trial that begins after your first successful sync. For more details on our pricing model, see our [pricing page](https://www.airbyte.com/pricing).
 
-If you signed up using your email address, Airbyte will send you an email with a verification link. On clicking the link, you'll be taken to your new workspace. 
-
-    :::note
-    If you have been invited to an existing workspace, you cannot use the Google login option to create a new Airbyte account. Use email instead. 
-    :::
-
 To start setting up a data pipeline, see how to [set up a source](./add-a-source.md).
 
-    :::info
-    Depending on your data residency, you may need to [allowlist IP addresses](/operating-airbyte/security) to enable access to Airbyte.
-    :::
+:::info
+Depending on your data residency, you may need to [allowlist IP addresses](/operating-airbyte/security.md#network-security-1) to enable access to Airbyte.
+:::
 
-## Deploy Airbyte (Open-Source)
+## Deploy Airbyte (Open Source)
 
-To use Airbyte Open-Source, you can use on the following options to deploy it on your infrastructure.
+To use Airbyte Open Source, you can use on the following options to deploy it on your infrastructure.
 
 - [Local Deployment](/deploying-airbyte/local-deployment.md) (recommended when trying out Airbyte)
 - [On Aws](/deploying-airbyte/on-aws-ec2.md)
@@ -33,4 +27,4 @@ To use Airbyte Open-Source, you can use on the following options to deploy it on
 - [On OCI VM](/deploying-airbyte/on-oci-vm.md)
 - [On Restack](/deploying-airbyte/on-restack.md)
 - [On Plural](/deploying-airbyte/on-plural.md)
-- [On AWS ECS](/deploying-airbyte/on-aws-ecs.md)  (Spoiler alert: it doesn't work)
+- [On AWS ECS](/deploying-airbyte/on-aws-ecs.md) (Spoiler alert: it doesn't work)

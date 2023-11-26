@@ -77,7 +77,7 @@ Airbyte supports the following configuration options for a connection:
 | Mirror source structure | Some sources (for example, databases) provide namespace information for a stream. If a source provides namespace information, the destination will mirror the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option.  |
 | Custom format | All streams will be replicated to a single user-defined namespace. |
 
-For more details, see our [Namespace documentation](/using-airbyte/namespaces).
+For more details, see our [Namespace documentation](namespaces.md).
 
 ## Connection sync modes
 

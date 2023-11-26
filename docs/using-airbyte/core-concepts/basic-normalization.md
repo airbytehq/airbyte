@@ -2,7 +2,7 @@
 
 :::danger
 
-Basic normalization is being removed in favor of [Typing and Deduping](/understanding-airbyte/typing-deduping), as part of [Destinations V2](/release_notes/upgrading_to_destinations_v2). This pages remains as a guide for legacy connectors.
+Basic normalization is being removed in favor of [Typing and Deduping](typing-deduping.md), as part of [Destinations V2](/release_notes/upgrading_to_destinations_v2). This pages remains as a guide for legacy connectors.
 
 :::
 

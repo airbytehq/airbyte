@@ -9,7 +9,7 @@ Once you've logged in to your Airbyte Open Source deployment, click on the **Des
 You can use the provided search bar at the top of the page, or scroll down the list to find the destination you want to replicate data from.
 
 :::tip
-You can filter the list of destinations by support level. Airbyte connectors are categorized in two support levels, Certified and Community. See our [Connector Support Levels](./integrations/connector-support-levels) page for more information on this topic.
+You can filter the list of destinations by support level. Airbyte connectors are categorized in two support levels, Certified and Community. See our [Connector Support Levels](/integrations/connector-support-levels.md) page for more information on this topic.
 :::
 
 As an example, we'll be setting up a simple JSON file that will be saved on our local system as the destination. Select **Local JSON** from the list of destinations. This will take you to the destination setup page.
