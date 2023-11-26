@@ -1,3 +1,7 @@
+---
+displayed_sidebar: docs
+---
+
 # Welcome to Airbyte Docs
 
 Whether you are an Airbyte user or contributor, we have docs for you!

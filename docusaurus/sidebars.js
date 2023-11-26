@@ -394,12 +394,7 @@ const understandingAirbyte = {
 };
 
 module.exports = {
-  mySidebar: [
-    {
-      type: "doc",
-      label: "Start here",
-      id: "readme",
-    },
+  docs: [
     sectionHeader("Airbyte Connectors"),
     connectorCatalog,
     buildAConnector,
@@ -448,7 +443,7 @@ module.exports = {
     },
     {
       type: "category",
-      label: "Managing Connections",
+      label: "Configuring Connections",
       items: [
         "cloud/managing-airbyte-cloud/configuring-connections",
         "cloud/managing-airbyte-cloud/manage-schema-changes",
@@ -479,16 +474,14 @@ module.exports = {
     },
     {
       type: "category",
-      label: "Managing your workspace",
+      label: "Workspace Management",
       items: [
         "cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace",
-        // TODO: merge with operator-guides/configure-sync-notifications
         "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
         "cloud/managing-airbyte-cloud/manage-credits",
         "operator-guides/using-custom-connectors",
       ]
     },
-    "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
     sectionHeader("Operating Airbyte"),
     deployAirbyte,
     {
@@ -522,6 +515,7 @@ module.exports = {
       items: [
         "operator-guides/collecting-metrics",
         "operator-guides/scaling-airbyte",
+        "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
       ]
     },
     "operating-airbyte/security",
@@ -567,7 +561,6 @@ module.exports = {
     sectionHeader("Community"),
     "community/getting-support",
     "community/code-of-conduct",
-    "community/slack-code-of-conduct",
     sectionHeader("Product Updates"),
     {
       type: "link",

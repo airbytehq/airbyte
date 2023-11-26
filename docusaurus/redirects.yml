@@ -24,10 +24,10 @@
     - /project-overview/product-support-levels
     - /project-overview/product-release-stages
   to: /integrations/connector-support-levels
-- from: /project-overview/code-of-conduct
+- from:
+    - /project-overview/code-of-conduct
+    - /project-overview/slack-code-of-conduct
   to: /community/code-of-conduct
-- from: /project-overview/slack-code-of-conduct
-  to: /community/slack-code-of-conduct
 - from: /project-overview/licenses/
   to: /developer-guides/licenses/
 - from: /project-overview/licenses/license-faq
