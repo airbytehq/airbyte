@@ -10,8 +10,8 @@ When using Airbyte Open Source, you can also access additional logs outside of t
 
 To find the logs for a connection, navigate to a connection's `Job History` tab to see the latest syncs. 
 
-## View the logs in-app
-To open the logs in the UI, select the three grey dots next to a sync and select `View logs`. This will open our in-app log viewer.
+## View the logs in the UI
+To open the logs in the UI, select the three grey dots next to a sync and select `View logs`. This will open our full screen in-app log viewer.
 
 :::tip
 If you are troubleshooting a sync error, you can search for `Error`, `Exception`, or `Fail` to find common errors. 

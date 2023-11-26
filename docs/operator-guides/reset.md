@@ -18,7 +18,7 @@ When a reset is successfully completed, all the records are deleted from your de
 If you are using destinations that are on the [Destinations v2](/release_notes/upgrading_to_destinations_v2.md) framework, only raw tables will be cleared of their data. Final tables will retain all records from the last sync. 
 :::
 
-A reset **DOES NOT** delete any destination tables or files itself. The schema is retained but will not contain any rows.
+A reset **DOES NOT** delete any destination tables when using a data warehouse, data lake, database. The schema is retained but will not contain any rows.
 
 :::tip
 If you have any orphaned tables or files that are no longer being synced to, they should be cleaned up separately, as Airbyte will not clean them up for you. This can occur when the `Destination Namespace` or `Stream Prefix` connection configuration is changed for an existing connection.
