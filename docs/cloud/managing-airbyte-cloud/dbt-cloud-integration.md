@@ -25,7 +25,7 @@ Generate a [service token](https://docs.getdbt.com/docs/dbt-cloud-apis/service-t
 
 To set up the dbt Cloud integration in Airbyte Cloud:
 
-1. On the Airbyte Cloud dashboard, click **Settings**.
+1. In the Airbyte UI, click **Settings**.
 
 2. Click **dbt Cloud integration**.
 
