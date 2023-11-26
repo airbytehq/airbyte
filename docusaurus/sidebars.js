@@ -435,14 +435,14 @@ module.exports = {
             id: "using-airbyte/core-concepts/sync-modes/README"
           },
           items: [
-            "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
-            "using-airbyte/core-concepts/sync-modes/full-refresh-append",
-            "using-airbyte/core-concepts/sync-modes/incremental-append",
             "using-airbyte/core-concepts/sync-modes/incremental-append-deduped",
+            "using-airbyte/core-concepts/sync-modes/incremental-append",
+            "using-airbyte/core-concepts/sync-modes/full-refresh-append",
+            "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
           ],
         },
-        "using-airbyte/core-concepts/basic-normalization",
         "using-airbyte/core-concepts/typing-deduping",
+        "using-airbyte/core-concepts/basic-normalization",
       ],
     },
     {

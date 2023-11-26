@@ -12,9 +12,9 @@ A sync mode governs how Airbyte reads from a source and writes to a destination.
    2. Append: Write by adding data to existing tables in the destination.
    3. Deduped History: Write by first adding data to existing tables in the destination to keep a history of changes. The final table is produced by de-duplicating the intermediate ones using a primary key.
 
-A sync mode is therefore, a combination of a source and destination mode together. The UI exposes the following options, whenever both source and destination connectors are capable to support it for the corresponding stream:
+A sync mode is a combination of a source and destination mode together. The UI exposes the following options, whenever both source and destination connectors are capable to support it for the corresponding stream:
 
+- [Incremental Append + Deduped](./incremental-append-deduped.md): Sync new records from stream and append data in destination, also provides a de-duplicated view mirroring the state of the stream in the source.
 - [Full Refresh Overwrite](./full-refresh-overwrite.md): Sync the whole stream and replace data in destination by overwriting it.
 - [Full Refresh Append](./full-refresh-append.md): Sync the whole stream and append data in destination.
 - [Incremental Append](./incremental-append.md): Sync new records from stream and append data in destination.
-- [Incremental Append + Deduped](./incremental-append-deduped.md): Sync new records from stream and append data in destination, also provides a de-duplicated view mirroring the state of the stream in the source.
