@@ -2,7 +2,7 @@
 
 For each connection, you can select between three options that allow a sync to run. The three options for `Replication Frequency` are:
 
-- Scheduled (ie. every 24 hours, every 2 hours)
+- Scheduled (e.g. every 24 hours, every 2 hours)
 - Cron scheduling
 - Manual
 
