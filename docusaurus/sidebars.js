@@ -448,8 +448,11 @@ module.exports = {
     {
       type: "category",
       label: "Configuring Connections",
+      link: {
+        type: "doc",
+        id: "cloud/managing-airbyte-cloud/configuring-connections"
+      },
       items: [
-        "cloud/managing-airbyte-cloud/configuring-connections",
         "cloud/managing-airbyte-cloud/manage-schema-changes",
         "cloud/managing-airbyte-cloud/manage-data-residency",
         "cloud/managing-airbyte-cloud/manage-connection-state",

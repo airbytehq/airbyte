@@ -79,7 +79,7 @@ You're done!
 To be notified of any source schema changes: 
 1. Make sure you have enabled `Automatic Connection Updates` and `Connection Updates Requiring Action` notifications. If these are off, even if you turned on schema update notifications in a connection's settings, Airbyte will *NOT* send out any notifications related to these types of events.
 
-2. On the [Airbyte](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection you want to receive notifications for.
+2. In the Airbyte UI, click **Connections** and select the connection you want to receive notifications for.
 
 3. Click the **Settings** tab on the Connection page.
 

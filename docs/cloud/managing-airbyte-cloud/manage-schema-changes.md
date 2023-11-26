@@ -39,7 +39,7 @@ To re-enable the streams, ensure the correct **Primary Key** and **Cursor** are 
 
 If the connection is set to **Ignore** any schema changes, Airbyte continues syncing according to your last saved schema. You need to manually approve any detected schema changes for the schema in the destination to change.
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections**. Select a connection and navigate to the **Replication** tab. If schema changes are detected, you'll see a blue "i" icon next to the Replication ab. 
+1. In the Airbyte UI, click **Connections**. Select a connection and navigate to the **Replication** tab. If schema changes are detected, you'll see a blue "i" icon next to the Replication ab. 
 
 2. Click **Review changes**.
 
@@ -68,7 +68,7 @@ A major version upgrade will include a breaking change if any of these apply:
 | State Changes          | The format of the source’s state has changed, and the full dataset will need to be re-synced                |
 
 To review and fix breaking schema changes:
-1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection with breaking changes.
+1. In the Airbyte UI, click **Connections** and select the connection with breaking changes.
 
 2. Review the description of what has changed in the new version. The breaking change will require you to upgrade your source or destination to a new version by a specific cutoff date. 
 
