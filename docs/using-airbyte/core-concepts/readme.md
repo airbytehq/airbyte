@@ -47,14 +47,12 @@ Examples of fields:
 - A column in the table in a relational database
 - A field in an API response
 
-## Sync Schedule
+## Sync Schedules
 
 There are three options for scheduling a sync to run: 
 - Scheduled (ie. every 24 hours, every 2 hours)
 - [CRON schedule](https://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html)
 - Manual \(i.e: clicking the "Sync Now" button in the UI or through the API\)
-
-When a scheduled connection is first created, a sync is executed as soon as possible. After that, a sync is run once the time since the last sync \(whether it was triggered manually or due to a schedule\) has exceeded the schedule interval. For example:
 
 For more details, see our [Sync Schedules documentation](sync-schedules.md).
 
