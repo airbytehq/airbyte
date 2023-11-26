@@ -74,7 +74,7 @@ In addition to Airbyte Cloud’s automatic schema change detection, you can manu
 
  To manually refresh the source schema:
 
- 1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to refresh.
+ 1. In the Airbyte UI, click **Connections** and then click the connection you want to refresh.
 
  2. Click the **Replication** tab.
 

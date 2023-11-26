@@ -40,7 +40,7 @@ A connection's schema consists of one or many streams. Each stream is most commo
 
 To modify streams:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to change. 
+1. In the Airbyte UI, click **Connections** and then click the connection you want to change. 
 
 2. Click the **Replication** tab.
 

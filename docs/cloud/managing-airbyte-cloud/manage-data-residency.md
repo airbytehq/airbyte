@@ -18,7 +18,7 @@ When you set the default data residency, it applies to new connections only. If 
 
 To choose your default data residency:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
+1. In the Airbyte UI, click **Settings**.
 
 2. Click **Data Residency**.
 
@@ -37,7 +37,7 @@ You can choose the data residency for your connection in the connection settings
 
 To choose the data residency for your connection: 
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection that you want to change. 
+1. In the Airbyte UI, click **Connections** and then click the connection that you want to change. 
 
 2. Click the **Settings** tab. 
 
