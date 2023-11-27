@@ -13,7 +13,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.io.IOException;
 
-public class MySqlStrictEncryptSslCaCertificateSourceAcceptanceTest extends AbstractMySqlStrictEncryptSslCertificateSourceAcceptanceTest {
+public class CloudDeploymentMySqlSslCaCertificateSourceAcceptanceTest extends AbstractCloudDeploymentMySqlSslCertificateSourceAcceptanceTest {
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {

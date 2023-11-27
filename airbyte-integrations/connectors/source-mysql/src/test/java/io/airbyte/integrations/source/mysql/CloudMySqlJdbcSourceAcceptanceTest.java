@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.Network;
 
-class MySqlStrictEncryptJdbcSourceAcceptanceTest extends MySqlSslJdbcSourceAcceptanceTest {
+class CloudMySqlJdbcSourceAcceptanceTest extends MySqlSslJdbcSourceAcceptanceTest {
 
   private static final SshBastionContainer bastion = new SshBastionContainer();
   private static final Network network = Network.newNetwork();
