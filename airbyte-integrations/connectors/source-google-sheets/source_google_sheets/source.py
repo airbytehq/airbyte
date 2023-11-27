@@ -30,9 +30,6 @@ from .models.spreadsheet import Spreadsheet
 from .models.spreadsheet_values import SpreadsheetValues
 from .utils import exception_description_by_status_code, safe_name_conversion
 
-
-
-
 # override default socket timeout to be 10 mins instead of 60 sec.
 # on behalf of https://github.com/airbytehq/oncall/issues/242
 DEFAULT_SOCKET_TIMEOUT: int = 600
