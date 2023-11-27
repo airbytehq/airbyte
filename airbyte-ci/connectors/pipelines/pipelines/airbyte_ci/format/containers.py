@@ -76,7 +76,6 @@ def format_java_container(dagger_client: dagger.Client) -> dagger.Container:
             "yum install -y findutils",  # gradle requires xargs, which is shipped in findutils.
             "yum clean all",
         ],
-        env_vars={"RUN_IN_AIRBYTE_CI": "1"},
     )
 
 
