@@ -319,49 +319,6 @@ const contributeToAirbyte = {
   ],
 };
 
-const airbyteCloud = [
-  {
-    type: "doc",
-    label: "Getting Started",
-    id: "cloud/getting-started-with-airbyte-cloud",
-  },
-  "cloud/core-concepts",
-  {
-    type: "category",
-    label: "Using Airbyte Cloud",
-    link: {
-      type: "generated-index",
-    },
-    items: [
-      "cloud/managing-airbyte-cloud/configuring-connections",
-      "cloud/managing-airbyte-cloud/review-connection-status",
-      "cloud/managing-airbyte-cloud/review-sync-history",
-      "cloud/managing-airbyte-cloud/manage-schema-changes",
-      "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
-      "cloud/managing-airbyte-cloud/manage-data-residency",
-      "cloud/managing-airbyte-cloud/dbt-cloud-integration",
-      "cloud/managing-airbyte-cloud/manage-credits",
-      "cloud/managing-airbyte-cloud/manage-connection-state",
-      "cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace",
-      "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
-    ],
-  },
-];
-
-const ossGettingStarted = {
-  type: "category",
-  label: "Getting Started",
-  link: {
-    type: "generated-index",
-  },
-  items: [
-    "quickstart/deploy-airbyte",
-    "quickstart/add-a-source",
-    "quickstart/add-a-destination",
-    "quickstart/set-up-a-connection",
-  ],
-};
-
 const deployAirbyte = {
   type: "category",
   label: "Deploy Airbyte",
@@ -379,7 +336,11 @@ const deployAirbyte = {
       label: "On AWS EC2",
       id: "deploying-airbyte/on-aws-ec2",
     },
-
+    {
+      type: "doc",
+      label: "On AWS ECS",
+      id: "deploying-airbyte/on-aws-ecs",
+    },
     {
       type: "doc",
       label: "On Azure",
@@ -418,53 +379,6 @@ const deployAirbyte = {
   ],
 };
 
-const airbyteSelfManaged = {
-  type: "category",
-  label: "Airbyte Self-Managed",
-  link: {
-    type: "doc",
-    id: "enterprise-setup/self-managed/README",
-  },
-  items: [
-    "enterprise-setup/self-managed/implementation-guide",
-    "enterprise-setup/self-managed/sso",
-  ]
-}
-
-const operatorGuide = {
-  type: "category",
-  label: "Manage Airbyte",
-  link: {
-    type: "generated-index",
-  },
-  items: [
-    "operator-guides/upgrading-airbyte",
-    "operator-guides/reset",
-    "operator-guides/configuring-airbyte-db",
-    "operator-guides/configuring-connector-resources",
-    "operator-guides/browsing-output-logs",
-    "operator-guides/using-the-airflow-airbyte-operator",
-    "operator-guides/using-prefect-task",
-    "operator-guides/using-dagster-integration",
-    "operator-guides/using-kestra-plugin",
-    "operator-guides/locating-files-local-destination",
-    "operator-guides/collecting-metrics",
-    {
-      type: "category",
-      label: "Transformations and Normalization",
-      items: [
-        "operator-guides/transformation-and-normalization/transformations-with-sql",
-        "operator-guides/transformation-and-normalization/transformations-with-dbt",
-        "operator-guides/transformation-and-normalization/transformations-with-airbyte",
-      ],
-    },
-    "operator-guides/configuring-airbyte",
-    "operator-guides/using-custom-connectors",
-    "operator-guides/scaling-airbyte",
-    "operator-guides/configuring-sync-notifications",
-  ],
-};
-
 const understandingAirbyte = {
   type: "category",
   label: "Understand Airbyte",
@@ -472,67 +386,155 @@ const understandingAirbyte = {
     "understanding-airbyte/beginners-guide-to-catalog",
     "understanding-airbyte/airbyte-protocol",
     "understanding-airbyte/airbyte-protocol-docker",
-    "understanding-airbyte/basic-normalization",
-    "understanding-airbyte/typing-deduping",
-    {
-      type: "category",
-      label: "Connections and Sync Modes",
-      items: [
-        {
-          type: "doc",
-          label: "Connections Overview",
-          id: "understanding-airbyte/connections/README",
-        },
-        "understanding-airbyte/connections/full-refresh-overwrite",
-        "understanding-airbyte/connections/full-refresh-append",
-        "understanding-airbyte/connections/incremental-append",
-        "understanding-airbyte/connections/incremental-append-deduped",
-      ],
-    },
     "understanding-airbyte/operations",
     "understanding-airbyte/high-level-view",
     "understanding-airbyte/jobs",
     "understanding-airbyte/tech-stack",
     "understanding-airbyte/cdc",
-    "understanding-airbyte/namespaces",
     "understanding-airbyte/supported-data-types",
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/database-data-catalog",
   ],
 };
 
-const security = {
-  type: "doc",
-  id: "operator-guides/security",
-};
-
-const support = {
-  type: "doc",
-  id: "operator-guides/contact-support",
-};
-
 module.exports = {
-  mySidebar: [
-    {
-      type: "doc",
-      label: "Start here",
-      id: "readme",
-    },
+  docs: [
     sectionHeader("Airbyte Connectors"),
     connectorCatalog,
     buildAConnector,
-    sectionHeader("Airbyte Cloud"),
-    ...airbyteCloud,
-    sectionHeader("Airbyte Open Source (OSS)"),
-    ossGettingStarted,
-    deployAirbyte,
-    operatorGuide,
+    "integrations/connector-support-levels",
+    sectionHeader("Using Airbyte"),
     {
-      type: "doc",
-      id: "troubleshooting",
+      type: "category",
+      label: "Getting Started",
+      link: {
+        type: "doc",
+        id: "using-airbyte/getting-started/readme",
+      },
+      items: [
+        "using-airbyte/getting-started/add-a-source",
+        "using-airbyte/getting-started/add-a-destination",
+        "using-airbyte/getting-started/set-up-a-connection",
+      ],
     },
-    sectionHeader("Enterprise Setup"),
-    airbyteSelfManaged,
+    {
+      type: "category",
+      label: "Core Concepts",
+      link: {
+        type: "doc",
+        id: "using-airbyte/core-concepts/readme"
+      },
+      items: [
+        "using-airbyte/core-concepts/sync-schedules",
+        "using-airbyte/core-concepts/namespaces",
+        {
+          type: "category",
+          label: "Sync Modes",
+          link: {
+            type: "doc",
+            id: "using-airbyte/core-concepts/sync-modes/README"
+          },
+          items: [
+            "using-airbyte/core-concepts/sync-modes/incremental-append-deduped",
+            "using-airbyte/core-concepts/sync-modes/incremental-append",
+            "using-airbyte/core-concepts/sync-modes/full-refresh-append",
+            "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
+          ],
+        },
+        "using-airbyte/core-concepts/typing-deduping",
+        "using-airbyte/core-concepts/basic-normalization",
+      ],
+    },
+    {
+      type: "category",
+      label: "Configuring Connections",
+      link: {
+        type: "doc",
+        id: "cloud/managing-airbyte-cloud/configuring-connections"
+      },
+      items: [
+        "cloud/managing-airbyte-cloud/manage-schema-changes",
+        "cloud/managing-airbyte-cloud/manage-data-residency",
+        "cloud/managing-airbyte-cloud/manage-connection-state",
+        {
+          type: "category",
+          label: "Transformations",
+          items: [
+            "cloud/managing-airbyte-cloud/dbt-cloud-integration",
+            "operator-guides/transformation-and-normalization/transformations-with-sql",
+            "operator-guides/transformation-and-normalization/transformations-with-dbt",
+            "operator-guides/transformation-and-normalization/transformations-with-airbyte",
+          ]
+        },
+      ]
+    },
+    {
+      type: "category",
+      label: "Managing Syncs",
+      items: [
+        "cloud/managing-airbyte-cloud/review-connection-status",
+        "cloud/managing-airbyte-cloud/review-sync-history",
+        "operator-guides/browsing-output-logs",
+        "operator-guides/reset",
+      ],
+    },
+    {
+      type: "category",
+      label: "Workspace Management",
+      items: [
+        "using-airbyte/workspaces",
+        "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
+        "cloud/managing-airbyte-cloud/manage-credits",
+        "operator-guides/using-custom-connectors",
+      ]
+    },
+    sectionHeader("Operating Airbyte"),
+    deployAirbyte,
+    {
+      type: "category",
+      label: "Airbyte Enterprise",
+      link: {
+        type: "doc",
+        id: "enterprise-setup/README",
+      },
+      items: [
+        "enterprise-setup/implementation-guide",
+        "enterprise-setup/sso",
+      ]
+    },
+    "operator-guides/upgrading-airbyte",
+    {
+      type: "category",
+      label: "Configuring Airbyte",
+      link: {
+        type: "doc",
+        id: "operator-guides/configuring-airbyte",
+      },
+      items: [
+        "operator-guides/configuring-airbyte-db",
+        "operator-guides/configuring-connector-resources",
+      ]
+    },
+    {
+      type: "category",
+      label: "Airbyte at Scale",
+      items: [
+        "operator-guides/collecting-metrics",
+        "operator-guides/scaling-airbyte",
+        "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
+      ]
+    },
+    "operating-airbyte/security",
+    {
+      type: "category",
+      label: "Integrating with Airbyte",
+      items: [
+        "operator-guides/using-the-airflow-airbyte-operator",
+        "operator-guides/using-prefect-task",
+        "operator-guides/using-dagster-integration",
+        "operator-guides/using-kestra-plugin",
+      ],
+    },
     sectionHeader("Developer Guides"),
     {
       type: "doc",
@@ -548,41 +550,28 @@ module.exports = {
     },
     understandingAirbyte,
     contributeToAirbyte,
-    sectionHeader("Resources"),
-    support,
-    security,
     {
       type: "category",
-      label: "Project Overview",
+      label: "Licenses",
+      link: {
+        type: "doc",
+        id: "developer-guides/licenses/README",
+      },
       items: [
-        {
-          type: "link",
-          label: "Roadmap",
-          href: "https://go.airbyte.com/roadmap",
-        },
-        "project-overview/product-support-levels",
-        "project-overview/slack-code-of-conduct",
-        "project-overview/code-of-conduct",
-        {
-          type: "link",
-          label: "Airbyte Repository",
-          href: "https://github.com/airbytehq/airbyte",
-        },
-        {
-          type: "category",
-          label: "Licenses",
-          link: {
-            type: "doc",
-            id: "project-overview/licenses/README",
-          },
-          items: [
-            "project-overview/licenses/license-faq",
-            "project-overview/licenses/elv2-license",
-            "project-overview/licenses/mit-license",
-            "project-overview/licenses/examples",
-          ],
-        },
+        "developer-guides/licenses/license-faq",
+        "developer-guides/licenses/elv2-license",
+        "developer-guides/licenses/mit-license",
+        "developer-guides/licenses/examples",
       ],
+    },
+    sectionHeader("Community"),
+    "community/getting-support",
+    "community/code-of-conduct",
+    sectionHeader("Product Updates"),
+    {
+      type: "link",
+      label: "Roadmap",
+      href: "https://go.airbyte.com/roadmap",
     },
     {
       type: "category",
