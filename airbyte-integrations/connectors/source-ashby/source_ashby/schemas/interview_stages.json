@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "type": {
+       "type": ["null", "string"]
+    },
+    "orderInInterviewPlan": {
+        "type": ["null", "integer"]
+    },
+    "interviewPlanId": {
+        "type": ["null", "string"]
+    }
+  }
+}

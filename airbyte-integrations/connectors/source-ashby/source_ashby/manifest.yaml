@@ -107,6 +107,24 @@ definitions:
         $ref: "#/definitions/requester"
         request_body_json:
           createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
+  interview_stages_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "interview_stages"
+      primary_key: "id"
+      path: "/interviewStage.list"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/interview_plans_stream"
+            parent_key: id
+            partition_field: plan_id
+      requester:
+        $ref: "#/definitions/requester"
+        request_body_json:
+          interviewPlanId: "{{ stream_slice.plan_id }}"
   interviews_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -160,6 +178,7 @@ streams:
   - "#/definitions/feedback_form_definitions_stream"
   - "#/definitions/interview_plans_stream"
   - "#/definitions/interview_schedules_stream"
+  - "#/definitions/interview_stages_stream"
   - "#/definitions/interviews_stream"
   - "#/definitions/job_postings_stream"
   - "#/definitions/jobs_stream"

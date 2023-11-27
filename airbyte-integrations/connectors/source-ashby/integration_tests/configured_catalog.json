@@ -83,6 +83,15 @@
     },
     {
       "stream": {
+        "name": "interview_stages",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "interviews",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
