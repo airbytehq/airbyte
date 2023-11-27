@@ -130,7 +130,8 @@ class UnstructuredParser(FileTypeParser):
             try:
                 result: Optional[str] = self._read_file_remotely_with_retries(file_handle, format.processing, filetype)
             except Exception as e:
-                # re-throw as config error so the sync is stopped
+                # Re-throw as config error so the sync is stopped as problems with the external API need to be resolved by the user and are not considered part of the SLA.
+                # Once this parser leaves experimental stage, we should consider making this a system error instead for issues that might be transient.
                 raise AirbyteTracedException.from_exception(e)
 
             return result
