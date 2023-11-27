@@ -378,7 +378,7 @@ class TestJdbcUtils {
     arrayNode2.add("3");
     expected.set("int_array", arrayNode2);
 
-    expected.set("binary1", new BinaryNode("aaaa".getBytes()));
+    expected.set("binary1", new BinaryNode("aaaa".getBytes(Charsets.UTF_8)));
 
     return expected;
   }
