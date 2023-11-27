@@ -28,7 +28,8 @@
       "type": "string",
       "title": "Create Time",
       "description": "The date and time the campaign was created in ISO 8601 format.",
-      "readOnly": true
+      "readOnly": true,
+      "format": "date-time"
     },
     "archive_url": {
       "type": "string",
@@ -52,10 +53,11 @@
       "readOnly": true
     },
     "send_time": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Send Time",
       "description": "The date and time a campaign was sent.",
-      "readOnly": true
+      "readOnly": true,
+      "format": "date-time"
     },
     "content_type": {
       "type": "string",
@@ -503,7 +505,8 @@
           "type": "string",
           "title": "Last Sent",
           "description": "The date the campaign was last sent.",
-          "readOnly": true
+          "readOnly": true,
+          "format": "date-time"
         },
         "constrain_rss_img": {
           "type": "boolean",

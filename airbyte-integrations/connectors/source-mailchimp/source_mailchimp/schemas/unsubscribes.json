@@ -17,7 +17,8 @@
       "type": ["null", "boolean"]
     },
     "timestamp": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "reason": {
       "type": ["null", "string"]

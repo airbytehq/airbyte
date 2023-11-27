@@ -55,6 +55,29 @@
       "type": ["string", "null"],
       "title": "Action ip address",
       "description": "The IP address recorded for the action."
+    },
+    "_links": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "rel": {
+            "type": ["null", "string"]
+          },
+          "href": {
+            "type": ["null", "string"]
+          },
+          "method": {
+            "type": ["null", "string"]
+          },
+          "targetSchema": {
+            "type": ["null", "string"]
+          },
+          "schema": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     }
   }
 }

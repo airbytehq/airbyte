@@ -184,6 +184,14 @@ class Campaigns(IncrementalMailChimpStream):
 
     def path(self, **kwargs) -> str:
         return "campaigns"
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response = super().parse_response(response, **kwargs)
+        for record in response:
+            # Add the list_id to each record
+            if record.get("send_time") == "":
+                record["send_time"] = None
+            yield record
 
 
 class Automations(IncrementalMailChimpStream):
