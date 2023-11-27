@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -41,11 +42,22 @@ class SourceXero(AbstractSource):
         return config
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        config = self._validate_and_transform(config)
-        stream = Organisations(authenticator=self.get_authenticator(config), tenant_id=config["tenant_id"])
-        records = stream.read_records(sync_mode=SyncMode.full_refresh)
-        record = next(records)
-        return record["OrganisationID"] == config["tenant_id"], None
+        try:
+            config = self._validate_and_transform(config)
+            stream = Organisations(authenticator=self.get_authenticator(config), tenant_id=config["tenant_id"])
+            records = stream.read_records(sync_mode=SyncMode.full_refresh)
+            record = next(records)
+            return record["OrganisationID"] == config["tenant_id"], None
+        except requests.exceptions.HTTPError as e:
+            error_message = str(e)
+            if e.response.status_code == 403:
+                error_message = (
+                    "For oauth2 authentication try to re-authenticate and allow all requested scopes, for token authentication please update "
+                    "access token with all required scopes mentioned in prerequisites. Full error message: " + error_message
+                )
+            return False, error_message
+        except Exception as e:
+            return False, str(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         stream_kwargs = {
