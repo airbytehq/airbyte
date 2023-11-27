@@ -78,6 +78,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 0.11.0  | 2023-11-27 | [32852](https://github.com/airbytehq/airbyte/pull/32852) | Add optional start_date for incremental streams                            |
 | 0.10.0  | 2023-11-23 | [32782](https://github.com/airbytehq/airbyte/pull/32782) | Add SegmentMembers stream                                                  |
 | 0.9.0   | 2023-11-17 | [32218](https://github.com/airbytehq/airbyte/pull/32218) | Add Interests, InterestCategories, Tags streams                            |
 | 0.8.3   | 2023-11-15 | [32543](https://github.com/airbytehq/airbyte/pull/32543) | Handle empty datetime fields in Reports stream                             |
