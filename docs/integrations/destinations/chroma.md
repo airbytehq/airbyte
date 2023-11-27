@@ -17,7 +17,7 @@ Only one stream will exist to collect data from all source streams. This will be
 
 For each record, a UUID string is generated and used as the document id. The embeddings generated as defined will be stored as embeddings. Data in the text fields will be stored as documents and those in the metadata fields will be stored as metadata.
 
-## Getting Started \(Airbyte Open-Source\)
+## Getting Started \(Airbyte Open Source\)
 
 
 You can connect to a Chroma instance either in client/server mode or in a local persistent mode. For the local persistent mode, the database file will be saved in the path defined in the `path` config parameter. Note that `path` must be an absolute path, prefixed with `/local`.
@@ -56,6 +56,7 @@ Make sure your Chroma database can be accessed by Airbyte. If your database is w
 You should now have all the requirements needed to configure Chroma as a destination in the UI. You'll need the following information to configure the Chroma destination:
 
 - (Required) **Text fields to embed**
+- (Optional) **Text splitter** Options around configuring the chunking process provided by the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
 - (Required) **Fields to store as metadata**
 - (Required) **Collection** The name of the collection in Chroma db to store your data 
 - (Required) Authentication method 

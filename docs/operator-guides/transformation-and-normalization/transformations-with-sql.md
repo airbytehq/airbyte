@@ -16,7 +16,7 @@ At its core, Airbyte is geared to handle the EL \(Extract Load\) steps of an ELT
 
 However, this is actually producing a table in the destination with a JSON blob column... For the typical analytics use case, you probably want this json blob normalized so that each field is its own column.
 
-So, after EL, comes the T \(transformation\) and the first T step that Airbyte actually applies on top of the extracted data is called "Normalization". You can find more information about it [here](../../understanding-airbyte/basic-normalization.md).
+So, after EL, comes the T \(transformation\) and the first T step that Airbyte actually applies on top of the extracted data is called "Normalization". You can find more information about it [here](../../using-airbyte/core-concepts/basic-normalization.md).
 
 Airbyte runs this step before handing the final data over to other tools that will manage further transformation down the line.
 
