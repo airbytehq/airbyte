@@ -308,7 +308,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
               // Redshift doesn't care about primary key but we can use SORTKEY for performance, its a table
               // attribute not supported by jooq.
               createTableSql.getSQL() + System.lineSeparator() + " SORTKEY(\"" + COLUMN_NAME_AB_EXTRACTED_AT + "\");"),
-           System.lineSeparator());
+          System.lineSeparator());
     }
     return Strings.join(
         List.of(
