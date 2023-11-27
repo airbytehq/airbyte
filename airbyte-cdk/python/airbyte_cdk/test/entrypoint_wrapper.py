@@ -19,7 +19,7 @@ class CommandOutput:
 
     @property
     def records(self) -> List[AirbyteMessage]:
-        return self._messages_per_type[Type.RECORD]
+        return self._messages_per_type.get(Type.RECORD, [])
 
 
 def read(source, config, catalog):

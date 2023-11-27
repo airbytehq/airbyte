@@ -175,7 +175,9 @@ class HttpMocker(contextlib.ContextDecorator):
             with self:
                 kwargs['http_mocker'] = self
                 try:
-                    return f(*args, **kwargs)
+                    result = f(*args, **kwargs)
+                    self._validate_all_matchers_called()
+                    return result
                 except AssertionError:
                     try:
                         self._validate_all_matchers_called()
