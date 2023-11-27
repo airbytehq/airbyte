@@ -13,7 +13,7 @@ import sys
 import unicodedata
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple
 
 import anyio
 import asyncer
@@ -308,16 +308,16 @@ def sh_dash_c(lines: List[str]) -> List[str]:
     return ["sh", "-c", " && ".join(["set -o xtrace"] + lines)]
 
 
-def transform_strs_to_paths(str_paths: Set[str]) -> List[Path]:
-    """Transform a list of string paths to an ordered list of Path objects.
+def transform_strs_to_paths(str_paths: List[str]) -> List[Path]:
+    """Transform a list of string paths to a list of Path objects.
 
     Args:
-        str_paths (Set[str]): A set of string paths.
+        str_paths (List[str]): A list of string paths.
 
     Returns:
         List[Path]: A list of Path objects.
     """
-    return sorted([Path(str_path) for str_path in str_paths])
+    return [Path(str_path) for str_path in str_paths]
 
 
 def fail_if_missing_docker_hub_creds(ctx: click.Context):

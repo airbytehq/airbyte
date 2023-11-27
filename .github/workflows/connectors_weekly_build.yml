@@ -34,7 +34,7 @@ jobs:
       - name: Test connectors
         uses: ./.github/actions/run-dagger-pipeline
         with:
-          context: "master"
+          context: "nightly_builds"
           ci_job_key: "weekly_alpha_test"
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
