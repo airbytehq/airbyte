@@ -17,6 +17,7 @@ from source_wildberries_seller.streams import (
     check_content_analytics_stream_connection,
     GetStocksWarehouseStream,
     check_marketplace_stream_connection,
+    PriceStream,
 )
 from source_wildberries_seller.types import StartDate, EndDate, IsSuccess, Message, WildberriesCredentials
 
@@ -77,6 +78,7 @@ class SourceWildberriesSeller(AbstractSource):
                 warehouse_id=stock_warehouse,
                 skus=stock_warehouse_ids,
             ),
+            PriceStream(credentials=credentials),
         ]
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[IsSuccess, Message | None]:
