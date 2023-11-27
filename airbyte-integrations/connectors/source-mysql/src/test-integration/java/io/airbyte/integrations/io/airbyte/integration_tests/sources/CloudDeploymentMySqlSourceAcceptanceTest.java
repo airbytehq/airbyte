@@ -9,13 +9,14 @@ import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 
-public class MySqlStrictEncryptSourceAcceptanceTest extends MySqlSslSourceAcceptanceTest {
+public class CloudDeploymentMySqlSourceAcceptanceTest extends MySqlSslSourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     super.setupEnvironment(environment);
-    environmentVariables.set("DEPLOYMENT_MODE", "CLOUD");
+    environmentVariables.set(EnvVariableFeatureFlags.DEPLOYMENT_MODE, "CLOUD");
   }
 
   @Override
