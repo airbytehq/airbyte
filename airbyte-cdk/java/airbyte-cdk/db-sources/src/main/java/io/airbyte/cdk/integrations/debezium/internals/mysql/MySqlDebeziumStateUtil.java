@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
 public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlDebeziumStateUtil.class);
+  private static final String INITIAL_WAITING_SECONDS = "initial_waiting_seconds";
 
   public boolean savedOffsetStillPresentOnServer(final JdbcDatabase database, final MysqlDebeziumStateAttributes savedState) {
     if (savedState.gtidSet().isPresent()) {
@@ -254,10 +255,10 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
         if (event == null) {
-          final Duration engineWarmupWaitTime = database.getSourceConfig().has(JdbcUtils.ENGINE_WARMUP_MINUTE_KEY) ? Duration
-              .ofMinutes(database.getSourceConfig().get(JdbcUtils.ENGINE_WARMUP_MINUTE_KEY).asLong()) : Duration.ofMinutes(5L);
-          if (Duration.between(engineStartTime, Instant.now()).compareTo(engineWarmupWaitTime) > 0) {
-            LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", engineWarmupWaitTime.getSeconds());
+          final Duration initialWaitingDuration = database.getSourceConfig().has(INITIAL_WAITING_SECONDS) ? Duration
+              .ofSeconds(database.getSourceConfig().get(INITIAL_WAITING_SECONDS).asLong()) : Duration.ofMinutes(5L);
+          if (Duration.between(engineStartTime, Instant.now()).compareTo(initialWaitingDuration) > 0) {
+            LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", initialWaitingDuration.getSeconds());
             publisher.close();
 
           }

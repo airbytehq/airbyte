@@ -55,7 +55,6 @@ public class JdbcUtils {
   public static final String TLS_KEY = "tls";
   public static final String USERNAME_KEY = "username";
   public static final String MODE_KEY = "mode";
-  public static final String ENGINE_WARMUP_MINUTE_KEY = "engine_warmup_minute";
   public static final String AMPERSAND = "&";
   public static final String EQUALS = "=";
 
