@@ -18,7 +18,6 @@ def test_stream_uses_advanced_options():
         period_in_days=0,
         report_options=None,
         advanced_stream_options='{"GET_SALES_AND_TRAFFIC_REPORT":{"availability_sla_days": 3}}',
-        max_wait_seconds=500,
     )
 
     assert stream.availability_sla_days == 3

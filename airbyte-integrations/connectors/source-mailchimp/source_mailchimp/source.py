@@ -16,7 +16,20 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from requests.auth import AuthBase
 from pendulum.parsing.exceptions import ParserError
 
-from .streams import Automations, Campaigns, EmailActivity, ListMembers, Lists, Reports, Segments, Unsubscribes
+from .streams import (
+    Automations,
+    Campaigns,
+    EmailActivity,
+    InterestCategories,
+    Interests,
+    ListMembers,
+    Lists,
+    Reports,
+    SegmentMembers,
+    Segments,
+    Tags,
+    Unsubscribes,
+)
 
 
 class MailChimpAuthenticator:
@@ -118,13 +131,21 @@ class SourceMailchimp(AbstractSource):
         authenticator = MailChimpAuthenticator().get_auth(config)
         campaign_id = config.get("campaign_id")
         start_date = config.get("start_date")
+
+        lists = Lists(authenticator=authenticator, start_date=start_date)
+        interest_categories = InterestCategories(authenticator=authenticator, parent=lists)
+
         return [
-            Automations(authenticator=authenticator),
+            Automations(authenticator=authenticator, start_date=start_date),
             Campaigns(authenticator=authenticator, start_date=start_date),
-            EmailActivity(authenticator=authenticator, campaign_id=campaign_id),
-            Lists(authenticator=authenticator),
-            ListMembers(authenticator=authenticator),
-            Reports(authenticator=authenticator),
-            Segments(authenticator=authenticator),
-            Unsubscribes(authenticator=authenticator, campaign_id=campaign_id),
+            EmailActivity(authenticator=authenticator, start_date=start_date, campaign_id=campaign_id),
+            interest_categories,
+            Interests(authenticator=authenticator, parent=interest_categories),
+            lists,
+            ListMembers(authenticator=authenticator, start_date=start_date),
+            Reports(authenticator=authenticator, start_date=start_date),
+            SegmentMembers(authenticator=authenticator, start_date=start_date),
+            Segments(authenticator=authenticator, start_date=start_date),
+            Tags(authenticator=authenticator, parent=lists),
+            Unsubscribes(authenticator=authenticator, start_date=start_date, campaign_id=campaign_id),
         ]

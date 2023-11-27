@@ -113,4 +113,4 @@ def test_validate_start_date(config, expected_return):
 
 def test_streams_count(config):
     streams = SourceMailchimp().streams(config)
-    assert len(streams) == 8
+    assert len(streams) == 12

@@ -53,7 +53,8 @@
     },
     "timestamp": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "username": {
       "type": ["null", "string"]
@@ -94,7 +95,8 @@
           },
           "timestamp": {
             "type": ["null", "string"],
-            "format": "date-time"
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
           },
           "username": {
             "type": ["null", "string"]

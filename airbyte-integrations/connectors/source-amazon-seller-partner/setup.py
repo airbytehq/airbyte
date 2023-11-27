@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "pendulum~=2.1", "pycryptodome~=3.10", "xmltodict~=0.12"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "xmltodict~=0.12"]
 
 TEST_REQUIREMENTS = [
     "requests-mock~=1.9.3",
