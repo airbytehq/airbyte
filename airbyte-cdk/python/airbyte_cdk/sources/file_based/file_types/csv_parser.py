@@ -206,8 +206,10 @@ class CsvParser(FileTypeParser):
     def _to_nullable(
         row: Mapping[str, str], deduped_property_types: Mapping[str, str], null_values: Set[str], strings_can_be_null: bool
     ) -> Dict[str, Optional[str]]:
-        nullable = {k: None if CsvParser._value_is_none(v, deduped_property_types.get(k), null_values, strings_can_be_null) else v
-                    for k, v in row.items()}
+        nullable = {
+            k: None if CsvParser._value_is_none(v, deduped_property_types.get(k), null_values, strings_can_be_null) else v
+            for k, v in row.items()
+        }
         return nullable
 
     @staticmethod
