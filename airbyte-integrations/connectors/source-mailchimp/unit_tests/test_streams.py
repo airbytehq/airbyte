@@ -633,11 +633,13 @@ def test_reports_remove_empty_datetime_fields(auth, record, expected_return):
 
 @pytest.mark.parametrize("start_date, expected_ids", [
         (None, [1, 2, 3]),
-        ("2022-01-01T00:00:00.000Z", [1, 3])
+        ("2022-01-01T00:00:00.000Z", [1, 3]),
+        ("2100-01-01T00:00:00.000Z", [])
     ],
     ids=[
         "No start_date: all records read", 
-        "start_date provided: only records >= start_date read"
+        "start_date provided: only records >= start_date read",
+        "Start date > records: no records read"
     ]
 )
 def test_incremental_start_date(auth, start_date, expected_ids, requests_mock):

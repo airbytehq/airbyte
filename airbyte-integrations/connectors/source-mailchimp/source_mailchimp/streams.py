@@ -130,14 +130,14 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         return params
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        
+        """
+        Mailchimp endpoints do not always support filtering by date, 
+        so we should filter out records manually against the start_date as a fallback.
+        """
         response = super().parse_response(response, **kwargs)
         start_date = pendulum.parse(self.start_date) if self.start_date else None
 
         if start_date:
-        # Filter out records that are older than the start date
-        # Mailchimp endpoints do not always support filtering by date,
-        # so we should filter out records manually as a fallback
             for record in response:
                 parsed_date = pendulum.parse(record.get(self.cursor_field))
                 if parsed_date >= start_date:
