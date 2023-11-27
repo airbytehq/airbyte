@@ -1,4 +1,5 @@
 from typing import Any, Mapping
+from urllib import response
 
 import requests
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -18,7 +19,7 @@ class CredentialsCraftAuthenticator(TokenAuthenticator):
 
     @property
     def _url(self) -> str:
-        return f"{self._cc_host}/api/v1/token/vk_ads/{self._cc_token_id}/"
+        return f"{self._cc_host}/api/v1/token/yandex/{self._cc_token_id}/"
 
     @property
     def token(self) -> str:
@@ -43,10 +44,11 @@ class CredentialsCraftAuthenticator(TokenAuthenticator):
         except:
             return False, f"Connection to {self._cc_host} timed out"
 
-        data: dict[str, Any] = requests.get(
+        response: requests.Response = requests.get(
             self._url,
             headers={"Authorization": f"Bearer {self._cc_token}"},
-        ).json()
+        )
+        data: dict[str, Any] = response.json()
         if data.get("error"):
             return False, f"CredentialsCraft error: {data.get('error')}"
 

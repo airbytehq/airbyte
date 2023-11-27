@@ -10,14 +10,14 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
-    "pytest~=6.1",
+    "pytest~=6.2",
     "pytest-mock~=3.6.1",
     "source-acceptance-test",
 ]
 
 setup(
-    name="source_vk_ads_new",
-    description="Source implementation for Vk Ads New.",
+    name="source_yandex_promopages",
+    description="Source implementation for Yandex Promopages.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

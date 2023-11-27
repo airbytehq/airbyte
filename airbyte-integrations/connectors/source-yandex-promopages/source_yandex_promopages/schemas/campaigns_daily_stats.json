@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "campaignId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "publicationId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "previewId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mskDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "impressions": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "reach": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "budget": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "cpm": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "clickouts": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "clickoutCost": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "clickoutPercent": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "fullReads": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "fullReadPercent": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "ctr": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "videoExpands": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "videoFullViews": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "videoExpandPercent": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "videoFullViewPercent": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "metricaVisits": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "metricaVisitPercent": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "metricaVisitCost": {
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  }
+}
