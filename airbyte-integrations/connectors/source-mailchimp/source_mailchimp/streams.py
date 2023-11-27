@@ -45,7 +45,7 @@ class MailChimpStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
 
-        params = {"count": self.page_size}
+        params = {"count": self.page_size, "exclude_fields": f"{self.data_field}._links"}
 
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
@@ -142,9 +142,6 @@ class MailChimpListSubStream(IncrementalMailChimpStream):
 
     def request_params(self, stream_state=None, stream_slice=None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-
-        # Exclude the _links field, as it is not user-relevant data
-        params["exclude_fields"] = f"{self.data_field}._links"
 
         # Get the current state value for this list_id, if it exists
         # Then, use the value in state to filter the request
@@ -283,13 +280,6 @@ class InterestCategories(MailChimpStream, HttpSubStream):
         list_id = stream_slice.get("parent").get("id")
         return f"lists/{list_id}/interest-categories"
 
-    def request_params(self, **kwargs):
-
-        # Exclude the _links field, as it is not user-relevant data
-        params = super().request_params(**kwargs)
-        params["exclude_fields"] = "categories._links"
-        return params
-
 
 class Interests(MailChimpStream, HttpSubStream):
     """
@@ -306,13 +296,6 @@ class Interests(MailChimpStream, HttpSubStream):
         list_id = stream_slice.get("parent").get("list_id")
         category_id = stream_slice.get("parent").get("id")
         return f"lists/{list_id}/interest-categories/{category_id}/interests"
-
-    def request_params(self, **kwargs):
-
-        # Exclude the _links field, as it is not user-relevant data
-        params = super().request_params(**kwargs)
-        params["exclude_fields"] = "interests._links"
-        return params
 
 
 class ListMembers(MailChimpListSubStream):
@@ -492,12 +475,6 @@ class Unsubscribes(IncrementalMailChimpStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         campaign_id = stream_slice.get("campaign_id")
         return f"reports/{campaign_id}/unsubscribed"
-
-    def request_params(self, stream_state=None, stream_slice=None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        # Exclude the _links field, as it is not user-relevant data
-        params["exclude_fields"] = "unsubscribes._links"
-        return params
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
 

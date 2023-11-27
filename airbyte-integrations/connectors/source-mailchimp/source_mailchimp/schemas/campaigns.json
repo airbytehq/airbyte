@@ -260,7 +260,8 @@
           "title": "Send Times",
           "description": "The possible send times to test. The times provided should be in the format YYYY-MM-DD HH:MM:SS. If send_times are provided to test, the test_size will be set to 100% and winner_criteria will be ignored.",
           "items": {
-            "type": "string"
+            "type": ["null", "string"],
+            "format": "date-time"
           }
         },
         "from_names": {
@@ -582,12 +583,14 @@
           "description": "For campaigns split on 'Subject Line', the subject line for Group B."
         },
         "send_time_a": {
-          "type": "string",
+          "type": ["null", "string"],
+          "format": "date-time",
           "title": "Send Time Group A",
           "description": "The send time for Group A."
         },
         "send_time_b": {
-          "type": "string",
+          "type": ["null", "string"],
+          "format": "date-time",
           "title": "Send Time Group B",
           "description": "The send time for Group B."
         },

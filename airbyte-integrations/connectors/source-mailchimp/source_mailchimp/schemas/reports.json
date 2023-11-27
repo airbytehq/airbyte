@@ -321,7 +321,8 @@
             "last_open": {
               "type": "string",
               "title": "Last Open",
-              "description": "The last open for Campaign A."
+              "description": "The last open for Campaign A.",
+              "format": "date-time"
             },
             "unique_opens": {
               "type": "integer",
@@ -373,7 +374,8 @@
             "last_open": {
               "type": "string",
               "title": "Last Open",
-              "description": "The last open for Campaign B."
+              "description": "The last open for Campaign B.",
+              "format": "date-time"
             },
             "unique_opens": {
               "type": "integer",

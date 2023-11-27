@@ -76,13 +76,15 @@
       "type": ["null", "string"]
     },
     "timestamp_opt": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "member_rating": {
       "type": ["null", "integer"]
     },
     "last_changed": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "language": {
       "type": ["null", "string"]

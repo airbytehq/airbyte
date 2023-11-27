@@ -76,12 +76,12 @@ def test_next_page_token(auth):
         (
             Lists,
             {"stream_slice": None, "stream_state": None, "next_page_token": None},
-            {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created"},
+            {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created", "exclude_fields": "lists._links"},
         ),
         (
             Lists,
             {"stream_slice": None, "stream_state": None, "next_page_token": {"offset": 1000}},
-            {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created", "offset": 1000},
+            {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created", "offset": 1000, "exclude_fields": "lists._links"},
         ),
         (
             InterestCategories,
