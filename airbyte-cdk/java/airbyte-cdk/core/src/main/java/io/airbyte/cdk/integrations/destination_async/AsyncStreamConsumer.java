@@ -11,8 +11,8 @@ import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferEnqueue;
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination_async.state.FlushFailure;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -170,26 +170,12 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
    */
   @VisibleForTesting
   public static PartialAirbyteMessage deserializeAirbyteMessage(final String messageString) {
-    // TODO: (ryankfu) plumb in the serialized AirbyteStateMessage to match AirbyteRecordMessage code
-    // parity. https://github.com/airbytehq/airbyte/issues/27530 for additional context
-    final var partial = Jsons.tryDeserializeExact(messageString, PartialAirbyteMessage.class)
+    final PartialAirbyteMessage message = PartialAirbyteMessage.tryFromJson(messageString)
         .orElseThrow(() -> new RuntimeException("Unable to deserialize PartialAirbyteMessage."));
-
-    final var msgType = partial.getType();
-    if (Type.RECORD.equals(msgType) && partial.getRecord().getData() != null) {
-      // store serialized json
-      partial.withSerialized(partial.getRecord().getData().toString());
-      // The connector doesn't need to be able to access to the record value. We can serialize it here and
-      // drop the json
-      // object. Having this data stored as a string is slightly more optimal for the memory usage.
-      partial.getRecord().setData(null);
-    } else if (Type.STATE.equals(msgType)) {
-      partial.withSerialized(messageString);
-    } else {
-      throw new RuntimeException(String.format("Unsupported message type: %s", msgType));
+    if (message.getType() != Type.RECORD && message.getType() != Type.STATE) {
+      throw new RuntimeException(String.format("Unsupported message type: %s", message.getType()));
     }
-
-    return partial;
+    return message;
   }
 
   @Override

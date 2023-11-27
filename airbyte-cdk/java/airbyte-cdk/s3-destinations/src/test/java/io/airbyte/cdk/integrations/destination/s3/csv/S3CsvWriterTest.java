@@ -27,8 +27,8 @@ import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvWriter.Builder;
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionType;
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -196,12 +196,12 @@ class S3CsvWriterTest {
 
     writer.write(
         UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
-        new AirbyteRecordMessage()
+        new PartialAirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
             .withEmittedAt(1234L));
     writer.write(
         UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
-        new AirbyteRecordMessage()
+        new PartialAirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
             .withEmittedAt(2345L));
     writer.close(false);
@@ -222,12 +222,12 @@ class S3CsvWriterTest {
 
     writer.write(
         UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
-        new AirbyteRecordMessage()
+        new PartialAirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
             .withEmittedAt(1234L));
     writer.write(
         UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
-        new AirbyteRecordMessage()
+        new PartialAirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
             .withEmittedAt(2345L));
     writer.close(false);
@@ -270,12 +270,12 @@ class S3CsvWriterTest {
 
     writer.write(
         UUID.fromString("f6767f7d-ce1e-45cc-92db-2ad3dfdd088e"),
-        new AirbyteRecordMessage()
+        new PartialAirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"foo\": 73}"))
             .withEmittedAt(1234L));
     writer.write(
         UUID.fromString("2b95a13f-d54f-4370-a712-1c7bf2716190"),
-        new AirbyteRecordMessage()
+        new PartialAirbyteRecordMessage()
             .withData(OBJECT_MAPPER.readTree("{\"bar\": 84}"))
             .withEmittedAt(2345L));
     writer.close(false);

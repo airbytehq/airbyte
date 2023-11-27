@@ -4,8 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.s3.csv;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -16,23 +15,24 @@ import java.util.UUID;
  */
 public abstract class BaseSheetGenerator implements CsvSheetGenerator {
 
-  public List<Object> getDataRow(final UUID id, final AirbyteRecordMessage recordMessage) {
+  @Override
+  public List<Object> getDataRow(final UUID id, final PartialAirbyteRecordMessage recordMessage) {
     final List<Object> data = new LinkedList<>();
     data.add(id);
     data.add(recordMessage.getEmittedAt());
-    data.addAll(getRecordColumns(recordMessage.getData()));
+    data.addAll(getRecordColumns(recordMessage.getSerializedData()));
     return data;
   }
 
   @Override
-  public List<Object> getDataRow(final JsonNode formattedData) {
-    return new LinkedList<>(getRecordColumns(formattedData));
+  public List<Object> getDataRow(final String serializedFormattedData) {
+    return new LinkedList<>(getRecordColumns(serializedFormattedData));
   }
 
   public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
     throw new UnsupportedOperationException("Not implemented in BaseSheetGenerator");
   }
 
-  abstract List<String> getRecordColumns(JsonNode json);
+  abstract List<String> getRecordColumns(String serializedJson);
 
 }

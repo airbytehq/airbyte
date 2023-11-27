@@ -64,7 +64,7 @@ public class BigQueryStagingConsumerFactory {
         (hasFailed) -> {
           try {
             onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(hasFailed);
-          } catch (Exception e) {
+          } catch (final Exception e) {
             throw new RuntimeException(e);
           }
         },

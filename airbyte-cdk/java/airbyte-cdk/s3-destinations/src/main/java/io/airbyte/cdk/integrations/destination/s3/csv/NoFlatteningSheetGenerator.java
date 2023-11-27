@@ -4,10 +4,8 @@
 
 package io.airbyte.cdk.integrations.destination.s3.csv;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
-import io.airbyte.commons.json.Jsons;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,8 +23,8 @@ public class NoFlatteningSheetGenerator extends BaseSheetGenerator implements Cs
    * When no flattening is needed, the record column is just one json blob.
    */
   @Override
-  List<String> getRecordColumns(final JsonNode json) {
-    return Collections.singletonList(Jsons.serialize(json));
+  List<String> getRecordColumns(final String serializedJson) {
+    return Collections.singletonList(serializedJson);
   }
 
 }

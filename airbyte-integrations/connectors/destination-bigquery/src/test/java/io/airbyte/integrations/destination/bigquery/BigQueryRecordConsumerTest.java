@@ -40,8 +40,8 @@ public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
   public void setup() {
     DestinationConfig.initialize(Jsons.deserialize("{}"));
 
-    ParsedCatalog parsedCatalog = new ParsedCatalog(Collections.emptyList());
-    BigQueryV1V2Migrator migrator = Mockito.mock(BigQueryV1V2Migrator.class);
+    final ParsedCatalog parsedCatalog = new ParsedCatalog(Collections.emptyList());
+    final BigQueryV1V2Migrator migrator = Mockito.mock(BigQueryV1V2Migrator.class);
     bigQueryRecordConsumer = new BigQueryRecordConsumer(
         mock(BigQuery.class),
         uploaderMap,

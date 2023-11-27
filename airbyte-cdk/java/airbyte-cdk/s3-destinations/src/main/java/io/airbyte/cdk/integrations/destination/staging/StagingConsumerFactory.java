@@ -111,7 +111,7 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
         (hasFailed) -> {
           try {
             GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false);
-          } catch (Exception e) {
+          } catch (final Exception e) {
             throw new RuntimeException(e);
           }
         },
@@ -121,7 +121,7 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
         defaultNamespace);
   }
 
-  private static long getMemoryLimit(Optional<Long> bufferMemoryLimit) {
+  private static long getMemoryLimit(final Optional<Long> bufferMemoryLimit) {
     return bufferMemoryLimit.orElse((long) (Runtime.getRuntime().maxMemory() * MEMORY_LIMIT_RATIO));
   }
 

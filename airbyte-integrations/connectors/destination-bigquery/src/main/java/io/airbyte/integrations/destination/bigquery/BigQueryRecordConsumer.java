@@ -9,6 +9,7 @@ import com.google.cloud.bigquery.TableId;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
@@ -91,10 +92,10 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
    * @param message {@link AirbyteMessage} to be processed
    */
   @Override
-  public void acceptTracked(final AirbyteMessage message) throws Exception {
+  public void acceptTracked(final PartialAirbyteMessage message) throws Exception {
     if (message.getType() == Type.STATE) {
-      lastStateMessage = message;
-      outputRecordCollector.accept(message);
+      lastStateMessage = message.toFullMessage();
+      outputRecordCollector.accept(lastStateMessage);
     } else if (message.getType() == Type.RECORD) {
       if (StringUtils.isEmpty(message.getRecord().getNamespace())) {
         message.getRecord().setNamespace(defaultDatasetId);
@@ -111,8 +112,8 @@ class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer imple
    *
    * @param message record to be written
    */
-  private void processRecord(final AirbyteMessage message) {
-    final var streamId = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
+  private void processRecord(final PartialAirbyteMessage message) {
+    final var streamId = message.getRecord().toStreamNameNamespacePair();
     uploaderMap.get(streamId).upload(message);
     // We are not doing any incremental typing and de-duping for Standard Inserts, see
     // https://github.com/airbytehq/airbyte/issues/27586

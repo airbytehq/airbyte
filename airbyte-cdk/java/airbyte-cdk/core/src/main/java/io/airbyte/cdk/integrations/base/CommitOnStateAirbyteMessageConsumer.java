@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.base;
 
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import java.util.function.Consumer;
@@ -26,10 +27,10 @@ public abstract class CommitOnStateAirbyteMessageConsumer extends FailureTrackin
   }
 
   @Override
-  public void accept(final AirbyteMessage message) throws Exception {
+  public void accept(final PartialAirbyteMessage message) throws Exception {
     if (message.getType() == Type.STATE) {
       commit();
-      outputRecordCollector.accept(message);
+      outputRecordCollector.accept(message.toFullMessage());
     }
     super.accept(message);
   }

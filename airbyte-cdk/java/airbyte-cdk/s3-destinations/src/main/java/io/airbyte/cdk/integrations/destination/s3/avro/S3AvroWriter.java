@@ -7,14 +7,14 @@ package io.airbyte.cdk.integrations.destination.s3.avro;
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3Format;
 import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -76,7 +76,7 @@ public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter 
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
+  public void write(final UUID id, final PartialAirbyteRecordMessage recordMessage) throws IOException {
     dataFileWriter.append(avroRecordFactory.getAvroRecord(id, recordMessage));
   }
 
@@ -110,8 +110,9 @@ public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter 
   }
 
   @Override
-  public void write(final JsonNode formattedData) throws IOException {
-    final Record record = avroRecordFactory.getAvroRecord(formattedData);
+  public void write(final String formattedData) throws IOException {
+    // We need the full deserialize to convert to avro.
+    final Record record = avroRecordFactory.getAvroRecord(Jsons.deserializeExact(formattedData));
     dataFileWriter.append(record);
   }
 

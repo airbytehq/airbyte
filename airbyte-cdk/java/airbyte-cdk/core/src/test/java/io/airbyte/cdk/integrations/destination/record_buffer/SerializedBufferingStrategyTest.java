@@ -15,9 +15,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Optional;
@@ -68,11 +68,11 @@ public class SerializedBufferingStrategyTest {
     final AirbyteStreamNameNamespacePair stream1 = new AirbyteStreamNameNamespacePair(STREAM_1, "namespace");
     final AirbyteStreamNameNamespacePair stream2 = new AirbyteStreamNameNamespacePair(STREAM_2, null);
     // To test per stream threshold, we are sending multiple test messages on a single stream
-    final AirbyteMessage message1 = generateMessage(stream1);
-    final AirbyteMessage message2 = generateMessage(stream2);
-    final AirbyteMessage message3 = generateMessage(stream2);
-    final AirbyteMessage message4 = generateMessage(stream2);
-    final AirbyteMessage message5 = generateMessage(stream2);
+    final PartialAirbyteMessage message1 = generateMessage(stream1);
+    final PartialAirbyteMessage message2 = generateMessage(stream2);
+    final PartialAirbyteMessage message3 = generateMessage(stream2);
+    final PartialAirbyteMessage message4 = generateMessage(stream2);
+    final PartialAirbyteMessage message5 = generateMessage(stream2);
 
     when(recordWriter1.getByteCount()).thenReturn(10L); // one record in recordWriter1
     assertFalse(buffering.addRecord(stream1, message1).isPresent());
@@ -113,12 +113,12 @@ public class SerializedBufferingStrategyTest {
     final AirbyteStreamNameNamespacePair stream3 = new AirbyteStreamNameNamespacePair(STREAM_3, "namespace");
     // To test total stream threshold, we are sending test messages to multiple streams without reaching
     // per stream limits
-    final AirbyteMessage message1 = generateMessage(stream1);
-    final AirbyteMessage message2 = generateMessage(stream2);
-    final AirbyteMessage message3 = generateMessage(stream3);
-    final AirbyteMessage message4 = generateMessage(stream1);
-    final AirbyteMessage message5 = generateMessage(stream2);
-    final AirbyteMessage message6 = generateMessage(stream3);
+    final PartialAirbyteMessage message1 = generateMessage(stream1);
+    final PartialAirbyteMessage message2 = generateMessage(stream2);
+    final PartialAirbyteMessage message3 = generateMessage(stream3);
+    final PartialAirbyteMessage message4 = generateMessage(stream1);
+    final PartialAirbyteMessage message5 = generateMessage(stream2);
+    final PartialAirbyteMessage message6 = generateMessage(stream3);
 
     assertFalse(buffering.addRecord(stream1, message1).isPresent());
     assertFalse(buffering.addRecord(stream2, message2).isPresent());
@@ -159,11 +159,11 @@ public class SerializedBufferingStrategyTest {
     final AirbyteStreamNameNamespacePair stream3 = new AirbyteStreamNameNamespacePair(STREAM_3, null);
     final AirbyteStreamNameNamespacePair stream4 = new AirbyteStreamNameNamespacePair(STREAM_4, null);
     // To test concurrent stream threshold, we are sending test messages to multiple streams
-    final AirbyteMessage message1 = generateMessage(stream1);
-    final AirbyteMessage message2 = generateMessage(stream2);
-    final AirbyteMessage message3 = generateMessage(stream3);
-    final AirbyteMessage message4 = generateMessage(stream4);
-    final AirbyteMessage message5 = generateMessage(stream1);
+    final PartialAirbyteMessage message1 = generateMessage(stream1);
+    final PartialAirbyteMessage message2 = generateMessage(stream2);
+    final PartialAirbyteMessage message3 = generateMessage(stream3);
+    final PartialAirbyteMessage message4 = generateMessage(stream4);
+    final PartialAirbyteMessage message5 = generateMessage(stream1);
 
     assertFalse(buffering.addRecord(stream1, message1).isPresent());
     assertFalse(buffering.addRecord(stream2, message2).isPresent());
@@ -200,8 +200,8 @@ public class SerializedBufferingStrategyTest {
     assertThrows(RuntimeException.class, () -> buffering.addRecord(stream, generateMessage(stream)));
   }
 
-  private static AirbyteMessage generateMessage(final AirbyteStreamNameNamespacePair stream) {
-    return new AirbyteMessage().withRecord(new AirbyteRecordMessage()
+  private static PartialAirbyteMessage generateMessage(final AirbyteStreamNameNamespacePair stream) {
+    return new PartialAirbyteMessage().withRecord(new PartialAirbyteRecordMessage()
         .withStream(stream.getName())
         .withNamespace(stream.getNamespace())
         .withData(MESSAGE_DATA));

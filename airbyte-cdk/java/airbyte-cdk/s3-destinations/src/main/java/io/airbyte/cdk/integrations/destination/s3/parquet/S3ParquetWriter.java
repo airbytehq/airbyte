@@ -7,7 +7,6 @@ package io.airbyte.cdk.integrations.destination.s3.parquet;
 import static org.apache.parquet.avro.AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3Format;
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory;
@@ -15,7 +14,8 @@ import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredenti
 import io.airbyte.cdk.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.net.URI;
@@ -118,7 +118,7 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage) throws IOException {
+  public void write(final UUID id, final PartialAirbyteRecordMessage recordMessage) throws IOException {
     parquetWriter.write(avroRecordFactory.getAvroRecord(id, recordMessage));
   }
 
@@ -148,8 +148,8 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
   }
 
   @Override
-  public void write(final JsonNode formattedData) throws IOException {
-    parquetWriter.write(avroRecordFactory.getAvroRecord(formattedData));
+  public void write(final String formattedData) throws IOException {
+    parquetWriter.write(avroRecordFactory.getAvroRecord(Jsons.deserializeExact(formattedData)));
   }
 
 }

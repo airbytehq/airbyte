@@ -4,9 +4,8 @@
 
 package io.airbyte.cdk.integrations.destination.jdbc;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +97,7 @@ public interface SqlOperations {
    * @param tableName Name of table
    * @throws Exception exception
    */
-  void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
+  void insertRecords(JdbcDatabase database, List<PartialAirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
 
   /**
    * Query to insert all records from source table to destination table. Both tables must be in the
@@ -128,7 +127,7 @@ public interface SqlOperations {
   /**
    * Check if the data record is valid and ok to be written to destination
    */
-  boolean isValidData(final JsonNode data);
+  boolean isValidData(final String data);
 
   /**
    * Denotes whether the destination has the concept of schema or not

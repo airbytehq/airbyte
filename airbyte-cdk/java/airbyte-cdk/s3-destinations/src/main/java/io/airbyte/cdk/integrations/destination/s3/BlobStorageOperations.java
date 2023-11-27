@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.integrations.destination.s3;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +50,7 @@ public abstract class BlobStorageOperations {
 
   public abstract void dropBucketObject(String objectPath);
 
-  public abstract boolean isValidData(JsonNode jsonNode);
+  public abstract boolean isValidData(String jsonNode);
 
   protected abstract Map<String, String> getMetadataMapping();
 

@@ -17,7 +17,7 @@ import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.cdk.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.cdk.integrations.destination.s3.util.CompressionType;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.IOException;
@@ -124,7 +124,7 @@ public abstract class S3StreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String filename) throws Exception {
+  public void write(final UUID id, final PartialAirbyteRecordMessage recordMessage, final String filename) throws Exception {
     if (stagingWritersByFile.containsKey(filename)) {
       stagingWritersByFile.get(filename).write(id, recordMessage);
     }

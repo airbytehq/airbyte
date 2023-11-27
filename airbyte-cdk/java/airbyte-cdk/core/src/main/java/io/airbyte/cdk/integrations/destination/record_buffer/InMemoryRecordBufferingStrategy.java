@@ -7,8 +7,8 @@ package io.airbyte.cdk.integrations.destination.record_buffer;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This is the default implementation of a {@link BufferStorage} to be backward compatible. Data is
- * being buffered in a {@link List<AirbyteRecordMessage>} as they are being consumed.
+ * being buffered in a {@link List<PartialAirbyteRecordMessage>} as they are being consumed.
  *
  * This should be deprecated as we slowly move towards using {@link SerializedBufferingStrategy}
  * instead.
@@ -30,8 +30,8 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryRecordBufferingStrategy.class);
 
-  private Map<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> streamBuffer = new HashMap<>();
-  private final RecordWriter<AirbyteRecordMessage> recordWriter;
+  private Map<AirbyteStreamNameNamespacePair, List<PartialAirbyteRecordMessage>> streamBuffer = new HashMap<>();
+  private final RecordWriter<PartialAirbyteRecordMessage> recordWriter;
   private final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter;
   private String fileName;
 
@@ -39,12 +39,12 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   private final long maxQueueSizeInBytes;
   private long bufferSizeInBytes;
 
-  public InMemoryRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
+  public InMemoryRecordBufferingStrategy(final RecordWriter<PartialAirbyteRecordMessage> recordWriter,
                                          final long maxQueueSizeInBytes) {
     this(recordWriter, null, maxQueueSizeInBytes);
   }
 
-  public InMemoryRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
+  public InMemoryRecordBufferingStrategy(final RecordWriter<PartialAirbyteRecordMessage> recordWriter,
                                          final CheckAndRemoveRecordWriter checkAndRemoveRecordWriter,
                                          final long maxQueueSizeInBytes) {
     this.recordWriter = recordWriter;
@@ -56,7 +56,7 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   }
 
   @Override
-  public Optional<BufferFlushType> addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+  public Optional<BufferFlushType> addRecord(final AirbyteStreamNameNamespacePair stream, final PartialAirbyteMessage message) throws Exception {
     Optional<BufferFlushType> flushed = Optional.empty();
 
     final long messageSizeInBytes = recordSizeEstimator.getEstimatedByteSize(message.getRecord());
@@ -65,7 +65,7 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
       flushed = Optional.of(BufferFlushType.FLUSH_ALL);
     }
 
-    final List<AirbyteRecordMessage> bufferedRecords = streamBuffer.computeIfAbsent(stream, k -> new ArrayList<>());
+    final List<PartialAirbyteRecordMessage> bufferedRecords = streamBuffer.computeIfAbsent(stream, k -> new ArrayList<>());
     bufferedRecords.add(message.getRecord());
     bufferSizeInBytes += messageSizeInBytes;
 
@@ -81,7 +81,7 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 
   @Override
   public void flushAllBuffers() throws Exception {
-    for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
+    for (final Map.Entry<AirbyteStreamNameNamespacePair, List<PartialAirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
       LOGGER.info("Flushing {}: {} records ({})", entry.getKey().getName(), entry.getValue().size(),
           FileUtils.byteCountToDisplaySize(bufferSizeInBytes));
       recordWriter.accept(entry.getKey(), entry.getValue());

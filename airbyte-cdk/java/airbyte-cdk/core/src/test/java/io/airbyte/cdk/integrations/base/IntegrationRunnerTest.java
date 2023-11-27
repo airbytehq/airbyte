@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.base.Destination.ShimToSerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -489,7 +490,7 @@ class IntegrationRunnerTest {
     Assertions.assertDoesNotThrow(() -> {
       try (final AirbyteMessageConsumer consumer = mock(AirbyteMessageConsumer.class)) {
         ShimToSerializedAirbyteMessageConsumer.consumeMessage(consumer, invalidNonStateMessage);
-        verify(consumer, times(0)).accept(any(AirbyteMessage.class));
+        verify(consumer, times(0)).accept(any(PartialAirbyteMessage.class));
       }
     });
   }

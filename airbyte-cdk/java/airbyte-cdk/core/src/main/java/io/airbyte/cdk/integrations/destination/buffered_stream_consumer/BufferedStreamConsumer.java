@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.integrations.destination.buffered_stream_consumer;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -14,11 +13,12 @@ import io.airbyte.cdk.integrations.destination.dest_state_lifecycle_manager.Defa
 import io.airbyte.cdk.integrations.destination.dest_state_lifecycle_manager.DestStateLifecycleManager;
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferFlushType;
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferingStrategy;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteRecordMessage;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Duration;
@@ -82,7 +82,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private final OnCloseFunction onClose;
   private final Set<AirbyteStreamNameNamespacePair> streamNames;
   private final ConfiguredAirbyteCatalog catalog;
-  private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
+  private final CheckedFunction<String, Boolean, Exception> isValidRecord;
   private final Map<AirbyteStreamNameNamespacePair, Long> streamToIgnoredRecordCount;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final BufferingStrategy bufferingStrategy;
@@ -105,7 +105,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                                 final BufferingStrategy bufferingStrategy,
                                 final OnCloseFunction onClose,
                                 final ConfiguredAirbyteCatalog catalog,
-                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord) {
+                                final CheckedFunction<String, Boolean, Exception> isValidRecord) {
     this(outputRecordCollector,
         onStart,
         bufferingStrategy,
@@ -123,7 +123,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                                 final BufferingStrategy bufferingStrategy,
                                 final OnCloseFunction onClose,
                                 final ConfiguredAirbyteCatalog catalog,
-                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                                final CheckedFunction<String, Boolean, Exception> isValidRecord,
                                 final String defaultNamespace) {
     this(outputRecordCollector,
         onStart,
@@ -145,7 +145,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                          final BufferingStrategy bufferingStrategy,
                          final OnCloseFunction onClose,
                          final ConfiguredAirbyteCatalog catalog,
-                         final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                         final CheckedFunction<String, Boolean, Exception> isValidRecord,
                          final Duration flushFrequency,
                          final String defaultNamespace) {
     this.outputRecordCollector = outputRecordCollector;
@@ -182,22 +182,22 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
    * @throws Exception
    */
   @Override
-  protected void acceptTracked(final AirbyteMessage message) throws Exception {
+  protected void acceptTracked(final PartialAirbyteMessage message) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
     if (message.getType() == Type.RECORD) {
-      final AirbyteRecordMessage record = message.getRecord();
+      final PartialAirbyteRecordMessage record = message.getRecord();
       if (Strings.isNullOrEmpty(record.getNamespace())) {
         record.setNamespace(defaultNamespace);
       }
       final AirbyteStreamNameNamespacePair stream;
-      stream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
+      stream = record.toStreamNameNamespacePair();
 
       // if stream is not part of list of streams to sync to then throw invalid stream exception
       if (!streamNames.contains(stream)) {
         throwUnrecognizedStream(catalog, message);
       }
 
-      if (!isValidRecord.apply(record.getData())) {
+      if (!isValidRecord.apply(record.getSerializedData())) {
         streamToIgnoredRecordCount.put(stream, streamToIgnoredRecordCount.getOrDefault(stream, 0L) + 1L);
         return;
       }
@@ -220,7 +220,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         }
       }
     } else if (message.getType() == Type.STATE) {
-      stateManager.addState(message);
+      stateManager.addState(message.toFullMessage());
     } else {
       LOGGER.warn("Unexpected message: " + message.getType());
     }
@@ -266,7 +266,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
-  private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
+  private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final PartialAirbyteMessage message) {
     throw new IllegalArgumentException(
         String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
             Jsons.serialize(catalog), Jsons.serialize(message)));

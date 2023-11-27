@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination_async;
 
-import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.protocol.PartialAirbyteMessage;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStreamState;
@@ -28,11 +28,11 @@ public class PartialAirbyteMessageTest {
             .withEmittedAt(emittedAt)
             .withData(Jsons.jsonNode("data"))));
 
-    final var rec = Jsons.tryDeserialize(serializedRec, PartialAirbyteMessage.class).get();
+    final var rec = PartialAirbyteMessage.fromJson(serializedRec);
     Assertions.assertEquals(AirbyteMessage.Type.RECORD, rec.getType());
     Assertions.assertEquals("users", rec.getRecord().getStream());
     Assertions.assertEquals("public", rec.getRecord().getNamespace());
-    Assertions.assertEquals("\"data\"", rec.getRecord().getData().toString());
+    Assertions.assertEquals("\"data\"", rec.getRecord().getSerializedData());
     Assertions.assertEquals(emittedAt, rec.getRecord().getEmittedAt());
   }
 
@@ -46,7 +46,7 @@ public class PartialAirbyteMessageTest {
                 .withStreamState(Jsons.jsonNode("data")))
             .withType(AirbyteStateMessage.AirbyteStateType.STREAM)));
 
-    final var rec = Jsons.tryDeserialize(serializedState, PartialAirbyteMessage.class).get();
+    final var rec = PartialAirbyteMessage.fromJson(serializedState);
     Assertions.assertEquals(AirbyteMessage.Type.STATE, rec.getType());
 
     final var streamDesc = rec.getState().getStream().getStreamDescriptor();
@@ -59,7 +59,7 @@ public class PartialAirbyteMessageTest {
   void testGarbage() {
     final var badSerialization = "messed up data";
 
-    final var rec = Jsons.tryDeserialize(badSerialization, PartialAirbyteMessage.class);
+    final var rec = PartialAirbyteMessage.tryFromJson(badSerialization);
     Assertions.assertTrue(rec.isEmpty());
   }
 
