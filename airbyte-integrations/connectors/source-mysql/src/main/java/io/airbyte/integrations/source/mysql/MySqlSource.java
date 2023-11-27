@@ -151,6 +151,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       stream.setDefaultCursorField(ImmutableList.of(CDC_DEFAULT_CURSOR));
     }
     return stream;
+
   }
 
   // Note: in place mutation.
