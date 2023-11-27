@@ -23,6 +23,12 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - email_activity
+      - campaigns
+      - lists
+      - reports
   supportLevel: certified
   tags:
     - language:python
