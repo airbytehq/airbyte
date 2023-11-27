@@ -14,6 +14,7 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMI
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.cast;
 import static org.jooq.impl.DSL.createSchemaIfNotExists;
+import static org.jooq.impl.DSL.dropTableIfExists;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.function;
 import static org.jooq.impl.DSL.name;
@@ -216,7 +217,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
    */
   Field<?> arrayConcatStmt(List<Field<?>> arrays) {
     if (arrays.isEmpty()) {
-      return field(""); // Return an empty string if the list is empty
+      return field("ARRAY()"); // Return an empty string if the list is empty
     }
 
     // Base case: if there's only one element, return it
@@ -271,7 +272,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
         .stream()
         .map(column -> toCastingErrorCaseStmt(column.getKey(), column.getValue()))
         .collect(Collectors.toList());
-    return function("object", getSuperType(), val(AIRBYTE_META_COLUMN_ERRORS_KEY), arrayConcatStmt(dataFields)).as(COLUMN_NAME_AB_META);
+    return function("OBJECT", getSuperType(), val(AIRBYTE_META_COLUMN_ERRORS_KEY), arrayConcatStmt(dataFields)).as(COLUMN_NAME_AB_META);
 
   }
 
@@ -300,13 +301,23 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     CreateTableColumnStep createTableSql = dsl
         .createTable(quotedName(stream.id().finalNamespace(), finalTableIdentifier))
         .columns(buildFinalTableFields(stream.columns(), getFinalTableMetaColumns(true)));
+    if (!force) {
+      return Strings.join(
+          List.of(
+              createSchemaSql.getSQL() + ";",
+              // Redshift doesn't care about primary key but we can use SORTKEY for performance, its a table
+              // attribute not supported by jooq.
+              createTableSql.getSQL() + System.lineSeparator() + " SORTKEY(\"" + COLUMN_NAME_AB_EXTRACTED_AT + "\");"),
+           System.lineSeparator());
+    }
     return Strings.join(
         List.of(
-            createSchemaSql.getSQL(),
-            // Redshift doesn't care about primary key but we can use SORTKEY for performance, its a table
-            // attribute not supported by jooq.
-            createTableSql.getSQL() + System.lineSeparator() + " SORTKEY(\"" + COLUMN_NAME_AB_EXTRACTED_AT + "\");"),
-        ";" + System.lineSeparator());
+            createSchemaSql.getSQL() + ";",
+            "BEGIN;",
+            dropTableIfExists(quotedName(stream.id().finalNamespace(), finalTableIdentifier)) + ";",
+            createTableSql.getSQL() + System.lineSeparator() + " SORTKEY(\"" + COLUMN_NAME_AB_EXTRACTED_AT + "\");",
+            "COMMIT;"),
+        System.lineSeparator());
   }
 
   @Override
