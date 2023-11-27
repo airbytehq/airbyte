@@ -4994,7 +4994,6 @@ components:
         - entityName
         - connectorName
         - status
-        - isSyncing
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -5004,16 +5003,8 @@ components:
           type: string
         connectorName:
           type: string
-        isSyncing:
-          type: boolean
         status:
           $ref: "#/components/schemas/ConnectionStatus"
-        latestSyncJobCreatedAt:
-          description: epoch time of the latest sync job. null if no sync job has taken place.
-          type: integer
-          format: int64
-        latestSyncJobStatus:
-          $ref: "#/components/schemas/JobStatus"
     WebBackendConnectionStatusRead:
       type: object
       required:
