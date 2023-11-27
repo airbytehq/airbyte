@@ -13,7 +13,7 @@ The Docs team maintains a list of [#good-first-issues](https://github.com/airbyt
 
 ## Contributing to Airbyte docs
 
-Before contributing to Airbyte docs, read the Airbyte Community [Code of Conduct](../project-overview/code-of-conduct.md).
+Before contributing to Airbyte docs, read the Airbyte Community [Code of Conduct](../community/code-of-conduct.md).
 
 :::tip
 If you're new to GitHub and Markdown, complete [the First Contributions tutorial](https://github.com/firstcontributions/first-contributions) and learn [Markdown basics](https://guides.github.com/features/mastering-markdown/) before contributing to Airbyte documentation. Even if you're familiar with the basics, you may be interested in Airbyte's [custom markdown extensions for connector docs](#custom-markdown-extensions-for-connector-docs).
@@ -276,16 +276,7 @@ Eagle-eyed readers may note that _all_ markdown should support this feature sinc
 
 ### Adding a redirect
 
-To add a redirect, open the [`docusaurus.config.js`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/docusaurus.config.js#L22) file and locate the following commented section:
-
-```js
-//                        {
-//                         from: '/some-lame-path',
-//                         to: '/a-much-cooler-uri',
-//                        },
-```
-
-Copy this section, replace the values, and [test the changes locally](#editing-on-your-local-machine) by going to the path you created a redirect for and verify that the address changes to the new one.
+To add a redirect, open the [`docusaurus/redirects.yml`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/redirects.yml) file and add an entry from which old path to which new path a redirect should happen.
 
 :::note 
 Your path **needs** a leading slash `/` to work
