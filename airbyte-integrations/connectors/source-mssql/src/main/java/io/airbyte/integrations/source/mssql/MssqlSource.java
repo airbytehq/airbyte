@@ -410,6 +410,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         throw e;
       }
     }
+
   }
 
   protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
