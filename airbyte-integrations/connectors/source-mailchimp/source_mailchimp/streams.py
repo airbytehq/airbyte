@@ -45,6 +45,7 @@ class MailChimpStream(HttpStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
 
+        # The ._links field is returned by most Mailchimp endpoints and contains non-relevant schema metadata.
         params = {"count": self.page_size, "exclude_fields": f"{self.data_field}._links"}
 
         # Handle pagination by inserting the next page's token in the request parameters
@@ -185,7 +186,7 @@ class Campaigns(IncrementalMailChimpStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response = super().parse_response(response, **kwargs)
         for record in response:
-            # Add the list_id to each record
+            # Set the send_time to None if it is an empty string to avoid validation errors
             if record.get("send_time") == "":
                 record["send_time"] = None
             yield record
