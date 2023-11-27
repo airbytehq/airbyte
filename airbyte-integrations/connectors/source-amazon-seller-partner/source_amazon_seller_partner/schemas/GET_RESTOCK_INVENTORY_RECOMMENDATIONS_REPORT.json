@@ -86,10 +86,12 @@
       "type": ["null", "string"]
     },
     "Recommended ship date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "Recommended action": {
+      "type": ["null", "string"]
+    },
+    "Unit storage size": {
       "type": ["null", "string"]
     },
     "dataEndTime": {

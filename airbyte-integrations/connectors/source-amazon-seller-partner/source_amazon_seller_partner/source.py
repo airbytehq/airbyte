@@ -51,9 +51,11 @@ from source_amazon_seller_partner.streams import (
     MerchantListingsReport,
     MerchantListingsReportBackCompat,
     MerchantListingsReports,
+    NetPureProductMarginReport,
     OrderItems,
     OrderReportDataShipping,
     Orders,
+    RapidRetailAnalyticsInventoryReport,
     RestockInventoryReports,
     SellerAnalyticsSalesAndTrafficReports,
     SellerFeedbackReports,
@@ -61,13 +63,15 @@ from source_amazon_seller_partner.streams import (
     VendorDirectFulfillmentShipping,
     VendorInventoryReports,
     VendorSalesReports,
+    VendorTrafficReport,
     XmlAllOrdersDataByOrderDataGeneral,
 )
 from source_amazon_seller_partner.utils import AmazonConfigException
 
 
 class SourceAmazonSellerPartner(AbstractSource):
-    def _get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+    @staticmethod
+    def _get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
         endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
         auth = AWSAuthenticator(
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
@@ -178,14 +182,17 @@ class SourceAmazonSellerPartner(AbstractSource):
         #  https://github.com/airbytehq/airbyte/issues/32353
         if getenv("DEPLOYMENT_MODE", "").upper() != "CLOUD":
             brand_analytics_reports = [
-                BrandAnalyticsMarketBasketReports,
-                BrandAnalyticsSearchTermsReports,
-                BrandAnalyticsRepeatPurchaseReports,
-                BrandAnalyticsAlternatePurchaseReports,
-                BrandAnalyticsItemComparisonReports,
-                SellerAnalyticsSalesAndTrafficReports,
-                VendorSalesReports,
-                VendorInventoryReports,
+                BrandAnalyticsMarketBasketReports(**stream_kwargs),
+                BrandAnalyticsSearchTermsReports(**stream_kwargs),
+                BrandAnalyticsRepeatPurchaseReports(**stream_kwargs),
+                BrandAnalyticsAlternatePurchaseReports(**stream_kwargs),
+                BrandAnalyticsItemComparisonReports(**stream_kwargs),
+                SellerAnalyticsSalesAndTrafficReports(**stream_kwargs),
+                VendorSalesReports(**stream_kwargs),
+                VendorInventoryReports(**stream_kwargs),
+                NetPureProductMarginReport(**stream_kwargs),
+                RapidRetailAnalyticsInventoryReport(**stream_kwargs),
+                VendorTrafficReport(**stream_kwargs),
             ]
             stream_list += brand_analytics_reports
 
