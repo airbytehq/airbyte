@@ -151,10 +151,7 @@ async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: 
     If the current branch is not master, it will return the list of modified files in the current branch.
     This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
     """
-    if (
-        ci_context is CIContext.MASTER
-        or (ci_context is CIContext.MANUAL and git_branch == "master")
-    ):
+    if ci_context is CIContext.MASTER or (ci_context is CIContext.MANUAL and git_branch == "master"):
         return await get_modified_files_in_commit(git_branch, git_revision, is_local)
     return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
 
