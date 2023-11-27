@@ -25,7 +25,7 @@ Each stream will be output into its own collection in MongoDB. Each collection w
 
 Airbyte Cloud only supports connecting to your MongoDB instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
 
-## Getting Started \(Airbyte Open-Source\)
+## Getting Started \(Airbyte Open Source\)
 
 #### Requirements
 

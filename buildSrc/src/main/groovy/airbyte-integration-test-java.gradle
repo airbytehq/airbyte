@@ -28,31 +28,34 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             testClassesDirs = project.sourceSets.integrationTestJava.output.classesDirs
             classpath += project.sourceSets.integrationTestJava.runtimeClasspath
 
-            useJUnitPlatform {
-                // todo (cgardens) - figure out how to de-dupe this exclusion with the one in build.gradle.
-                excludeTags 'log4j2-config', 'logger-client', 'cloud-storage'
-            }
-
+            useJUnitPlatform()
             testLogging() {
-                events "passed", "failed", "started"
-                exceptionFormat "full"
-                // uncomment to get the full log output
-                // showStandardStreams = true
+                events 'skipped', 'started', 'passed', 'failed'
+                exceptionFormat 'full'
+                // Swallow the logs when running in airbyte-ci, rely on test reports instead.
+                showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
             }
 
-            outputs.upToDateWhen { false }
-
+            systemProperties = project.test.systemProperties
             maxParallelForks = project.test.maxParallelForks
             maxHeapSize = project.test.maxHeapSize
 
-            systemProperties = [
-                // Allow tests to set @Execution(ExecutionMode.CONCURRENT)
-                'junit.jupiter.execution.parallel.enabled': 'true'
-            ]
+            // Tone down the JIT when running the containerized connector to improve overall performance.
+            // The JVM default settings are optimized for long-lived processes in steady-state operation.
+            // Unlike in production, the connector containers in these tests are always short-lived.
+            // It's very much worth injecting a JAVA_OPTS environment variable into the container with
+            // flags which will reduce startup time at the detriment of long-term performance.
+            environment 'JOB_DEFAULT_ENV_JAVA_OPTS', '-XX:TieredStopAtLevel=1'
+
+            // Always re-run integration tests no matter what.
+            outputs.upToDateWhen { false }
         }
         integrationTestJava.configure {
             mustRunAfter project.tasks.named('check')
             dependsOn project.tasks.matching { it.name == 'assemble' }
+        }
+        project.tasks.named('build').configure {
+            dependsOn integrationTestJava
         }
     }
 }

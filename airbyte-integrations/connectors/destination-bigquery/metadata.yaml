@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
-  dockerImageTag: 2.0.19
+  dockerImageTag: 2.3.16
   dockerRepository: airbyte/destination-bigquery
   githubIssueLabel: destination-bigquery
   icon: bigquery.svg
@@ -29,13 +29,13 @@ data:
           This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides better error handling, incremental delivery of data for large syncs, and improved final table structures. To review the breaking changes, and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading). These changes will likely require updates to downstream dbt / SQL models, which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).
 
           Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync. You can manually sync existing connections prior to the next scheduled sync to start the upgrade early.
-        upgradeDeadline: "2023-11-01"
+        upgradeDeadline: "2023-11-07"
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   supportsDbt: true
   tags:
     - language:java
   ab_internal:
-    sl: 200
-    ql: 400
+    sl: 300
+    ql: 300
   supportLevel: certified
 metadataSpecVersion: "1.0"

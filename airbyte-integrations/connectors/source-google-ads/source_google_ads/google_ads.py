@@ -12,7 +12,7 @@ from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v13.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
-from google.api_core.exceptions import ServerError, TooManyRequests
+from google.api_core.exceptions import InternalServerError, ServerError, TooManyRequests
 from google.auth import exceptions
 from proto.marshal.collections import Repeated, RepeatedComposite
 
@@ -40,7 +40,7 @@ class GoogleAds:
 
     @backoff.on_exception(
         backoff.expo,
-        (ServerError, TooManyRequests),
+        (InternalServerError, ServerError, TooManyRequests),
         on_backoff=lambda details: logger.info(
             f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         ),
@@ -178,17 +178,8 @@ class GoogleAds:
         # For example:
         # 1. ad_group_ad.ad.responsive_display_ad.long_headline - type AdTextAsset (https://developers.google.com/google-ads/api/reference/rpc/v6/AdTextAsset?hl=en).
         # 2. ad_group_ad.ad.legacy_app_install_ad - type LegacyAppInstallAdInfo (https://developers.google.com/google-ads/api/reference/rpc/v7/LegacyAppInstallAdInfo?hl=en).
-        #
-        if not (isinstance(field_value, (list, int, float, str, bool, dict)) or field_value is None):
+        if not isinstance(field_value, (list, int, float, str, bool, dict)) and field_value is not None:
             field_value = str(field_value)
-        # In case of custom query field has MESSAGE type it represents protobuf
-        # message and could be anything, convert it to a string or array of
-        # string if it has "repeated" flag on metadata
-        if schema_type.get("protobuf_message"):
-            if "array" in schema_type.get("type"):
-                field_value = [str(field) for field in field_value]
-            else:
-                field_value = str(field_value)
 
         return field_value
 

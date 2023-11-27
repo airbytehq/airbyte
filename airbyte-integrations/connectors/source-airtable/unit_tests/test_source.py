@@ -7,15 +7,8 @@ import logging
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import AirbyteCatalog, ConnectorSpecification
+from airbyte_cdk.models import AirbyteCatalog
 from source_airtable.source import SourceAirtable
-
-
-def test_spec(config):
-    source = SourceAirtable()
-    logger_mock = MagicMock()
-    spec = source.spec(logger_mock)
-    assert isinstance(spec, ConnectorSpecification)
 
 
 @pytest.mark.parametrize(

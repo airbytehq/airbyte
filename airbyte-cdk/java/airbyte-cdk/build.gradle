@@ -1,7 +1,6 @@
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
-    apply plugin: 'airbyte-docker'
     apply plugin: 'airbyte-java-cdk'
     apply plugin: 'airbyte-integration-test-java'
     apply plugin: 'airbyte-performance-test-java'
@@ -12,7 +11,7 @@ allprojects {
 }
 
 subprojects { subproject ->
-    def artifactBaseName = 'airbyte-cdk-' + subproject.name.replace('-feature', '')
+    def artifactBaseName = 'airbyte-cdk-' + subproject.name
     // E.g. airbyte-cdk-core, airbyte-cdk-db-sources, airbyte-cdk-db-destinations, etc.
 
     publishing {
@@ -29,10 +28,13 @@ subprojects { subproject ->
                 artifact subproject.tasks.testFixturesJar
             }
         }
+        // This repository is only defined and used in the context of an artifact publishing
+        // It's different from the 'airbyte-public-jars' defined in settings.graddle only in its omission 
+        // of the 'public' directory. Any artifacts publish here will be available in the 'airbyte-public-jars' repo
         repositories {
             maven {
-                name 'cloudrepo'
-                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+                name 'airbyte-repo'
+                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars/' 
                 credentials {
                     username System.getenv('CLOUDREPO_USER')
                     password System.getenv('CLOUDREPO_PASSWORD')

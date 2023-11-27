@@ -4,9 +4,19 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.2.0'
     features = ['db-sources']
     useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileTestJava {
+        options.compilerArgs.remove("-Werror")
+    }
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -16,18 +26,15 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
-repositories {
-    maven { url "https://s3.amazonaws.com/redshift-maven-repository/release" }
-}
-
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation 'com.amazon.redshift:redshift-jdbc42:1.2.43.1067'
 
     testImplementation 'org.apache.commons:commons-text:1.10.0'
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
-    testImplementation project(":airbyte-json-validation")
+    testImplementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
+
+
 }
 

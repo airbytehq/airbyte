@@ -5,7 +5,7 @@ acceptance_tests:
     tests:
       - spec_path: "source_github/spec.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.5.0"
+          disable_for_version: "1.4.3"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -18,7 +18,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.4.8"
+          disable_for_version: "1.4.3"
       - config_path: "secrets/config_oauth.json"
         backward_compatibility_tests_config:
           disable_for_version: "0.4.8"
@@ -93,7 +93,7 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+        configured_catalog_path: "integration_tests/configured_catalog_full_refresh_test.json"
         ignored_fields:
           organizations:
             - name: followers

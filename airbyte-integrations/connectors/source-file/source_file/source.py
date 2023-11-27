@@ -17,15 +17,16 @@ from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     ConfiguredAirbyteCatalog,
+    ConnectorSpecification,
     FailureType,
     Status,
     Type,
 )
 from airbyte_cdk.sources import Source
-from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
 
 from .client import Client
-from .utils import dropbox_force_download
+from .utils import LOCAL_STORAGE_NAME, dropbox_force_download
 
 
 class SourceFile(Source):
@@ -104,6 +105,19 @@ class SourceFile(Source):
             message = f'Failed to load {config["url"]}: please use the Official Google Sheets Source connector'
             raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return config
+
+    def spec(self, logger: AirbyteLogger) -> ConnectorSpecification:
+        """Returns the json schema for the spec"""
+        spec = super().spec(logger)
+
+        # override cloud spec to remove local file support
+        if is_cloud_environment():
+            for i in range(len(spec.connectionSpecification["properties"]["provider"]["oneOf"])):
+                provider = spec.connectionSpecification["properties"]["provider"]["oneOf"][i]
+                if provider["properties"]["storage"]["const"] == LOCAL_STORAGE_NAME:
+                    spec.connectionSpecification["properties"]["provider"]["oneOf"].pop(i)
+
+        return spec
 
     def check(self, logger, config: Mapping) -> AirbyteConnectionStatus:
         """

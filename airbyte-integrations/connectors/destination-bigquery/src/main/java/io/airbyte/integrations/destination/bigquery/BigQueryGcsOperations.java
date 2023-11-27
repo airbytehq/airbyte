@@ -140,7 +140,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
         .setFormatOptions(FormatOptions.csv())
         .setSchema(tableSchema)
         .setWriteDisposition(WriteDisposition.WRITE_APPEND)
-        .setJobTimeoutMs(60000L)
+        .setJobTimeoutMs(300000L) // 5min
         .build();
 
     final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
@@ -160,6 +160,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   }
 
   @Override
+  @Deprecated
   public void cleanUpStage(final String datasetId, final String stream, final List<String> stagedFiles) {
     if (keepStagingFiles) {
       return;

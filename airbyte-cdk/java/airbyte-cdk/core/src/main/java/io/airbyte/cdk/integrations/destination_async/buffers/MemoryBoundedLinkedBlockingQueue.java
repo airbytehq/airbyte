@@ -66,6 +66,10 @@ class MemoryBoundedLinkedBlockingQueue<E> {
     return hiddenQueue.poll(timeout, unit);
   }
 
+  public long getMaxMemoryUsage() {
+    return hiddenQueue.getMaxMemoryUsage();
+  }
+
   /**
    * Extends LinkedBlockingQueue so that we can get a LinkedBlockingQueue bounded by memory. Hidden as
    * an inner class, so it doesn't get misused, see top-level javadoc comment.
@@ -80,6 +84,10 @@ class MemoryBoundedLinkedBlockingQueue<E> {
     public HiddenQueue(final long maxMemoryUsage) {
       currentMemoryUsage = new AtomicLong(0);
       this.maxMemoryUsage = new AtomicLong(maxMemoryUsage);
+    }
+
+    public long getMaxMemoryUsage() {
+      return maxMemoryUsage.get();
     }
 
     public boolean offer(final E e, final long itemSizeInBytes) {

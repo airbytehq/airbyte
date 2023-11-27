@@ -7,7 +7,10 @@ from unittest import mock
 
 import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
-from pipelines import utils
+from pipelines import consts
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.helpers import utils
+from pipelines.helpers.connectors.modifed import get_connector_modified_files, get_modified_connectors
 from tests.utils import pick_a_random_connector
 
 
@@ -25,7 +28,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": None,
                 },
             ),
-            f"{utils.STATIC_REPORT_PREFIX}/command/path/my_ci_context/my_branch/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_context/my_branch/my_pipeline_start_timestamp/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -38,7 +41,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{utils.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch/my_pipeline_start_timestamp/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -51,7 +54,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{utils.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch/my_pipeline_start_timestamp/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -64,7 +67,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{utils.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch/my_pipeline_start_timestamp/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -77,7 +80,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{utils.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashes/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashes/my_pipeline_start_timestamp/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -90,7 +93,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{utils.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_pipeline_start_timestamp/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -103,7 +106,7 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{utils.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_pipeline_start_timestamp/my_git_revision",
         ),
         (
             mock.MagicMock(
@@ -116,12 +119,12 @@ from tests.utils import pick_a_random_connector
                     "ci_job_key": "my_ci_job_key",
                 },
             ),
-            f"{utils.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_pipeline_start_timestamp/my_git_revision",
+            f"{consts.STATIC_REPORT_PREFIX}/command/path/my_ci_job_key/my_branch_with_slashesandspecialcharacters/my_pipeline_start_timestamp/my_git_revision",
         ),
     ],
 )
 def test_render_report_output_prefix(ctx, expected):
-    assert utils.DaggerPipelineCommand.render_report_output_prefix(ctx) == expected
+    assert DaggerPipelineCommand.render_report_output_prefix(ctx) == expected
 
 
 @pytest.mark.parametrize("enable_dependency_scanning", [True, False])
@@ -135,7 +138,7 @@ def test_get_modified_connectors_with_dependency_scanning(all_connectors, enable
     )
     modified_files.append(modified_java_connector.code_directory / "foo.bar")
 
-    modified_connectors = utils.get_modified_connectors(modified_files, all_connectors, enable_dependency_scanning)
+    modified_connectors = get_modified_connectors(modified_files, all_connectors, enable_dependency_scanning)
     if enable_dependency_scanning:
         assert not_modified_java_connector in modified_connectors
     else:
@@ -152,7 +155,7 @@ def test_get_connector_modified_files():
         other_connector.code_directory / "README.md",
     }
 
-    result = utils.get_connector_modified_files(connector, all_modified_files)
+    result = get_connector_modified_files(connector, all_modified_files)
     assert result == frozenset({connector.code_directory / "setup.py"})
 
 
@@ -164,7 +167,7 @@ def test_no_modified_files_in_connector_directory():
         other_connector.code_directory / "README.md",
     }
 
-    result = utils.get_connector_modified_files(connector, all_modified_files)
+    result = get_connector_modified_files(connector, all_modified_files)
     assert result == frozenset()
 
 

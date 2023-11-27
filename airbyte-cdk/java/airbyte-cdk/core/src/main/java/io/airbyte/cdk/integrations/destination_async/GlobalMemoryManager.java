@@ -38,7 +38,7 @@ public class GlobalMemoryManager {
   // In cases where a queue is rapidly expanding, a larger block size allows less allocation calls. On
   // the flip size, a smaller block size allows more granular memory management. Since this overhead
   // is minimal for now, err on a smaller block sizes.
-  public static final long BLOCK_SIZE_BYTES = 30 * 1024 * 1024; // 30MB
+  public static final long BLOCK_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
   private final long maxMemoryBytes;
 
   private final AtomicLong currentMemoryBytes = new AtomicLong(0);

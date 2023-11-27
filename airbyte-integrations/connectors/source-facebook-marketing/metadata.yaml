@@ -1,12 +1,18 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 300
   allowedHosts:
     hosts:
       - graph.facebook.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 1.1.14
+  dockerImageTag: 1.2.0
   dockerRepository: airbyte/source-facebook-marketing
+  documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   githubIssueLabel: source-facebook-marketing
   icon: facebook.svg
   license: ELv2
@@ -33,11 +39,7 @@ data:
       - ads_insights_region
       - ads_insights_dma
       - activities
-  documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 300
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

@@ -56,10 +56,11 @@ class MetadataDescriptor:
         if not self._metadata:
             stream = GoogleAnalyticsDataApiMetadataStream(config=instance.config, authenticator=instance.config["authenticator"])
 
+            metadata = None
             try:
                 metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
             except HTTPError as e:
-                if e.response.status_code == HTTPStatus.UNAUTHORIZED:
+                if e.response.status_code in [HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN]:
                     internal_message = "Unauthorized error reached."
                     message = "Can not get metadata with unauthorized credentials. Try to re-authenticate in source settings."
 
@@ -516,7 +517,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
                     invalid_metrics = ", ".join(invalid_metrics)
                     return False, WRONG_METRICS.format(fields=invalid_metrics, report_name=report["name"])
 
-                report_stream = self.instantiate_report_class(report, _config, page_size=100)
+                report_stream = self.instantiate_report_class(report, False, _config, page_size=100)
                 # check if custom_report dimensions + metrics can be combined and report generated
                 stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
                 next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
@@ -530,10 +531,20 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         return [stream for report in reports + config["custom_reports_array"] for stream in self.instantiate_report_streams(report, config)]
 
     def instantiate_report_streams(self, report: dict, config: Mapping[str, Any], **extra_kwargs) -> GoogleAnalyticsDataApiBaseStream:
+        add_name_suffix = False
         for property_id in config["property_ids"]:
-            yield self.instantiate_report_class(report=report, config={**config, "property_id": property_id})
+            yield self.instantiate_report_class(
+                report=report, add_name_suffix=add_name_suffix, config={**config, "property_id": property_id}
+            )
+            # Append property ID to stream name only for the second and subsequent properties.
+            # This will make a release non-breaking for users with a single property.
+            # This is a temporary solution until https://github.com/airbytehq/airbyte/issues/30926 is implemented.
+            add_name_suffix = True
 
-    def instantiate_report_class(self, report: dict, config: Mapping[str, Any], **extra_kwargs) -> GoogleAnalyticsDataApiBaseStream:
+    @staticmethod
+    def instantiate_report_class(
+        report: dict, add_name_suffix: bool, config: Mapping[str, Any], **extra_kwargs
+    ) -> GoogleAnalyticsDataApiBaseStream:
         cohort_spec = report.get("cohortSpec")
         pivots = report.get("pivots")
         stream_config = {
@@ -550,4 +561,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         if cohort_spec:
             stream_config["cohort_spec"] = cohort_spec
             report_class_tuple = (CohortReportMixin, *report_class_tuple)
-        return type(report["name"], report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"], **extra_kwargs)
+        name = report["name"]
+        if add_name_suffix:
+            name = f"{name}Property{config['property_id']}"
+        return type(name, report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"], **extra_kwargs)

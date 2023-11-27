@@ -3,7 +3,7 @@
 #
 
 from decimal import Decimal
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from .common import CatalogModel, Targeting
 
@@ -46,6 +46,14 @@ class DisplayTargeting(Targeting):
     campaignId: Decimal
     expression: List[Dict[str, str]]
     resolvedExpression: List[Dict[str, str]]
+
+
+class DisplayCreatives(CatalogModel):
+    adGroupId: Decimal
+    creativeId: Decimal
+    creativeType: str
+    properties: Dict[str, Any]
+    moderationStatus: str
 
 
 class DisplayBudgetRuleDetailsPerformanceMeasureCondition(CatalogModel):

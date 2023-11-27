@@ -11,36 +11,109 @@ on:
       - opened
       - reopened
       - synchronize
-    paths:
-      - airbyte-ci/**
 jobs:
   run-airbyte-ci-tests:
+    # Note if you are changing this name you must also change it in the approve-and-merge-dispatch.yml workflow
     name: Run Airbyte CI tests
-    runs-on: "conn-prod-xlarge-runner"
+    runs-on: "ci-runner-connector-test-large-dagger-0-6-4"
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
-      - name: Run airbyte-ci/connectors/pipelines tests
-        id: run-airbyte-ci-connectors-pipelines-tests
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      # IMPORTANT! This is nessesary to make sure that a status is reported on the PR
+      # even if the workflow is skipped. If we used github actions filters, the workflow
+      # would not be reported as skipped, but instead would be forever pending.
+      #
+      # I KNOW THIS SOUNDS CRAZY, BUT IT IS TRUE.
+      #
+      # Also it gets worse
+      #
+      # IMPORTANT! DO NOT CHANGE THE QUOTES AROUND THE GLOBS. THEY ARE REQUIRED.
+      # MAKE SURE TO TEST ANY SYNTAX CHANGES BEFORE MERGING.
+      - name: Get changed files
+        uses: tj-actions/changed-files@v39
+        id: changes
+        with:
+          files_yaml: |
+            ops:
+              - 'airbyte-ci/connectors/connector_ops/**'
+              - '!**/*.md'
+            base_images:
+              - 'airbyte-ci/connectors/connector_ops/**'
+              - 'airbyte-ci/connectors/base_images/**'
+              - '!**/*.md'
+            pipelines:
+              - 'airbyte-ci/connectors/connector_ops/**'
+              - 'airbyte-ci/connectors/base_images/**'
+              - 'airbyte-ci/connectors/pipelines/**'
+              - '!**/*.md'
+            metadata_lib:
+              - 'airbyte-ci/connectors/metadata/lib/**'
+              - '!**/*.md'
+            metadata_orchestrator:
+              - 'airbyte-ci/connectors/metadata/lib/**'
+              - 'airbyte-ci/connectors/metadata/orchestrator/**'
+              - '!**/*.md'
+
+      - name: Run airbyte-ci/connectors/connector_ops tests
+        if: steps.changes.outputs.ops_any_changed == 'true'
+        id: run-airbyte-ci-connectors-connector-ops-tests
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "pull_request"
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "test airbyte-ci/connectors/connector_ops"
+
+      - name: Run airbyte-ci/connectors/pipelines tests
+        id: run-airbyte-ci-connectors-pipelines-tests
+        if: steps.changes.outputs.pipelines_any_changed == 'true'
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          context: "pull_request"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/pipelines"
+
       - name: Run airbyte-ci/connectors/base_images tests
         id: run-airbyte-ci-connectors-base-images-tests
+        if: steps.changes.outputs.base_images_any_changed == 'true'
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "pull_request"
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/base_images"
+
+      - name: Run test pipeline for the metadata lib
+        id: metadata_lib-test-pipeline
+        if: steps.changes.outputs.metadata_lib_any_changed == 'true'
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          subcommand: "test airbyte-ci/connectors/metadata_service/lib/"
+          context: "pull_request"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Run test for the metadata orchestrator
+        id: metadata_orchestrator-test-pipeline
+        if: steps.changes.outputs.metadata_orchestrator_any_changed == 'true'
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          subcommand: "test airbyte-ci/connectors/metadata_service/orchestrator/"
+          context: "pull_request"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}

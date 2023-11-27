@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobConfiguration;
 import com.google.cloud.bigquery.JobId;
@@ -16,14 +17,19 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
+import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.Streams;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.math.BigInteger;
+import java.time.Instant;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +58,39 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
   }
 
   @Override
+  public Optional<Instant> getMinTimestampForSync(final StreamId id) throws Exception {
+    final Table rawTable = bq.getTable(TableId.of(id.rawNamespace(), id.rawName()));
+    if (rawTable == null) {
+      return Optional.empty();
+    }
+    final TableResult queryResult = bq.query(QueryJobConfiguration.newBuilder(new StringSubstitutor(Map.of(
+        "raw_table", id.rawTableId(BigQuerySqlGenerator.QUOTE))).replace(
+            // bigquery timestamps have microsecond precision
+            // and COALESCE short-circuits, so if the first subquery returns non-null, we don't
+            // evaluate the second query at all
+            """
+            SELECT COALESCE(
+              (
+                SELECT TIMESTAMP_SUB(MIN(_airbyte_extracted_at), INTERVAL 1 MICROSECOND)
+                FROM ${raw_table}
+                WHERE _airbyte_loaded_at IS NULL
+              ),
+              (
+                SELECT MAX(_airbyte_extracted_at)
+                FROM ${raw_table}
+              )
+            )
+            """))
+        .build());
+    final FieldValue value = queryResult.iterateAll().iterator().next().get(0);
+    if (value.isNull()) {
+      return Optional.empty();
+    } else {
+      return Optional.ofNullable(value.getTimestampInstant());
+    }
+  }
+
+  @Override
   public void execute(final String sql) throws InterruptedException {
     if ("".equals(sql)) {
       return;
@@ -64,6 +103,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
      * doesn't do a good job of inferring the query location. Pass it in explicitly.
      */
     Job job = bq.create(JobInfo.of(JobId.newBuilder().setLocation(datasetLocation).build(), QueryJobConfiguration.newBuilder(sql).build()));
+    AirbyteExceptionHandler.addStringForDeinterpolation(job.getEtag());
     // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
     while (!JobStatus.State.DONE.equals(job.getStatus().getState())) {
       Thread.sleep(1000L);

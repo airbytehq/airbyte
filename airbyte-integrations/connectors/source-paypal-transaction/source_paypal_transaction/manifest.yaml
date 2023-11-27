@@ -79,6 +79,7 @@ definitions:
           - path:
               - transaction_id
             value: "{{ record['transaction_info']['transaction_id'] }}"
+            value_type: string
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: transaction_updated_date
@@ -102,7 +103,7 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      step: P15D
+      step: "P{{ config.get('time_window', 7) }}D"
       cursor_granularity: PT1S
     $parameters:
       path: "transactions"
@@ -202,3 +203,10 @@ spec:
         title: "Refresh token"
         description: "The key to refresh the expired access token."
         airbyte_secret: true
+      time_window:
+        type: "integer"
+        title: "Number of days per request"
+        description: "The number of days per request. Must be a number between 1 and 31."
+        default: 7
+        minimum: 1
+        maximum: 31

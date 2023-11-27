@@ -1,12 +1,18 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 300
   allowedHosts:
     hosts:
       - api.stripe.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 4.3.1
+  dockerImageTag: 5.0.1
   dockerRepository: airbyte/source-stripe
+  documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   githubIssueLabel: source-stripe
   icon: stripe.svg
   license: ELv2
@@ -17,6 +23,21 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      4.0.0:
+        message:
+          Version 4.0.0 changes the cursors in most of the Stripe streams that
+          support incremental sync mode. This is done to not only sync the data that
+          was created since previous sync, but also the data that was modified. A
+          schema refresh of all effected streams is required to use the new cursor
+          format.
+        upgradeDeadline: "2023-09-14"
+      5.0.0:
+        message:
+          Version 5.0.0 introduces fixes for the `CheckoutSessions`, `CheckoutSessionsLineItems` and `Refunds` streams. The cursor field is changed for the `CheckoutSessionsLineItems` and `Refunds` streams. This will prevent data loss during incremental syncs.
+          Also, the `Invoices`, `Subscriptions` and `SubscriptionSchedule` stream schemas have been updated.
+        upgradeDeadline: "2023-11-30"
   suggestedStreams:
     streams:
       - customers
@@ -24,16 +45,7 @@ data:
       - charges
       - subscriptions
       - refunds
-  documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 300
-    ql: 400
-  releases:
-    breakingChanges:
-      4.0.0:
-        message: "Version 4.0.0 changes the cursors in most of the Stripe streams that support incremental sync mode. This is done to not only sync the data that was created since previous sync, but also the data that was modified. A schema refresh of all effected streams is required to use the new cursor format."
-        upgradeDeadline: "2023-09-14"
-  supportLevel: certified
 metadataSpecVersion: "1.0"

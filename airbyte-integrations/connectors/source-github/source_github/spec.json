@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "GitHub Source Spec",
     "type": "object",
-    "required": ["start_date", "repository"],
+    "required": ["credentials", "repositories"],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -64,15 +64,6 @@
           }
         ]
       },
-      "start_date": {
-        "type": "string",
-        "title": "Start date",
-        "description": "The date from which you'd like to replicate data from GitHub in the format YYYY-MM-DDT00:00:00Z. For the streams which support this configuration, only data generated on or after the start date will be replicated. This field doesn't apply to all streams, see the <a href=\"https://docs.airbyte.com/integrations/sources/github\">docs</a> for more info",
-        "examples": ["2021-03-01T00:00:00Z"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "order": 1,
-        "format": "date-time"
-      },
       "repository": {
         "type": "string",
         "examples": [
@@ -81,10 +72,37 @@
           "airbytehq/airbyte"
         ],
         "title": "GitHub Repositories",
-        "description": "Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/airbyte airbytehq/another-repo` for multiple repositories.",
-        "order": 2,
+        "description": "(DEPRCATED) Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/airbyte airbytehq/another-repo` for multiple repositories.",
+        "airbyte_hidden": true,
         "pattern": "^([\\w.-]+/(\\*|[\\w.-]+(?<!\\.git))\\s+)*[\\w.-]+/(\\*|[\\w.-]+(?<!\\.git))$",
         "pattern_descriptor": "org/repo org/another-repo org/*"
+      },
+      "repositories": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^([\\w.-]+/(\\*|[\\w.-]+(?<!\\.git))\\s+)*[\\w.-]+/(\\*|[\\w.-]+(?<!\\.git))$"
+        },
+        "minItems": 1,
+        "examples": [
+          "airbytehq/airbyte airbytehq/another-repo",
+          "airbytehq/*",
+          "airbytehq/airbyte"
+        ],
+        "title": "GitHub Repositories",
+        "description": "List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/airbyte airbytehq/another-repo` for multiple repositories.",
+        "order": 1,
+        "pattern_descriptor": "org/repo org/another-repo org/*"
+      },
+      "start_date": {
+        "type": "string",
+        "title": "Start date",
+        "description": "The date from which you'd like to replicate data from GitHub in the format YYYY-MM-DDT00:00:00Z. If the date is not set, all data will be replicated.  For the streams which support this configuration, only data generated on or after the start date will be replicated. This field doesn't apply to all streams, see the <a href=\"https://docs.airbyte.com/integrations/sources/github\">docs</a> for more info",
+        "examples": ["2021-03-01T00:00:00Z"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "pattern_descriptor": "YYYY-MM-DDTHH:mm:ssZ",
+        "order": 2,
+        "format": "date-time"
       },
       "api_url": {
         "type": "string",
@@ -98,7 +116,18 @@
         "type": "string",
         "title": "Branch",
         "examples": ["airbytehq/airbyte/master airbytehq/airbyte/my-branch"],
-        "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
+        "description": "(DEPRCATED) Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
+        "airbyte_hidden": true,
+        "pattern_descriptor": "org/repo/branch1 org/repo/branch2"
+      },
+      "branches": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Branches",
+        "examples": ["airbytehq/airbyte/master airbytehq/airbyte/my-branch"],
+        "description": "List of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
         "order": 4,
         "pattern_descriptor": "org/repo/branch1 org/repo/branch2"
       },

@@ -9,6 +9,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     AzureOpenAIEmbeddingConfigModel,
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
+    OpenAICompatibleEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
 )
@@ -40,7 +41,11 @@ class ConfigModel(BaseModel):
     indexing: PineconeIndexingModel
 
     embedding: Union[
-        OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, AzureOpenAIEmbeddingConfigModel
+        OpenAIEmbeddingConfigModel,
+        CohereEmbeddingConfigModel,
+        FakeEmbeddingConfigModel,
+        AzureOpenAIEmbeddingConfigModel,
+        OpenAICompatibleEmbeddingConfigModel,
     ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
     processing: ProcessingConfigModel
 
@@ -57,7 +62,7 @@ class ConfigModel(BaseModel):
     @staticmethod
     def remove_discriminator(schema: dict) -> None:
         """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
-        dpath.util.delete(schema, "properties/*/discriminator")
+        dpath.util.delete(schema, "properties/**/discriminator")
 
     @classmethod
     def schema(cls):

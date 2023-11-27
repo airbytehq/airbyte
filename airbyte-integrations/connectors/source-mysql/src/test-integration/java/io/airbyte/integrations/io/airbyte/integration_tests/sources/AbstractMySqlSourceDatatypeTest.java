@@ -235,19 +235,10 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
-            .airbyteType(JsonSchemaType.NUMBER)
-            .fullSourceDataType("decimal(19,2)")
-            .addInsertValues("1700000.01")
-            .addExpectedValues("1700000.01")
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("decimal")
             .airbyteType(JsonSchemaType.INTEGER)
             .fullSourceDataType("decimal(32,0)")
-            .addInsertValues("1700000.01")
-            .addExpectedValues("1700000")
+            .addInsertValues("1700000.01", "123")
+            .addExpectedValues("1700000", "123")
             .build());
 
     for (final String type : Set.of("date", "date not null default '0000-00-00'")) {
@@ -451,6 +442,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues(null, "xs,s", "m,xl")
             .build());
 
+    addDecimalValuesTest();
   }
 
   protected void addJsonDataTypeTest() {
@@ -490,6 +482,17 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
       LOGGER.error(String.format("Fail to read the file: %s. Error: %s", file.getAbsoluteFile(), e.getMessage()));
     }
     return null;
+  }
+
+  protected void addDecimalValuesTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("decimal")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .fullSourceDataType("decimal(19,2)")
+            .addInsertValues("1700000.01", "'123'")
+            .addExpectedValues("1700000.01", "123.0")
+            .build());
   }
 
 }

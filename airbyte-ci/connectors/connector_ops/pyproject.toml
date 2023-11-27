@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "connector_ops"
-version = "0.2.3"
+version = "0.3.3"
 description = "Packaged maintained by the connector operations team to perform CI for connectors"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -30,7 +30,7 @@ freezegun = "^1.1.0"
 
 [tool.poetry.scripts]
 check-test-strictness-level = "connector_ops.acceptance_test_config_checks:check_test_strictness_level"
-write-review-requirements-file = "connector_ops.acceptance_test_config_checks:write_review_requirements_file"
-print-mandatory-reviewers = "connector_ops.acceptance_test_config_checks:print_mandatory_reviewers"
+write-review-requirements-file = "connector_ops.required_reviewer_checks:write_review_requirements_file"
+print-mandatory-reviewers = "connector_ops.required_reviewer_checks:print_mandatory_reviewers"
 allowed-hosts-checks = "connector_ops.allowed_hosts_checks:check_allowed_hosts"
 run-qa-checks = "connector_ops.qa_checks:run_qa_checks"

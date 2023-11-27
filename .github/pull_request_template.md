@@ -79,9 +79,31 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 <details><summary><strong>Connector Generator</strong></summary>
 
 - Issue acceptance criteria met
-- PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/issues-and-pull-requests#pull-request-title-convention)
+- PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook)
 - If adding a new generator, add it to the [list of scaffold modules being tested](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/generator/build.gradle#L41)
 - The generator test modules (all connectors with `-scaffold` in their name) have been updated with the latest scaffold by running `./gradlew :airbyte-integrations:connector-templates:generator:generateScaffolds` then checking in your changes
 - Documentation which references the generator is updated as needed
+
+</details>
+
+<details><summary><strong>Updating the Python CDK</strong></summary>
+
+### Airbyter
+
+Before merging:
+- Pull Request description explains what problem it is solving
+- Code change is unit tested
+- Build and my-py check pass
+- Smoke test the change on at least one affected connector
+   - On Github: Run [this workflow](https://github.com/airbytehq/airbyte/actions/workflows/connectors_tests.yml), passing `--use-local-cdk --name=source-<connector>` as options
+   - Locally: `airbyte-ci connectors --use-local-cdk --name=source-<connector> test`
+- PR is reviewed and approved
+      
+After merging:
+- [Publish the CDK](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml)
+   - The CDK does not follow proper semantic versioning. Choose minor if this the change has significant user impact or is a breaking change. Choose patch otherwise.
+   - Write a thoughtful changelog message so we know what was updated.
+- Merge the platform PR that was auto-created for updating the Connector Builder's CDK version
+   - This step is optional if the change does not affect the connector builder or declarative connectors.
 
 </details>

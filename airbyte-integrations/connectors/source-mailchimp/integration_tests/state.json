@@ -24,7 +24,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "49d68626f3": { "timestamp": "2220-11-23T05:42:10+00:00" }
+        "7847cdaeff": { "timestamp": "2230-11-23T05:42:10+00:00" }
       },
       "stream_descriptor": { "name": "email_activity" }
     }
@@ -32,8 +32,35 @@
   {
     "type": "STREAM",
     "stream": {
+      "stream_state": {
+        "16d6ec4ffc": { "last_changed": "2230-02-26T05:42:10+00:00" }
+      },
+      "stream_descriptor": { "name": "list_members" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
       "stream_state": { "send_time": "2230-02-26T05:42:10+00:00" },
       "stream_descriptor": { "name": "reports" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "16d6ec4ffc": { "updated_at": "2230-02-26T05:42:10+00:00" }
+      },
+      "stream_descriptor": { "name": "segments" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "7847cdaeff": { "timestamp": "2231-09-26T05:42:10+00:00" }
+      },
+      "stream_descriptor": { "name": "unsubscribes" }
     }
   }
 ]

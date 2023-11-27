@@ -279,23 +279,47 @@ def engage_schema_response():
         200,
         {
             "results": {
-                "$browser": {"count": 124, "type": "string"},
-                "$browser_version": {"count": 124, "type": "string"},
                 "$created": {"count": 124, "type": "string"},
+                "$is_active": {"count": 412, "type": "boolean"},
+                "$CreatedDateTimestamp": {"count": 300, "type": "number"},
+                "$CreatedDate": {"count": 11, "type": "datetime"},
+                "$properties": {"count": 2, "type": "object"},
+                "$tags": {"count": 131, "type": "list"},
             }
         },
     )
 
 
 def test_engage_schema(requests_mock, engage_schema_response, config):
-
-    stream = EngageSchema(authenticator=MagicMock(), **config)
-    requests_mock.register_uri("GET", get_url_to_mock(stream), engage_schema_response)
-
-    records = stream.read_records(sync_mode=SyncMode.full_refresh)
-
-    records_length = sum(1 for _ in records)
-    assert records_length == 3
+    stream = Engage(authenticator=MagicMock(), **config)
+    requests_mock.register_uri("GET", get_url_to_mock(EngageSchema(authenticator=MagicMock(), **config)), engage_schema_response)
+    assert stream.get_json_schema() == {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": True,
+        "properties": {
+            "CreatedDate": {"type": ["null", "string"]},
+            "CreatedDateTimestamp": {"multipleOf": 1e-20, "type": ["null", "number"]},
+            "browser": {"type": ["null", "string"]},
+            "browser_version": {"type": ["null", "string"]},
+            "city": {"type": ["null", "string"]},
+            "country_code": {"type": ["null", "string"]},
+            "created": {"type": ["null", "string"]},
+            "distinct_id": {"type": ["null", "string"]},
+            "email": {"type": ["null", "string"]},
+            "first_name": {"type": ["null", "string"]},
+            "id": {"type": ["null", "string"]},
+            "is_active": {"type": ["null", "boolean"]},
+            "last_name": {"type": ["null", "string"]},
+            "last_seen": {"format": "date-time", "type": ["null", "string"]},
+            "name": {"type": ["null", "string"]},
+            "properties": {"additionalProperties": True, "type": ["null", "object"]},
+            "region": {"type": ["null", "string"]},
+            "tags": {"items": {}, "required": False, "type": ["null", "array"]},
+            "timezone": {"type": ["null", "string"]},
+            "unblocked": {"type": ["null", "string"]},
+        },
+        "type": "object",
+    }
 
 
 def test_update_engage_schema(requests_mock, config):

@@ -3,16 +3,17 @@
 #
 
 import os
+import platform
 import sys
 from pathlib import Path
-from typing import Set
+from typing import List
 
 import dagger
 import git
 import pytest
 import requests
 from connector_ops.utils import Connector
-from pipelines import utils
+from pipelines.helpers import utils
 from tests.utils import ALL_CONNECTORS
 
 
@@ -22,8 +23,13 @@ def anyio_backend():
 
 
 @pytest.fixture(scope="module")
-async def dagger_client():
-    async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
+def dagger_connection():
+    return dagger.Connection(dagger.Config(log_output=sys.stderr))
+
+
+@pytest.fixture(scope="module")
+async def dagger_client(dagger_connection):
+    async with dagger_connection as client:
         yield client
 
 
@@ -68,5 +74,10 @@ def from_airbyte_root(airbyte_repo_path):
 
 
 @pytest.fixture(scope="session")
-def all_connectors() -> Set[Connector]:
-    return ALL_CONNECTORS
+def all_connectors() -> List[Connector]:
+    return sorted(ALL_CONNECTORS, key=lambda connector: connector.technical_name)
+
+
+@pytest.fixture(scope="session")
+def current_platform():
+    return dagger.Platform(f"linux/{platform.machine()}")

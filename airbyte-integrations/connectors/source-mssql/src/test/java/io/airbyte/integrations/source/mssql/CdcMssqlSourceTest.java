@@ -84,7 +84,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   @BeforeAll
   public static void createContainer() {
     if (container == null) {
-      container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-latest").acceptLicense();
+      container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
       container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
       container.start();
     }

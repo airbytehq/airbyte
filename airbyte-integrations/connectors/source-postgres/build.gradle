@@ -6,8 +6,14 @@ plugins {
     id "org.jsonschema2pojo" version "1.2.1"
 }
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try,-rawtypes,-unchecked"
+    }
+}
+
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.4.8'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -33,7 +39,6 @@ configurations.all {
 dependencies {
     testImplementation libs.jooq
     testImplementation libs.hikaricp
-    implementation libs.airbyte.protocol
 
     migrations libs.testcontainers.postgresql
     migrations sourceSets.main.output
@@ -46,7 +51,6 @@ dependencies {
     implementation libs.postgresql
     implementation libs.bundles.datadog
 
-    testImplementation project(":airbyte-json-validation")
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
     testImplementation libs.testcontainers.jdbc
     testImplementation libs.testcontainers.postgresql

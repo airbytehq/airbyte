@@ -1,46 +1,143 @@
 import com.gradle.scan.plugin.PublishedBuildScan
 
-
 pluginManagement {
     repositories {
+        // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
+
+        // ## Prefer repos controlled by Airbyte.
+        // TODO: add airbyte-controlled proxy repos here
+
+        // ## Look into other, public repos.
+        // Gradle plugin portal.
         gradlePluginPortal()
-        maven {
-            url 'https://oss.sonatype.org/content/repositories/snapshots'
-        }
-    }
-    resolutionStrategy {
-        eachPlugin {
-            // We're using the 6.1.0-SNAPSHOT version of openapi-generator which contains a fix for generating nullable arrays (https://github.com/OpenAPITools/openapi-generator/issues/13025)
-            // The snapshot version isn't available in the main Gradle Plugin Portal, so we added the Sonatype snapshot repository above.
-            // The useModule command below allows us to map from the plugin id, `org.openapi.generator`, to the underlying module (https://oss.sonatype.org/content/repositories/snapshots/org/openapitools/openapi-generator-gradle-plugin/6.1.0-SNAPSHOT/_
-            if (requested.id.id == 'org.openapi.generator') {
-                useModule "org.openapitools:openapi-generator-gradle-plugin:${requested.version}"
-            }
-        }
+        // Maven Central has most of everything.
+        mavenCentral()
     }
 }
 
 // Configure the gradle enterprise plugin to enable build scans. Enabling the plugin at the top of the settings file allows the build scan to record
 // as much information as possible.
 plugins {
-    id "com.gradle.enterprise" version "3.13.1"
+    id "com.gradle.enterprise" version "3.15.1"
     id 'com.github.burrunan.s3-build-cache' version "1.5"
+}
+
+ext.isCiServer = System.getenv().containsKey("CI")
+ext.isAirbyteCI = System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+
+dependencyResolutionManagement {
+    // Set FAIL_ON_PROJECT_REPOS to ensure there are no more `repositories { ... }` blocks than necessary.
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+
+    repositories {
+        // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
+
+        // ## Start with the local filesystem.
+        mavenLocal()
+
+        // ## Prefer repos controlled by Airbyte.
+
+        maven {
+            // This repo hosts our public artifacts and can be referenced by anyone.
+            name 'airbyte-public-jars'
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+            content {
+                // Whitelist artifacts served by this repo because it's slow.
+                includeGroup 'io.airbyte'
+                includeGroupByRegex 'io\\.airbyte\\..*'
+                includeGroup 'com.hadoop.gplcompression'
+                includeGroup 'com.therealvan'
+            }
+        }
+        // TODO: add airbyte-controlled proxy repos here
+
+        // ## Look into other, public repos.
+
+        // Maven Central has most of everything.
+        mavenCentral()
+        // Jitpack is used to pull dependencies directly from github.
+        maven {
+            name 'jitpack'
+            url 'https://jitpack.io'
+            content {
+                includeGroupByRegex 'com\\.github\\..*'
+                includeGroup 'net.jimblackler.jsonschemafriend'
+            }
+        }
+        // Elastic Search repo.
+        maven {
+            name 'elastic-search-snapshots'
+            url 'https://snapshots.elastic.co/maven/'
+            content {
+                includeGroup 'co.elastic.clients'
+            }
+        }
+        // Redshift repo.
+        maven {
+            name 'redshift'
+            url 'https://s3.amazonaws.com/redshift-maven-repository/release'
+            content {
+                includeGroup 'com.amazon.redshift'
+            }
+        }
+        // Rockset repo.
+        maven {
+            name 'rockset'
+            url 'https://mvnrepository.com/artifact/com.rockset/rockset-java'
+            content {
+                includeGroup 'com.rockset'
+            }
+        }
+        // Awaitility repo.
+        maven {
+            name 'awaitility'
+            url 'https://mvnrepository.com/artifact/org.awaitility/awaitility'
+            content {
+                includeGroup 'org.awaitility'
+            }
+        }
+        // Confluent repo.
+        maven {
+            name 'confluent'
+            url "https://packages.confluent.io/maven"
+            content {
+                includeGroup 'io.confluent'
+                includeGroup 'org.apache.kafka'
+            }
+        }
+        // Node.js download repository, required only by com.github.node-gradle.node plugin.
+        ivy {
+            name = "Node.js"
+            setUrl("https://nodejs.org/dist/")
+            patternLayout {
+                artifact("v[revision]/[artifact](-v[revision]-[classifier]).[ext]")
+            }
+            metadataSources {
+                artifact()
+            }
+            content {
+                includeModule("org.nodejs", "node")
+            }
+        }
+    }
+
+    versionCatalogs {
+        libs {
+            from(files("deps.toml"))
+        }
+    }
 }
 
 gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
+        uploadInBackground = (!isCiServer && !isAirbyteCI) // Disable in CI or scan URLs may not work.
         buildScanPublished { PublishedBuildScan scan ->
             file("scan-journal.log") << "${new Date()} - ${scan.buildScanId} - ${scan.buildScanUri}\n"
         }
     }
 }
-
-
-
-ext.isCiServer = System.getenv().containsKey("CI")
-ext.isAirbyteCI = System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
 
 if (isCiServer || isAirbyteCI) {
     buildCache {
@@ -50,162 +147,40 @@ if (isCiServer || isAirbyteCI) {
             enabled = isAirbyteCI
         }
         remote(com.github.burrunan.s3cache.AwsS3BuildCache) {
-            region = 'us-east-2'
-            bucket = 'airbyte-buildcache'
-            prefix = 'cache/'
-            push = isCiServer
-            enabled = isCiServer && !isAirbyteCI
-            // Credentials will be taken from  S3_BUILD_CACHE_... environment variables
-            // anonymous access will be used if environment variables are missing
+            region = 'us-west-2' // close to dagger runners
+            bucket = 'ab-ci-cache'
+            prefix = "${System.getProperty('s3BuildCachePrefix', 'connectors')}-ci-cache/"
+            push = isAirbyteCI
+            // Sometimes the env var is set, but with an empty value. Ignore this case.
+            enabled = !System.getenv().getOrDefault("S3_BUILD_CACHE_ACCESS_KEY_ID", "").isEmpty()
         }
     }
 }
 
 rootProject.name = 'airbyte'
 
-// definition for dependency resolution
-dependencyResolutionManagement {
-    repositories {
-        // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
-
-        // Start with the local filesystem.
-        mavenLocal()
-
-        // ## Look into repos controlled by Airbyte.
-
-        // This repo hosts our public artifacts and can be referenced by anyone.
-        maven { url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/' }
-
-        // TODO: We might want to add a private proxy repo for maven central at some point.
-
-        // ## Look into other, public repos.
-
-        // Maven Central has most of everything.
-        mavenCentral()
-    }
-    versionCatalogs {
-        libs {
-            from(files("deps.toml"))
-        }
-    }
-}
-
-// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, CDK, ALL_CONNECTORS and OCTAVIA_CLI.
-// Blank is equivalent to ALL_CONNECTORS.
-//
-// This is a relic from the days of the monorepo and we support it here to not break existing github workflows.
-// As soon as they are not referenced there (directly or indirectly) we can remove this whole if-block.
-if (System.getenv().containsKey("SUB_BUILD")) {
-    def subBuild = System.getenv().get("SUB_BUILD")
-    println("Building Airbyte Sub Build: " + subBuild)
-    switch(subBuild) {
-        case "ALL_CONNECTORS":
-            break
-
-        case "CDK":
-            include ':airbyte-commons' // this wouldn't be necessary if it wasn't from https://github.com/airbytehq/airbyte/blob/645558b74aab0b91fda1b4628b37b7095d92b4cc/build.gradle
-            include ':tools:code-generator'
-            include ':airbyte-cdk:python'
-            return
-
-        case "OCTAVIA_CLI":
-            include ':airbyte-commons'
-            include ':airbyte-api'
-            include ':octavia-cli'
-            return
-
-        case "CONNECTORS_BASE":
-            include ':airbyte-commons'
-            include ':airbyte-api'
-            include ':airbyte-commons-cli'
-            include ':airbyte-commons-protocol'
-            include ':airbyte-config-oss:init-oss'
-            include ':airbyte-config-oss:config-models-oss' // reused by acceptance tests in connector base.
-            include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
-            include ':airbyte-json-validation'
-            include ':airbyte-test-utils'
-
-            include ':airbyte-connector-test-harnesses:acceptance-test-harness'
-
-            include ':tools:code-generator'
-            include ':airbyte-cdk:python'
-            include ':airbyte-cdk:java:airbyte-cdk'
-            include ':airbyte-cdk:java:airbyte-cdk:core'
-            include ':airbyte-cdk:java:airbyte-cdk:db-destinations'
-            include ':airbyte-cdk:java:airbyte-cdk:db-sources'
-            include ':airbyte-integrations:bases:base'
-            include ':airbyte-integrations:bases:base-java'
-            include ':airbyte-integrations:bases:base-java-s3'
-            include ':airbyte-integrations:bases:base-normalization'
-            include ':airbyte-integrations:bases:base-typing-deduping'
-            include ':airbyte-integrations:bases:base-typing-deduping-test'
-            include ':airbyte-integrations:bases:bases-destination-jdbc' // needs to be lexicographically after base-java and base-normalization to avoid race condition
-            include ':airbyte-integrations:bases:base-standard-source-test-file'
-            include ':airbyte-integrations:bases:connector-acceptance-test'
-            include ':airbyte-integrations:bases:standard-destination-test'
-            include ':airbyte-integrations:bases:s3-destination-base-integration-test'
-            include ':airbyte-integrations:bases:standard-source-test'
-            include ':airbyte-integrations:connector-templates:generator'
-            include ':airbyte-integrations:bases:debezium'
-
-            // Needed by normalization integration tests
-            include ':airbyte-integrations:connectors:destination-bigquery'
-            include ':airbyte-integrations:connectors:destination-mysql'
-            include ':airbyte-integrations:connectors:destination-postgres'
-            include ':airbyte-integrations:connectors:destination-redshift'
-            include ':airbyte-integrations:connectors:destination-snowflake'
-            include ':airbyte-integrations:connectors:destination-oracle'
-            include ':airbyte-integrations:connectors:destination-mssql'
-            include ':airbyte-integrations:connectors:destination-clickhouse'
-            include ':airbyte-integrations:connectors:destination-tidb'
-            include ':airbyte-integrations:connectors:destination-duckdb'
-
-            //Needed by destination-bigquery
-            include ':airbyte-integrations:connectors:destination-s3'
-            include ':airbyte-integrations:connectors:destination-gcs'
-
-            include ':airbyte-integrations:connectors-performance:source-harness'
-            include ':airbyte-integrations:connectors-performance:destination-harness'
-
-            return
-
-        default:
-            throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or CONNECTORS_BASE, CDK, ALL_CONNECTORS or OCTAVIA_CLI", subBuild))
-    }
-}
-
-include ':airbyte-commons'
-include ':airbyte-api'
-include ':airbyte-commons-cli'
-include ':airbyte-commons-protocol'
-include ':airbyte-config-oss:init-oss'
-include ':airbyte-config-oss:config-models-oss' // reused by acceptance tests in connector base.
-include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
-include ':airbyte-json-validation'
-include ':airbyte-test-utils'
-
-include ':airbyte-connector-test-harnesses:acceptance-test-harness'
-
 include ':tools:code-generator'
+
 include ':airbyte-cdk:python'
 include ':airbyte-cdk:java:airbyte-cdk'
+include ':airbyte-cdk:java:airbyte-cdk:airbyte-commons'
+include ':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation'
+include ':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli'
+include ':airbyte-cdk:java:airbyte-cdk:airbyte-commons-protocol'
+include ':airbyte-cdk:java:airbyte-cdk:airbyte-api'
+include ':airbyte-cdk:java:airbyte-cdk:config-models-oss'
+include ':airbyte-cdk:java:airbyte-cdk:init-oss'
+include ':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness'
 include ':airbyte-cdk:java:airbyte-cdk:core'
 include ':airbyte-cdk:java:airbyte-cdk:db-destinations'
 include ':airbyte-cdk:java:airbyte-cdk:db-sources'
+include ':airbyte-cdk:java:airbyte-cdk:s3-destinations'
+include ':airbyte-cdk:java:airbyte-cdk:typing-deduping'
+
 include ':airbyte-integrations:bases:base'
 include ':airbyte-integrations:bases:base-java'
-include ':airbyte-integrations:bases:base-java-s3'
 include ':airbyte-integrations:bases:base-normalization'
-include ':airbyte-integrations:bases:base-typing-deduping'
-include ':airbyte-integrations:bases:base-typing-deduping-test'
-include ':airbyte-integrations:bases:bases-destination-jdbc' // needs to be lexicographically after base-java and base-normalization to avoid race condition
-include ':airbyte-integrations:bases:base-standard-source-test-file'
-include ':airbyte-integrations:bases:connector-acceptance-test'
-include ':airbyte-integrations:bases:standard-destination-test'
-include ':airbyte-integrations:bases:s3-destination-base-integration-test'
-include ':airbyte-integrations:bases:standard-source-test'
 include ':airbyte-integrations:connector-templates:generator'
-include ':airbyte-integrations:bases:debezium'
 include ':airbyte-integrations:connectors-performance:source-harness'
 include ':airbyte-integrations:connectors-performance:destination-harness'
 

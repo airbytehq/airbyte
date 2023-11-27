@@ -1,12 +1,18 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 300
   allowedHosts:
     hosts:
       - "*.googleapis.com"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: file
   connectorType: source
   definitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
-  dockerImageTag: 0.3.9
+  dockerImageTag: 0.3.11
   dockerRepository: airbyte/source-google-sheets
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   githubIssueLabel: source-google-sheets
   icon: google-sheets.svg
   license: Elv2
@@ -17,11 +23,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 300
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

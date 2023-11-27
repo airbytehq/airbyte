@@ -1,5 +1,27 @@
 # Changelog
 
+
+## 2.1.3
+
+Remove dockerfile and migrations tools. We are now running CAT with `airbyte-ci` and new migration operation will be done by the `airbyte-ci` tool.
+
+## 2.1.2
+
+Add check for duplicate stream names
+
+## 2.1.1
+
+Centralize timeout duration declaration and increase timeout for discover.
+
+## 2.1.0
+
+Make the container under test a sessions scoped fixture.
+Support loading it from its Dagger container id for better performance.
+Install pytest-xdist to support running tests in parallel.
+
+## 2.0.2
+Make `test_two_sequential_reads` handle namespace property in stream descriptor.
+
 ## 2.0.1
 Changing `format` or `airbyte_type` in a field definition of a schema or specification is now a breaking change.
 
@@ -338,4 +360,3 @@ Add test whether PKs present and not None if `source_defined_primary_key` define
 
 ## 0.1.5
 Add configurable timeout for the acceptance tests: [#4296](https://github.com/airbytehq/airbyte/pull/4296)
-

@@ -11,8 +11,10 @@ import dagger
 import pytest
 import yaml
 from freezegun import freeze_time
-from pipelines.bases import ConnectorWithModifiedFiles, StepStatus
-from pipelines.tests import common
+from pipelines.airbyte_ci.connectors.test.steps import common
+from pipelines.dagger.actions.system import docker
+from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+from pipelines.models.steps import StepStatus
 
 pytestmark = [
     pytest.mark.anyio,
@@ -41,16 +43,12 @@ class TestAcceptanceTests:
         return mocker.MagicMock(connector=ConnectorWithModifiedFiles("source-faker", frozenset()), dagger_client=dagger_client)
 
     @pytest.fixture
-    def dummy_connector_under_test_image_tar(self, dagger_client, tmpdir) -> dagger.File:
-        dummy_tar_file = tmpdir / "dummy.tar"
-        dummy_tar_file.write_text("dummy", encoding="utf8")
-        return dagger_client.host().directory(str(tmpdir), include=["dummy.tar"]).file("dummy.tar")
+    def dummy_connector_under_test_container(self, dagger_client) -> dagger.Container:
+        return dagger_client.container().from_("airbyte/source-faker:latest")
 
     @pytest.fixture
-    def another_dummy_connector_under_test_image_tar(self, dagger_client, tmpdir) -> dagger.File:
-        dummy_tar_file = tmpdir / "another_dummy.tar"
-        dummy_tar_file.write_text("another_dummy", encoding="utf8")
-        return dagger_client.host().directory(str(tmpdir), include=["another_dummy.tar"]).file("another_dummy.tar")
+    def another_dummy_connector_under_test_container(self, dagger_client) -> dagger.File:
+        return dagger_client.container().from_("airbyte/source-pokeapi:latest")
 
     async def test_skipped_when_no_acceptance_test_config(self, mocker, test_context):
         test_context.connector = mocker.MagicMock(acceptance_test_config=None)
@@ -153,12 +151,12 @@ class TestAcceptanceTests:
         test_context.connector_acceptance_test_image = "bash:latest"
         test_context.connector_secrets = {"config.json": dagger_client.set_secret("config.json", "connector_secret")}
 
-        mocker.patch.object(common.environments, "load_image_to_docker_host", return_value="image_sha")
-        mocker.patch.object(common.environments, "with_bound_docker_host", lambda _, cat_container: cat_container)
+        mocker.patch.object(docker, "load_image_to_docker_host", return_value="image_sha")
+        mocker.patch.object(docker, "with_bound_docker_host", lambda _, cat_container: cat_container)
         return common.AcceptanceTests(test_context)
 
     async def test_cat_container_provisioning(
-        self, dagger_client, mocker, test_context, test_input_dir, dummy_connector_under_test_image_tar
+        self, dagger_client, mocker, test_context, test_input_dir, dummy_connector_under_test_container
     ):
         """Check that the acceptance test container is correctly provisioned.
         We check that:
@@ -173,7 +171,7 @@ class TestAcceptanceTests:
         test_context.is_local = False
         test_context.is_ci = True
         acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context, test_input_dir)
-        cat_container = await acceptance_test_step._build_connector_acceptance_test(dummy_connector_under_test_image_tar, test_input_dir)
+        cat_container = await acceptance_test_step._build_connector_acceptance_test(dummy_connector_under_test_container, test_input_dir)
         assert (await cat_container.with_exec(["pwd"]).stdout()).strip() == acceptance_test_step.CONTAINER_TEST_INPUT_DIRECTORY
         test_input_ls_result = await cat_container.with_exec(["ls"]).stdout()
         assert all(
@@ -189,8 +187,8 @@ class TestAcceptanceTests:
         mocker,
         test_context,
         test_input_dir,
-        dummy_connector_under_test_image_tar,
-        another_dummy_connector_under_test_image_tar,
+        dummy_connector_under_test_container,
+        another_dummy_connector_under_test_container,
     ):
         """Check that the acceptance test container caching behavior is correct."""
 
@@ -199,7 +197,7 @@ class TestAcceptanceTests:
         with freeze_time(initial_datetime) as frozen_datetime:
             acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context, test_input_dir)
             cat_container = await acceptance_test_step._build_connector_acceptance_test(
-                dummy_connector_under_test_image_tar, test_input_dir
+                dummy_connector_under_test_container, test_input_dir
             )
             cat_container = cat_container.with_exec(["date"])
             fist_date_result = await cat_container.stdout()
@@ -207,7 +205,7 @@ class TestAcceptanceTests:
             frozen_datetime.tick(delta=datetime.timedelta(hours=5))
             # Check that cache is used in the same day
             cat_container = await acceptance_test_step._build_connector_acceptance_test(
-                dummy_connector_under_test_image_tar, test_input_dir
+                dummy_connector_under_test_container, test_input_dir
             )
             cat_container = cat_container.with_exec(["date"])
             second_date_result = await cat_container.stdout()
@@ -216,17 +214,70 @@ class TestAcceptanceTests:
             # Check that cache bursted after a day
             frozen_datetime.tick(delta=datetime.timedelta(days=1, seconds=1))
             cat_container = await acceptance_test_step._build_connector_acceptance_test(
-                dummy_connector_under_test_image_tar, test_input_dir
+                dummy_connector_under_test_container, test_input_dir
             )
             cat_container = cat_container.with_exec(["date"])
             third_date_result = await cat_container.stdout()
             assert third_date_result != second_date_result
 
             time.sleep(1)
-            # Check that changing the tarball invalidates the cache
+            # Check that changing the container invalidates the cache
             cat_container = await acceptance_test_step._build_connector_acceptance_test(
-                another_dummy_connector_under_test_image_tar, test_input_dir
+                another_dummy_connector_under_test_container, test_input_dir
             )
             cat_container = cat_container.with_exec(["date"])
             fourth_date_result = await cat_container.stdout()
             assert fourth_date_result != third_date_result
+
+
+class TestCheckBaseImageIsUsed:
+    @pytest.fixture
+    def certified_connector_no_base_image(self, all_connectors):
+        for connector in all_connectors:
+            if connector.metadata.get("supportLevel") == "certified":
+                if connector.metadata.get("connectorBuildOptions", {}).get("baseImage") is None:
+                    return connector
+        pytest.skip("No certified connector without base image found")
+
+    @pytest.fixture
+    def certified_connector_with_base_image(self, all_connectors):
+        for connector in all_connectors:
+            if connector.metadata.get("supportLevel") == "certified":
+                if connector.metadata.get("connectorBuildOptions", {}).get("baseImage") is not None:
+                    return connector
+        pytest.skip("No certified connector with base image found")
+
+    @pytest.fixture
+    def community_connector_no_base_image(self, all_connectors):
+        for connector in all_connectors:
+            if connector.metadata.get("supportLevel") == "community":
+                if connector.metadata.get("connectorBuildOptions", {}).get("baseImage") is None:
+                    return connector
+        pytest.skip("No certified connector without base image found")
+
+    @pytest.fixture
+    def test_context(self, mocker, dagger_client):
+        return mocker.MagicMock(dagger_client=dagger_client)
+
+    async def test_pass_on_community_connector_no_base_image(self, mocker, dagger_client, community_connector_no_base_image):
+        test_context = mocker.MagicMock(dagger_client=dagger_client, connector=community_connector_no_base_image)
+        check_base_image_is_used_step = common.CheckBaseImageIsUsed(test_context)
+        step_result = await check_base_image_is_used_step.run()
+        assert step_result.status == StepStatus.SKIPPED
+
+    async def test_pass_on_certified_connector_with_base_image(self, mocker, dagger_client, certified_connector_with_base_image):
+        dagger_connector_dir = dagger_client.host().directory(str(certified_connector_with_base_image.code_directory))
+        test_context = mocker.MagicMock(
+            dagger_client=dagger_client,
+            connector=certified_connector_with_base_image,
+            get_connector_dir=mocker.AsyncMock(return_value=dagger_connector_dir),
+        )
+        check_base_image_is_used_step = common.CheckBaseImageIsUsed(test_context)
+        step_result = await check_base_image_is_used_step.run()
+        assert step_result.status == StepStatus.SUCCESS
+
+    async def test_fail_on_certified_connector_no_base_image(self, mocker, dagger_client, certified_connector_no_base_image):
+        test_context = mocker.MagicMock(dagger_client=dagger_client, connector=certified_connector_no_base_image)
+        check_base_image_is_used_step = common.CheckBaseImageIsUsed(test_context)
+        step_result = await check_base_image_is_used_step.run()
+        assert step_result.status == StepStatus.FAILURE

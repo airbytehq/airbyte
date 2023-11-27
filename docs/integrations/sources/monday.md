@@ -71,6 +71,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                              | Subject                                                                 |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------|
+| 1.1.3   | 2023-09-23 | [30248](https://github.com/airbytehq/airbyte/pull/30248)  | Add new field "type" to board stream                                    |
 | 1.1.2   | 2023-08-23 | [29777](https://github.com/airbytehq/airbyte/pull/29777)  | Add retry for `502` error                                               |
 | 1.1.1   | 2023-08-15 | [29429](https://github.com/airbytehq/airbyte/pull/29429)  | Ignore `null` records in response                                       |
 | 1.1.0   | 2023-07-05 | [27944](https://github.com/airbytehq/airbyte/pull/27944)  | Add incremental sync for Items and Boards streams                       |
