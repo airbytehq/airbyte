@@ -103,14 +103,12 @@ In Airbyte, the current normalization option is implemented using a dbt Transfor
 
 ## Destinations that Support Basic Normalization
 
-- [BigQuery](../integrations/destinations/bigquery.md)
 - [MS Server SQL](../integrations/destinations/mssql.md)
 - [MySQL](../integrations/destinations/mysql.md)
   - The server must support the `WITH` keyword.
   - Require MySQL &gt;= 8.0, or MariaDB &gt;= 10.2.1.
 - [Postgres](../integrations/destinations/postgres.md)
 - [Redshift](../integrations/destinations/redshift.md)
-- [Snowflake](../integrations/destinations/snowflake.md)
 
 Basic Normalization can be configured when you're creating the connection between your Connection Setup and after in the Transformation Tab.
 Select the option: **Normalized tabular data**.
