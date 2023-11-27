@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "string"]
@@ -14,28 +15,34 @@
       "format": "date-time"
     },
     "candidate": {
-      "type": ["null", "object"]
+      "$ref": "candidate.json"
     },
     "status": {
       "type": ["null", "string"]
     },
     "creditedToUser": {
-      "type": ["null", "object"]
+      "$ref": "user.json"
     },
     "customFields": {
       "type": ["null", "array"]
     },
     "currentInterviewStage": {
-      "type": ["null", "object"]
+      "$ref": "interview_stage.json"
     },
     "archiveReason": {
-      "type": ["null", "string"]
+      "$ref": "archive_reason.json"
     },
     "job": {
-      "type": ["null", "object"]
+      "$ref": "job.json"
     },
     "hiringTeam": {
       "type": ["null", "array"]
+    },
+    "appliedViaJobPostingId": {
+      "type": ["null", "string"]
+    },
+    "source": {
+      "$ref": "source.json"
     }
   }
 }

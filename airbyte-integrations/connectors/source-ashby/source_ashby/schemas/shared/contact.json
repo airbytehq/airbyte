@@ -1,21 +1,15 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
-    "id": {
+    "value": {
       "type": ["null", "string"]
     },
-    "name": {
+    "type": {
       "type": ["null", "string"]
     },
-    "isArchived": {
-      "type": ["null", "boolean"]
-    },
-    "address": {
-      "type": ["null", "object"]
-    },
-    "isRemote": {
+    "isPrimary": {
       "type": ["null", "boolean"]
     }
   }

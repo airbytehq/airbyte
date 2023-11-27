@@ -1,28 +1,3 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "properties": {
-    "id": {
-      "type": ["null", "string"]
-    },
-    "firstName": {
-      "type": ["null", "string"]
-    },
-    "lastName": {
-      "type": ["null", "string"]
-    },
-    "email": {
-      "type": ["null", "string"]
-    },
-    "globalRole": {
-      "type": ["null", "string"]
-    },
-    "isEnabled": {
-      "type": ["null", "boolean"]
-    },
-    "updatedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    }
-  }
+  "$ref": "user.json"
 }
