@@ -6,10 +6,10 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 
 public class CloudDeploymentMySqlSourceAcceptanceTest extends MySqlSslSourceAcceptanceTest {
 

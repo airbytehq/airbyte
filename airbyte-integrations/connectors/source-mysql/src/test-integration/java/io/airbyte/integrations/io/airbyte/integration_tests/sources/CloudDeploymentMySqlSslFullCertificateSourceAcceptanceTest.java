@@ -7,14 +7,9 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.MySqlUtils;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.io.IOException;
 
 public class CloudDeploymentMySqlSslFullCertificateSourceAcceptanceTest extends AbstractCloudDeploymentMySqlSslCertificateSourceAcceptanceTest {
-
 
   @Override
   public MySqlUtils.Certificate getCertificates() throws IOException, InterruptedException {
