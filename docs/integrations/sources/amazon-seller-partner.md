@@ -142,8 +142,9 @@ So, for any value that exceeds the limit, the `period_in_days` will be automatic
 
 ## Changelog
 
-| Version  | Date       | Pull Request                                                | Subject                                                                                                                                 |
-|:---------|:-----------|:------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------|
+| Version  | Date       | Pull Request                                                | Subject                                                                                                                                                                             |
+|:---------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `2.5.0`  | 2023-11-27 | [\#32505](https://github.com/airbytehq/airbyte/pull/32505)  | Make report options configurable via UI                                                                                                                                             |
 | `2.4.0`  | 2023-11-23 | [\#32738](https://github.com/airbytehq/airbyte/pull/32738)  | Add `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, and `GET_VENDOR_TRAFFIC_REPORT` streams                                                   |
 | `2.3.0`  | 2023-11-22 | [\#32541](https://github.com/airbytehq/airbyte/pull/32541)  | Make `GET_AFN_INVENTORY_DATA`, `GET_AFN_INVENTORY_DATA_BY_COUNTRY`, and `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` streams incremental                                               |
 | `2.2.0`  | 2023-11-21 | [\#32639](https://github.com/airbytehq/airbyte/pull/32639)  | Make start date optional, if start date is not provided, date 2 years ago from today will be used                                                                                   |
