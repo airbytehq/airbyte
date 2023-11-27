@@ -13,6 +13,16 @@
     },
     "email": {
       "type": ["null", "string"]
+    },
+    "globalRole": {
+      "type": ["null", "string"]
+    },
+    "isEnabled": {
+      "type": ["null", "boolean"]
+    },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }
