@@ -26,7 +26,10 @@ import org.slf4j.LoggerFactory;
 public class MySqlCdcProperties {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlCdcProperties.class);
-  private static final Duration HEARTBEAT_FREQUENCY = Duration.ofSeconds(10);
+  private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10L);
+
+  // Test execution latency is lower when heartbeats are more frequent.
+  private static final Duration HEARTBEAT_INTERVAL_IN_TESTS = Duration.ofSeconds(1L);
 
   public static Properties getDebeziumProperties(final JdbcDatabase database) {
     final JsonNode sourceConfig = database.getSourceConfig();
@@ -61,7 +64,12 @@ public class MySqlCdcProperties {
     props.setProperty("converters", "boolean, datetime");
     props.setProperty("boolean.type", CustomMySQLTinyIntOneToBooleanConverter.class.getName());
     props.setProperty("datetime.type", MySQLDateTimeConverter.class.getName());
-    props.setProperty("heartbeat.interval.ms", Long.toString(HEARTBEAT_FREQUENCY.toMillis()));
+
+    final Duration heartbeatInterval =
+        (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())
+            ? HEARTBEAT_INTERVAL_IN_TESTS
+            : HEARTBEAT_INTERVAL;
+    props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
 
     // For CDC mode, the user cannot provide timezone arguments as JDBC parameters - they are
     // specifically defined in the replication_method
