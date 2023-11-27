@@ -12,7 +12,6 @@ import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 logger = logging.getLogger("airbyte")
 
@@ -22,7 +21,6 @@ class MailChimpStream(HttpStream, ABC):
     page_size = 1000
 
     def __init__(self, **kwargs):
-        self.logger.info(f"Kwargs for stream {self.__class__}: {kwargs}")
         super().__init__(**kwargs)
         self.current_offset = 0
         self.data_center = kwargs["authenticator"].data_center
@@ -84,7 +82,6 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     state_checkpoint_interval = math.inf
 
     def __init__(self, **kwargs):
-        self.logger.info(f"Kwargs in IncrementalMailChimpStream: {kwargs}")
         self.start_date = kwargs.pop("start_date", None)
         super().__init__(**kwargs)
 
@@ -135,19 +132,15 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         
         response = super().parse_response(response, **kwargs)
-        self.logger.info(f"Kwargs in parse_response: {kwargs}")
         start_date = pendulum.parse(self.start_date) if self.start_date else None
 
         if start_date:
         # Filter out records that are older than the start date
         # Mailchimp endpoints do not always support filtering by date,
         # so we should filter out records manually as a fallback
-            self.logger.info(f"Start date found")
             for record in response:
                 parsed_date = pendulum.parse(record.get(self.cursor_field))
-                self.logger.info(f"parsed_date: {parsed_date}")
                 if parsed_date >= start_date:
-                    self.logger.info(f"Record cursor of {parsed_date} is newer than start date of {start_date}")
                     yield record
         # If no start date is provided, return all records
         else:

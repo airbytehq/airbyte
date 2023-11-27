@@ -629,4 +629,27 @@ def test_reports_remove_empty_datetime_fields(auth, record, expected_return):
     """
     stream = Reports(authenticator=auth)
     assert stream.remove_empty_datetime_fields(record) == expected_return, f"Expected: {expected_return}, Actual: {stream.remove_empty_datetime_fields(record)}"
-    
+
+
+@pytest.mark.parametrize("start_date, expected_ids", [
+        (None, [1, 2, 3]),
+        ("2022-01-01T00:00:00.000Z", [1, 3])
+    ],
+    ids=[
+        "No start_date: all records read", 
+        "start_date provided: only records >= start_date read"
+    ]
+)
+def test_incremental_start_date(auth, start_date, expected_ids, requests_mock):
+    mock_data = [
+        {"id": 1, "create_time": "2022-01-05T00:00:00.000Z"},
+        {"id": 2, "create_time": "2021-12-25T00:00:00.000Z"},
+        {"id": 3, "create_time": "2022-01-01T00:00:00.000Z"},
+    ]
+    stream = Campaigns(authenticator=auth, start_date=start_date)
+
+    response = MagicMock()
+    response.json.return_value = {"campaigns": mock_data}
+    records = list(stream.parse_response(response))
+
+    assert [record["id"] for record in records] == expected_ids
