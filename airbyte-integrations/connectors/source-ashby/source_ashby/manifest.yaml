@@ -83,6 +83,18 @@ definitions:
       name: "feedback_form_definitions"
       primary_key: "id"
       path: "/feedbackFormDefinition.list"
+  interview_plans_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "interview_plans"
+      primary_key: "id"
+      path: "/interviewPlan.list"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          includeArchived: "{{ config['include_archived'] }}"
   interview_schedules_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -146,6 +158,7 @@ streams:
   - "#/definitions/custom_fields_stream"
   - "#/definitions/departments_stream"
   - "#/definitions/feedback_form_definitions_stream"
+  - "#/definitions/interview_plans_stream"
   - "#/definitions/interview_schedules_stream"
   - "#/definitions/interviews_stream"
   - "#/definitions/job_postings_stream"

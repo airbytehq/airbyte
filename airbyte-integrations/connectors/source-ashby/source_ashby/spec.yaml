@@ -13,6 +13,7 @@ connectionSpecification:
       title: Ashby API key
       description: The Ashby API Key, see <a href=\"https://developers.ashbyhq.com/reference/authentication\">doc</a> here.
       airbyte_secret: true
+      order: 0
     start_date:
       type: string
       title: Start date
@@ -22,3 +23,12 @@ connectionSpecification:
         this date will not be replicated.
       examples:
         - "2017-01-25T00:00:00Z"
+      order: 1
+    include_archived:
+      type: boolean
+      title: Include archived records
+      description: >-
+        Whether to include archived records. If true, archived records will be
+        included in streams that would otherwise filter those records out.
+      default: false
+      order: 2
