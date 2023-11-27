@@ -19,8 +19,24 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class PostgresTestDatabase extends
     TestDatabase<PostgreSQLContainer<?>, PostgresTestDatabase, PostgresTestDatabase.PostgresConfigBuilder> {
 
-  static public PostgresTestDatabase in(String imageName, String... methods) {
-    final var container = new PostgresContainerFactory().shared(imageName, methods);
+  public static enum BaseImage {
+
+    POSTGRES_16_BULLSEYE("postgres:16-bullseye"),
+    POSTGRES_12_BULLSEYE("postgres:12-bullseye"),
+    POSTGRES_16_ALPINE("postgres:16-alpine"),
+    POSTGRES_9_ALPINE("postgres:9-alpine"),
+    POSTGRES_SSL_DEV("marcosmarxm/postgres-ssl:dev");
+
+    private final String reference;
+
+    private BaseImage(String reference) {
+      this.reference = reference;
+    };
+
+  }
+
+  static public PostgresTestDatabase in(BaseImage imageName, String... methods) {
+    final var container = new PostgresContainerFactory().shared(imageName.reference, methods);
     return new PostgresTestDatabase(container).initialized();
   }
 
