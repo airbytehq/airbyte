@@ -43,7 +43,10 @@ public class BulkConsumer implements AirbyteMessageConsumer {
 
   private static final String CONFIG_STAGE_KEY = "snowflake_stage_name";
   private static final String CONFIG_FORMAT_KEY = "snowflake_file_format";
-  private static final int MAX_BULK_FILES = 1000; // https://docs.snowflake.com/en/sql-reference/sql/copy-into-table#optional-parameters
+
+  // https://docs.snowflake.com/en/sql-reference/sql/copy-into-table#optional-parameters
+  // can be 1000, but making it less so the queries aren't as slow to test out dropping messages.
+  private static final int MAX_BULK_FILES = 500;
 
   private final JsonNode config;
   private final Consumer<AirbyteMessage> outputRecordCollector;
