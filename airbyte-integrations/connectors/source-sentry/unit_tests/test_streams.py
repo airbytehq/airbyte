@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pendulum as pdm
 import pytest
 import requests
-from source_sentry.streams import Events, Issues, ProjectDetail, Projects, SentryStreamPagination
+from source_sentry.streams import Events, Issues, ProjectDetail, Projects, SentryStreamPagination, SentryIncremental
 
 INIT_ARGS = {"hostname": "sentry.io", "organization": "test-org", "project": "test-project"}
 
@@ -127,6 +127,22 @@ def test_project_detail_parse_response(mocker):
     response.json = Mock(return_value={"id": "1"})
     result = list(stream.parse_response(response))
     assert result[0] == {"id": "1"}
+
+class MockSentryIncremental(SentryIncremental):
+    def path():
+        return '/test/path'
+
+def test_sentry_incremental_parse_response(mocker):
+    with patch('source_sentry.streams.SentryIncremental.filter_by_state') as mock_filter_by_state:
+      stream = MockSentryIncremental(hostname="sentry.io")
+      mock_filter_by_state.return_value = True
+      state = None
+      response = requests.Response()
+      mocker.patch.object(response, "json", return_value=[{"id": "1"}])
+      mock_filter_by_state.return_value = iter(response.json())
+      result = list(stream.parse_response(response, state))
+      print(result)
+      assert result[0] == {"id": "1"}
 
 
 @pytest.mark.parametrize(
