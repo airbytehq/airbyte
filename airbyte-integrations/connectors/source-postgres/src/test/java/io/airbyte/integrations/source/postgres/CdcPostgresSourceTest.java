@@ -41,6 +41,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -74,7 +75,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
   @Override
   protected PostgresTestDatabase createTestDatabase() {
-    return PostgresTestDatabase.in(getServerImage(), "withConf").withReplicationSlot();
+    return PostgresTestDatabase.in(getServerImage(), ContainerModifier.CONF).withReplicationSlot();
   }
 
   @Override

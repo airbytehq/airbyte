@@ -20,6 +20,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -77,7 +78,7 @@ class PostgresSourceSSLTest {
 
   @BeforeEach
   void setup() throws Exception {
-    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_SSL_DEV, "withSSL")
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_SSL_DEV, ContainerModifier.SSL)
         .with("CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));")
         .with("CREATE INDEX i1 ON id_and_name (id);")
         .with("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');")

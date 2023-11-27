@@ -35,8 +35,27 @@ public class PostgresTestDatabase extends
 
   }
 
-  static public PostgresTestDatabase in(BaseImage imageName, String... methods) {
-    final var container = new PostgresContainerFactory().shared(imageName.reference, methods);
+  public static enum ContainerModifier {
+
+    ASCII("withASCII"),
+    CONF("withConf"),
+    NETWORK("withNetwork"),
+    SSL("withSSL"),
+    WAL_LEVEL_LOGICAL("withWalLevelLogical"),
+    CERT("withCert"),
+    ;
+
+    private String methodName;
+
+    private ContainerModifier(String methodName) {
+      this.methodName = methodName;
+    }
+
+  }
+
+  static public PostgresTestDatabase in(BaseImage baseImage, ContainerModifier... modifiers) {
+    String[] methodNames = Stream.of(modifiers).map(im -> im.methodName).toList().toArray(new String[0]);
+    final var container = new PostgresContainerFactory().shared(baseImage.reference, methodNames);
     return new PostgresTestDatabase(container).initialized();
   }
 
