@@ -2,13 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, Dict
 from unittest.mock import patch
 
 import pendulum
 import pytest
-
 from airbyte_cdk.models import SyncMode
-from typing import Any, Dict
 from source_amazon_seller_partner.streams import AnalyticsStream, IncrementalAnalyticsStream
 
 
