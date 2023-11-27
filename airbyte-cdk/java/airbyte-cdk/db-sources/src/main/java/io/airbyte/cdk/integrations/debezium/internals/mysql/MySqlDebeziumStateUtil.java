@@ -17,7 +17,7 @@ import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorag
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
-import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -258,7 +258,7 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
           Duration initialWaitingDuration = Duration.ofMinutes(5L);
           // If initial waiting seconds is configured and it's greater than 5 minutes, use that value instead
           // of the default value
-          final Duration configuredDuration = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(database.getSourceConfig());
+          final Duration configuredDuration = RecordWaitTimeUtil.getFirstRecordWaitTime(database.getSourceConfig());
           if (configuredDuration.compareTo(initialWaitingDuration) > 0) {
             initialWaitingDuration = configuredDuration;
           }
