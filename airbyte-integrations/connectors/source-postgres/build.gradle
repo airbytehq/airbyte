@@ -13,9 +13,10 @@ java {
 }
 
 airbyteJavaConnector {
+    // Bump version when published and increase cdkVersion
     cdkVersionRequired = '0.4.8'
     features = ['db-sources']
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 airbyteJavaConnector.addCdkDependencies()
