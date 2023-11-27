@@ -16,7 +16,6 @@ import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
-import io.airbyte.cdk.testutils.PostgresTestDatabase;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
@@ -37,15 +36,15 @@ public class CloudDeploymentPostgresSourceTest {
 
   @BeforeAll
   static void setupContainers() {
-    DB_NO_SSL_WITH_NETWORK = PostgresTestDatabase.make("postgres:16-bullseye", "withNetwork");
-    NETWORK_NO_SSL = DB_NO_SSL_WITH_NETWORK.container.getNetwork();
+    DB_NO_SSL_WITH_NETWORK = PostgresTestDatabase.in("postgres:16-bullseye", "withNetwork");
+    NETWORK_NO_SSL = DB_NO_SSL_WITH_NETWORK.getContainer().getNetwork();
     BASTION_NO_SSL = new SshBastionContainer();
     BASTION_NO_SSL.initAndStartBastion(NETWORK_NO_SSL);
 
-    DB_WITH_SSL = PostgresTestDatabase.make("marcosmarxm/postgres-ssl:dev", "withSSL");
+    DB_WITH_SSL = PostgresTestDatabase.in("marcosmarxm/postgres-ssl:dev", "withSSL");
 
-    DB_WITH_SSL_WITH_NETWORK = PostgresTestDatabase.make("marcosmarxm/postgres-ssl:dev", "withSSL", "withNetwork");
-    NETWORK_WITH_SSL = DB_WITH_SSL_WITH_NETWORK.container.getNetwork();
+    DB_WITH_SSL_WITH_NETWORK = PostgresTestDatabase.in("marcosmarxm/postgres-ssl:dev", "withSSL", "withNetwork");
+    NETWORK_WITH_SSL = DB_WITH_SSL_WITH_NETWORK.getContainer().getNetwork();
     BASTION_WITH_SSL = new SshBastionContainer();
     BASTION_WITH_SSL.initAndStartBastion(NETWORK_WITH_SSL);
   }
@@ -108,9 +107,7 @@ public class CloudDeploymentPostgresSourceTest {
 
   @Test
   void testSSlRequiredNoTunnelIfServerSupportSSL() throws Exception {
-    final ImmutableMap<Object, Object> configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(
-        DB_WITH_SSL, SSL_MODE_REQUIRE, false).build();
-    final JsonNode config = Jsons.jsonNode(configBuilderWithSSLMode);
+    final JsonNode config = configBuilderWithSSLMode(DB_WITH_SSL, SSL_MODE_REQUIRE, false).build();
     addNoTunnel((ObjectNode) config);
     final AirbyteConnectionStatus connectionStatus = source().check(config);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
@@ -122,20 +119,20 @@ public class CloudDeploymentPostgresSourceTest {
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
   }
 
-  private ImmutableMap.Builder<Object, Object> getDatabaseConfigBuilderWithSSLMode(final PostgresTestDatabase db,
-                                                                                   final String sslMode,
-                                                                                   final boolean innerAddress) {
+  private PostgresTestDatabase.PostgresConfigBuilder configBuilderWithSSLMode(
+                                                                              final PostgresTestDatabase db,
+                                                                              final String sslMode,
+                                                                              final boolean innerAddress) {
     final var containerAddress = innerAddress
-        ? SshHelpers.getInnerContainerAddress(db.container)
-        : SshHelpers.getOuterContainerAddress(db.container);
-    return ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(containerAddress.left))
-        .put(JdbcUtils.PORT_KEY, containerAddress.right)
-        .put(JdbcUtils.DATABASE_KEY, db.dbName)
-        .put(JdbcUtils.SCHEMAS_KEY, List.of("public"))
-        .put(JdbcUtils.USERNAME_KEY, db.userName)
-        .put(JdbcUtils.PASSWORD_KEY, db.password)
-        .put(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, sslMode));
+        ? SshHelpers.getInnerContainerAddress(db.getContainer())
+        : SshHelpers.getOuterContainerAddress(db.getContainer());
+    return db.configBuilder()
+        .with(JdbcUtils.HOST_KEY, Objects.requireNonNull(containerAddress.left))
+        .with(JdbcUtils.PORT_KEY, containerAddress.right)
+        .withDatabase()
+        .withSchemas("public")
+        .withCredentials()
+        .with(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, sslMode));
   }
 
   private JsonNode getMockedSSLConfig(final String sslMode) {
@@ -163,10 +160,10 @@ public class CloudDeploymentPostgresSourceTest {
   }
 
   private AirbyteConnectionStatus checkWithTunnel(final PostgresTestDatabase db, SshBastionContainer bastion, final String sslmode) throws Exception {
-    final var configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, sslmode, true);
-    final JsonNode configWithSSLModeDisable =
-        bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, configBuilderWithSSLMode, false);
-    ((ObjectNode) configWithSSLModeDisable).put(JdbcUtils.JDBC_URL_PARAMS_KEY, "connectTimeout=1");
+    final var configWithSSLModeDisable = configBuilderWithSSLMode(db, sslmode, true)
+        .with("tunnel_method", bastion.getTunnelMethod(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, false))
+        .with(JdbcUtils.JDBC_URL_PARAMS_KEY, "connectTimeout=1")
+        .build();
     return source().check(configWithSSLModeDisable);
   }
 
