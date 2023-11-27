@@ -132,7 +132,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return new SshWrappedSource(new MySqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
-  private ConnectorSpecification modifySpecForCloud(final ConnectorSpecification originalSpec) {
+  private ConnectorSpecification getCloudDeploymentSpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     // Remove the SSL options
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
@@ -144,7 +144,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   @Override
   public ConnectorSpecification spec() throws Exception {
     if (cloudDeploymentMode()) {
-      return modifySpecForCloud(super.spec());
+      return getCloudDeploymentSpec(super.spec());
     }
     return super.spec();
   }
