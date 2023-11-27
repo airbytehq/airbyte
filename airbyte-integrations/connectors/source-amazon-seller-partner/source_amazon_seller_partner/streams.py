@@ -654,6 +654,7 @@ class VendorInventoryReports(AnalyticsStream):
 
 class VendorTrafficReport(AnalyticsStream):
     name = "GET_VENDOR_TRAFFIC_REPORT"
+    result_key = "trafficByAsin"
 
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
