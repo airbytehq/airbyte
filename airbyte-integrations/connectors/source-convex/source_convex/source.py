@@ -5,28 +5,14 @@
 
 from datetime import datetime
 from json import JSONDecodeError
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Mapping,
-    MutableMapping,
-    Optional,
-    Tuple,
-    TypedDict,
-    cast,
-)
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, TypedDict, cast
 
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth.token import (
-    TokenAuthenticator,
-)
+from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 ConvexConfig = TypedDict(
     "ConvexConfig",
@@ -60,9 +46,7 @@ class SourceConvex(AbstractSource):
         }
         return requests.get(url, headers=headers)
 
-    def check_connection(
-        self, logger: Any, config: Mapping[str, Any]
-    ) -> Tuple[bool, Any]:
+    def check_connection(self, logger: Any, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
         Connection check to validate that the user-provided config can be used to connect to the underlying API
 
@@ -75,9 +59,7 @@ class SourceConvex(AbstractSource):
         if resp.status_code == 200:
             return True, None
         else:
-            return False, format_http_error(
-                "Connection to Convex via json_schemas endpoint failed", resp
-            )
+            return False, format_http_error("Connection to Convex via json_schemas endpoint failed", resp)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -117,9 +99,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
             json_schema["additionalProperties"] = True
             json_schema["properties"]["_ab_cdc_lsn"] = {"type": "number"}
             json_schema["properties"]["_ab_cdc_updated_at"] = {"type": "string"}
-            json_schema["properties"]["_ab_cdc_deleted_at"] = {
-                "anyOf": [{"type": "string"}, {"type": "null"}]
-            }
+            json_schema["properties"]["_ab_cdc_deleted_at"] = {"anyOf": [{"type": "string"}, {"type": "null"}]}
         else:
             json_schema = {}
         self.json_schema = json_schema
@@ -229,17 +209,13 @@ class ConvexStream(HttpStream, IncrementalMixin):
             "Convex-Client": f"airbyte-export-{CONVEX_CLIENT_VERSION}",
         }
 
-    def get_updated_state(
-        self, current_stream_state: ConvexState, latest_record: Mapping[str, Any]
-    ) -> ConvexState:
+    def get_updated_state(self, current_stream_state: ConvexState, latest_record: Mapping[str, Any]) -> ConvexState:
         """
         This (deprecated) method is still used by AbstractSource to update state between calls to `read_records`.
         """
         return cast(ConvexState, self.state)
 
-    def read_records(
-        self, sync_mode: SyncMode, *args: Any, **kwargs: Any
-    ) -> Iterator[Any]:
+    def read_records(self, sync_mode: SyncMode, *args: Any, **kwargs: Any) -> Iterator[Any]:
         self._delta_has_more = sync_mode == SyncMode.incremental
         for read_record in super().read_records(sync_mode, *args, **kwargs):
             record = dict(read_record)
