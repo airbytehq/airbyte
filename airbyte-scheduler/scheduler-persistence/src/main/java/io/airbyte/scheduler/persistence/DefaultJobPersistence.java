@@ -7,8 +7,6 @@ package io.airbyte.scheduler.persistence;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.name;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -60,7 +58,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.ObjectUtils;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.InsertValuesStepN;
@@ -422,25 +419,34 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public Job latestJob(final Set<ConfigType> configTypes, final String configId) throws IOException {
-    return jobDatabase.query(ctx -> {
-      final Record latestJobRecord = ctx.select(field(name("id")).as("job_id"),
-          field(name("config_type")).as("config_type"),
-          field(name("scope")).as("scope"),
-          field(name("config")).as("config"),
-          field(name("status")).as("job_status"),
-          field(name("started_at")).as("job_started_at"),
-          field(name("created_at")).as("job_created_at"),
-          field(name("updated_at")).as("job_updated_at")).from(JOBS)
-          .where(JOBS.CONFIG_TYPE.in(Sqls.toSqlNames(configTypes)))
-          .and(JOBS.SCOPE.eq(configId))
-          .orderBy(JOBS.CREATED_AT.desc(), JOBS.ID.desc())
-          .limit(1).fetchOne();
-      if (ObjectUtils.isEmpty(latestJobRecord)) {
-        return null;
-      }
-      return getJobFromRecord(latestJobRecord);
+  public List<Job> latestJobList(final ConfigType configTypes, List<String> configIds) throws IOException {
+    final Result<Record> result = jobDatabase.query(ctx -> {
+      return ctx.fetch(String.format("SELECT * FROM (SELECT ROW_NUMBER() OVER(PARTITION BY scope ORDER BY created_at DESC) AS row_num," +
+          "id,config_type,scope,config,status,started_at,created_at,updated_at FROM jobs " +
+          "WHERE config_type = '%s' AND scope IN (%s)) ranked " +
+          "WHERE row_num = 1", configTypes.value(),
+          configIds.stream()
+              .map(id -> String.format("'%s'", id))
+              .collect(Collectors.joining(", "))));
     });
+    return getJobFromCustomQuery(result);
+  }
+
+  private static List<Job> getJobFromCustomQuery(final Result<Record> recordList) {
+    List<Job> jobs = new ArrayList<>();
+    for (Record record : recordList) {
+      Job job = new Job(record.get("id", Long.class),
+          Enums.toEnum(record.get("config_type", String.class), ConfigType.class).orElseThrow(),
+          record.get("scope", String.class),
+          Jsons.deserialize(record.get("config", String.class), JobConfig.class),
+          new ArrayList<Attempt>(),
+          JobStatus.valueOf(record.get("status", String.class).toUpperCase()),
+          Optional.ofNullable(record.get("started_at")).map(value -> getEpoch(record, "started_at")).orElse(null),
+          getEpoch(record, "created_at"),
+          getEpoch(record, "updated_at"));
+      jobs.add(job);
+    }
+    return jobs;
   }
 
   @Override

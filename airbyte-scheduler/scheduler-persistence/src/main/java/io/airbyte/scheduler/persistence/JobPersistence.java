@@ -158,11 +158,11 @@ public interface JobPersistence {
 
   /**
    * @param configTypes - type of config, e.g. sync
-   * @param configId - id of that config
-   * @return Job - latest job order by created_at
+   * @param configIds - ids of that config
+   * @return List of Job - return latest job based on config id order by created_at
    * @throws IOException - what you do when you IO
    */
-  Job latestJob(Set<JobConfig.ConfigType> configTypes, String configId) throws IOException;
+  List<Job> latestJobList(JobConfig.ConfigType configTypes, List<String> configIds) throws IOException;
 
   /**
    * @param configType The type of job

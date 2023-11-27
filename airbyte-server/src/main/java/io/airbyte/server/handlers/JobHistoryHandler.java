@@ -35,6 +35,7 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -103,17 +104,13 @@ public class JobHistoryHandler {
     return new JobReadList().jobs(jobReads).totalJobCount(totalJobCount);
   }
 
-  public JobRead latestJobFor(final JobListRequestBody request) throws IOException {
-    Preconditions.checkNotNull(request.getConfigTypes(), "configType cannot be null.");
-    Preconditions.checkState(!request.getConfigTypes().isEmpty(), "Must include at least one configType.");
-
-    final Set<ConfigType> configTypes = request.getConfigTypes()
-        .stream()
-        .map(type -> Enums.convertTo(type, JobConfig.ConfigType.class))
-        .collect(Collectors.toSet());
-    final String configId = request.getConfigId();
-
-    return JobConverter.getJobRead(jobPersistence.latestJob(configTypes, configId));
+  public List<JobRead> latestJobListFor(List<String> ids) throws IOException {
+    List<Job> jobList = jobPersistence.latestJobList(JobConfig.ConfigType.SYNC, ids);
+    List<JobRead> jobReadList = new ArrayList<>();
+    for (Job job : jobList) {
+      jobReadList.add(JobConverter.getJobRead(job));
+    }
+    return jobReadList;
   }
 
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {

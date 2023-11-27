@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Map;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 
@@ -204,6 +206,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public WorkspaceRead updateWorkspaceName(final WorkspaceUpdateName workspaceUpdateName) {
     return execute(() -> workspacesHandler.updateWorkspaceName(workspaceUpdateName));
+  }
+
+  @Override
+  public WebBackendConnectionStatusReadList webBackendConnectionStatusForWorkspace(@Valid @NotNull ConnectionIdListRequestBody connectionIdListRequestBody) {
+    return execute(() -> webBackendConnectionsHandler.webBackendConnectionStatusForWorkspace(connectionIdListRequestBody));
   }
 
   @Override
