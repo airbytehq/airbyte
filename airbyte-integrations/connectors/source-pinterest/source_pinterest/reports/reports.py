@@ -8,6 +8,7 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import urljoin
 
+import airbyte_cdk.sources.utils.casing as casing
 import backoff
 import requests
 from airbyte_cdk.models import SyncMode
@@ -260,3 +261,53 @@ class KeywordReport(PinterestAnalyticsTargetingReportStream):
     @property
     def level(self):
         return "KEYWORD"
+
+
+class CustomReport(PinterestAnalyticsTargetingReportStream):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self._custom_class_name = f"Custom_{self.config['name']}"
+        self._level = self.config["level"]
+        self.granularity = self.config["granularity"]
+        self.click_window_days = self.config["click_window_days"]
+        self.engagement_window_days = self.config["engagement_window_days"]
+        self.view_window_days = self.config["view_window_days"]
+        self.conversion_report_time = self.config["conversion_report_time"]
+        self.attribution_types = self.config["attribution_types"]
+        self.columns = self.config["columns"]
+
+    @property
+    def level(self):
+        return self._level
+
+    @property
+    def name(self) -> str:
+        """We override stream name to let the user change it via configuration."""
+        name = self._custom_class_name or self.__class__.__name__
+        return casing.camel_to_snake(name)
+
+    def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
+        """Return the body of the API request in JSON format."""
+        return {
+            "start_date": stream_slice["start_date"],
+            "end_date": stream_slice["end_date"],
+            "level": self.level,
+            "granularity": self.granularity,
+            "click_window_days": self.click_window_days,
+            "engagement_window_days": self.engagement_window_days,
+            "view_window_days": self.view_window_days,
+            "conversion_report_time": self.conversion_report_time,
+            "attribution_types": self.attribution_types,
+            "columns": self.columns,
+        }
+
+    @property
+    def window_in_days(self):
+        """Docs: https://developers.pinterest.com/docs/api/v5/#operation/analytics/get_report"""
+        if self.granularity == "HOUR":
+            return 2
+        elif self.level == "PRODUCT_ITEM":
+            return 31
+        else:
+            return 185
