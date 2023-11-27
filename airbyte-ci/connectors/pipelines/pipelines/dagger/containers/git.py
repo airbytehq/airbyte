@@ -1,7 +1,8 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from typing import Optional
 
 from dagger import Client, Container
-
 from pipelines.helpers.utils import AIRBYTE_REPO_URL
 
 
