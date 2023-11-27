@@ -18,8 +18,8 @@ json_schema = {
         "content": {"type": ["null", "string"], "description": "Content of the file as markdown. Might be null if the file could not be parsed"},
         "document_key": {"type": ["null", "string"], "description": "Unique identifier of the document, e.g. the file path"},
         "error": {"type": ["null", "string"], "description": "Error message if the file could not be parsed even though the file is supported"},
-        "_ab_source_file_last_modified": { "type": "string" },
-        "_ab_source_file_url": { "type": "string" },
+        "_ab_source_file_last_modified": {"type": "string"},
+        "_ab_source_file_url": {"type": "string"},
     }
 }
 
