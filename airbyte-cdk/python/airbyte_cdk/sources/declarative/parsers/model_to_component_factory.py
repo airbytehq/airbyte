@@ -317,7 +317,7 @@ class ModelToComponentFactory:
             )
         else:
             return ModelToComponentFactory.create_api_key_authenticator(
-                ApiKeyAuthenticatorModel(type="ApiKeyAuthenticator", api_token="", inject_into=model.request_authentication.inject_into),  # type: ignore # $parameters and headers defaults to None
+                ApiKeyAuthenticatorModel(type="ApiKeyAuthenticator", api_token="", inject_into=model.request_authentication.inject_into),  # type: ignore # $parameters and headers default to None
                 config=config,
                 token_provider=token_provider,
             )
