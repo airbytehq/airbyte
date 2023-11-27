@@ -17,14 +17,14 @@ import styles from "./MainInfo.module.scss";
 import { getJobStatus } from "../JobItem";
 
 const getJobConfig = (job: SynchronousJobRead | JobsWithJobs) =>
-  (job as SynchronousJobRead).configType ?? (job as JobsWithJobs).job.configType;
+  (job as SynchronousJobRead).configType ?? (job as JobsWithJobs).job?.configType;
 
 const getJobCreatedAt = (job: SynchronousJobRead | JobsWithJobs) =>
-  (job as SynchronousJobRead).createdAt ?? (job as JobsWithJobs).job.createdAt;
+  (job as SynchronousJobRead).createdAt ?? (job as JobsWithJobs).job?.createdAt;
 
 const partialSuccessCheck = (attempts: AttemptRead[]) => {
-  if (attempts.length > 0 && attempts[attempts.length - 1].status === JobStatus.failed) {
-    return attempts.some((attempt) => attempt.failureSummary && attempt.failureSummary.partialSuccess);
+  if (attempts?.length > 0 && attempts[attempts?.length - 1].status === JobStatus.failed) {
+    return attempts?.some((attempt) => attempt?.failureSummary && attempt?.failureSummary?.partialSuccess);
   }
   return false;
 };
@@ -72,14 +72,14 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
           ) : (
             <FormattedMessage id={`sources.${getJobStatus(job)}`} />
           )}
-          {attempts.length > 0 && (
+          {attempts?.length > 0 && (
             <>
-              {attempts.length > 1 && (
+              {attempts?.length > 1 && (
                 <div className={styles.lastAttempt}>
                   <FormattedMessage id="sources.lastAttempt" />
                 </div>
               )}
-              <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
+              <AttemptDetails attempt={attempts[attempts?.length - 1]} configType={getJobConfig(job)} />
             </>
           )}
         </div>
@@ -96,9 +96,9 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
           <FormattedDateParts value={getJobCreatedAt(job) * 1000} month="2-digit" day="2-digit">
             {(parts) => <span>{`${parts[0].value}/${parts[2].value}`}</span>}
           </FormattedDateParts>
-          {attempts.length > 1 && (
+          {attempts?.length > 1 && (
             <div className={styles.attemptCount}>
-              <FormattedMessage id="sources.countAttempts" values={{ count: attempts.length }} />
+              <FormattedMessage id="sources.countAttempts" values={{ count: attempts?.length }} />
             </div>
           )}
         </div>

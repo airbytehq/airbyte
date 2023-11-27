@@ -5,12 +5,12 @@ import { Spinner } from "components";
 
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
 
-import { AttemptRead, JobStatus, SynchronousJobRead } from "../../core/request/AirbyteClient";
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
 import ErrorDetails from "./components/ErrorDetails";
 import MainInfo from "./components/MainInfo";
 import styles from "./JobItem.module.scss";
+import { AttemptRead, JobStatus, SynchronousJobRead } from "../../core/request/AirbyteClient";
 
 const Item = styled.div<{ isFailed: boolean }>`
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
@@ -27,16 +27,20 @@ interface JobItemProps {
 }
 
 const didJobSucceed = (job: SynchronousJobRead | JobsWithJobs): boolean =>
-  "status" in job ? (job.status === JobStatus.succeeded ? true : false) : getJobStatus(job) !== "failed";
+  "status" in job ? (job?.status === JobStatus?.succeeded ? true : false) : getJobStatus(job) !== "failed";
 
 export const getJobStatus: (job: SynchronousJobRead | JobsWithJobs) => JobStatus = (job) =>
-  "status" in job ? (job.status === JobStatus.succeeded ? JobStatus.succeeded : JobStatus.failed) : job.job.status;
+  "status" in job
+    ? job?.status === JobStatus?.succeeded
+      ? JobStatus?.succeeded
+      : JobStatus?.failed
+    : job.job?.status ?? JobStatus?.failed;
 
 export const getJobAttemps: (job: SynchronousJobRead | JobsWithJobs) => AttemptRead[] | undefined = (job) =>
-  "attempts" in job ? job.attempts : undefined;
+  "attempts" in job ? job?.attempts : undefined;
 
 export const getJobId = (job: SynchronousJobRead | JobsWithJobs): string | number =>
-  "id" in job ? job.id : job.job.id;
+  "id" in job ? job?.id : job?.job?.id;
 
 export const JobItem: React.FC<JobItemProps> = ({ job }) => {
   const { jobId: linkedJobId } = useAttemptLink();
