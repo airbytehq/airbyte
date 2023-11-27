@@ -17,7 +17,6 @@ import io.airbyte.cdk.testutils.PostgreSQLContainerHelper;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.PostgresBaseImage;
 import java.sql.JDBCType;
 import java.util.Optional;
 import java.util.Set;

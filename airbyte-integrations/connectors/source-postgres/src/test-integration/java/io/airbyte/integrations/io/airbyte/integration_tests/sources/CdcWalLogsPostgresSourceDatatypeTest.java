@@ -11,7 +11,7 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.PostgresBaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -72,7 +72,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
 
   @Override
   protected Database setupDatabase() {
-    testdb = PostgresTestDatabase.in(PostgresBaseImage.POSTGRES_16_BULLSEYE, "withConf")
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, "withConf")
         .with("CREATE EXTENSION hstore;")
         .with("CREATE SCHEMA TEST;")
         .with("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');")

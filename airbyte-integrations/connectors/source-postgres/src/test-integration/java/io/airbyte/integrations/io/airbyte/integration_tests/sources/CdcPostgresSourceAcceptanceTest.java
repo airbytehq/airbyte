@@ -14,7 +14,7 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.PostgresBaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -169,8 +169,8 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
         .isEmpty(), "Records contain unselected columns [%s:%s]".formatted(stream, field));
   }
 
-  protected PostgresBaseImage getServerImage() {
-    return PostgresBaseImage.POSTGRES_16_BULLSEYE;
+  protected BaseImage getServerImage() {
+    return BaseImage.POSTGRES_16_BULLSEYE;
   }
 
 }

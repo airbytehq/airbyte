@@ -7,7 +7,7 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.PostgresBaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import java.util.Map;
 
 public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPostgresSourceAcceptanceTest {
@@ -34,7 +34,7 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
         .build();
   }
 
-  protected abstract PostgresBaseImage getServerImage();
+  protected abstract BaseImage getServerImage();
 
   public abstract Map<Object, Object> getCertificateConfiguration();
 

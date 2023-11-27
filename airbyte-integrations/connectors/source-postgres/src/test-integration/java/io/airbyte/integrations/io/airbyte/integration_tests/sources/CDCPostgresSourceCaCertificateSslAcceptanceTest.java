@@ -5,7 +5,7 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.PostgresBaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import java.util.Map;
 
 public class CDCPostgresSourceCaCertificateSslAcceptanceTest extends AbstractCdcPostgresSourceSslAcceptanceTest {
@@ -19,8 +19,8 @@ public class CDCPostgresSourceCaCertificateSslAcceptanceTest extends AbstractCdc
   }
 
   @Override
-  protected PostgresBaseImage getServerImage() {
-    return PostgresBaseImage.POSTGRES_16_BULLSEYE;
+  protected BaseImage getServerImage() {
+    return BaseImage.POSTGRES_16_BULLSEYE;
   }
 
 }

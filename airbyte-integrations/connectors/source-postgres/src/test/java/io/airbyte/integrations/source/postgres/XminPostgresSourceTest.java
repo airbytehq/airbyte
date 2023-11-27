@@ -22,7 +22,7 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.PostgresBaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -91,8 +91,8 @@ class XminPostgresSourceTest {
 
   protected PostgresTestDatabase testdb;
 
-  protected PostgresBaseImage getDatabaseImage() {
-    return PostgresBaseImage.POSTGRES_12_BULLSEYE;
+  protected BaseImage getDatabaseImage() {
+    return BaseImage.POSTGRES_12_BULLSEYE;
   }
 
   @BeforeEach
