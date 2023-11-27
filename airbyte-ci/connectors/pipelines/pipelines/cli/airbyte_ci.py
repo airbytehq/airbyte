@@ -22,10 +22,7 @@ from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
 from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_PIPELINE_PACKAGE_PATH, CIContext
 from pipelines.helpers import github
-from pipelines.helpers.git import (
-    get_current_git_branch,
-    get_current_git_revision,
-)
+from pipelines.helpers.git import get_current_git_branch, get_current_git_revision
 from pipelines.helpers.utils import get_current_epoch_time
 
 # HELPERS
@@ -149,7 +146,6 @@ def log_git_info(ctx: click.Context):
     main_logger.info(f"GitHub Workflow Run URL: {ctx.obj['gha_workflow_run_url']}")
     main_logger.info(f"Pull Request Number: {ctx.obj['pull_request_number']}")
     main_logger.info(f"Pipeline Start Timestamp: {ctx.obj['pipeline_start_timestamp']}")
-    main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
 
 
 def _get_gha_workflow_run_url(ctx: click.Context) -> Optional[str]:

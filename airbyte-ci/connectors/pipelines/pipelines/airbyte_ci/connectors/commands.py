@@ -235,12 +235,14 @@ async def connectors(
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"])
 
-    if ctx.obj["metadata_changes_only"] and not ctx.obj["modified"]:
+    modified = ctx.obj["modified"]
+    if ctx.obj["metadata_changes_only"] and not modified:
         main_logger.info("--metadata-changes-only overrides --modified")
-        ctx.obj["modified"] = True
+        modified = True
 
-    if ctx.obj["modified"]:
-        ctx.obj["modified_files"] = transform_strs_to_paths(await get_modified_files(
+    modified_files = []
+    if modified:
+        modified_files = transform_strs_to_paths(await get_modified_files(
             ctx.obj["git_branch"],
             ctx.obj["git_revision"],
             ctx.obj["diffed_branch"],
@@ -252,10 +254,10 @@ async def connectors(
         ctx.obj["names"],
         ctx.obj["support_levels"],
         ctx.obj["languages"],
-        ctx.obj["modified"],
+        modified,
         ctx.obj["metadata_changes_only"],
         ctx.obj["metadata_query"],
-        set(ctx.obj["modified_files"]),
+        set(modified_files),
         ctx.obj["enable_dependency_scanning"],
     )
     log_selected_connectors(ctx.obj["selected_connectors_with_modified_files"])
