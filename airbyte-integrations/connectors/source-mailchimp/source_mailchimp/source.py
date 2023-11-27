@@ -4,17 +4,17 @@
 
 
 import base64
+import re
 from typing import Any, List, Mapping, Tuple
 
-import re
-import requests
 import pendulum
+import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from requests.auth import AuthBase
 from pendulum.parsing.exceptions import ParserError
+from requests.auth import AuthBase
 
 from .streams import (
     Automations,
@@ -81,7 +81,6 @@ class MailChimpAuthenticator:
 
 
 class SourceMailchimp(AbstractSource):
-
     def _validate_start_date(self, config: Mapping[str, Any]):
         start_date = config.get("start_date")
 
@@ -99,7 +98,6 @@ class SourceMailchimp(AbstractSource):
                 return "The start date cannot be greater than the current date."
 
         return None
-
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         # First, check for a valid start date if it is provided
