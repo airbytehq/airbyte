@@ -5,7 +5,7 @@
 import json
 import logging
 import os
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 from urllib.parse import unquote
 
 import pyarrow as pa
@@ -22,6 +22,9 @@ from pyarrow import Scalar
 class ParquetParser(FileTypeParser):
 
     ENCODING = None
+
+    def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
+        return True, None
 
     async def infer_schema(
         self,
