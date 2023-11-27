@@ -10,7 +10,7 @@ import multiprocessing
 import os
 import sys
 from pathlib import Path
-from typing import Optional, Set
+from typing import Optional
 
 import asyncclick as click
 import docker
@@ -25,10 +25,8 @@ from pipelines.helpers import github
 from pipelines.helpers.git import (
     get_current_git_branch,
     get_current_git_revision,
-    get_modified_files_in_branch,
-    get_modified_files_in_commit,
 )
-from pipelines.helpers.utils import get_current_epoch_time, transform_strs_to_paths
+from pipelines.helpers.utils import get_current_epoch_time
 
 # HELPERS
 
@@ -141,21 +139,6 @@ def set_working_directory_to_root() -> None:
     os.chdir(working_dir)
 
 
-async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext) -> Set[str]:
-    """Get the list of modified files in the current git branch.
-    If the current branch is master, it will return the list of modified files in the head commit.
-    The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.
-    Pipelines like "publish on merge" are triggered on each new commit on master.
-
-    If the CI context is a pull request, it will return the list of modified files in the pull request, without using git diff.
-    If the current branch is not master, it will return the list of modified files in the current branch.
-    This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
-    """
-    if ci_context is CIContext.MASTER or (ci_context is CIContext.MANUAL and git_branch == "master"):
-        return await get_modified_files_in_commit(git_branch, git_revision, is_local)
-    return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
-
-
 def log_git_info(ctx: click.Context):
     main_logger.info("Running airbyte-ci in CI mode.")
     main_logger.info(f"CI Context: {ctx.obj['ci_context']}")
@@ -234,17 +217,6 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
     return called_with_dagger_run
 
 
-async def get_modified_files_str(ctx: click.Context):
-    modified_files = await get_modified_files(
-        ctx.obj["git_branch"],
-        ctx.obj["git_revision"],
-        ctx.obj["diffed_branch"],
-        ctx.obj["is_local"],
-        ctx.obj["ci_context"],
-    )
-    return transform_strs_to_paths(modified_files)
-
-
 # COMMANDS
 
 
@@ -293,7 +265,6 @@ async def get_modified_files_str(ctx: click.Context):
 @click_append_to_context_object("is_ci", lambda ctx: not ctx.obj["is_local"])
 @click_append_to_context_object("gha_workflow_run_url", _get_gha_workflow_run_url)
 @click_append_to_context_object("pull_request", _get_pull_request)
-@click_append_to_context_object("modified_files", get_modified_files_str)
 @click.pass_context
 @click_ignore_unused_kwargs
 async def airbyte_ci(ctx: click.Context):  # noqa D103
