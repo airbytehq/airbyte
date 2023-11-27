@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -43,7 +44,7 @@ class MssqlSourceTest {
   // 2. /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P "A_Str0ng_Required_Password"
   @BeforeEach
   void setup() {
-    testdb = MsSQLTestDatabase.in("mcr.microsoft.com/mssql/server:2022-latest")
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022_LATEST)
         .with("CREATE TABLE id_and_name(id INTEGER NOT NULL, name VARCHAR(200), born DATETIMEOFFSET(7));")
         .with("INSERT INTO id_and_name (id, name, born) VALUES (1,'picard', '2124-03-04T01:01:01Z'),  (2, 'crusher', " +
             "'2124-03-04T01:01:01Z'), (3, 'vash', '2124-03-04T01:01:01Z');");
