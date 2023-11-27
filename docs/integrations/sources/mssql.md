@@ -25,7 +25,7 @@ Note: Currently hierarchyid and sql_variant are not processed in CDC migration t
 
 On Airbyte Cloud, only TLS connections to your MSSQL instance are supported in source configuration. Other than that, you can proceed with the open-source instructions below.
 
-## Getting Started \(Airbyte Open-Source\)
+## Getting Started \(Airbyte Open Source\)
 
 #### Requirements
 

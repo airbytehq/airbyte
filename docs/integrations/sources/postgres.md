@@ -54,7 +54,7 @@ To fill out the required information:
 #### Step 3: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
 
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
-our [Airbyte Security docs](../../../operator-guides/security#network-security-1).
+our [Airbyte Security docs](../../operating-airbyte/security#network-security-1).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte Postgres source!
 <!-- /env:cloud -->
