@@ -256,8 +256,8 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
         if (event == null) {
           Duration initialWaitingDuration = Duration.ofMinutes(5L);
-          // If initial waiting seconds is configured and it's greater than 5 minutes, use that value instead of the default value
-          FirstRecordWaitTimeUtil.getFirstRecordWaitSeconds()
+          // If initial waiting seconds is configured and it's greater than 5 minutes, use that value instead
+          // of the default value
           final Duration configuredDuration = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(database.getSourceConfig());
           if (configuredDuration.compareTo(initialWaitingDuration) > 0) {
             initialWaitingDuration = configuredDuration;
