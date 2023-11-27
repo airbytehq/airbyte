@@ -255,8 +255,14 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
         if (event == null) {
-          final Duration initialWaitingDuration = database.getSourceConfig().has(INITIAL_WAITING_SECONDS) ? Duration
-              .ofSeconds(database.getSourceConfig().get(INITIAL_WAITING_SECONDS).asLong()) : Duration.ofMinutes(5L);
+          Duration initialWaitingDuration = Duration.ofMinutes(5L);
+          // If initial waiting seconds is configured and it's greater than 5 minutes, use that value instead of the default value
+          if (database.getSourceConfig().has(INITIAL_WAITING_SECONDS)) {
+            final Duration configuredDuration =  Duration.ofSeconds(database.getSourceConfig().get(INITIAL_WAITING_SECONDS).asLong());
+            if (configuredDuration.compareTo(initialWaitingDuration) > 0) {
+              initialWaitingDuration = configuredDuration;
+            }
+          }
           if (Duration.between(engineStartTime, Instant.now()).compareTo(initialWaitingDuration) > 0) {
             LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", initialWaitingDuration.getSeconds());
             publisher.close();
