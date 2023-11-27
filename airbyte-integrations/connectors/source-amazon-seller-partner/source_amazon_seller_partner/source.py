@@ -178,21 +178,20 @@ class SourceAmazonSellerPartner(AbstractSource):
             FbaReimbursementsReports,
         ]
 
-        # TODO: Remove after Brand Analytics will be enabled in CLOUD:
-        #  https://github.com/airbytehq/airbyte/issues/32353
+        # TODO: Remove after Brand Analytics will be enabled in CLOUD: https://github.com/airbytehq/airbyte/issues/32353
         if getenv("DEPLOYMENT_MODE", "").upper() != "CLOUD":
             brand_analytics_reports = [
-                BrandAnalyticsMarketBasketReports(**stream_kwargs),
-                BrandAnalyticsSearchTermsReports(**stream_kwargs),
-                BrandAnalyticsRepeatPurchaseReports(**stream_kwargs),
-                BrandAnalyticsAlternatePurchaseReports(**stream_kwargs),
-                BrandAnalyticsItemComparisonReports(**stream_kwargs),
-                SellerAnalyticsSalesAndTrafficReports(**stream_kwargs),
-                VendorSalesReports(**stream_kwargs),
-                VendorInventoryReports(**stream_kwargs),
-                NetPureProductMarginReport(**stream_kwargs),
-                RapidRetailAnalyticsInventoryReport(**stream_kwargs),
-                VendorTrafficReport(**stream_kwargs),
+                BrandAnalyticsMarketBasketReports,
+                BrandAnalyticsSearchTermsReports,
+                BrandAnalyticsRepeatPurchaseReports,
+                BrandAnalyticsAlternatePurchaseReports,
+                BrandAnalyticsItemComparisonReports,
+                SellerAnalyticsSalesAndTrafficReports,
+                VendorSalesReports,
+                VendorInventoryReports,
+                NetPureProductMarginReport,
+                RapidRetailAnalyticsInventoryReport,
+                VendorTrafficReport,
             ]
             stream_list += brand_analytics_reports
 

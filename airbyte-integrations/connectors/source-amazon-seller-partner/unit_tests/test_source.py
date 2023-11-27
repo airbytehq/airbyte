@@ -2,10 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+from unittest.mock import patch
+
 import pytest
 from airbyte_cdk.sources.streams import Stream
 from source_amazon_seller_partner import SourceAmazonSellerPartner
+from source_amazon_seller_partner.streams import VendorSalesReports
 from source_amazon_seller_partner.utils import AmazonConfigException
+
+logger = logging.getLogger("airbyte")
 
 
 @pytest.fixture
@@ -14,7 +20,6 @@ def connector_config_with_report_options():
         "replication_start_date": "2017-01-25T00:00:00Z",
         "replication_end_date": "2017-02-25T00:00:00Z",
         "refresh_token": "Atzr|IwEBIP-abc123",
-        "app_id": "amzn1.sp.solution.2cfa6ca8-2c35-123-456-78910",
         "lwa_app_id": "amzn1.application-oa2-client.abc123",
         "lwa_client_secret": "abc123",
         "aws_environment": "SANDBOX",
@@ -40,6 +45,57 @@ def connector_config_without_start_date():
         "aws_environment": "SANDBOX",
         "region": "US",
     }
+
+
+def test_check_connection_with_vendor_report(mocker, requests_mock, connector_config_with_report_options):
+    mocker.patch("time.sleep", lambda x: None)
+    requests_mock.register_uri(
+        "POST",
+        "https://api.amazon.com/auth/o2/token",
+        status_code=200,
+        json={"access_token": "access_token", "expires_in": "3600"},
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://sandbox.sellingpartnerapi-na.amazon.com/orders/v0/orders",
+        status_code=403,
+        json={"error": "forbidden"},
+    )
+
+    with patch.object(VendorSalesReports, "read_records", return_value=iter([{"some_key": "some_value"}])):
+        assert SourceAmazonSellerPartner().check_connection(logger, connector_config_with_report_options) == (True, None)
+
+
+def test_check_connection_with_orders_stop_iteration(requests_mock, connector_config_with_report_options):
+    requests_mock.register_uri(
+        "POST",
+        "https://api.amazon.com/auth/o2/token",
+        status_code=200,
+        json={"access_token": "access_token", "expires_in": "3600"},
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://sandbox.sellingpartnerapi-na.amazon.com/orders/v0/orders",
+        status_code=201,
+        json={"payload": {"Orders": []}},
+    )
+    assert SourceAmazonSellerPartner().check_connection(logger, connector_config_with_report_options) == (True, None)
+
+
+def test_check_connection_with_orders(requests_mock, connector_config_with_report_options):
+    requests_mock.register_uri(
+        "POST",
+        "https://api.amazon.com/auth/o2/token",
+        status_code=200,
+        json={"access_token": "access_token", "expires_in": "3600"},
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://sandbox.sellingpartnerapi-na.amazon.com/orders/v0/orders",
+        status_code=200,
+        json={"payload": {"Orders": [{"some_key": "some_value"}]}},
+    )
+    assert SourceAmazonSellerPartner().check_connection(logger, connector_config_with_report_options) == (True, None)
 
 
 @pytest.mark.parametrize(

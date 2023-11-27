@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from unittest import mock
+
 import pendulum
 import pytest
 import requests
@@ -215,4 +217,17 @@ def test_reports_read_records_exit_on_backoff(mocker, requests_mock, caplog):
         report_options=None,
     )
     assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == []
-    assert "The report for stream 'GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT' was cancelled due to several failed retry attempts." in caplog.messages[-1]
+    assert (
+        "The report for stream 'GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT' was cancelled due to several failed retry attempts."
+    ) in caplog.messages[-1]
+
+
+@pytest.mark.parametrize(
+    ("response_headers", "expected_backoff_time"),
+    (({"x-amzn-RateLimit-Limit": "2"}, 0.5), ({}, 60)),
+)
+def test_financial_events_stream_backoff_time(list_financial_events_stream, response_headers, expected_backoff_time):
+    stream = list_financial_events_stream()
+    response_mock = mock.MagicMock()
+    response_mock.headers = response_headers
+    assert stream.backoff_time(response_mock) == expected_backoff_time

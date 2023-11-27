@@ -39,8 +39,8 @@ class AmazonSPStream(HttpStream, ABC):
         replication_start_date: str,
         marketplace_id: str,
         period_in_days: Optional[int],
-        report_options: Optional[Mapping[str, Any]],
         replication_end_date: Optional[str],
+        report_options: Optional[Mapping[str, Any]] = None,
         *args,
         **kwargs,
     ):
@@ -164,8 +164,8 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         replication_start_date: str,
         marketplace_id: str,
         period_in_days: Optional[int],
-        report_options: Optional[List[Mapping[str, Any]]],
         replication_end_date: Optional[str],
+        report_options: Optional[List[Mapping[str, Any]]] = None,
         *args,
         **kwargs,
     ):
@@ -346,7 +346,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
                     record["dataEndTime"] = report_end_date.strftime(DATE_FORMAT)
                 yield record
         elif is_fatal:
-            raise AirbyteTracedException(f"The report for stream '{self.name}' was not created - skip reading")
+            raise AirbyteTracedException(message=f"The report for stream '{self.name}' was not created - skip reading")
         elif is_cancelled:
             logger.warning(f"The report for stream '{self.name}' was cancelled or there is no data to return")
         else:
@@ -568,10 +568,9 @@ class AnalyticsStream(ReportsAmazonSPStream):
         data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
         options = self.report_options()
         if options and options.get("reportPeriod") is not None:
-            data.update(self._augmented_data(self, options))
+            data.update(self._augmented_data(options))
         return data
 
-    @staticmethod
     def _augmented_data(self, report_options) -> Mapping[str, Any]:
         now = pendulum.now("utc")
         if report_options["reportPeriod"] == "DAY":

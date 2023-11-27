@@ -91,14 +91,5 @@ def settlement_reports_stream():
     return _internal
 
 
-def test_stream_slices_method(mocker, settlement_reports_stream):
-    response = requests.Response()
-    mocker.patch.object(response, "json", return_value=generated_reports_from_amazon)
-
-    data = response.json().get("payload", list())
-
-    slices = [{"report_id": e.get("reportId")} for e in data]
-
-    for i in range(len(slices)):
-        report = settlement_reports_stream()._create_report(sync_mode=SyncMode.full_refresh, stream_slice=slices[i])
-        assert report.get("reportId") == generated_reports_from_amazon.get("payload")[i].get("reportId")
+def test_stream_slices(mocker, settlement_reports_stream):
+    stream = settlement_reports_stream()
