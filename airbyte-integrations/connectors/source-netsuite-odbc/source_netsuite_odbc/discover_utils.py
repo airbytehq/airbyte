@@ -13,16 +13,16 @@ class NetsuiteODBCTableDiscoverer():
         self.cursor = cursor
         self.tables = []
         self.data_type_switcher = {
-          "SMALLINT":{"type": "integer"},
-          'BIGINT': {"type": "integer"},
-          'INTEGER': {"type": "integer"},
-          'VARCHAR': {"type": "string"},
-          "VARCHAR2": {"type": "string"},
-          "WVARCHAR": {"type": "string"},
-          "CHAR": {"type": "string"},
-          "CLOB": {"type": "string"},
-          "TIMESTAMP" : {"type": "string", "format": "date-time"},
-          "DOUBLE": {"type": "number"},
+          "SMALLINT":{"type": ["integer", "null"]},
+          'BIGINT': {"type": ["integer", "null"]},
+          'INTEGER': {"type": ["integer", "null"]},
+          'VARCHAR': {"type": ["string", "null"]},
+          "VARCHAR2":{"type": ["string", "null"]},
+          "WVARCHAR": {"type": ["string", "null"]},
+          "CHAR": {"type": ["string", "null"]},
+          "CLOB": {"type": ["string", "null"]},
+          "TIMESTAMP" : {"type": ["string", "null"], "format": "date-time"},
+          "DOUBLE": {"type": ["number", "null"]},
         }
 
     def get_streams(self) -> list[AirbyteStream]:

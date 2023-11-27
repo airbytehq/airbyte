@@ -23,11 +23,13 @@ from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteRecordMessage,
-    AirbyteStream,
     AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
     Status,
     Type,
+    AirbyteStateType,
+    AirbyteStreamState,
+    StreamDescriptor,
 )
 from airbyte_cdk.sources import Source
 from source_netsuite_odbc.discover_utils import NetsuiteODBCTableDiscoverer
@@ -155,12 +157,18 @@ class SourceNetsuiteOdbc(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
+        """  
+            we will assume that state looks like 
+            {"type": "STREAM", "stream": {"stream_descriptor": {"name": "Customer"}, "stream_state": {}}, "emitted_at": 1701052407000}}
+
+        """
 
         streams = catalog.streams
         for stream in streams:
+            stream_name = stream.stream.name
+            is_incremental = stream.sync_mode == "incremental"
             try: 
-                stream_name = stream.stream.name
-                reader = NetsuiteODBCTableReader(self.create_database_cursor(config), stream_name, stream.stream)
+                reader = NetsuiteODBCTableReader(self.create_database_cursor(config), stream_name, stream.stream, is_incremental=is_incremental)
 
                 while True:
                     rows = reader.read_table(state)
@@ -173,6 +181,16 @@ class SourceNetsuiteOdbc(Source):
 
                     if len(rows) < NETSUITE_PAGINATION_INTERVAL:
                         print(len(rows), 'breaking')
+
+                        reader.update_state(state, rows)
+                        yield AirbyteMessage(
+                            type=Type.STATE,
+                            state=AirbyteStateMessage(
+                                type=AirbyteStateType.STREAM,
+                                stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state),
+                                emitted_at=self.find_emitted_at(),
+                            ),
+                        )
                         break
                     else:
                         reader.update_state(state, rows)
@@ -182,7 +200,8 @@ class SourceNetsuiteOdbc(Source):
                 yield AirbyteMessage(
                     type=Type.STATE,
                     state=AirbyteStateMessage(
-                        data=state,
+                        type=AirbyteStateType.STREAM,
+                        stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state),
                         emitted_at=self.find_emitted_at(),
                     ),
                 )
