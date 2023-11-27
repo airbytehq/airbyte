@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -118,9 +119,41 @@ public class WebBackendConnectionsHandler {
     double elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
     LOGGER.info("webBackendConnectionsPageForWorkspace spends {} milliseconds", elapsedTimeInMilli);
 
+    long startTime1 = System.nanoTime();
+    List<UUID> idList = reads.stream().map(data -> data.getConnectionId()).collect(Collectors.toList());
+    List<String> connectionIds = idList.stream().map(UUID::toString).collect(Collectors.toList());
+    List<JobRead> jobReads = jobHistoryHandler.latestJobListFor(connectionIds);
+
+    Map<String, JobRead> jobReadMap = jobReads.stream()
+        .collect(Collectors.toMap(JobRead::getConfigId, data -> data));
+    for (WebBackendConnectionPageRead data : reads) {
+      JobRead jobRead = jobReadMap.get(data.getConnectionId().toString());
+      if (!ObjectUtils.isEmpty(jobRead)) {
+        data.isSyncing(!TERMINAL_STATUSES.contains(jobRead.getStatus()));
+        data.setLatestSyncJobStatus(jobRead.getStatus());
+        data.setLatestSyncJobCreatedAt(jobRead.getCreatedAt());
+      }
+    }
+    long elapsedTimeInNano1 = System.nanoTime() - startTime1;
+    double elapsedTimeInMilli1 = (double) elapsedTimeInNano1 / 1_000_000;
+    LOGGER.info("get job status spends {} milliseconds", elapsedTimeInMilli1);
+
     return new WebBackendConnectionsPageReadList().connections(reads)
         .total(connectionsHandler.pageConnectionsForWorkspaceCount(workspaceIdPageRequestBody))
         .pageCurrent(workspaceIdPageRequestBody.getPageCurrent()).pageSize(workspaceIdPageRequestBody.getPageSize());
+  }
+
+  public WebBackendConnectionStatusReadList webBackendConnectionStatusForWorkspace(ConnectionIdListRequestBody connectionIdListRequestBody)
+      throws IOException {
+    List<String> connectionIds = connectionIdListRequestBody.getConnectionIds().stream()
+        .map(UUID::toString).collect(Collectors.toList());
+    List<JobRead> jobReads = jobHistoryHandler.latestJobListFor(connectionIds);
+    List<WebBackendConnectionStatusRead> connectionStatusList = new ArrayList<>();
+    for (JobRead data : jobReads) {
+      connectionStatusList.add(new WebBackendConnectionStatusRead().connectionId(UUID.fromString(data.getConfigId()))
+          .latestSyncJobStatus(data.getStatus()).latestSyncJobCreatedAt(data.getCreatedAt()));
+    }
+    return new WebBackendConnectionStatusReadList().connectionStatusList(connectionStatusList);
   }
 
   public WebBackendConnectionFilterParam webBackendConnectionsFilterParam()
@@ -185,12 +218,6 @@ public class WebBackendConnectionsHandler {
     LOGGER.info("buildWebBackendConnectionPageRead part 2 spends {} milliseconds", elapsedTimeInMilli);
 
     startTime = System.nanoTime();
-    final JobRead jobRead = getLatestSyncJob(connectionRead);
-    if (jobRead != null) {
-      webBackendConnectionPageRead.isSyncing(!TERMINAL_STATUSES.contains(jobRead.getStatus()));
-      webBackendConnectionPageRead.setLatestSyncJobCreatedAt(jobRead.getCreatedAt());
-      webBackendConnectionPageRead.setLatestSyncJobStatus(jobRead.getStatus());
-    }
 
     elapsedTimeInNano = System.nanoTime() - startTime;
     elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
@@ -284,13 +311,6 @@ public class WebBackendConnectionsHandler {
         .configId(connectionRead.getConnectionId().toString())
         .configTypes(Collections.singletonList(JobConfigType.SYNC));
     return jobHistoryHandler.listJobsFor(jobListRequestBody);
-  }
-
-  private JobRead getLatestSyncJob(final ConnectionRead connectionRead) throws IOException {
-    final JobListRequestBody jobRequestBody = new JobListRequestBody()
-        .configId(connectionRead.getConnectionId().toString())
-        .configTypes(Collections.singletonList(JobConfigType.SYNC));
-    return jobHistoryHandler.latestJobFor(jobRequestBody);
   }
 
   private static void setLatestSyncJobProperties(final WebBackendConnectionRead WebBackendConnectionRead, final JobReadList syncJobReadList) {
