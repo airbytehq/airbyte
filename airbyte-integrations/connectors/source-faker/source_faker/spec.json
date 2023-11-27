@@ -8,7 +8,7 @@
     "additionalProperties": true,
     "properties": {
       "count": {
-        "title": "Count",
+        "title": "Count again",
         "description": "How many users should be generated in total.  This setting does not apply to the purchases or products stream.",
         "type": "integer",
         "minimum": 1,
