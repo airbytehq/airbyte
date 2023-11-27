@@ -17,6 +17,7 @@ import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorag
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
+import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -53,7 +54,6 @@ import org.slf4j.LoggerFactory;
 public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlDebeziumStateUtil.class);
-  private static final String INITIAL_WAITING_SECONDS = "initial_waiting_seconds";
 
   public boolean savedOffsetStillPresentOnServer(final JdbcDatabase database, final MysqlDebeziumStateAttributes savedState) {
     if (savedState.gtidSet().isPresent()) {
@@ -257,11 +257,10 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
         if (event == null) {
           Duration initialWaitingDuration = Duration.ofMinutes(5L);
           // If initial waiting seconds is configured and it's greater than 5 minutes, use that value instead of the default value
-          if (database.getSourceConfig().has(INITIAL_WAITING_SECONDS)) {
-            final Duration configuredDuration =  Duration.ofSeconds(database.getSourceConfig().get(INITIAL_WAITING_SECONDS).asLong());
-            if (configuredDuration.compareTo(initialWaitingDuration) > 0) {
-              initialWaitingDuration = configuredDuration;
-            }
+          FirstRecordWaitTimeUtil.getFirstRecordWaitSeconds()
+          final Duration configuredDuration = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(database.getSourceConfig());
+          if (configuredDuration.compareTo(initialWaitingDuration) > 0) {
+            initialWaitingDuration = configuredDuration;
           }
           if (Duration.between(engineStartTime, Instant.now()).compareTo(initialWaitingDuration) > 0) {
             LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", initialWaitingDuration.getSeconds());
