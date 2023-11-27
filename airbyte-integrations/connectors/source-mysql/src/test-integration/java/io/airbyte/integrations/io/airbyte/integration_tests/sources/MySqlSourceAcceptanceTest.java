@@ -35,7 +35,7 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8, getImageModifiers())
+    testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8, getContainerModifiers())
         .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
         .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
         .with("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")
@@ -47,7 +47,7 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
   }
 
-  protected ContainerModifier[] getImageModifiers() {
+  protected ContainerModifier[] getContainerModifiers() {
     return ArrayUtils.toArray();
   }
 
