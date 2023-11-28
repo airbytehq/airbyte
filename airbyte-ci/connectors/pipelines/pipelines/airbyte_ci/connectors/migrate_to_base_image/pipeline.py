@@ -10,7 +10,11 @@ from base_images import version_registry
 from connector_ops.utils import ConnectorLanguage
 from dagger import Directory
 from jinja2 import Template
-from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
+from pipelines.airbyte_ci.connectors.bump_version.pipeline import (
+    AddChangelogEntry,
+    BumpDockerImageTagInMetadata,
+    get_bumped_version,
+)
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.helpers import git
@@ -33,16 +37,29 @@ class UpgradeBaseImageMetadata(Step):
 
     async def get_latest_base_image_address(self) -> Optional[str]:
         try:
-            version_registry_for_language = await version_registry.get_registry_for_language(
-                self.dagger_client, self.context.connector.language, (self.context.docker_hub_username, self.context.docker_hub_password)
+            version_registry_for_language = (
+                await version_registry.get_registry_for_language(
+                    self.dagger_client,
+                    self.context.connector.language,
+                    (
+                        self.context.docker_hub_username,
+                        self.context.docker_hub_password,
+                    ),
+                )
             )
-            return version_registry_for_language.latest_not_pre_released_published_entry.published_docker_image.address
+            return (
+                version_registry_for_language.latest_not_pre_released_published_entry.published_docker_image.address
+            )
         except NotImplementedError:
             return None
 
     @staticmethod
-    def update_base_image_in_metadata(current_metadata: dict, latest_base_image_version_address: str) -> dict:
-        current_connector_build_options = current_metadata["data"].get("connectorBuildOptions", {})
+    def update_base_image_in_metadata(
+        current_metadata: dict, latest_base_image_version_address: str
+    ) -> dict:
+        current_connector_build_options = current_metadata["data"].get(
+            "connectorBuildOptions", {}
+        )
         updated_metadata = deepcopy(current_metadata)
         updated_metadata["data"]["connectorBuildOptions"] = {
             **current_connector_build_options,
@@ -61,8 +78,14 @@ class UpgradeBaseImageMetadata(Step):
             )
 
         metadata_path = self.context.connector.metadata_file_path
-        current_metadata = await metadata_change_helpers.get_current_metadata(self.repo_dir, metadata_path)
-        current_base_image_address = current_metadata.get("data", {}).get("connectorBuildOptions", {}).get("baseImage")
+        current_metadata = await metadata_change_helpers.get_current_metadata(
+            self.repo_dir, metadata_path
+        )
+        current_base_image_address = (
+            current_metadata.get("data", {})
+            .get("connectorBuildOptions", {})
+            .get("baseImage")
+        )
 
         if current_base_image_address is None and not self.set_if_not_exists:
             return StepResult(
@@ -79,8 +102,12 @@ class UpgradeBaseImageMetadata(Step):
                 stdout="Connector already uses latest base image",
                 output_artifact=self.repo_dir,
             )
-        updated_metadata = self.update_base_image_in_metadata(current_metadata, latest_base_image_address)
-        updated_repo_dir = metadata_change_helpers.get_repo_dir_with_updated_metadata(self.repo_dir, metadata_path, updated_metadata)
+        updated_metadata = self.update_base_image_in_metadata(
+            current_metadata, latest_base_image_address
+        )
+        updated_repo_dir = metadata_change_helpers.get_repo_dir_with_updated_metadata(
+            self.repo_dir, metadata_path, updated_metadata
+        )
 
         return StepResult(
             self,
@@ -104,7 +131,9 @@ class DeleteConnectorFile(Step):
         return f"Delete {self.file_to_delete}"
 
     async def _run(self) -> StepResult:
-        file_to_delete_path = self.context.connector.code_directory / self.file_to_delete
+        file_to_delete_path = (
+            self.context.connector.code_directory / self.file_to_delete
+        )
         if not file_to_delete_path.exists():
             return StepResult(
                 self,
@@ -137,7 +166,11 @@ class AddBuildInstructionsToReadme(Step):
                 stdout="Connector does not have a documentation file.",
                 output_artifact=self.repo_dir,
             )
-        current_readme = await (await self.context.get_connector_dir(include=["README.md"])).file("README.md").contents()
+        current_readme = (
+            await (await self.context.get_connector_dir(include=["README.md"]))
+            .file("README.md")
+            .contents()
+        )
         try:
             updated_readme = self.add_build_instructions(current_readme)
         except Exception as e:
@@ -147,7 +180,9 @@ class AddBuildInstructionsToReadme(Step):
                 stdout=str(e),
                 output_artifact=self.repo_dir,
             )
-        updated_repo_dir = await self.repo_dir.with_new_file(str(readme_path), updated_readme)
+        updated_repo_dir = await self.repo_dir.with_new_file(
+            str(readme_path), updated_readme
+        )
         return StepResult(
             self,
             StepStatus.SUCCESS,
@@ -156,14 +191,13 @@ class AddBuildInstructionsToReadme(Step):
         )
 
     def add_build_instructions(self, og_doc_content) -> str:
-
         build_instructions_template = Template(
             textwrap.dedent(
                 """
 
             #### Use `airbyte-ci` to build your connector
             The Airbyte way of building this connector is to use our `airbyte-ci` tool.
-            You can follow install instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1).
+            You can follow install instructions [here](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/README.md#L1).
             Then running the following command will build your connector:
 
             ```bash
@@ -199,7 +233,7 @@ class AddBuildInstructionsToReadme(Step):
             #### Build your own connector image
             This connector is built using our dynamic built process in `airbyte-ci`.
             The base image used to build it is defined within the metadata.yaml file under the `connectorBuildOptions`.
-            The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
+            The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
             It does not rely on a Dockerfile.
 
             If you would like to patch our connector and build your own a simple approach would be to:
@@ -248,11 +282,17 @@ class AddBuildInstructionsToReadme(Step):
         if build_instructions_index is None or run_instructions_index is None:
             raise Exception("Could not find build or run instructions in README.md")
 
-        new_doc = "\n".join(og_lines[:build_instructions_index] + build_instructions.splitlines() + og_lines[run_instructions_index:])
+        new_doc = "\n".join(
+            og_lines[:build_instructions_index]
+            + build_instructions.splitlines()
+            + og_lines[run_instructions_index:]
+        )
         return new_doc
 
 
-async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, semaphore, set_if_not_exists: bool) -> ConnectorReport:
+async def run_connector_base_image_upgrade_pipeline(
+    context: ConnectorContext, semaphore, set_if_not_exists: bool
+) -> ConnectorReport:
     """Run a pipeline to upgrade for a single connector to use our base image."""
     async with semaphore:
         steps_results = []
@@ -263,15 +303,21 @@ async def run_connector_base_image_upgrade_pipeline(context: ConnectorContext, s
                 og_repo_dir,
                 set_if_not_exists=set_if_not_exists,
             )
-            update_base_image_in_metadata_result = await update_base_image_in_metadata.run()
+            update_base_image_in_metadata_result = (
+                await update_base_image_in_metadata.run()
+            )
             steps_results.append(update_base_image_in_metadata_result)
             final_repo_dir = update_base_image_in_metadata_result.output_artifact
             await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
-            context.report = ConnectorReport(context, steps_results, name="BASE IMAGE UPGRADE RESULTS")
+            context.report = ConnectorReport(
+                context, steps_results, name="BASE IMAGE UPGRADE RESULTS"
+            )
     return context.report
 
 
-async def run_connector_migration_to_base_image_pipeline(context: ConnectorContext, semaphore, pull_request_number: str):
+async def run_connector_migration_to_base_image_pipeline(
+    context: ConnectorContext, semaphore, pull_request_number: str
+):
     async with semaphore:
         steps_results = []
         async with context:
@@ -300,10 +346,14 @@ async def run_connector_migration_to_base_image_pipeline(context: ConnectorConte
                 og_repo_dir,
                 set_if_not_exists=True,
             )
-            update_base_image_in_metadata_result = await update_base_image_in_metadata.run()
+            update_base_image_in_metadata_result = (
+                await update_base_image_in_metadata.run()
+            )
             steps_results.append(update_base_image_in_metadata_result)
             if update_base_image_in_metadata_result.status is not StepStatus.SUCCESS:
-                context.report = ConnectorReport(context, steps_results, name="BASE IMAGE UPGRADE RESULTS")
+                context.report = ConnectorReport(
+                    context, steps_results, name="BASE IMAGE UPGRADE RESULTS"
+                )
                 return context.report
 
             # BUMP CONNECTOR VERSION IN METADATA
@@ -332,12 +382,16 @@ async def run_connector_migration_to_base_image_pipeline(context: ConnectorConte
                 context,
                 add_changelog_entry_result.output_artifact,
             )
-            add_build_instructions_to_doc_results = await add_build_instructions_to_doc.run()
+            add_build_instructions_to_doc_results = (
+                await add_build_instructions_to_doc.run()
+            )
             steps_results.append(add_build_instructions_to_doc_results)
 
             # EXPORT MODIFIED FILES BACK TO HOST
             final_repo_dir = add_build_instructions_to_doc_results.output_artifact
             await og_repo_dir.diff(final_repo_dir).export(str(git.get_git_repo_path()))
 
-            context.report = ConnectorReport(context, steps_results, name="MIGRATE TO BASE IMAGE RESULTS")
+            context.report = ConnectorReport(
+                context, steps_results, name="MIGRATE TO BASE IMAGE RESULTS"
+            )
     return context.report

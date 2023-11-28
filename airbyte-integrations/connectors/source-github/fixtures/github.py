@@ -70,7 +70,7 @@ class GitHubFiller:
             create_pr_data = {
                 "title": f'New PR from {branch.get("name")}',
                 "head": branch.get("name"),
-                "base": "master",
+                "base": "main",
             }
             # create PR
             response = self.session.post(url=url, data=json.dumps(create_pr_data))

@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - main
   pull_request:
     types:
       - opened
@@ -102,7 +102,7 @@ jobs:
         env:
           CI: true
         with:
-          read-only: ${{ github.ref != 'refs/heads/master' }}
+          read-only: ${{ github.ref != 'refs/heads/main' }}
           # TODO: be able to remove the skipSlowTests property
           arguments: --scan --no-daemon --no-watch-fs check -DskipSlowTests=true
 
@@ -144,10 +144,10 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - run-check
-    if: ${{ failure() && github.ref == 'refs/heads/master' }}
+    if: ${{ failure() && github.ref == 'refs/heads/main' }}
     steps:
       - name: Call Instatus Webhook
-        uses: joelwmale/webhook-action@master
+        uses: joelwmale/webhook-action@main
         with:
           url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
           body: '{ "trigger": "down", "status": "HASISSUES" }'
@@ -157,10 +157,10 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - run-check
-    if: ${{ success() && github.ref == 'refs/heads/master' }}
+    if: ${{ success() && github.ref == 'refs/heads/main' }}
     steps:
       - name: Call Instatus Webhook
-        uses: joelwmale/webhook-action@master
+        uses: joelwmale/webhook-action@main
         with:
           url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
           body: '{ "trigger": "up" }'
@@ -170,7 +170,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - run-check
-    if: ${{ failure() && github.ref == 'refs/heads/master' }}
+    if: ${{ failure() && github.ref == 'refs/heads/main' }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -181,14 +181,14 @@ jobs:
           AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
           GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish to OSS Build Failure Slack Channel
-        uses: abinoda/slack-action@master
+        uses: abinoda/slack-action@main
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
         with:
           args: >-
             {\"channel\":\"C03BEADRPNY\", \"blocks\":[
             {\"type\":\"divider\"},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" Merge to OSS Master failed! :bangbang: \n\n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" Merge to OSS main failed! :bangbang: \n\n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
@@ -209,14 +209,14 @@ jobs:
       # To avoid clogging up the channel, only publish build success if the previous build was a failure since this means the build was fixed.
       - name: Publish Build Fixed Message to OSS Build Failure Slack Channel
         if: ${{ steps.last_status.outputs.last_status == 'failure' }}
-        uses: abinoda/slack-action@master
+        uses: abinoda/slack-action@main
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
         with:
           args: >-
             {\"channel\":\"C03BEADRPNY\", \"blocks\":[
             {\"type\":\"divider\"},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" OSS Master Fixed! :white_check_mark: \n\n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" OSS main Fixed! :white_check_mark: \n\n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-rocket: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-rocket: \n\"}},
             {\"type\":\"divider\"}]}

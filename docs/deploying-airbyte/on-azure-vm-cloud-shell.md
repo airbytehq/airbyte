@@ -78,7 +78,7 @@ Download Airbyte and deploy it in the VM using Docker Compose:
 3. Download Airbyte's install script from GitHub:
 
    ```bash
-   wget https://raw.githubusercontent.com/airbytehq/airbyte/master/run-ab-platform.sh
+   wget https://raw.githubusercontent.com/airbytehq/airbyte/main/run-ab-platform.sh
    ```
 
 4. To start Airbyte, run the following commands:

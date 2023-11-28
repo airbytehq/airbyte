@@ -18,7 +18,16 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple
 import anyio
 import asyncer
 import click
-from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, QueryError, Secret
+from dagger import (
+    Client,
+    Config,
+    Container,
+    ExecError,
+    File,
+    ImageLayerCompression,
+    QueryError,
+    Secret,
+)
 from more_itertools import chunked
 
 if TYPE_CHECKING:
@@ -43,7 +52,9 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
     Returns:
         bool: Whether the path exists in the container working directory.
     """
-    workdir = (await container.with_exec(["pwd"], skip_entrypoint=True).stdout()).strip()
+    workdir = (
+        await container.with_exec(["pwd"], skip_entrypoint=True).stdout()
+    ).strip()
     mounts = await container.mounts()
     if workdir in mounts:
         expected_file_path = Path(workdir[1:]) / path
@@ -69,7 +80,9 @@ def secret_host_variable(client: Client, name: str, default: str = ""):
     """
 
     def _secret_host_variable(container: Container):
-        return container.with_secret_variable(name, get_secret_host_variable(client, name, default))
+        return container.with_secret_variable(
+            name, get_secret_host_variable(client, name, default)
+        )
 
     return _secret_host_variable
 
@@ -199,7 +212,7 @@ def get_current_epoch_time() -> int:  # noqa D103
 
 def slugify(value: Any, allow_unicode: bool = False):
     """
-    Taken from https://github.com/django/django/blob/master/django/utils/text.py.
+    Taken from https://github.com/django/django/blob/main/django/utils/text.py.
 
     Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
     dashes to single dashes. Remove characters that aren't alphanumerics,
@@ -210,7 +223,11 @@ def slugify(value: Any, allow_unicode: bool = False):
     if allow_unicode:
         value = unicodedata.normalize("NFKC", value)
     else:
-        value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+        value = (
+            unicodedata.normalize("NFKD", value)
+            .encode("ascii", "ignore")
+            .decode("ascii")
+        )
     value = re.sub(r"[^\w\s-]", "", value.lower())
     return re.sub(r"[-\s]+", "-", value).strip("-_")
 
@@ -232,7 +249,11 @@ async def key_value_file_to_dict(file: File) -> dict:
 
 
 async def get_dockerfile_labels(dockerfile: File) -> dict:
-    return {k.replace("LABEL ", ""): v for k, v in (await key_value_file_to_dict(dockerfile)).items() if k.startswith("LABEL")}
+    return {
+        k.replace("LABEL ", ""): v
+        for k, v in (await key_value_file_to_dict(dockerfile)).items()
+        if k.startswith("LABEL")
+    }
 
 
 async def get_version_from_dockerfile(dockerfile: File) -> str:
@@ -284,10 +305,14 @@ async def export_container_to_tarball(
         tar_file_name = f"{context.connector.technical_name}_{context.git_revision}.tar"
     tar_file_name = slugify(tar_file_name)
     local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
-    export_success = await container.export(str(local_path), forced_compression=ImageLayerCompression.Gzip)
+    export_success = await container.export(
+        str(local_path), forced_compression=ImageLayerCompression.Gzip
+    )
     if export_success:
         exported_file = (
-            context.dagger_client.host().directory(context.host_image_export_dir_path, include=[tar_file_name]).file(tar_file_name)
+            context.dagger_client.host()
+            .directory(context.host_image_export_dir_path, include=[tar_file_name])
+            .file(tar_file_name)
         )
         return exported_file, local_path
     else:

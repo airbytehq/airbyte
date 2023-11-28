@@ -50,7 +50,7 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
 
   public static MySqlCdcTargetPosition targetPosition(final JdbcDatabase database) {
     try (final Stream<MySqlCdcTargetPosition> stream = database.unsafeResultSetQuery(
-        connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
+        connection -> connection.createStatement().executeQuery("SHOW main STATUS"),
         resultSet -> {
           final String file = resultSet.getString("File");
           final long position = resultSet.getLong("Position");

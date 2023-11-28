@@ -5277,7 +5277,7 @@ components:
     # DB Migration
     DbMigrationState:
       type: string
-      # https://github.com/flyway/flyway/blob/master/flyway-core/src/main/java/org/flywaydb/core/api/MigrationState.java
+      # https://github.com/flyway/flyway/blob/main/flyway-core/src/main/java/org/flywaydb/core/api/MigrationState.java
       enum:
         - pending
         - above_target

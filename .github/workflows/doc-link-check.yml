@@ -13,8 +13,8 @@ jobs:
     timeout-minutes: 50
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      # check all files on master
+      - uses: actions/checkout@main
+      # check all files on main
       - uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
           use-quiet-mode: "yes"
@@ -24,7 +24,7 @@ jobs:
       # posts to #_doc_link_checker
       - name: Publish Success to Slack
         if: success()
-        uses: abinoda/slack-action@master
+        uses: abinoda/slack-action@main
         env:
           SLACK_BOT_TOKEN: ${{ secrets.DOC_LINK_CHECKER_BOT_TOKEN }}
         with:
@@ -37,7 +37,7 @@ jobs:
       # posts to #_doc_link_checker
       - name: Publish Failure to Slack
         if: failure()
-        uses: abinoda/slack-action@master
+        uses: abinoda/slack-action@main
         env:
           SLACK_BOT_TOKEN: ${{ secrets.DOC_LINK_CHECKER_BOT_TOKEN }}
         with:

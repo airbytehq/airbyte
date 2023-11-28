@@ -53,7 +53,7 @@ If you are building a connector in any of the following languages/frameworks, th
 #### Sources
 
 - **Python Source Connector**
-- [**Singer**](https://singer.io)**-based Python Source Connector**. [Singer.io](https://singer.io/) is an open source framework with a large community and many available connectors \(known as taps & targets\). To build an Airbyte connector from a Singer tap, wrap the tap in a thin Python package to make it Airbyte Protocol-compatible. See the [Github Connector](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-github) for an example of an Airbyte Connector implemented on top of a Singer tap.
+- [**Singer**](https://singer.io)**-based Python Source Connector**. [Singer.io](https://singer.io/) is an open source framework with a large community and many available connectors \(known as taps & targets\). To build an Airbyte connector from a Singer tap, wrap the tap in a thin Python package to make it Airbyte Protocol-compatible. See the [Github Connector](https://github.com/airbytehq/airbyte/tree/main/airbyte-integrations/connectors/source-github) for an example of an Airbyte Connector implemented on top of a Singer tap.
 - **Generic Connector**: This template provides a basic starting point for any language.
 
 #### Destinations
@@ -144,9 +144,9 @@ When a new (or updated version) of a connector is ready, our automations will ch
 
 If any of the above are failing, you won't be able to merge your PR or publish your connector.
 
-Connector icons should be square SVGs and be located in [this directory](https://github.com/airbytehq/airbyte/tree/master/airbyte-config-oss/init-oss/src/main/resources/icons).
+Connector icons should be square SVGs and be located in [this directory](https://github.com/airbytehq/airbyte/tree/main/airbyte-config-oss/init-oss/src/main/resources/icons).
 
-Connector documentation and changelogs are markdown files living either [here for sources](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/sources), or [here for destinations](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/destinations).
+Connector documentation and changelogs are markdown files living either [here for sources](https://github.com/airbytehq/airbyte/tree/main/docs/integrations/sources), or [here for destinations](https://github.com/airbytehq/airbyte/tree/main/docs/integrations/destinations).
 
 ## Using credentials in CI
 

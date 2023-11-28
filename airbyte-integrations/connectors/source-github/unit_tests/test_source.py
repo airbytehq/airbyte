@@ -116,7 +116,6 @@ def test_check_connection_org_only():
 
 @responses.activate
 def test_get_branches_data():
-
     repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 10}
 
     source = SourceGithub()
@@ -124,7 +123,7 @@ def test_get_branches_data():
     responses.add(
         "GET",
         "https://api.github.com/repos/airbytehq/integration-test",
-        json={"full_name": "airbytehq/integration-test", "default_branch": "master"},
+        json={"full_name": "airbytehq/integration-test", "default_branch": "main"},
     )
 
     responses.add(
@@ -134,13 +133,13 @@ def test_get_branches_data():
             {"repository": "airbytehq/integration-test", "name": "feature/branch_0"},
             {"repository": "airbytehq/integration-test", "name": "feature/branch_1"},
             {"repository": "airbytehq/integration-test", "name": "feature/branch_2"},
-            {"repository": "airbytehq/integration-test", "name": "master"},
+            {"repository": "airbytehq/integration-test", "name": "main"},
         ],
     )
 
     default_branches, branches_to_pull = source._get_branches_data([], repository_args)
-    assert default_branches == {"airbytehq/integration-test": "master"}
-    assert branches_to_pull == {"airbytehq/integration-test": ["master"]}
+    assert default_branches == {"airbytehq/integration-test": "main"}
+    assert branches_to_pull == {"airbytehq/integration-test": ["main"]}
 
     default_branches, branches_to_pull = source._get_branches_data(
         [
@@ -151,7 +150,7 @@ def test_get_branches_data():
         repository_args,
     )
 
-    assert default_branches == {"airbytehq/integration-test": "master"}
+    assert default_branches == {"airbytehq/integration-test": "main"}
     assert len(branches_to_pull["airbytehq/integration-test"]) == 2
     assert "feature/branch_0" in branches_to_pull["airbytehq/integration-test"]
     assert "feature/branch_1" in branches_to_pull["airbytehq/integration-test"]
@@ -217,7 +216,7 @@ def test_check_config_repository():
         "airbytehq/airbyte/",
         "airbytehq/air*yte",
         "airbyte*/airbyte",
-        "airbytehq/airbyte-test/master-branch",
+        "airbytehq/airbyte-test/main-branch",
         "https://github.com/airbytehq/airbyte",
     ]
 
@@ -246,7 +245,6 @@ def test_streams_no_streams_available_error(monkeypatch):
 
 
 def test_multiple_token_authenticator_with_rate_limiter(monkeypatch):
-
     called_args = []
 
     def sleep_mock(seconds):
@@ -256,7 +254,6 @@ def test_multiple_token_authenticator_with_rate_limiter(monkeypatch):
     monkeypatch.setattr(time, "sleep", sleep_mock)
 
     with freeze_time("2021-01-01 12:00:00") as frozen_time:
-
         authenticator = MultipleTokenAuthenticatorWithRateLimiter(tokens=["token1", "token2"], requests_per_hour=4)
         authenticator._tokens["token1"].count = 2
 
@@ -287,8 +284,8 @@ def test_multiple_token_authenticator_with_rate_limiter(monkeypatch):
 
 @responses.activate
 def test_streams_page_size():
-    responses.get("https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte", "default_branch": "master"})
-    responses.get("https://api.github.com/repos/airbytehq/airbyte/branches", json=[{"repository": "airbytehq/airbyte", "name": "master"}])
+    responses.get("https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte", "default_branch": "main"})
+    responses.get("https://api.github.com/repos/airbytehq/airbyte/branches", json=[{"repository": "airbytehq/airbyte", "name": "main"}])
 
     config = {
         "credentials": {"access_token": "access_token"},

@@ -33,9 +33,9 @@ To use the Chargify destination, you'll first need to create a [Chargify account
 Once you have a Chargify account, you can use the following credentials to set up the connector
 
 - A Project ID associated with the site
-- A Master API key associated with the site
+- A main API key associated with the site
 
-You can reach out to [support@chargify.com](mailto:support@chargify.com) to request your Project ID and Master API key for the Airbyte destination connector.
+You can reach out to [support@chargify.com](mailto:support@chargify.com) to request your Project ID and main API key for the Airbyte destination connector.
 
 See the setup guide for more information about how to get started.
 
@@ -49,11 +49,11 @@ Login to the Chargify application and identify which sites you want to stream da
 
 Chargify sites are simply containers for your Products, Customers, and Subscriptions. You can use Chargify with just one Site, although most customers will want two sites at a minimum – one for testing and one for production.
 
-Reach out to [support@chargify.com](mailto:support@chargify.com) to obtain your Site Project ID and Site Master API key. Note: You will need keys for each site you plan to stream data to.
+Reach out to [support@chargify.com](mailto:support@chargify.com) to obtain your Site Project ID and Site main API key. Note: You will need keys for each site you plan to stream data to.
 
 #### API Key and Project ID
 
-The Chargify Connector requires your `Project ID` and `Master Key` for authentication. To get them, please reach out to [support@chargify.com](mailto:support@chargify.com).
+The Chargify Connector requires your `Project ID` and `main Key` for authentication. To get them, please reach out to [support@chargify.com](mailto:support@chargify.com).
 
 #### Timestamp Inference
 
@@ -64,7 +64,7 @@ The `Infer Timestamp` field lets you specify if you want the connector to infer 
 Now, you should have all the parameters needed to configure Chargify destination.
 
 - **Project ID**
-- **Master API Key**
+- **main API Key**
 - **Infer Timestamp**
 
 Connect your first source and then head to the Chargify application. You can seamlessly run [custom analysis](https://www.chargify.com/business-intelligence/) on your data and build [multi-attribute, usage-based pricing models](http://chargify.com/events-based-billing/).

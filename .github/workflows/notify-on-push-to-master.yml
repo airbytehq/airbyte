@@ -2,7 +2,7 @@ name: Trigger action in cloud based on push
 on:
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:
 
 jobs:
@@ -15,5 +15,5 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           repository: airbytehq/airbyte-cloud
-          event-type: oss-push-to-master
+          event-type: oss-push-to-main
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'

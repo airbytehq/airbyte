@@ -291,7 +291,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   @Test
   void testAssertSqlServerAgentRunning() throws InterruptedException {
-    executeQuery(String.format("USE master;\n" + "GRANT VIEW SERVER STATE TO %s", testUserName));
+    executeQuery(String.format("USE main;\n" + "GRANT VIEW SERVER STATE TO %s", testUserName));
     // assert expected failure if sql server agent stopped
     switchSqlServerAgentAndWait(false);
     assertThrows(RuntimeException.class, () -> source.assertSqlServerAgentRunning(testJdbcDatabase));
@@ -338,7 +338,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
     alterPermissionsOnSchema(true, "cdc");
     // assertSqlServerAgentRunning
-    executeQuery(String.format("USE master;\n" + "GRANT VIEW SERVER STATE TO %s", testUserName));
+    executeQuery(String.format("USE main;\n" + "GRANT VIEW SERVER STATE TO %s", testUserName));
     switchSqlServerAgentAndWait(false);
     status = getSource().check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);

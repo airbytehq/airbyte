@@ -13,7 +13,7 @@
     },
     "master_airway_bill": {
       "type": "string",
-      "description": "Master air waybill number"
+      "description": "main air waybill number"
     },
     "chargeable_weight": {
       "description": "Chargeable weight (kg or lbs) of the shipment.",

@@ -86,7 +86,7 @@ public class HadoopCatalogIcebergS3ParquetWriter {
     // brings inconsistencies between table schema and the schema used by parquetWriter.
     // For sharing consistent schema between parquetWriter and a table, loadTable is used to get the
     // updated schema which can be used by the parquetWriter
-    // https://github.com/apache/iceberg/blob/master/core/src/main/java/org/apache/iceberg/TableMetadata.java#L102-L105
+    // https://github.com/apache/iceberg/blob/main/core/src/main/java/org/apache/iceberg/TableMetadata.java#L102-L105
     this.table = catalog.loadTable(name);
     String tableLocation = table.location() + "/" + outputFilename;
     LOGGER.info("Table {} at data file location {} is created", table.name(), tableLocation);

@@ -746,7 +746,7 @@
             },
             "api_key": {
               "title": "API Key",
-              "description": "To get Keen Master API Key, navigate to the Access tab from the left-hand, side panel and check the Project Details section.",
+              "description": "To get Keen main API Key, navigate to the Access tab from the left-hand, side panel and check the Project Details section.",
               "type": "string",
               "examples": ["ABCDEFGHIJKLMNOPRSTUWXYZ"],
               "airbyte_secret": true
@@ -7458,9 +7458,9 @@
               "type": "string",
               "title": "Branch (Optional)",
               "examples": [
-                "airbytehq/airbyte/master airbytehq/airbyte/my-branch"
+                "airbytehq/airbyte/main airbytehq/airbyte/my-branch"
               ],
-              "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
+              "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/main`. If no branches are specified for a repository, the default branch will be pulled.",
               "order": 3
             },
             "page_size_for_large_streams": {
@@ -9073,7 +9073,7 @@
               "description": "The name of the database.",
               "title": "Database",
               "type": "string",
-              "examples": ["master"],
+              "examples": ["main"],
               "order": 2
             },
             "username": {
@@ -11426,7 +11426,7 @@
               "title": "Database",
               "description": "Name of the database.",
               "type": "string",
-              "examples": ["master"],
+              "examples": ["main"],
               "order": 3
             },
             "schemas": {

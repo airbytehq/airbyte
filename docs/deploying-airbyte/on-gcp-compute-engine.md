@@ -83,7 +83,7 @@ gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME
 
 ```bash
 mkdir airbyte && cd airbyte
-wget https://raw.githubusercontent.com/airbytehq/airbyte/master/run-ab-platform.sh
+wget https://raw.githubusercontent.com/airbytehq/airbyte/main/run-ab-platform.sh
 chmod +x run-ab-platform.sh
 ./run-ab-platform.sh -b
 ```

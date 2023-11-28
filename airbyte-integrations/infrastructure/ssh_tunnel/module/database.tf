@@ -35,7 +35,7 @@ resource "aws_db_instance" "default" {
   db_subnet_group_name = aws_db_subnet_group.default.name 
   name                 = "airbyte"
   username             = "airbyte"
-  password             = chomp(file("${path.module}/secrets/aws_db_instance-master-password"))
+  password             = chomp(file("${path.module}/secrets/aws_db_instance-main-password"))
   parameter_group_name = aws_db_parameter_group.default.name
   publicly_accessible = false
   skip_final_snapshot  = true

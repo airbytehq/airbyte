@@ -1,45 +1,46 @@
 # Normalization
 
-* [Normalization](#normalization)
-    * [Under the hood](#under-the-hood)
-        * [Incremental updates with dedup-history sync mode](#incremental-updates-with-dedup-history-sync-mode)
-    * [Developer workflow](#developer-workflow)
-        * [Setting up your environment](#setting-up-your-environment)
-        * [Running dbt](#running-dbt)
-    * [Testing normalization](#testing-normalization)
-        * [Build & Activate Virtual Environment and install dependencies](#build--activate-virtual-environment-and-install-dependencies)
-        * [Unit Tests](#unit-tests)
-            * [test_transform_config.py:](#test_transform_configpy)
-            * [test_stream_processor.py and test_table_name_registry.py:](#test_stream_processorpy-and-test_table_name_registrypy)
-            * [test_destination_name_transformer.py:](#test_destination_name_transformerpy)
-        * [Integration Tests](#integration-tests)
-            * [Integration Tests Definitions for test_ephemeral.py:](#integration-tests-definitions-for-test_ephemeralpy)
-            * [Integration Tests Definitions for test_normalization.py:](#integration-tests-definitions-for-test_normalizationpy)
-                * [README.md:](#readmemd)
-            * [Integration Test Data Input:](#integration-test-data-input)
-                * [data_input/catalog.json:](#data_inputcatalogjson)
-                * [data_input/messages.txt:](#data_inputmessagestxt)
-                * [data_input/replace_identifiers.json:](#data_inputreplace_identifiersjson)
-            * [Integration Test Execution Flow:](#integration-test-execution-flow)
-            * [Integration Test Checks:](#integration-test-checks)
-                * [dbt schema tests:](#dbt-schema-tests)
-                * [dbt data tests:](#dbt-data-tests)
-                * [Notes using dbt seeds:](#notes-using-dbt-seeds)
-            * [Debug dbt operations with local database](#debug-dbt-operations-with-local-database)
-        * [Standard Destination Tests](#standard-destination-tests)
-        * [Acceptance Tests](#acceptance-tests)
+- [Normalization](#normalization)
+  - [Under the hood](#under-the-hood)
+    - [Incremental updates with dedup-history sync mode](#incremental-updates-with-dedup-history-sync-mode)
+  - [Developer workflow](#developer-workflow)
+    - [Setting up your environment](#setting-up-your-environment)
+    - [Running dbt](#running-dbt)
+  - [Testing normalization](#testing-normalization)
+    - [Build & Activate Virtual Environment and install dependencies](#build--activate-virtual-environment-and-install-dependencies)
+    - [Unit Tests](#unit-tests)
+      - [test_transform_config.py:](#test_transform_configpy)
+      - [test_stream_processor.py and test_table_name_registry.py:](#test_stream_processorpy-and-test_table_name_registrypy)
+      - [test_destination_name_transformer.py:](#test_destination_name_transformerpy)
+    - [Integration Tests](#integration-tests)
+      - [Integration Tests Definitions for test_ephemeral.py:](#integration-tests-definitions-for-test_ephemeralpy)
+      - [Integration Tests Definitions for test_normalization.py:](#integration-tests-definitions-for-test_normalizationpy)
+        - [README.md:](#readmemd)
+      - [Integration Test Data Input:](#integration-test-data-input)
+        - [data_input/catalog.json:](#data_inputcatalogjson)
+        - [data_input/messages.txt:](#data_inputmessagestxt)
+        - [data_input/replace_identifiers.json:](#data_inputreplace_identifiersjson)
+      - [Integration Test Execution Flow:](#integration-test-execution-flow)
+      - [Integration Test Checks:](#integration-test-checks)
+        - [dbt schema tests:](#dbt-schema-tests)
+        - [dbt data tests:](#dbt-data-tests)
+        - [Notes using dbt seeds:](#notes-using-dbt-seeds)
+      - [Debug dbt operations with local database](#debug-dbt-operations-with-local-database)
+    - [Standard Destination Tests](#standard-destination-tests)
+    - [Acceptance Tests](#acceptance-tests)
 
 Related documentation on normalization is available here:
 
-* [architecture / Basic Normalization](../../../docs/understanding-airbyte/basic-normalization.md)
-* [tutorials / Custom dbt normalization](../../../docs/operator-guides/transformation-and-normalization/transformations-with-dbt.md)
+- [architecture / Basic Normalization](../../../docs/understanding-airbyte/basic-normalization.md)
+- [tutorials / Custom dbt normalization](../../../docs/operator-guides/transformation-and-normalization/transformations-with-dbt.md)
 
 ## Under the hood
 
 Normalization has two Python modules:
-* `transform_config` parses the destination connector config and generates a profile.yml file,
+
+- `transform_config` parses the destination connector config and generates a profile.yml file,
   which configures how dbt will connect to the destination database.
-* `transform_catalog` parses the connection's catalog and generates a dbt_project.yml file,
+- `transform_catalog` parses the connection's catalog and generates a dbt_project.yml file,
   which configures the models that dbt will run and how they should be materialized.
 
 `entrypoint.sh` (the entrypoint to normalization's Docker image) invokes these two modules, then calls `dbt run` on their output.
@@ -54,10 +55,11 @@ Then we only need to find records from the source table with `_airbyte_emitted_a
 (equal to is necessary in case a previous normalization run was interrupted).
 
 This handles the two error scenarios quite cleanly:
-* If a sync fails but succeeds after a retry, such that the first attempt commits some records and the retry commits a superset
+
+- If a sync fails but succeeds after a retry, such that the first attempt commits some records and the retry commits a superset
   of those records, then normalization will see that the SCD table has none of those records. The SCD model has a deduping stage,
   which removes the records which were synced multiple times.
-* If normalization fails partway through, such that (for example) the SCD model is updated but the final table is not, and then the sync
+- If normalization fails partway through, such that (for example) the SCD model is updated but the final table is not, and then the sync
   is retried, then the source will not re-emit any old records (because the destination will have emitted a state message ack-ing
   all of the records). If the retry emits some new records, then normalization will append them to the SCD table as usual
   (because, from the SCD's point of view, this is just a normal sync). Then the final table's latest `__airbyte_emitted_at`
@@ -66,10 +68,11 @@ This handles the two error scenarios quite cleanly:
 ## Developer workflow
 
 At a high level, this is the recommended workflow for updating base-normalization:
+
 1. Manually edit the models in `integration_tests/normalization_test_output/postgres/test_simple_streams/models/generated`.
    Run `dbt compile` and manually execute the SQL queries. This requires manual setup and validation, but allows you to quickly experiment
    with different inputs.
-    1. You can substitute your preferred database/warehouse. This document will use Postgres because it's easy to set up.
+   1. You can substitute your preferred database/warehouse. This document will use Postgres because it's easy to set up.
 1. Run `dbt run` and verify that it generates the data correctly.
 1. Once `dbt run` succeeds, edit `stream_processor.py` until it generates the models you hand-wrote in step 1.
 1. Run the `test_normalization[DestinationType.POSTGRES-test_simple_streams]` integration test case.
@@ -79,13 +82,13 @@ At a high level, this is the recommended workflow for updating base-normalizatio
 ### Setting up your environment
 
 If you have a fully-featured Python dev environment, you can just set a breakpoint
-at [this line]([integration_tests/test_normalization.py#L105](https://github.com/airbytehq/airbyte/blob/17ee3ad44ff71164765b97ff439c7ffd51bf9bfe/airbyte-integrations/bases/base-normalization/integration_tests/test_normalization.py#L108))
+at [this line](<[integration_tests/test_normalization.py#L105](https://github.com/airbytehq/airbyte/blob/17ee3ad44ff71164765b97ff439c7ffd51bf9bfe/airbyte-integrations/bases/base-normalization/integration_tests/test_normalization.py#L108)>)
 and run the `test_normalization[DestinationType.POSTGRES-test_simple_streams]` test case. You can terminate the run after it hits the
 breakpoint. This will start Postgres in a Docker container with some prepopulated data and configure profiles.yml to match the container.
 
 To achieve this, follow the steps to [set up your python environment](#build--activate-virtual-environment-and-install-dependencies). Next, you can
 add a line with just `breakpoint()` after the contents of the `run_test_normalization` method
-in [test_normalization.py]([integration_tests/test_normalization.py#L105](https://github.com/airbytehq/airbyte/blob/17ee3ad44ff71164765b97ff439c7ffd51bf9bfe/airbyte-integrations/bases/base-normalization/integration_tests/test_normalization.py#L108))
+in [test_normalization.py](<[integration_tests/test_normalization.py#L105](https://github.com/airbytehq/airbyte/blob/17ee3ad44ff71164765b97ff439c7ffd51bf9bfe/airbyte-integrations/bases/base-normalization/integration_tests/test_normalization.py#L108)>)
 then, from the `integration_tests` directory run the following:
 
 ```shell
@@ -119,6 +122,7 @@ Once you have a database available, you can run dbt commands. We recommend runni
 This saves you the effort of installing dbt and reconfiguring dbt_project.yml. You should build the image locally with `./gradlew :airbyte-integrations:bases:base-normalization:airbyteDocker`.
 
 First, `cd integration_tests/normalization_test_output/postgres/test_simple_streams`. Then install dbt's dependencies:
+
 ```shell
 docker run \
   --rm \
@@ -136,6 +140,7 @@ docker run \
 ```
 
 You should be able to run `dbt compile` now:
+
 ```shell
 docker run \
   --rm \
@@ -157,6 +162,7 @@ For example, if you edit `models/generated/airbyte_incremental/scd/test_normaliz
 you can see the results in `build/compiled/airbyte_utils/models/generated/airbyte_incremental/scd/test_normalization/dedup_cdc_excluded_scd.sql`.
 
 You can also use `dbt run` to have dbt actually execute your models:
+
 ```shell
 docker run \
   --rm \
@@ -172,6 +178,7 @@ docker run \
   --profiles-dir=/workspace \
   --project-dir=/workspace
 ```
+
 Like `dbt compile`, this will modify the files in `build/compiled/airbyte_utils/models/generated`. It will also modify the files in
 `build/run/airbyte_utils/models/generated`.
 
@@ -180,17 +187,21 @@ Like `dbt compile`, this will modify the files in `build/compiled/airbyte_utils/
 Below are short descriptions of the kind of tests that may be affected by changes to the normalization code.
 
 ### Build & Activate Virtual Environment and install dependencies
+
 From this connector directory, create a virtual environment:
+
 ```
 python3 -m venv .venv
 ```
 
 This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
 development environment of choice. To activate it from the terminal, run:
+
 ```
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
 Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
@@ -239,22 +250,23 @@ These Unit tests checks implementation of specific rules of SQL identifier namin
 The specifications rules of each destinations are detailed in the corresponding docs, especially on the
 allowed characters, if quotes are needed or not, and the length limitations:
 
-* [bigquery](../../../docs/integrations/destinations/bigquery.md)
-* [postgres](../../../docs/integrations/destinations/postgres.md)
-* [redshift](../../../docs/integrations/destinations/redshift.md)
-* [snowflake](../../../docs/integrations/destinations/snowflake.md)
-* [mysql](../../../docs/integrations/destinations/mysql.md)
-* [oracle](../../../docs/integrations/destinations/oracle.md)
-* [mssql](../../../docs/integrations/destinations/mssql.md)
+- [bigquery](../../../docs/integrations/destinations/bigquery.md)
+- [postgres](../../../docs/integrations/destinations/postgres.md)
+- [redshift](../../../docs/integrations/destinations/redshift.md)
+- [snowflake](../../../docs/integrations/destinations/snowflake.md)
+- [mysql](../../../docs/integrations/destinations/mysql.md)
+- [oracle](../../../docs/integrations/destinations/oracle.md)
+- [mssql](../../../docs/integrations/destinations/mssql.md)
 
 Rules about truncations, for example for both of these strings which are too long for the postgres 64 limit:
-* `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii`
-* `Aaaa_Bbbb_Cccc_Dddd_a_very_long_name_Ffff_Gggg_Hhhh_Iiii`
+
+- `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii`
+- `Aaaa_Bbbb_Cccc_Dddd_a_very_long_name_Ffff_Gggg_Hhhh_Iiii`
 
 Deciding on how to truncate (in the middle) are being verified in these tests.
 In this instance, both strings ends up as:
 
-* `Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii`
+- `Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii`
 
 The truncate operation gets rid of characters in the middle of the string to preserve the start
 and end characters as it may contain more useful information in table naming. However the final
@@ -302,12 +314,14 @@ integration tests for normalization are running. Thus, if you encounter errors a
 present locally (even though it was built beforehand), make sure to increase the docker image storage size of your docker engine ("defaultKeepStorage" for mac for example).
 
 #### Integration Tests Definitions for test_ephemeral.py:
+
 The test here focus on benchmarking the "ephemeral" materialization mode of dbt. Depending on the number of
 columns in a catalog, this may throw exceptions and fail. This test ensures that we support reasonable number of columns in destination tables.
 
 For example, known limitations that are now supported were:
-* Ephemeral materialization with some generated models break with more than 490 columns with "maximum recursion depth exceeded", we now automatically switch to a little more scalable mode when generating dbt models by using views materialization.
-* The tests are currently checking that at least a reasonably large number (1500) of columns can complete successfully.
+
+- Ephemeral materialization with some generated models break with more than 490 columns with "maximum recursion depth exceeded", we now automatically switch to a little more scalable mode when generating dbt models by using views materialization.
+- The tests are currently checking that at least a reasonably large number (1500) of columns can complete successfully.
 
 However, limits on the destination still exists and can break for higher number of columns...
 
@@ -368,6 +382,7 @@ Note that `test_simple_streams` has additional message files, each representing 
 (`messages_incremental.txt` and `messages_schema_change.txt`).
 
 ##### data_input/replace_identifiers.json:
+
 The `replace_identifiers.json` contains maps of string patterns and values to replace in the `dbt_schema_tests`
 and `dbt_data_tests` files to handle cross database compatibility.
 
@@ -385,9 +400,9 @@ So, for each target destination, the steps run by the tests are:
    `messages.txt` file as data input.
 4. Run Normalization step to generate dbt models files from `catalog.json` input file.
 5. Execute dbt cli command: `dbt run` from the test workspace folder to compile generated models files
-   * from `models/generated/` folder
-   * into `../build/(compiled|run)/airbyte_utils/models/generated/` folder
-   * The final "run" SQL files are also copied (for archiving) to `final/` folder by the test script.
+   - from `models/generated/` folder
+   - into `../build/(compiled|run)/airbyte_utils/models/generated/` folder
+   - The final "run" SQL files are also copied (for archiving) to `final/` folder by the test script.
 6. Deploy the `schema_tests` and `data_tests` files into the test workspace folder.
 7. Execute dbt cli command: `dbt tests` from the test workspace folder to run verifications and checks with dbt.
 8. Optional checks (nothing for the moment)
@@ -404,9 +419,9 @@ Similarly, if your `destination-xyz:dev` image doesn't work, then the base-norma
 dbt allows out of the box to configure some tests as properties for an existing model (or source, seed, or snapshot).
 This can be done in yaml format as described in the following documentation pages:
 
-* [dbt schema-tests](https://docs.getdbt.com/docs/building-a-dbt-project/tests#schema-tests)
-* [custom schema test](https://docs.getdbt.com/docs/guides/writing-custom-schema-tests)
-* [dbt expectations](https://github.com/calogica/dbt-expectations)
+- [dbt schema-tests](https://docs.getdbt.com/docs/building-a-dbt-project/tests#schema-tests)
+- [custom schema test](https://docs.getdbt.com/docs/guides/writing-custom-schema-tests)
+- [dbt expectations](https://github.com/calogica/dbt-expectations)
 
 We are leveraging these capabilities in these integration tests to verify some relationships in our
 generated tables on the destinations.
@@ -416,7 +431,7 @@ generated tables on the destinations.
 Additionally, dbt also supports "data tests" which are specified as SQL queries.
 A data test is a select statement that returns 0 records when the test is successful.
 
-* [dbt data-tests](https://docs.getdbt.com/docs/building-a-dbt-project/tests#data-tests)
+- [dbt data-tests](https://docs.getdbt.com/docs/building-a-dbt-project/tests#data-tests)
 
 ##### Notes using dbt seeds:
 
@@ -425,21 +440,23 @@ Because some functionalities are not stable enough on dbt side, it is difficult 
 more easily be done in the future...
 
 Related issues to watch on dbt progress to improve this aspects:
-* <https://github.com/fishtown-analytics/dbt/issues/2959#issuecomment-747509782>
-* <https://medium.com/hashmapinc/unit-testing-on-dbt-models-using-a-static-test-dataset-in-snowflake-dfd35549b5e2>
+
+- <https://github.com/fishtown-analytics/dbt/issues/2959#issuecomment-747509782>
+- <https://medium.com/hashmapinc/unit-testing-on-dbt-models-using-a-static-test-dataset-in-snowflake-dfd35549b5e2>
 
 A nice improvement would be to add csv/json seed files as expected output data from tables.
 The integration tests would verify that the content of such tables in the destination would match
 these seed files or fail.
 
 #### Debug dbt operations with local database
+
 This only works for testing databases launched in local containers (e.g. postgres and mysql).
 
-* In `dbt_integration_test.py`, comment out the `tear_down_db` method so that the relevant database container is not deleted.
-* Find the name of the database container in the logs (e.g. by searching `Executing`).
-* Connect to the container by running `docker exec -it <container-name> bash` in the commandline.
-* Connect to the database inside the container (e.g. `mysql -u root` for mysql).
-* Test the generated dbt operations directly in the database.
+- In `dbt_integration_test.py`, comment out the `tear_down_db` method so that the relevant database container is not deleted.
+- Find the name of the database container in the logs (e.g. by searching `Executing`).
+- Connect to the container by running `docker exec -it <container-name> bash` in the commandline.
+- Connect to the database inside the container (e.g. `mysql -u root` for mysql).
+- Test the generated dbt operations directly in the database.
 
 ### Standard Destination Tests
 
@@ -454,7 +471,8 @@ For more details and options, you can also refer to the [testing connectors docs
 Please refer to the [developing docs](../../../docs/contributing-to-airbyte/developing-locally.md) on how to run Acceptance Tests.
 
 ## Publishing normalization
-The normalization publish pipeline still relies on the `manage.sh` [script](https://github.com/airbytehq/airbyte/blob/master/tools/integrations/manage.sh). It is not published on merge to master, but rather on demand, from the PR. To publish normalization, run the following slash command on the PR:
+
+The normalization publish pipeline still relies on the `manage.sh` [script](https://github.com/airbytehq/airbyte/blob/main/tools/integrations/manage.sh). It is not published on merge to main, but rather on demand, from the PR. To publish normalization, run the following slash command on the PR:
 
 ```text
 /legacy-publish connector=bases/base-normalization

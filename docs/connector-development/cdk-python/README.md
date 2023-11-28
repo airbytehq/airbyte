@@ -68,14 +68,14 @@ You can find a complete tutorial for implementing an HTTP source connector in [t
 
 **HTTP Connectors**:
 
-- [Exchangerates API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py)
-- [Stripe](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py)
-- [Slack](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-slack/source_slack/source.py)
+- [Exchangerates API](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/source.py)
+- [Stripe](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/source-stripe/source_stripe/source.py)
+- [Slack](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/source-slack/source_slack/source.py)
 
 **Simple Python connectors using the barebones `Source` abstraction**:
 
-- [Google Sheets](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-google-sheets/google_sheets_source/google_sheets_source.py)
-- [Mailchimp](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mailchimp/source_mailchimp/source.py)
+- [Google Sheets](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/source-google-sheets/google_sheets_source/google_sheets_source.py)
+- [Mailchimp](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/source-mailchimp/source_mailchimp/source.py)
 
 ## Contributing
 

@@ -9,7 +9,12 @@ import sentry_sdk
 from dagster import MetadataValue, Output, asset
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 from metadata_service.models.transform import to_json_sanitized_dict
-from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTOR_TEST_SUMMARY_FOLDER, REPORT_FOLDER, get_public_metadata_service_url
+from orchestrator.config import (
+    CONNECTOR_REPO_NAME,
+    CONNECTOR_TEST_SUMMARY_FOLDER,
+    REPORT_FOLDER,
+    get_public_metadata_service_url,
+)
 from orchestrator.logging import sentry
 from orchestrator.templates.render import (
     ColumnInfo,
@@ -36,7 +41,7 @@ def github_url(docker_repo_name: str, github_connector_folders: List[str]) -> st
 
     connector_name = docker_repo_name.replace("airbyte/", "")
     if connector_name in github_connector_folders:
-        return f"https://github.com/{CONNECTOR_REPO_NAME}/blob/master/airbyte-integrations/connectors/{connector_name}"
+        return f"https://github.com/{CONNECTOR_REPO_NAME}/blob/main/airbyte-integrations/connectors/{connector_name}"
     else:
         return None
 
@@ -46,9 +51,7 @@ def icon_url(row: pd.DataFrame) -> str:
     if not isinstance(icon_file_name, str):
         return None
 
-    github_icon_base = (
-        f"https://raw.githubusercontent.com/{CONNECTOR_REPO_NAME}/master/airbyte-config-oss/init-oss/src/main/resources/icons"
-    )
+    github_icon_base = f"https://raw.githubusercontent.com/{CONNECTOR_REPO_NAME}/main/airbyte-config-oss/init-oss/src/main/resources/icons"
     return f"{github_icon_base}/{icon_file_name}"
 
 
@@ -109,7 +112,11 @@ def ab_internal_ql(row: pd.DataFrame) -> str:
 
 @sentry_sdk.trace
 def augment_and_normalize_connector_dataframes(
-    cloud_df: pd.DataFrame, oss_df: pd.DataFrame, primary_key: str, connector_type: str, github_connector_folders: List[str]
+    cloud_df: pd.DataFrame,
+    oss_df: pd.DataFrame,
+    primary_key: str,
+    connector_type: str,
+    github_connector_folders: List[str],
 ) -> pd.DataFrame:
     """
     Normalize the cloud and oss connector dataframes and merge them into a single dataframe.
@@ -123,18 +130,28 @@ def augment_and_normalize_connector_dataframes(
     oss_df["is_oss"] = True
 
     # Merge the two registries on the 'image' and 'version' columns
-    total_registry = pd.merge(oss_df, cloud_df, how="outer", suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), on=primary_key)
+    total_registry = pd.merge(
+        oss_df,
+        cloud_df,
+        how="outer",
+        suffixes=(OSS_SUFFIX, CLOUD_SUFFIX),
+        on=primary_key,
+    )
 
     # remove duplicates from the merged dataframe
     total_registry = total_registry.drop_duplicates(subset=primary_key, keep="first")
 
     # Replace NaN values in the 'is_cloud' and 'is_oss' columns with False
-    total_registry[["is_cloud", "is_oss"]] = total_registry[["is_cloud", "is_oss"]].fillna(False)
+    total_registry[["is_cloud", "is_oss"]] = total_registry[
+        ["is_cloud", "is_oss"]
+    ].fillna(False)
 
     # Set connectorType to 'source' or 'destination'
     total_registry["connector_type"] = connector_type
 
-    total_registry["github_url"] = total_registry["dockerRepository_oss"].apply(lambda x: github_url(x, github_connector_folders))
+    total_registry["github_url"] = total_registry["dockerRepository_oss"].apply(
+        lambda x: github_url(x, github_connector_folders)
+    )
 
     total_registry["issue_url"] = total_registry.apply(issue_url, axis=1)
     total_registry["test_summary_url"] = total_registry.apply(test_summary_url, axis=1)
@@ -144,9 +161,15 @@ def augment_and_normalize_connector_dataframes(
     total_registry["ab_internal_sl"] = total_registry.apply(ab_internal_sl, axis=1)
 
     # Merge docker repo and version into separate columns
-    total_registry["docker_image_oss"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, OSS_SUFFIX), axis=1)
-    total_registry["docker_image_cloud"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, CLOUD_SUFFIX), axis=1)
-    total_registry["docker_images_match"] = total_registry["docker_image_oss"] == total_registry["docker_image_cloud"]
+    total_registry["docker_image_oss"] = total_registry.apply(
+        lambda x: merge_docker_repo_and_version(x, OSS_SUFFIX), axis=1
+    )
+    total_registry["docker_image_cloud"] = total_registry.apply(
+        lambda x: merge_docker_repo_and_version(x, CLOUD_SUFFIX), axis=1
+    )
+    total_registry["docker_images_match"] = (
+        total_registry["docker_image_oss"] == total_registry["docker_image_cloud"]
+    )
 
     # Rename column primary_key to 'definitionId'
     total_registry.rename(columns={primary_key: "definitionId"}, inplace=True)
@@ -159,7 +182,9 @@ def augment_and_normalize_connector_dataframes(
 
 @asset(group_name=GROUP_NAME)
 @sentry_sdk.trace
-def cloud_sources_dataframe(latest_cloud_registry: ConnectorRegistryV0) -> OutputDataFrame:
+def cloud_sources_dataframe(
+    latest_cloud_registry: ConnectorRegistryV0,
+) -> OutputDataFrame:
     latest_cloud_registry_dict = to_json_sanitized_dict(latest_cloud_registry)
     sources = latest_cloud_registry_dict["sources"]
     return output_dataframe(pd.DataFrame(sources))
@@ -175,7 +200,9 @@ def oss_sources_dataframe(latest_oss_registry: ConnectorRegistryV0) -> OutputDat
 
 @asset(group_name=GROUP_NAME)
 @sentry_sdk.trace
-def cloud_destinations_dataframe(latest_cloud_registry: ConnectorRegistryV0) -> OutputDataFrame:
+def cloud_destinations_dataframe(
+    latest_cloud_registry: ConnectorRegistryV0,
+) -> OutputDataFrame:
     latest_cloud_registry_dict = to_json_sanitized_dict(latest_cloud_registry)
     destinations = latest_cloud_registry_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
@@ -183,7 +210,9 @@ def cloud_destinations_dataframe(latest_cloud_registry: ConnectorRegistryV0) -> 
 
 @asset(group_name=GROUP_NAME)
 @sentry_sdk.trace
-def oss_destinations_dataframe(latest_oss_registry: ConnectorRegistryV0) -> OutputDataFrame:
+def oss_destinations_dataframe(
+    latest_oss_registry: ConnectorRegistryV0,
+) -> OutputDataFrame:
     latest_oss_registry_dict = to_json_sanitized_dict(latest_oss_registry)
     destinations = latest_oss_registry_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
@@ -191,7 +220,9 @@ def oss_destinations_dataframe(latest_oss_registry: ConnectorRegistryV0) -> Outp
 
 @asset(group_name=GROUP_NAME)
 @sentry_sdk.trace
-def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders) -> pd.DataFrame:
+def all_sources_dataframe(
+    cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders
+) -> pd.DataFrame:
     """
     Merge the cloud and oss sources registries into a single dataframe.
     """
@@ -207,7 +238,9 @@ def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github
 
 @asset(group_name=GROUP_NAME)
 @sentry_sdk.trace
-def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders) -> pd.DataFrame:
+def all_destinations_dataframe(
+    cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders
+) -> pd.DataFrame:
     """
     Merge the cloud and oss destinations registries into a single dataframe.
     """
@@ -221,15 +254,21 @@ def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_da
     )
 
 
-@asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
+@asset(
+    required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME
+)
 @sentry.instrument_asset_op
-def connector_registry_report(context, all_destinations_dataframe, all_sources_dataframe):
+def connector_registry_report(
+    context, all_destinations_dataframe, all_sources_dataframe
+):
     """
     Generate a report of the connector registry.
     """
 
     report_file_name = "connector_registry_report"
-    all_connectors_dataframe = pd.concat([all_destinations_dataframe, all_sources_dataframe])
+    all_connectors_dataframe = pd.concat(
+        [all_destinations_dataframe, all_sources_dataframe]
+    )
     all_connectors_dataframe.reset_index(inplace=True)
 
     columns_to_show: List[ColumnInfo] = [
@@ -311,19 +350,31 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
     ]
 
     html_string = render_connector_registry_locations_html(
-        destinations_table_html=dataframe_to_table_html(all_destinations_dataframe, columns_to_show),
-        sources_table_html=dataframe_to_table_html(all_sources_dataframe, columns_to_show),
+        destinations_table_html=dataframe_to_table_html(
+            all_destinations_dataframe, columns_to_show
+        ),
+        sources_table_html=dataframe_to_table_html(
+            all_sources_dataframe, columns_to_show
+        ),
     )
 
     json_string = all_connectors_dataframe.to_json(orient="records")
 
-    registry_report_directory_manager = context.resources.registry_report_directory_manager
+    registry_report_directory_manager = (
+        context.resources.registry_report_directory_manager
+    )
 
-    json_file_handle = registry_report_directory_manager.write_data(json_string.encode(), ext="json", key=report_file_name)
-    html_file_handle = registry_report_directory_manager.write_data(html_string.encode(), ext="html", key=report_file_name)
+    json_file_handle = registry_report_directory_manager.write_data(
+        json_string.encode(), ext="json", key=report_file_name
+    )
+    html_file_handle = registry_report_directory_manager.write_data(
+        html_string.encode(), ext="html", key=report_file_name
+    )
 
     metadata = {
-        "first_10_preview": MetadataValue.md(all_connectors_dataframe.head(10).to_markdown()),
+        "first_10_preview": MetadataValue.md(
+            all_connectors_dataframe.head(10).to_markdown()
+        ),
         "json_gcs_url": MetadataValue.url(json_file_handle.public_url),
         "html_gcs_url": MetadataValue.url(html_file_handle.public_url),
     }

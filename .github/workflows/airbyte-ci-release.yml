@@ -67,7 +67,7 @@ jobs:
 
       - name: Upload pre-release to GCS dev bucket
         id: upload_pre_release_to_gcs
-        if: github.ref != 'refs/heads/master'
+        if: github.ref != 'refs/heads/main'
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}
@@ -80,11 +80,11 @@ jobs:
         run: |
           echo "https://storage.googleapis.com/${{ env.DEV_GCS_BUCKET_NAME }}/airbyte-ci/releases/${{ matrix.os }}/${{ steps.get_short_sha.outputs.sha }}/${{ env.BINARY_FILE_NAME }}"
 
-      # if master, upload per version and latest to prod bucket
+      # if main, upload per version and latest to prod bucket
 
       - name: Set version from poetry version --short
         id: set_version
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         working-directory: airbyte-ci/connectors/pipelines/
         run: |
           echo "::set-output name=version::$(poetry version --short)"
@@ -97,7 +97,7 @@ jobs:
 
       - name: Upload version release to GCS prod bucket
         id: upload_version_release_to_gcs
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}
@@ -107,13 +107,13 @@ jobs:
 
       - name: Print release version public url
         id: print_version_release_public_url
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         run: |
           echo "https://storage.googleapis.com/${{ env.PROD_GCS_BUCKET_NAME }}/airbyte-ci/releases/${{ matrix.os }}/${{ steps.set_version.outputs.version }}/${{ env.BINARY_FILE_NAME }}"
 
       - name: Upload latest release to GCS prod bucket
         id: upload_latest_release_to_gcs
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: airbyte-ci/connectors/pipelines/dist/${{ env.BINARY_FILE_NAME }}
@@ -123,6 +123,6 @@ jobs:
 
       - name: Print latest release public url
         id: print_latest_release_public_url
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         run: |
           echo "https://storage.googleapis.com/${{ env.PROD_GCS_BUCKET_NAME }}/airbyte-ci/releases/${{ matrix.os }}/latest/${{ env.BINARY_FILE_NAME }}"

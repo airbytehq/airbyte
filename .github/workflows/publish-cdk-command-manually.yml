@@ -9,7 +9,7 @@ on:
       gitref:
         description: "The git ref to check out from the specified repository."
         required: false
-        default: master
+        default: main
       release-type:
         type: choice
         description: "Choose the type of version upgrade : major|minor|patch"
@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: airbytehq/airbyte
-          ref: master
+          ref: main
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -223,7 +223,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: airbytehq/airbyte
-          ref: master
+          ref: main
       - name: Install Java
         uses: actions/setup-java@v3
         with:
@@ -309,7 +309,7 @@ jobs:
           title: Updating CDK version following release
           body: This is an automatically generated PR triggered by a CDK release
           branch: automatic-cdk-release
-          base: master
+          base: main
           delete-branch: true
       - name: Post success to Slack channel dev-connectors-extensibility
         uses: slackapi/slack-github-action@v1.23.0
@@ -324,7 +324,7 @@ jobs:
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
+                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/main/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
                         }
                     },
                     {
@@ -359,7 +359,7 @@ jobs:
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
+                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/main/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
                         }
                     },
                     {

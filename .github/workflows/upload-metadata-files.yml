@@ -35,7 +35,7 @@ jobs:
           done
       - name: Slack Notification - Failure
         if: failure()
-        uses: rtCamp/action-slack-notify@master
+        uses: rtCamp/action-slack-notify@main
         env:
           SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           SLACK_USERNAME: Metadata Service

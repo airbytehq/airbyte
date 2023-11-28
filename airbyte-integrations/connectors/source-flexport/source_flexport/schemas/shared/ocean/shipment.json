@@ -17,7 +17,7 @@
     },
     "master_bill_number": {
       "type": ["null", "string"],
-      "description": "Master bill of lading number."
+      "description": "main bill of lading number."
     },
     "carrier_booking_number": {
       "type": ["null", "string"],

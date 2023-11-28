@@ -19,7 +19,7 @@ and place them into `secrets/config.json`.
 
 #### Use `airbyte-ci` to build your connector
 The Airbyte way of building this connector is to use our `airbyte-ci` tool.
-You can follow install instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1).
+You can follow install instructions [here](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/README.md#L1).
 Then running the following command will build your connector:
 
 ```bash
@@ -55,7 +55,7 @@ async def post_connector_install(connector_container: Container) -> Container:
 #### Build your own connector image
 This connector is built using our dynamic built process in `airbyte-ci`.
 The base image used to build it is defined within the metadata.yaml file under the `connectorBuildOptions`.
-The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
+The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
 It does not rely on a Dockerfile.
 
 If you would like to patch our connector and build your own a simple approach would be to:
@@ -92,7 +92,7 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 ### Acceptance Tests
 Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
-Please run acceptance tests via [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#connectors-test-command):
+Please run acceptance tests via [airbyte-ci](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/README.md#connectors-test-command):
 ```bash
 airbyte-ci connectors --name source-{{dashCase name}} test
 ```
@@ -111,5 +111,5 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 4. Make the connector documentation and its changelog is up to date (`docs/integrations/sources/{{dashCase name}}.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
-7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into main.
 

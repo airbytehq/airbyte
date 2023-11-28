@@ -99,7 +99,7 @@ public class KeenDestinationTest extends DestinationAcceptanceTest {
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     if (!Files.exists(Path.of(SECRET_FILE_PATH))) {
       throw new IllegalStateException(
-          "Must provide path to a file containing Keen account credentials: Project ID and Master API Key. " +
+          "Must provide path to a file containing Keen account credentials: Project ID and main API Key. " +
               "By default {module-root}/" + SECRET_FILE_PATH);
     }
     configJson = getBaseConfigJson();

@@ -1,6 +1,6 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/models-oss/src/main/resources/types/SyncStats.yaml
+"$id": https://github.com/airbytehq/airbyte/blob/main/airbyte-config-oss/models-oss/src/main/resources/types/SyncStats.yaml
 title: SyncStats
 description: sync stats.
 type: object

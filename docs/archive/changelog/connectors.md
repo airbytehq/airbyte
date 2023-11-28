@@ -104,7 +104,7 @@ New sources:
 
 - [**Confluence**](https://docs.airbyte.com/integrations/sources/confluence)
 - [**Monday**](https://docs.airbyte.com/integrations/sources/monday)
-- [**Commerce Tools**](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-commercetools)
+- [**Commerce Tools**](https://github.com/airbytehq/airbyte/tree/main/airbyte-integrations/connectors/source-commercetools)
 - [**Pinterest**](https://docs.airbyte.com/integrations/sources/pinterest)
 
 New features:
@@ -130,11 +130,11 @@ New sources:
 - [**Amazon SQS**](https://docs.airbyte.com/integrations/sources/amazon-sqs)
 - [**Freshservices**](https://docs.airbyte.com/integrations/sources/freshservice/)
 - [**Freshsales**](https://docs.airbyte.com/integrations/sources/freshsales)
-- [**Appsflyer**](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-appsflyer)
+- [**Appsflyer**](https://github.com/airbytehq/airbyte/tree/main/airbyte-integrations/connectors/source-appsflyer)
 - [**Paystack**](https://docs.airbyte.com/integrations/sources/paystack)
 - [**Sentry**](https://docs.airbyte.com/integrations/sources/sentry)
-- [**Retently**](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-retently)
-- [**Delighted!**](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-delighted)
+- [**Retently**](https://github.com/airbytehq/airbyte/tree/main/airbyte-integrations/connectors/source-retently)
+- [**Delighted!**](https://github.com/airbytehq/airbyte/tree/main/airbyte-integrations/connectors/source-delighted)
 
 New features:
 

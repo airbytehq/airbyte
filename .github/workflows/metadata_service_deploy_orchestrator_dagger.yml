@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - main
     paths:
       - "airbyte-ci/connectors/metadata_service/orchestrator/**"
 jobs:
@@ -19,7 +19,7 @@ jobs:
         uses: ./.github/actions/run-dagger-pipeline
         with:
           subcommand: "metadata deploy orchestrator"
-          context: "master"
+          context: "main"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}

@@ -115,8 +115,8 @@
       "branch": {
         "type": "string",
         "title": "Branch",
-        "examples": ["airbytehq/airbyte/master airbytehq/airbyte/my-branch"],
-        "description": "(DEPRCATED) Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
+        "examples": ["airbytehq/airbyte/main airbytehq/airbyte/my-branch"],
+        "description": "(DEPRCATED) Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/main`. If no branches are specified for a repository, the default branch will be pulled.",
         "airbyte_hidden": true,
         "pattern_descriptor": "org/repo/branch1 org/repo/branch2"
       },
@@ -126,8 +126,8 @@
           "type": "string"
         },
         "title": "Branches",
-        "examples": ["airbytehq/airbyte/master airbytehq/airbyte/my-branch"],
-        "description": "List of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
+        "examples": ["airbytehq/airbyte/main airbytehq/airbyte/my-branch"],
+        "description": "List of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/main`. If no branches are specified for a repository, the default branch will be pulled.",
         "order": 4,
         "pattern_descriptor": "org/repo/branch1 org/repo/branch2"
       },

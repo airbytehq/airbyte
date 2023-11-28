@@ -35,7 +35,7 @@ EOM
 
 for d in $dates
 do
-git checkout $(git rev-list -n 1 --first-parent --before="$d" master)
+git checkout $(git rev-list -n 1 --first-parent --before="$d" main)
 
 # count how many lowcode connectors there are
 

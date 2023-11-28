@@ -37,7 +37,7 @@ To use the Keen destination, you'll first need to create a [Keen account](https:
 Once you have a Keen account, you can use the following credentials to set up the connector
 
 - A Keen Project ID
-- A Keen Master API key associated with the project
+- A Keen main API key associated with the project
 
 See the setup guide for more information about how to get started.
 
@@ -51,16 +51,16 @@ Login to the [Keen application](https://keen.io/) and add a new project. To do t
 
 You can think of a project as a data silo. The data in a project is completely separate from data in other projects. We recommend that you create separate projects for each of your applications and separate projects for Dev and Prod environments.
 
-Now, head to the ‘Access’ section and grab your Project ID and Master API Key.
+Now, head to the ‘Access’ section and grab your Project ID and main API Key.
 
 If you already have a project set up:
 
-Head to the ‘Access’ tab and grab your Project ID and Master API Key
+Head to the ‘Access’ tab and grab your Project ID and main API Key
 
 #### API Key and Project ID
 
-The Keen Connector uses the [Keen Kafka Inbound Cluster](https://keen.io/docs/streams/kafka-streaming/kafka-inbound-cluster/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) to stream data. It requires your `Project ID` and `Master Key` for authentication. To get them, navigate to the `Access` tab from the left-hand, side panel and check the `Project Details` section.
-**Important**: This destination requires the Project's **Master** Key.
+The Keen Connector uses the [Keen Kafka Inbound Cluster](https://keen.io/docs/streams/kafka-streaming/kafka-inbound-cluster/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) to stream data. It requires your `Project ID` and `main Key` for authentication. To get them, navigate to the `Access` tab from the left-hand, side panel and check the `Project Details` section.
+**Important**: This destination requires the Project's **main** Key.
 
 #### Timestamp Inference
 
@@ -71,7 +71,7 @@ The `Infer Timestamp` field lets you specify if you want the connector to infer 
 Now, you should have all the parameters needed to configure Keen destination.
 
 - **Project ID**
-- **Master API Key**
+- **main API Key**
 - **Infer Timestamp**
 
 Connect your first source and then head to the Keen application. You can seamlessly run [custom analysis](https://keen.io/docs/compute/data-explorer-guide/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) on your data and [build interactive dashboards](https://keen.io/docs/visualize/dashboard-creator/dashboard-edition/?utm_campaign=Airbyte%20Destination%20Connector&utm_source=Airbyte%20Hosted%20Docs&utm_medium=Airbyte%20Hosted%20Docs&utm_term=Airbyte%20Hosted%20Docs&utm_content=Airbyte%20Hosted%20Docs) for key stakeholders.

@@ -27,6 +27,7 @@ Here is a cheatsheet for common gradle commands.
 ### List Gradle Tasks
 
 To view all available tasks:
+
 ```text
 ./gradlew tasks
 ```
@@ -121,7 +122,7 @@ SUB_BUILD=PLATFORM ./gradlew build
 The Platform has 3 different levels of tests: Unit Tests, Acceptance Tests, Frontend Acceptance Tests.
 
 | Test        | Used | Description                                                                                   |
-|:------------|:----:|:----------------------------------------------------------------------------------------------|
+| :---------- | :--: | :-------------------------------------------------------------------------------------------- |
 | Unit        |  X   | Aims to test each component (e.g. a method function)                                          |
 | Integration |      | Checks the data flow from one module to other modules                                         |
 | System      |      | Tests overall interaction of components, includes load, performance, reliability and security |
@@ -135,19 +136,20 @@ Unit Tests can be run using the `:test` task on any submodule. These test class-
 
 We split Acceptance Tests into 2 different test suites:
 
-* Platform Acceptance Tests: These tests are a coarse test to sanity check that each major feature in the platform. They are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests`. These tests expect to find a local version of Airbyte running. For testing the docker version start Airbyte locally. For an example, see the [acceptance_test script](https://github.com/airbytehq/airbyte-platform/blob/main/tools/bin/acceptance_test.sh) that is used by the CI. For Kubernetes, see the [acceptance_test_helm script](https://github.com/airbytehq/airbyte-platform/blob/main/tools/bin/acceptance_test_kube_helm.sh) that is used by the CI.
-* Migration Acceptance Tests: These tests make sure the end-to-end process of migrating from one version of Airbyte to the next works. These tests are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan`. These tests do not expect there to be a separate deployment of Airbyte running.
+- Platform Acceptance Tests: These tests are a coarse test to sanity check that each major feature in the platform. They are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests`. These tests expect to find a local version of Airbyte running. For testing the docker version start Airbyte locally. For an example, see the [acceptance_test script](https://github.com/airbytehq/airbyte-platform/blob/main/tools/bin/acceptance_test.sh) that is used by the CI. For Kubernetes, see the [acceptance_test_helm script](https://github.com/airbytehq/airbyte-platform/blob/main/tools/bin/acceptance_test_kube_helm.sh) that is used by the CI.
+- Migration Acceptance Tests: These tests make sure the end-to-end process of migrating from one version of Airbyte to the next works. These tests are run with the following command: `SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan`. These tests do not expect there to be a separate deployment of Airbyte running.
 
 These tests currently all live in [airbyte-tests](https://github.com/airbytehq/airbyte/airbyte-tests)
 
 **Frontend Acceptance Tests**
 
 These are acceptance tests for the frontend. They are run with
+
 ```shell
 SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp-e2e-tests:e2etest
-``` 
+```
 
-Like the Platform Acceptance Tests, they expect Airbyte to be running locally. See the [script](https://github.com/airbytehq/airbyte/blob/master/tools/bin/e2e_test.sh) that is used by the CI.
+Like the Platform Acceptance Tests, they expect Airbyte to be running locally. See the [script](https://github.com/airbytehq/airbyte/blob/main/tools/bin/e2e_test.sh) that is used by the CI.
 
 These tests currently all live in [airbyte-webapp-e2e-tests](https://github.com/airbytehq/airbyte/airbyte-webapp-e2e-tests)
 
@@ -162,11 +164,13 @@ Our story around "integration testing" or "E2E testing" is a little ambiguous. O
 All connectors, regardless of implementation language, implement the following interface to allow uniformity in the build system when run from CI:
 
 **Build connector, run unit tests, and build Docker image**:
+
 ```shell
 ./gradlew :airbyte-integrations:connectors:<connector_name>:build
-``` 
+```
 
 **Run integration tests**:
+
 ```shell
 ./gradlew :airbyte-integrations:connectors:<connector_name>:integrationTest
 ```
@@ -178,11 +182,13 @@ The ideal end state for a Python connector developer is that they shouldn't have
 We're almost there, but today there is only one Gradle command that's needed when developing in Python, used for formatting code.
 
 **Formatting python module**:
+
 ```shell
 ./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
 ```
 
 # Updating Gradle Dependencies
+
 We use [Gradle Catalogs](https://docs.gradle.org/current/userguide/platforms.html#sub:central-declaration-of-dependencies)
 to keep dependencies synced up across different Java projects. This is particularly useful for Airbyte Cloud, and can be
 used by any project seeking to build off Airbyte.
@@ -191,17 +197,20 @@ Catalogs allow dependencies to be represented as dependency coordinates. A user 
 when declaring dependencies in a build script.
 
 > Version Catalog Example:
+>
 > ```gradle
 > dependencies {
 >    implementation(libs.groovy.core)
 > }
 > ```
+>
 > In this context, libs is a catalog and groovy represents a dependency available in this catalog. Instead of declaring a
 > specific version, we reference the version in the Catalog.
 
 This helps reduce the chances of dependency drift and dependency hell.
 
 Thus, please use the Catalog when:
+
 - declaring new common dependencies.
 - specifying new common dependencies.
 
@@ -211,19 +220,23 @@ are built upon.
 This is a relatively new addition, so devs should keep this in mind and use the top-level Catalog on a best-effort basis.
 
 ### Setup Details
+
 This section is for engineers wanting to understand Gradle Catalog details and how Airbyte has set this up.
 
 #### The version catalog TOML file format
+
 Gradle offers a conventional file to declare a catalog.
 It’s a conventional location to declare dependencies that are both consumed and published.
 
 The TOML file consists of 4 major sections:
+
 - the [versions] section is used to declare versions which can be referenced by dependencies
 - the [libraries] section is used to declare the aliases to coordinates
 - the [bundles] section is used to declare dependency bundles
 - the [plugins] section is used to declare plugins
 
 > TOML file Example:
+>
 > ```gradle
 > [versions]
 > groovy = "3.0.5"
@@ -237,8 +250,8 @@ The TOML file consists of 4 major sections:
 > [plugins]
 > jmh = { id = "me.champeau.jmh", version = "0.6.5" }
 > ```
-> NOTE: for more information please follow [this](https://docs.gradle.org/current/userguide/platforms.html#:~:text=The%20version%20catalog%20TOML%20file%20format
-) link.
+>
+> NOTE: for more information please follow [this](https://docs.gradle.org/current/userguide/platforms.html#:~:text=The%20version%20catalog%20TOML%20file%20format) link.
 
 As described above this project contains TOML file `deps.toml` which is fully fulfilled with respect to [official](https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format) documentation.
 In case when new versions should be used please update `deps.toml` accordingly.
@@ -297,9 +310,12 @@ junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]
 </details>
 
 #### Declaring a version catalog
+
 Version catalogs can be declared in the settings.gradle file.
 There should be specified section `dependencyResolutionManagement` which uses `deps.toml` file as a declared catalog.
+
 > Example:
+>
 > ```gradle
 > dependencyResolutionManagement {
 >     repositories {
@@ -316,7 +332,9 @@ There should be specified section `dependencyResolutionManagement` which uses `d
 > ```
 
 #### Sharing Catalogs
+
 To share this catalog for further usage by other Projects, we do the following 2 steps:
+
 - Define `version-catalog` plugin in `build.gradle` file (ignore if this record exists)
   ```gradle
   plugins {
@@ -333,15 +351,20 @@ To share this catalog for further usage by other Projects, we do the following 2
   ```
 
 #### Configure the Plugin Publishing Plugin
+
 To **Publishing**, first define the `maven-publish` plugin in `build.gradle` file (ignore if this already exists):
+
 ```gradle
 plugins {
     id '...'
     id 'maven-publish'
 }
 ```
+
 After that, describe the publishing section. Please use [this](https://docs.gradle.org/current/userguide/publishing_gradle_plugins.html) official documentation for more details.
+
 > Example:
+>
 > ```gradle
 > publishing {
 >     publications {

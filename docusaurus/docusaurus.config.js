@@ -77,7 +77,7 @@ const config = {
           routeBasePath: "/",
           sidebarCollapsible: true,
           sidebarPath: require.resolve("./sidebars.js"),
-          editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+          editUrl: "https://github.com/airbytehq/airbyte/blob/main/docs",
           path: "../docs",
           exclude: ["**/*.inapp.md"],
           remarkPlugins: [docsHeaderDecoration],

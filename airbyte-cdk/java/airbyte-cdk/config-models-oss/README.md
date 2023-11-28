@@ -3,6 +3,7 @@
 This module uses `jsonschema2pojo` to generate Java config objects from [json schema](https://json-schema.org/) definitions. See [build.gradle](./build.gradle) for details.
 
 ## How to use
+
 - Update json schema under:
   ```
   src/main/resources/types/
@@ -17,4 +18,5 @@ This module uses `jsonschema2pojo` to generate Java config objects from [json sc
   ```
 
 ## Reference
-- [`jsonschema2pojo` plugin](https://github.com/joelittlejohn/jsonschema2pojo/tree/master/jsonschema2pojo-gradle-plugin).
+
+- [`jsonschema2pojo` plugin](https://github.com/joelittlejohn/jsonschema2pojo/tree/main/jsonschema2pojo-gradle-plugin).

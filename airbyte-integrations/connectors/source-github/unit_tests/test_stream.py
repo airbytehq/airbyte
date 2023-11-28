@@ -11,7 +11,10 @@ import pytest
 import requests
 import responses
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import (
+    BaseBackoffException,
+    UserDefinedBackoffException,
+)
 from requests import HTTPError
 from responses import matchers
 from source_github import constants
@@ -404,7 +407,7 @@ def test_stream_commits_incremental_read():
         "start_date": "2022-02-02T10:10:03Z",
     }
 
-    default_branches = {"organization/repository": "master"}
+    default_branches = {"organization/repository": "main"}
     branches_to_pull = {"organization/repository": ["branch"]}
 
     stream = Commits(**repository_args_with_start_date, branches_to_pull=branches_to_pull, default_branches=default_branches)

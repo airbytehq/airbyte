@@ -37224,9 +37224,9 @@ class Repository(
     Arguments:
 
     * `qualified_name` (`String!`): The ref to retrieve. Fully
-      qualified matches are checked in order (`refs/heads/master`)
+      qualified matches are checked in order (`refs/heads/main`)
       before falling back onto checks for short name matches
-      (`master`).
+      (`main`).
     """
 
     refs = sgqlc.types.Field(

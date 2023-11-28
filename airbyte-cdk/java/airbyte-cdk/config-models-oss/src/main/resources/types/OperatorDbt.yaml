@@ -1,6 +1,6 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/models-oss/src/main/resources/types/OperatorDbt.yaml
+"$id": https://github.com/airbytehq/airbyte/blob/main/airbyte-config-oss/models-oss/src/main/resources/types/OperatorDbt.yaml
 title: OperatorDbt
 description: Settings for a DBT operator
 type: object

@@ -17,10 +17,18 @@ import docker
 import git
 from github import PullRequest
 from pipelines import main_logger
-from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.click_decorators import (
+    click_append_to_context_object,
+    click_ignore_unused_kwargs,
+    click_merge_args_into_context_obj,
+)
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
-from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_PIPELINE_PACKAGE_PATH, CIContext
+from pipelines.consts import (
+    DAGGER_WRAP_ENV_VAR_NAME,
+    LOCAL_PIPELINE_PACKAGE_PATH,
+    CIContext,
+)
 from pipelines.helpers import github
 from pipelines.helpers.git import (
     get_current_git_branch,
@@ -76,7 +84,9 @@ def check_up_to_date(throw_as_error=False) -> bool:
             logging.warning(upgrade_error_message)
             return False
 
-    main_logger.info(f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
+    main_logger.info(
+        f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}"
+    )
     return True
 
 
@@ -90,7 +100,9 @@ def get_latest_version() -> str:
         for line in f.readlines():
             if "version" in line:
                 return line.split("=")[1].strip().replace('"', "")
-    raise Exception("Could not find version in pyproject.toml. Please ensure you are running from the root of the airbyte repo.")
+    raise Exception(
+        "Could not find version in pyproject.toml. Please ensure you are running from the root of the airbyte repo."
+    )
 
 
 def _validate_airbyte_repo(repo: git.Repo) -> bool:
@@ -129,7 +141,9 @@ def get_airbyte_repo_path_with_fallback() -> Path:
     try:
         return get_airbyte_repo().working_tree_dir
     except git.exc.InvalidGitRepositoryError:
-        logging.warning("Could not find the airbyte repo, falling back to the current working directory.")
+        logging.warning(
+            "Could not find the airbyte repo, falling back to the current working directory."
+        )
         path = Path.cwd()
         logging.warning(f"Using {path} as the airbyte repo path.")
         return path
@@ -143,27 +157,38 @@ def set_working_directory_to_root() -> None:
 
 
 async def get_modified_files(
-    git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext, pull_request: PullRequest
+    git_branch: str,
+    git_revision: str,
+    diffed_branch: str,
+    is_local: bool,
+    ci_context: CIContext,
+    pull_request: PullRequest,
 ) -> List[str]:
     """Get the list of modified files in the current git branch.
-    If the current branch is master, it will return the list of modified files in the head commit.
-    The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.
-    Pipelines like "publish on merge" are triggered on each new commit on master.
+    If the current branch is main, it will return the list of modified files in the head commit.
+    The head commit on main should be the merge commit of the latest merged pull request as we squash commits on merge.
+    Pipelines like "publish on merge" are triggered on each new commit on main.
 
     If the CI context is a pull request, it will return the list of modified files in the pull request, without using git diff.
-    If the current branch is not master, it will return the list of modified files in the current branch.
+    If the current branch is not main, it will return the list of modified files in the current branch.
     This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
     """
-    if ci_context is CIContext.MASTER or ci_context is CIContext.NIGHTLY_BUILDS:
+    if ci_context is CIContext.main or ci_context is CIContext.NIGHTLY_BUILDS:
         return await get_modified_files_in_commit(git_branch, git_revision, is_local)
     if ci_context is CIContext.PULL_REQUEST and pull_request is not None:
         return get_modified_files_in_pull_request(pull_request)
     if ci_context is CIContext.MANUAL:
-        if git_branch == "master":
-            return await get_modified_files_in_commit(git_branch, git_revision, is_local)
+        if git_branch == "main":
+            return await get_modified_files_in_commit(
+                git_branch, git_revision, is_local
+            )
         else:
-            return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
-    return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
+            return await get_modified_files_in_branch(
+                git_branch, git_revision, diffed_branch, is_local
+            )
+    return await get_modified_files_in_branch(
+        git_branch, git_revision, diffed_branch, is_local
+    )
 
 
 def log_git_info(ctx: click.Context):
@@ -270,21 +295,42 @@ async def get_modified_files_str(ctx: click.Context):
     },
 )
 @click.version_option(__installed_version__)
-@click.option("--enable-dagger-run/--disable-dagger-run", default=is_dagger_run_enabled_by_default)
+@click.option(
+    "--enable-dagger-run/--disable-dagger-run", default=is_dagger_run_enabled_by_default
+)
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
-@click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
+@click.option(
+    "--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION"
+)
 @click.option(
     "--diffed-branch",
     help="Branch to which the git diff will happen to detect new or modified connectors",
-    default="origin/master",
+    default="origin/main",
     type=str,
 )
-@click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
-@click.option("--ci-context", default=CIContext.MANUAL, envvar="CI_CONTEXT", type=click.Choice(CIContext))
-@click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
+@click.option(
+    "--gha-workflow-run-id",
+    help="[CI Only] The run id of the GitHub action workflow",
+    default=None,
+    type=str,
+)
+@click.option(
+    "--ci-context",
+    default=CIContext.MANUAL,
+    envvar="CI_CONTEXT",
+    type=click.Choice(CIContext),
+)
+@click.option(
+    "--pipeline-start-timestamp",
+    default=get_current_epoch_time,
+    envvar="CI_PIPELINE_START_TIMESTAMP",
+    type=int,
+)
 @click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=int)
-@click.option("--ci-git-user", default="octavia-squidington-iii", envvar="CI_GIT_USER", type=str)
+@click.option(
+    "--ci-git-user", default="octavia-squidington-iii", envvar="CI_GIT_USER", type=str
+)
 @click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
 @click.option("--ci-report-bucket-name", envvar="CI_REPORT_BUCKET_NAME", type=str)
 @click.option("--ci-artifact-bucket-name", envvar="CI_ARTIFACT_BUCKET_NAME", type=str)
@@ -296,8 +342,12 @@ async def get_modified_files_str(ctx: click.Context):
     envvar="GCP_GSM_CREDENTIALS",
 )
 @click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
-@click.option("--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str)
-@click.option("--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str)
+@click.option(
+    "--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str
+)
+@click.option(
+    "--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str
+)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click_track_command
 @click_merge_args_into_context_obj

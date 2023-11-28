@@ -22,7 +22,7 @@ from simpleeval import simple_eval
 
 console = Console()
 
-DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
+DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/main")
 OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 BASE_AIRBYTE_DOCS_URL = "https://docs.airbyte.com"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
@@ -81,7 +81,7 @@ def get_connector_name_from_path(path):
 
 
 def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[str]:
-    """Retrieve the set of connectors for which the acceptance_test_config file was changed in the current branch (compared to master).
+    """Retrieve the set of connectors for which the acceptance_test_config file was changed in the current branch (compared to main).
 
     Args:
         diff_regex (str): Find the edited files that contain the following regex in their change.
@@ -93,7 +93,7 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
 
 
 def get_changed_metadata(diff_regex: Optional[str] = None) -> Set[str]:
-    """Retrieve the set of connectors for which the metadata file was changed in the current branch (compared to master).
+    """Retrieve the set of connectors for which the metadata file was changed in the current branch (compared to main).
 
     Args:
         diff_regex (str): Find the edited files that contain the following regex in their change.
@@ -105,7 +105,7 @@ def get_changed_metadata(diff_regex: Optional[str] = None) -> Set[str]:
 
 
 def get_changed_file(file_name: str, diff_regex: Optional[str] = None) -> Set[str]:
-    """Retrieve the set of connectors for which the given file was changed in the current branch (compared to master).
+    """Retrieve the set of connectors for which the given file was changed in the current branch (compared to main).
 
     Args:
         diff_regex (str): Find the edited files that contain the following regex in their change.
@@ -123,9 +123,13 @@ def get_changed_file(file_name: str, diff_regex: Optional[str] = None) -> Set[st
     changed_acceptance_test_config_paths = {
         file_path
         for file_path in airbyte_repo.git.diff(*diff_command_args).split("\n")
-        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) and file_path.endswith(file_name)
+        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX)
+        and file_path.endswith(file_name)
     }
-    return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
+    return {
+        Connector(get_connector_name_from_path(changed_file))
+        for changed_file in changed_acceptance_test_config_paths
+    }
 
 
 def has_local_cdk_ref(build_file: Path) -> bool:
@@ -226,7 +230,9 @@ def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> List[Path
     found: List[Path] = [base_path]
     for submodule in ["core", "db-sources", "db-destinations"]:
         found.append(base_path / submodule)
-        project_dependencies, test_dependencies = parse_gradle_dependencies(base_path / Path(submodule) / Path("build.gradle"))
+        project_dependencies, test_dependencies = parse_gradle_dependencies(
+            base_path / Path(submodule) / Path("build.gradle")
+        )
         found += project_dependencies
         if with_test_dependencies:
             found += test_dependencies
@@ -234,7 +240,9 @@ def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> List[Path
 
 
 def get_all_gradle_dependencies(
-    build_file: Path, with_test_dependencies: bool = True, found_dependencies: Optional[List[Path]] = None
+    build_file: Path,
+    with_test_dependencies: bool = True,
+    found_dependencies: Optional[List[Path]] = None,
 ) -> List[Path]:
     """Recursively retrieve all transitive dependencies of a Gradle project.
 
@@ -254,11 +262,22 @@ def get_all_gradle_dependencies(
     project_dependencies += get_local_cdk_gradle_dependencies(False)
     test_dependencies += get_local_cdk_gradle_dependencies(with_test_dependencies=True)
 
-    all_dependencies = project_dependencies + test_dependencies if with_test_dependencies else project_dependencies
+    all_dependencies = (
+        project_dependencies + test_dependencies
+        if with_test_dependencies
+        else project_dependencies
+    )
     for dependency_path in all_dependencies:
-        if dependency_path not in found_dependencies and Path(dependency_path / "build.gradle").exists():
+        if (
+            dependency_path not in found_dependencies
+            and Path(dependency_path / "build.gradle").exists()
+        ):
             found_dependencies.append(dependency_path)
-            get_all_gradle_dependencies(dependency_path / "build.gradle", with_test_dependencies, found_dependencies)
+            get_all_gradle_dependencies(
+                dependency_path / "build.gradle",
+                with_test_dependencies,
+                found_dependencies,
+            )
 
     return found_dependencies
 
@@ -283,7 +302,9 @@ class Connector:
 
     def _get_type_and_name_from_technical_name(self) -> Tuple[str, str]:
         if "-" not in self.technical_name:
-            raise ConnectorInvalidNameError(f"Connector type and name could not be inferred from {self.technical_name}")
+            raise ConnectorInvalidNameError(
+                f"Connector type and name could not be inferred from {self.technical_name}"
+            )
         _type = self.technical_name.split("-")[0]
         name = self.technical_name[len(_type) + 1 :]
         return _type, name
@@ -323,7 +344,9 @@ class Connector:
     @property
     def relative_documentation_path_str(self) -> str:
         documentation_url = self.metadata["documentationUrl"]
-        relative_documentation_path = documentation_url.replace(BASE_AIRBYTE_DOCS_URL, "")
+        relative_documentation_path = documentation_url.replace(
+            BASE_AIRBYTE_DOCS_URL, ""
+        )
 
         # strip leading and trailing slashes
         relative_documentation_path = relative_documentation_path.strip("/")
@@ -332,7 +355,11 @@ class Connector:
 
     @property
     def documentation_file_path(self) -> Optional[Path]:
-        return Path(f"{self.relative_documentation_path_str}.md") if self.has_airbyte_docs else None
+        return (
+            Path(f"{self.relative_documentation_path_str}.md")
+            if self.has_airbyte_docs
+            else None
+        )
 
     @property
     def inapp_documentation_file_path(self) -> Path:
@@ -347,7 +374,10 @@ class Connector:
 
     @property
     def migration_guide_file_path(self) -> Path:
-        return self.local_connector_documentation_directory / self.migration_guide_file_name
+        return (
+            self.local_connector_documentation_directory
+            / self.migration_guide_file_name
+        )
 
     @property
     def icon_path(self) -> Path:
@@ -371,13 +401,22 @@ class Connector:
         file_path = self.metadata_file_path
         if not file_path.is_file():
             return None
-        return yaml.safe_load((self.code_directory / METADATA_FILE_NAME).read_text())["data"]
+        return yaml.safe_load((self.code_directory / METADATA_FILE_NAME).read_text())[
+            "data"
+        ]
 
     @property
     def language(self) -> ConnectorLanguage:
-        if Path(self.code_directory / self.technical_name.replace("-", "_") / "manifest.yaml").is_file():
+        if Path(
+            self.code_directory
+            / self.technical_name.replace("-", "_")
+            / "manifest.yaml"
+        ).is_file():
             return ConnectorLanguage.LOW_CODE
-        if Path(self.code_directory / "setup.py").is_file() or Path(self.code_directory / "pyproject.toml").is_file():
+        if (
+            Path(self.code_directory / "setup.py").is_file()
+            or Path(self.code_directory / "pyproject.toml").is_file()
+        ):
             return ConnectorLanguage.PYTHON
         if Path(self.code_directory / "src" / "main" / "java").exists():
             return ConnectorLanguage.JAVA
@@ -440,7 +479,9 @@ class Connector:
             return bool(matches)
         except Exception as e:
             # Skip on error as we not all fields are present in all connectors.
-            logging.debug(f"Failed to evaluate query string {query_string} for connector {self.technical_name}, error: {e}")
+            logging.debug(
+                f"Failed to evaluate query string {query_string} for connector {self.technical_name}, error: {e}"
+            )
             return False
 
     @property
@@ -534,7 +575,9 @@ class Connector:
             with open(self.acceptance_test_config_path) as acceptance_test_config_file:
                 return yaml.safe_load(acceptance_test_config_file)
         except FileNotFoundError:
-            logging.warning(f"No {ACCEPTANCE_TEST_CONFIG_FILE_NAME} file found for {self.technical_name}")
+            logging.warning(
+                f"No {ACCEPTANCE_TEST_CONFIG_FILE_NAME} file found for {self.technical_name}"
+            )
             return None
 
     @property
@@ -556,25 +599,33 @@ class Connector:
         return Path(self.code_directory / "pyproject.toml").exists()
 
     def get_secret_manager(self, gsm_credentials: str):
-        return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
+        return SecretsManager(
+            connector_name=self.technical_name, gsm_credentials=gsm_credentials
+        )
 
     def __repr__(self) -> str:
         return self.technical_name
 
     @functools.lru_cache(maxsize=2)
-    def get_local_dependency_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
+    def get_local_dependency_paths(
+        self, with_test_dependencies: bool = True
+    ) -> Set[Path]:
         dependencies_paths = []
         if self.language == ConnectorLanguage.JAVA:
             dependencies_paths += get_all_gradle_dependencies(
-                self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
+                self.code_directory / "build.gradle",
+                with_test_dependencies=with_test_dependencies,
             )
         return sorted(list(set(dependencies_paths)))
 
 
 def get_changed_connectors(
-    modified_files: Optional[Set[Union[str, Path]]] = None, source: bool = True, destination: bool = True, third_party: bool = True
+    modified_files: Optional[Set[Union[str, Path]]] = None,
+    source: bool = True,
+    destination: bool = True,
+    third_party: bool = True,
 ) -> Set[Connector]:
-    """Retrieve a set of Connectors that were changed in the current branch (compared to master)."""
+    """Retrieve a set of Connectors that were changed in the current branch (compared to main)."""
     if modified_files is None:
         airbyte_repo = git.Repo(search_parent_directories=True)
         modified_files = airbyte_repo.git.diff("--name-only", DIFFED_BRANCH).split("\n")
@@ -590,12 +641,18 @@ def get_changed_connectors(
     changed_source_connector_files = {
         file_path
         for file_path in modified_files
-        if any(file_path.startswith(prefix) for prefix in prefix_to_check) and SCAFFOLD_CONNECTOR_GLOB not in file_path
+        if any(file_path.startswith(prefix) for prefix in prefix_to_check)
+        and SCAFFOLD_CONNECTOR_GLOB not in file_path
     }
-    return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}
+    return {
+        Connector(get_connector_name_from_path(changed_file))
+        for changed_file in changed_source_connector_files
+    }
 
 
-def _get_relative_connector_folder_name_from_metadata_path(metadata_file_path: str) -> str:
+def _get_relative_connector_folder_name_from_metadata_path(
+    metadata_file_path: str,
+) -> str:
     """Get the relative connector folder name from the metadata file path.
 
     Args:
@@ -627,7 +684,9 @@ def get_all_connectors_in_repo() -> Set[Connector]:
 
     return {
         Connector(_get_relative_connector_folder_name_from_metadata_path(metadata_file))
-        for metadata_file in glob(f"{repo_path}/{CONNECTOR_PATH_PREFIX}/**/metadata.yaml", recursive=True)
+        for metadata_file in glob(
+            f"{repo_path}/{CONNECTOR_PATH_PREFIX}/**/metadata.yaml", recursive=True
+        )
         if SCAFFOLD_CONNECTOR_GLOB not in metadata_file
     }
 

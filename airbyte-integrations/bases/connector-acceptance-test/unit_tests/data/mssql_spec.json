@@ -21,7 +21,7 @@
       "database": {
         "description": "Name of the database.",
         "type": "string",
-        "examples": ["master"]
+        "examples": ["main"]
       },
       "username": {
         "description": "Username to use to access the database.",

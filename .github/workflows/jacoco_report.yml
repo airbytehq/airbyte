@@ -3,7 +3,7 @@ name: Measure Java Test Coverage
 on:
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - "airbyte-integrations/connectors/source-postgres/**"
 

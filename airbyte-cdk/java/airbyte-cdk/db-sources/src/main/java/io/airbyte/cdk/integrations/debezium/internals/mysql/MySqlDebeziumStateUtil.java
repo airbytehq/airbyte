@@ -319,7 +319,7 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
 
   public static MysqlDebeziumStateAttributes getStateAttributesFromDB(final JdbcDatabase database) {
     try (final Stream<MysqlDebeziumStateAttributes> stream = database.unsafeResultSetQuery(
-        connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
+        connection -> connection.createStatement().executeQuery("SHOW main STATUS"),
         resultSet -> {
           final String file = resultSet.getString("File");
           final long position = resultSet.getLong("Position");

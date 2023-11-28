@@ -4,8 +4,12 @@
 
 import os
 
-CONNECTOR_TEST_SUMMARY_URL = "https://connectors.airbyte.com/files/generated_reports/test_summary"
-CLOUD_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/cloud_registry.json"
+CONNECTOR_TEST_SUMMARY_URL = (
+    "https://connectors.airbyte.com/files/generated_reports/test_summary"
+)
+CLOUD_CATALOG_URL = (
+    "https://connectors.airbyte.com/files/registries/v0/cloud_registry.json"
+)
 OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 
 INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS = [
@@ -36,9 +40,13 @@ INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS = [
 GCS_QA_REPORT_PATH = "gs://airbyte-data-connectors-qa-engine/"
 AIRBYTE_REPO_OWNER = "airbytehq"
 AIRBYTE_REPO_NAME = "airbyte"
-AIRBYTE_GITHUB_REPO_URL = f"https://github.com/{AIRBYTE_REPO_OWNER}/{AIRBYTE_REPO_NAME}.git"
-AIRBYTE_MAIN_BRANCH_NAME = "master"
-AIRBYTE_REPO_ENDPOINT = f"https://api.github.com/repos/{AIRBYTE_REPO_OWNER}/{AIRBYTE_REPO_NAME}"
+AIRBYTE_GITHUB_REPO_URL = (
+    f"https://github.com/{AIRBYTE_REPO_OWNER}/{AIRBYTE_REPO_NAME}.git"
+)
+AIRBYTE_MAIN_BRANCH_NAME = "main"
+AIRBYTE_REPO_ENDPOINT = (
+    f"https://api.github.com/repos/{AIRBYTE_REPO_OWNER}/{AIRBYTE_REPO_NAME}"
+)
 AIRBYTE_PR_ENDPOINT = f"{AIRBYTE_REPO_ENDPOINT}/pulls"
 AIRBYTE_ISSUES_ENDPOINT = f"{AIRBYTE_REPO_ENDPOINT}/issues"
 

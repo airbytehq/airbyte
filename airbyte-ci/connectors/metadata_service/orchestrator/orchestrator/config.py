@@ -9,12 +9,12 @@ VALID_REGISTRIES = ["oss", "cloud"]
 REGISTRIES_FOLDER = "registries/v0"
 REPORT_FOLDER = "generated_reports"
 
-NIGHTLY_FOLDER = "airbyte-ci/connectors/test/nightly_builds/master"
+NIGHTLY_FOLDER = "airbyte-ci/connectors/test/nightly_builds/main"
 NIGHTLY_COMPLETE_REPORT_FILE_NAME = "complete.json"
 NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME = "output.json"
 NIGHTLY_GHA_WORKFLOW_ID = "connector_nightly_builds_dagger.yml"
 CI_TEST_REPORT_PREFIX = "airbyte-ci/connectors/test"
-CI_MASTER_TEST_OUTPUT_REGEX = f".*master.*output.json$"
+CI_MASTER_TEST_OUTPUT_REGEX = f".*main.*output.json$"
 
 CONNECTOR_REPO_NAME = "airbytehq/airbyte"
 CONNECTORS_PATH = "airbyte-integrations/connectors"
@@ -28,7 +28,9 @@ LOW_QUEUE_PRIORITY = "1"
 NO_QUEUE_PRIORITY = "-1"
 
 
-def get_public_url_for_gcs_file(bucket_name: str, file_path: str, cdn_url: Optional[str] = None) -> str:
+def get_public_url_for_gcs_file(
+    bucket_name: str, file_path: str, cdn_url: Optional[str] = None
+) -> str:
     """Get the public URL to a file in the GCS bucket.
 
     Args:
@@ -39,7 +41,11 @@ def get_public_url_for_gcs_file(bucket_name: str, file_path: str, cdn_url: Optio
     Returns:
         The public URL to the file.
     """
-    return f"{cdn_url}/{file_path}" if cdn_url else f"https://storage.googleapis.com/{bucket_name}/{file_path}"
+    return (
+        f"{cdn_url}/{file_path}"
+        if cdn_url
+        else f"https://storage.googleapis.com/{bucket_name}/{file_path}"
+    )
 
 
 def get_public_metadata_service_url(file_path: str) -> str:

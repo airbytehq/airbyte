@@ -1,4 +1,4 @@
-# Step  1: Generate the source connector project locally
+# Step 1: Generate the source connector project locally
 
 Let's start by cloning the Airbyte repository:
 
@@ -30,4 +30,4 @@ Next, [we'll install dependencies required to run the connector](2-install-depen
 
 ## More readings
 
-- [Connector generator](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/generator/README.md)
+- [Connector generator](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connector-templates/generator/README.md)

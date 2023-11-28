@@ -16,7 +16,11 @@ def _valid_metadata_file_path(path: str) -> bool:
     """
     Ensure that the path is a metadata file and not a scaffold file.
     """
-    return METADATA_FILE_NAME in path and CONNECTORS_PATH in path and "-scaffold-" not in path
+    return (
+        METADATA_FILE_NAME in path
+        and CONNECTORS_PATH in path
+        and "-scaffold-" not in path
+    )
 
 
 @resource(
@@ -43,7 +47,9 @@ def github_connector_repo(resource_context: InitResourceContext) -> Repository:
     required_resource_keys={"github_connector_repo"},
     config_schema={"connectors_path": StringSource},
 )
-def github_connectors_directory(resource_context: InitResourceContext) -> List[ContentFile.ContentFile]:
+def github_connectors_directory(
+    resource_context: InitResourceContext,
+) -> List[ContentFile.ContentFile]:
     connectors_path = resource_context.resource_config["connectors_path"]
     resource_context.log.info(f"retrieving github contents of {connectors_path}")
 
@@ -55,13 +61,19 @@ def github_connectors_directory(resource_context: InitResourceContext) -> List[C
     required_resource_keys={"github_connector_repo"},
     config_schema={"connectors_path": StringSource},
 )
-def github_connectors_metadata_files(resource_context: InitResourceContext) -> List[dict]:
+def github_connectors_metadata_files(
+    resource_context: InitResourceContext,
+) -> List[dict]:
     resource_context.log.info(f"retrieving github metadata files")
 
     github_connector_repo = resource_context.resources.github_connector_repo
-    repo_file_tree = github_connector_repo.get_git_tree("master", recursive=True).tree
+    repo_file_tree = github_connector_repo.get_git_tree("main", recursive=True).tree
     metadata_file_paths = [
-        {"path": github_file.path, "sha": github_file.sha, "last_modified": github_file.last_modified}
+        {
+            "path": github_file.path,
+            "sha": github_file.sha,
+            "last_modified": github_file.last_modified,
+        }
         for github_file in repo_file_tree
         if _valid_metadata_file_path(github_file.path)
     ]
@@ -78,9 +90,13 @@ def github_connectors_metadata_files(resource_context: InitResourceContext) -> L
         "status": StringSource,
     },
 )
-def github_workflow_runs(resource_context: InitResourceContext) -> List[ContentFile.ContentFile]:
+def github_workflow_runs(
+    resource_context: InitResourceContext,
+) -> List[ContentFile.ContentFile]:
     MAX_DAYS_LOOK_BACK = 3
-    max_look_back_date = (datetime.now() - timedelta(days=MAX_DAYS_LOOK_BACK)).isoformat()
+    max_look_back_date = (
+        datetime.now() - timedelta(days=MAX_DAYS_LOOK_BACK)
+    ).isoformat()
 
     workflow_id = resource_context.resource_config["workflow_id"]
     branch = resource_context.resource_config["branch"]
@@ -88,7 +104,9 @@ def github_workflow_runs(resource_context: InitResourceContext) -> List[ContentF
 
     github_connector_repo = resource_context.resources.github_connector_repo
 
-    resource_context.log.info(f"retrieving github workflow runs for {workflow_id} on {branch} with status {status}")
+    resource_context.log.info(
+        f"retrieving github workflow runs for {workflow_id} on {branch} with status {status}"
+    )
 
     params = {"status": status, "branch": branch, "created": f">{max_look_back_date}"}
 
@@ -96,7 +114,9 @@ def github_workflow_runs(resource_context: InitResourceContext) -> List[ContentF
     # Note: We must do this as pygithub does not support all required
     #       parameters for this endpoint
     status, data = github_connector_repo._requester.requestJsonAndCheck(
-        "GET", f"{github_connector_repo.url}/actions/workflows/{workflow_id}/runs", parameters=params
+        "GET",
+        f"{github_connector_repo.url}/actions/workflows/{workflow_id}/runs",
+        parameters=params,
     )
 
     workflow_runs = data.get("workflow_runs", [])

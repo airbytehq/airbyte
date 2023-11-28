@@ -8,11 +8,11 @@ description: Using Airbyte and Apache Superset
 
 This article will show how to use [Airbyte](http://airbyte.com) - an open-source data integration platform - and [Apache Superset](https://superset.apache.org/) - an open-source data exploration platform - in order to build a Slack activity dashboard showing:
 
-* Total number of members of a Slack workspace
-* The evolution of the number of Slack workspace members
-* Evolution of weekly messages
-* Evolution of messages per channel
-* Members per time zone
+- Total number of members of a Slack workspace
+- The evolution of the number of Slack workspace members
+- Evolution of weekly messages
+- Evolution of messages per channel
+- Members per time zone
 
 Before we get started, let’s take a high-level look at how we are going to achieve creating a Slack dashboard using Airbyte and Apache Superset.
 
@@ -125,14 +125,14 @@ Since we already have Docker installed, we can spin off a Postgres container wit
 docker run --rm --name slack-db -e POSTGRES_PASSWORD=password -p 2000:5432 -d postgres
 ```
 
-\(Note that the Docker compose file for Superset ships with a Postgres database, as you can see [here](https://github.com/apache/superset/blob/master/docker-compose.yml#L40)\).
+\(Note that the Docker compose file for Superset ships with a Postgres database, as you can see [here](https://github.com/apache/superset/blob/main/docker-compose.yml#L40)\).
 
 The above command will do the following:
 
-* create a Postgres container with the name slack-db,
-* set the password to password,
-* expose the container’s port 5432, as our machine’s port 2000. 
-* create a database and a user, both called postgres. 
+- create a Postgres container with the name slack-db,
+- set the password to password,
+- expose the container’s port 5432, as our machine’s port 2000.
+- create a database and a user, both called postgres.
 
 With this, we can go back to the Airbyte screen and supply the information needed. Your form should look like this:
 
@@ -300,12 +300,12 @@ Now that we have set up Superset and given it our Slack data, let’s proceed to
 
 Still remember them? Here they are again:
 
-* Total number of members of a Slack workspace
-* The evolution of the number of Slack workspace members
-* Evolution of weekly messages
-* Evolution of weekly threads created
-* Evolution of messages per channel
-* Members per time zone
+- Total number of members of a Slack workspace
+- The evolution of the number of Slack workspace members
+- Evolution of weekly messages
+- Evolution of weekly threads created
+- Evolution of messages per channel
+- Members per time zone
 
 ## 3. Creating Our Dashboards with Superset
 
@@ -421,4 +421,3 @@ Of course, you can edit how the dashboard looks to fit what you want on it.
 ## Conclusion
 
 In this article, we looked at using Airbyte’s Slack connector to get the data from a Slack workspace into a Postgres database, and then used Apache Superset to craft a dashboard of visualizations.If you have any questions about Airbyte, don’t hesitate to ask questions on our [Slack](https://slack.airbyte.io)! If you have questions about Superset, you can join the [Superset Community Slack](https://superset.apache.org/community/)!
-

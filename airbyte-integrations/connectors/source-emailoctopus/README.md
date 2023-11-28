@@ -18,7 +18,7 @@ and place them into `secrets/config.json`.
 
 
 #### Build
-**Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
+**Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/README.md) (recommended):**
 ```bash
 airbyte-ci connectors --name=source-emailoctopus build
 ```
@@ -40,7 +40,7 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 ```
 
 ## Testing
-You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/README.md):
 ```bash
 airbyte-ci connectors --name=source-emailoctopus test
 ```
@@ -63,5 +63,5 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 4. Make the connector documentation and its changelog is up to date (`docs/integrations/sources/emailoctopus.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
-7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into main.
 

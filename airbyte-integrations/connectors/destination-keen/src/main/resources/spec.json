@@ -19,7 +19,7 @@
       },
       "api_key": {
         "title": "API Key",
-        "description": "To get Keen Master API Key, navigate to the Access tab from the left-hand, side panel and check the Project Details section.",
+        "description": "To get Keen main API Key, navigate to the Access tab from the left-hand, side panel and check the Project Details section.",
         "type": "string",
         "examples": ["ABCDEFGHIJKLMNOPRSTUWXYZ"],
         "airbyte_secret": true

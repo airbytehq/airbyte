@@ -1,6 +1,6 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/models-oss/src/main/resources/types/SuggestedStreams.yaml
+"$id": https://github.com/airbytehq/airbyte/blob/main/airbyte-config-oss/models-oss/src/main/resources/types/SuggestedStreams.yaml
 title: SuggestedStreams
 description: A source's suggested streams.  These will be suggested by default for new connections using this source.  Otherwise, all streams will be selected.  This is useful for when your source has a lot of streams, but the average user will only want a subset of them synced.
 type: object

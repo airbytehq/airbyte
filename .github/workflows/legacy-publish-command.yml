@@ -9,7 +9,7 @@ on:
       gitref:
         description: "The git ref to check out from the specified repository."
         required: false
-        default: master
+        default: main
       connector:
         description: "Airbyte Connector"
         required: true

@@ -159,7 +159,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
       throws Exception {
 
     // arrays are not fully supported yet in jdbc driver
-    // https://github.com/ClickHouse/clickhouse-jdbc/blob/master/clickhouse-jdbc/src/main/java/ru/yandex/clickhouse/ClickHouseArray.java
+    // https://github.com/ClickHouse/clickhouse-jdbc/blob/main/clickhouse-jdbc/src/main/java/ru/yandex/clickhouse/ClickHouseArray.java
     if (messagesFilename.contains("array")) {
       return;
     }

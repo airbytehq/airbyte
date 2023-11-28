@@ -26,7 +26,7 @@ cleanup-workflows.py deletes old workflow runs (again older than DAYS_TO_KEEP_OR
 
 We need to clean up the runs because even if a workflow is deleted, the runs linger in the UI. 
 We don't want to delete workflow runs newer than 90 days on GH actions, even if the workflow doesn't exist.
-it's possible that people might test things off the master branch and we don't want to delete their recent runs
+it's possible that people might test things off the main branch and we don't want to delete their recent runs
 
 """
 

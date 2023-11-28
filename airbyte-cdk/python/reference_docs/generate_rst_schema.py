@@ -15,12 +15,16 @@ from sphinx.util import ensuredir
 def write_master_file(templatedir: str, master_name: str, values: Dict, opts: Any):
     template = QuickstartRenderer(templatedir=templatedir)
     opts.destdir = opts.destdir[: opts.destdir.rfind("/")]
-    write_file(master_name, template.render(f"{templatedir}/master_doc.rst_t", values), opts)
+    write_file(
+        master_name, template.render(f"{templatedir}/master_doc.rst_t", values), opts
+    )
 
 
 if __name__ == "__main__":
     parser = get_parser()
-    parser.add_argument("--master", metavar="MASTER", default="index", help=__("master document name"))
+    parser.add_argument(
+        "--main", metavar="main", default="index", help=__("main document name")
+    )
     args = parser.parse_args(sys.argv[1:])
 
     rootpath = path.abspath(args.module_path)
@@ -39,8 +43,17 @@ if __name__ == "__main__":
     modules = recurse_tree(rootpath, excludes, args, args.templatedir)
 
     template_values = {
-        "top_modules": [{"path": f"api/{module}", "caption": module.split(".")[1].title()} for module in modules if module.count(".") == 1],
+        "top_modules": [
+            {"path": f"api/{module}", "caption": module.split(".")[1].title()}
+            for module in modules
+            if module.count(".") == 1
+        ],
         "maxdepth": args.maxdepth,
     }
-    write_master_file(templatedir=args.templatedir, master_name=args.master, values=template_values, opts=args)
+    write_master_file(
+        templatedir=args.templatedir,
+        master_name=args.main,
+        values=template_values,
+        opts=args,
+    )
     main()

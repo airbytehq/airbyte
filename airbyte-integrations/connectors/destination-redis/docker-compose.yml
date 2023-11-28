@@ -10,7 +10,7 @@ services:
     #      - $PWD/redis-data:/var/lib/redis
     #      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
-      - REDIS_REPLICATION_MODE=master
+      - REDIS_REPLICATION_MODE=main
     networks:
       node_net:
         ipv4_address: 172.28.1.4

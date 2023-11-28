@@ -12,14 +12,14 @@ Docker and Java with the versions listed in the [tech stack section](../../under
 
 ### Creating a destination
 
-* Step 1: Create the destination using the template generator
-* Step 2: Build the newly generated destination 
-* Step 3: Implement `spec` to define the configuration required to run the connector
-* Step 4: Implement `check` to provide a way to validate configurations provided to the connector
-* Step 5: Implement `write` to write data to the destination
-* Step 6: Set up Acceptance Tests
-* Step 7: Write unit tests or integration tests
-* Step 8: Update the docs \(in `docs/integrations/destinations/<destination-name>.md`\)
+- Step 1: Create the destination using the template generator
+- Step 2: Build the newly generated destination
+- Step 3: Implement `spec` to define the configuration required to run the connector
+- Step 4: Implement `check` to provide a way to validate configurations provided to the connector
+- Step 5: Implement `write` to write data to the destination
+- Step 6: Set up Acceptance Tests
+- Step 7: Write unit tests or integration tests
+- Step 8: Update the docs \(in `docs/integrations/destinations/<destination-name>.md`\)
 
 :::info
 
@@ -67,9 +67,9 @@ Airbyte uses Gradle to manage Java dependencies. To add dependencies for your co
 
 We recommend the following ways of iterating on your connector as you're making changes:
 
-* Test-driven development \(TDD\) in Java 
-* Test-driven development \(TDD\) using Airbyte's Acceptance Tests
-* Directly running the docker image 
+- Test-driven development \(TDD\) in Java
+- Test-driven development \(TDD\) using Airbyte's Acceptance Tests
+- Directly running the docker image
 
 #### Test-driven development in Java
 
@@ -98,7 +98,7 @@ If you want to run your destination exactly as it will be run by Airbyte \(i.e. 
 ./gradlew :airbyte-integrations:connectors:destination-<name>:build
 
 # Then use the following commands to run it
-# Runs the "spec" command, used to find out what configurations are needed to run a connector 
+# Runs the "spec" command, used to find out what configurations are needed to run a connector
 docker run --rm airbyte/destination-<name>:dev spec
 
 # Runs the "check" command, used to validate if the input configurations are valid
@@ -119,34 +119,36 @@ In order to best propagate user-friendly error messages and log error informatio
 We recommend using AirbyteTraceMessages for known errors, as in these cases you can likely offer the user a helpful message as to what went wrong and suggest how they can resolve it.
 
 Airbyte provides a static utility class, `io.airbyte.integrations.base.AirbyteTraceMessageUtility`, to give you a clear and straight-forward way to emit these AirbyteTraceMessages. Example usage:
+
 ```java
 try {
   // some connector code responsible for doing X
-} 
+}
 catch (ExceptionIndicatingIncorrectCredentials credErr) {
   AirbyteTraceMessageUtility.emitConfigErrorTrace(
     credErr, "Connector failed due to incorrect credentials while doing X. Please check your connection is using valid credentials.")
   throw credErr
-} 
+}
 catch (ExceptionIndicatingKnownErrorY knownErr) {
   AirbyteTraceMessageUtility.emitSystemErrorTrace(
     knownErr, "Connector failed because of reason Y while doing X. Please check/do/make ... to resolve this.")
   throw knownErr
-} 
+}
 catch (Exception e) {
   AirbyteTraceMessageUtility.emitSystemErrorTrace(
     e, "Connector failed while doing X. Possible reasons for this could be ...")
-  throw e 
+  throw e
 }
 ```
 
 Note the two different error trace methods.
+
 - Where possible `emitConfigErrorTrace` should be used when we are certain the issue arises from a problem with the user's input configuration, e.g. invalid credentials.
 - For everything else or if unsure, use `emitSystemErrorTrace`.
 
 ### Step 3: Implement `spec`
 
-Each destination contains a specification written in JsonSchema that describes its inputs. Defining the specification is a good place to start when developing your destination. Check out the documentation [here](https://json-schema.org/) to learn the syntax. Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/resources/spec.json) of what the `spec.json` looks like for the postgres destination.
+Each destination contains a specification written in JsonSchema that describes its inputs. Defining the specification is a good place to start when developing your destination. Check out the documentation [here](https://json-schema.org/) to learn the syntax. Here's [an example](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/destination-postgres/src/main/resources/spec.json) of what the `spec.json` looks like for the postgres destination.
 
 Your generated template should have the spec file in `airbyte-integrations/connectors/destination-<name>/src/main/resources/spec.json`. The generated connector will take care of reading this file and converting it to the correct output. Edit it and you should be done with this step.
 
@@ -155,7 +157,7 @@ For more details on what the spec is, you can read about the Airbyte Protocol [h
 See the `spec` operation in action:
 
 ```bash
-# First build the connector 
+# First build the connector
 ./gradlew :airbyte-integrations:connectors:destination-<name>:build
 
 # Run the spec operation
@@ -168,7 +170,7 @@ The check operation accepts a JSON object conforming to the `spec.json`. In othe
 
 While developing, we recommend storing any credentials in `secrets/config.json`. Any `secrets` directory in the Airbyte repo is gitignored by default.
 
-Implement the `check` method in the generated file `<Name>Destination.java`. Here's an [example implementation](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-bigquery/src/main/java/io/airbyte/integrations/destination/bigquery/BigQueryDestination.java#L94) from the BigQuery destination.
+Implement the `check` method in the generated file `<Name>Destination.java`. Here's an [example implementation](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/destination-bigquery/src/main/java/io/airbyte/integrations/destination/bigquery/BigQueryDestination.java#L94) from the BigQuery destination.
 
 Verify that the method is working by placing your config in `secrets/config.json` then running:
 
@@ -189,10 +191,10 @@ The `write` operation is the main workhorse of a destination connector: it reads
 
 To implement the `write` Airbyte operation, implement the `getConsumer` method in your generated `<Name>Destination.java` file. Here are some example implementations from different destination conectors:
 
-* [BigQuery](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-bigquery/src/main/java/io/airbyte/integrations/destination/bigquery/BigQueryDestination.java#L188)
-* [Google Pubsub](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-pubsub/src/main/java/io/airbyte/integrations/destination/pubsub/PubsubDestination.java#L98) 
-* [Local CSV](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-csv/src/main/java/io/airbyte/integrations/destination/csv/CsvDestination.java#L90)
-* [Postgres](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/java/io/airbyte/integrations/destination/postgres/PostgresDestination.java)
+- [BigQuery](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/destination-bigquery/src/main/java/io/airbyte/integrations/destination/bigquery/BigQueryDestination.java#L188)
+- [Google Pubsub](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/destination-pubsub/src/main/java/io/airbyte/integrations/destination/pubsub/PubsubDestination.java#L98)
+- [Local CSV](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/destination-csv/src/main/java/io/airbyte/integrations/destination/csv/CsvDestination.java#L90)
+- [Postgres](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/destination-postgres/src/main/java/io/airbyte/integrations/destination/postgres/PostgresDestination.java)
 
 :::info
 
@@ -204,7 +206,7 @@ For a brief overview on the Airbyte catalog check out [the Beginner's Guide to t
 
 ### Step 6: Set up Acceptance Tests
 
-The Acceptance Tests are a set of tests that run against all destinations. These tests are run in the Airbyte CI to prevent regressions and verify a baseline of functionality. The test cases are contained and documented in the [following file](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/standard-destination-test/src/main/java/io/airbyte/integrations/standardtest/destination/DestinationAcceptanceTest.java).
+The Acceptance Tests are a set of tests that run against all destinations. These tests are run in the Airbyte CI to prevent regressions and verify a baseline of functionality. The test cases are contained and documented in the [following file](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/bases/standard-destination-test/src/main/java/io/airbyte/integrations/standardtest/destination/DestinationAcceptanceTest.java).
 
 To setup acceptance Tests for your connector, follow the `TODO`s in the generated file `<name>DestinationAcceptanceTest.java`. Once setup, you can run the tests using `./gradlew :airbyte-integrations:connectors:destination-<name>:integrationTest`. Make sure to run this command from the Airbyte repository root.
 
@@ -219,4 +221,3 @@ Each connector has its own documentation page. By convention, that page should h
 ## Wrapping up
 
 Well done on making it this far! If you'd like your connector to ship with Airbyte by default, create a PR against the Airbyte repo and we'll work with you to get it across the finish line.
-

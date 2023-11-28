@@ -290,7 +290,7 @@
                     },
                     "master_bill_number": {
                       "type": ["null", "string"],
-                      "description": "Master bill of lading number."
+                      "description": "main bill of lading number."
                     },
                     "carrier_booking_number": {
                       "type": ["null", "string"],
@@ -344,7 +344,7 @@
                     },
                     "master_airway_bill": {
                       "type": "string",
-                      "description": "Master air waybill number"
+                      "description": "main air waybill number"
                     },
                     "chargeable_weight": {
                       "$schema": "http://json-schema.org/draft-07/schema#",

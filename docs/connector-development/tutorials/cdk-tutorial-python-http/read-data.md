@@ -4,31 +4,31 @@ Describing schemas is good and all, but at some point we have to start reading d
 
 The `HttpStream` superclass, like described in the [concepts documentation](../../cdk-python/http-streams.md), is facilitating reading data from HTTP endpoints. It contains built-in functions or helpers for:
 
-* authentication
-* pagination
-* handling rate limiting or transient errors
-* and other useful functionality
+- authentication
+- pagination
+- handling rate limiting or transient errors
+- and other useful functionality
 
 In order for it to be able to do this, we have to provide it with a few inputs:
 
-* the URL base and path of the endpoint we'd like to hit
-* how to parse the response from the API
-* how to perform pagination
+- the URL base and path of the endpoint we'd like to hit
+- how to parse the response from the API
+- how to perform pagination
 
 Optionally, we can provide additional inputs to customize requests:
 
-* request parameters and headers
-* how to recognize rate limit errors, and how long to wait \(by default it retries 429 and 5XX errors using exponential backoff\)
-* HTTP method and request body if applicable
-* configure exponential backoff policy
+- request parameters and headers
+- how to recognize rate limit errors, and how long to wait \(by default it retries 429 and 5XX errors using exponential backoff\)
+- HTTP method and request body if applicable
+- configure exponential backoff policy
 
 Backoff policy options:
 
-* `retry_factor` Specifies factor for exponential backoff policy \(by default is 5\)
-* `max_retries` Specifies maximum amount of retries for backoff policy \(by default is 5\)
-* `raise_on_http_errors` If set to False, allows opting-out of raising HTTP code exception \(by default is True\)
+- `retry_factor` Specifies factor for exponential backoff policy \(by default is 5\)
+- `max_retries` Specifies maximum amount of retries for backoff policy \(by default is 5\)
+- `raise_on_http_errors` If set to False, allows opting-out of raising HTTP code exception \(by default is True\)
 
-There are many other customizable options - you can find them in the [`airbyte_cdk.sources.streams.http.HttpStream`](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/streams/http/http.py) class.
+There are many other customizable options - you can find them in the [`airbyte_cdk.sources.streams.http.HttpStream`](https://github.com/airbytehq/airbyte/blob/main/airbyte-cdk/python/airbyte_cdk/sources/streams/http/http.py) class.
 
 So in order to read data from the exchange rates API, we'll fill out the necessary information for the stream to do its work. First, we'll implement a basic read that just reads the last day's exchange rates, then we'll implement incremental sync using stream slicing.
 
@@ -47,13 +47,13 @@ class ExchangeRates(HttpStream):
 
 
     def path(
-        self, 
-        stream_state: Mapping[str, Any] = None, 
-        stream_slice: Mapping[str, Any] = None, 
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None
     ) -> str:
         # The "/latest" path gives us the latest currency exchange rates
-        return "latest"  
+        return "latest"
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -77,17 +77,17 @@ class ExchangeRates(HttpStream):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        # The response is a simple JSON whose schema matches our stream's schema exactly, 
+        # The response is a simple JSON whose schema matches our stream's schema exactly,
         # so we just return a list containing the response
         return [response.json()]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # The API does not offer pagination, 
+        # The API does not offer pagination,
         # so we return None to indicate there are no more pages in the response
         return None
 ```
 
-This may look big, but that's just because there are lots of \(unused, for now\) parameters in these methods \(those can be hidden with Python's `**kwargs`, but don't worry about it for now\). Really we just added a few lines of "significant" code: 
+This may look big, but that's just because there are lots of \(unused, for now\) parameters in these methods \(those can be hidden with Python's `**kwargs`, but don't worry about it for now\). Really we just added a few lines of "significant" code:
 
 1. Added a constructor `__init__` which stores the `base` currency to query for and the `apikey` used for authentication.
 2. `return {'base': self.base}` to add the `?base=<base-value>` query parameter to the request based on the `base` input by the user.
@@ -105,7 +105,7 @@ Let's also pass the config specified by the user to the stream class:
 
 We're now ready to query the API!
 
-To do this, we'll need a [ConfiguredCatalog](../../../understanding-airbyte/beginners-guide-to-catalog.md). We've prepared one [here](https://github.com/airbytehq/airbyte/blob/master/docs/connector-development/tutorials/cdk-tutorial-python-http/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
+To do this, we'll need a [ConfiguredCatalog](../../../understanding-airbyte/beginners-guide-to-catalog.md). We've prepared one [here](https://github.com/airbytehq/airbyte/blob/main/docs/connector-development/tutorials/cdk-tutorial-python-http/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
 
 ```text
  python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
@@ -123,13 +123,14 @@ We theoretically _could_ stop here and call it a connector. But let's give addin
 
 ## Adding incremental sync
 
-To add incremental sync, we'll do a few things: 
-1. Pass the `start_date` param input by the user into the stream. 
-2. Declare the stream's `cursor_field`. 
+To add incremental sync, we'll do a few things:
+
+1. Pass the `start_date` param input by the user into the stream.
+2. Declare the stream's `cursor_field`.
 3. Declare the stream's property `_cursor_value` to hold the state value
 4. Add `IncrementalMixin` to the list of the ancestors of the stream and implement setter and getter of the `state`.
-5. Implement the `stream_slices` method. 
-6. Update the `path` method to specify the date to pull exchange rates for. 
+5. Implement the `stream_slices` method.
+6. Update the `path` method to specify the date to pull exchange rates for.
 7. Update the configured catalog to use `incremental` sync when we're testing the stream.
 
 We'll describe what each of these methods do below. Before we begin, it may help to familiarize yourself with how incremental sync works in Airbyte by reading the [docs on incremental](../../../understanding-airbyte/connections/incremental-append.md).
@@ -179,7 +180,7 @@ Let's do this by implementing the getter and setter for the `state` inside the `
             return {self.cursor_field: self._cursor_value.strftime('%Y-%m-%d')}
         else:
             return {self.cursor_field: self.start_date.strftime('%Y-%m-%d')}
-    
+
     @state.setter
     def state(self, value: Mapping[str, Any]):
        self._cursor_value = datetime.strptime(value[self.cursor_field], '%Y-%m-%d')
@@ -227,7 +228,7 @@ def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str
     return stream_slice['date']
 ```
 
-With these changes, your implementation should look like the file [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-python-http-tutorial/source_python_http_tutorial/source.py).
+With these changes, your implementation should look like the file [here](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/source-python-http-tutorial/source_python_http_tutorial/source.py).
 
 The last thing we need to do is change the `sync_mode` field in the `sample_files/configured_catalog.json` to `incremental`:
 
@@ -256,4 +257,3 @@ python main.py read --config secrets/config.json --catalog sample_files/configur
 You should see that only the record from the last date is being synced! This is acceptable behavior, since Airbyte requires at-least-once delivery of records, so repeating the last record twice is OK.
 
 With that, we've implemented incremental sync for our connector!
-

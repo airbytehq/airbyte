@@ -104,7 +104,7 @@ class SourceMixpanel(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
+        See https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
 
         :param config:  the user-input config object conforming to the connector's spec.json

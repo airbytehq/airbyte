@@ -18,7 +18,7 @@ A Gridly account.
 ### Get grid id
 
 The grid id is available in the url.
-Gridly support version control, by default the `grid id` is the same to the `branch id` when `Master` branch is selected. For fetching records on other branches, use `branch id` instead.
+Gridly support version control, by default the `grid id` is the same to the `branch id` when `main` branch is selected. For fetching records on other branches, use `branch id` instead.
 ![img.png](../../.gitbook/assets/gridly_grid_id.png)
 
 ## Supported sync modes

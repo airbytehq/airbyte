@@ -96,7 +96,7 @@ curl 'http://localhost:7700/indexes/messages/search' --data '{ "q": "welcome to"
 
 Making curl requests to search your Slack History is a little clunky, so we have modified the example UI that MeiliSearch provides in [their docs](https://docs.meilisearch.com/learn/tutorials/getting_started.html#integrate-with-your-project) to search through the Slack results.
 
-Download \(or copy and paste\) this [html file](https://github.com/airbytehq/airbyte/blob/master/docs/examples/slack-history/index.html) to your workstation. Then, open it using a browser. You should now be able to write search terms in the search bar and get results instantly!
+Download \(or copy and paste\) this [html file](https://github.com/airbytehq/airbyte/blob/main/docs/examples/slack-history/index.html) to your workstation. Then, open it using a browser. You should now be able to write search terms in the search bar and get results instantly!
 
 ![](../../.gitbook/assets/slack-history-ui.png)
 

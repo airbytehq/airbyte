@@ -27,7 +27,7 @@ and `integration_tests/abnormal_state.json` with
 }
 ```
 
-You can run the [acceptance tests](https://github.com/airbytehq/airbyte/blob/master/docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md#L1) with the following commands using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1):
+You can run the [acceptance tests](https://github.com/airbytehq/airbyte/blob/main/docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md#L1) with the following commands using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/README.md#L1):
 
 ```bash
 airbyte-ci connectors --use-remote-secrets=false --name source-exchange-rates-tutorial test
@@ -43,6 +43,6 @@ Next, we'll add the connector to the [Airbyte platform](https://docs.airbyte.com
 - [Pagination](../understanding-the-yaml-file/pagination.md)
 - [Testing connectors](../../testing-connectors/README.md)
 - [Contribution guide](../../../contributing-to-airbyte/README.md)
-- [Greenhouse source](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse)
-- [Sendgrid source](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-sendgrid)
-- [Sentry source](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-sentry)
+- [Greenhouse source](https://github.com/airbytehq/airbyte/tree/main/airbyte-integrations/connectors/source-greenhouse)
+- [Sendgrid source](https://github.com/airbytehq/airbyte/tree/main/airbyte-integrations/connectors/source-sendgrid)
+- [Sentry source](https://github.com/airbytehq/airbyte/tree/main/airbyte-integrations/connectors/source-sentry)

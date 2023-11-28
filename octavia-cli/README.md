@@ -90,7 +90,7 @@ We decided to package the CLI in a docker image with portability in mind.
 ### As a command available in your bash profile
 
 ```bash
-curl -s -o- https://raw.githubusercontent.com/airbytehq/airbyte/master/octavia-cli/install.sh | bash
+curl -s -o- https://raw.githubusercontent.com/airbytehq/airbyte/main/octavia-cli/install.sh | bash
 ```
 
 This script:
@@ -138,7 +138,7 @@ docker compose run octavia-cli <command>`
 ### `octavia` command flags
 
 | **Flag**                                 | **Description**                                                                   | **Env Variable**           | **Default**                                            |
-| ---------------------------------------- | --------------------------------------------------------------------------------- |----------------------------| ------------------------------------------------------ |
+| ---------------------------------------- | --------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------ |
 | `--airbyte-url`                          | Airbyte instance URL.                                                             | `AIRBYTE_URL`              | `http://localhost:8000`                                |
 | `--airbyte-username`                     | Airbyte instance username (basic auth).                                           | `AIRBYTE_USERNAME`         | `airbyte`                                              |
 | `--airbyte-password`                     | Airbyte instance password (basic auth).                                           | `AIRBYTE_PASSWORD`         | `password`                                             |
@@ -174,25 +174,25 @@ headers:
 
 ### `octavia` subcommands
 
-| **Command**                               | **Usage**                                                                                  |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------ |
-| **`octavia init`**                        | Initialize required directories for the project.                                           |
-| **`octavia list connectors sources`**     | List all sources connectors available on the remote Airbyte instance.                      |
+| **Command**                                | **Usage**                                                                                  |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| **`octavia init`**                         | Initialize required directories for the project.                                           |
+| **`octavia list connectors sources`**      | List all sources connectors available on the remote Airbyte instance.                      |
 | **`octavia list connectors destinations`** | List all destinations connectors available on the remote Airbyte instance.                 |
-| **`octavia list workspace sources`**      | List existing sources in current the Airbyte workspace.                                    |
-| **`octavia list workspace destinations`** | List existing destinations in the current Airbyte workspace.                               |
-| **`octavia list workspace connections`**  | List existing connections in the current Airbyte workspace.                                |
-| **`octavia get source`**                  | Get the JSON representation of an existing source in current the Airbyte workspace.        |
-| **`octavia get destination`**             | Get the JSON representation of an existing destination in the current Airbyte workspace.   |
-| **`octavia get connection`**              | Get the JSON representation of an existing connection in the current Airbyte workspace.    |
-| **`octavia import all`**                  | Import all existing sources, destinations and connections to manage them with octavia-cli. |
-| **`octavia import source`**               | Import an existing source to manage it with octavia-cli.                                   |
-| **`octavia import destination`**          | Import an existing destination to manage it with octavia-cli.                              |
-| **`octavia import connection`**           | Import an existing connection to manage it with octavia-cli.                               |
-| **`octavia generate source`**             | Generate a local YAML configuration for a new source.                                      |
-| **`octavia generate destination`**        | Generate a local YAML configuration for a new destination.                                 |
-| **`octavia generate connection`**         | Generate a local YAML configuration for a new connection.                                  |
-| **`octavia apply`**                       | Create or update Airbyte remote resources according to local YAML configurations.          |
+| **`octavia list workspace sources`**       | List existing sources in current the Airbyte workspace.                                    |
+| **`octavia list workspace destinations`**  | List existing destinations in the current Airbyte workspace.                               |
+| **`octavia list workspace connections`**   | List existing connections in the current Airbyte workspace.                                |
+| **`octavia get source`**                   | Get the JSON representation of an existing source in current the Airbyte workspace.        |
+| **`octavia get destination`**              | Get the JSON representation of an existing destination in the current Airbyte workspace.   |
+| **`octavia get connection`**               | Get the JSON representation of an existing connection in the current Airbyte workspace.    |
+| **`octavia import all`**                   | Import all existing sources, destinations and connections to manage them with octavia-cli. |
+| **`octavia import source`**                | Import an existing source to manage it with octavia-cli.                                   |
+| **`octavia import destination`**           | Import an existing destination to manage it with octavia-cli.                              |
+| **`octavia import connection`**            | Import an existing connection to manage it with octavia-cli.                               |
+| **`octavia generate source`**              | Generate a local YAML configuration for a new source.                                      |
+| **`octavia generate destination`**         | Generate a local YAML configuration for a new destination.                                 |
+| **`octavia generate connection`**          | Generate a local YAML configuration for a new connection.                                  |
+| **`octavia apply`**                        | Create or update Airbyte remote resources according to local YAML configurations.          |
 
 #### `octavia init`
 
@@ -710,7 +710,7 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 ## Changelog
 
 | Version | Date       | Description                                                                           | PR                                                          |
-|---------| ---------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| ------- | ---------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | 0.41.0  | 2022-10-13 | Use Basic Authentication for making API requests                                      | [#17982](https://github.com/airbytehq/airbyte/pull/17982)   |
 | 0.40.0  | 2022-08-10 | Enable cron and basic scheduling                                                      | [#15253](https://github.com/airbytehq/airbyte/pull/15253)   |
 | 0.39.33 | 2022-07-05 | Add `octavia import all` command                                                      | [#14374](https://github.com/airbytehq/airbyte/pull/14374)   |

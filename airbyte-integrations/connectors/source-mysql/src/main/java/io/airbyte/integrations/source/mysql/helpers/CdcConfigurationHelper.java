@@ -53,7 +53,7 @@ public class CdcConfigurationHelper {
     return database -> {
       try {
         database.unsafeResultSetQuery(
-            connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
+            connection -> connection.createStatement().executeQuery("SHOW main STATUS"),
             resultSet -> resultSet);
       } catch (final SQLException e) {
         throw new ConfigErrorException("Please grant REPLICATION CLIENT privilege, so that binary log files are available"

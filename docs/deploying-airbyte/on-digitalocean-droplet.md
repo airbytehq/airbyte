@@ -43,7 +43,7 @@ To install and start Airbyte :
 
 ```bash
   mkdir airbyte && cd airbyte
-  wget https://raw.githubusercontent.com/airbytehq/airbyte/master/run-ab-platform.sh
+  wget https://raw.githubusercontent.com/airbytehq/airbyte/main/run-ab-platform.sh
   chmod +x run-ab-platform.sh
   ./run-ab-platform.sh -b
 ```

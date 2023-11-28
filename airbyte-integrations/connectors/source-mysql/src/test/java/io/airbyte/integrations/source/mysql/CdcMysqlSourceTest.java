@@ -157,7 +157,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   protected void purgeAllBinaryLogs() {
-    executeQuery("RESET MASTER;");
+    executeQuery("RESET main;");
   }
 
   @AfterEach
