@@ -4,26 +4,31 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.db.MySqlUtils;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import java.io.IOException;
+import java.util.stream.Stream;
 
-public class MySqlSslFullCertificateSourceAcceptanceTest extends AbstractMySqlSslCertificateSourceAcceptanceTest {
+public class MySqlSslFullCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
+
+  private static final String PASSWORD = "Passw0rd";
 
   @Override
-  public MySqlUtils.Certificate getCertificates() throws IOException, InterruptedException {
-    return MySqlUtils.getCertificate(container, true);
+  protected Stream<String> extraContainerFactoryMethods() {
+    return Stream.of("withRootAndServerCertificates", "withClientCertificate");
   }
 
   @Override
-  public ImmutableMap getSslConfig() {
-    return ImmutableMap.builder()
-        .put(JdbcUtils.MODE_KEY, "verify_ca")
-        .put("ca_certificate", certs.getCaCertificate())
-        .put("client_certificate", certs.getClientCertificate())
-        .put("client_key", certs.getClientKey())
-        .put("client_key_password", PASSWORD)
+  protected JsonNode getConfig() {
+    return testdb.integrationTestConfigBuilder()
+        .withStandardReplication()
+        .withSsl(ImmutableMap.builder()
+            .put(JdbcUtils.MODE_KEY, "verify_ca")
+            .put("ca_certificate", testdb.getCertificates().caCertificate())
+            .put("client_certificate", testdb.getCertificates().clientCertificate())
+            .put("client_key", testdb.getCertificates().clientKey())
+            .put("client_key_password", PASSWORD)
+            .build())
         .build();
   }
 
