@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.integrations.destination.jdbc;
 
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter;
@@ -18,11 +22,11 @@ public class JdbcInsertFlushFunction implements DestinationFlushFunction {
 
   @Override
   public void flush(final StreamDescriptor desc, final Stream<PartialAirbyteMessage> stream) throws Exception {
-    // TODO we can probably implement this better - use the serialized data string directly instead of redeserializing it for insertRecords
+    // TODO we can probably implement this better - use the serialized data string directly instead of
+    // redeserializing it for insertRecords
     recordWriter.accept(
         new AirbyteStreamNameNamespacePair(desc.getName(), desc.getNamespace()),
-        stream.map(PartialAirbyteMessage::getFullRecordMessage).toList()
-    );
+        stream.map(PartialAirbyteMessage::getFullRecordMessage).toList());
   }
 
   @Override
@@ -31,4 +35,5 @@ public class JdbcInsertFlushFunction implements DestinationFlushFunction {
     // so limit ourselves to 5MB of data per insert statement
     return 5 * 1024 * 1024;
   }
+
 }

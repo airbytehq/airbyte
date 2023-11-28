@@ -12,6 +12,7 @@ import java.util.function.Consumer;
  * Separately out for easier versioning.
  */
 public interface OnCloseFunction extends Consumer<Boolean> {
+
   static OnCloseFunction fromNonAsync(final io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction legacy) {
     return (success) -> {
       try {
@@ -21,4 +22,5 @@ public interface OnCloseFunction extends Consumer<Boolean> {
       }
     };
   }
+
 }

@@ -74,10 +74,12 @@ public class PartialAirbyteMessage {
   }
 
   /**
-   * For record messages, this stores the serialized data blob (i.e. {@code Jsons.serialize(message.getRecord().getData())}).
-   * For state messages, this stores the _entire_ message (i.e. {@code Jsons.serialize(message)}).
+   * For record messages, this stores the serialized data blob (i.e.
+   * {@code Jsons.serialize(message.getRecord().getData())}). For state messages, this stores the
+   * _entire_ message (i.e. {@code Jsons.serialize(message)}).
    * <p>
-   * See {@link io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer#deserializeAirbyteMessage(String)}
+   * See
+   * {@link io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer#deserializeAirbyteMessage(String)}
    * for the exact logic of how this field is populated.
    */
   @JsonProperty("serialized")

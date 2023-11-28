@@ -101,8 +101,7 @@ public class JdbcBufferedConsumerFactory {
         catalog,
         new BufferManager((long) (Runtime.getRuntime().maxMemory() * BufferManager.MEMORY_LIMIT_RATIO)),
         defaultNamespace,
-        Executors.newFixedThreadPool(2)
-    );
+        Executors.newFixedThreadPool(2));
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
@@ -231,17 +230,17 @@ public class JdbcBufferedConsumerFactory {
    */
   private static OnCloseFunction onCloseFunction() {
     // TODO something like this for DV2
-//    (hasFailed) -> {
-//      if (use1s1t) {
-//        try {
-//          typerDeduper.typeAndDedupe();
-//          typerDeduper.commitFinalTables();
-//          typerDeduper.cleanup();
-//        } catch (final Exception e) {
-//          throw new RuntimeException(e);
-//        }
-//      }
-//    }
+    // (hasFailed) -> {
+    // if (use1s1t) {
+    // try {
+    // typerDeduper.typeAndDedupe();
+    // typerDeduper.commitFinalTables();
+    // typerDeduper.cleanup();
+    // } catch (final Exception e) {
+    // throw new RuntimeException(e);
+    // }
+    // }
+    // }
     return (hasFailed) -> {};
   }
 

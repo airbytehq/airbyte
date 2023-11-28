@@ -222,8 +222,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         false,
         null,
         null,
-        null
-    );
+        null);
   }
 
 }
