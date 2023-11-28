@@ -41,10 +41,8 @@ class GoogleAdsStream(Stream, ABC):
             latest_records = {}
             for result in response:
                 record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
-                # Create a tuple of values from the record for each key in self.primary_key
                 record_id = tuple(record.get(key) for key in self.primary_key)
 
-                # Compare dates and update latest_records if necessary
                 current_record_date = record.get("segments.date")
                 latest_record_date = latest_records.get(record_id, {}).get("segments.date")
 
