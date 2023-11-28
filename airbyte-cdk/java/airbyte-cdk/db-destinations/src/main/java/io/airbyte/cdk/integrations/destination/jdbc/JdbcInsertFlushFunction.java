@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.destination.jdbc;
 
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter;
+import io.airbyte.cdk.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
 import io.airbyte.cdk.integrations.destination_async.DestinationFlushFunction;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -31,9 +32,7 @@ public class JdbcInsertFlushFunction implements DestinationFlushFunction {
 
   @Override
   public long getOptimalBatchSizeBytes() {
-    // SQL statements probably shouldn't be very large
-    // so limit ourselves to 5MB of data per insert statement
-    return 5 * 1024 * 1024;
+    return GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
   }
 
 }
