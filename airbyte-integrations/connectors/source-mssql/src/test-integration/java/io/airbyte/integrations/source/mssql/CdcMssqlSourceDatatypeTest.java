@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ImageModifier;
 
 public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
@@ -21,7 +22,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
 
   @Override
   protected Database setupDatabase() {
-    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022_LATEST, "withAgent")
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022_LATEST, ImageModifier.AGENT)
         .withSnapshotIsolation()
         .withCdc();
     return testdb.getDatabase();
