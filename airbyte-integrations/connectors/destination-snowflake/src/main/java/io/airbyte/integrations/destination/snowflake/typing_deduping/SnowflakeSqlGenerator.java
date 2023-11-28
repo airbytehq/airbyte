@@ -131,10 +131,16 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   private void updateStreamTypes(final StreamConfig stream) {
     stream.columns().entrySet().stream().forEach(column -> {
-      final String name = column.getKey().originalName();
+      final String name = column.getKey().originalName().toUpperCase();
       // set as variant if it is literally called variant.
-      if(name.toUpperCase().indexOf("VARIANT") >= 0) {
+      if(name.indexOf("VARIANT") >= 0) {
         column.setValue(AirbyteProtocolType.UNKNOWN); // makes it a variant
+      } else if(name.indexOf("OBJECT") >= 0) {
+        final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
+        propertiesMap.put("area", AirbyteProtocolType.NUMBER); // makes it an object
+        column.setValue(new Struct(propertiesMap));
+      } else if(name.indexOf("OBJECT") >= 0) {
+        column.setValue(new Array(AirbyteProtocolType.NUMBER)); // makes it an array
       }
     });
   }
