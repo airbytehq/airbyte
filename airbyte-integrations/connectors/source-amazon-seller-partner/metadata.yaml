@@ -1,4 +1,12 @@
 data:
+  allowedHosts:
+    hosts:
+      - https://sellingpartnerapi-eu.amazon.com
+      - https://sellingpartnerapi-fe.amazon.com
+      - https://sellingpartnerapi-na.amazon.com
+      - https://sandbox.sellingpartnerapi-eu.amazon.com
+      - https://sandbox.sellingpartnerapi-fe.amazon.com
+      - https://sandbox.sellingpartnerapi-na.amazon.com
   ab_internal:
     ql: 200
     sl: 100
@@ -7,7 +15,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
-  dockerImageTag: 2.0.2
+  dockerImageTag: 2.4.0
   dockerRepository: airbyte/source-amazon-seller-partner
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
   githubIssueLabel: source-amazon-seller-partner
@@ -20,6 +28,12 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  suggestedStreams:
+    streams:
+      - Orders
+      - OrderItems
+      - ListFinancialEvents
+      - ListFinancialEventGroups
   releases:
     breakingChanges:
       2.0.0:

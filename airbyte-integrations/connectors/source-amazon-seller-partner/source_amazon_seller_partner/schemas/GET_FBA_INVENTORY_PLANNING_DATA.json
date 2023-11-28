@@ -4,7 +4,7 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "snapshot-date": { "type": ["null", "string"] },
+    "snapshot-date": { "type": ["null", "string"], "format": "date-time" },
     "sku": { "type": ["null", "string"] },
     "fnsku": { "type": ["null", "string"] },
     "asin": { "type": ["null", "string"] },
@@ -68,6 +68,21 @@
     "inbound-received": { "type": ["null", "string"] },
     "no-sale-last-6-months": { "type": ["null", "string"] },
     "reserved-quantity": { "type": ["null", "string"] },
-    "unfulfillable-quantity": { "type": ["null", "string"] }
+    "unfulfillable-quantity": { "type": ["null", "string"] },
+    "estimated-ais-181-210-days": { "type": ["null", "number"] },
+    "estimated-ais-211-240-days": { "type": ["null", "number"] },
+    "estimated-ais-241-270-days": { "type": ["null", "number"] },
+    "estimated-ais-271-300-days": { "type": ["null", "number"] },
+    "estimated-ais-301-330-days": { "type": ["null", "number"] },
+    "estimated-ais-331-365-days": { "type": ["null", "number"] },
+    "estimated-ais-365-plus-days": { "type": ["null", "number"] },
+    "quantity-to-be-charged-ais-181-210-days": { "type": ["null", "integer"] },
+    "quantity-to-be-charged-ais-211-240-days": { "type": ["null", "integer"] },
+    "quantity-to-be-charged-ais-241-270-days": { "type": ["null", "integer"] },
+    "quantity-to-be-charged-ais-271-300-days": { "type": ["null", "integer"] },
+    "quantity-to-be-charged-ais-301-330-days": { "type": ["null", "integer"] },
+    "quantity-to-be-charged-ais-331-365-days": { "type": ["null", "integer"] },
+    "quantity-to-be-charged-ais-365-plus-days": { "type": ["null", "integer"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }
