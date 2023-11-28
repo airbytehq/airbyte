@@ -39,13 +39,18 @@ class GoogleAdsStream(Stream, ABC):
         logger.info("Primary key: " + str(self.primary_key) + " Name " + str(self.name))
         if self.primary_key:
             latest_records = {}
-            primary_key = ' '.join(list(self.primary_key))
             for result in response:
                 record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
-                record_id = record.get(primary_key)
+                # Create a tuple of values from the record for each key in self.primary_key
+                record_id = tuple(record.get(key) for key in self.primary_key)
+
+                # Compare dates and update latest_records if necessary
+                current_record_date = record.get("segments.date")
+                latest_record_date = latest_records.get(record_id, {}).get("segments.date")
+
                 if (latest_records.get(record_id) is None
-                        or record.get("segments_date") is None
-                        or pendulum.parse(latest_records[record_id]["segments.date"]) < pendulum.parse(record.get("segments.date"))):
+                        or current_record_date is None
+                        or (latest_record_date and pendulum.parse(latest_record_date) < pendulum.parse(current_record_date))):
                     latest_records[record_id] = record
 
             for value in latest_records.values():
@@ -281,7 +286,7 @@ class CampaignBudget(IncrementalGoogleAdsStream):
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = [
         "customer.id",
-        "campaign_budget.id",
+        "campaign.id",
     ]
 
 
