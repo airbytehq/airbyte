@@ -45,6 +45,7 @@
     "Progressive Lower Bound 2": { "type": ["null", "string"] },
     "Progressive Price 2": { "type": ["null", "string"] },
     "Progressive Lower Bound 3": { "type": ["null", "string"] },
-    "Progressive Price 3": { "type": ["null", "string"] }
+    "Progressive Price 3": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }
