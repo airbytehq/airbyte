@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -44,4 +48,5 @@ public class CloudDeploymentSslEnabledMssqlSourceAcceptanceTest extends MssqlSou
         .withSsl(Map.of("ssl_method", "encrypted_trust_server_certificate"))
         .build();
   }
+
 }
