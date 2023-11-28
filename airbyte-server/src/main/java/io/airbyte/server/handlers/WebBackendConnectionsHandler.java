@@ -119,25 +119,6 @@ public class WebBackendConnectionsHandler {
     double elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
     LOGGER.info("webBackendConnectionsPageForWorkspace spends {} milliseconds", elapsedTimeInMilli);
 
-    long startTime1 = System.nanoTime();
-    List<UUID> idList = reads.stream().map(data -> data.getConnectionId()).collect(Collectors.toList());
-    List<String> connectionIds = idList.stream().map(UUID::toString).collect(Collectors.toList());
-    List<JobRead> jobReads = jobHistoryHandler.latestJobListFor(connectionIds);
-
-    Map<String, JobRead> jobReadMap = jobReads.stream()
-        .collect(Collectors.toMap(JobRead::getConfigId, data -> data));
-    for (WebBackendConnectionPageRead data : reads) {
-      JobRead jobRead = jobReadMap.get(data.getConnectionId().toString());
-      if (!ObjectUtils.isEmpty(jobRead)) {
-        data.isSyncing(!TERMINAL_STATUSES.contains(jobRead.getStatus()));
-        data.setLatestSyncJobStatus(jobRead.getStatus());
-        data.setLatestSyncJobCreatedAt(jobRead.getCreatedAt());
-      }
-    }
-    long elapsedTimeInNano1 = System.nanoTime() - startTime1;
-    double elapsedTimeInMilli1 = (double) elapsedTimeInNano1 / 1_000_000;
-    LOGGER.info("get job status spends {} milliseconds", elapsedTimeInMilli1);
-
     return new WebBackendConnectionsPageReadList().connections(reads)
         .total(connectionsHandler.pageConnectionsForWorkspaceCount(workspaceIdPageRequestBody))
         .pageCurrent(workspaceIdPageRequestBody.getPageCurrent()).pageSize(workspaceIdPageRequestBody.getPageSize());
@@ -203,12 +184,6 @@ public class WebBackendConnectionsHandler {
     LOGGER.info("buildWebBackendConnectionPageRead part 0 spends {} milliseconds", elapsedTimeInMilli);
 
     startTime = System.nanoTime();
-
-    elapsedTimeInNano = System.nanoTime() - startTime;
-    elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
-    LOGGER.info("buildWebBackendConnectionPageRead part 1 spends {} milliseconds", elapsedTimeInMilli);
-
-    startTime = System.nanoTime();
     WebBackendConnectionPageRead webBackendConnectionPageRead = new WebBackendConnectionPageRead().connectionId(connectionRead.getConnectionId())
         .name(connectionRead.getName()).status(connectionRead.getStatus()).entityName(destinationDefinition.getName())
         .connectorName(sourceDefinition.getName());
@@ -216,12 +191,6 @@ public class WebBackendConnectionsHandler {
     elapsedTimeInNano = System.nanoTime() - startTime;
     elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
     LOGGER.info("buildWebBackendConnectionPageRead part 2 spends {} milliseconds", elapsedTimeInMilli);
-
-    startTime = System.nanoTime();
-
-    elapsedTimeInNano = System.nanoTime() - startTime;
-    elapsedTimeInMilli = (double) elapsedTimeInNano / 1_000_000;
-    LOGGER.info("buildWebBackendConnectionPageRead part 3 spends {} milliseconds", elapsedTimeInMilli);
 
     return webBackendConnectionPageRead;
   }

@@ -20,6 +20,9 @@ export interface FilterConnectionRequestBody {
   destinationDefinitionId: string;
   status: string;
 }
+export interface ConnectionData {
+  connectionIds: string[];
+}
 export interface FilterSourceRequestBody {
   workspaceId: string;
   pageSize: number;
@@ -322,7 +325,20 @@ export const webBackendListFilteredConnectionsForWorkspace = (
     options
   );
 };
-
+export const webBackendListFilteredConnectionsStatus = (
+  connectionIdsBody: ConnectionData,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride(
+    {
+      url: `/etl/web_backend/connections/status`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: connectionIdsBody,
+    },
+    options
+  );
+};
 /**
  * @summary Returns all filters for connections
  */
