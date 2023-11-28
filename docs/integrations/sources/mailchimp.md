@@ -38,10 +38,15 @@ The Mailchimp source connector supports the following streams:
 [Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/)
 [Interests](https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/)
 [Interest Categories](https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/)
+[Interests](https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/)
+[Interest Categories](https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/)
 [Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info)
+[List Members](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/)
 [List Members](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/)
 [Reports](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/)
 [Segments](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/)
+[Segment Members](https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/)
+[Tags](https://mailchimp.com/developer/marketing/api/lists-tags-search/search-for-tags-on-a-list-by-name/)
 [Segment Members](https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/)
 [Tags](https://mailchimp.com/developer/marketing/api/lists-tags-search/search-for-tags-on-a-list-by-name/)
 [Unsubscribes](https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/)
@@ -64,6 +69,10 @@ All other streams contain an `id` primary key.
 | `int`, `float`, `number`   | `number`     |                                                                                     |
 | `object`                   | `object`     | properties within objects are mapped based on the mappings in this table            |
 | `string`                   | `string`     |                                                                                     |
+
+## Performance considerations
+
+[Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous connections to its API, which means that Airbyte is unable to run more than 10 concurrent syncs from Mailchimp using API keys generated from the same account.
 
 ## Performance considerations
 
