@@ -6,7 +6,9 @@ package io.airbyte.cdk.integrations.destination_async.partial_messages;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.Objects;
 
 public class PartialAirbyteMessage {
@@ -71,6 +73,13 @@ public class PartialAirbyteMessage {
     return this;
   }
 
+  /**
+   * For record messages, this stores the serialized data blob (i.e. {@code Jsons.serialize(message.getRecord().getData())}).
+   * For state messages, this stores the _entire_ message (i.e. {@code Jsons.serialize(message)}).
+   * <p>
+   * See {@link io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer#deserializeAirbyteMessage(String)}
+   * for the exact logic of how this field is populated.
+   */
   @JsonProperty("serialized")
   public String getSerialized() {
     return serialized;
@@ -112,6 +121,17 @@ public class PartialAirbyteMessage {
         ", state=" + state +
         ", serialized='" + serialized + '\'' +
         '}';
+  }
+
+  public AirbyteRecordMessage getFullRecordMessage() {
+    if (type != AirbyteMessage.Type.RECORD || record == null) {
+      throw new IllegalStateException("Cannot get full record message for non-record message");
+    }
+    return new AirbyteRecordMessage()
+        .withNamespace(record.getNamespace())
+        .withStream(record.getStream())
+        .withData(Jsons.deserializeExact(getSerialized()))
+        .withEmittedAt(record.getEmittedAt());
   }
 
 }

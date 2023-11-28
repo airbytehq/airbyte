@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
@@ -111,7 +112,6 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
    * @param sqlOps - SqlOperations object
    * @param attemptInsert - set true if need to make attempt to insert dummy records to newly created
    *        table. Set false to skip insert step.
-   * @throws Exception
    */
   public static void attemptTableOperations(final String outputSchema,
                                             final JdbcDatabase database,
@@ -203,6 +203,27 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), sqlOperations, namingResolver, config,
         catalog);
+  }
+
+  @Override
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
+    return JdbcBufferedConsumerFactory.createAsync(
+        outputRecordCollector,
+        getDatabase(getDataSource(config)),
+        sqlOperations,
+        namingResolver,
+        config,
+        catalog,
+        null,
+        // TODO populate the DV2 stuff
+        false,
+        null,
+        null,
+        null
+    );
   }
 
 }
