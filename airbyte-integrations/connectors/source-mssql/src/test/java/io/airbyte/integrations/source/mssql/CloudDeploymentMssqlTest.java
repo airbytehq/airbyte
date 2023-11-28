@@ -60,17 +60,12 @@ public class CloudDeploymentMssqlTest {
   @Test
   void testStrictSSLSecuredNoTunnel() throws Exception {
     try (final var testdb = createTestDatabase()) {
-      final var config = testdb.configBuilder()
-          .withHostAndPort()
-          .withDatabase()
-          .with(JdbcUtils.USERNAME_KEY, testdb.getUserName())
-          .with(JdbcUtils.PASSWORD_KEY, "fake")
+      final var config = testdb.testConfigBuilder()
           .withSsl(Map.of("ssl_method", "encrypted_trust_server_certificate"))
           .with("tunnel_method", ImmutableMap.builder().put("tunnel_method", "NO_TUNNEL").build())
           .build();
       final AirbyteConnectionStatus actual = source().check(config);
-      assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
-      assertTrue(actual.getMessage().contains("Failed to create keystore for Client certificate"), actual.getMessage());
+      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, actual.getStatus());
     }
   }
 
