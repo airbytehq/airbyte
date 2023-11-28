@@ -10,11 +10,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 import responses
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException, UserDefinedBackoffException
 from requests import HTTPError
 from responses import matchers
-from source_github import constants
+from source_github import SourceGithub, constants
 from source_github.streams import (
     Branches,
     Collaborators,
@@ -1369,21 +1369,50 @@ def test_stream_contributor_activity_parse_empty_response(caplog):
 
 @responses.activate
 def test_stream_contributor_activity_accepted_response(caplog):
-    repository_args = {
-        "page_size_for_large_streams": 20,
-        "repositories": ["airbytehq/airbyte"],
-    }
-    stream = ContributorActivity(**repository_args)
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        json={"full_name": "airbytehq/test_airbyte"},
+        status=200,
+    )
+    responses.add(
+            responses.GET,
+            "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+            json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
+            status=200,
+        )
+    responses.add(
+                responses.GET,
+                "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+                json={},
+                status=200,
+            )
     resp = responses.add(
         responses.GET,
-        "https://api.github.com/repos/airbytehq/airbyte/stats/contributors",
+        "https://api.github.com/repos/airbytehq/test_airbyte/stats/contributors?per_page=100",
         body="",
         status=202,
     )
+
+    source = SourceGithub()
+    configured_catalog = {
+        "streams": [
+            {
+                "stream": {"name": "contributor_activity", "json_schema": {}, "supported_sync_modes": ["full_refresh"],"source_defined_primary_key": [["id"]]},
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite"
+            }
+        ]
+    }
+    catalog = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    config = {"access_token": "test_token", "repository": "airbytehq/test_airbyte"}
+    logger_mock = MagicMock()
+
     with patch("time.sleep", return_value=0):
-        list(read_full_refresh(stream))
+        records = list(source.read(config=config, logger=logger_mock, catalog=catalog, state={}))
+
+    assert records[2].log.message == "Syncing `ContributorActivity` stream isn't available for repository `airbytehq/test_airbyte`."
     assert resp.call_count == 6
-    assert "Syncing `ContributorActivity` stream isn't available for repository `airbytehq/airbyte`." in caplog.messages
 
 
 @responses.activate
