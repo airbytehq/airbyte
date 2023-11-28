@@ -141,6 +141,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         column.setValue(new Struct(propertiesMap));
       } else if(name.indexOf("ARRAY") >= 0) {
         column.setValue(new Array(AirbyteProtocolType.NUMBER)); // makes it an array
+      } else {
+        column.setValue(AirbyteProtocolType.STRING);
       }
     });
   }
@@ -259,6 +261,14 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
           END
           """);
     } else {
+      if(sqlExpression.indexOf("BINARY") >= 0) {
+        // column named TEST_BINARY
+        return new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
+            """
+            BASE64_DECODE_BINARY(${expression})
+            """);
+      }
+
       final String dialectType = toDialectType(airbyteType);
       return switch (dialectType) {
         case "TIMESTAMP_TZ" -> new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
@@ -283,27 +293,18 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             END
             """);
         // try_cast doesn't support variant/array/object, so handle them specially
-        case "VARIANT" -> sqlExpression;
-        // We need to validate that the struct is actually a struct.
-        // Note that struct columns are actually nullable in two ways. For a column `foo`:
-        // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a
-        // JSON null).
+        case "VARIANT" -> new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
+            """
+            PARSE_JSON(${expression})
+            """);
         case "OBJECT" -> new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
             """
-            CASE
-              WHEN TYPEOF(${expression}) != 'OBJECT'
-                THEN NULL
-              ELSE ${expression}
-            END
+            PARSE_JSON(${expression})
             """);
         // Much like the object case, arrays need special handling.
         case "ARRAY" -> new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
             """
-            CASE
-              WHEN TYPEOF(${expression}) != 'ARRAY'
-                THEN NULL
-              ELSE ${expression}
-            END
+            PARSE_JSON(${expression})
             """);
         case "TEXT" -> "((" + sqlExpression + ")::text)"; // we don't need TRY_CAST on strings.
         default -> "TRY_CAST((" + sqlExpression + ")::text as " + dialectType + ")";
