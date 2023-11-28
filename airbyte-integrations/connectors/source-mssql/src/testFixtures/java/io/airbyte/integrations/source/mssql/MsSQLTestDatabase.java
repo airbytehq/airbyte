@@ -39,19 +39,21 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   }
 
-  public static enum ImageModifier {
+  public static enum ContainerModifier {
+
     NETWORK("withNetwork"),
-    AGENT("withAgent")
-    ;
+    AGENT("withAgent");
 
     private final String methodName;
-    private ImageModifier(String methodName) {
+
+    private ContainerModifier(String methodName) {
       this.methodName = methodName;
     }
+
   }
 
-  static public MsSQLTestDatabase in(BaseImage imageName, ImageModifier... methods) {
-    String[] methodNames = Stream.of(methods).map(im->im.methodName).toList().toArray(new String[0]);
+  static public MsSQLTestDatabase in(BaseImage imageName, ContainerModifier... methods) {
+    String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
     final var container = new MsSQLContainerFactory().shared(imageName.reference, methodNames);
     final var testdb = new MsSQLTestDatabase(container);
     return testdb
