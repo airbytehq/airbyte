@@ -9,6 +9,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -82,7 +83,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) {
-    testdb = MsSQLTestDatabase.in("mcr.microsoft.com/mssql/server:2022-latest", "withAgent");
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022_LATEST, "withAgent");
     final var enableCdcSqlFmt = """
                                 EXEC sys.sp_cdc_enable_table
                                 \t@source_schema = N'%s',

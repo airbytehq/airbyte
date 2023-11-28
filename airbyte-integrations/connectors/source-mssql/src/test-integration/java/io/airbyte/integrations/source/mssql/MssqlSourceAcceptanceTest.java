@@ -9,6 +9,7 @@ import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -26,7 +27,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
-    testdb = MsSQLTestDatabase.in("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04")
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022_UBUNTU_20_04)
         .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));")
         .with("INSERT INTO id_and_name (id, name, born) VALUES " +
             "(1, 'picard', '2124-03-04T01:01:01Z'), " +
