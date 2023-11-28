@@ -22,6 +22,7 @@ import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -47,7 +48,7 @@ public class MySqlSourceTests {
 
   @Test
   public void testSettingTimezones() throws Exception {
-    try (final var testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8, "withMoscowTimezone")) {
+    try (final var testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8, ContainerModifier.MOSCOW_TIMEZONE)) {
       final var config = testdb.testConfigBuilder()
           .with(JdbcUtils.JDBC_URL_PARAMS_KEY, "serverTimezone=Europe/Moscow")
           .withoutSsl()
