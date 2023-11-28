@@ -60,7 +60,8 @@ specify the target size of compacted Iceberg data file.
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                                    |
-| :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------- |
+|:--------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------|
+| 0.1.6   | 2023-11-28 | [32864](https://github.com/airbytehq/airbyte/pull/32864)  | Bump Iceberg from 1.3.0 to 1.4.2                           |
 | 0.1.5   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region                          |
 | 0.1.4   | 2023-07-20 | [28506](https://github.com/airbytehq/airbyte/pull/28506)  | Support server-managed storage config                      |
 | 0.1.3   | 2023-07-12 | [28158](https://github.com/airbytehq/airbyte/pull/28158)  | Bump Iceberg library to 1.3.0 and add REST catalog support |
