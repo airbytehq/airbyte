@@ -220,9 +220,7 @@ class UnstructuredParser(FileTypeParser):
 
         return self._render_markdown([element.to_dict() for element in elements])
 
-    def _handle_unprocessable_file(
-        self, remote_file: RemoteFile, skip_unprocessable_file_types: bool, logger: logging.Logger
-    ) -> None:
+    def _handle_unprocessable_file(self, remote_file: RemoteFile, skip_unprocessable_file_types: bool, logger: logging.Logger) -> None:
         if skip_unprocessable_file_types:
             logger.warn(f"File {remote_file.uri} cannot be parsed. Skipping it.")
         else:
