@@ -19,7 +19,7 @@ public class MssqlSourceStrictEncrypt extends SpecModifyingSource implements Sou
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlSourceStrictEncrypt.class);
 
   public MssqlSourceStrictEncrypt() {
-    super(MssqlSource.sshWrappedSource());
+    super(MssqlSource.sshWrappedSource(new MssqlSource()));
   }
 
   @Override

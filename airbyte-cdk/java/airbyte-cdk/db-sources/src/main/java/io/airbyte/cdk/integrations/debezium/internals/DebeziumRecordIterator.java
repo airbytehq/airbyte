@@ -39,13 +39,11 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordIterator.class);
 
-  private static final Duration SUBSEQUENT_RECORD_WAIT_TIME = Duration.ofMinutes(1);
-
   private final Map<Class<? extends ChangeEvent>, Field> heartbeatEventSourceField;
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
   private final CdcTargetPosition<T> targetPosition;
   private final Supplier<Boolean> publisherStatusSupplier;
-  private final Duration firstRecordWaitTime;
+  private final Duration firstRecordWaitTime, subsequentRecordWaitTime;
   private final DebeziumShutdownProcedure<ChangeEvent<String, String>> debeziumShutdownProcedure;
 
   private boolean receivedFirstRecord;
@@ -59,12 +57,14 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
                                 final CdcTargetPosition<T> targetPosition,
                                 final Supplier<Boolean> publisherStatusSupplier,
                                 final DebeziumShutdownProcedure<ChangeEvent<String, String>> debeziumShutdownProcedure,
-                                final Duration firstRecordWaitTime) {
+                                final Duration firstRecordWaitTime,
+                                final Duration subsequentRecordWaitTime) {
     this.queue = queue;
     this.targetPosition = targetPosition;
     this.publisherStatusSupplier = publisherStatusSupplier;
     this.debeziumShutdownProcedure = debeziumShutdownProcedure;
     this.firstRecordWaitTime = firstRecordWaitTime;
+    this.subsequentRecordWaitTime = subsequentRecordWaitTime;
     this.heartbeatEventSourceField = new HashMap<>(1);
 
     this.receivedFirstRecord = false;
@@ -90,7 +90,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
 
-      final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : this.firstRecordWaitTime;
+      final Duration waitTime = receivedFirstRecord ? this.subsequentRecordWaitTime : this.firstRecordWaitTime;
       try {
         next = queue.poll(waitTime.getSeconds(), TimeUnit.SECONDS);
       } catch (final InterruptedException e) {

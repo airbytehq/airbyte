@@ -16,8 +16,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
-import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.testutils.TestDatabase;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -36,7 +36,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,65 +47,24 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class CdcSourceTest {
+public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, T, ?>> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CdcSourceTest.class);
+  static private final Logger LOGGER = LoggerFactory.getLogger(CdcSourceTest.class);
 
-  protected static final String MODELS_SCHEMA = "models_schema";
-  protected static final String MODELS_STREAM_NAME = "models";
-  protected static final Set<String> STREAM_NAMES = Sets
-      .newHashSet(MODELS_STREAM_NAME);
-  protected static final String COL_ID = "id";
-  protected static final String COL_MAKE_ID = "make_id";
-  protected static final String COL_MODEL = "model";
-  protected static final int INITIAL_WAITING_SECONDS = 5;
+  static protected final String MODELS_STREAM_NAME = "models";
+  static protected final Set<String> STREAM_NAMES = Set.of(MODELS_STREAM_NAME);
+  static protected final String COL_ID = "id";
+  static protected final String COL_MAKE_ID = "make_id";
+  static protected final String COL_MODEL = "model";
 
-  protected final List<JsonNode> MODEL_RECORDS_RANDOM = ImmutableList.of(
-      Jsons
-          .jsonNode(ImmutableMap
-              .of(COL_ID + "_random", 11000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
-                  "Fiesta-random")),
-      Jsons.jsonNode(ImmutableMap
-          .of(COL_ID + "_random", 12000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
-              "Focus-random")),
-      Jsons
-          .jsonNode(ImmutableMap
-              .of(COL_ID + "_random", 13000, COL_MAKE_ID + "_random", 1, COL_MODEL + "_random",
-                  "Ranger-random")),
-      Jsons.jsonNode(ImmutableMap
-          .of(COL_ID + "_random", 14000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
-              "GLA-random")),
-      Jsons.jsonNode(ImmutableMap
-          .of(COL_ID + "_random", 15000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
-              "A 220-random")),
-      Jsons
-          .jsonNode(ImmutableMap
-              .of(COL_ID + "_random", 16000, COL_MAKE_ID + "_random", 2, COL_MODEL + "_random",
-                  "E 350-random")));
-
-  protected static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
-      CatalogHelpers.createAirbyteStream(
-          MODELS_STREAM_NAME,
-          MODELS_SCHEMA,
-          Field.of(COL_ID, JsonSchemaType.INTEGER),
-          Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-          Field.of(COL_MODEL, JsonSchemaType.STRING))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID)))));
-  protected static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers
-      .toDefaultConfiguredCatalog(CATALOG);
-
-  // set all streams to incremental.
-  static {
-    CONFIGURED_CATALOG.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
-  }
-
-  protected static final List<JsonNode> MODEL_RECORDS = ImmutableList.of(
+  static protected final List<JsonNode> MODEL_RECORDS = ImmutableList.of(
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 11, COL_MAKE_ID, 1, COL_MODEL, "Fiesta")),
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 12, COL_MAKE_ID, 1, COL_MODEL, "Focus")),
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 13, COL_MAKE_ID, 1, COL_MODEL, "Ranger")),
@@ -114,26 +72,115 @@ public abstract class CdcSourceTest {
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 15, COL_MAKE_ID, 2, COL_MODEL, "A 220")),
       Jsons.jsonNode(ImmutableMap.of(COL_ID, 16, COL_MAKE_ID, 2, COL_MODEL, "E 350")));
 
-  protected void setup() throws SQLException {
-    createAndPopulateTables();
+  static protected final String RANDOM_TABLE_NAME = MODELS_STREAM_NAME + "_random";
+
+  static protected final List<JsonNode> MODEL_RECORDS_RANDOM = MODEL_RECORDS.stream()
+      .map(r -> Jsons.jsonNode(ImmutableMap.of(
+          COL_ID + "_random", r.get(COL_ID).asInt() * 1000,
+          COL_MAKE_ID + "_random", r.get(COL_MAKE_ID),
+          COL_MODEL + "_random", r.get(COL_MODEL).asText() + "-random")))
+      .toList();
+
+  protected T testdb;
+
+  protected String createTableSqlFmt() {
+    return "CREATE TABLE %s.%s(%s);";
   }
 
-  private void createAndPopulateTables() {
-    createAndPopulateActualTable();
-    createAndPopulateRandomTable();
+  protected String createSchemaSqlFmt() {
+    return "CREATE SCHEMA %s;";
   }
 
-  protected void executeQuery(final String query) {
-    try {
-      getDatabase().query(
-          ctx -> ctx
-              .execute(query));
-    } catch (final SQLException e) {
-      throw new RuntimeException(e);
+  protected String modelsSchema() {
+    return "models_schema";
+  }
+
+  /**
+   * The schema of a random table which is used as a new table in snapshot test
+   */
+  protected String randomSchema() {
+    return "models_schema_random";
+  }
+
+  protected AirbyteCatalog getCatalog() {
+    return new AirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createAirbyteStream(
+            MODELS_STREAM_NAME,
+            modelsSchema(),
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_MODEL, JsonSchemaType.STRING))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID)))));
+  }
+
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
+    final var configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(getCatalog());
+    configuredCatalog.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
+    return configuredCatalog;
+  }
+
+  protected abstract T createTestDatabase();
+
+  protected abstract S source();
+
+  protected abstract JsonNode config();
+
+  protected abstract CdcTargetPosition<?> cdcLatestTargetPosition();
+
+  protected abstract CdcTargetPosition<?> extractPosition(final JsonNode record);
+
+  protected abstract void assertNullCdcMetaData(final JsonNode data);
+
+  protected abstract void assertCdcMetaData(final JsonNode data, final boolean deletedAtNull);
+
+  protected abstract void removeCDCColumns(final ObjectNode data);
+
+  protected abstract void addCdcMetadataColumns(final AirbyteStream stream);
+
+  protected abstract void addCdcDefaultCursorField(final AirbyteStream stream);
+
+  protected abstract void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages);
+
+  @BeforeEach
+  protected void setup() {
+    testdb = createTestDatabase();
+
+    // create and populate actual table
+    final var actualColumns = ImmutableMap.of(
+        COL_ID, "INTEGER",
+        COL_MAKE_ID, "INTEGER",
+        COL_MODEL, "VARCHAR(200)");
+    testdb
+        .with(createSchemaSqlFmt(), modelsSchema())
+        .with(createTableSqlFmt(), modelsSchema(), MODELS_STREAM_NAME, columnClause(actualColumns, Optional.of(COL_ID)));
+    for (final JsonNode recordJson : MODEL_RECORDS) {
+      writeModelRecord(recordJson);
+    }
+
+    // Create and populate random table.
+    // This table is not part of Airbyte sync. It is being created just to make sure the schemas not
+    // being synced by Airbyte are not causing issues with our debezium logic.
+    final var randomColumns = ImmutableMap.of(
+        COL_ID + "_random", "INTEGER",
+        COL_MAKE_ID + "_random", "INTEGER",
+        COL_MODEL + "_random", "VARCHAR(200)");
+    if (!randomSchema().equals(modelsSchema())) {
+      testdb.with(createSchemaSqlFmt(), randomSchema());
+    }
+    testdb.with(createTableSqlFmt(), randomSchema(), RANDOM_TABLE_NAME, columnClause(randomColumns, Optional.of(COL_ID + "_random")));
+    for (final JsonNode recordJson : MODEL_RECORDS_RANDOM) {
+      writeRecords(recordJson, randomSchema(), RANDOM_TABLE_NAME,
+          COL_ID + "_random", COL_MAKE_ID + "_random", COL_MODEL + "_random");
     }
   }
 
-  public String columnClause(final Map<String, String> columnsWithDataType, final Optional<String> primaryKey) {
+  @AfterEach
+  protected void tearDown() {
+    testdb.close();
+  }
+
+  protected String columnClause(final Map<String, String> columnsWithDataType, final Optional<String> primaryKey) {
     final StringBuilder columnClause = new StringBuilder();
     int i = 0;
     for (final Map.Entry<String, String> column : columnsWithDataType.entrySet()) {
@@ -151,50 +198,8 @@ public abstract class CdcSourceTest {
     return columnClause.toString();
   }
 
-  public void createTable(final String schemaName, final String tableName, final String columnClause) {
-    executeQuery(createTableQuery(schemaName, tableName, columnClause));
-  }
-
-  public String createTableQuery(final String schemaName, final String tableName, final String columnClause) {
-    return String.format("CREATE TABLE %s.%s(%s);", schemaName, tableName, columnClause);
-  }
-
-  public void createSchema(final String schemaName) {
-    executeQuery(createSchemaQuery(schemaName));
-  }
-
-  public String createSchemaQuery(final String schemaName) {
-    return "CREATE DATABASE " + schemaName + ";";
-  }
-
-  private void createAndPopulateActualTable() {
-    createSchema(MODELS_SCHEMA);
-    createTable(MODELS_SCHEMA, MODELS_STREAM_NAME,
-        columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.of(COL_ID)));
-    for (final JsonNode recordJson : MODEL_RECORDS) {
-      writeModelRecord(recordJson);
-    }
-  }
-
-  /**
-   * This database and table is not part of Airbyte sync. It is being created just to make sure the
-   * databases not being synced by Airbyte are not causing issues with our debezium logic
-   */
-  private void createAndPopulateRandomTable() {
-    if (!randomTableSchema().equals(MODELS_SCHEMA)) {
-      createSchema(randomTableSchema());
-    }
-    createTable(randomTableSchema(), MODELS_STREAM_NAME + "_random",
-        columnClause(ImmutableMap.of(COL_ID + "_random", "INTEGER", COL_MAKE_ID + "_random", "INTEGER", COL_MODEL + "_random", "VARCHAR(200)"),
-            Optional.of(COL_ID + "_random")));
-    for (final JsonNode recordJson : MODEL_RECORDS_RANDOM) {
-      writeRecords(recordJson, randomTableSchema(), MODELS_STREAM_NAME + "_random",
-          COL_ID + "_random", COL_MAKE_ID + "_random", COL_MODEL + "_random");
-    }
-  }
-
   protected void writeModelRecord(final JsonNode recordJson) {
-    writeRecords(recordJson, MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL);
+    writeRecords(recordJson, modelsSchema(), MODELS_STREAM_NAME, COL_ID, COL_MAKE_ID, COL_MODEL);
   }
 
   protected void writeRecords(
@@ -204,14 +209,13 @@ public abstract class CdcSourceTest {
                               final String idCol,
                               final String makeIdCol,
                               final String modelCol) {
-    executeQuery(
-        String.format("INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
-            idCol, makeIdCol, modelCol,
-            recordJson.get(idCol).asInt(), recordJson.get(makeIdCol).asInt(),
-            recordJson.get(modelCol).asText()));
+    testdb.with("INSERT INTO %s.%s (%s, %s, %s) VALUES (%s, %s, '%s');", dbName, streamName,
+        idCol, makeIdCol, modelCol,
+        recordJson.get(idCol).asInt(), recordJson.get(makeIdCol).asInt(),
+        recordJson.get(modelCol).asText());
   }
 
-  protected static Set<AirbyteRecordMessage> removeDuplicates(final Set<AirbyteRecordMessage> messages) {
+  static protected Set<AirbyteRecordMessage> removeDuplicates(final Set<AirbyteRecordMessage> messages) {
     final Set<JsonNode> existingDataRecordsWithoutUpdated = new HashSet<>();
     final Set<AirbyteRecordMessage> output = new HashSet<>();
 
@@ -272,7 +276,7 @@ public abstract class CdcSourceTest {
   private void assertExpectedRecords(final Set<JsonNode> expectedRecords,
                                      final Set<AirbyteRecordMessage> actualRecords,
                                      final Set<String> cdcStreams) {
-    assertExpectedRecords(expectedRecords, actualRecords, cdcStreams, STREAM_NAMES, MODELS_SCHEMA);
+    assertExpectedRecords(expectedRecords, actualRecords, cdcStreams, STREAM_NAMES, modelsSchema());
   }
 
   protected void assertExpectedRecords(final Set<JsonNode> expectedRecords,
@@ -309,7 +313,7 @@ public abstract class CdcSourceTest {
   @DisplayName("On the first sync, produce returns records that exist in the database.")
   void testExistingData() throws Exception {
     final CdcTargetPosition targetPosition = cdcLatestTargetPosition();
-    final AutoCloseableIterator<AirbyteMessage> read = getSource().read(getConfig(), CONFIGURED_CATALOG, null);
+    final AutoCloseableIterator<AirbyteMessage> read = source().read(config(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
 
     final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
@@ -332,19 +336,17 @@ public abstract class CdcSourceTest {
   @Test
   @DisplayName("When a record is deleted, produces a deletion record.")
   void testDelete() throws Exception {
-    final AutoCloseableIterator<AirbyteMessage> read1 = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+    final AutoCloseableIterator<AirbyteMessage> read1 = source()
+        .read(config(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
     assertExpectedStateMessages(stateMessages1);
 
-    executeQuery(String
-        .format("DELETE FROM %s.%s WHERE %s = %s", MODELS_SCHEMA, MODELS_STREAM_NAME, COL_ID,
-            11));
+    testdb.with("DELETE FROM %s.%s WHERE %s = %s", modelsSchema(), MODELS_STREAM_NAME, COL_ID, 11);
 
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessages1.get(stateMessages1.size() - 1)));
-    final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, state);
+    final AutoCloseableIterator<AirbyteMessage> read2 = source()
+        .read(config(), getConfiguredCatalog(), state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
     final List<AirbyteRecordMessage> recordMessages2 = new ArrayList<>(
         extractRecordMessages(actualRecords2));
@@ -363,19 +365,18 @@ public abstract class CdcSourceTest {
   @DisplayName("When a record is updated, produces an update record.")
   void testUpdate() throws Exception {
     final String updatedModel = "Explorer";
-    final AutoCloseableIterator<AirbyteMessage> read1 = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+    final AutoCloseableIterator<AirbyteMessage> read1 = source()
+        .read(config(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
     final List<AirbyteStateMessage> stateMessages1 = extractStateMessages(actualRecords1);
     assertExpectedStateMessages(stateMessages1);
 
-    executeQuery(String
-        .format("UPDATE %s.%s SET %s = '%s' WHERE %s = %s", MODELS_SCHEMA, MODELS_STREAM_NAME,
-            COL_MODEL, updatedModel, COL_ID, 11));
+    testdb.with("UPDATE %s.%s SET %s = '%s' WHERE %s = %s", modelsSchema(), MODELS_STREAM_NAME,
+        COL_MODEL, updatedModel, COL_ID, 11);
 
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessages1.get(stateMessages1.size() - 1)));
-    final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, state);
+    final AutoCloseableIterator<AirbyteMessage> read2 = source()
+        .read(config(), getConfiguredCatalog(), state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
     final List<AirbyteRecordMessage> recordMessages2 = new ArrayList<>(
         extractRecordMessages(actualRecords2));
@@ -402,8 +403,8 @@ public abstract class CdcSourceTest {
       writeModelRecord(record);
     }
 
-    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source()
+        .read(config(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
@@ -422,8 +423,8 @@ public abstract class CdcSourceTest {
     }
 
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1)));
-    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, state);
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = source()
+        .read(config(), getConfiguredCatalog(), state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
 
@@ -457,7 +458,7 @@ public abstract class CdcSourceTest {
   @Test
   @DisplayName("When both incremental CDC and full refresh are configured for different streams in a sync, the data is replicated as expected.")
   void testCdcAndFullRefreshInSameSync() throws Exception {
-    final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(CONFIGURED_CATALOG);
+    final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(getConfiguredCatalog());
 
     final List<JsonNode> MODEL_RECORDS_2 = ImmutableList.of(
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 110, COL_MAKE_ID, 1, COL_MODEL, "Fiesta-2")),
@@ -467,18 +468,17 @@ public abstract class CdcSourceTest {
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 150, COL_MAKE_ID, 2, COL_MODEL, "A 220-2")),
         Jsons.jsonNode(ImmutableMap.of(COL_ID, 160, COL_MAKE_ID, 2, COL_MODEL, "E 350-2")));
 
-    createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2",
-        columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.of(COL_ID)));
+    final var columns = ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)");
+    testdb.with(createTableSqlFmt(), modelsSchema(), MODELS_STREAM_NAME + "_2", columnClause(columns, Optional.of(COL_ID)));
 
     for (final JsonNode recordJson : MODEL_RECORDS_2) {
-      writeRecords(recordJson, MODELS_SCHEMA, MODELS_STREAM_NAME + "_2", COL_ID,
-          COL_MAKE_ID, COL_MODEL);
+      writeRecords(recordJson, modelsSchema(), MODELS_STREAM_NAME + "_2", COL_ID, COL_MAKE_ID, COL_MODEL);
     }
 
     final ConfiguredAirbyteStream airbyteStream = new ConfiguredAirbyteStream()
         .withStream(CatalogHelpers.createAirbyteStream(
             MODELS_STREAM_NAME + "_2",
-            MODELS_SCHEMA,
+            modelsSchema(),
             Field.of(COL_ID, JsonSchemaType.INTEGER),
             Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
             Field.of(COL_MODEL, JsonSchemaType.STRING))
@@ -491,8 +491,8 @@ public abstract class CdcSourceTest {
     streams.add(airbyteStream);
     configuredCatalog.withStreams(streams);
 
-    final AutoCloseableIterator<AirbyteMessage> read1 = getSource()
-        .read(getConfig(), configuredCatalog, null);
+    final AutoCloseableIterator<AirbyteMessage> read1 = source()
+        .read(config(), configuredCatalog, null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
 
     final Set<AirbyteRecordMessage> recordMessages1 = extractRecordMessages(actualRecords1);
@@ -505,15 +505,15 @@ public abstract class CdcSourceTest {
         recordMessages1,
         Collections.singleton(MODELS_STREAM_NAME),
         names,
-        MODELS_SCHEMA);
+        modelsSchema());
 
     final JsonNode puntoRecord = Jsons
         .jsonNode(ImmutableMap.of(COL_ID, 100, COL_MAKE_ID, 3, COL_MODEL, "Punto"));
     writeModelRecord(puntoRecord);
 
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessages1.get(stateMessages1.size() - 1)));
-    final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
-        .read(getConfig(), configuredCatalog, state);
+    final AutoCloseableIterator<AirbyteMessage> read2 = source()
+        .read(config(), configuredCatalog, state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
 
     final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
@@ -525,17 +525,16 @@ public abstract class CdcSourceTest {
         recordMessages2,
         Collections.singleton(MODELS_STREAM_NAME),
         names,
-        MODELS_SCHEMA);
+        modelsSchema());
   }
 
   @Test
   @DisplayName("When no records exist, no records are returned.")
   void testNoData() throws Exception {
 
-    executeQuery(String.format("DELETE FROM %s.%s", MODELS_SCHEMA, MODELS_STREAM_NAME));
+    testdb.with("DELETE FROM %s.%s", modelsSchema(), MODELS_STREAM_NAME);
 
-    final AutoCloseableIterator<AirbyteMessage> read = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+    final AutoCloseableIterator<AirbyteMessage> read = source().read(config(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
 
     final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
@@ -551,14 +550,14 @@ public abstract class CdcSourceTest {
   @Test
   @DisplayName("When no changes have been made to the database since the previous sync, no records are returned.")
   void testNoDataOnSecondSync() throws Exception {
-    final AutoCloseableIterator<AirbyteMessage> read1 = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+    final AutoCloseableIterator<AirbyteMessage> read1 = source()
+        .read(config(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> actualRecords1 = AutoCloseableIterators.toListAndClose(read1);
     final List<AirbyteStateMessage> stateMessagesFromFirstSync = extractStateMessages(actualRecords1);
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessagesFromFirstSync.get(stateMessagesFromFirstSync.size() - 1)));
 
-    final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, state);
+    final AutoCloseableIterator<AirbyteMessage> read2 = source()
+        .read(config(), getConfiguredCatalog(), state);
     final List<AirbyteMessage> actualRecords2 = AutoCloseableIterators.toListAndClose(read2);
 
     final Set<AirbyteRecordMessage> recordMessages2 = extractRecordMessages(actualRecords2);
@@ -570,14 +569,14 @@ public abstract class CdcSourceTest {
 
   @Test
   void testCheck() throws Exception {
-    final AirbyteConnectionStatus status = getSource().check(getConfig());
+    final AirbyteConnectionStatus status = source().check(config());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
   @Test
   void testDiscover() throws Exception {
     final AirbyteCatalog expectedCatalog = expectedCatalogForDiscover();
-    final AirbyteCatalog actualCatalog = getSource().discover(getConfig());
+    final AirbyteCatalog actualCatalog = source().discover(config());
 
     assertEquals(
         expectedCatalog.getStreams().stream().sorted(Comparator.comparing(AirbyteStream::getName))
@@ -588,8 +587,8 @@ public abstract class CdcSourceTest {
 
   @Test
   public void newTableSnapshotTest() throws Exception {
-    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = source()
+        .read(config(), getConfiguredCatalog(), null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
@@ -605,7 +604,7 @@ public abstract class CdcSourceTest {
         .map(AirbyteStreamState::getStreamDescriptor)
         .collect(Collectors.toSet());
     assertEquals(1, streamsInStateAfterFirstSyncCompletion.size());
-    assertTrue(streamsInStateAfterFirstSyncCompletion.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+    assertTrue(streamsInStateAfterFirstSyncCompletion.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema())));
     assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getData());
 
     assertEquals((MODEL_RECORDS.size()), recordsFromFirstBatch.size());
@@ -616,8 +615,8 @@ public abstract class CdcSourceTest {
     final ConfiguredAirbyteCatalog newTables = CatalogHelpers
         .toDefaultConfiguredCatalog(new AirbyteCatalog().withStreams(List.of(
             CatalogHelpers.createAirbyteStream(
-                MODELS_STREAM_NAME + "_random",
-                randomTableSchema(),
+                RANDOM_TABLE_NAME,
+                randomSchema(),
                 Field.of(COL_ID + "_random", JsonSchemaType.NUMBER),
                 Field.of(COL_MAKE_ID + "_random", JsonSchemaType.NUMBER),
                 Field.of(COL_MODEL + "_random", JsonSchemaType.STRING))
@@ -626,7 +625,7 @@ public abstract class CdcSourceTest {
 
     newTables.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
     final List<ConfiguredAirbyteStream> combinedStreams = new ArrayList<>();
-    combinedStreams.addAll(CONFIGURED_CATALOG.getStreams());
+    combinedStreams.addAll(getConfiguredCatalog().getStreams());
     combinedStreams.addAll(newTables.getStreams());
 
     final ConfiguredAirbyteCatalog updatedCatalog = new ConfiguredAirbyteCatalog().withStreams(combinedStreams);
@@ -644,8 +643,8 @@ public abstract class CdcSourceTest {
       writeModelRecord(record);
     }
 
-    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(getConfig(), updatedCatalog, state);
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = source()
+        .read(config(), updatedCatalog, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
 
@@ -654,10 +653,10 @@ public abstract class CdcSourceTest {
 
     final Map<String, Set<AirbyteRecordMessage>> recordsStreamWise = extractRecordMessagesStreamWise(dataFromSecondBatch);
     assertTrue(recordsStreamWise.containsKey(MODELS_STREAM_NAME));
-    assertTrue(recordsStreamWise.containsKey(MODELS_STREAM_NAME + "_random"));
+    assertTrue(recordsStreamWise.containsKey(RANDOM_TABLE_NAME));
 
     final Set<AirbyteRecordMessage> recordsForModelsStreamFromSecondBatch = recordsStreamWise.get(MODELS_STREAM_NAME);
-    final Set<AirbyteRecordMessage> recordsForModelsRandomStreamFromSecondBatch = recordsStreamWise.get(MODELS_STREAM_NAME + "_random");
+    final Set<AirbyteRecordMessage> recordsForModelsRandomStreamFromSecondBatch = recordsStreamWise.get(RANDOM_TABLE_NAME);
 
     assertEquals((MODEL_RECORDS_RANDOM.size()), recordsForModelsRandomStreamFromSecondBatch.size());
     assertEquals(20, recordsForModelsStreamFromSecondBatch.size());
@@ -665,8 +664,8 @@ public abstract class CdcSourceTest {
         recordsForModelsRandomStreamFromSecondBatch.stream().map(AirbyteRecordMessage::getStream).collect(
             Collectors.toSet()),
         Sets
-            .newHashSet(MODELS_STREAM_NAME + "_random"),
-        randomTableSchema());
+            .newHashSet(RANDOM_TABLE_NAME),
+        randomSchema());
     assertExpectedRecords(recordsWritten, recordsForModelsStreamFromSecondBatch);
 
     /*
@@ -686,14 +685,14 @@ public abstract class CdcSourceTest {
           .jsonNode(ImmutableMap
               .of(COL_ID + "_random", 11000 + recordsCreated, COL_MAKE_ID + "_random", 1 + recordsCreated, COL_MODEL + "_random",
                   "Fiesta-random" + recordsCreated));
-      writeRecords(record2, randomTableSchema(), MODELS_STREAM_NAME + "_random",
+      writeRecords(record2, randomSchema(), RANDOM_TABLE_NAME,
           COL_ID + "_random", COL_MAKE_ID + "_random", COL_MODEL + "_random");
       recordsWrittenInRandomTable.add(record2);
     }
 
     final JsonNode state2 = stateAfterSecondBatch.get(stateAfterSecondBatch.size() - 1).getData();
-    final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = getSource()
-        .read(getConfig(), updatedCatalog, state2);
+    final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = source()
+        .read(config(), updatedCatalog, state2);
     final List<AirbyteMessage> dataFromThirdBatch = AutoCloseableIterators
         .toListAndClose(thirdBatchIterator);
 
@@ -710,16 +709,17 @@ public abstract class CdcSourceTest {
         .collect(Collectors.toSet());
     assertTrue(
         streamsInSyncCompletionStateAfterThirdSync.contains(
-            new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-    assertTrue(streamsInSyncCompletionStateAfterThirdSync.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+            new StreamDescriptor().withName(RANDOM_TABLE_NAME).withNamespace(randomSchema())));
+    assertTrue(
+        streamsInSyncCompletionStateAfterThirdSync.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema())));
     assertNotNull(stateMessageEmittedAfterThirdSyncCompletion.getData());
 
     final Map<String, Set<AirbyteRecordMessage>> recordsStreamWiseFromThirdBatch = extractRecordMessagesStreamWise(dataFromThirdBatch);
     assertTrue(recordsStreamWiseFromThirdBatch.containsKey(MODELS_STREAM_NAME));
-    assertTrue(recordsStreamWiseFromThirdBatch.containsKey(MODELS_STREAM_NAME + "_random"));
+    assertTrue(recordsStreamWiseFromThirdBatch.containsKey(RANDOM_TABLE_NAME));
 
     final Set<AirbyteRecordMessage> recordsForModelsStreamFromThirdBatch = recordsStreamWiseFromThirdBatch.get(MODELS_STREAM_NAME);
-    final Set<AirbyteRecordMessage> recordsForModelsRandomStreamFromThirdBatch = recordsStreamWiseFromThirdBatch.get(MODELS_STREAM_NAME + "_random");
+    final Set<AirbyteRecordMessage> recordsForModelsRandomStreamFromThirdBatch = recordsStreamWiseFromThirdBatch.get(RANDOM_TABLE_NAME);
 
     assertEquals(20, recordsForModelsStreamFromThirdBatch.size());
     assertEquals(20, recordsForModelsRandomStreamFromThirdBatch.size());
@@ -728,8 +728,8 @@ public abstract class CdcSourceTest {
         recordsForModelsRandomStreamFromThirdBatch.stream().map(AirbyteRecordMessage::getStream).collect(
             Collectors.toSet()),
         Sets
-            .newHashSet(MODELS_STREAM_NAME + "_random"),
-        randomTableSchema());
+            .newHashSet(RANDOM_TABLE_NAME),
+        randomSchema());
   }
 
   protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
@@ -745,8 +745,8 @@ public abstract class CdcSourceTest {
         .collect(Collectors.toSet());
     assertEquals(2, streamsInSnapshotState.size());
     assertTrue(
-        streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+        streamsInSnapshotState.contains(new StreamDescriptor().withName(RANDOM_TABLE_NAME).withNamespace(randomSchema())));
+    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema())));
     assertNotNull(stateMessageEmittedAfterSnapshotCompletionInSecondSync.getData());
 
     final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateMessages.get(1);
@@ -760,16 +760,16 @@ public abstract class CdcSourceTest {
     assertEquals(2, streamsInSnapshotState.size());
     assertTrue(
         streamsInSyncCompletionState.contains(
-            new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
-    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
+            new StreamDescriptor().withName(RANDOM_TABLE_NAME).withNamespace(randomSchema())));
+    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema())));
     assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
   }
 
   protected AirbyteCatalog expectedCatalogForDiscover() {
-    final AirbyteCatalog expectedCatalog = Jsons.clone(CATALOG);
+    final AirbyteCatalog expectedCatalog = Jsons.clone(getCatalog());
 
-    createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2",
-        columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.empty()));
+    final var columns = ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)");
+    testdb.with(createTableSqlFmt(), modelsSchema(), MODELS_STREAM_NAME + "_2", columnClause(columns, Optional.empty()));
 
     final List<AirbyteStream> streams = expectedCatalog.getStreams();
     // stream with PK
@@ -779,7 +779,7 @@ public abstract class CdcSourceTest {
 
     final AirbyteStream streamWithoutPK = CatalogHelpers.createAirbyteStream(
         MODELS_STREAM_NAME + "_2",
-        MODELS_SCHEMA,
+        modelsSchema(),
         Field.of(COL_ID, JsonSchemaType.INTEGER),
         Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
         Field.of(COL_MODEL, JsonSchemaType.STRING));
@@ -789,8 +789,8 @@ public abstract class CdcSourceTest {
     addCdcMetadataColumns(streamWithoutPK);
 
     final AirbyteStream randomStream = CatalogHelpers.createAirbyteStream(
-        MODELS_STREAM_NAME + "_random",
-        randomTableSchema(),
+        RANDOM_TABLE_NAME,
+        randomSchema(),
         Field.of(COL_ID + "_random", JsonSchemaType.INTEGER),
         Field.of(COL_MAKE_ID + "_random", JsonSchemaType.INTEGER),
         Field.of(COL_MODEL + "_random", JsonSchemaType.STRING))
@@ -806,32 +806,5 @@ public abstract class CdcSourceTest {
     expectedCatalog.withStreams(streams);
     return expectedCatalog;
   }
-
-  /**
-   * The schema of a random table which is used as a new table in snapshot test
-   */
-  protected abstract String randomTableSchema();
-
-  protected abstract CdcTargetPosition cdcLatestTargetPosition();
-
-  protected abstract CdcTargetPosition extractPosition(final JsonNode record);
-
-  protected abstract void assertNullCdcMetaData(final JsonNode data);
-
-  protected abstract void assertCdcMetaData(final JsonNode data, final boolean deletedAtNull);
-
-  protected abstract void removeCDCColumns(final ObjectNode data);
-
-  protected abstract void addCdcMetadataColumns(final AirbyteStream stream);
-
-  protected abstract void addCdcDefaultCursorField(final AirbyteStream stream);
-
-  protected abstract Source getSource();
-
-  protected abstract JsonNode getConfig();
-
-  protected abstract Database getDatabase();
-
-  protected abstract void assertExpectedStateMessages(final List<AirbyteStateMessage> stateMessages);
 
 }
