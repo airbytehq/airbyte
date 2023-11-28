@@ -18,7 +18,8 @@
       "type": ["null", "string"]
     },
     "Date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "MonthlyBudget": {
       "type": ["null", "number"]

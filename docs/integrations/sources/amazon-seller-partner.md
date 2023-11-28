@@ -4,23 +4,39 @@ This page guides you through the process of setting up the Amazon Seller Partner
 
 ## Prerequisites
 
+- Amazon Selling Partner account
+
+<!-- env:cloud -->
+
+**For Airbyte Cloud:**
+
 - AWS Environment
 - AWS Region
-- AWS Access Key
-- AWS Secret Key
-- Role ARN
-- LWA Client ID (LWA App ID)**
-- LWA Client Secret**
-- Refresh token**
+- Granted OAuth access
 - Replication Start Date
+<!-- /env:cloud -->
 
-**not required for Airbyte Cloud
+<!-- env:oss -->
+
+**For Airbyte Open Source:**
+
+- AWS Environment
+- AWS Region
+- Replication Start Date
+<!-- /env:oss -->
+
+## Setup Guide
 
 ## Step 1: Set up Amazon Seller Partner
 
-1. [Register](https://developer-docs.amazon.com/sp-api/docs/registering-your-application) Amazon Seller Partner application.
+<!-- env:oss -->
+
+**Airbyte Open Source setup steps**
+
+- [Register](https://developer-docs.amazon.com/sp-api/docs/registering-your-application) Amazon Seller Partner application.
     - The application must be published as Amazon does not allow external parties such as Airbyte to access draft applications.
-2. [Create](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html) IAM user.
+
+<!-- /env:oss -->
 
 ## Step 2: Set up the source connector in Airbyte
 
@@ -31,7 +47,7 @@ This page guides you through the process of setting up the Amazon Seller Partner
 3. On the source setup page, select **Amazon Seller Partner** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your account`.
 5. Log in and Authorize to your Amazon Seller Partner account.
-6. Paste all other data to required fields using your IAM user.
+6. Paste all other data to required fields.
 7. Click `Set up source`.
 
 **For Airbyte Open Source:**
@@ -40,7 +56,7 @@ This page guides you through the process of setting up the Amazon Seller Partner
 2. Go to local Airbyte page.
 3. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
 4. On the Set up the source page, enter the name for the Amazon Seller Partner connector and select **Amazon Seller Partner** from the Source type dropdown. 
-5. Paste all data to required fields using your IAM user and developer account.
+5. Paste all data to required fields.
 6. Click `Set up source`.
 
 ## Supported sync modes
@@ -73,21 +89,16 @@ This source is capable of syncing the following tables and their data:
 - [Orders](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference) \(incremental\)
 - [Orders Items](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems) \(incremental\)
 - [Seller Feedback Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(incremental\)
-- [Brand Analytics Alternate Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
-- [Brand Analytics Item Comparison Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
-- [Brand Analytics Market Basket Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
-- [Brand Analytics Repeat Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
-- [Brand Analytics Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports)
+- [Brand Analytics Alternate Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports) \(only available in OSS\)
+- [Brand Analytics Item Comparison Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports) \(only available in OSS\)
+- [Brand Analytics Market Basket Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports) \(only available in OSS\)
+- [Brand Analytics Repeat Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports) \(only available in OSS\)
+- [Brand Analytics Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values#brand-analytics-reports) \(only available in OSS\)
 - [Browse tree report](https://github.com/amzn/selling-partner-api-docs/blob/main/references/reports-api/reporttype-values.md#browse-tree-report)
 - [Financial Event Groups](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialeventgroups)
 - [Financial Events](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialevents)
 - [FBA Fee Preview Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
-- [FBA Daily Inventory History Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [FBA Promotions Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
-- [FBA Inventory Adjustments Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
-- [FBA Received Inventory Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
-- [FBA Inventory Event Detail Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
-- [FBA Monthly Inventory History Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [FBA Manage Inventory](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Subscribe and Save Forecast Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Subscribe and Save Performance Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
@@ -105,6 +116,9 @@ This source is capable of syncing the following tables and their data:
 - [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [FBA Reimbursements Report](https://sellercentral.amazon.com/help/hub/reference/G200732720)
 - [Order Data Shipping Report](https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_order_report_data_shipping)
+- [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(only available in OSS\)
+- [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(only available in OSS\)
+- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(only available in OSS\)
 
 ## Report options
 
@@ -129,6 +143,12 @@ So, for any value that exceeds the limit, the `period_in_days` will be automatic
 
 | Version  | Date       | Pull Request                                                  | Subject                                                                                                                                                                             |
 |:---------|:-----------|:--------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `2.0.2`  | 2023-11-17 | [\#32462](https://github.com/airbytehq/airbyte/pull/32462)    | Remove Max time option from specification; set default waiting time for reports to 1 hour                                                                                           |
+| `2.0.1`  | 2023-11-16 | [\#32550](https://github.com/airbytehq/airbyte/pull/32550)    | Fix the OAuth flow                                                                                                                                                                  |
+| `2.0.0`  | 2023-11-23 | [\#32355](https://github.com/airbytehq/airbyte/pull/32355)    | Remove Brand Analytics from Airbyte Cloud, permanently remove deprecated FBA reports                                                                                                |
+| `1.6.2`  | 2023-11-14 | [\#32508](https://github.com/airbytehq/airbyte/pull/32508)    | Do not use AWS signature as it is no longer required by the Amazon API                                                                                                              |
+| `1.6.1`  | 2023-11-13 | [\#32457](https://github.com/airbytehq/airbyte/pull/32457)    | Fix report decompression                                                                                                                                                            |
+| `1.6.0`  | 2023-11-09 | [\#32259](https://github.com/airbytehq/airbyte/pull/32259)    | mark "aws_secret_key" and "aws_access_key" as required in specification; update schema for stream `Orders`                                                                          |
 | `1.5.1`  | 2023-08-18 | [\#29255](https://github.com/airbytehq/airbyte/pull/29255)    | role_arn is optional on UI but not really on the backend blocking connector set up using oauth                                                                                      |
 | `1.5.0`  | 2023-08-08 | [\#29054](https://github.com/airbytehq/airbyte/pull/29054)    | Add new stream `OrderItems`                                                                                                                                                         |
 | `1.4.1`  | 2023-07-25 | [\#27050](https://github.com/airbytehq/airbyte/pull/27050)    | Fix - non vendor accounts connector create/check issue                                                                                                                              |

@@ -6,17 +6,17 @@ plugins {
 }
 
 dependencies {
-    project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+    project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
 }
 
 // we need to access the sshtunneling script from airbyte-workers for ssh support
 def copySshScript = tasks.register('copySshScript', Copy) {
-    from "${project(':airbyte-connector-test-harnesses:acceptance-test-harness').buildDir}/resources/main"
+    from "${project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness').buildDir}/resources/main"
     into "${buildDir}"
     include "sshtunneling.sh"
 }
 copySshScript.configure {
-    dependsOn project(':airbyte-connector-test-harnesses:acceptance-test-harness').tasks.named('processResources')
+    dependsOn project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness').tasks.named('processResources')
 }
 
 // make sure the copy task above worked (if it fails, it fails silently annoyingly)
@@ -51,13 +51,7 @@ tasks.named('check').configure {
         'tidb',
         'duckdb',
 ].each {destinationName ->
-    def integrationTestPython = tasks.named('integrationTestPython')
-    integrationTestPython.configure {
-        dependsOn project(":airbyte-integrations:connectors:destination-$destinationName").tasks.named('assemble')
-    }
-    // Not really sure what this task does differently from customIntegrationTestPython,
-    // but it seems to also run integration tests and as such it depends on the docker images.
-    integrationTestPython.configure {
+    tasks.matching { it.name == 'integrationTestPython' }.configureEach {
         dependsOn project(":airbyte-integrations:connectors:destination-$destinationName").tasks.named('assemble')
     }
 }
