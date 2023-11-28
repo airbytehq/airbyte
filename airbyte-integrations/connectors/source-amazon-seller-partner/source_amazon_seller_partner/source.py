@@ -4,6 +4,7 @@
 from os import getenv
 from typing import Any, List, Mapping, Tuple
 
+import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -49,9 +50,11 @@ from source_amazon_seller_partner.streams import (
     MerchantListingsReport,
     MerchantListingsReportBackCompat,
     MerchantListingsReports,
+    NetPureProductMarginReport,
     OrderItems,
     OrderReportDataShipping,
     Orders,
+    RapidRetailAnalyticsInventoryReport,
     RestockInventoryReports,
     SellerAnalyticsSalesAndTrafficReports,
     SellerFeedbackReports,
@@ -59,12 +62,14 @@ from source_amazon_seller_partner.streams import (
     VendorDirectFulfillmentShipping,
     VendorInventoryReports,
     VendorSalesReports,
+    VendorTrafficReport,
     XmlAllOrdersDataByOrderDataGeneral,
 )
 
 
 class SourceAmazonSellerPartner(AbstractSource):
-    def _get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+    @staticmethod
+    def _get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
         endpoint, marketplace_id, _ = get_marketplaces(config.get("aws_environment"))[config.get("region")]
         auth = AWSAuthenticator(
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
@@ -74,10 +79,15 @@ class SourceAmazonSellerPartner(AbstractSource):
             host=endpoint.replace("https://", ""),
             refresh_access_token_headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
+        start_date = (
+            config.get("replication_start_date")
+            if config.get("replication_start_date")
+            else pendulum.now("utc").subtract(years=2).strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
         stream_kwargs = {
             "url_base": endpoint,
             "authenticator": auth,
-            "replication_start_date": config.get("replication_start_date"),
+            "replication_start_date": start_date,
             "marketplace_id": marketplace_id,
             "period_in_days": config.get("period_in_days", 90),
             "report_options": config.get("report_options"),
@@ -176,6 +186,9 @@ class SourceAmazonSellerPartner(AbstractSource):
                 SellerAnalyticsSalesAndTrafficReports(**stream_kwargs),
                 VendorSalesReports(**stream_kwargs),
                 VendorInventoryReports(**stream_kwargs),
+                NetPureProductMarginReport(**stream_kwargs),
+                RapidRetailAnalyticsInventoryReport(**stream_kwargs),
+                VendorTrafficReport(**stream_kwargs),
             ]
             streams += brand_analytics_reports
         return streams
