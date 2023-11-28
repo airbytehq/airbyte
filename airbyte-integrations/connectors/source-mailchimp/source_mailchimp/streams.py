@@ -182,7 +182,7 @@ class Campaigns(IncrementalMailChimpStream):
 
     def path(self, **kwargs) -> str:
         return "campaigns"
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response = super().parse_response(response, **kwargs)
         for record in response:
