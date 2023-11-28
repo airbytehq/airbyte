@@ -73,9 +73,8 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
             } else {
                 additionalParameters.put(PARAM_SSLMODE, REQUIRE);
             }
-        } else {
-       	     additionalParameters.put(ENCRYPTDATA, ENCRYPTDATA_ON);
-    	}
+        } 
+       	additionalParameters.put(ENCRYPTDATA, ENCRYPTDATA_ON);
         return additionalParameters;
     }
 
