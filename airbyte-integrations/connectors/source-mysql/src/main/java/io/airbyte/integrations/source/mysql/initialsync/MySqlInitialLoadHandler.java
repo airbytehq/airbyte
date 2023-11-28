@@ -129,7 +129,14 @@ public class MySqlInitialLoadHandler {
   @VisibleForTesting
   public static long calculateChunkSize(final TableSizeInfo tableSizeInfo, final AirbyteStreamNameNamespacePair pair) {
     // If table size info could not be calculated, a default chunk size will be provided.
-    return 3;
+    if (tableSizeInfo == null || tableSizeInfo.tableSize() == 0 || tableSizeInfo.avgRowLength() == 0) {
+      LOGGER.info("Chunk size could not be determined for pair: {}, defaulting to {} rows", pair, DEFAULT_CHUNK_SIZE);
+      return DEFAULT_CHUNK_SIZE;
+    }
+    final long avgRowLength = tableSizeInfo.avgRowLength();
+    final long chunkSize = QUERY_TARGET_SIZE_GB / avgRowLength;
+    LOGGER.info("Chunk size determined for pair: {}, is {}", pair, chunkSize);
+    return chunkSize;
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
