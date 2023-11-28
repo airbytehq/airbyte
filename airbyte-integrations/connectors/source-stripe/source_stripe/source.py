@@ -12,7 +12,8 @@ import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
@@ -44,9 +45,17 @@ USE_CACHE = not _CACHE_DISABLED
 STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
-class SourceStripe(AbstractSource):
-    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], **kwargs):
-        super().__init__(**kwargs)
+class SourceStripe(ConcurrentSourceAdapter):
+
+    message_repository = InMemoryMessageRepository(entrypoint_logger.level)
+
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], **kwargs):
+        concurrency_level = min(config.get("num_workers", 10), _MAX_CONCURRENCY)
+        logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+        concurrent_source = ConcurrentSource.create(
+            concurrency_level, concurrency_level / 2, logger, self._slice_logger, self.message_repository
+        )
+        super().__init__(concurrent_source)
         if catalog:
             self._streams_configured_as_full_refresh = {
                 configured_stream.stream.name
@@ -56,8 +65,6 @@ class SourceStripe(AbstractSource):
         else:
             # things will NOT be executed concurrently
             self._streams_configured_as_full_refresh = set()
-
-    message_repository = InMemoryMessageRepository(entrypoint_logger.level)
 
     @staticmethod
     def validate_and_fill_with_defaults(config: MutableMapping) -> MutableMapping:
@@ -506,11 +513,8 @@ class SourceStripe(AbstractSource):
             ),
         ]
 
-        concurrency_level = min(config.get("num_workers", 10), _MAX_CONCURRENCY)
-        streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
-
         return [
-            StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, self._create_empty_state(), NoopCursor())
+            StreamFacade.create_from_stream(stream, self, entrypoint_logger, self._create_empty_state(), NoopCursor())
             if stream.name in self._streams_configured_as_full_refresh
             else stream
             for stream in streams
