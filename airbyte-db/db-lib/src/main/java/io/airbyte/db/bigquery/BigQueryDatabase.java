@@ -101,7 +101,7 @@ public class BigQueryDatabase extends SqlDatabase {
     if (result.getLeft() == null) {
       throw new SQLException("BigQuery request is failed with error: " + result.getRight() + ". SQL: " + sql);
     }
-    // add expiration time of one day to the table created for query results
+    // add expiration time of one week to the table created for query results
     bigQuery.update(bigQuery.getTable(datasetName, jobId).toBuilder().setExpirationTime(TimeUnit.MILLISECONDS.convert(7, TimeUnit.DAYS) + System.currentTimeMillis()).build());
 
     LOGGER.info("BigQuery successfully finished execution SQL: " + sql);
