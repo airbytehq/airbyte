@@ -686,14 +686,19 @@ def test_raise_on_http_errors(mocker, error):
         ({"error": {"message": "something broke"}}, "something broke"),
         ({"error": "err-001", "message": "something broke"}, "something broke"),
         ({"failure": {"message": "something broke"}}, "something broke"),
+        ({"detail": {"message": "something broke"}}, "something broke"),
         ({"error": {"errors": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}}, "one, two, three"),
         ({"errors": ["one", "two", "three"]}, "one, two, three"),
+        ({"errors": [None, {}, "third error", 9002.09]}, "third error"),
         ({"messages": ["one", "two", "three"]}, "one, two, three"),
         ({"errors": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
         ({"error": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
         ({"errors": [{"error": "one"}, {"error": "two"}, {"error": "three"}]}, "one, two, three"),
         ({"failures": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
+        ({"details": [{"message": "one"}, {"message": "two"}, {"message": "three"}]}, "one, two, three"),
+        ({"details": ["one", 10087, True]}, "one"),
         (["one", "two", "three"], "one, two, three"),
+        ({"detail": False}, None),
         ([{"error": "one"}, {"error": "two"}, {"error": "three"}], "one, two, three"),
         ({"error": True}, None),
         ({"something_else": "hi"}, None),
@@ -849,3 +854,18 @@ def test_log_requests(should_log, status_code, should_throw):
     if should_log:
         assert repository.log_message.call_args_list[0].args[1]() == "formatted_response"
         formatter.assert_called_once_with(response)
+
+
+def test_connection_pool():
+    requester = HttpRequester(
+        name="name",
+        url_base="https://test_base_url.com",
+        path="/",
+        http_method=HttpMethod.GET,
+        request_options_provider=None,
+        config={},
+        parameters={},
+        message_repository=MagicMock(),
+        disable_retries=True,
+    )
+    assert requester._session.adapters["https://"]._pool_connections == 20

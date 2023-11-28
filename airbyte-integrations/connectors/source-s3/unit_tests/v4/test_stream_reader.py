@@ -22,7 +22,7 @@ from source_s3.v4.stream_reader import SourceS3StreamReader
 
 logger = logging.Logger("")
 
-endpoint_values = ["http://fake.com", None]
+endpoint_values = ["https://fake.com", None]
 _get_matching_files_cases = [
     pytest.param([], [], False, set(), id="no-files-match-if-no-globs"),
     pytest.param(

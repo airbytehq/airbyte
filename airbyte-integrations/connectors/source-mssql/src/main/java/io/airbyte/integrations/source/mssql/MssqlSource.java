@@ -30,7 +30,7 @@ import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
@@ -78,7 +78,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       """
         SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM "%s"."%s" WHERE "%s" IS NULL), 1, 0) AS BIT) AS %s
       """;
-  static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
+  public static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
@@ -88,11 +88,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
   private List<String> schemas;
 
-  public static Source sshWrappedSource() {
-    return new SshWrappedSource(new MssqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  public static Source sshWrappedSource(MssqlSource source) {
+    return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
-  MssqlSource() {
+  public MssqlSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
   }
 
@@ -451,11 +451,16 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("using CDC: {}", true);
-      final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
-      final AirbyteDebeziumHandler<Lsn> handler =
-          new AirbyteDebeziumHandler<>(sourceConfig,
-              MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()), true, firstRecordWaitTime,
-              OptionalInt.empty());
+      final Duration firstRecordWaitTime = RecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
+      final Duration subsequentRecordWaitTime = RecordWaitTimeUtil.getSubsequentRecordWaitTime(sourceConfig);
+      final var targetPosition = MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText());
+      final AirbyteDebeziumHandler<Lsn> handler = new AirbyteDebeziumHandler<>(
+          sourceConfig,
+          targetPosition,
+          true,
+          firstRecordWaitTime,
+          subsequentRecordWaitTime,
+          OptionalInt.empty());
 
       final MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
 
@@ -565,7 +570,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   public static void main(final String[] args) throws Exception {
-    final Source source = MssqlSource.sshWrappedSource();
+    final Source source = MssqlSource.sshWrappedSource(new MssqlSource());
     LOGGER.info("starting source: {}", MssqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MssqlSource.class);

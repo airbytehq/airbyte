@@ -1,0 +1,19 @@
+{
+  "folder_url": "https://drive.google.com/drive/folders/yyy",
+  "credentials": {
+    "auth_type": "Service",
+    "service_account_info": "abc"
+  },
+  "streams": [
+    {
+      "name": "test",
+      "globs": ["**/*.jsonl"],
+      "format": {
+        "filetype": "jsonl"
+      },
+      "schemaless": false,
+      "validation_policy": "Emit Record",
+      "days_to_sync_if_history_is_full": 3
+    }
+  ]
+}
