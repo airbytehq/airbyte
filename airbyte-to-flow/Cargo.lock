@@ -401,7 +401,7 @@ dependencies = [
 [[package]]
 name = "doc"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow#8eeb6cd2430b24178c554ce69635da0454eae0ac"
+source = "git+https://github.com/estuary/flow#1bf50ba62135be8aba2c095fa78f4529f3922ef2"
 dependencies = [
  "base64",
  "bumpalo",
@@ -484,7 +484,7 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 [[package]]
 name = "flow_cli_common"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow#8eeb6cd2430b24178c554ce69635da0454eae0ac"
+source = "git+https://github.com/estuary/flow#1bf50ba62135be8aba2c095fa78f4529f3922ef2"
 dependencies = [
  "anyhow",
  "atty",
@@ -792,7 +792,7 @@ dependencies = [
 [[package]]
 name = "json"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow#8eeb6cd2430b24178c554ce69635da0454eae0ac"
+source = "git+https://github.com/estuary/flow#1bf50ba62135be8aba2c095fa78f4529f3922ef2"
 dependencies = [
  "addr",
  "bigdecimal",
@@ -1196,7 +1196,7 @@ dependencies = [
 [[package]]
 name = "proto-flow"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow#8eeb6cd2430b24178c554ce69635da0454eae0ac"
+source = "git+https://github.com/estuary/flow#1bf50ba62135be8aba2c095fa78f4529f3922ef2"
 dependencies = [
  "bytes",
  "pbjson",
@@ -1211,7 +1211,7 @@ dependencies = [
 [[package]]
 name = "proto-gazette"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow#8eeb6cd2430b24178c554ce69635da0454eae0ac"
+source = "git+https://github.com/estuary/flow#1bf50ba62135be8aba2c095fa78f4529f3922ef2"
 dependencies = [
  "bytes",
  "pbjson",
@@ -1861,7 +1861,7 @@ dependencies = [
 [[package]]
 name = "tuple"
 version = "0.0.0"
-source = "git+https://github.com/estuary/flow#8eeb6cd2430b24178c554ce69635da0454eae0ac"
+source = "git+https://github.com/estuary/flow#1bf50ba62135be8aba2c095fa78f4529f3922ef2"
 dependencies = [
  "memchr",
  "serde_json",

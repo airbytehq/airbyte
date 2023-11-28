@@ -17,11 +17,9 @@ pub fn stream_lines(
     in_stream: InterceptorStream,
 ) -> impl TryStream<Item = Result<Bytes, Error>, Error = Error, Ok = bytes::Bytes> {
     io_stream_to_interceptor_stream(
-        AsyncByteLines::new(StreamReader::new(
-            in_stream,
-        ))
-        .into_stream()
-        .map_ok(Bytes::from),
+        AsyncByteLines::new(StreamReader::new(in_stream))
+            .into_stream()
+            .map_ok(Bytes::from),
     )
 }
 
@@ -261,6 +259,7 @@ mod test {
                 resource_config_json: "{}".to_string(),
                 collection: None,
                 field_config_json_map: BTreeMap::new(),
+                backfill: 7,
             }],
         };
 
