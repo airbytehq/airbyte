@@ -11,6 +11,7 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
+import static org.jooq.impl.DSL.*;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.cast;
 import static org.jooq.impl.DSL.createSchemaIfNotExists;
@@ -64,7 +65,6 @@ import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.SelectConditionStep;
 import org.jooq.conf.ParamType;
-import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
@@ -124,10 +124,13 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     return getSuperType();
   }
 
-  // TODO: Pull it into base class as abstract and formatted only for testing.
+  @Override
+  protected SQLDialect getDialect() {
+    return SQLDialect.POSTGRES;
+  }
+
   protected DSLContext getDslContext() {
-    return DSL.using(SQLDialect.POSTGRES, new Settings().withRenderFormatted(true));
-    // return DSL.using(SQLDialect.POSTGRES);
+    return DSL.using(getDialect());
   }
 
   /**
@@ -174,29 +177,30 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   List<Field<?>> buildRawTableSelectFields(final LinkedHashMap<ColumnId, AirbyteType> columns, final Map<String, DataType<?>> metaColumns) {
     final List<Field<?>> fields =
         metaColumns.entrySet().stream().map(metaColumn -> field(quotedName(metaColumn.getKey()), metaColumn.getValue())).collect(Collectors.toList());
+    // Use originalName with non-sanitized characters when extracting data from _airbyte_data
     final List<Field<?>> dataFields = columns
         .entrySet()
         .stream()
-        .map(column -> castedField(field(quotedName(COLUMN_NAME_DATA, column.getKey().name())), column.getValue()))
+        .map(column -> castedField(field(quotedName(COLUMN_NAME_DATA, column.getKey().originalName())), column.getValue(), column.getKey().name()))
         .collect(Collectors.toList());
     dataFields.addAll(fields);
     return dataFields;
   }
 
-  private Field<?> castedField(final Field<?> field, final AirbyteType type) {
+  private Field<?> castedField(final Field<?> field, final AirbyteType type, final String alias) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
-      return castedField(field, airbyteProtocolType);
+      return castedField(field, airbyteProtocolType).as(quotedName(alias));
     }
     // Redshift SUPER can silently cast an array type to struct and vice versa.
     return switch (type.getTypeName()) {
       case Struct.TYPE, UnsupportedOneOf.TYPE -> field(CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
           jsonTypeOf(field).eq("object"),
-          cast(field, getStructType())).as(field.getName());
+          cast(field, getStructType())).as(quotedName(alias));
       case Array.TYPE -> field(CASE_STATEMENT_NO_ELSE_SQL_TEMPLATE,
           jsonTypeOf(field).eq("array"),
-          cast(field, getArrayType())).as(field.getName());
+          cast(field, getArrayType())).as(quotedName(alias));
       // No nested Unions supported so this will definitely not result in infinite recursion.
-      case Union.TYPE -> castedField(field, ((Union) type).chooseType());
+      case Union.TYPE -> castedField(field, ((Union) type).chooseType(), alias);
       default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
     };
   }
@@ -233,37 +237,12 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   }
 
   Field<?> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
-    final Field<?> field = field(quotedName(COLUMN_NAME_DATA, column.name()));
-    final Condition typeCheckCondition = typeCheckCondition(field, type);
+    final Field<?> field = field(quotedName(COLUMN_NAME_DATA, column.originalName()));
+    // Just checks if data is not null but casted data is null. This also accounts for conditional casting result of array and struct.
+    // TODO: Timestamp format issues can result in null values when cast, add regex check if destination supports regex functions.
     return field(CASE_STATEMENT_SQL_TEMPLATE,
-        field.isNotNull().and(castedField(field, type).isNull()),
+        field.isNotNull().and(castedField(field, type, column.name()).isNull()),
         function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT.formatted(column.name()))), field("ARRAY()"));
-  }
-
-  // Sadly can't reuse the toDialectType because it returns Generics of DataType<?>
-  Condition typeCheckCondition(final Field<?> field, final AirbyteType type) {
-    if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
-      return typeCheckCondition(field, airbyteProtocolType);
-    }
-    return switch (type.getTypeName()) {
-      case Struct.TYPE, UnsupportedOneOf.TYPE -> jsonTypeOf(field).eq("object");
-      case Array.TYPE -> jsonTypeOf(field).eq("array");
-      // No nested Unions supported so this will definitely not result in infinite recursion.
-      case Union.TYPE -> typeCheckCondition(field, ((Union) type).chooseType());
-      default -> throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
-    };
-  }
-
-  Condition typeCheckCondition(final Field<?> field, final AirbyteProtocolType airbyteProtocolType) {
-    Condition defaultCondition = function("JSON_TYPEOF", SQLDataType.VARCHAR, field).eq("string");
-    return switch (airbyteProtocolType) {
-      case STRING -> function("IS_VARCHAR", SQLDataType.BOOLEAN, field).eq(true);
-      case NUMBER -> function("IS_FLOAT", SQLDataType.BOOLEAN, field).eq(true);
-      case INTEGER -> function("IS_BIGINT", SQLDataType.BOOLEAN, field).eq(true);
-      case BOOLEAN -> function("IS_BOOLEAN", SQLDataType.BOOLEAN, field).eq(true);
-      // Time data types are just string in redshift SUPER.
-      case TIMESTAMP_WITH_TIMEZONE, TIMESTAMP_WITHOUT_TIMEZONE, TIME_WITHOUT_TIMEZONE, TIME_WITH_TIMEZONE, DATE, UNKNOWN -> defaultCondition;
-    };
   }
 
   Field<?> buildAirbyteMetaColumn(final LinkedHashMap<ColumnId, AirbyteType> columns) {
@@ -396,7 +375,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     final String deleteStmt = deleteFromFinalTable(finalSchema, finalTable, streamConfig.primaryKey(), streamConfig.cursor());
     final String deleteCdcDeletesStmt =
         streamConfig.columns().containsKey(CDC_DELETED_AT_COLUMN) ? deleteFromFinalTableCdcDeletes(finalSchema, finalTable) : "";
-    final String checkpointStmt = checkpointRawTable(rawSchema, rawTable);
+    final String checkpointStmt = checkpointRawTable(rawSchema, rawTable, minRawTimestamp);
 
     if (streamConfig.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return Strings.join(
@@ -476,7 +455,7 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
       }
     }
     if (minRawTimestamp.isPresent()) {
-      condition = condition.and(field(name(COLUMN_NAME_AB_EXTRACTED_AT)).gt(minRawTimestamp.get()));
+      condition = condition.and(field(name(COLUMN_NAME_AB_EXTRACTED_AT)).gt(minRawTimestamp.get().toString()));
     }
     return condition;
   }
@@ -513,12 +492,16 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
         .getSQL(ParamType.INLINED);
   }
 
-  String checkpointRawTable(final String schemaName, final String tableName) {
+  String checkpointRawTable(final String schemaName, final String tableName, final Optional<Instant> minRawTimestamp) {
     final DSLContext dsl = getDslContext();
+    Condition extractedAtCondition = noCondition();
+    if (minRawTimestamp.isPresent()) {
+      extractedAtCondition = extractedAtCondition.and(field(name(COLUMN_NAME_AB_EXTRACTED_AT)).gt(minRawTimestamp.get().toString()));
+    }
     return dsl.update(table(quotedName(schemaName, tableName)))
         .set(field(quotedName(COLUMN_NAME_AB_LOADED_AT), SQLDataType.TIMESTAMPWITHTIMEZONE),
             function("GETDATE", SQLDataType.TIMESTAMPWITHTIMEZONE))
-        .where(field(quotedName(COLUMN_NAME_AB_LOADED_AT)).isNull())
+        .where(field(quotedName(COLUMN_NAME_AB_LOADED_AT)).isNull()).and(extractedAtCondition)
         .getSQL(ParamType.INLINED);
   }
 
@@ -526,38 +509,38 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
   public String overwriteFinalTable(final StreamId stream, final String finalSuffix) {
     return Strings.join(
         List.of(
-            DSL.dropTableIfExists(DSL.name(stream.finalNamespace(), stream.finalName())),
-            DSL.alterTable(DSL.name(stream.finalNamespace(), stream.finalName() + finalSuffix))
-                .renameTo(DSL.name(stream.finalName()))
+            dropTableIfExists(name(stream.finalNamespace(), stream.finalName())),
+            alterTable(name(stream.finalNamespace(), stream.finalName() + finalSuffix))
+                .renameTo(name(stream.finalName()))
                 .getSQL()),
         ";" + System.lineSeparator());
   }
 
   @Override
   public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
-    final Name rawTableName = DSL.name(streamId.rawNamespace(), streamId.rawName());
+    final Name rawTableName = name(streamId.rawNamespace(), streamId.rawName());
     return Strings.join(
         List.of(
-            DSL.createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
-            DSL.dropTableIfExists(rawTableName).getSQL(),
+            createSchemaIfNotExists(streamId.rawNamespace()).getSQL(),
+            dropTableIfExists(rawTableName).getSQL(),
             DSL.createTable(rawTableName)
                 .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
                 .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
                 .column(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false))
                 .column(COLUMN_NAME_DATA, getSuperType().nullable(false))
-                .as(DSL.select(
-                    DSL.field(COLUMN_NAME_AB_ID).as(COLUMN_NAME_AB_RAW_ID),
-                    DSL.field(COLUMN_NAME_EMITTED_AT).as(COLUMN_NAME_AB_EXTRACTED_AT),
-                    DSL.inline(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
-                    DSL.field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(DSL.table(DSL.name(namespace, tableName))))
+                .as(select(
+                    field(COLUMN_NAME_AB_ID).as(COLUMN_NAME_AB_RAW_ID),
+                    field(COLUMN_NAME_EMITTED_AT).as(COLUMN_NAME_AB_EXTRACTED_AT),
+                    inline(null, SQLDataType.TIMESTAMPWITHTIMEZONE).as(COLUMN_NAME_AB_LOADED_AT),
+                    field(COLUMN_NAME_DATA).as(COLUMN_NAME_DATA)).from(table(name(namespace, tableName))))
                 .getSQL()),
         ";" + System.lineSeparator());
   }
 
   @Override
   public String clearLoadedAt(final StreamId streamId) {
-    return DSL.update(DSL.table(DSL.name(streamId.rawNamespace(), streamId.rawName())))
-        .set(DSL.field(COLUMN_NAME_AB_LOADED_AT), DSL.inline((String) null))
+    return update(table(name(streamId.rawNamespace(), streamId.rawName())))
+        .set(field(COLUMN_NAME_AB_LOADED_AT), inline((String) null))
         .getSQL();
   }
 

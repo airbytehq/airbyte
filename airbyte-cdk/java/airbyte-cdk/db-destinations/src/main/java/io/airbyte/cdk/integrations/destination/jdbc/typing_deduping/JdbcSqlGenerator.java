@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import org.jooq.DataType;
+import org.jooq.SQLDialect;
 import org.jooq.impl.SQLDataType;
 
 public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> {
@@ -150,5 +151,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
   protected abstract DataType<?> getArrayType();
 
   protected abstract DataType<?> getWidestType();
+
+  protected abstract SQLDialect getDialect();
 
 }
