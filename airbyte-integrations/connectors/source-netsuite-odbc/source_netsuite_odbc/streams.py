@@ -1,8 +1,8 @@
 
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union, Final, String
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union, Final
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
-from datetime import datetime
+from datetime import datetime, date
 import calendar
 
 # A stream's read method can return one of the following types:
@@ -11,7 +11,7 @@ import calendar
 StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
 NETSUITE_PAGINATION_INTERVAL: Final[int] = 10000
-EARLIEST_DATE: Final[str] = datetime(1980, 1, 1)
+EARLIEST_DATE: Final[str] = date(1980, 1, 1)
 YEARS_FORWARD_LOOKING: Final[int] = 1
 STARTING_CURSOR_VALUE: Final[int] = -1
 
@@ -43,11 +43,12 @@ class NetsuiteODBCStream(Stream, IncrementalMixin):
       self.cursor = cursor
       self.table_name = table_name
       self.properties = self.get_properties_from_stream(stream)
-      self.primary_key = self.get_primary_key_from_stream(stream)
+      self.primary_key_column = self.get_primary_key_from_stream(stream)
       self.incremental_column = self.get_incremental_column_from_stream(stream)
       self.is_incremental_stream = is_incremental
       self.cursor_value_last_id_seen = STARTING_CURSOR_VALUE
       self.incremental_most_recent_value_seen = None
+      self.json_schema = stream.json_schema
 
     @property
     def name(self) -> str:
@@ -71,7 +72,7 @@ class NetsuiteODBCStream(Stream, IncrementalMixin):
       :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
         If the stream has no primary keys, return None.
       """
-      return [self.primary_key]
+      return [self.primary_key_column]
 
 
     def read_records(
@@ -89,22 +90,38 @@ class NetsuiteODBCStream(Stream, IncrementalMixin):
         # data from netsuite does not include columns, so we need to assign each value to the correct column name
         serialized_data = self.serialize_row_to_response(row)
         # before we yield record, update state
-        if self.primary_key in serialized_data:
-          self.cursor_value_last_id_seen = max(self.cursor_value_last_id_seen, serialized_data[self.primary_key])
-        if self.incremental_column in serialized_data:
-          self.incremental_most_recent_value_seen = max(self.incremental_most_recent_value_seen, serialized_data[self.incremental_column])
+        if self.primary_key_column in serialized_data:
+          self.cursor_value_last_id_seen = max(self.cursor_value_last_id_seen, serialized_data[self.primary_key_column])
+        self.find_most_recent_date(serialized_data)
         #yield response
         yield serialized_data
+      self.logger.info(f"Finished Stream Slice for Netsuite ODBC with stream slice: {stream_slice}")
+    
+    def find_most_recent_date(self, result):
+      date_value_received = None
+      if self.incremental_column in result:
+        date_value_received = result[self.incremental_column]
+      if date_value_received is not None:
+        if self.incremental_most_recent_value_seen is None:
+          self.incremental_most_recent_value_seen = date_value_received
+        else:
+          self.incremental_most_recent_value_seen = max(self.incremental_most_recent_value_seen, date_value_received)
+
+
   
     def generate_ordered_query(self, table_state, stream_slice):
       values = ', '.join(self.properties) # we use values instead of '*' because we want to preserve the order of the columns
       incremental_column_sorter = f", {self.incremental_column} ASC" if self.incremental_column else ""
-      incremental_column_filter = f" AND {self.incremental_column} >= {stream_slice['first_day']} AND {self.incremental_column} < {stream_slice['last_day']}"
+      # per https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_156257805177.html#subsect_156330163819
+      # date literals need to be warpped in a to_date function
+      incremental_column_filter = f" AND {self.incremental_column} >= to_timestamp('{stream_slice['first_day']}', 'YYYY-MM-DD') AND {self.incremental_column} <= to_timestamp('{stream_slice['last_day']}', 'YYYY-MM-DD')"
+      id_filter = table_state['last_id_seen'] if table_state is not None else STARTING_CURSOR_VALUE
       query = f"""
         SELECT TOP {NETSUITE_PAGINATION_INTERVAL} {values} FROM {self.table_name} 
-        WHERE ID > {table_state['last_id_seen']} {incremental_column_filter}
-        ORDER BY {self.primary_key} 
-        ASC""" + incremental_column_sorter
+        WHERE {self.primary_key_column} > {id_filter}{incremental_column_filter}
+        ORDER BY {self.primary_key_column} ASC""" + incremental_column_sorter
+      # print(query)
+      # {self.primary_key_column} > {id_filter}
       return query
   
     def serialize_row_to_response(self, row):
@@ -116,6 +133,7 @@ class NetsuiteODBCStream(Stream, IncrementalMixin):
     def stream_slices(
       self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+      # return [{'first_day': date(2000, 1, 1), 'last_day': date(2023, 12,31)}]
       start_date, end_date = self.get_range_to_fetch(sync_mode=sync_mode, stream_state=stream_state)
 
       # Ensure start_date is before end_date
@@ -125,32 +143,36 @@ class NetsuiteODBCStream(Stream, IncrementalMixin):
       current_date = start_date
       date_slices = []
       while current_date <= end_date:
-        date_slices.append(self.get_slice_for_month(current_date))
-        # Increment month
-        if current_date.month == 12:
-            current_date = current_date.replace(year=current_date.year + 1, month=1)
-        else:
-            current_date = current_date.replace(month=current_date.month + 1)
+        date_slices.append(self.get_slice_for_year(current_date))
+        current_date = current_date.replace(year=current_date.year + 1, month=1)
 
       return date_slices
     
     def get_range_to_fetch(self, sync_mode: SyncMode, stream_state: Optional[Mapping[str, Any]] = None):
-      end_slice_range = datetime.now()
+      end_slice_range = date.today()
       # we fetch data for some years in the future because accountants can book transactions in the future
       end_slice_range = end_slice_range.replace(year=end_slice_range.year + YEARS_FORWARD_LOOKING) 
       # we use an earliest date of 1980 since 1998 was when netsuite was founded.  Note that in some cases customers might have ported over older historical data
       start_slice_range = EARLIEST_DATE
-      if sync_mode == 'incremental':
-        start_slice_range = datetime.fromisoformat(stream_state['last_date_updated'])
-      elif not (sync_mode == 'full_refresh'):
+      if sync_mode == SyncMode.incremental:
+        start_slice_range = date.fromisoformat(stream_state['last_date_updated'])
+      elif not (sync_mode == SyncMode.full_refresh):
         raise Exception(f'Unsupported Sync Mode: {sync_mode}.  Please use either "full_refresh" or "incremental"')
       return start_slice_range, end_slice_range
     
-    def get_slice_for_month(self, date: datetime):
-      first_day = datetime(date.year, date.month, 1)
-      days_in_month = calendar.monthrange(date.year, date.month)[1]
-      last_day = datetime(date.year, date.month, days_in_month)
-      return {'first_day': first_day.isoformat(timespec='seconds'), 'last_day': last_day.isoformat(timespec='seconds')}
+    def get_slice_for_month(self, date_for_slice: date):
+      month_to_use = date_for_slice.month
+      year_to_use = date_for_slice.year
+      first_day = date(year_to_use, month_to_use, 1)
+      days_in_month = calendar.monthrange(year_to_use, month_to_use)[1]
+      last_day = date(year_to_use, month_to_use, days_in_month)
+      return {'first_day': first_day, 'last_day': last_day}
+    
+    def get_slice_for_year(self, date_for_slice: date):
+      year_to_use = date_for_slice.year
+      first_day = date(year_to_use, 1, 1)
+      last_day = date(year_to_use, 12, 31)
+      return {'first_day': first_day, 'last_day': last_day}
     
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -184,3 +206,12 @@ class NetsuiteODBCStream(Stream, IncrementalMixin):
       else:
         self.cursor_value_last_id_seen = value['last_id_seen']
       self.incremental_most_recent_value_seen = value['last_date_updated']
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        :return: A dict of the JSON schema representing this stream.
+
+        The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
+        Override as needed.
+        """
+        return self.json_schema

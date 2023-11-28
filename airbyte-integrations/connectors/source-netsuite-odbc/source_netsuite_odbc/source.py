@@ -7,7 +7,7 @@ import json
 from datetime import datetime
 
 import traceback
-from typing import Dict, Generator, Mapping, Tuple, Union, Any, List
+from typing import Mapping, Tuple, Any, List, Optional
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -41,23 +41,22 @@ class SourceNetsuiteOdbc(AbstractSource):
         streams = discoverer.get_streams()
         stream_objects = []
         for stream in streams:
-            stream_name = stream.stream.name
-            is_incremental = stream.sync_mode == "incremental"
-            netsuite_stream = NetsuiteODBCStream(cursor=cursor_constructor.create_database_cursor(config), table_name=stream_name, is_incremental=is_incremental, stream=stream.stream)
+            stream_name = stream.name
+            # is_incremental = stream.sync_mode == "incremental"
+            netsuite_stream = NetsuiteODBCStream(cursor=cursor_constructor.create_database_cursor(config), table_name=stream_name, is_incremental=False, stream=stream)
             stream_objects.append(netsuite_stream)
         return stream_objects
-
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
-        Tests if the input configuration can be used to successfully connect to the integration
-            e.g: if a provided Stripe API token can be used to connect to the Stripe API.
-
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.yaml file
-
-        :return: AirbyteConnectionStatus indicating a Success or Failure
+        :param logger: source logger
+        :param config: The user-provided configuration as specified by the source's spec.
+          This usually contains information required to check connection e.g. tokens, secrets and keys etc.
+        :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful
+          and we can connect to the underlying data source using the provided configuration.
+          Otherwise, the input config cannot be used to connect to the underlying data source,
+          and the "error" object should describe what went wrong.
+          The error object will be cast to string to display the problem to the user.
         """
         try:
             cursor_constructor = NetsuiteODBCCursorConstructor()
@@ -75,13 +74,47 @@ class SourceNetsuiteOdbc(AbstractSource):
                 if not row:
                     break
                 print(row)
-            
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            return True, None
         except Exception as e:
             print(e)
+            return False, e
 
-            traceback.print_exc() 
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+
+    # def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    #     """
+    #     Tests if the input configuration can be used to successfully connect to the integration
+    #         e.g: if a provided Stripe API token can be used to connect to the Stripe API.
+
+    #     :param logger: Logging object to display debug/info/error to the logs
+    #         (logs will not be accessible via airbyte UI if they are not passed to this logger)
+    #     :param config: Json object containing the configuration of this source, content of this json is as specified in
+    #     the properties of the spec.yaml file
+
+    #     :return: AirbyteConnectionStatus indicating a Success or Failure
+    #     """
+    #     try:
+    #         cursor_constructor = NetsuiteODBCCursorConstructor()
+    #         cursor = cursor_constructor.create_database_cursor(config)
+
+    #         cursor.execute("SELECT * FROM OA_TABLES")
+    #         row = cursor.fetchone()
+    #         print(row)
+    #         row = cursor.fetchone()
+    #         print(row)
+
+    #         cursor.execute("SELECT column_name, COUNT(*) FROM OA_COLUMNS WHERE oa_userdata LIKE '%M-%' GROUP BY column_name")
+    #         while True:
+    #             row = cursor.fetchone()
+    #             if not row:
+    #                 break
+    #             print(row)
+            
+    #         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    #     except Exception as e:
+    #         print(e)
+
+    #         traceback.print_exc() 
+    #         return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
     # def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
     #     """
