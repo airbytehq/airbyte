@@ -9,41 +9,34 @@ You can use [OAuth](https://mailchimp.com/developer/marketing/guides/access-user
 ## Set up the Mailchimp source connector
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**. 
-3. On the Set up the source page, select **Mailchimp** from the Source type dropdown.
+2. Click **Sources** and then click **+ New source**.
+3. Find and select **Mailchimp** from the list of available sources.
 4. Enter a name for your source.
+5. You can use OAuth or an API key to authenticate your Mailchimp account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte Open Source.
+    - To authenticate using OAuth for Airbyte Cloud, ensure you have [registered your Mailchimp account](#prerequisite) and then click **Authenticate your Mailchimp account** to sign in with Mailchimp and authorize your account.
+    - To authenticate using an API key for Airbyte Open Source, select **API key** from the Authentication dropdown and enter the [API key](https://mailchimp.com/developer/marketing/guides/quick-start/#generate-your-api-key) for your Mailchimp account.
+6. Click **Set up source** and wait for the tests to complete.
 
-6. You can use OAuth or an API key to authenticate your Mailchimp account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte Open Source.
-    - To authenticate using OAuth for Airbyte Cloud, ensure you have [registered your Mailchimp account](#prerequisite) and then click **Authenticate your Mailchimp account** to sign in with Mailchimp and authorize your account. 
-    - To authenticate using an API key for Airbyte Open Source, select **API key** from the Authentication dropdown and enter the [API key](https://mailchimp.com/developer/marketing/guides/quick-start/#generate-your-api-key) for your Mailchimp account.    
-    :::note
-    Check the [performance considerations](#performance-considerations) before using an API key.
-    :::
-7. Click **Set up source**.
-
-## Supported sync modes
-
-The Mailchimp source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
-
- - Full Refresh
- - Incremental
+<HideInUI>
 
 ## Supported streams
 
-The Mailchimp source connector supports the following streams:
+The Mailchimp source connector supports the following streams and [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
 
-[Automations](https://mailchimp.com/developer/marketing/api/automation/list-automations/)
-[Campaigns](https://mailchimp.com/developer/marketing/api/campaigns/get-campaign-info/)
-[Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/)
-[Interests](https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/)
-[Interest Categories](https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/)
-[Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info)
-[List Members](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/)
-[Reports](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/)
-[Segments](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/)
-[Segment Members](https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/)
-[Tags](https://mailchimp.com/developer/marketing/api/lists-tags-search/search-for-tags-on-a-list-by-name/)
-[Unsubscribes](https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/)
+| Stream                                                                                                             | Full Refresh | Incremental |
+|:-------------------------------------------------------------------------------------------------------------------|:-------------|:------------|
+| [Automations](https://mailchimp.com/developer/marketing/api/automation/list-automations/)                          | ✓            | ✓          |
+| [Campaigns](https://mailchimp.com/developer/marketing/api/campaigns/get-campaign-info/)                            | ✓            | ✓          |
+| [Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/)        | ✓            | ✓          |
+| [Interests](https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/)                   | ✓            |             |
+| [Interest Categories](https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/) | ✓            |             |
+| [Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info)                                         | ✓            | ✓          |
+| [List Members](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/)                      | ✓            | ✓          |
+| [Reports](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/)                            | ✓            | ✓          |
+| [Segments](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/)                             | ✓            | ✓          |
+| [Segment Members](https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/)     | ✓            | ✓          |
+| [Tags](https://mailchimp.com/developer/marketing/api/lists-tags-search/search-for-tags-on-a-list-by-name/)         | ✓            |             |
+| [Unsubscribes](https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/)             | ✓            | ✓          |
 
 ### A note on primary keys
 
@@ -60,13 +53,25 @@ All other streams contain an `id` primary key.
 |:---------------------------|:-------------|:------------------------------------------------------------------------------------|
 | `array`                    | `array`      | the type of elements in the array is determined based on the mappings in this table |
 | `date`, `time`, `datetime` | `string`     |                                                                                     |
-| `int`, `float`, `number`   | `number`     |                                                                                     |
+| `float`, `number`          | `number`     |                                                                                     |
+| `integer`                  | `integer`    |                                                                                     |
 | `object`                   | `object`     | properties within objects are mapped based on the mappings in this table            |
 | `string`                   | `string`     |                                                                                     |
 
-## Performance considerations
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+
+Expand to see details about Mailchimp connector limitations and troubleshooting
+
+</summary>
+
+### Connector limitations
 
 [Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous connections to its API, which means that Airbyte is unable to run more than 10 concurrent syncs from Mailchimp using API keys generated from the same account.
+
+</details>
 
 ## Tutorials
 
@@ -78,6 +83,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 0.10.1  | 2023-11-28 | [32836](https://github.com/airbytehq/airbyte/pull/32836) | Stream schema updates                                                      |
 | 0.10.0  | 2023-11-23 | [32782](https://github.com/airbytehq/airbyte/pull/32782) | Add SegmentMembers stream                                                  |
 | 0.9.0   | 2023-11-17 | [32218](https://github.com/airbytehq/airbyte/pull/32218) | Add Interests, InterestCategories, Tags streams                            |
 | 0.8.3   | 2023-11-15 | [32543](https://github.com/airbytehq/airbyte/pull/32543) | Handle empty datetime fields in Reports stream                             |
@@ -112,3 +118,5 @@ Now that you have set up the Mailchimp source connector, check out the following
 | 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726)   | Fix base connector versioning                                              |
 | 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238)   | Protocol allows future/unknown properties                                  |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                    |
+
+</HideInUI>
