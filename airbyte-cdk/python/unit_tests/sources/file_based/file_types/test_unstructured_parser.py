@@ -81,7 +81,7 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
         assert schema == {
             "content": {"type": "string", "description": "Content of the file as markdown. Might be null if the file could not be parsed"},
             "document_key": {"type": "string", "description": "Unique identifier of the document, e.g. the file path"},
-            "error": {"type": "string", "description": "Error message if the file could not be parsed even though the file is supported"},
+            "_ab_source_file_parse_error": {"type": "string", "description": "Error message if the file could not be parsed even though the file is supported"},
         }
     loop.close()
     asyncio.set_event_loop(main_loop)
@@ -99,7 +99,7 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
                 {
                     "content": "test",
                     "document_key": FILE_URI,
-                    "error": None,
+                    "_ab_source_file_parse_error": None,
                 }
             ],
             False,
@@ -137,7 +137,7 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
                 {
                     "content": "# heading\n\nThis is the text\n\n- This is a list item\n\n```\nThis is a formula\n```",
                     "document_key": FILE_URI,
-                    "error": None,
+                    "_ab_source_file_parse_error": None,
                 }
             ],
             False,
@@ -155,7 +155,7 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
                 {
                     "content": "# first level heading\n\n## second level heading",
                     "document_key": FILE_URI,
-                    "error": None,
+                    "_ab_source_file_parse_error": None,
                 }
             ],
             False,
@@ -175,7 +175,7 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
                 {
                     "content": "# heading\n\nThis is the text\n\n- This is a list item\n\n```\nThis is a formula\n```",
                     "document_key": FILE_URI,
-                    "error": None,
+                    "_ab_source_file_parse_error": None,
                 }
             ],
             False,
@@ -190,7 +190,7 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
                 {
                     "content": None,
                     "document_key": FILE_URI,
-                    "error": "weird parsing error"
+                    "_ab_source_file_parse_error": "weird parsing error"
                 }
             ],
             True,

@@ -74,7 +74,7 @@ class UnstructuredParser(FileTypeParser):
                     "description": "Content of the file as markdown. Might be null if the file could not be parsed",
                 },
                 "document_key": {"type": "string", "description": "Unique identifier of the document, e.g. the file path"},
-                "error": {
+                "_ab_source_file_parse_error": {
                     "type": "string",
                     "description": "Error message if the file could not be parsed even though the file is supported",
                 },
@@ -96,7 +96,7 @@ class UnstructuredParser(FileTypeParser):
                     yield {
                         "content": markdown,
                         "document_key": file.uri,
-                        "error": None,
+                        "_ab_source_file_parse_error": None,
                     }
             except RecordParseError as e:
                 # pass explicitly raised RecordParseError through to be handled by the caller
@@ -108,7 +108,7 @@ class UnstructuredParser(FileTypeParser):
                 yield {
                     "content": None,
                     "document_key": file.uri,
-                    "error": exception_str,
+                    "_ab_source_file_parse_error": exception_str,
                 }
 
     def _read_file(self, file_handle: IOBase, remote_file: RemoteFile, format: UnstructuredFormat, logger: logging.Logger) -> Optional[str]:
