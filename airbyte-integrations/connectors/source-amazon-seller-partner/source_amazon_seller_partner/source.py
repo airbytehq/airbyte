@@ -3,7 +3,6 @@
 #
 
 from os import getenv
-from requests import HTTPError
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
@@ -11,6 +10,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from requests import HTTPError
 from source_amazon_seller_partner.auth import AWSAuthenticator
 from source_amazon_seller_partner.constants import get_marketplaces
 from source_amazon_seller_partner.streams import (

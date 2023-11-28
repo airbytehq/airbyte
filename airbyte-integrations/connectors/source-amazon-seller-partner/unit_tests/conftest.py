@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
-
 from typing import Any, Dict
+
+import pytest
 
 
 @pytest.fixture
