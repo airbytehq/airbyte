@@ -7,7 +7,8 @@ from unittest.mock import MagicMock
 
 import pytest
 from source_shopify.auth import ShopifyAuthenticator
-from source_shopify.source import (
+from source_shopify.source import SourceShopify
+from source_shopify.streams.streams import (
     AbandonedCheckouts,
     Articles,
     Blogs,
@@ -41,7 +42,6 @@ from source_shopify.source import (
     Products,
     ProductVariants,
     Shop,
-    SourceShopify,
     TenderTransactions,
     Transactions,
 )
@@ -62,7 +62,8 @@ def config(basic_config):
         (MetafieldBlogs, {"id": 123}, "blogs/123/metafields.json"),
         (MetafieldArticles, {"id": 123}, "articles/123/metafields.json"),
         (MetafieldCustomers, {"id": 123}, "customers/123/metafields.json"),
-        (MetafieldOrders, {"id": 123}, "orders/123/metafields.json"),
+        # GraphQL Bulk Stream
+        (MetafieldOrders, None, "graphql.json"),
         (MetafieldDraftOrders, {"id": 123}, "draft_orders/123/metafields.json"),
         (MetafieldProducts, {"id": 123}, "products/123/metafields.json"),
         (MetafieldProductVariants, {"variants": 123}, "variants/123/metafields.json"),
@@ -87,7 +88,7 @@ def config(basic_config):
         (CustomCollections, None, "custom_collections.json"),
     ],
 )
-def test_customers_path(stream, stream_slice, expected_path, config):
+def test_path(stream, stream_slice, expected_path, config):
     stream = stream(config)
     if stream_slice:
         result = stream.path(stream_slice)
@@ -114,7 +115,7 @@ def test_customers_path_with_stream_slice_param(stream, stream_slice, expected_p
 
 
 def test_check_connection(config, mocker):
-    mocker.patch("source_shopify.source.Shop.read_records", return_value=[{"id": 1}])
+    mocker.patch("source_shopify.streams.streams.Shop.read_records", return_value=[{"id": 1}])
     source = SourceShopify()
     logger_mock = MagicMock()
     assert source.check_connection(logger_mock, config) == (True, None)
@@ -124,7 +125,7 @@ def test_read_records(config, mocker):
     records = [{"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}]
     stream_slice = records[0]
     stream = OrderRefunds(config)
-    mocker.patch("source_shopify.source.IncrementalShopifyStream.read_records", return_value=records)
+    mocker.patch("source_shopify.streams.base_streams.IncrementalShopifyStream.read_records", return_value=records)
     assert next(stream.read_records(stream_slice=stream_slice)) == records[0]
 
 
