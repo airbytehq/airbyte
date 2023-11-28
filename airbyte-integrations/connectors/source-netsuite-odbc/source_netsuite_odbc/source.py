@@ -5,17 +5,9 @@
 import logging
 import json
 from datetime import datetime
-import hmac
-import hashlib
-import pyodbc
-import time
 
 import traceback
-import random
-import string
-
-import base64
-from typing import Dict, Generator, Mapping, Tuple, Union, Any
+from typing import Dict, Generator, Mapping, Tuple, Union, Any, List
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -31,52 +23,31 @@ from airbyte_cdk.models import (
     AirbyteStreamState,
     StreamDescriptor,
 )
-from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources import AbstractSource
 from source_netsuite_odbc.discover_utils import NetsuiteODBCTableDiscoverer
 from source_netsuite_odbc.reader_utils import NetsuiteODBCTableReader, NETSUITE_PAGINATION_INTERVAL
+from .streams import NetsuiteODBCStream
+from .odbc_utils import NetsuiteODBCCursorConstructor
 
 
 
-class SourceNetsuiteOdbc(Source):
+class SourceNetsuiteOdbc(AbstractSource):
     logger: logging.Logger = logging.getLogger("airbyte")
-
-    def generate_nonce(self) -> str:
-        # Define the characters to choose from
-        characters = string.ascii_letters + string.digits
-        # Generate a random 10-character string
-        random_string = ''.join(random.choice(characters) for i in range(10))
-        return random_string
     
-    def construct_password(self, config: Mapping[str, Any]) -> str:
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        cursor_constructor = NetsuiteODBCCursorConstructor()
+        discoverer = NetsuiteODBCTableDiscoverer(cursor_constructor.create_database_cursor(config))
+        streams = discoverer.get_streams()
+        stream_objects = []
+        for stream in streams:
+            stream_name = stream.stream.name
+            is_incremental = stream.sync_mode == "incremental"
+            netsuite_stream = NetsuiteODBCStream(cursor=cursor_constructor.create_database_cursor(config), table_name=stream_name, is_incremental=is_incremental, stream=stream.stream)
+            stream_objects.append(netsuite_stream)
+        return stream_objects
 
-        time_tuple = datetime.now().timetuple() 
-        timestamp = str(time.mktime(time_tuple))[0:10]
-
-        nonce = self.generate_nonce()
-
-        base_string = config['realm'] + '&' + config['consumer_key'] + '&' + config['token_key'] + '&' + nonce + '&' + timestamp
-
-        key = config['consumer_secret'] + '&' + config['token_secret']
-
-        hmac_sha256 = hmac.new(key.encode(), base_string.encode(), hashlib.sha256)
-
-        # Compute the HMAC and encode the result in Base64
-        hmac_base64 = base64.b64encode(hmac_sha256.digest())
-
-        hmac_base64_str = hmac_base64.decode()
-
-        return base_string + '&' + hmac_base64_str + '&HMAC-SHA256'
-    
-
-    def create_database_cursor(self, config: Mapping[str, Any]) -> pyodbc.Cursor:
-        password = self.construct_password(config)
-        connection_string = f'DRIVER=NetSuite ODBC Drivers 8.1;Host={config["service_host"]};Port={config["service_port"]};Encrypted=1;AllowSinglePacketLogout=1;Truststore=/opt/netsuite/odbcclient/cert/ca3.cer;ServerDataSource=NetSuite2.com;UID=TBA;PWD={password};CustomProperties=AccountID={config["realm"]};RoleID=57;StaticSchema=1'
-        cxn = pyodbc.connect(connection_string)
-        return cxn.cursor()
-
-
-
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
             e.g: if a provided Stripe API token can be used to connect to the Stripe API.
@@ -89,7 +60,8 @@ class SourceNetsuiteOdbc(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            cursor = self.create_database_cursor(config)
+            cursor_constructor = NetsuiteODBCCursorConstructor()
+            cursor = cursor_constructor.create_database_cursor(config)
 
             cursor.execute("SELECT * FROM OA_TABLES")
             row = cursor.fetchone()
@@ -111,103 +83,105 @@ class SourceNetsuiteOdbc(Source):
             traceback.print_exc() 
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
-        """
-        Returns an AirbyteCatalog representing the available streams and fields in this integration.
-        For example, given valid credentials to a Postgres database,
-        returns an Airbyte catalog where each postgres table is a stream, and each table column is a field.
+    # def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+    #     """
+    #     Returns an AirbyteCatalog representing the available streams and fields in this integration.
+    #     For example, given valid credentials to a Postgres database,
+    #     returns an Airbyte catalog where each postgres table is a stream, and each table column is a field.
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.yaml file
+    #     :param logger: Logging object to display debug/info/error to the logs
+    #         (logs will not be accessible via airbyte UI if they are not passed to this logger)
+    #     :param config: Json object containing the configuration of this source, content of this json is as specified in
+    #     the properties of the spec.yaml file
 
-        :return: AirbyteCatalog is an object describing a list of all available streams in this source.
-            A stream is an AirbyteStream object that includes:
-            - its stream name (or table name in the case of Postgres)
-            - json_schema providing the specifications of expected schema for this stream (a list of columns described
-            by their names and types)
-        """
+    #     :return: AirbyteCatalog is an object describing a list of all available streams in this source.
+    #         A stream is an AirbyteStream object that includes:
+    #         - its stream name (or table name in the case of Postgres)
+    #         - json_schema providing the specifications of expected schema for this stream (a list of columns described
+    #         by their names and types)
+    #     """
 
-        cursor = self.create_database_cursor(config)
-        discoverer = NetsuiteODBCTableDiscoverer(cursor)
-        streams = discoverer.get_streams()
+    #     cursor_constructor = NetsuiteODBCCursorConstructor()
+    #     cursor = cursor_constructor.create_database_cursor(config)
+    #     discoverer = NetsuiteODBCTableDiscoverer(cursor)
+    #     streams = discoverer.get_streams()
 
-        return AirbyteCatalog(streams=streams)
+    #     return AirbyteCatalog(streams=streams)
 
-    def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
-    ) -> Generator[AirbyteMessage, None, None]:
-        """
-        Returns a generator of the AirbyteMessages generated by reading the source with the given configuration,
-        catalog, and state.
+    # def read(
+    #     self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+    # ) -> Generator[AirbyteMessage, None, None]:
+    #     """
+    #     Returns a generator of the AirbyteMessages generated by reading the source with the given configuration,
+    #     catalog, and state.
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-            the properties of the spec.yaml file
-        :param catalog: The input catalog is a ConfiguredAirbyteCatalog which is almost the same as AirbyteCatalog
-            returned by discover(), but
-        in addition, it's been configured in the UI! For each particular stream and field, there may have been provided
-        with extra modifications such as: filtering streams and/or columns out, renaming some entities, etc
-        :param state: When a Airbyte reads data from a source, it might need to keep a checkpoint cursor to resume
-            replication in the future from that saved checkpoint.
-            This is the object that is provided with state from previous runs and avoid replicating the entire set of
-            data everytime.
+    #     :param logger: Logging object to display debug/info/error to the logs
+    #         (logs will not be accessible via airbyte UI if they are not passed to this logger)
+    #     :param config: Json object containing the configuration of this source, content of this json is as specified in
+    #         the properties of the spec.yaml file
+    #     :param catalog: The input catalog is a ConfiguredAirbyteCatalog which is almost the same as AirbyteCatalog
+    #         returned by discover(), but
+    #     in addition, it's been configured in the UI! For each particular stream and field, there may have been provided
+    #     with extra modifications such as: filtering streams and/or columns out, renaming some entities, etc
+    #     :param state: When a Airbyte reads data from a source, it might need to keep a checkpoint cursor to resume
+    #         replication in the future from that saved checkpoint.
+    #         This is the object that is provided with state from previous runs and avoid replicating the entire set of
+    #         data everytime.
 
-        :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
-        """
-        """  
-            we will assume that state looks like 
-            {"type": "STREAM", "stream": {"stream_descriptor": {"name": "Customer"}, "stream_state": {}}, "emitted_at": 1701052407000}}
+    #     :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
+    #     """
+    #     """  
+    #         we will assume that state looks like 
+    #         {"type": "STREAM", "stream": {"stream_descriptor": {"name": "Customer"}, "stream_state": {}}, "emitted_at": 1701052407000}}
 
-        """
+    #     """
 
-        streams = catalog.streams
-        for stream in streams:
-            stream_name = stream.stream.name
-            is_incremental = stream.sync_mode == "incremental"
-            try: 
-                reader = NetsuiteODBCTableReader(self.create_database_cursor(config), stream_name, stream.stream, is_incremental=is_incremental)
+    #     streams = catalog.streams
+    #     cursor_constructor = NetsuiteODBCCursorConstructor()
+    #     for stream in streams:
+    #         stream_name = stream.stream.name
+    #         is_incremental = stream.sync_mode == "incremental"
+    #         try: 
+    #             reader = NetsuiteODBCTableReader(cursor_constructor.create_database_cursor(config), stream_name, stream.stream, is_incremental=is_incremental)
 
-                while True:
-                    rows = reader.read_table(state)
+    #             while True:
+    #                 rows = reader.read_table(state)
                 
-                    for row in rows:
-                        yield AirbyteMessage(
-                            type=Type.RECORD,
-                            record=AirbyteRecordMessage(stream=stream_name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000),
-                        )
+    #                 for row in rows:
+    #                     yield AirbyteMessage(
+    #                         type=Type.RECORD,
+    #                         record=AirbyteRecordMessage(stream=stream_name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000),
+    #                     )
 
-                    if len(rows) < NETSUITE_PAGINATION_INTERVAL:
-                        print(len(rows), 'breaking')
+    #                 if len(rows) < NETSUITE_PAGINATION_INTERVAL:
+    #                     print(len(rows), 'breaking')
 
-                        reader.update_state(state, rows)
-                        yield AirbyteMessage(
-                            type=Type.STATE,
-                            state=AirbyteStateMessage(
-                                type=AirbyteStateType.STREAM,
-                                stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state),
-                                emitted_at=self.find_emitted_at(),
-                            ),
-                        )
-                        break
-                    else:
-                        reader.update_state(state, rows)
+    #                     reader.update_state(state, rows)
+    #                     yield AirbyteMessage(
+    #                         type=Type.STATE,
+    #                         state=AirbyteStateMessage(
+    #                             type=AirbyteStateType.STREAM,
+    #                             stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state),
+    #                             emitted_at=self.find_emitted_at(),
+    #                         ),
+    #                     )
+    #                     break
+    #                 else:
+    #                     reader.update_state(state, rows)
 
                     
-            except Exception as e:
-                yield AirbyteMessage(
-                    type=Type.STATE,
-                    state=AirbyteStateMessage(
-                        type=AirbyteStateType.STREAM,
-                        stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state),
-                        emitted_at=self.find_emitted_at(),
-                    ),
-                )
-                logger.error(e)
-                raise
-        print(state)
+    #         except Exception as e:
+    #             yield AirbyteMessage(
+    #                 type=Type.STATE,
+    #                 state=AirbyteStateMessage(
+    #                     type=AirbyteStateType.STREAM,
+    #                     stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=state),
+    #                     emitted_at=self.find_emitted_at(),
+    #                 ),
+    #             )
+    #             logger.error(e)
+    #             raise
+    #     print(state)
 
 
     def find_emitted_at(self):
