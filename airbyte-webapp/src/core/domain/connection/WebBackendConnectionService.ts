@@ -11,6 +11,8 @@ import {
   FilterConnectionRequestBody,
   webBackendListFilteredConnectionsForWorkspace,
   getConnectionFilterParams,
+  ConnectionData,
+  webBackendListFilteredConnectionsStatus,
 } from "../../request/DaspireClient";
 
 export class WebBackendConnectionService extends AirbyteRequestService {
@@ -25,7 +27,9 @@ export class WebBackendConnectionService extends AirbyteRequestService {
   public filteredList(filters: FilterConnectionRequestBody) {
     return webBackendListFilteredConnectionsForWorkspace(filters, this.requestOptions);
   }
-
+  public getConnectionsStatus(payload: ConnectionData) {
+    return webBackendListFilteredConnectionsStatus(payload, this.requestOptions);
+  }
   public update(payload: WebBackendConnectionUpdate) {
     return webBackendUpdateConnection(payload, this.requestOptions);
   }

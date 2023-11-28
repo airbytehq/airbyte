@@ -173,12 +173,15 @@ export interface WebBackendNewConnectionList {
   connectorName: string;
   entityName: string;
   isSyncing: boolean;
-  latestSyncJobCreatedAt?: number;
-  latestSyncJobStatus?: JobStatus;
   name: string;
   status: ConnectionStatus;
   statusLang?: string;
   syncCatalog?: AirbyteCatalog;
+}
+export interface WebBackendNewConnectionStatusList {
+  latestSyncJobCreatedAt?: number;
+  latestSyncJobStatus?: JobStatus;
+  connectionId: ConnectionId;
 }
 export interface WebBackendConnectionReadList {
   connections: WebBackendConnectionRead[];

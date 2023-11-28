@@ -16,7 +16,11 @@ import { Separator } from "components/Separator";
 import { FilterConnectionRequestBody } from "core/request/DaspireClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
-import { useFilteredConnectionList, useConnectionFilterOptions } from "hooks/services/useConnectionHook";
+import {
+  useFilteredConnectionList,
+  useConnectionFilterOptions,
+  useConnectionStatusList,
+} from "hooks/services/useConnectionHook";
 import { usePageConfig } from "hooks/services/usePageConfig";
 import useRouter from "hooks/useRouter";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
@@ -89,6 +93,12 @@ const AllConnectionsPage: React.FC = () => {
   const [filters, setFilters] = useState<FilterConnectionRequestBody>(initialFiltersState);
 
   const { connections, total, pageSize } = useFilteredConnectionList(filters);
+
+  const connectionIds = connections?.filter((con) => con?.connectionId)?.map((con) => con?.connectionId);
+  const apiData = {
+    connectionIds,
+  };
+  const { connectionStatusList } = useConnectionStatusList(apiData);
 
   const onSelectFilter = useCallback(
     (
@@ -198,7 +208,11 @@ const AllConnectionsPage: React.FC = () => {
 
             <Separator height="10px" />
 
-            <NewConnectionsTable connections={connections as any} onSetMessageId={onSetMessageId} />
+            <NewConnectionsTable
+              connections={connections as any}
+              onSetMessageId={onSetMessageId}
+              connectionStatus={connectionStatusList as any}
+            />
             <Separator height="24px" />
             <Footer>
               <PageSize currentPageSize={currentPageSize} totalPage={total / pageSize} onChange={onChangePageSize} />

@@ -9,6 +9,7 @@ import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
 import {
+  ConnectionData,
   FilterConnectionRequestBody,
   ReadConnectionFilters,
   WebBackendFilteredConnectionReadList,
@@ -40,6 +41,7 @@ export const connectionsKeys = {
   filteredList: (filters: FilterConnectionRequestBody) => [...connectionsKeys.lists(), { filters }] as const,
   detail: (connectionId: string) => [...connectionsKeys.all, "details", connectionId] as const,
   getState: (connectionId: string) => [...connectionsKeys.all, "getState", connectionId] as const,
+  connectionIdsStatus: (connectionIds: ConnectionData) => [...connectionsKeys.lists(), { connectionIds }] as const,
 };
 
 export interface ValuesProps {
@@ -61,11 +63,17 @@ interface CreateConnectionProps {
   destinationDefinition?: { name: string; destinationDefinitionId: string };
   sourceCatalogId: string | undefined;
 }
-
+interface statusValues {
+  connectionId: string;
+  latestSyncJobCreatedAt: number;
+  latestSyncJobStatus: string;
+}
 export interface ListConnection {
   connections: WebBackendConnectionRead[];
 }
-
+export interface ListConnectionStatus {
+  connectionStatusList: statusValues[];
+}
 function useWebConnectionService() {
   const { removeUser } = useUser();
   const middlewares = useDefaultRequestMiddlewares();
@@ -238,7 +246,10 @@ const useConnectionList = (): ListConnection => {
   const service = useWebConnectionService();
   return useSuspenseQuery(connectionsKeys.lists(), () => service.list(workspace.workspaceId));
 };
-
+const useConnectionStatusList = (apiData: ConnectionData): ListConnectionStatus => {
+  const service = useWebConnectionService();
+  return useSuspenseQuery(connectionsKeys.connectionIdsStatus(apiData), () => service.getConnectionsStatus(apiData));
+};
 const useFilteredConnectionList = (filters: FilterConnectionRequestBody): WebBackendFilteredConnectionReadList => {
   const service = useWebConnectionService();
 
@@ -313,4 +324,5 @@ export {
   useDeleteConnection,
   invalidateConnectionsList,
   useGetConnectionState,
+  useConnectionStatusList,
 };
