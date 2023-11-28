@@ -12,7 +12,7 @@ from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v13.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
-from google.api_core.exceptions import ServerError, TooManyRequests
+from google.api_core.exceptions import InternalServerError, ServerError, TooManyRequests
 from google.auth import exceptions
 from proto.marshal.collections import Repeated, RepeatedComposite
 
@@ -40,7 +40,7 @@ class GoogleAds:
 
     @backoff.on_exception(
         backoff.expo,
-        (ServerError, TooManyRequests),
+        (InternalServerError, ServerError, TooManyRequests),
         on_backoff=lambda details: logger.info(
             f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         ),

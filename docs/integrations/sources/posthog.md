@@ -44,15 +44,31 @@ This page contains the setup guide and reference information for the PostHog sou
 - [Insights](https://posthog.com/docs/api/insights)
 - [Persons](https://posthog.com/docs/api/people)
 
-### Performance considerations
+### Rate limiting
 
-The PostHog API doesn't have any known request limitation.
-Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Private `GET`, `POST`, `PATCH`, `DELETE` endpoints are rate limited. Public POST-only endpoints are **not** rate limited. A rule of thumb for whether rate limits apply is if the personal API key is used for authentication. 
+
+There are separate limits for different kinds of resources.
+
+- For all analytics endpoints (such as calculating insights, retrieving persons, or retrieving session recordings), the rate limits are `240/minute` and `1200/hour`.
+
+- The [HogQL query](https://posthog.com/docs/hogql#api-access) endpoint (`/api/project/:id/query`) has a rate limit of `120/hour`.
+
+- For the rest of the create, read, update, and delete endpoints, the rate limits are `480/minute` and `4800/hour`.
+
+- For Public POST-only endpoints like event capture (`/capture`) and feature flag evaluation (`/decide`), there are no rate limits.
+
+These limits apply to **the entire team** (i.e. all users within your PostHog organization). For example, if a script requesting feature flag metadata hits the rate limit, and another user, using a different personal API key, makes a single request to the persons API, this gets rate limited as well.
+
+For large or regular exports of events, use [batch exports](https://posthog.com/docs/cdp).
+
+Want to use the PostHog API beyond these limits? Email Posthog at `customers@posthog.com`.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------|
+| 0.1.15  | 2023-10-28 | [31265](https://github.com/airbytehq/airbyte/pull/31265) | Fix Events stream datetime format                                                                     |
 | 0.1.14  | 2023-08-29 | [29947](https://github.com/airbytehq/airbyte/pull/29947) | Add optional field to spec: `events_time_step`                                                                     |
 | 0.1.13  | 2023-07-19 | [28461](https://github.com/airbytehq/airbyte/pull/28461) | Fixed EventsSimpleRetriever declaration                                                                            |
 | 0.1.12  | 2023-06-28 | [27764](https://github.com/airbytehq/airbyte/pull/27764) | Update following state breaking changes                                                                            |

@@ -69,22 +69,6 @@ acceptance_tests:
             bypass_reason: "Tested with daily granularity."
           - name: campaigns_reports_hourly
             bypass_reason: "Tested with daily granularity."
-          - name: campaigns_audience_reports_daily
-            bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-          - name: advertisers_audience_reports_by_country_daily
-            bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-          - name: ads_audience_reports_by_country_daily
-            bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-          - name: campaigns_audience_reports_by_platform_daily
-            bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-          - name: ad_group_audience_reports_by_platform_daily
-            bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-          - name: ad_group_audience_reports_by_country_daily
-            bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-          - name: advertisers_audience_reports_by_platform_daily
-            bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
-          - name: ads_audience_reports_by_platform_daily
-            bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
           - name: creative_assets_portfolios
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
           - name: creative_assets_music

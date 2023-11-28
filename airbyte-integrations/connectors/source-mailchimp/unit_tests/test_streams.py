@@ -10,7 +10,7 @@ import requests
 import responses
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
-from source_mailchimp.streams import Campaigns, EmailActivity, Lists, Segments
+from source_mailchimp.streams import Campaigns, EmailActivity, ListMembers, Lists, Reports, Segments
 from utils import read_full_refresh, read_incremental
 
 
@@ -122,10 +122,11 @@ def test_stream_parse_json_error(auth, caplog):
 
 
 @pytest.mark.parametrize(
-    "stream_slice,stream_state,next_page_token,expected_params",
+    "stream_class, stream_slice, stream_state, next_page_token, expected_params",
     [
         # Test case 1: no state, no next_page_token
         (
+            Segments,
             {"list_id": "123"},
             {},
             None,
@@ -133,57 +134,67 @@ def test_stream_parse_json_error(auth, caplog):
         ),
         # Test case 2: state and next_page_token
         (
+            ListMembers,
             {"list_id": "123"},
-            {"123": {"updated_at": "2023-10-15T00:00:00Z"}},
+            {"123": {"last_changed": "2023-10-15T00:00:00Z"}},
             {"offset": 1000},
             {
                 "count": 1000,
                 "sort_dir": "ASC",
-                "sort_field": "updated_at",
+                "sort_field": "last_changed",
                 "list_id": "123",
                 "offset": 1000,
-                "exclude_fields": "segments._links",
-                "since_updated_at": "2023-10-15T00:00:00Z",
+                "exclude_fields": "members._links",
+                "since_last_changed": "2023-10-15T00:00:00Z",
             },
         ),
     ],
     ids=[
-        "no state, no next_page_token",
-        "state and next_page_token",
+        "Segments: no next_page_token or state to add to request params",
+        "ListMembers: next_page_token and state filter added to request params",
     ],
 )
-def test_segments_request_params(auth, stream_slice, stream_state, next_page_token, expected_params):
-    segments_stream = Segments(authenticator=auth)
-    params = segments_stream.request_params(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
+def test_list_child_request_params(auth, stream_class, stream_slice, stream_state, next_page_token, expected_params):
+    """
+    Tests the request_params method for the shared MailChimpListSubStream class.
+    """
+    stream = stream_class(authenticator=auth)
+    params = stream.request_params(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
     assert params == expected_params
 
 
 @pytest.mark.parametrize(
-    "current_stream_state,latest_record,expected_state",
+    "stream_class, current_stream_state,latest_record,expected_state",
     [
         # Test case 1: current_stream_state is empty
-        ({}, {"list_id": "list_1", "updated_at": "2023-10-15T00:00:00Z"}, {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}}),
+        (Segments, {}, {"list_id": "list_1", "updated_at": "2023-10-15T00:00:00Z"}, {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}}),
         # Test case 2: latest_record's cursor is higher than current_stream_state for list_1 and updates it
         (
+            Segments,
             {"list_1": {"updated_at": "2023-10-14T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
             {"list_id": "list_1", "updated_at": "2023-10-15T00:00:00Z"},
             {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
         ),
         # Test case 3: latest_record's cursor is lower than current_stream_state for list_2, no state update
         (
-            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
-            {"list_id": "list_2", "updated_at": "2023-10-14T00:00:00Z"},
-            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
+            ListMembers,
+            {"list_1": {"last_changed": "2023-10-15T00:00:00Z"}, "list_2": {"last_changed": "2023-10-15T00:00:00Z"}},
+            {"list_id": "list_2", "last_changed": "2023-10-14T00:00:00Z"},
+            {"list_1": {"last_changed": "2023-10-15T00:00:00Z"}, "list_2": {"last_changed": "2023-10-15T00:00:00Z"}},
         ),
     ],
     ids=[
-        "current_stream_state is empty",
-        "latest_record's cursor > than current_stream_state for list_1",
-        "latest_record's cursor < current_stream_state for list_2",
+        "Segments: no current_stream_state",
+        "Segments: latest_record's cursor > than current_stream_state for list_1",
+        "ListMembers: latest_record's cursor < current_stream_state for list_2",
     ],
 )
-def test_segments_get_updated_state(auth, current_stream_state, latest_record, expected_state):
-    segments_stream = Segments(authenticator=auth)
+def test_list_child_get_updated_state(auth, stream_class, current_stream_state, latest_record, expected_state):
+    """
+    Tests that the get_updated_state method for the shared MailChimpListSubStream class
+    correctly updates state only for its slice.
+    """
+    segments_stream = stream_class(authenticator=auth)
     updated_state = segments_stream.get_updated_state(current_stream_state, latest_record)
     assert updated_state == expected_state
 
@@ -402,3 +413,39 @@ def test_403_error_handling(
     # Handle non-403 error
     except HTTPError as e:
         assert e.response.status_code == status_code
+
+@pytest.mark.parametrize(
+    "record, expected_return",
+    [
+        (
+            {"clicks": {"last_click": ""}, "opens": {"last_open": ""}},
+            {"clicks": {}, "opens": {}},
+        ),
+        (
+            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {"last_open": ""}},
+            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {}},
+        ),
+        (         
+            {"clicks": {"last_click": ""}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
+            {"clicks": {}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
+
+        ),
+        (
+            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
+            {"clicks": {"last_click": "2023-01-01T00:00:00.000Z"}, "opens": {"last_open": "2023-01-01T00:00:00.000Z"}},
+        ),
+    ],
+    ids=[
+        "last_click and last_open empty",
+        "last_click empty",
+        "last_open empty",
+        "last_click and last_open not empty"
+    ]
+)
+def test_reports_remove_empty_datetime_fields(auth, record, expected_return):
+    """
+    Tests that the Reports stream removes the 'clicks' and 'opens' fields from the response
+    when they are empty strings
+    """
+    stream = Reports(authenticator=auth)
+    assert stream.remove_empty_datetime_fields(record) == expected_return, f"Expected: {expected_return}, Actual: {stream.remove_empty_datetime_fields(record)}"
