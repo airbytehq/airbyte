@@ -40,7 +40,7 @@ class AmazonSPStream(HttpStream, ABC):
         marketplace_id: str,
         period_in_days: Optional[int],
         replication_end_date: Optional[str],
-        report_options: Optional[Mapping[str, Any]] = None,
+        report_options: Optional[List[Mapping[str, Any]]] = None,
         *args,
         **kwargs,
     ):
