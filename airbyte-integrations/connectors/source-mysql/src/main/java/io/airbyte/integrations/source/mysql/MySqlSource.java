@@ -34,7 +34,7 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
-import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils;
@@ -46,8 +46,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -126,10 +124,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       "useSSL=true",
       "requireSSL=true");
 
-  private final FeatureFlags featureFlags;
-
-  public static Source sshWrappedSource() {
-    return new SshWrappedSource(new MySqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  public static Source sshWrappedSource(MySqlSource source) {
+    return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   private ConnectorSpecification getCloudDeploymentSpec(final ConnectorSpecification originalSpec) {
@@ -174,7 +170,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   public MySqlSource() {
     super(DRIVER_CLASS, MySqlStreamingQueryConfig::new, new MySqlSourceOperations());
-    this.featureFlags = new EnvVariableFeatureFlags();
   }
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
@@ -232,7 +227,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       checkOperations.addAll(CdcConfigurationHelper.getCheckOperations());
 
       checkOperations.add(database -> {
-        FirstRecordWaitTimeUtil.checkFirstRecordWaitTime(config);
+        RecordWaitTimeUtil.checkFirstRecordWaitTime(config);
         CdcConfigurationHelper.checkServerTimeZoneConfig(config);
       });
     }
@@ -584,7 +579,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   public static void main(final String[] args) throws Exception {
-    final Source source = MySqlSource.sshWrappedSource();
+    final Source source = MySqlSource.sshWrappedSource(new MySqlSource());
     LOGGER.info("starting source: {}", MySqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MySqlSource.class);

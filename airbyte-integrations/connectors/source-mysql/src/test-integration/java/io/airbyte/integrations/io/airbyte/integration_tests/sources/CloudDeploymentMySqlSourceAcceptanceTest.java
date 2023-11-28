@@ -7,6 +7,8 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
@@ -14,9 +16,8 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification;
 public class CloudDeploymentMySqlSourceAcceptanceTest extends MySqlSslSourceAcceptanceTest {
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    super.setupEnvironment(environment);
-    environmentVariables.set(EnvVariableFeatureFlags.DEPLOYMENT_MODE, "CLOUD");
+  protected FeatureFlags featureFlags() {
+    return FeatureFlagsWrapper.overridingDeploymentMode(super.featureFlags(), "CLOUD");
   }
 
   @Override

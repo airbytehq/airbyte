@@ -4,25 +4,46 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.db.MySqlUtils;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
+import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.io.IOException;
+import java.util.stream.Stream;
 
-public class CloudDeploymentMySqlSslCaCertificateSourceAcceptanceTest extends AbstractCloudDeploymentMySqlSslCertificateSourceAcceptanceTest {
+public class CloudDeploymentMySqlSslCaCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
+
+  private static final String PASSWORD = "Passw0rd";
 
   @Override
-  public MySqlUtils.Certificate getCertificates() throws IOException, InterruptedException {
-    return MySqlUtils.getCertificate(container, false);
+  protected FeatureFlags featureFlags() {
+    return FeatureFlagsWrapper.overridingDeploymentMode(super.featureFlags(), "CLOUD");
   }
 
   @Override
-  public ImmutableMap getSslConfig() {
-    return ImmutableMap.builder()
-        .put(JdbcUtils.MODE_KEY, "verify_ca")
-        .put("ca_certificate", certs.getCaCertificate())
-        .put("client_key_password", PASSWORD)
+  protected Stream<String> extraContainerFactoryMethods() {
+    return Stream.of("withRootAndServerCertificates");
+  }
+
+  @Override
+  protected JsonNode getConfig() {
+    return testdb.integrationTestConfigBuilder()
+        .withStandardReplication()
+        .withSsl(ImmutableMap.builder()
+            .put(JdbcUtils.MODE_KEY, "verify_ca")
+            .put("ca_certificate", testdb.getCaCertificate())
+            .put("client_key_password", PASSWORD)
+            .build())
         .build();
   }
 
+  @Override
+  protected ConnectorSpecification getSpec() throws Exception {
+    return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_cloud_spec.json"), ConnectorSpecification.class));
+  }
 }
