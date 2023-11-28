@@ -286,7 +286,7 @@ class CampaignBudget(IncrementalGoogleAdsStream):
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = [
         "customer.id",
-        "campaign.id",
+        "campaign_budget.id",
     ]
 
 
