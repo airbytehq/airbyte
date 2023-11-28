@@ -6,8 +6,6 @@ package io.airbyte.integrations.source.mysql;
 
 import static com.mysql.cj.MysqlType.BIGINT;
 import static com.mysql.cj.MysqlType.BIGINT_UNSIGNED;
-import static com.mysql.cj.MysqlType.BINARY;
-import static com.mysql.cj.MysqlType.BLOB;
 import static com.mysql.cj.MysqlType.DATE;
 import static com.mysql.cj.MysqlType.DATETIME;
 import static com.mysql.cj.MysqlType.DECIMAL;
@@ -18,9 +16,7 @@ import static com.mysql.cj.MysqlType.FLOAT;
 import static com.mysql.cj.MysqlType.FLOAT_UNSIGNED;
 import static com.mysql.cj.MysqlType.INT;
 import static com.mysql.cj.MysqlType.INT_UNSIGNED;
-import static com.mysql.cj.MysqlType.LONGBLOB;
 import static com.mysql.cj.MysqlType.LONGTEXT;
-import static com.mysql.cj.MysqlType.MEDIUMBLOB;
 import static com.mysql.cj.MysqlType.MEDIUMINT;
 import static com.mysql.cj.MysqlType.MEDIUMINT_UNSIGNED;
 import static com.mysql.cj.MysqlType.MEDIUMTEXT;
@@ -29,11 +25,9 @@ import static com.mysql.cj.MysqlType.SMALLINT_UNSIGNED;
 import static com.mysql.cj.MysqlType.TEXT;
 import static com.mysql.cj.MysqlType.TIME;
 import static com.mysql.cj.MysqlType.TIMESTAMP;
-import static com.mysql.cj.MysqlType.TINYBLOB;
 import static com.mysql.cj.MysqlType.TINYINT;
 import static com.mysql.cj.MysqlType.TINYINT_UNSIGNED;
 import static com.mysql.cj.MysqlType.TINYTEXT;
-import static com.mysql.cj.MysqlType.VARBINARY;
 import static com.mysql.cj.MysqlType.VARCHAR;
 import static com.mysql.cj.MysqlType.YEAR;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
@@ -69,7 +63,6 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSourceOperations.class);
   private static final Set<MysqlType> ALLOWED_CURSOR_TYPES = Set.of(TINYINT, TINYINT_UNSIGNED, SMALLINT,
       SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED,
-      TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY,
       FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP,
       TIME, YEAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT);
 
