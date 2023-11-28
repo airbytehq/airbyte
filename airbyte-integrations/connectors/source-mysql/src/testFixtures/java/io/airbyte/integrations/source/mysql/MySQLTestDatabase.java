@@ -18,12 +18,16 @@ public class MySQLTestDatabase extends
     TestDatabase<MySQLContainer<?>, MySQLTestDatabase, MySQLTestDatabase.MySQLConfigBuilder> {
 
   public static enum BaseImage {
+
     MYSQL_8("mysql:8.0"),
     ;
+
     private final String reference;
+
     private BaseImage(String reference) {
       this.reference = reference;
     }
+
   }
 
   static public MySQLTestDatabase in(BaseImage baseImage, String... methods) {
