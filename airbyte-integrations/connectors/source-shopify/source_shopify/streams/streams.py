@@ -58,6 +58,9 @@ class MetafieldShopifyGraphQlBulkStream(IncrementalShopifyGraphQlBulkStream):
         record["owner_resource"] = _camel_to_snake(record[ShopifyBulkGraphQl.parent_key].split("/")[3])
         # remove `__parentId` from record
         record.pop(ShopifyBulkGraphQl.parent_key, None)
+        # convert dates from ISO-8601 to RFC-3339
+        record["created_at"] = ShopifyBulkGraphQl.Tools.convert_iso8601_to_rfc3339(record, "created_at")
+        record["updated_at"] = ShopifyBulkGraphQl.Tools.convert_iso8601_to_rfc3339(record, "updated_at")
         yield record
 
     def parse_response(self, job_result_url: str, **kwargs) -> Iterable[Mapping]:

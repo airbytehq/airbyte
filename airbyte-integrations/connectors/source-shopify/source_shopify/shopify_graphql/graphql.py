@@ -15,6 +15,7 @@ from time import sleep, time
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
+import pendulum as pdm
 import requests
 import sgqlc.operation
 from requests.exceptions import JSONDecodeError
@@ -199,6 +200,16 @@ class ShopifyBulkGraphQl:
             filename_pattern = r'filename\*?=(?:UTF-8\'\')?"([^"]+)"'
             parsed_url = dict(parse_qsl(urlparse(job_result_url).query))
             return re.search(filename_pattern, parsed_url.get("response-content-disposition")).group(1)
+
+        def convert_iso8601_to_rfc3339(record: Mapping[str, Any], field: str) -> Mapping[str, Any]:
+            """
+            Converts date-time as follows:
+                Input: "2023-01-01T15:00:00Z"
+                Output: "2023-01-01T15:00:00+00:00"
+            If the value of the `field` is `None` we return it `as is`.
+            """
+            target_value = record.get(field)
+            return pdm.parse(target_value).to_rfc3339_string() if target_value else record.get(field)
 
         def record_fields_to_snake_case(record: Mapping[str, Any]) -> Mapping[str, Any]:
             # transforming record field names from camel to snake case,
