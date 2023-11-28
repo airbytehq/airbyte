@@ -161,6 +161,8 @@ class UnstructuredParser(FileTypeParser):
         Perform a connection check for the parser config:
         - Verify that encryption is enabled if the API is hosted on a cloud instance.
         - Verify that the API can extract text from a file.
+
+        For local processing, we don't need to perform any additional checks, implicit pydantic validation is enough.
         """
         format_config = _extract_format(config)
         if isinstance(format_config.processing, LocalProcessingConfigModel):
@@ -219,7 +221,7 @@ class UnstructuredParser(FileTypeParser):
         return self._render_markdown([element.to_dict() for element in elements])
 
     def _handle_unprocessable_file(
-        self, remote_file: RemoteFile, skip_unprocessable_file_types: Optional[bool], logger: logging.Logger
+        self, remote_file: RemoteFile, skip_unprocessable_file_types: bool, logger: logging.Logger
     ) -> None:
         if skip_unprocessable_file_types:
             logger.warn(f"File {remote_file.uri} cannot be parsed. Skipping it.")

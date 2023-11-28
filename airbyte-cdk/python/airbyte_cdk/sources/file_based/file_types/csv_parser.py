@@ -124,6 +124,9 @@ class CsvParser(FileTypeParser):
         self._csv_reader = csv_reader if csv_reader else _CsvReader()
 
     def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
+        """
+        CsvParser does not require config checks, implicit pydantic validation is enough.
+        """
         return True, None
 
     async def infer_schema(

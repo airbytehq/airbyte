@@ -24,6 +24,9 @@ class ParquetParser(FileTypeParser):
     ENCODING = None
 
     def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
+        """
+        ParquetParser does not require config checks, implicit pydantic validation is enough.
+        """
         return True, None
 
     async def infer_schema(
