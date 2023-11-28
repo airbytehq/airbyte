@@ -13,12 +13,13 @@ You can use [OAuth](https://mailchimp.com/developer/marketing/guides/access-user
 3. On the Set up the source page, select **Mailchimp** from the Source type dropdown.
 4. Enter a name for your source.
 
-6. You can use OAuth or an API key to authenticate your Mailchimp account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte Open Source.
+5. You can use OAuth or an API key to authenticate your Mailchimp account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte Open Source.
     - To authenticate using OAuth for Airbyte Cloud, ensure you have [registered your Mailchimp account](#prerequisite) and then click **Authenticate your Mailchimp account** to sign in with Mailchimp and authorize your account. 
     - To authenticate using an API key for Airbyte Open Source, select **API key** from the Authentication dropdown and enter the [API key](https://mailchimp.com/developer/marketing/guides/quick-start/#generate-your-api-key) for your Mailchimp account.    
     :::note
     Check the [performance considerations](#performance-considerations) before using an API key.
     :::
+6. (Optional) You may optionally provide an **Incremental Sync Start Date** using the provided datepicker, or by programmatically entering a UTC date-time in the format `YYYY-MM-DDThh:mm:ss.sssZ`. If set, only data generated on or after the configured date-time will be synced for Incremental streams. Leaving this field blank will sync all data returned from the API. Please note that this option has no effect on streams using Full Refresh sync mode.
 7. Click **Set up source**.
 
 ## Supported sync modes
