@@ -408,7 +408,7 @@ class ShopifySubstream(IncrementalShopifyStream):
                 # avoid checking `deleted` records for substreams, a.k.a `Metafields` streams,
                 # since `deleted` records are not available, thus we avoid HTTP-400 errors.
                 if self.deleted_cursor_field not in record:
-                    yield {self.slice_key: record[self.nested_record]}
+                    yield {self.slice_key: record[self.nested_record]} | (stream_state or {})
 
         # output slice from sorted list to avoid filtering older records
         if self.nested_substream:
@@ -832,11 +832,23 @@ class MetafieldLocations(MetafieldShopifySubstream):
 class InventoryLevels(ShopifySubstream):
     parent_stream_class: object = Locations
     slice_key = "location_id"
+    filter_field = "location_ids"
     data_field = "inventory_levels"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        location_id = stream_slice["location_id"]
-        return f"locations/{location_id}/{self.data_field}.json"
+        return f"{self.data_field}.json"
+
+    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
+        params = {"limit": self.limit}
+        if next_page_token:
+            params.update(**next_page_token)
+        else:
+            params[self.filter_field] = kwargs["stream_slice"]["location_id"]
+            params["updated_at_min"] = kwargs.get("stream_slice", {}).get(self.cursor_field)
+        return params
+
+    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping] = None) -> Iterable:
+        yield from records_slice
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         records_stream = super().parse_response(response, **kwargs)
