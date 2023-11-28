@@ -866,6 +866,42 @@
       },
       "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
+    },
+    {
+      "stream" : {
+        "name" : "price_stream",
+        "json_schema" : {
+          "title" : "PriceStatistics",
+          "type" : "object",
+          "properties" : {
+            "nmId" : {
+              "title" : "Nmid",
+              "description" : "\u0410\u0440\u0442\u0438\u043a\u0443\u043b WB",
+              "type" : "integer"
+            },
+            "price" : {
+              "title" : "Price",
+              "description" : "\u0426\u0435\u043d\u0430",
+              "type" : "number"
+            },
+            "discount" : {
+              "title" : "Discount",
+              "description" : "\u0421\u043a\u0438\u0434\u043a\u0430",
+              "type" : "number"
+            },
+            "promoCode" : {
+              "title" : "Promocode",
+              "description" : "\u041f\u0440\u043e\u043c\u043e\u043a\u043e\u0434",
+              "type" : "number"
+            }
+          }
+        },
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "overwrite"
     }
   ]
 }

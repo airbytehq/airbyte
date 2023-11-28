@@ -17,6 +17,7 @@ from source_wildberries_seller.schemas.nm_report_detail import DetailNmReport, D
 from source_wildberries_seller.schemas.nm_report_detail_history import DetailHistoryNmReport, DetailHistoryNmReportResponse
 from source_wildberries_seller.schemas.nm_report_grouped import GroupedNmReport, GroupedNmReportResponse
 from source_wildberries_seller.schemas.nm_report_grouped_history import GroupedHistoryNmReport, GroupedHistoryNmReportResponse
+from source_wildberries_seller.schemas.price import PriceStatistics
 from source_wildberries_seller.types import SchemaT, WildberriesCredentials, IsSuccess, Message
 
 
@@ -374,5 +375,60 @@ class GetStocksWarehouseStream(Stream):
             elif response.status_code == 400:
                 error_response = GetStocksWarehouseStockErrorResponse(**response.json())
                 raise Exception(f"Status code: {response.status_code}. Error: {error_response}")
+            else:
+                raise Exception(f"Status code: {response.status_code}. Body: {response.text}")
+
+
+class PriceStream(Stream):
+    def __init__(self, credentials: WildberriesCredentials):
+        self.credentials = credentials
+
+    @property
+    def url(self) -> str:
+        return "https://suppliers-api.wildberries.ru/public/api/v1/info"
+
+    @property
+    def primary_key(self) -> None:
+        return None
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return PriceStatistics.schema()
+
+    @property
+    def headers(self) -> Dict:
+        return {"Authorization": self.credentials["api_key"]}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        attempts_count = 0
+        while attempts_count < 3:
+            try:
+                response = requests.get(self.url, headers=self.headers)
+            except ChunkedEncodingError:
+                time.sleep(20)
+                continue
+            if response.status_code == 200:
+                if records := response.json():
+                    for record in records:
+                        yield PriceStatistics(**record).dict()
+                return
+            elif response.status_code == 204:
+                return
+            elif response.status_code == 401:
+                raise Exception(f"Invalid token")
+            elif response.status_code > 500:
+                time.sleep(20)
+                continue
+            elif response.status_code in (408, 429):
+                attempts_count += 1
+                if attempts_count < 3:
+                    time.sleep(20)  # Wait for Wildberries rate limits
+                else:
+                    raise Exception(f"Failed to get prices from Wildberries API after 3 attempts due to rate limits")
             else:
                 raise Exception(f"Status code: {response.status_code}. Body: {response.text}")
