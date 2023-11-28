@@ -2,10 +2,9 @@ connector_image: airbyte/source-amazon-seller-partner:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "integration_tests/spec.json"
-        # massively refactored `spec`
+      - spec_path: "source_amazon_seller_partner/spec.json"
         backward_compatibility_tests_config:
-          disable_for_version: "1.2.0"
+          disable_for_version: "1.5.1"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -56,8 +55,6 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE
             bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_MONTHLY_INVENTORY_DATA
-            bypass_reason: "no records"
           - name: GET_VENDOR_SALES_REPORT
             bypass_reason: "no records"
           - name: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT
@@ -67,8 +64,6 @@ acceptance_tests:
           - name: GET_FBA_SNS_FORECAST_DATA
             bypass_reason: "no records"
           - name: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
-            bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_INVENTORY_SUMMARY_DATA
             bypass_reason: "no records"
           - name: GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT
             bypass_reason: "no records"
@@ -84,8 +79,6 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT
             bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_INVENTORY_ADJUSTMENTS_DATA
-            bypass_reason: "no records"
           - name: GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT
             bypass_reason: "no records"
           - name: GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT
@@ -97,8 +90,6 @@ acceptance_tests:
           - name: GET_VENDOR_INVENTORY_REPORT
             bypass_reason: "no records"
           - name: GET_FBA_SNS_PERFORMANCE_DATA
-            bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_CURRENT_INVENTORY_DATA
             bypass_reason: "no records"
           - name: GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA
             bypass_reason: "no records"
@@ -113,8 +104,6 @@ acceptance_tests:
           - name: GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA
             bypass_reason: "no records"
           - name: GET_STRANDED_INVENTORY_UI_DATA
-            bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_INVENTORY_RECEIPTS_DATA
             bypass_reason: "no records"
           - name: GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
             bypass_reason: "no records"

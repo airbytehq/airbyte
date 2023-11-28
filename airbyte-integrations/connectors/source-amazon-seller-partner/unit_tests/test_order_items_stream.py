@@ -4,7 +4,6 @@
 
 import pytest
 import requests
-from source_amazon_seller_partner.auth import AWSSignature
 from source_amazon_seller_partner.streams import OrderItems
 
 list_order_items_payload_data = {
@@ -31,16 +30,8 @@ list_order_items_payload_data = {
 @pytest.fixture
 def order_items_stream():
     def _internal():
-        aws_signature = AWSSignature(
-            service="execute-api",
-            aws_access_key_id="AccessKeyId",
-            aws_secret_access_key="SecretAccessKey",
-            aws_session_token="SessionToken",
-            region="US",
-        )
         stream = OrderItems(
             url_base="https://test.url",
-            aws_signature=aws_signature,
             replication_start_date="2023-08-08T00:00:00Z",
             replication_end_date=None,
             marketplace_id="id",
@@ -48,7 +39,6 @@ def order_items_stream():
             period_in_days=0,
             report_options=None,
             advanced_stream_options=None,
-            max_wait_seconds=500,
         )
         return stream
 

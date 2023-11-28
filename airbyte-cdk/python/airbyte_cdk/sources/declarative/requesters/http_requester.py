@@ -24,6 +24,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
@@ -79,6 +80,9 @@ class HttpRequester(Requester):
         self._parameters = parameters
         self.decoder = JsonDecoder(parameters={})
         self._session = requests.Session()
+        self._session.mount(
+            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
+        )
 
         if isinstance(self._authenticator, AuthBase):
             self._session.auth = self._authenticator
@@ -534,7 +538,8 @@ class HttpRequester(Requester):
             if isinstance(value, str):
                 return value
             elif isinstance(value, list):
-                return ", ".join(_try_get_error(v) for v in value)
+                error_list = [_try_get_error(v) for v in value]
+                return ", ".join(v for v in error_list if v is not None)
             elif isinstance(value, dict):
                 new_value = (
                     value.get("message")
@@ -543,6 +548,8 @@ class HttpRequester(Requester):
                     or value.get("errors")
                     or value.get("failures")
                     or value.get("failure")
+                    or value.get("details")
+                    or value.get("detail")
                 )
                 return _try_get_error(new_value)
             return None
