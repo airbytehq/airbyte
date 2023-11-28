@@ -13,7 +13,7 @@ from pipelines.cli.click_decorators import click_append_to_context_object, click
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.consts import CIContext
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles, get_connector_modified_files, get_modified_connectors
-from pipelines.helpers.git import get_modified_files_in_commit, get_modified_files_in_branch
+from pipelines.helpers.git import get_modified_files_in_branch, get_modified_files_in_commit
 from pipelines.helpers.utils import transform_strs_to_paths
 
 ALL_CONNECTORS = get_all_connectors_in_repo()
@@ -242,13 +242,15 @@ async def connectors(
 
     modified_files = []
     if modified:
-        modified_files = transform_strs_to_paths(await get_modified_files(
-            ctx.obj["git_branch"],
-            ctx.obj["git_revision"],
-            ctx.obj["diffed_branch"],
-            ctx.obj["is_local"],
-            ctx.obj["ci_context"],
-        ))
+        modified_files = transform_strs_to_paths(
+            await get_modified_files(
+                ctx.obj["git_branch"],
+                ctx.obj["git_revision"],
+                ctx.obj["diffed_branch"],
+                ctx.obj["is_local"],
+                ctx.obj["ci_context"],
+            )
+        )
 
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
         ctx.obj["names"],
