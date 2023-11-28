@@ -66,10 +66,8 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
 
     @Override
     public void copyToJsonField(ResultSet resultSet, int colIndex, ObjectNode json) throws SQLException {
-      final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
       final String columnName = resultSet.getMetaData().getColumnName(colIndex);
       final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
-      final JDBCType columnType = safeGetJdbcType(columnTypeInt);
 
       switch (columnTypeName) {
         case "super" -> json.set(columnName, Jsons.deserializeExact(resultSet.getString(colIndex)));
