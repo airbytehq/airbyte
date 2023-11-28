@@ -58,7 +58,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
-
 @Order(2)
 class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource, MySQLTestDatabase> {
 

@@ -47,4 +47,5 @@ public class CloudDeploymentMySqlSslFullCertificateSourceAcceptanceTest extends 
   protected ConnectorSpecification getSpec() throws Exception {
     return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_cloud_spec.json"), ConnectorSpecification.class));
   }
+
 }

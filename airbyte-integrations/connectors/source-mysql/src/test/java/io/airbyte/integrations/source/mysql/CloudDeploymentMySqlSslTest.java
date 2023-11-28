@@ -13,6 +13,8 @@ import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -22,7 +24,7 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Execution(ExecutionMode.CONCURRENT)
-public class CloudMySqlSslTest {
+public class CloudDeploymentMySqlSslTest {
 
   private MySQLTestDatabase createTestDatabase(String... containerFactoryMethods) {
     final var container = new MySQLContainerFactory().shared("mysql:8.0", containerFactoryMethods);
@@ -31,9 +33,11 @@ public class CloudMySqlSslTest {
         .withConnectionProperty("requireSSL", "true")
         .initialized();
   }
-  
+
   private Source source() {
-    return MySqlSource.sshWrappedSource(new MySqlSource());
+    final var source = new MySqlSource();
+    source.setFeatureFlags(FeatureFlagsWrapper.overridingDeploymentMode(new EnvVariableFeatureFlags(), "CLOUD"));
+    return MySqlSource.sshWrappedSource(source);
   }
 
   @Test

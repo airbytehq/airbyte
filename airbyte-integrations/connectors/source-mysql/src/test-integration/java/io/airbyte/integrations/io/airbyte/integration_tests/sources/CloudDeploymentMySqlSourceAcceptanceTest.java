@@ -5,8 +5,6 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
-import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;

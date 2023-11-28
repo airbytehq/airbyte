@@ -13,7 +13,6 @@ import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import java.io.IOException;
 import java.util.stream.Stream;
 
 public class CloudDeploymentMySqlSslCaCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
@@ -46,4 +45,5 @@ public class CloudDeploymentMySqlSslCaCertificateSourceAcceptanceTest extends My
   protected ConnectorSpecification getSpec() throws Exception {
     return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_cloud_spec.json"), ConnectorSpecification.class));
   }
+
 }
