@@ -23,36 +23,23 @@ class SomeIncrementalReportStream(IncrementalReportsAmazonSPStream):
 
 
 class TestReportsAmazonSPStream:
-    @staticmethod
-    def report_init_kwargs() -> Dict[str, Any]:
-        return {
-            "url_base": "https://test.url",
-            "replication_start_date": "2022-09-01T00:00:00Z",
-            "marketplace_id": "market",
-            "period_in_days": 90,
-            "report_options": None,
-            "replication_end_date": None,
-        }
-
-    def test_next_page_token(self, mocker):
-        stream = SomeReportStream(**self.report_init_kwargs())
+    def test_next_page_token(self, report_init_kwargs, mocker):
+        stream = SomeReportStream(**report_init_kwargs)
         assert stream.next_page_token(mocker.Mock(spec=requests.Response)) is None
 
-    def test_request_params(self):
-        kwargs = self.report_init_kwargs()
-        stream = SomeReportStream(**kwargs)
-        assert stream.request_params() == {"MarketplaceIds": kwargs["marketplace_id"]}
+    def test_request_params(self, report_init_kwargs):
+        stream = SomeReportStream(**report_init_kwargs)
+        assert stream.request_params() == {"MarketplaceIds": report_init_kwargs["marketplace_id"]}
 
-    def test_report_data(self):
-        kwargs = self.report_init_kwargs()
-        kwargs["report_options"] = [
+    def test_report_data(self, report_init_kwargs):
+        report_init_kwargs["report_options"] = [
             {"option_name": "some_name_1", "option_value": "some_value_1"},
             {"option_name": "some_name_2", "option_value": "some_value_2"},
         ]
-        stream = SomeReportStream(**kwargs)
+        stream = SomeReportStream(**report_init_kwargs)
         expected_data = {
             "reportType": stream.name,
-            "marketplaceIds": [kwargs["marketplace_id"]],
+            "marketplaceIds": [report_init_kwargs["marketplace_id"]],
             "reportOptions": {"some_name_1": "some_value_1", "some_name_2": "some_value_2"},
         }
 
@@ -86,12 +73,11 @@ class TestReportsAmazonSPStream:
             ),
         ),
     )
-    def test_stream_slices(self, start_date, end_date, expected_slices):
-        kwargs = self.report_init_kwargs()
-        kwargs["replication_start_date"] = start_date
-        kwargs["replication_end_date"] = end_date
+    def test_stream_slices(self, report_init_kwargs, start_date, end_date, expected_slices):
+        report_init_kwargs["replication_start_date"] = start_date
+        report_init_kwargs["replication_end_date"] = end_date
 
-        stream = SomeReportStream(**kwargs)
+        stream = SomeReportStream(**report_init_kwargs)
         with patch("pendulum.now", return_value=pendulum.parse("2023-01-01T00:00:00Z")):
             assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh)) == expected_slices
 
@@ -103,12 +89,12 @@ class TestReportsAmazonSPStream:
             ({}, {"dataEndTime": "2022-10-03"}, "2022-10-03"),
         ),
     )
-    def test_get_updated_state(self, current_stream_state, latest_record, expected_date):
-        stream = SomeIncrementalReportStream(**self.report_init_kwargs())
+    def test_get_updated_state(self, report_init_kwargs, current_stream_state, latest_record, expected_date):
+        stream = SomeIncrementalReportStream(**report_init_kwargs)
         expected_state = {stream.cursor_field: expected_date}
         assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
 
-    def test_read_records_retrieve_fatal(self, mocker, requests_mock):
+    def test_read_records_retrieve_fatal(self, report_init_kwargs, mocker, requests_mock):
         mocker.patch("time.sleep", lambda x: None)
         requests_mock.register_uri(
             "POST",
@@ -131,12 +117,12 @@ class TestReportsAmazonSPStream:
             json={"processingStatus": "FATAL", "dataEndTime": "2022-10-03T00:00:00Z"},
         )
 
-        stream = SomeReportStream(**self.report_init_kwargs())
+        stream = SomeReportStream(**report_init_kwargs)
         with pytest.raises(AirbyteTracedException) as e:
             list(stream.read_records(sync_mode=SyncMode.full_refresh))
         assert e.value.message == "The report for stream 'GET_TEST_REPORT' was not created - skip reading"
 
-    def test_read_records_retrieve_cancelled(self, mocker, requests_mock, caplog):
+    def test_read_records_retrieve_cancelled(self, report_init_kwargs, mocker, requests_mock, caplog):
         mocker.patch("time.sleep", lambda x: None)
         requests_mock.register_uri(
             "POST",
@@ -159,11 +145,11 @@ class TestReportsAmazonSPStream:
             json={"processingStatus": "CANCELLED", "dataEndTime": "2022-10-03T00:00:00Z"},
         )
 
-        stream = SomeReportStream(**self.report_init_kwargs())
+        stream = SomeReportStream(**report_init_kwargs)
         list(stream.read_records(sync_mode=SyncMode.full_refresh))
         assert "The report for stream 'GET_TEST_REPORT' was cancelled or there is no data to return" in caplog.messages[-1]
 
-    def test_read_records_retrieve_done(self, mocker, requests_mock):
+    def test_read_records_retrieve_done(self, report_init_kwargs, mocker, requests_mock):
         mocker.patch("time.sleep", lambda x: None)
         requests_mock.register_uri(
             "POST",
@@ -193,24 +179,13 @@ class TestReportsAmazonSPStream:
             json={"reportDocumentId": document_id},
         )
 
-        stream = SomeReportStream(**self.report_init_kwargs())
+        stream = SomeReportStream(**report_init_kwargs)
         with patch.object(stream, "parse_response", return_value=[{"some_key": "some_value"}]):
             records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
         assert records[0] == {"some_key": "some_value", "dataEndTime": "2022-10-03"}
 
 
 class TestVendorDirectFulfillmentShipping:
-    @staticmethod
-    def report_init_kwargs() -> Dict[str, Any]:
-        return {
-            "url_base": "https://test.url",
-            "replication_start_date": "2022-09-01T00:00:00Z",
-            "marketplace_id": "market",
-            "period_in_days": 90,
-            "report_options": None,
-            "replication_end_date": None,
-        }
-
     @pytest.mark.parametrize(
         ("start_date", "end_date", "expected_params"),
         (
@@ -223,11 +198,10 @@ class TestVendorDirectFulfillmentShipping:
             ),
         ),
     )
-    def test_request_params(self, start_date, end_date, expected_params):
-        kwargs = self.report_init_kwargs()
-        kwargs["replication_start_date"] = start_date
-        kwargs["replication_end_date"] = end_date
+    def test_request_params(self, report_init_kwargs, start_date, end_date, expected_params):
+        report_init_kwargs["replication_start_date"] = start_date
+        report_init_kwargs["replication_end_date"] = end_date
 
-        stream = VendorDirectFulfillmentShipping(**kwargs)
+        stream = VendorDirectFulfillmentShipping(**report_init_kwargs)
         with patch("pendulum.now", return_value=pendulum.parse("2022-09-05T00:00:00Z")):
             assert stream.request_params(stream_state={}) == expected_params

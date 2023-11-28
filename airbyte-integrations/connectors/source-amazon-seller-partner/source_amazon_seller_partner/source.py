@@ -3,6 +3,7 @@
 #
 
 from os import getenv
+from requests import HTTPError
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
@@ -125,7 +126,8 @@ class SourceAmazonSellerPartner(AbstractSource):
                 next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
                 return True, None
 
-            return False, e
+            error_message = e.response.json().get("error_description") if isinstance(e, HTTPError) else e
+            return False, error_message
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
