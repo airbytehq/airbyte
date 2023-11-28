@@ -106,6 +106,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
+    updateStreamTypes(stream);
     final String columnDeclarations = stream.columns().entrySet().stream()
         .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()))
         .collect(joining("\n"));
@@ -128,11 +129,21 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             """);
   }
 
+  private void updateStreamTypes(final StreamConfig stream) {
+    stream.columns().entrySet().stream().forEach(column -> {
+      final String name = column.getKey().originalName();
+      // set as variant if it is literally called variant.
+      if(name.toUpperCase().indexOf("VARIANT") >= 0) {
+        column.setValue(AirbyteProtocolType.UNKNOWN); // makes it a variant
+      }
+    });
+  }
+
   @Override
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final SnowflakeTableDefinition existingTable)
       throws TableNotMigratedException {
+    updateStreamTypes(stream);
     final Set<String> pks = getPks(stream);
-
     // Check that the columns match, with special handling for the metadata columns.
     final LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
         .collect(LinkedHashMap::new,
@@ -159,6 +170,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp) {
+    updateStreamTypes(stream);
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), minRawTimestamp);
     String dedupFinalTable = "";
     String cdcDeletes = "";
@@ -214,6 +226,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         .collect(joining(hackReplacement));
     escapedAndQuotedColumnName = "'" + escapedAndQuotedColumnName + "'";
     final String extract = "get(\"_airbyte_data\", " + escapedAndQuotedColumnName + ")";
+
     return cast(extract, airbyteType);
   }
 
@@ -297,6 +310,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                           final String finalSuffix,
                           final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
                           final Optional<Instant> minRawTimestamp) {
+    updateStreamTypes(stream);
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
     final String extractNewRawRecords = extractNewRawRecords(stream, minRawTimestamp);
 
@@ -316,6 +330,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   private String extractNewRawRecords(final StreamConfig stream, final Optional<Instant> minRawTimestamp) {
+    updateStreamTypes(stream);
     final String columnCasts = stream.columns().entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
@@ -452,6 +467,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   private String cdcDeletes(final StreamConfig stream, final String finalSuffix) {
+    updateStreamTypes(stream);
     if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return "";
     }
@@ -496,6 +512,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String softReset(final StreamConfig stream) {
+    updateStreamTypes(stream);
     final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX.toUpperCase(), true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
     final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX.toUpperCase(), Optional.empty());
