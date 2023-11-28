@@ -50,6 +50,10 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
 
     protected static final String CA_CERT_KEY = "ssl_ca_certificate";
 
+    protected static final String ENCRYPTDATA = "ENCRYPTDATA";
+
+    protected static final String ENCRYPTDATA_ON = "ON";
+
     public static void main(String[] args) throws Exception {
         new IntegrationRunner(new TeradataDestination()).run(args);
     }
@@ -69,7 +73,9 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
             } else {
                 additionalParameters.put(PARAM_SSLMODE, REQUIRE);
             }
-        }
+        } else {
+       	     additionalParameters.put(ENCRYPTDATA, ENCRYPTDATA_ON);
+    	}
         return additionalParameters;
     }
 
