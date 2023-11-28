@@ -35,7 +35,6 @@ import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -50,7 +49,6 @@ import org.jooq.DSLContext;
 import org.jooq.InsertValuesStepN;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.SQLDialect;
 import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
@@ -146,11 +144,13 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   protected SqlGenerator<TableDefinition> getSqlGenerator() {
     return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
 
-      // Override only for tests to print formatted SQL. The actual implementation should use unformatted to save bytes.
+      // Override only for tests to print formatted SQL. The actual implementation should use unformatted
+      // to save bytes.
       @Override
       protected DSLContext getDslContext() {
         return DSL.using(getDialect(), new Settings().withRenderFormatted(true));
       }
+
     };
   }
 
@@ -315,6 +315,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   @Test
   @Override
   public void jsonStringifyTypes() throws Exception {
-    //TODO: Implement this by supporting JSON_SERIALIZE for String fields in RedshiftSqlGenerator.
+    // TODO: Implement this by supporting JSON_SERIALIZE for String fields in RedshiftSqlGenerator.
   }
+
 }

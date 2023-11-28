@@ -238,8 +238,10 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   Field<?> toCastingErrorCaseStmt(final ColumnId column, final AirbyteType type) {
     final Field<?> field = field(quotedName(COLUMN_NAME_DATA, column.originalName()));
-    // Just checks if data is not null but casted data is null. This also accounts for conditional casting result of array and struct.
-    // TODO: Timestamp format issues can result in null values when cast, add regex check if destination supports regex functions.
+    // Just checks if data is not null but casted data is null. This also accounts for conditional
+    // casting result of array and struct.
+    // TODO: Timestamp format issues can result in null values when cast, add regex check if destination
+    // supports regex functions.
     return field(CASE_STATEMENT_SQL_TEMPLATE,
         field.isNotNull().and(castedField(field, type, column.name()).isNull()),
         function("ARRAY", getSuperType(), val(COLUMN_ERROR_MESSAGE_FORMAT.formatted(column.name()))), field("ARRAY()"));
