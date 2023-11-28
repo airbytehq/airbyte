@@ -16,87 +16,62 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
-import io.airbyte.cdk.testutils.PostgreSQLContainerHelper;
+import io.airbyte.cdk.testutils.TestDatabase;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import java.sql.JDBCType;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 /**
  * Runs the acceptance tests in the source-jdbc test module. We want this module to run these tests
  * itself as a sanity check. The trade off here is that this class is duplicated from the one used
  * in source-postgres.
  */
-@ExtendWith(SystemStubsExtension.class)
-class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+class DefaultJdbcSourceAcceptanceTest
+    extends JdbcSourceAcceptanceTest<DefaultJdbcSourceAcceptanceTest.PostgresTestSource, DefaultJdbcSourceAcceptanceTest.BareBonesTestDatabase> {
 
-  @SystemStub
-  private EnvironmentVariables environmentVariables;
-
-  private static PostgreSQLContainer<?> PSQL_DB;
-
-  private JsonNode config;
-  private String dbName;
+  private static PostgreSQLContainer<?> PSQL_CONTAINER;
 
   @BeforeAll
   static void init() {
-    PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
-    PSQL_DB.start();
+    PSQL_CONTAINER = new PostgreSQLContainer<>("postgres:13-alpine");
+    PSQL_CONTAINER.start();
     CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s BIT(3) NOT NULL);";
     INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(B'101');";
   }
 
-  @BeforeEach
-  public void setup() throws Exception {
-    dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+  @Override
+  protected JsonNode config() {
+    return testdb.testConfigBuilder().build();
+  }
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
-        .put(JdbcUtils.PORT_KEY, PSQL_DB.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
-        .build());
+  @Override
+  protected PostgresTestSource source() {
+    final var source = new PostgresTestSource();
+    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
+    return source;
+  }
 
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
-
-    super.setup();
+  @Override
+  protected BareBonesTestDatabase createTestDatabase() {
+    return new BareBonesTestDatabase(PSQL_CONTAINER).initialized();
   }
 
   @Override
   public boolean supportsSchemas() {
     return true;
-  }
-
-  @Override
-  public AbstractJdbcSource<JDBCType> getJdbcSource() {
-    return new PostgresTestSource();
-  }
-
-  @Override
-  public JsonNode getConfig() {
-    return config;
   }
 
   public JsonNode getConfigWithConnectionProperties(final PostgreSQLContainer<?> psqlDb, final String dbName, final String additionalParameters) {
@@ -112,21 +87,16 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public String getDriverClass() {
-    return PostgresTestSource.DRIVER_CLASS;
-  }
-
-  @Override
   protected boolean supportsPerStream() {
     return true;
   }
 
   @AfterAll
   static void cleanUp() {
-    PSQL_DB.close();
+    PSQL_CONTAINER.close();
   }
 
-  private static class PostgresTestSource extends AbstractJdbcSource<JDBCType> implements Source {
+  public static class PostgresTestSource extends AbstractJdbcSource<JDBCType> implements Source {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresTestSource.class);
 
@@ -171,10 +141,63 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   }
 
+  static protected class BareBonesTestDatabase
+      extends TestDatabase<PostgreSQLContainer<?>, BareBonesTestDatabase, BareBonesTestDatabase.BareBonesConfigBuilder> {
+
+    public BareBonesTestDatabase(PostgreSQLContainer<?> container) {
+      super(container);
+    }
+
+    @Override
+    protected Stream<Stream<String>> inContainerBootstrapCmd() {
+      final var sql = Stream.of(
+          String.format("CREATE DATABASE %s", getDatabaseName()),
+          String.format("CREATE USER %s PASSWORD '%s'", getUserName(), getPassword()),
+          String.format("GRANT ALL PRIVILEGES ON DATABASE %s TO %s", getDatabaseName(), getUserName()),
+          String.format("ALTER USER %s WITH SUPERUSER", getUserName()));
+      return Stream.of(Stream.concat(
+          Stream.of("psql",
+              "-d", getContainer().getDatabaseName(),
+              "-U", getContainer().getUsername(),
+              "-v", "ON_ERROR_STOP=1",
+              "-a"),
+          sql.flatMap(stmt -> Stream.of("-c", stmt))));
+    }
+
+    @Override
+    protected Stream<String> inContainerUndoBootstrapCmd() {
+      return Stream.empty();
+    }
+
+    @Override
+    public DatabaseDriver getDatabaseDriver() {
+      return DatabaseDriver.POSTGRESQL;
+    }
+
+    @Override
+    public SQLDialect getSqlDialect() {
+      return SQLDialect.POSTGRES;
+    }
+
+    @Override
+    public BareBonesConfigBuilder configBuilder() {
+      return new BareBonesConfigBuilder(this);
+    }
+
+    static protected class BareBonesConfigBuilder extends TestDatabase.ConfigBuilder<BareBonesTestDatabase, BareBonesConfigBuilder> {
+
+      private BareBonesConfigBuilder(BareBonesTestDatabase testDatabase) {
+        super(testDatabase);
+      }
+
+    }
+
+  }
+
   @Test
   void testCustomParametersOverwriteDefaultParametersExpectException() {
     final String connectionPropertiesUrl = "ssl=false";
-    final JsonNode config = getConfigWithConnectionProperties(PSQL_DB, dbName, connectionPropertiesUrl);
+    final JsonNode config = getConfigWithConnectionProperties(PSQL_CONTAINER, testdb.getDatabaseName(), connectionPropertiesUrl);
     final Map<String, String> customParameters = JdbcUtils.parseJdbcParameters(config, JdbcUtils.CONNECTION_PROPERTIES_KEY, "&");
     final Map<String, String> defaultParameters = Map.of(
         "ssl", "true",
