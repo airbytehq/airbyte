@@ -7,8 +7,8 @@ import math
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-import requests
 import pendulum
+import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -128,10 +128,10 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         default_params = {"sort_field": self.sort_field, "sort_dir": "ASC", **stream_slice}
         params.update(default_params)
         return params
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        Mailchimp endpoints do not always support filtering by date, 
+        Mailchimp endpoints do not always support filtering by date,
         so we should filter out records manually against the start_date as a fallback.
         """
         response = super().parse_response(response, **kwargs)
