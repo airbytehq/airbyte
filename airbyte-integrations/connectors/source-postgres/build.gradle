@@ -16,9 +16,8 @@ airbyteJavaConnector {
     // Bump version when published and increase cdkVersion
     cdkVersionRequired = '0.5.0'
     features = ['db-sources']
-    useLocalCdk = true
+    useLocalCdk = false
 }
-
 
 
 application {
