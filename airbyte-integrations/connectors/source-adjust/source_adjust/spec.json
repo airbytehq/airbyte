@@ -1,0 +1,385 @@
+{
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Adjust reporting API connector.",
+    "properties": {
+      "credentials": {
+        "title": "Authorization Method",
+        "order": 0,
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Access Token Authorization",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "access_token_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "access_token": {
+                "airbyte_secret": true,
+                "description": "Adjust API key, see https://help.adjust.com/en/article/report-service-api-authentication",
+                "order": 0,
+                "title": "API Token",
+                "type": "string"
+              }
+            },
+            "required": [
+              "auth_type",
+              "access_token"
+            ]
+          },
+          {
+            "title": "CredentialsCraft Auth",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Auth Type",
+                "const": "credentials_craft_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "credentials_craft_host": {
+                "title": "CredentialsCraft Host",
+                "description": "CredentialsCraft Host.",
+                "examples": [
+                  "https://credentialscraft.mysite.com"
+                ],
+                "type": "string"
+              },
+              "credentials_craft_token": {
+                "title": "CredentialsCraft Token",
+                "description": "Long-term CredentialsCraft Access Token (NOT Adjust token).",
+                "type": "string",
+                "airbyte_secret": true
+              },
+              "credentials_craft_token_id": {
+                "title": "CredentialsCraft Adjust Token ID",
+                "desctiption": "Adjust Token ID in CredentialsCraft",
+                "examples": [
+                  123
+                ],
+                "type": "integer"
+              }
+            },
+            "required": [
+              "auth_type",
+              "credentials_craft_host",
+              "credentials_craft_token",
+              "credentials_craft_token_id"
+            ]
+          }
+        ]
+      },
+      "account_id": {
+        "description": "Adjust Account ID. Optional. Of not specified, all accounts will be queried.",
+        "order": 1,
+        "title": "Account ID",
+        "type": "string"
+      },
+      "reports": {
+        "type": "array",
+        "title": "Reports",
+        "description": "List of reports to sync. Each report will be synced to a separate stream.\nYou must specify at least one report.\nSee <a href=\"https://help.adjust.com/en/article/reports-endpoint\">https://help.adjust.com/en/article/reports-endpoint</a>\nfor more information about the reports.\n",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "required": [
+            "name",
+            "dimensions",
+            "metrics"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Report Name",
+              "description": "Name of the report. Will be used as the stream name.",
+              "order": 0
+            },
+            "dimensions": {
+              "description": "Dimensions allow a user to break down metrics into groups using one or several parameters. For example, the number of installs by date, country and network. See <a href=\"https://help.adjust.com/en/article/reports-endpoint#dimensions\">https://help.adjust.com/en/article/reports-endpoint#dimensions</a> for more information about the dimensions.",
+              "items": {
+                "enum": [
+                  "os_name",
+                  "device_type",
+                  "app",
+                  "app_token",
+                  "store_id",
+                  "store_type",
+                  "app_network",
+                  "currency",
+                  "currency_code",
+                  "network",
+                  "campaign",
+                  "campaign_network",
+                  "campaign_id_network",
+                  "adgroup",
+                  "adgroup_network",
+                  "adgroup_id_network",
+                  "source_network",
+                  "source_id_network",
+                  "creative",
+                  "creative_network",
+                  "creative_id_network",
+                  "country",
+                  "country_code",
+                  "region",
+                  "partner_name",
+                  "partner_id"
+                ],
+                "type": "string"
+              },
+              "minItems": 1,
+              "order": 1,
+              "title": "Dimensions",
+              "type": "array",
+              "uniqueItems": true
+            },
+            "metrics": {
+              "items": {
+                "enum": [
+                  "network_cost",
+                  "network_cost_diff",
+                  "network_clicks",
+                  "network_impressions",
+                  "network_installs",
+                  "network_installs_diff",
+                  "network_ecpc",
+                  "network_ecpi",
+                  "network_ecpm",
+                  "arpdau_ad",
+                  "arpdau",
+                  "arpdau_iap",
+                  "ad_impressions",
+                  "ad_rpm",
+                  "ad_revenue",
+                  "cohort_ad_revenue",
+                  "cost",
+                  "adjust_cost",
+                  "all_revenue",
+                  "cohort_all_revenue",
+                  "daus",
+                  "maus",
+                  "waus",
+                  "base_sessions",
+                  "ctr",
+                  "click_conversion_rate",
+                  "click_cost",
+                  "clicks",
+                  "paid_clicks",
+                  "deattributions",
+                  "ecpc",
+                  "gdpr_forgets",
+                  "gross_profit",
+                  "cohort_gross_profit",
+                  "impression_conversion_rate",
+                  "impression_cost",
+                  "impressions",
+                  "paid_impressions",
+                  "install_cost",
+                  "installs",
+                  "paid_installs",
+                  "installs_per_mile",
+                  "limit_ad_tracking_installs",
+                  "limit_ad_tracking_install_rate",
+                  "limit_ad_tracking_reattribution_rate",
+                  "limit_ad_tracking_reattributions",
+                  "non_organic_installs",
+                  "organic_installs",
+                  "roas_ad",
+                  "roas",
+                  "roas_iap",
+                  "reattributions",
+                  "return_on_investment",
+                  "revenue",
+                  "cohort_revenue",
+                  "revenue_events",
+                  "revenue_to_cost",
+                  "sessions",
+                  "events",
+                  "ecpi_all",
+                  "ecpi",
+                  "ecpm"
+                ]
+              },
+              "description": "Select at least one metric to query. Full list of metrics: <a href=\"https://help.adjust.com/ru/article/datascape-metrics-glossary\">https://help.adjust.com/ru/article/datascape-metrics-glossary</a>",
+              "type": "array",
+              "order": 2
+            },
+            "additional_metrics": {
+              "description": "Metrics names that are not pre-defined, such as cohort metrics or app specific metrics.",
+              "items": {
+                "type": "string"
+              },
+              "order": 3,
+              "default": [],
+              "title": "Additional metrics for ingestion",
+              "type": "array"
+            },
+            "rename_fields": {
+              "description": "Rename fields to avoid name collisions. For example - From = \"goal12345\", To = \"goal\". In this case, the field \"goal12345\" will be renamed to \"goal\" in output stream schema.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "title": "From",
+                    "description": "Field name to rename."
+                  },
+                  "to": {
+                    "type": "string",
+                    "title": "To",
+                    "description": "New field name."
+                  }
+                },
+                "required": [
+                  "from",
+                  "to"
+                ]
+              },
+              "order": 4,
+              "default": [],
+              "title": "Rename fields",
+              "type": "array"
+            }
+          }
+        },
+        "order": 2
+      },
+      "date_range": {
+        "title": "Date Range",
+        "description": "Choose date period that must be loaded",
+        "type": "object",
+        "order": 3,
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Custom Date Range",
+            "required": [
+              "date_from",
+              "date_to",
+              "date_range_type"
+            ],
+            "properties": {
+              "date_from": {
+                "title": "Start Date",
+                "type": "string",
+                "description": "Start date in format YYYY-MM-DD.",
+                "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "pattern_descriptor": "YYYY-MM-DD",
+                "examples": [
+                  "2023-01-01"
+                ],
+                "format": "date",
+                "order": 0
+              },
+              "date_to": {
+                "title": "End Date",
+                "type": "string",
+                "description": "End date in format YYYY-MM-DD.",
+                "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "examples": [
+                  "2023-01-30"
+                ],
+                "pattern_descriptor": "YYYY-MM-DD",
+                "format": "date",
+                "order": 1
+              },
+              "date_range_type": {
+                "type": "string",
+                "title": "Date Range Type",
+                "description": "Custom Date",
+                "const": "custom_date",
+                "order": 2
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Last N Days",
+            "required": [
+              "last_days_count",
+              "should_load_today",
+              "date_range_type"
+            ],
+            "properties": {
+              "last_days_count": {
+                "title": "Last Days Count",
+                "type": "integer",
+                "description": "Count of last days exclude today.",
+                "minimum": 0,
+                "maximum": 3650,
+                "examples": [
+                  30
+                ],
+                "order": 0
+              },
+              "should_load_today": {
+                "title": "Load Today?",
+                "type": "boolean",
+                "description": "Should connector load today time as End Time? If not, End Time will be yesterday.",
+                "order": 1,
+                "default": false
+              },
+              "date_range_type": {
+                "type": "string",
+                "title": "Date Range Type",
+                "description": "Last N Days",
+                "const": "last_n_days",
+                "order": 1
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "From Start Date To Today",
+            "description": "Load data from Start Date to Today. Only with this option you can use incremental sync.",
+            "required": [
+              "last_days_count",
+              "should_load_today",
+              "date_range_type"
+            ],
+            "properties": {
+              "date_from": {
+                "title": "Start Date",
+                "type": "string",
+                "description": "Start date in format YYYY-MM-DD.",
+                "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "pattern_descriptor": "YYYY-MM-DD",
+                "examples": [
+                  "2023-01-01"
+                ],
+                "format": "date",
+                "order": 0
+              },
+              "should_load_today": {
+                "title": "Load Today?",
+                "type": "boolean",
+                "description": "Should connector load today date as End Date? If not, End Date will be yesterday.",
+                "order": 1,
+                "default": false
+              },
+              "date_range_type": {
+                "type": "string",
+                "title": "Date Range Type",
+                "description": "Last N Days",
+                "const": "from_start_date_to_today",
+                "order": 1
+              }
+            }
+          }
+        ]
+      }
+    },
+    "required": [
+      "credentials",
+      "reports",
+      "date_range"
+    ],
+    "title": "Adjust Spec",
+    "type": "object"
+  },
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/adjust"
+}
