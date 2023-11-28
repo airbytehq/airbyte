@@ -1,4 +1,6 @@
+#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 import functools
 import json
@@ -117,10 +119,7 @@ class RecordBuilder:
 
 class HttpResponseBuilder:
     def __init__(
-        self,
-        template: Dict[str, Any],
-        records_path: Union[FieldPath, NestedPath],
-        pagination_strategy: Optional[PaginationStrategy]
+        self, template: Dict[str, Any], records_path: Union[FieldPath, NestedPath], pagination_strategy: Optional[PaginationStrategy]
     ):
         self._response = template
         self._records: List[RecordBuilder] = []
@@ -170,7 +169,7 @@ def create_builders_from_resource(
     records_path: Union[FieldPath, NestedPath],
     record_id_path: Optional[Path] = None,
     record_cursor_path: Optional[Union[FieldPath, NestedPath]] = None,
-    pagination_strategy: Optional[PaginationStrategy] = None
+    pagination_strategy: Optional[PaginationStrategy] = None,
 ) -> Tuple[RecordBuilder, HttpResponseBuilder]:
     """
     This will use the first record define at `records_path` as a template for the records. If more records are defined, they will be ignored
@@ -181,11 +180,13 @@ def create_builders_from_resource(
     try:
         record_template = records_path.extract(response_template)[0]
         if not record_template:
-            raise ValueError(f"Could not extract any record from template at path `{records_path}`. "
-                             f"Please fix the template to provide a record sample or fix `records_path`.")
+            raise ValueError(
+                f"Could not extract any record from template at path `{records_path}`. "
+                f"Please fix the template to provide a record sample or fix `records_path`."
+            )
         return (
             RecordBuilder(record_template, record_id_path, record_cursor_path),
-            HttpResponseBuilder(response_template, records_path, pagination_strategy)
+            HttpResponseBuilder(response_template, records_path, pagination_strategy),
         )
     except (IndexError, KeyError):
         raise ValueError(f"Error while extracting records at path `{records_path}` from response template `{response_template}`")

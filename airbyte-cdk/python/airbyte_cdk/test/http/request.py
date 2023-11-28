@@ -1,4 +1,6 @@
+#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 from typing import Any, List, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
