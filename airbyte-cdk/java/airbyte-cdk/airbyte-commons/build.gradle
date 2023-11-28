@@ -7,6 +7,9 @@ java {
     compileJava {
         options.compilerArgs += "-Xlint:-varargs,-try,-deprecation"
     }
+    compileTestJava {
+        options.compilerArgs += "-Xlint:-try"
+    }
 }
 
 dependencies {

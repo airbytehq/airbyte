@@ -10,7 +10,7 @@ on:
 jobs:
   connector_metadata_service_deploy_orchestrator:
     name: Connector metadata service deploy orchestrator
-    runs-on: medium-runner
+    runs-on: ci-runner-connector-test-large-dagger-0-6-4
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2

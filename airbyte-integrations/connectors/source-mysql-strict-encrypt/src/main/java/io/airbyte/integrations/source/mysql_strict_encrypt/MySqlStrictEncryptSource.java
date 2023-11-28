@@ -41,7 +41,11 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
       "<li><b>Verify Identity</b> - Always connect with SSL. Verify both CA and Hostname.</li></ul>Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"> in the docs</a>.";
 
   MySqlStrictEncryptSource() {
-    super(MySqlSource.sshWrappedSource());
+    this(new MySqlSource());
+  }
+
+  MySqlStrictEncryptSource(MySqlSource source) {
+    super(MySqlSource.sshWrappedSource(source));
   }
 
   @Override

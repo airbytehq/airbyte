@@ -4,10 +4,10 @@
 import concurrent
 import logging
 from queue import Queue
-from typing import Any, Iterable, Iterator, List
+from typing import Iterable, Iterator, List
 
 from airbyte_cdk.models import AirbyteMessage
-from airbyte_cdk.sources.concurrent_source.concurrent_stream_processor import ConcurrentStreamProcessor
+from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
@@ -54,24 +54,21 @@ class ConcurrentSource:
         message_repository: MessageRepository = InMemoryMessageRepository(),
         initial_number_partitions_to_generate: int = 1,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
-        raise_exception_on_missing_stream: bool = True,
-        **kwargs: Any,
     ) -> None:
         """
         :param threadpool: The threadpool to submit tasks to
+        :param logger: The logger to log to
+        :param slice_logger: The slice logger used to create messages on new slices
         :param message_repository: The repository to emit messages to
-        :param max_number_of_partition_generator_in_progress: The initial number of concurrent partition generation tasks. Limiting this number ensures will limit the latency of the first records emitted. While the latency is not critical, emitting the records early allows the platform and the destination to process them as early as possible.
+        :param initial_number_partitions_to_generate: The initial number of concurrent partition generation tasks. Limiting this number ensures will limit the latency of the first records emitted. While the latency is not critical, emitting the records early allows the platform and the destination to process them as early as possible.
         :param timeout_seconds: The maximum number of seconds to wait for a record to be read from the queue. If no record is read within this time, the source will stop reading and return.
-        :param kwargs:
         """
-        super().__init__(**kwargs)
         self._threadpool = threadpool
         self._logger = logger
         self._slice_logger = slice_logger
         self._message_repository = message_repository
         self._initial_number_partitions_to_generate = initial_number_partitions_to_generate
         self._timeout_seconds = timeout_seconds
-        self._raise_exception_on_missing_stream = raise_exception_on_missing_stream
 
     def read(
         self,
@@ -82,11 +79,10 @@ class ConcurrentSource:
 
         # Return early if there are no streams to read from
         if not stream_instances_to_read_from:
-            yield from []
             return
 
         queue: Queue[QueueItem] = Queue()
-        concurrent_stream_processor = ConcurrentStreamProcessor(
+        concurrent_stream_processor = ConcurrentReadProcessor(
             stream_instances_to_read_from,
             PartitionEnqueuer(queue),
             self._threadpool,
@@ -107,7 +103,7 @@ class ConcurrentSource:
         self._threadpool.check_for_errors_and_shutdown()
         self._logger.info("Finished syncing")
 
-    def _submit_initial_partition_generators(self, concurrent_stream_processor: ConcurrentStreamProcessor) -> Iterable[AirbyteMessage]:
+    def _submit_initial_partition_generators(self, concurrent_stream_processor: ConcurrentReadProcessor) -> Iterable[AirbyteMessage]:
         for _ in range(self._initial_number_partitions_to_generate):
             status_message = concurrent_stream_processor.start_next_partition_generator()
             if status_message:
@@ -116,7 +112,7 @@ class ConcurrentSource:
     def _consume_from_queue(
         self,
         queue: Queue[QueueItem],
-        concurrent_stream_processor: ConcurrentStreamProcessor,
+        concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
             yield from self._handle_item(
@@ -130,7 +126,7 @@ class ConcurrentSource:
     def _handle_item(
         self,
         queue_item: QueueItem,
-        concurrent_stream_processor: ConcurrentStreamProcessor,
+        concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
         # handle queue item and call the appropriate handler depending on the type of the queue item
         if isinstance(queue_item, Exception):

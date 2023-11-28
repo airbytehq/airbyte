@@ -48,7 +48,7 @@ All other fields are serialized into their JSON representation.
 
 ### Processing
 
-Each record will be split into text fields and metadata fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Please note that metadata fields can only be used for filtering and not for retrieval and have to be of type string, number, boolean (all other values are ignored). Please note that there's a 40kb limit on the _total_ size of the metadata saved for each entry.
+Each record will be split into text fields and metadata fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Options around configuring the chunking process use the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
 
 When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.
 
@@ -83,6 +83,7 @@ As properties have to start will a lowercase letter in Weaviate, field names mig
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.9 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
 | 0.2.8   | 2023-11-03 | [#32134](https://github.com/airbytehq/airbyte/pull/32134) | Improve test coverage |
 | 0.2.7   | 2023-11-03 | [#32134](https://github.com/airbytehq/airbyte/pull/32134) | Upgrade weaviate client library |
 | 0.2.6   | 2023-11-01 | [#32038](https://github.com/airbytehq/airbyte/pull/32038) | Retry failed object loads |
