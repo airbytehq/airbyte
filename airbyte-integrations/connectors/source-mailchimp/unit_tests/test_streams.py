@@ -93,22 +93,6 @@ def test_next_page_token(auth):
             {"stream_slice": {"parent": {"id": "123"}}, "stream_state": None, "next_page_token": {"offset": 2000}},
             {"count": 1000, "exclude_fields": "interests._links", "offset": 2000},
         ),
-        (
-            InterestCategories,
-            {"stream_slice": {"parent": {"id": "123"}}, "stream_state": None, "next_page_token": None},
-            {"count": 1000, "exclude_fields": "categories._links"},
-        ),
-        (
-            Interests,
-            {"stream_slice": {"parent": {"id": "123"}}, "stream_state": None, "next_page_token": {"offset": 2000}},
-            {"count": 1000, "exclude_fields": "interests._links", "offset": 2000},
-        ),
-    ],
-    ids=[
-        "Lists: no next_page_token or state to add to request params",
-        "Lists: next_page_token added to request params",
-        "InterestCategories: no next_page_token to add to request params",
-        "Interests: next_page_token added to request params",
     ],
     ids=[
         "Lists: no next_page_token or state to add to request params",
