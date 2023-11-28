@@ -119,7 +119,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
         // too long
         if (targetPosition.reachedTargetPosition(heartbeatPos)) {
           requestClose("Closing: Heartbeat indicates sync is done by reaching the target position");
-        } else if (heartbeatPosNotChanging(heartbeatPos)) {
+        } else if (heartbeatPos.equals(this.lastHeartbeatPosition) && heartbeatPosNotChanging()) {
           requestClose("Closing: Heartbeat indicates sync is not progressing");
         }
 
@@ -192,12 +192,14 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
     return targetPosition.isHeartbeatSupported() && Objects.nonNull(event) && !event.value().contains("source");
   }
 
-  private boolean heartbeatPosNotChanging(final T heartbeatPos) {
+  private boolean heartbeatPosNotChanging() {
+    if (this.tsLastHeartbeat == null) {
+      return false;
+    }
     final Duration timeElapsedSinceLastHeartbeatTs = Duration.between(this.tsLastHeartbeat, LocalDateTime.now());
     LOGGER.info("Time since last hb_pos change {}s", timeElapsedSinceLastHeartbeatTs.toSeconds());
-    final boolean heartbeatPosSame = heartbeatPos.equals(this.lastHeartbeatPosition);
     // wait time for no change in heartbeat position is half of initial waitTime
-    return heartbeatPosSame && timeElapsedSinceLastHeartbeatTs.compareTo(this.firstRecordWaitTime.dividedBy(2)) > 0;
+    return timeElapsedSinceLastHeartbeatTs.compareTo(this.firstRecordWaitTime.dividedBy(2)) > 0;
   }
 
   private void requestClose(final String closeLogMessage) {
