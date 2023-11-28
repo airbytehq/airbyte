@@ -88,11 +88,13 @@ public abstract class AbstractRedshiftTypingDedupingTest extends BaseTypingDedup
   protected SqlGenerator<?> getSqlGenerator() {
     return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
 
-      // Override only for tests to print formatted SQL. The actual implementation should use unformatted to save bytes.
+      // Override only for tests to print formatted SQL. The actual implementation should use unformatted
+      // to save bytes.
       @Override
       protected DSLContext getDslContext() {
         return DSL.using(getDialect(), new Settings().withRenderFormatted(true));
       }
+
     };
   }
 
