@@ -19,6 +19,8 @@ import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
 import java.nio.file.Path;
 import java.util.List;
 import javax.sql.DataSource;
+import org.jooq.DSLContext;
+import org.jooq.conf.Settings;
 import org.jooq.impl.DSL;
 
 /**
@@ -73,8 +75,8 @@ public abstract class AbstractRedshiftTypingDedupingTest extends BaseTypingDedup
     if (streamNamespace == null) {
       streamNamespace = getDefaultSchema();
     }
-    database.execute(DSL.dropSchema(DSL.name(streamNamespace)).cascade().getSQL());
     database.execute(DSL.dropTableIfExists(DSL.name(streamNamespace, streamName)).cascade().getSQL());
+    database.execute(DSL.dropSchema(DSL.name(streamNamespace)).cascade().getSQL());
   }
 
   @Override
@@ -84,7 +86,14 @@ public abstract class AbstractRedshiftTypingDedupingTest extends BaseTypingDedup
 
   @Override
   protected SqlGenerator<?> getSqlGenerator() {
-    return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer());
+    return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
+
+      // Override only for tests to print formatted SQL. The actual implementation should use unformatted to save bytes.
+      @Override
+      protected DSLContext getDslContext() {
+        return DSL.using(getDialect(), new Settings().withRenderFormatted(true));
+      }
+    };
   }
 
   /**

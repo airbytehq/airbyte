@@ -50,6 +50,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   public static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
 
+  public static final String DISABLE_TYPE_DEDUPE = "disable_type_dedupe";
+
   private final String driverClass;
   private final NamingConventionTransformer namingResolver;
   private final SqlOperations sqlOperations;
