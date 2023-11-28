@@ -139,7 +139,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
         propertiesMap.put("area", AirbyteProtocolType.NUMBER); // makes it an object
         column.setValue(new Struct(propertiesMap));
-      } else if(name.indexOf("OBJECT") >= 0) {
+      } else if(name.indexOf("ARRAY") >= 0) {
         column.setValue(new Array(AirbyteProtocolType.NUMBER)); // makes it an array
       }
     });
