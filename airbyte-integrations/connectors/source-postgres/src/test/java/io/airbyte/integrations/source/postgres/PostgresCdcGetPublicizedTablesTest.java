@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ImageModifier;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.sql.SQLException;
 import java.util.Set;
@@ -28,7 +28,7 @@ class PostgresCdcGetPublicizedTablesTest {
 
   @BeforeEach
   void setup() {
-    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, ImageModifier.CONF)
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, ContainerModifier.CONF)
         .with("create table table_1 (id serial primary key, text_column text);")
         .with("create table table_2 (id serial primary key, text_column text);")
         .with("create table table_irrelevant (id serial primary key, text_column text);")

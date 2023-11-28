@@ -11,7 +11,6 @@ import io.airbyte.cdk.testutils.TestDatabase;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
@@ -38,26 +37,29 @@ public class PostgresTestDatabase extends
 
   }
 
-  public static enum ImageModifier {
-    ASCII ("withASCII"),
+  public static enum ContainerModifier {
+
+    ASCII("withASCII"),
     CONF("withConf"),
     NETWORK("withNetwork"),
     SSL("withSSL"),
     WAL_LEVEL_LOGICAL("withWalLevelLogical"),
     CERT("withCert"),
     ;
-    String methodName;
-    ImageModifier(String methodName) {
+
+    private String methodName;
+
+    private ContainerModifier(String methodName) {
       this.methodName = methodName;
     }
+
   }
 
-  static public PostgresTestDatabase in(BaseImage baseImage, ImageModifier... modifiers) {
-    String[] methodNames = Stream.of(modifiers).map(im->im.methodName).toList().toArray(new String[0]);
+  static public PostgresTestDatabase in(BaseImage baseImage, ContainerModifier... modifiers) {
+    String[] methodNames = Stream.of(modifiers).map(im -> im.methodName).toList().toArray(new String[0]);
     final var container = new PostgresContainerFactory().shared(baseImage.reference, methodNames);
     return new PostgresTestDatabase(container).initialized();
   }
-
 
   public PostgresTestDatabase(PostgreSQLContainer<?> container) {
     super(container);
