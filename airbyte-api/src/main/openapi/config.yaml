@@ -3043,8 +3043,8 @@ components:
       properties:
         SourceRead:
           $ref: "#/components/schemas/SourceRead"
-        ConnectionReadList:
-          $ref: "#/components/schemas/WebBackendConnectionReadList"
+        WebBackendConnectionReadList:
+          $ref: "#/components/schemas/WebBackendConnectionList"
         total:
           type: integer
           format: int64
@@ -3368,7 +3368,7 @@ components:
         DestinationRead:
           $ref: "#/components/schemas/DestinationRead"
         WebBackendConnectionReadList:
-          $ref: "#/components/schemas/WebBackendConnectionReadList"
+          $ref: "#/components/schemas/WebBackendConnectionList"
         total:
           type: integer
           format: int64
@@ -5059,6 +5059,15 @@ components:
           type: integer
         pageCurrent:
           type: integer
+    WebBackendConnectionList:
+      type: object
+      required:
+        - connections
+      properties:
+        connections:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebBackendConnectionPageRead"
     WebBackendConnectionStatusReadList:
       type: object
       required:
