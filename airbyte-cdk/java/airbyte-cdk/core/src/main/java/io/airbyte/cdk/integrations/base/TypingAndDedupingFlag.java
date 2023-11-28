@@ -5,7 +5,6 @@
 package io.airbyte.cdk.integrations.base;
 
 import java.util.Optional;
-import org.elasticsearch.common.Strings;
 
 public class TypingAndDedupingFlag {
 
@@ -15,7 +14,7 @@ public class TypingAndDedupingFlag {
 
   public static Optional<String> getRawNamespaceOverride(String option) {
     String rawOverride = DestinationConfig.getInstance().getTextValue(option);
-    if (Strings.isEmpty(rawOverride)) {
+    if (rawOverride == null || rawOverride.isEmpty()) {
       return Optional.empty();
     } else {
       return Optional.of(rawOverride);
