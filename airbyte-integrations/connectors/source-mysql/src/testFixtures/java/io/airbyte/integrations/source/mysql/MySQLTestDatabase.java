@@ -17,8 +17,21 @@ import org.testcontainers.containers.MySQLContainer;
 public class MySQLTestDatabase extends
     TestDatabase<MySQLContainer<?>, MySQLTestDatabase, MySQLTestDatabase.MySQLConfigBuilder> {
 
-  static public MySQLTestDatabase in(String imageName, String... methods) {
-    final var container = new MySQLContainerFactory().shared(imageName, methods);
+  public static enum BaseImage {
+
+    MYSQL_8("mysql:8.0"),
+    ;
+
+    private final String reference;
+
+    private BaseImage(String reference) {
+      this.reference = reference;
+    }
+
+  }
+
+  static public MySQLTestDatabase in(BaseImage baseImage, String... methods) {
+    final var container = new MySQLContainerFactory().shared(baseImage.reference, methods);
     return new MySQLTestDatabase(container).initialized();
   }
 
