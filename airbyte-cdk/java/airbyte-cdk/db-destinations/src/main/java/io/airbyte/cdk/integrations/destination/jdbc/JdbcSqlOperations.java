@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -174,11 +175,15 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   @Override
   public final void insertRecords(final JdbcDatabase database,
-                                  final List<AirbyteRecordMessage> records,
+                                  final List<PartialAirbyteMessage> records,
                                   final String schemaName,
                                   final String tableName)
       throws Exception {
-    dataAdapter.ifPresent(adapter -> records.forEach(airbyteRecordMessage -> adapter.adapt(airbyteRecordMessage.getData())));
+    dataAdapter.ifPresent(adapter -> records.forEach(airbyteRecordMessage -> {
+      final JsonNode data = Jsons.deserializeExact(airbyteRecordMessage.getSerialized());
+      adapter.adapt(data);
+      airbyteRecordMessage.setSerialized(Jsons.serialize(data));
+    }));
     if (TypingAndDedupingFlag.isDestinationV2()) {
       insertRecordsInternalV2(database, records, schemaName, tableName);
     } else {
@@ -187,13 +192,13 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   protected abstract void insertRecordsInternal(JdbcDatabase database,
-                                                List<AirbyteRecordMessage> records,
+                                                List<PartialAirbyteMessage> records,
                                                 String schemaName,
                                                 String tableName)
       throws Exception;
 
   protected abstract void insertRecordsInternalV2(JdbcDatabase database,
-                                                  List<AirbyteRecordMessage> records,
+                                                  List<PartialAirbyteMessage> records,
                                                   String schemaName,
                                                   String tableName)
       throws Exception;

@@ -267,31 +267,31 @@ async def execute_concurrently(steps: List[Callable], concurrency=5):
     return [task.value for task in tasks]
 
 
-async def export_containers_to_tarball(
-    context: ConnectorContext, container_variants: List[Container], tar_file_name: Optional[str] = None
+async def export_container_to_tarball(
+    context: ConnectorContext, container: Container, tar_file_name: Optional[str] = None
 ) -> Tuple[Optional[File], Optional[Path]]:
     """Save the container image to the host filesystem as a tar archive.
 
-    Exports a list of container variants to a tarball file.
-    The list of container variants should be platform/os specific variants of the same container image.
-    The tarball file is saved to the host filesystem in the directory specified by the host_image_export_dir_path attribute of the context.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-        container_variants (List[Container]): The list of container variants to export.
-        tar_file_name (Optional[str], optional): The name of the tar archive file. Defaults to None.
+    Exporting a container image as a tar archive allows user to have a dagger built container image available on their host filesystem.
+    They can load this tar file to their main docker host with 'docker load'.
+    This mechanism is also used to share dagger built containers with other steps like AcceptanceTest that have their own dockerd service.
+    We 'docker load' this tar file to AcceptanceTest's docker host to make sure the container under test image is available for testing.
 
     Returns:
         Tuple[Optional[File], Optional[Path]]: A tuple with the file object holding the tar archive on the host and its path.
     """
-    tar_file_name = f"{slugify(context.connector.technical_name)}_{context.git_revision}.tar" if tar_file_name is None else tar_file_name
+    if tar_file_name is None:
+        tar_file_name = f"{context.connector.technical_name}_{context.git_revision}.tar"
+    tar_file_name = slugify(tar_file_name)
     local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
-    export_success = await context.dagger_client.container().export(
-        str(local_path), platform_variants=container_variants, forced_compression=ImageLayerCompression.Gzip
-    )
+    export_success = await container.export(str(local_path), forced_compression=ImageLayerCompression.Gzip)
     if export_success:
-        return context.dagger_client.host().file(str(local_path)), local_path
-    return None, None
+        exported_file = (
+            context.dagger_client.host().directory(context.host_image_export_dir_path, include=[tar_file_name]).file(tar_file_name)
+        )
+        return exported_file, local_path
+    else:
+        return None, None
 
 
 def format_duration(time_delta: datetime.timedelta) -> str:

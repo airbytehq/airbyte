@@ -6,15 +6,14 @@
 
 from datetime import datetime
 from types import TracebackType
-from typing import Iterable, Optional
+from typing import Optional
 
 import yaml
 from anyio import Path
 from asyncer import asyncify
-from dagger import Directory, Platform, Secret
+from dagger import Directory, Secret
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
-from pipelines.consts import BUILD_PLATFORMS
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.github import update_commit_status_check
@@ -61,7 +60,6 @@ class ConnectorContext(PipelineContext):
         s3_build_cache_access_key_id: Optional[str] = None,
         s3_build_cache_secret_key: Optional[str] = None,
         concurrent_cat: Optional[bool] = False,
-        targeted_platforms: Optional[Iterable[Platform]] = BUILD_PLATFORMS,
     ):
         """Initialize a connector context.
 
@@ -90,7 +88,6 @@ class ConnectorContext(PipelineContext):
             s3_build_cache_access_key_id (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
             s3_build_cache_secret_key (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
             concurrent_cat (bool, optional): Whether to run the CAT tests in parallel. Defaults to False.
-            targeted_platforms (Optional[Iterable[Platform]], optional): The platforms to build the connector image for. Defaults to BUILD_PLATFORMS.
         """
 
         self.pipeline_name = pipeline_name
@@ -113,7 +110,6 @@ class ConnectorContext(PipelineContext):
         self.s3_build_cache_access_key_id = s3_build_cache_access_key_id
         self.s3_build_cache_secret_key = s3_build_cache_secret_key
         self.concurrent_cat = concurrent_cat
-        self.targeted_platforms = targeted_platforms
 
         super().__init__(
             pipeline_name=pipeline_name,

@@ -16,8 +16,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperationsUtils;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -46,7 +45,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   @Override
   protected String createTableQueryV1(final String schemaName, final String tableName) {
-    DSLContext dsl = getDslContext();
+    final DSLContext dsl = getDslContext();
     return dsl.createTableIfNotExists(name(schemaName, tableName))
         .column(COLUMN_NAME_AB_ID, SQLDataType.VARCHAR(36).nullable(false))
         .column(COLUMN_NAME_EMITTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.defaultValue(DSL.function("GETDATE", SQLDataType.TIMESTAMPWITHTIMEZONE)))
@@ -56,7 +55,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   @Override
   protected String createTableQueryV2(final String schemaName, final String tableName) {
-    DSLContext dsl = getDslContext();
+    final DSLContext dsl = getDslContext();
     return dsl.createTableIfNotExists(name(schemaName, tableName))
         .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
         .column(COLUMN_NAME_AB_EXTRACTED_AT,
@@ -68,7 +67,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
+                                    final List<PartialAirbyteMessage> records,
                                     final String schemaName,
                                     final String tmpTableName)
       throws SQLException {
@@ -90,7 +89,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  protected void insertRecordsInternalV2(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName)
+  protected void insertRecordsInternalV2(final JdbcDatabase database, final List<PartialAirbyteMessage> records, final String schemaName, final String tableName)
       throws Exception {
     LOGGER.info("actual size of batch: {}", records.size());
     database.execute(connection -> {
@@ -102,8 +101,8 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
               field(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE),
               field(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE))
           .values(null, DSL.function("JSON_PARSE", String.class, val((String) null)), null, null)); // Jooq needs dummy values for batch binds
-      records.forEach(record -> batchInsertStep.bind(val(UUID.randomUUID().toString()), val(Jsons.serialize(record.getData())), val(Timestamp.from(
-          Instant.ofEpochMilli(record.getEmittedAt()))), null));
+      records.forEach(record -> batchInsertStep.bind(val(UUID.randomUUID().toString()), val(record.getSerialized()), val(Timestamp.from(
+          Instant.ofEpochMilli(record.getRecord().getEmittedAt()))), null));
       batchInsertStep.execute();
     });
   }
