@@ -16,9 +16,11 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler;
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator;
 import java.util.Map;
 import java.util.Optional;
@@ -90,6 +92,11 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   @Override
   protected JdbcSqlGenerator getSqlGenerator() {
     return new RedshiftSqlGenerator(super.getNamingResolver());
+  }
+
+  @Override
+  protected JdbcDestinationHandler getDestinationHandler(final String databaseName, final JdbcDatabase database) {
+    return new RedshiftDestinationHandler(databaseName, database);
   }
 
 }

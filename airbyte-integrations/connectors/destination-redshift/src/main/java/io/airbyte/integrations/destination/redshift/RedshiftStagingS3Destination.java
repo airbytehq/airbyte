@@ -25,6 +25,7 @@ import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcV1V2Migrator;
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
@@ -151,6 +152,11 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   @Override
   protected JdbcSqlGenerator getSqlGenerator() {
     return new RedshiftSqlGenerator(getNamingResolver());
+  }
+
+  @Override
+  protected JdbcDestinationHandler getDestinationHandler(String databaseName, JdbcDatabase database) {
+    return new RedshiftDestinationHandler(databaseName, database);
   }
 
   @Override

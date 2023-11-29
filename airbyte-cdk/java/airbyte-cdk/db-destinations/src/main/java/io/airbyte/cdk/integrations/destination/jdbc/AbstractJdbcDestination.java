@@ -224,6 +224,10 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   protected abstract JdbcSqlGenerator getSqlGenerator();
 
+  protected JdbcDestinationHandler getDestinationHandler(String databaseName, JdbcDatabase database) {
+    return new JdbcDestinationHandler(databaseName, database);
+  }
+
   /**
    * "database" key at root of the config json, for any other variants in config, override this
    * method.
@@ -265,7 +269,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
           .parseCatalog(catalog);
       final String databaseName = getDatabaseName(config);
       final var migrator = new JdbcV1V2Migrator(namingResolver, database, databaseName);
-      final DestinationHandler<TableDefinition> destinationHandler = new JdbcDestinationHandler(databaseName, database);
+      final DestinationHandler<TableDefinition> destinationHandler = getDestinationHandler(databaseName, database);
       final TyperDeduper typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, 8);
       return JdbcBufferedConsumerFactory.createAsync(
           outputRecordCollector,
