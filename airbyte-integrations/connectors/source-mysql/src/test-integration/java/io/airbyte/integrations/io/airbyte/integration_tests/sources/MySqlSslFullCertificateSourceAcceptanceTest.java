@@ -15,7 +15,7 @@ public class MySqlSslFullCertificateSourceAcceptanceTest extends MySqlSourceAcce
   private static final String PASSWORD = "Passw0rd";
 
   @Override
-  protected ContainerModifier[] getImageModifiers() {
+  protected ContainerModifier[] getContainerModifiers() {
     return ArrayUtils.toArray(ContainerModifier.ROOT_AND_SERVER_CERTIFICATES, ContainerModifier.CLIENT_CERTITICATE);
   }
 
