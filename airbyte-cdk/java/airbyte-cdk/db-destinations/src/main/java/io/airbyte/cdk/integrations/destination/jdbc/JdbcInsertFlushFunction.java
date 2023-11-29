@@ -15,19 +15,17 @@ import java.util.stream.Stream;
 
 public class JdbcInsertFlushFunction implements DestinationFlushFunction {
 
-  private final RecordWriter<AirbyteRecordMessage> recordWriter;
+  private final RecordWriter<PartialAirbyteMessage> recordWriter;
 
-  public JdbcInsertFlushFunction(final RecordWriter<AirbyteRecordMessage> recordWriter) {
+  public JdbcInsertFlushFunction(final RecordWriter<PartialAirbyteMessage> recordWriter) {
     this.recordWriter = recordWriter;
   }
 
   @Override
   public void flush(final StreamDescriptor desc, final Stream<PartialAirbyteMessage> stream) throws Exception {
-    // TODO we can probably implement this better - use the serialized data string directly instead of
-    // redeserializing it for insertRecords
     recordWriter.accept(
         new AirbyteStreamNameNamespacePair(desc.getName(), desc.getNamespace()),
-        stream.map(PartialAirbyteMessage::getFullRecordMessage).toList());
+        stream.toList());
   }
 
   @Override

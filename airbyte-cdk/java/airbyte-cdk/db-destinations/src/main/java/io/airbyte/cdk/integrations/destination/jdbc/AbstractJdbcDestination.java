@@ -17,6 +17,8 @@ import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteRecordMessage;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -156,12 +158,13 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
    *
    * @return AirbyteRecordMessage object with dummy values that may be used to test insert permission.
    */
-  private static AirbyteRecordMessage getDummyRecord() {
+  private static PartialAirbyteMessage getDummyRecord() {
     final JsonNode dummyDataToInsert = Jsons.deserialize("{ \"field1\": true }");
-    return new AirbyteRecordMessage()
-        .withStream("stream1")
-        .withData(dummyDataToInsert)
-        .withEmittedAt(1602637589000L);
+    return new PartialAirbyteMessage()
+        .withRecord(new PartialAirbyteRecordMessage()
+            .withStream("stream1")
+            .withEmittedAt(1602637589000L))
+        .withSerialized(dummyDataToInsert.toString());
   }
 
   protected DataSource getDataSource(final JsonNode config) {
