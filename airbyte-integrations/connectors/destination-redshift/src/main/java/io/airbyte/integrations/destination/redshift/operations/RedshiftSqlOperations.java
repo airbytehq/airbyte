@@ -97,7 +97,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
       final DSLContext create = DSL.using(connection, SQLDialect.POSTGRES);
       final BatchBindStep batchInsertStep = create.batch(create
           .insertInto(table(name(schemaName, tableName)),
-              field(COLUMN_NAME_AB_RAW_ID,  SQLDataType.VARCHAR(36)),
+              field(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36)),
               field(COLUMN_NAME_DATA, new DefaultDataType<>(null, String.class, "super")),
               field(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE),
               field(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE))

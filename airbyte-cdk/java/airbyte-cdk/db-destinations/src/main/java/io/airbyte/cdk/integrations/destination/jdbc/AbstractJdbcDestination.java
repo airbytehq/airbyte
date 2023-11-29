@@ -239,7 +239,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     final JdbcDatabase database = getDatabase(dataSource);
     if (TypingAndDedupingFlag.isDestinationV2()) {
       // TODO: This logic exists in all V2 destinations.
-      //  This is sad that if we forget to add this, there will be a null pointer during parseCatalog
+      // This is sad that if we forget to add this, there will be a null pointer during parseCatalog
       final String defaultNamespace = config.get("schema").asText();
       for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
         if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
