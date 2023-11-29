@@ -1785,6 +1785,7 @@ class PropertyHistory(ClientSideIncrementalStream):
 
     @property
     def cursor_field_datetime_format(self):
+        """Cursor value expected to be a timestamp in milliseconds"""
         return "x"
 
     def request_params(
