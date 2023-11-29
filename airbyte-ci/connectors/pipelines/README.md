@@ -11,43 +11,16 @@ This documentation should be helpful for both local and CI use of the CLI. We in
 ## How to install
 ### Requirements
 * A running Docker engine with version >= 20.10.23
-* Python >= 3.10
-* [pipx](https://pypa.github.io/pipx/installation/)
 
 
 ## Install or Update
 
-The recommended way to install `airbyte-ci` is using pipx. This ensures the tool and its dependencies are isolated from your other Python projects.
+The recommended way to install `airbyte-ci` is using the [Makefile](../../../Makefile).
 
-If you havent installed pyenv, you can do it with brew:
-
-```bash
-brew update
-brew install pyenv
+```sh
+# from the root of the airbyte repository
+make tools.airbyte-ci.install
 ```
-
-If you haven't installed pipx, you can do it with pip:
-
-```bash
-pyenv install # ensure you have the correct python version
-python -m pip install --user pipx
-python -m pipx ensurepath
-```
-
-Once pyenv and pipx is installed then run the following:
-
-```bash
-# install airbyte-ci
-pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/
-```
-
-This command installs `airbyte-ci` and makes it globally available in your terminal.
-
-_Note: `--force` is required to ensure updates are applied on subsequent installs._
-_Note: `--python=python3.10` is required to ensure the correct python version is used._
-_Note: `--editable` is required to ensure the correct python version is used._
-
-If you face any installation problems feel free to reach out the Airbyte Connectors Operations team.
 
 ### Setting up connector secrets access
 
@@ -58,10 +31,27 @@ CI Credentials package (which Airbyte CI uses under the hood) README's
 instructions.
 
 ### Updating the airbyte-ci tool
-To reinstall airbyte-ci:
-
+To reinstall airbyte-ci, run the following command:
 ```sh
-pipx reinstall pipelines
+airbyte-ci update
+```
+
+or if that fails, you can reinstall it with the following command:
+```sh
+# from the root of the airbyte repository
+make tools.airbyte-ci.install
+```
+
+## Checking the airbyte-ci install
+To check that airbyte-ci is installed correctly, run the following command:
+```sh
+make tools.airbyte-ci.check
+```
+
+## Cleaning the airbyte-ci install
+To clean the airbyte-ci install, run the following command:
+```sh
+make tools.airbyte-ci.clean
 ```
 
 ## Installation for development
@@ -72,7 +62,7 @@ pipx reinstall pipelines
 
 #### Installation
 
-If you are developing on pipelines, we recommend installing airbyte-ci in editable mode:
+If you are developing on pipelines, we recommend installing airbyte-ci with poetry:
 
 ```bash
 cd airbyte-ci/connectors/pipelines/
@@ -81,9 +71,19 @@ poetry shell
 cd ../../
 ```
 
-At this point you can run `airbyte-ci` commands.
+**Alternatively**, you can install airbyte-ci with pipx so that the entrypoint is available in your PATH:
+
+```bash
+make tools.airbyte-ci.install
+```
+
+However, this will not automatically install the dependencies for the local dependencies of airbyte-ci, or respect the lockfile.
+
+Its often best to use the `poetry` steps instead.
+
 
 ## Commands reference
+At this point you can run `airbyte-ci` commands.
 - [`airbyte-ci` command group](#airbyte-ci)
   * [Options](#options)
 - [`connectors` command subgroup](#connectors-command-subgroup)
@@ -127,6 +127,7 @@ At this point you can run `airbyte-ci` commands.
 | Option                                     | Default value                                                                                  | Mapped environment variable   | Description                                                                                 |
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
 | `--enable-dagger-run/--disable-dagger-run` | `--enable-dagger-run``      |                               | Disables the Dagger terminal UI. |                               |                                                                                             |
+| `--enable-auto-update/--disable-auto-update` | `--enable-auto-update``      |                               | Disables the auto update prompt |                               |                                                                                             |
 | `--is-local/--is-ci`                       | `--is-local`                                                                                   |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
 | `--git-branch`                             | The checked out git branch name                                                                | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
 | `--git-revision`                           | The current branch head                                                                        | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
@@ -432,12 +433,13 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
-|---------| ---------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------|
-| 2.7.3   | [#32847](https://github.com/airbytehq/airbyte/pull/32847)  | Improve --modified behaviour for pull requests.                                                           |
+| ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2.8.0   | [#31930](https://github.com/airbytehq/airbyte/pull/31930)  | Move pipx install to `airbyte-ci-dev`, and add auto-update feature targeting binary                       |
+| 2.7.3   | [#32847](https://github.com/airbytehq/airbyte/pull/32847)  | Improve --modified behaviour for pull requests.                                                            |
 | 2.7.2   | [#32839](https://github.com/airbytehq/airbyte/pull/32839)  | Revert changes in v2.7.1.                                                                                 |
-| 2.7.1   | [#32806](https://github.com/airbytehq/airbyte/pull/32806)  | Improve --modified behaviour for pull requests.                                                           |
+| 2.7.1   | [#32806](https://github.com/airbytehq/airbyte/pull/32806)  | Improve --modified behaviour for pull requests.                                                            |
 | 2.7.0   | [#31930](https://github.com/airbytehq/airbyte/pull/31930)  | Merge airbyte-ci-internal into airbyte-ci                                                                 |
-| 2.6.0   | [#31831](https://github.com/airbytehq/airbyte/pull/31831)  | Add `airbyte-ci format` commands, remove connector-specific formatting check                              |
+| 2.6.0   | [#31831](https://github.com/airbytehq/airbyte/pull/31831)  | Add `airbyte-ci format` commands, remove connector-specific formatting check                               |
 | 2.5.9   | [#32427](https://github.com/airbytehq/airbyte/pull/32427)  | Re-enable caching for source-postgres                                                                     |
 | 2.5.8   | [#32402](https://github.com/airbytehq/airbyte/pull/32402)  | Set Dagger Cloud token for airbyters only                                                                 |
 | 2.5.7   | [#31628](https://github.com/airbytehq/airbyte/pull/31628)  | Add ClickPipelineContext class                                                                            |
@@ -518,7 +520,15 @@ This project is owned by the Connectors Operations team.
 We share project updates and remaining stories before its release to production in this [EPIC](https://github.com/airbytehq/airbyte/issues/24403).
 
 # Troubleshooting
-## `airbyte-ci` is not found
+## Commands
+### `make tools.airbyte-ci.check`
+This command checks if the `airbyte-ci` command is appropriately installed.
+
+### `make tools.airbyte-ci.clean`
+This command removes the `airbyte-ci` command from your system.
+
+## Common issues
+### `airbyte-ci` is not found
 If you get the following error when running `airbyte-ci`:
 ```bash
 $ airbyte-ci
@@ -526,13 +536,36 @@ zsh: command not found: airbyte-ci
 ```
 It means that the `airbyte-ci` command is not in your PATH.
 
+Try running
+```bash
+make make tools.airbyte-ci.check
+```
+
+For some hints on how to fix this.
+
+But when in doubt it can be best to run
+```bash
+make tools.airbyte-ci.clean
+```
+
+Then reinstall the CLI with
+```bash
+make tools.airbyte-ci.install
+```
+
+
+## Development
+
+
+### `airbyte-ci` is not found
+
 To fix this, you can either:
 * Ensure that airbyte-ci is installed with pipx. Run `pipx list` to check if airbyte-ci is installed.
 * Run `pipx ensurepath` to add the pipx binary directory to your PATH.
 * Add the pipx binary directory to your PATH manually. The pipx binary directory is usually `~/.local/bin`.
 
 
-## python3.10 not found
+### python3.10 not found
 If you get the following error when running `pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/`:
 ```bash
 $ pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/
@@ -546,7 +579,7 @@ To fix this, you can either:
 * Install Python 3.10 with your system package manager. For instance, on Ubuntu you can run `sudo apt install python3.10`.
 * Ensure that Python 3.10 is in your PATH. Run `which python3.10` to check if Python 3.10 is installed and in your PATH.
 
-## Any type of pipeline failure
+### Any type of pipeline failure
 First you should check that the version of the CLI you are using is the latest one.
 You can check the version of the CLI with the `--version` option:
 ```bash
