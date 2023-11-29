@@ -155,3 +155,6 @@ For examples of production-ready config-based connectors, refer to:
 - [Greenhouse](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse/source_greenhouse/manifest.yaml)
 - [Sendgrid](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sendgrid/source_sendgrid/manifest.yaml)
 - [Sentry](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sentry/source_sentry/manifest.yaml)
+
+## Reference
+The full schema definition for the YAML file can be found [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).

@@ -8,7 +8,7 @@ Thank you for your interest in contributing! We love community contributions.
 Read on to learn how to contribute to Airbyte.
 We appreciate first time contributors and we are happy to assist you in getting started. In case of questions, just reach out to us via [email](mailto:hey@airbyte.io) or [Slack](https://slack.airbyte.io)!
 
-Before getting started, please review Airbyte's Code of Conduct. Everyone interacting in Slack, codebases, mailing lists, events, or other Airbyte activities is expected to follow [Code of Conduct](../project-overview/code-of-conduct.md).
+Before getting started, please review Airbyte's Code of Conduct. Everyone interacting in Slack, codebases, mailing lists, events, or other Airbyte activities is expected to follow [Code of Conduct](../community/code-of-conduct.md).
 
 ## Code Contributions
 
