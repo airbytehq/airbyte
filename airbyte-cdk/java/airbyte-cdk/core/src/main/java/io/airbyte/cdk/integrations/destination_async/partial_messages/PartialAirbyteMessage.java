@@ -125,15 +125,4 @@ public class PartialAirbyteMessage {
         '}';
   }
 
-  public AirbyteRecordMessage getFullRecordMessage() {
-    if (type != AirbyteMessage.Type.RECORD || record == null) {
-      throw new IllegalStateException("Cannot get full record message for non-record message");
-    }
-    return new AirbyteRecordMessage()
-        .withNamespace(record.getNamespace())
-        .withStream(record.getStream())
-        .withData(Jsons.deserializeExact(getSerialized()))
-        .withEmittedAt(record.getEmittedAt());
-  }
-
 }

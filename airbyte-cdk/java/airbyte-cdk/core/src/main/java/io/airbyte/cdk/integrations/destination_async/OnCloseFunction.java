@@ -13,14 +13,4 @@ import java.util.function.Consumer;
  */
 public interface OnCloseFunction extends Consumer<Boolean> {
 
-  static OnCloseFunction fromNonAsync(final io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction legacy) {
-    return (success) -> {
-      try {
-        legacy.accept(success);
-      } catch (final Exception e) {
-        throw new RuntimeException(e);
-      }
-    };
-  }
-
 }
