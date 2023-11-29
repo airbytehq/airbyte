@@ -90,7 +90,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
 
   @Override
   protected PostgresTestDatabase createTestDatabase() {
-    return PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE);
+    return PostgresTestDatabase.in(BaseImage.POSTGRES_16);
   }
 
   @Override
