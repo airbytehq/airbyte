@@ -32,12 +32,15 @@ async def run_connector_build(context: ConnectorContext) -> StepResult:
     return await LANGUAGE_BUILD_CONNECTOR_MAPPING[context.connector.language](context)
 
 
-async def run_connector_build_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
+async def run_connector_build_pipeline(
+    context: ConnectorContext, semaphore: anyio.Semaphore, image_tag: str
+) -> ConnectorReport:
     """Run a build pipeline for a single connector.
 
     Args:
         context (ConnectorContext): The initialized connector context.
         semaphore (anyio.Semaphore): The semaphore to use to limit the number of concurrent builds.
+        image_tag (str): The tag to use for the built image.
     Returns:
         ConnectorReport: The reports holding builds results.
     """
@@ -48,7 +51,7 @@ async def run_connector_build_pipeline(context: ConnectorContext, semaphore: any
             per_platform_built_containers = build_result.output_artifact
             step_results.append(build_result)
             if context.is_local and build_result.status is StepStatus.SUCCESS:
-                load_image_result = await LoadContainerToLocalDockerHost(context, per_platform_built_containers).run()
+                load_image_result = await LoadContainerToLocalDockerHost(context, per_platform_built_containers, image_tag).run()
                 step_results.append(load_image_result)
             context.report = ConnectorReport(context, step_results, name="BUILD RESULTS")
         return context.report

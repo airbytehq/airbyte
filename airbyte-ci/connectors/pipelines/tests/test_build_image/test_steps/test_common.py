@@ -54,16 +54,17 @@ class TestLoadContainerToLocalDockerHost:
 
     async def test_run(self, test_context, step):
         """Test that the step runs successfully and that the image is loaded in the local docker host."""
+        assert step.image_tag == "dev"
         docker_client = docker.from_env()
-        step.IMAGE_TAG = "test-load-container"
+        step.image_tag = "test-load-container"
         try:
-            docker_client.images.remove(f"{test_context.connector.metadata['dockerRepository']}:{step.IMAGE_TAG}")
+            docker_client.images.remove(f"{test_context.connector.metadata['dockerRepository']}:{step.image_tag}")
         except docker.errors.ImageNotFound:
             pass
         result = await step.run()
         assert result.status is StepStatus.SUCCESS
-        docker_client.images.get(f"{test_context.connector.metadata['dockerRepository']}:{step.IMAGE_TAG}")
-        docker_client.images.remove(f"{test_context.connector.metadata['dockerRepository']}:{step.IMAGE_TAG}")
+        docker_client.images.get(f"{test_context.connector.metadata['dockerRepository']}:{step.image_tag}")
+        docker_client.images.remove(f"{test_context.connector.metadata['dockerRepository']}:{step.image_tag}")
 
     async def test_run_export_failure(self, step, mocker):
         """Test that the step fails if the export of the container fails."""
