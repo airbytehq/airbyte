@@ -78,7 +78,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
 
   @Override
   protected MySQLTestDatabase createTestDatabase() {
-    return MySQLTestDatabase.in("mysql:8.0");
+    return MySQLTestDatabase.in("container-registry.oracle.com/mysql/community-server:8.0");
   }
 
   @Override

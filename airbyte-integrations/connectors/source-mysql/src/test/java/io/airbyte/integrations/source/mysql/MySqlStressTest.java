@@ -41,7 +41,7 @@ class MySqlStressTest extends JdbcStressTest {
 
   @BeforeAll
   static void init() throws Exception {
-    container = new MySQLContainer<>("mysql:8.0")
+    container = new MySQLContainer<>("container-registry.oracle.com/mysql/community-server:8.0")
         .withUsername(TEST_USER)
         .withPassword(TEST_PASSWORD.call())
         .withEnv("MYSQL_ROOT_HOST", "%")

@@ -77,7 +77,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
 
   @Override
   protected MySQLTestDatabase createTestDatabase() {
-    return MySQLTestDatabase.in("mysql:8.0", "withInvalidTimezoneCEST").withCdcPermissions();
+    return MySQLTestDatabase.in("container-registry.oracle.com/mysql/community-server:8.0", "withInvalidTimezoneCEST").withCdcPermissions();
   }
 
   @Override

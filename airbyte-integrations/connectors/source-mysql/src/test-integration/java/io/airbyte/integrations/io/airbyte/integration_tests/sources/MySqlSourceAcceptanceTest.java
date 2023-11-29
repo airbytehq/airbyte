@@ -33,7 +33,7 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = MySQLTestDatabase.in("mysql:8.0", extraContainerFactoryMethods().toArray(String[]::new))
+    testdb = MySQLTestDatabase.in("container-registry.oracle.com/mysql/community-server:8.0", extraContainerFactoryMethods().toArray(String[]::new))
         .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
         .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
         .with("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")

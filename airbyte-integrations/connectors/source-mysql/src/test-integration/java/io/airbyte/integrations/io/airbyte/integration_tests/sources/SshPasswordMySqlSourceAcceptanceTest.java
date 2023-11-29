@@ -25,7 +25,7 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
 
   @Test
   public void sshTimeoutExceptionMarkAsConfigErrorTest() throws Exception {
-    try (final var testdb = MySQLTestDatabase.in("mysql:8.0", "withNetwork")) {
+    try (final var testdb = MySQLTestDatabase.in("container-registry.oracle.com/mysql/community-server:8.0", "withNetwork")) {
       final SshBastionContainer bastion = new SshBastionContainer();
       bastion.initAndStartBastion(testdb.getContainer().getNetwork());
       final var config = testdb.integrationTestConfigBuilder()

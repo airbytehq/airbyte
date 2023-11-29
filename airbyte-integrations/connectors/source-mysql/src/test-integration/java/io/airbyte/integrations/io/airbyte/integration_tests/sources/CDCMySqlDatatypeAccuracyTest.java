@@ -21,7 +21,7 @@ public class CDCMySqlDatatypeAccuracyTest extends MySqlDatatypeAccuracyTest {
 
   @Override
   protected Database setupDatabase() {
-    testdb = MySQLTestDatabase.in("mysql:8.0").withoutStrictMode().withCdcPermissions();
+    testdb = MySQLTestDatabase.in("container-registry.oracle.com/mysql/community-server:8.0").withoutStrictMode().withCdcPermissions();
     return testdb.getDatabase();
   }
 

@@ -20,7 +20,7 @@ class MySqlSslJdbcSourceAcceptanceTest extends MySqlJdbcSourceAcceptanceTest {
 
   @Override
   protected MySQLTestDatabase createTestDatabase() {
-    return new MySQLTestDatabase(new MySQLContainerFactory().shared("mysql:8.0"))
+    return new MySQLTestDatabase(new MySQLContainerFactory().shared("container-registry.oracle.com/mysql/community-server:8.0"))
         .withConnectionProperty("useSSL", "true")
         .withConnectionProperty("requireSSL", "true")
         .initialized()

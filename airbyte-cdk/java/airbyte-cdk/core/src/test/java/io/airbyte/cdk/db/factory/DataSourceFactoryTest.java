@@ -78,7 +78,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingMySQLDataSourceWithConnectionTimeoutSetBelowDefault() {
-    try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.0")) {
+    try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>("container-registry.oracle.com/mysql/community-server:8.0")) {
       mySQLContainer.start();
       final Map<String, String> connectionProperties = Map.of(
           CONNECT_TIMEOUT, "5000");
@@ -141,7 +141,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingMySQLDataSourceWithConnectionTimeoutNotSet() {
-    try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.0")) {
+    try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>("container-registry.oracle.com/mysql/community-server:8.0")) {
       mySQLContainer.start();
       final Map<String, String> connectionProperties = Map.of();
       final DataSource dataSource = DataSourceFactory.create(

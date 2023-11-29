@@ -27,7 +27,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 public class CloudDeploymentMySqlSslTest {
 
   private MySQLTestDatabase createTestDatabase(String... containerFactoryMethods) {
-    final var container = new MySQLContainerFactory().shared("mysql:8.0", containerFactoryMethods);
+    final var container = new MySQLContainerFactory().shared("container-registry.oracle.com/mysql/community-server:8.0", containerFactoryMethods);
     return new MySQLTestDatabase(container)
         .withConnectionProperty("useSSL", "true")
         .withConnectionProperty("requireSSL", "true")

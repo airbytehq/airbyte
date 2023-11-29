@@ -35,7 +35,7 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
 
   @Override
   protected Database setupDatabase() {
-    final var sharedContainer = new MySQLContainerFactory().shared("mysql:8.0");
+    final var sharedContainer = new MySQLContainerFactory().shared("container-registry.oracle.com/mysql/community-server:8.0");
     testdb = new MySQLTestDatabase(sharedContainer)
         .withConnectionProperty("zeroDateTimeBehavior", "convertToNull")
         .initialized()

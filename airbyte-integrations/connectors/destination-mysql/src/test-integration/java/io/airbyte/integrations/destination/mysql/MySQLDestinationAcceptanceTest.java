@@ -150,7 +150,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Override
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
-    db = new MySQLContainer<>("mysql:8.0");
+    db = new MySQLContainer<>("container-registry.oracle.com/mysql/community-server:8.0");
     db.start();
     setLocalInFileToTrue();
     revokeAllPermissions();

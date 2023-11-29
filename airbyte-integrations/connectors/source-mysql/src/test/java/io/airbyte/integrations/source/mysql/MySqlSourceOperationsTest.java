@@ -91,7 +91,7 @@ public class MySqlSourceOperationsTest {
       throws SQLException {
     final var sqlSourceOperations = new MySqlSourceOperations();
     final String cursorColumn = "cursor_column";
-    try (final var testdb = MySQLTestDatabase.in("mysql:8.0")
+    try (final var testdb = MySQLTestDatabase.in("container-registry.oracle.com/mysql/community-server:8.0")
         .with("CREATE TABLE cursor_table (id INTEGER PRIMARY KEY, %s %s);", cursorColumn, sqlType)) {
 
       final List<JsonNode> expectedRecords = new ArrayList<>();
