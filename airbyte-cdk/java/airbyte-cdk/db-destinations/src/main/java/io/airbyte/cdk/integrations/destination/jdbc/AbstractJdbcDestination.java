@@ -34,6 +34,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -236,6 +238,14 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     final DataSource dataSource = getDataSource(config);
     final JdbcDatabase database = getDatabase(dataSource);
     if (TypingAndDedupingFlag.isDestinationV2()) {
+      // TODO: This logic exists in all V2 destinations.
+      //  This is sad that if we forget to add this, there will be a null pointer during parseCatalog
+      final String defaultNamespace = config.get("schema").asText();
+      for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+        if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
+          stream.getStream().setNamespace(defaultNamespace);
+        }
+      }
       final JdbcSqlGenerator sqlGenerator = getSqlGenerator();
       final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
           .map(override -> new CatalogParser(sqlGenerator, override))

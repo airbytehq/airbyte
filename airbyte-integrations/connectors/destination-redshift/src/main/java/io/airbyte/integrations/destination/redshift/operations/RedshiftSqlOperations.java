@@ -97,13 +97,13 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
       final DSLContext create = DSL.using(connection, SQLDialect.POSTGRES);
       final BatchBindStep batchInsertStep = create.batch(create
           .insertInto(table(name(schemaName, tableName)),
-              field(COLUMN_NAME_AB_RAW_ID),
-              field(COLUMN_NAME_DATA),
-              field(COLUMN_NAME_AB_EXTRACTED_AT),
-              field(COLUMN_NAME_AB_LOADED_AT))
-          .values(null, null, null, null)); // Jooq needs dummy values for batch binds
-      records.forEach(record -> batchInsertStep.bind(UUID.randomUUID().toString(), Jsons.serialize(record.getData()), Timestamp.from(
-          Instant.ofEpochMilli(record.getEmittedAt())), null));
+              field(COLUMN_NAME_AB_RAW_ID,  SQLDataType.VARCHAR(36)),
+              field(COLUMN_NAME_DATA, new DefaultDataType<>(null, String.class, "super")),
+              field(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE),
+              field(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE))
+          .values(null, DSL.function("JSON_PARSE", String.class, val((String) null)), null, null)); // Jooq needs dummy values for batch binds
+      records.forEach(record -> batchInsertStep.bind(val(UUID.randomUUID().toString()), val(Jsons.serialize(record.getData())), val(Timestamp.from(
+          Instant.ofEpochMilli(record.getEmittedAt()))), null));
       batchInsertStep.execute();
     });
   }

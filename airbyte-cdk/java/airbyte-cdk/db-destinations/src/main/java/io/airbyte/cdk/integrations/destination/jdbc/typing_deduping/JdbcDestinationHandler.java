@@ -84,8 +84,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
     LOGGER.info("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
   }
 
-  public static Optional<TableDefinition> findExistingTable(
-                                                            final JdbcDatabase jdbcDatabase,
+  public static Optional<TableDefinition> findExistingTable(final JdbcDatabase jdbcDatabase,
                                                             final String databaseName,
                                                             final String schemaName,
                                                             final String tableName)
