@@ -91,7 +91,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
 
     async def run_docker_build_dependent_steps(dist_tar_dir: Directory) -> List[StepResult]:
         step_results = []
-        build_connector_image_results = await BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run(dist_tar_dir)
+        build_connector_image_results = await BuildConnectorImages(context).run(dist_tar_dir)
         step_results.append(build_connector_image_results)
         if build_connector_image_results.status is StepStatus.FAILURE:
             return step_results
