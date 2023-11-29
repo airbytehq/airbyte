@@ -120,7 +120,7 @@ unstructured_invalid_file_type_discover_scenario_no_skip = (
             "streams": [
                 {
                     "name": "stream1",
-                    "format": {"filetype": "unstructured", "skip_unprocessable_file_types": False},
+                    "format": {"filetype": "unstructured", "skip_unprocessable_files": False},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -165,7 +165,7 @@ unstructured_invalid_file_type_discover_scenario_skip = (
             "streams": [
                 {
                     "name": "stream1",
-                    "format": {"filetype": "unstructured", "skip_unprocessable_file_types": True},
+                    "format": {"filetype": "unstructured", "skip_unprocessable_files": True},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -197,12 +197,25 @@ unstructured_invalid_file_type_discover_scenario_skip = (
             ]
         }
     )
-    .set_expected_records([])
+    .set_expected_records(
+        [
+            {
+                "data": {
+                    "document_key": "a.txt",
+                    "content": None,
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.txt",
+                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=a.txt message=File type FileType.TXT is not supported. Supported file types are FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX",
+                },
+                "stream": "stream1",
+            }
+        ]
+    )
 ).build()
 
 # TODO When working on https://github.com/airbytehq/airbyte/issues/31605, this test should be split into two tests:
-# 1. Test that the file is skipped if skip_unprocessable_file_types is set to true
-# 2. Test that the sync fails if skip_unprocessable_file_types is set to false
+# 1. Test that the file is skipped if skip_unprocessable_files is set to true
+# 2. Test that the sync fails if skip_unprocessable_files is set to false
 unstructured_invalid_file_type_read_scenario = (
     TestScenarioBuilder()
     .set_name("unstructured_invalid_file_type_read_scenario")
@@ -211,7 +224,7 @@ unstructured_invalid_file_type_read_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "format": {"filetype": "unstructured"},
+                    "format": {"filetype": "unstructured", "skip_unprocessable_files": False},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -409,7 +422,7 @@ corrupted_file_scenario = (
                 "data": {
                     "document_key": "sample.pdf",
                     "content": None,
-                    "_ab_source_file_parse_error": "No /Root object! - Is this really a PDF?",
+                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=sample.pdf message=No /Root object! - Is this really a PDF?",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "sample.pdf",
                 },

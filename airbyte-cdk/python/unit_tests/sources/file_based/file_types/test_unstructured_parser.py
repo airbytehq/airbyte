@@ -22,37 +22,37 @@ FILE_URI = "path/to/file.xyz"
     [
         pytest.param(
             FileType.MD,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             False,
             id="markdown file",
         ),
         pytest.param(
             FileType.CSV,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             True,
             id="wrong file format",
         ),
         pytest.param(
             FileType.CSV,
-            UnstructuredFormat(skip_unprocessable_file_types=True),
+            UnstructuredFormat(skip_unprocessable_files=True),
             False,
             id="wrong file format skipping",
         ),
         pytest.param(
             FileType.PDF,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             False,
             id="pdf file",
         ),
         pytest.param(
             FileType.DOCX,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             False,
             id="docx file",
         ),
         pytest.param(
             FileType.PPTX,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             False,
             id="pptx file",
         ),
@@ -92,7 +92,7 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
     [
         pytest.param(
             FileType.MD,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             "test",
             False,
             [
@@ -107,7 +107,7 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
         ),
         pytest.param(
             FileType.CSV,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             None,
             True,
             None,
@@ -116,16 +116,22 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
         ),
         pytest.param(
             FileType.CSV,
-            UnstructuredFormat(skip_unprocessable_file_types=True),
+            UnstructuredFormat(skip_unprocessable_files=True),
             None,
             False,
-            [],
+            [
+                {
+                    "content": None,
+                    "document_key": FILE_URI,
+                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=path/to/file.xyz message=File type FileType.CSV is not supported. Supported file types are FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX",
+                }
+            ],
             False,
-            id="skip_unprocessable_file_types",
+            id="skip_unprocessable_files",
         ),
         pytest.param(
             FileType.PDF,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             [
                 Title("heading"),
                 Text("This is the text"),
@@ -145,7 +151,7 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
         ),
         pytest.param(
             FileType.PDF,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             [
                 Title("first level heading", metadata=ElementMetadata(category_depth=1)),
                 Title("second level heading", metadata=ElementMetadata(category_depth=2)),
@@ -163,7 +169,7 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
         ),
         pytest.param(
             FileType.DOCX,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             [
                 Title("heading"),
                 Text("This is the text"),
@@ -183,18 +189,18 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
         ),
         pytest.param(
             FileType.DOCX,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=True),
             "",
             False,
             [
                 {
                     "content": None,
                     "document_key": FILE_URI,
-                    "_ab_source_file_parse_error": "weird parsing error"
+                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=path/to/file.xyz message=weird parsing error"
                 }
             ],
             True,
-            id="exception during parsing",
+            id="exception_during_parsing",
         ),
     ],
 )
