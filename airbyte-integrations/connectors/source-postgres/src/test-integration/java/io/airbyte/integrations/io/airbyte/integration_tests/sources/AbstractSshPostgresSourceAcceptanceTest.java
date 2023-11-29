@@ -86,7 +86,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPo
   // requiring data to already be in place.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, ContainerModifier.NETWORK);
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.NETWORK);
     bastion.initAndStartBastion(testdb.getContainer().getNetwork());
     populateDatabaseTestData();
   }

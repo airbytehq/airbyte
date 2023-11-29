@@ -92,7 +92,7 @@ class XminPostgresSourceTest {
   protected PostgresTestDatabase testdb;
 
   protected BaseImage getDatabaseImage() {
-    return BaseImage.POSTGRES_12_BULLSEYE;
+    return BaseImage.POSTGRES_12;
   }
 
   @BeforeEach

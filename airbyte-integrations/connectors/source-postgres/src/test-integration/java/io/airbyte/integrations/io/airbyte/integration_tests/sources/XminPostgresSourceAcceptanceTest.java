@@ -47,7 +47,7 @@ public class XminPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcce
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_12_BULLSEYE)
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_12)
         .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
         .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
         .with("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")

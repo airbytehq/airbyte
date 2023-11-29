@@ -202,7 +202,7 @@ public class PostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptan
   }
 
   protected BaseImage getServerImage() {
-    return BaseImage.POSTGRES_16_BULLSEYE;
+    return BaseImage.POSTGRES_16;
   }
 
 }

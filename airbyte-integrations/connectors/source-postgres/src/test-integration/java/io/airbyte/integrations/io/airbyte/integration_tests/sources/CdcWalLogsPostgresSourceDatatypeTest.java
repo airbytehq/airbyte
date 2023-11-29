@@ -73,7 +73,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
 
   @Override
   protected Database setupDatabase() {
-    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, ContainerModifier.CONF)
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.CONF)
         .with("CREATE EXTENSION hstore;")
         .with("CREATE SCHEMA TEST;")
         .with("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');")

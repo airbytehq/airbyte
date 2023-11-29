@@ -10,7 +10,7 @@ public class CDCPostgresSourceCaCertificateSslAcceptanceLegacyCtidTest extends C
 
   @Override
   protected BaseImage getServerImage() {
-    return BaseImage.POSTGRES_12_BULLSEYE;
+    return BaseImage.POSTGRES_12;
   }
 
 }

@@ -891,7 +891,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   protected static BaseImage getServerImage() {
-    return BaseImage.POSTGRES_16_BULLSEYE;
+    return BaseImage.POSTGRES_16;
   }
 
 }
