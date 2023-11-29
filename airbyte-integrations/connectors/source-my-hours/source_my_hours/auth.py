@@ -33,8 +33,8 @@ class MyHoursAuthenticator(Oauth2Authenticator):
         json_response = response.json()
 
         self.refresh_token = json_response["refreshToken"]
-        self._access_token = json_response[self.access_token_name]
-        self._token_expiry_date = t0.add(seconds=json_response[self.expires_in_name])
+        self._access_token = json_response[self._access_token_name]
+        self._token_expiry_date = t0.add(seconds=json_response[self._expires_in_name])
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         payload: MutableMapping[str, Any] = {
@@ -46,10 +46,10 @@ class MyHoursAuthenticator(Oauth2Authenticator):
 
     def refresh_access_token(self) -> Tuple[str, int]:
         try:
-            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
+            response = requests.request(method="POST", url=self._token_refresh_endpoint, data=self.get_refresh_request_body())
             response.raise_for_status()
             response_json = response.json()
             self.refresh_token = response_json["refreshToken"]
-            return response_json[self.access_token_name], response_json[self.expires_in_name]
+            return response_json[self._access_token_name], response_json[self._expires_in_name]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
