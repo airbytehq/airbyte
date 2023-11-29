@@ -51,7 +51,17 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -67,6 +77,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -599,30 +610,43 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   private void readSsl(final JsonNode sslMethod, final List<String> additionalParameters) {
     final JsonNode config = sslMethod.get("ssl_method");
     switch (config.get("ssl_method").asText()) {
-      case "unencrypted" -> additionalParameters.add("encrypt=false");
+      case "unencrypted" -> {
+        additionalParameters.add("encrypt=false");
+        additionalParameters.add("trustServerCertificate=true");
+      }
       case "encrypted_trust_server_certificate" -> {
         additionalParameters.add("encrypt=true");
         additionalParameters.add("trustServerCertificate=true");
       }
       case "encrypted_verify_certificate" -> {
         additionalParameters.add("encrypt=true");
+        additionalParameters.add("trustServerCertificate=false");
 
         // trust store location code found at https://stackoverflow.com/a/56570588
-        final String trustStoreLocation = Optional
-            .ofNullable(System.getProperty("javax.net.ssl.trustStore"))
-            .orElseGet(() -> System.getProperty("java.home") + "/lib/security/cacerts");
-        final File trustStoreFile = new File(trustStoreLocation);
-        if (!trustStoreFile.exists()) {
-          throw new RuntimeException(
-              "Unable to locate the Java TrustStore: the system property javax.net.ssl.trustStore is undefined or "
-                  + trustStoreLocation + " does not exist.");
-        }
-        final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
-        additionalParameters.add("trustStore=" + trustStoreLocation);
-        if (trustStorePassword != null && !trustStorePassword.isEmpty()) {
+        if (config.has("certificate")) {
+          byte[] certificate = config.get("certificate").asText().getBytes(StandardCharsets.US_ASCII);
+          String password = RandomStringUtils.randomAlphanumeric(100);
+          char[] pwdArray = password.toCharArray();
+          final File trustStoreFile;
+          try {
+            trustStoreFile = File.createTempFile("mssqlTrustStoreFile", "jks");
+            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            ks.load(null, pwdArray);
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            Certificate cert = cf.generateCertificate(new ByteArrayInputStream(certificate));
+            ks.setCertificateEntry("cert", cert);
+            try (FileOutputStream fos = new FileOutputStream(trustStoreFile)) {
+              ks.store(fos, pwdArray);
+            }
+          } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+            throw new RuntimeException(e);
+          }
           additionalParameters
-              .add("trustStorePassword=" + config.get("trustStorePassword").asText());
+              .add("trustStore=" + trustStoreFile.getAbsolutePath());
+          additionalParameters
+              .add("trustStorePassword=" + password);
         }
+
         if (config.has("hostNameInCertificate")) {
           additionalParameters
               .add("hostNameInCertificate=" + config.get("hostNameInCertificate").asText());
