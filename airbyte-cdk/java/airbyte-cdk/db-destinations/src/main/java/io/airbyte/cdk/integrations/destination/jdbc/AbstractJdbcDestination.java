@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -201,8 +202,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), sqlOperations, namingResolver, config,
-        catalog);
+    throw new NotImplementedException("Should use the getSerializedMessageConsumer instead");
   }
 
   @Override
