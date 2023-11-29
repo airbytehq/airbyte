@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from __future__ import annotations
 
 import json
 import os
@@ -46,7 +47,7 @@ class SourceDbtDuckDB(Source):
             env_vars=env_vars,
         )
         try:
-            dbt_runner.invoke_dbt("compile")
+            dbt_runner.invoke("compile")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
@@ -238,7 +239,6 @@ class SourceDbtDuckDB(Source):
             results=results_list,
         )
 
-
     def _get_env_vars(self, config: json) -> dict[str, str]:
         env_var_settings = config.get("env_var_settings", [])
         env_var_secrets = config.get("env_var_secrets", [])
@@ -265,7 +265,6 @@ class SourceDbtDuckDB(Source):
                 emitted_at=int(datetime.now().timestamp()) * 1000,
             ),
     )
-
 
     def _airbyte_state_message_from_results(
         self,

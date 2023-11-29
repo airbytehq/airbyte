@@ -42,7 +42,7 @@ genson = "1.2.2"
 isodate = ">=0.6.1,<0.7.0"
 jinja2 = ">=3.1.2,<3.2.0"
 jsonref = ">=0.2,<1.0"
-jsonschema = ">=4.0,<5.0"
+jsonschema = ">=3.2.0,<5.0"
 pendulum = "^2.1.2"
 pydantic = ">=1.10.8,<2.0.0"
 pyrate-limiter = ">=3.1.0,<3.2.0"
@@ -57,8 +57,11 @@ sphinx-docs = ["sphinx (>=4.2,<5.0)", "sphinx-rtd-theme (>=1.0,<2.0)"]
 vector-db-based = ["cohere (==4.21)", "langchain (==0.0.271)", "tiktoken (==0.4.0)"]
 
 [package.source]
-type = "directory"
-url = "../../../airbyte-cdk/python"
+type = "git"
+url = "https://github.com/airbytehq/airbyte.git"
+reference = "aj/source-dbt"
+resolved_reference = "46b14a8fd72b30b42c95c5c546d04338a39b6e48"
+subdirectory = "airbyte-cdk/python"
 
 [[package]]
 name = "airbyte-protocol-models"
@@ -144,13 +147,13 @@ files = [
 
 [[package]]
 name = "cattrs"
-version = "23.2.1"
+version = "23.2.2"
 description = "Composable complex class support for attrs and dataclasses."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "cattrs-23.2.1-py3-none-any.whl", hash = "sha256:c505344019b1a2708c775ffb1b8d092654d22a570799bb7b925c9effefc22703"},
-    {file = "cattrs-23.2.1.tar.gz", hash = "sha256:c9685821a75dc8588b90e847f47bcb6fba7bce8f280d5dc4edd3290e827854ec"},
+    {file = "cattrs-23.2.2-py3-none-any.whl", hash = "sha256:66064e2060ea207c5a48d065ab1910c10bb8108c28f3df8d1a7b1aa6b19d191b"},
+    {file = "cattrs-23.2.2.tar.gz", hash = "sha256:b790b1c2be1ce042611e33f740e343c2593918bbf3c1cc88cdddac4defc09655"},
 ]
 
 [package.dependencies]
@@ -557,13 +560,13 @@ files = [
 
 [[package]]
 name = "exceptiongroup"
-version = "1.1.3"
+version = "1.2.0"
 description = "Backport of PEP 654 (exception groups)"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "exceptiongroup-1.1.3-py3-none-any.whl", hash = "sha256:343280667a4585d195ca1cf9cef84a4e178c4b6cf2274caef9859782b567d5e3"},
-    {file = "exceptiongroup-1.1.3.tar.gz", hash = "sha256:097acd85d473d75af5bb98e41b61ff7fe35efe6675e4f9370ec6ec5126d160e9"},
+    {file = "exceptiongroup-1.2.0-py3-none-any.whl", hash = "sha256:4bfd3996ac73b41e9b9628b04e079f193850720ea5945fc96a08633c66912f14"},
+    {file = "exceptiongroup-1.2.0.tar.gz", hash = "sha256:91f5c769735f051a4290d52edd0858999b57e5876e9f85937691bd4c9fa3ed68"},
 ]
 
 [package.extras]
@@ -1451,13 +1454,13 @@ files = [
 
 [[package]]
 name = "setuptools"
-version = "69.0.0"
+version = "69.0.2"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "setuptools-69.0.0-py3-none-any.whl", hash = "sha256:eb03b43f23910c5fd0909cb677ad017cd9531f493d27f8b3f5316ff1fb07390e"},
-    {file = "setuptools-69.0.0.tar.gz", hash = "sha256:4c65d4f7891e5b046e9146913b87098144de2ca2128fbc10135b8556a6ddd946"},
+    {file = "setuptools-69.0.2-py3-none-any.whl", hash = "sha256:1e8fdff6797d3865f37397be788a4e3cba233608e9b509382a2777d25ebde7f2"},
+    {file = "setuptools-69.0.2.tar.gz", hash = "sha256:735896e78a4742605974de002ac60562d286fa8051a7e2299445e8e8fbb01aa6"},
 ]
 
 [package.extras]
@@ -1665,5 +1668,5 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.10,<4.0"
-content-hash = "339e19c2d4e85cd86442a4b05b1a1513db92914410b2b540925687f8fbd8b5fb"
+python-versions = ">=3.9.18,<4.0"
+content-hash = "4fdbedabe632212b28edb09b93261956a4f823398a1e00892094330098ed11ab"

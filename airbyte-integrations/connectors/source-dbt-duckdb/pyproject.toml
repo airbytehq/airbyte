@@ -7,14 +7,16 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<4.0"
+python = ">=3.9.18,<4.0"
 
 # Toggle which version of the CDK to use by commenting/uncommenting the appropriate line below.
 #
 # Use a published version of the CDK:
-# airbyte-cdk = "^0.53.9"  
+# airbyte-cdk = "^0.53.9"
 # OR use the local version of the CDK:
-airbyte-cdk = { path = "../../../airbyte-cdk/python", develop = true }
+# airbyte-cdk = { path = "../../../airbyte-cdk/python", develop = true }
+# OR temporary workaround because `airbyte-ci` doesn't have access to the local directory, and/or it is missing dependencies:
+airbyte-cdk = { git = "https://github.com/airbytehq/airbyte.git", branch = "aj/source-dbt", develop = true, subdirectory = "airbyte-cdk/python" }
 
 # Other dependencies
 dbt-duckdb = "^1.7.0"

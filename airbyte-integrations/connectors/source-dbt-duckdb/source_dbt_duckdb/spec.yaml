@@ -12,11 +12,11 @@ connectionSpecification:
       type: string
       description: Path to the dbt project directory.
       order: 1
-    # profile:
-    #   type: string
-    #   description: Name of the profile to use.
-    #   order: 2
-    #   default: dev
+    profile:
+      type: string
+      description: >
+        Name of the profile to use. If not provided, the default profile will be used.
+      order: 2
     env_var_settings:
       type: array
       description: >

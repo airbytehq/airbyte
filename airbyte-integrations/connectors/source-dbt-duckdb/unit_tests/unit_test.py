@@ -57,6 +57,17 @@ def test_spec_success(sample_configured_catalog, sample_config):
     )
 
 
+def test_discover_success(sample_config):
+    """Test that we can run a sync."""
+    launch(
+        SourceDbtDuckDB(),
+        [
+            "discover",
+            f"--config={SAMPLE_CONFIG_PATH}",
+        ],
+    )
+
+
 def test_check_success(sample_configured_catalog, sample_config):
     """Test that we can run a sync."""
     launch(
