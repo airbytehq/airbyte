@@ -10,7 +10,7 @@ import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .common import BASE_URL, get_date_time, get_header, get_instances_detail, get_table_field, get_result_node
-from .constraints import REFERAL_SCHEMA, SCHEMA_HEADERS
+from .constraints import INSTANCES_SCHEMA, VIEW_LIST_SCHEMA, TABLE_LIST_SCHEMA, ROLE_LIST_SCHEMA, RECORD_LIST_SCHEMA, MEMBER_LIST_SCHEMA, FIELD_LIST_SCHEMA, DASHBOARD_LIST_SCHEMA
 
 
 class FeishuInstancesStream(HttpStream, ABC):
@@ -41,7 +41,7 @@ class FeishuInstancesStream(HttpStream, ABC):
 
     @property
     def ref_schema(self) -> Mapping[str, str]:
-        schema = REFERAL_SCHEMA
+        schema = INSTANCES_SCHEMA
         return schema
 
     def get_schema(self, ref: str) -> Union[Mapping[str, Any], str]:
@@ -55,7 +55,7 @@ class FeishuInstancesStream(HttpStream, ABC):
         # try to retrieve the schema from the cache
         schema = self.schemas.get(ref)
         if not schema:
-            schema = REFERAL_SCHEMA
+            schema = INSTANCES_SCHEMA
             self.schemas[ref] = schema
         return schema
 
@@ -132,9 +132,10 @@ class FeishuInstancesStream(HttpStream, ABC):
 
 # Basic full refresh stream
 class FeishuBitableStream(HttpStream, ABC):
+
     primary_key = None
 
-    def __init__(self, config: Mapping[str, Any], app_token, table_id, view_id, **kwargs):
+    def __init__(self, config: Mapping[str, Any], app_token, table_id, view_id, object_name, object_type, **kwargs):
         super().__init__(**kwargs)
 
         self.config_param = config
@@ -143,6 +144,8 @@ class FeishuBitableStream(HttpStream, ABC):
         self.app_token = app_token
         self.table_id = table_id
         self.view_id = view_id
+        self.object_name = object_name
+        self.object_type = object_type
         self.current_page = None
 
     @property
@@ -154,7 +157,83 @@ class FeishuBitableStream(HttpStream, ABC):
         return BASE_URL
 
     def path(self, **kwargs) -> str:
-        return ""
+
+        if "record"== self.object_type:
+            return f"/open-apis/bitable/v1/apps/{self.app_token}/tables/{self.table_id}/records"
+        elif "member" == self.object_type:
+            return f"/open-apis/drive/v1/permissions/{self.app_token}/members"
+        elif "field" == self.object_type:
+            return f"/open-apis/bitable/v1/apps/{self.app_token}/tables/{self.table_id}/fields"
+        elif "view" == self.object_type:
+            return f"/open-apis/bitable/v1/apps/{self.app_token}/tables/{self.table_id}/views"
+        elif "table" == self.object_type:
+            return f"/open-apis/bitable/v1/apps/{self.app_token}/tables"
+        elif "role" == self.object_type:
+            return f"/open-apis/bitable/v1/apps/{self.app_token}/roles"
+        
+        return f"/open-apis/bitable/v1/apps/{self.app_token}/dashboards"
+    
+    @property
+    def name(self) -> str:
+        return self.object_name
+    
+    @property
+    def ref_schema(self) -> Mapping[str, str]:
+
+        if "view"== self.object_type:
+            return  VIEW_LIST_SCHEMA
+        elif "table" == self.object_type:
+            return  TABLE_LIST_SCHEMA
+        elif "role" == self.object_type:
+            return ROLE_LIST_SCHEMA
+        elif "record" == self.object_type:
+            return  RECORD_LIST_SCHEMA
+        elif "member" == self.object_type:
+            return   MEMBER_LIST_SCHEMA
+        elif "field" == self.object_type:
+            return   FIELD_LIST_SCHEMA
+        elif "dashboard" == self.object_type:
+            return  DASHBOARD_LIST_SCHEMA
+
+    def get_schema(self, ref: str) -> Union[Mapping[str, Any], str]:
+
+        if "view"== self.object_type:
+            return  VIEW_LIST_SCHEMA
+        elif "table" == self.object_type:
+            return  TABLE_LIST_SCHEMA
+        elif "role" == self.object_type:
+            return ROLE_LIST_SCHEMA
+        elif "record" == self.object_type:
+            return  RECORD_LIST_SCHEMA
+        elif "member" == self.object_type:
+            return   MEMBER_LIST_SCHEMA
+        elif "field" == self.object_type:
+            return   FIELD_LIST_SCHEMA
+        elif "dashboard" == self.object_type:
+            return  DASHBOARD_LIST_SCHEMA
+
+    def build_schema(self, record: Any) -> Mapping[str, Any]:
+        # recursively build a schema with subschemas
+        if isinstance(record, dict):
+            # Netsuite schemas do not specify if fields can be null, or not
+            # as Airbyte expects, so we have to allow every field to be null
+            property_type = record.get("type")
+
+            property_type_list = property_type if isinstance(property_type, list) else [property_type]
+            # ensure there is a type, type is the json schema type and not a property
+            # and null has not already been added
+            if property_type and not isinstance(property_type, dict) and "null" not in property_type_list:
+                record["type"] = ["null"] + property_type_list
+            # removing non-functional elements from schema
+
+            return {k: self.build_schema(v) for k, v in record.items()}
+        else:
+            return record
+
+    def get_json_schema(self, **kwargs) -> dict:
+        schema = self.get_schema(self.name)
+        return self.build_schema(schema)
+
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         respJson = response.json()
@@ -177,6 +256,12 @@ class FeishuBitableStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
+        if "record" == self.object_type:
+            return {"page_size": "500", "page_token": self.page_token, "view_id": self.view_id}
+        elif "member" == self.object_type:
+            return {"type": "bitable"}
+        elif "role" == self.object_type:
+            return {"page_size": "30", "page_token": self.page_token}
         return {"page_size": self.page_size, "page_token": self.page_token}
 
     def request_headers(
@@ -191,7 +276,7 @@ class FeishuBitableStream(HttpStream, ABC):
             if page_token is not None:
                 self.page_token = page_token
 
-            node_name = get_result_node(self.name)
+            node_name = get_result_node(self.object_type)
             results = respJson.get("data").get(node_name)
 
             ret_list = []
@@ -200,10 +285,16 @@ class FeishuBitableStream(HttpStream, ABC):
             for item in results:
                 if item.get("app_token") is None:
                     item["app_token"] = self.app_token
-                if get_table_field(self.name, "table"):
+                if get_table_field(self.object_type, "table"):
                     if item.get("table_id") is None:
                         item["table_id"] = self.table_id
-                if get_table_field(self.name, "view"):
+                if get_table_field(self.object_type, "view"):
+                    if item.get("view_id") is None:
+                        item["view_id"] = self.view_id
+                if get_table_field(self.object_type, "field"):
+                    print(item)
+                    if item.get("table_id") is None:
+                        item["table_id"] = self.table_id
                     if item.get("view_id") is None:
                         item["view_id"] = self.view_id
                 ret_list.append(item)
@@ -211,81 +302,3 @@ class FeishuBitableStream(HttpStream, ABC):
 
         else:
             raise Exception([{"message": "Failed to obtain data.", "msg": respJson}])
-
-
-class RecordList(FeishuBitableStream):
-    primary_key = "record_id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"/open-apis/bitable/v1/apps/{self.app_token}/tables/{self.table_id}/records"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {"page_size": "500", "page_token": self.page_token, "view_id": self.view_id}
-
-
-class FieldList(FeishuBitableStream):
-    primary_key = "field_id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"/open-apis/bitable/v1/apps/{self.app_token}/tables/{self.table_id}/fields"
-
-
-class ViewList(FeishuBitableStream):
-    primary_key = "field_id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"/open-apis/bitable/v1/apps/{self.app_token}/tables/{self.table_id}/views"
-
-
-class TableList(FeishuBitableStream):
-    primary_key = "table_id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"/open-apis/bitable/v1/apps/{self.app_token}/tables"
-
-
-class MemberList(FeishuBitableStream):
-    primary_key = "member_open_id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"/open-apis/drive/v1/permissions/{self.app_token}/members"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {"type": "bitable"}
-
-
-class RoleList(FeishuBitableStream):
-    primary_key = "role_id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"/open-apis/bitable/v1/apps/{self.app_token}/roles"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {"page_size": "30", "page_token": self.page_token}
-
-
-class DashboardList(FeishuBitableStream):
-    primary_key = "block_id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"/open-apis/bitable/v1/apps/{self.app_token}/dashboards"
