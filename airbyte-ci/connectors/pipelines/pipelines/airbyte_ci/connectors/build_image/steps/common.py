@@ -2,14 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from abc import ABC
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import docker
 from dagger import Container, ExecError, Platform, QueryError
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.helpers.utils import export_containers_to_tarball
+from pipelines.consts import BUILD_PLATFORMS
+from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 
@@ -22,8 +22,8 @@ class BuildConnectorImagesBase(Step, ABC):
     def title(self):
         return f"Build {self.context.connector.technical_name} docker image for platform(s) {', '.join(self.build_platforms)}"
 
-    def __init__(self, context: ConnectorContext) -> None:
-        self.build_platforms: List[Platform] = context.targeted_platforms
+    def __init__(self, context: ConnectorContext, *build_platforms: List[Platform]) -> None:
+        self.build_platforms = build_platforms if build_platforms else BUILD_PLATFORMS
         super().__init__(context)
 
     async def _run(self, *args) -> StepResult:
@@ -56,41 +56,28 @@ class BuildConnectorImagesBase(Step, ABC):
 
 
 class LoadContainerToLocalDockerHost(Step):
-    def __init__(self, context: ConnectorContext, containers: dict[Platform, Container], image_tag: Optional[str] = "dev") -> None:
+    IMAGE_TAG = "dev"
+
+    def __init__(self, context: ConnectorContext, platform: Platform, containers: dict[Platform, Container]) -> None:
         super().__init__(context)
-        self.image_tag = image_tag
-        self.containers = containers
+        self.platform = platform
+        self.container = containers[platform]
 
     @property
     def title(self):
-        return f"Load {self.image_name}:{self.image_tag} to the local docker host."
+        return f"Load {self.image_name}:{self.IMAGE_TAG} for platform {self.platform} to the local docker host."
 
     @property
     def image_name(self) -> Tuple:
         return f"airbyte/{self.context.connector.technical_name}"
 
     async def _run(self) -> StepResult:
-        container_variants = list(self.containers.values())
-        _, exported_tar_path = await export_containers_to_tarball(self.context, container_variants)
-        if not exported_tar_path:
-            return StepResult(
-                self,
-                StepStatus.FAILURE,
-                stderr=f"Failed to export the connector image {self.image_name}:{self.image_tag} to a tarball.",
-            )
+        _, exported_tarball_path = await export_container_to_tarball(self.context, self.container)
+        client = docker.from_env()
         try:
-            client = docker.from_env()
-            response = client.api.import_image_from_file(str(exported_tar_path), repository=self.image_name, tag=self.image_tag)
-            try:
-                image_sha = json.loads(response)["status"]
-            except (json.JSONDecodeError, KeyError):
-                return StepResult(
-                    self,
-                    StepStatus.FAILURE,
-                    stderr=f"Failed to import the connector image {self.image_name}:{self.image_tag} to your Docker host: {response}",
-                )
-            return StepResult(
-                self, StepStatus.SUCCESS, stdout=f"Loaded image {self.image_name}:{self.image_tag} to your Docker host ({image_sha})."
-            )
-        except docker.errors.DockerException as e:
-            return StepResult(self, StepStatus.FAILURE, stderr=f"Something went wrong while interacting with the local docker client: {e}")
+            with open(exported_tarball_path, "rb") as tarball_content:
+                new_image = client.images.load(tarball_content.read())[0]
+            new_image.tag(self.image_name, tag=self.IMAGE_TAG)
+            return StepResult(self, StepStatus.SUCCESS)
+        except ConnectionError:
+            return StepResult(self, StepStatus.FAILURE, stderr="The connection to the local docker host failed.")
