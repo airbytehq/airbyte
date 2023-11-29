@@ -77,4 +77,6 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 | :--- | :--- | :--- | :--- |
 | 0.1.0 | 2022-10-27 | [17888](https://github.com/airbytehq/airbyte/pull/17888) | Initial Release |
 | 0.1.1 | 2023-08-30 | [29830](https://github.com/airbytehq/airbyte/pull/29830) | Change phone_number in Calls to string (bug in zendesk sell api documentation) |
+| 0.2.0 | 2023-10-23 | [31016](https://github.com/airbytehq/airbyte/pull/31016) | Migrated to Low Code CDK |
+
 

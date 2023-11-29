@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.source.relationaldb;
 import static io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import datadog.trace.api.Trace;
 import io.airbyte.cdk.db.AbstractDatabase;
@@ -75,8 +76,14 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   public static final String READ_TRACE_OPERATION_NAME = "read-operation";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
+
   // TODO: Remove when the flag is not use anymore
-  private final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+  protected FeatureFlags featureFlags = new EnvVariableFeatureFlags();
+
+  @VisibleForTesting
+  public void setFeatureFlags(FeatureFlags featureFlags) {
+    this.featureFlags = featureFlags;
+  }
 
   @Override
   @Trace(operationName = CHECK_TRACE_OPERATION_NAME)

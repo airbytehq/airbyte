@@ -11,13 +11,13 @@ import os
 import re
 import sys
 import unicodedata
-from glob import glob
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple
 
 import anyio
 import asyncer
+import click
 from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, QueryError, Secret
 from more_itertools import chunked
 
@@ -308,13 +308,20 @@ def sh_dash_c(lines: List[str]) -> List[str]:
     return ["sh", "-c", " && ".join(["set -o xtrace"] + lines)]
 
 
-def transform_strs_to_paths(str_paths: List[str]) -> List[Path]:
-    """Transform a list of string paths to a list of Path objects.
+def transform_strs_to_paths(str_paths: Set[str]) -> List[Path]:
+    """Transform a list of string paths to an ordered list of Path objects.
 
     Args:
-        str_paths (List[str]): A list of string paths.
+        str_paths (Set[str]): A set of string paths.
 
     Returns:
         List[Path]: A list of Path objects.
     """
-    return [Path(str_path) for str_path in str_paths]
+    return sorted([Path(str_path) for str_path in str_paths])
+
+
+def fail_if_missing_docker_hub_creds(ctx: click.Context):
+    if ctx.obj["docker_hub_username"] is None or ctx.obj["docker_hub_password"] is None:
+        raise click.UsageError(
+            "You need to be logged to DockerHub registry to run this command. Please set DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables."
+        )

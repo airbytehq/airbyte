@@ -1,5 +1,85 @@
 # Changelog
 
+## 0.55.0
+concurrent cdk: read multiple streams concurrently
+
+## 0.54.0
+low-code: fix injection of page token if first request
+
+## 0.53.9
+Fix of generate the error message using _try_get_error based on list of errors
+
+## 0.53.8
+Vector DB CDK: Remove CDC records, File CDK: Update unstructured parser
+
+## 0.53.7
+low-code: fix debug logging when using --debug flag
+
+## 0.53.6
+Increase maximum_attempts_to_acquire to avoid crashing in acquire_call
+
+## 0.53.5
+File CDK: Improve stream config appearance
+
+## 0.53.4
+Concurrent CDK: fix futures pruning
+
+## 0.53.3
+Fix spec schema generation for File CDK and Vector DB CDK and allow skipping invalid files in document file parser
+
+## 0.53.2
+Concurrent CDK: Increase connection pool size to allow for 20 max workers
+
+## 0.53.1
+Concurrent CDK: Improve handling of future to avoid memory leak and improve performances
+
+## 0.53.0
+Add call rate functionality
+
+## 0.52.10
+Fix class SessionTokenAuthenticator for CLASS_TYPES_REGISTRY mapper
+
+## 0.52.9
+File CDK: Improve file type detection in document file type parser
+
+## 0.52.8
+Concurrent CDK: incremental (missing state conversion). Outside of concurrent specific work, this includes the following changes:
+* Checkpointing state was acting on the number of records per slice. This has been changed to consider the number of records per syncs
+* `Source.read_state` and `Source._emit_legacy_state_format` are now classmethods to allow for developers to have access to the state before instantiating the source
+
+## 0.52.7
+File CDK: Add pptx support
+
+## 0.52.6
+make  parameter as not required for default backoff handler
+
+## 0.52.5
+use in-memory cache if no file path is provided
+
+## 0.52.4
+File CDK: Add unstructured parser
+
+## 0.52.3
+Update source-declarative-manifest base image to update Linux alpine and Python
+
+## 0.52.2
+
+
+## 0.52.1
+Add max time for backoff handler
+
+## 0.52.0
+File CDK: Add CustomFileBasedException for custom errors
+
+## 0.51.44
+low-code: Allow connector developers to specify the type of an added field
+
+## 0.51.43
+concurrent cdk: fail fast if a partition raises an exception
+
+## 0.51.42
+File CDK: Avoid listing all files for check command
+
 ## 0.51.41
 Vector DB CDK: Expose stream identifier logic, add field remapping to processing | File CDK: Emit analytics message for used streams
 

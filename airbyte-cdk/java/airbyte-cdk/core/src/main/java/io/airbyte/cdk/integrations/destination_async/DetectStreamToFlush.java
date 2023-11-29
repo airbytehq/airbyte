@@ -28,7 +28,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 public class DetectStreamToFlush {
 
   private static final double EAGER_FLUSH_THRESHOLD = 0.90;
-  private static final long QUEUE_FLUSH_THRESHOLD_BYTES = 10 * 1024 * 1024; // 10MB
   private static final long MAX_TIME_BETWEEN_FLUSH_MS = 5 * 60 * 1000;
   private final BufferDequeue bufferDequeue;
   private final RunningFlushWorkers runningFlushWorkers;
@@ -87,7 +86,7 @@ public class DetectStreamToFlush {
     final boolean isBuffer90Full =
         EAGER_FLUSH_THRESHOLD <= (double) bufferDequeue.getTotalGlobalQueueSizeBytes() / bufferDequeue.getMaxQueueSizeBytes();
     // when we are closing or queues are very full, flush regardless of how few items are in the queue.
-    return isClosing.get() || isBuffer90Full ? 0 : QUEUE_FLUSH_THRESHOLD_BYTES;
+    return isClosing.get() || isBuffer90Full ? 0 : flusher.getQueueFlushThresholdBytes();
   }
 
   // todo (cgardens) - improve prioritization by getting a better estimate of how much data running

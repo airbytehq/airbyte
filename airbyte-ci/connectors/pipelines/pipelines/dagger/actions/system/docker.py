@@ -4,25 +4,30 @@
 
 import json
 import uuid
-from typing import Callable
+from typing import Callable, Optional
 
-from dagger import Client, Container, File
+from dagger import Client, Container, File, Secret
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.consts import DOCKER_HOST_NAME, DOCKER_HOST_PORT, DOCKER_TMP_VOLUME_NAME
+from pipelines.consts import DOCKER_HOST_NAME, DOCKER_HOST_PORT, DOCKER_TMP_VOLUME_NAME, DOCKER_VAR_LIB_VOLUME_NAME
 from pipelines.helpers.utils import sh_dash_c
 
 
-def with_global_dockerd_service(dagger_client: Client) -> Container:
+def with_global_dockerd_service(
+    dagger_client: Client, docker_hub_username_secret: Optional[Secret] = None, docker_hub_password_secret: Optional[Secret] = None
+) -> Container:
     """Create a container with a docker daemon running.
     We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
     Args:
         dagger_client (Client): The dagger client used to create the container.
+        docker_hub_username_secret (Optional[Secret]): The DockerHub username secret.
+        docker_hub_password_secret (Optional[Secret]): The DockerHub password secret.
     Returns:
         Container: The container running dockerd as a service
     """
-    return (
-        dagger_client.container().from_(consts.DOCKER_DIND_IMAGE)
+    dockerd_container = (
+        dagger_client.container()
+        .from_(consts.DOCKER_DIND_IMAGE)
         # We set this env var because we need to use a non-default zombie reaper setting.
         # The reason for this is that by default it will want to set its parent process ID to 1 when reaping.
         # This won't be possible because of container-ception: dind is running inside the dagger engine.
@@ -45,11 +50,20 @@ def with_global_dockerd_service(dagger_client: Client) -> Container:
         # Expose the docker host port.
         .with_exposed_port(DOCKER_HOST_PORT)
         # Mount the docker cache volumes.
+        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
         .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
-        # Run the docker daemon and bind it to the exposed TCP port.
-        .with_exec(
-            ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
+    )
+    if docker_hub_username_secret and docker_hub_password_secret:
+        dockerd_container = (
+            dockerd_container
+            # We use a cache buster here to guarantee the docker login is always executed.
+            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
+            .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
+            .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
+            .with_exec(sh_dash_c(["docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]), skip_entrypoint=True)
         )
+    return dockerd_container.with_exec(
+        ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
     )
 
 

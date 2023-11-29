@@ -16,12 +16,12 @@ on:
         default: "--pre-release"
       runs-on:
         type: string
-        default: conn-prod-xlarge-runner
+        default: ci-runner-connector-publish-large-dagger-0-6-4
         required: true
 jobs:
   publish_connectors:
     name: Publish connectors
-    runs-on: ${{ inputs.runs-on || 'conn-prod-xlarge-runner' }}
+    runs-on: ${{ inputs.runs-on || 'ci-runner-connector-publish-large-dagger-0-6-4' }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -40,6 +40,8 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --concurrency=1 --execute-timeout=3600 --metadata-changes-only publish --main-release"
 
       - name: Publish connectors [manual]
@@ -57,6 +59,8 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
 
   set-instatus-incident-on-failure:
