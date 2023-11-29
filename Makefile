@@ -1,10 +1,10 @@
 ##@ Makefile
 
-##@ Define the default version
-VERSION ?= latest
+##@ Define the default airbyte-ci version
+AIRBYTE_CI_VERSION ?= latest
 
 tools.airbyte-ci.install: ## Install airbyte-ci
-	@python airbyte-ci/connectors/pipelines/pipelines/external_scripts/airbyte_ci_install.py ${VERSION}
+	@python airbyte-ci/connectors/pipelines/pipelines/external_scripts/airbyte_ci_install.py ${AIRBYTE_CI_VERSION}
 
 tools.airbyte-ci-dev.install: ## Install the development version of airbyte-ci
 	@python airbyte-ci/connectors/pipelines/pipelines/external_scripts/airbyte_ci_dev_install.py
