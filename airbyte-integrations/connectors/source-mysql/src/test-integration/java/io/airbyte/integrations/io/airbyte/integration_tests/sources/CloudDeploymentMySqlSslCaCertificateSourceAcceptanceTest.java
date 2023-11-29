@@ -14,8 +14,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import java.awt.Container;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class CloudDeploymentMySqlSslCaCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
