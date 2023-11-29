@@ -61,7 +61,7 @@ class HttpMocker(contextlib.ContextDecorator):
 
         return matches
 
-    def __call__(self, f):
+    def __call__(self, f):  # type: ignore  # trying to type that using callables provides the error `incompatible with return type "_F" in supertype "ContextDecorator"`
         @functools.wraps(f)
         def wrapper(*args, **kwargs):  # type: ignore  # this is a very generic wrapper that does not need to be typed
             with self:
