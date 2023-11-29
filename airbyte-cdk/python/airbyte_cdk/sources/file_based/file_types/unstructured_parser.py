@@ -38,6 +38,7 @@ def _import_unstructured() -> None:
     unstructured_partition_pptx = partition_pptx
     unstructured_optional_decode = optional_decode
 
+
 class UnstructuredParser(FileTypeParser):
     @property
     def parser_max_n_files_for_schema_inference(self) -> Optional[int]:
