@@ -80,14 +80,11 @@ class ConcurrentReadProcessor:
         2. Log the slice if necessary
         3. Submit the partition to the thread pool manager
         """
-        # print(f"mainthread:on_partition")
         stream_name = partition.stream_name()
         self._streams_to_partitions[stream_name].add(partition)
         if self._slice_logger.should_log_slice_message(self._logger):
             self._message_repository.emit_message(self._slice_logger.create_slice_log_message(partition.to_slice()))
-        # print(f"mainthread:before_submit")
         self._thread_pool_manager.submit(self._partition_reader.process_partition, partition)
-        # print(f"mainthread:after_submit")
 
     def on_partition_complete_sentinel(self, sentinel: PartitionCompleteSentinel) -> Iterable[AirbyteMessage]:
         """
@@ -96,14 +93,10 @@ class ConcurrentReadProcessor:
         2. If the stream is done, mark it as such and return a stream status message
         3. Emit messages that were added to the message repository
         """
-        # print(f"mainthread:on_partition_complete_sentinel")
         partition = sentinel.partition
         partition.close()
-        # print(f"mainthread:on_partition_complete_sentinel:close")
         if self._is_stream_done(partition.stream_name()):
-            # print(f"mainthread:on_partition_complete_sentinel:stream_is_done")
             yield self._on_stream_is_done(partition.stream_name())
-        # print(f"mainthread:yielding_from_message_repository")
         yield from self._message_repository.consume_queue()
 
     def on_record(self, record: Record) -> Iterable[AirbyteMessage]:
