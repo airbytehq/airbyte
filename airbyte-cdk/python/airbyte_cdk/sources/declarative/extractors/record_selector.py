@@ -65,9 +65,10 @@ class RecordSelector(HttpSelector):
         self._normalize_by_schema(filtered_data, schema=records_schema)
         return [Record(data, stream_slice) for data in filtered_data]
 
-    def _normalize_by_schema(self, records: List[Mapping[str, Any]], schema: Optional[Mapping[str, Any]]):
+    def _normalize_by_schema(self, records: List[Mapping[str, Any]], schema: Optional[Mapping[str, Any]]) -> List[Mapping[str, Any]]:
         if schema:
-            return [self.schema_normalization.transform(record, schema) for record in records]
+            # record has type Mapping[str, Any], but dict[str, Any] expected
+            return [self.schema_normalization.transform(record, schema) for record in records]  # type: ignore
         return records
 
     def _filter(
@@ -91,4 +92,5 @@ class RecordSelector(HttpSelector):
     ) -> None:
         for record in records:
             for transformation in self.transformations:
-                transformation.transform(record, config=self.config, stream_state=stream_state, stream_slice=stream_slice)
+                # record has type Mapping[str, Any], but Record expected
+                transformation.transform(record, config=self.config, stream_state=stream_state, stream_slice=stream_slice)  # type: ignore
