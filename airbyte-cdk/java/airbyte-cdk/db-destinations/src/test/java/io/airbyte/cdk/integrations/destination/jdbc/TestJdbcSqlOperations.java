@@ -24,7 +24,10 @@ public class TestJdbcSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  protected void insertRecordsInternalV2(final JdbcDatabase database, final List<PartialAirbyteMessage> records, final String schemaName, final String tableName)
+  protected void insertRecordsInternalV2(final JdbcDatabase database,
+                                         final List<PartialAirbyteMessage> records,
+                                         final String schemaName,
+                                         final String tableName)
       throws Exception {
     // Not required for the testing
   }

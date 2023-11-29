@@ -89,7 +89,10 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  protected void insertRecordsInternalV2(final JdbcDatabase database, final List<PartialAirbyteMessage> records, final String schemaName, final String tableName)
+  protected void insertRecordsInternalV2(final JdbcDatabase database,
+                                         final List<PartialAirbyteMessage> records,
+                                         final String schemaName,
+                                         final String tableName)
       throws Exception {
     LOGGER.info("actual size of batch: {}", records.size());
     database.execute(connection -> {
