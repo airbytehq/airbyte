@@ -4,7 +4,7 @@
 
 import json
 from abc import ABC
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import docker
 from dagger import Container, ExecError, Platform, QueryError
@@ -56,15 +56,14 @@ class BuildConnectorImagesBase(Step, ABC):
 
 
 class LoadContainerToLocalDockerHost(Step):
-    IMAGE_TAG = "dev"
-
-    def __init__(self, context: ConnectorContext, containers: dict[Platform, Container]) -> None:
+    def __init__(self, context: ConnectorContext, containers: dict[Platform, Container], image_tag: Optional[str] = "dev") -> None:
         super().__init__(context)
+        self.image_tag = image_tag
         self.containers = containers
 
     @property
     def title(self):
-        return f"Load {self.image_name}:{self.IMAGE_TAG} to the local docker host."
+        return f"Load {self.image_name}:{self.image_tag} to the local docker host."
 
     @property
     def image_name(self) -> Tuple:
@@ -77,21 +76,21 @@ class LoadContainerToLocalDockerHost(Step):
             return StepResult(
                 self,
                 StepStatus.FAILURE,
-                stderr=f"Failed to export the connector image {self.image_name}:{self.IMAGE_TAG} to a tarball.",
+                stderr=f"Failed to export the connector image {self.image_name}:{self.image_tag} to a tarball.",
             )
         try:
             client = docker.from_env()
-            response = client.api.import_image_from_file(str(exported_tar_path), repository=self.image_name, tag=self.IMAGE_TAG)
+            response = client.api.import_image_from_file(str(exported_tar_path), repository=self.image_name, tag=self.image_tag)
             try:
                 image_sha = json.loads(response)["status"]
             except (json.JSONDecodeError, KeyError):
                 return StepResult(
                     self,
                     StepStatus.FAILURE,
-                    stderr=f"Failed to import the connector image {self.image_name}:{self.IMAGE_TAG} to your Docker host: {response}",
+                    stderr=f"Failed to import the connector image {self.image_name}:{self.image_tag} to your Docker host: {response}",
                 )
             return StepResult(
-                self, StepStatus.SUCCESS, stdout=f"Loaded image {self.image_name}:{self.IMAGE_TAG} to your Docker host ({image_sha})."
+                self, StepStatus.SUCCESS, stdout=f"Loaded image {self.image_name}:{self.image_tag} to your Docker host ({image_sha})."
             )
         except docker.errors.DockerException as e:
             return StepResult(self, StepStatus.FAILURE, stderr=f"Something went wrong while interacting with the local docker client: {e}")
