@@ -114,16 +114,6 @@
         "minimum": 1,
         "order": 9
       },
-      "report_options": {
-        "title": "Report Options",
-        "description": "(DEPRECATED) Additional information passed to reports. This varies by report type. Must be a valid json string.",
-        "examples": [
-          "{\"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT\": {\"reportPeriod\": \"WEEK\"}}",
-          "{\"GET_SOME_REPORT\": {\"custom\": \"true\"}}"
-        ],
-        "type": "string",
-        "airbyte_hidden": true
-      },
       "report_options_list": {
         "title": "Report Options",
         "description": "Additional information passed to reports. This varies by report type.",
