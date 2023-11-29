@@ -16,6 +16,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.redshift.RedshiftInsertDestination;
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer;
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGeneratorIntegrationTest.RedshiftSourceOperations;
 import java.nio.file.Path;
 import java.util.List;
 import javax.sql.DataSource;
@@ -48,7 +49,7 @@ public abstract class AbstractRedshiftTypingDedupingTest extends BaseTypingDedup
     ((ObjectNode) config).put("schema", "typing_deduping_default_schema" + getUniqueSuffix());
     final RedshiftInsertDestination insertDestination = new RedshiftInsertDestination();
     dataSource = insertDestination.getDataSource(config);
-    database = insertDestination.getDatabase(dataSource);
+    database = insertDestination.getDatabase(dataSource, new RedshiftSourceOperations());
     return config;
   }
 
@@ -75,8 +76,8 @@ public abstract class AbstractRedshiftTypingDedupingTest extends BaseTypingDedup
     if (streamNamespace == null) {
       streamNamespace = getDefaultSchema();
     }
-    database.execute(DSL.dropTableIfExists(DSL.name(streamNamespace, streamName)).cascade().getSQL());
-    database.execute(DSL.dropSchema(DSL.name(streamNamespace)).cascade().getSQL());
+    database.execute(DSL.dropTableIfExists(DSL.name(getRawSchema(), StreamId.concatenateRawTableName(streamNamespace, streamName))).getSQL());
+    database.execute(DSL.dropSchemaIfExists(DSL.name(streamNamespace)).cascade().getSQL());
   }
 
   @Override
