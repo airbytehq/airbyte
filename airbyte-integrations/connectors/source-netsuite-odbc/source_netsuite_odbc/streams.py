@@ -2,22 +2,31 @@
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union, Final
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
-from datetime import datetime, date
-import calendar
+from datetime import date
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteStateMessage,
+    Type,
+    AirbyteStateType,
+    AirbyteStreamState,
+    StreamDescriptor,
+)
 
 # A stream's read method can return one of the following types:
 # Mapping[str, Any]: The content of an AirbyteRecordMessage
 # AirbyteMessage: An AirbyteMessage. Could be of any type
 StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
-NETSUITE_PAGINATION_INTERVAL: Final[int] = 10000
-EARLIEST_DATE: Final[str] = date(1980, 1, 1)
+NETSUITE_PAGINATION_INTERVAL: Final[int] = 10
+EARLIEST_DATE: Final[str] = date(2020, 1, 1)
 YEARS_FORWARD_LOOKING: Final[int] = 1
 STARTING_CURSOR_VALUE: Final[int] = -1
 
 
 
-class NetsuiteODBCStream(Stream, IncrementalMixin):
+# class NetsuiteODBCStream(Stream, IncrementalMixin):
+class NetsuiteODBCStream(Stream):
+
     def get_primary_key_from_stream(self, stream):
       key = stream.primary_key
       if not key:
@@ -39,13 +48,12 @@ class NetsuiteODBCStream(Stream, IncrementalMixin):
     def get_properties_from_stream(self, stream):
       return stream.json_schema['properties'].keys()
 
-    def __init__(self, cursor, table_name, stream, is_incremental):
+    def __init__(self, cursor, table_name, stream):
       self.cursor = cursor
       self.table_name = table_name
       self.properties = self.get_properties_from_stream(stream)
       self.primary_key_column = self.get_primary_key_from_stream(stream)
       self.incremental_column = self.get_incremental_column_from_stream(stream)
-      self.is_incremental_stream = is_incremental
       self.cursor_value_last_id_seen = STARTING_CURSOR_VALUE
       self.incremental_most_recent_value_seen = None
       self.json_schema = stream.json_schema
@@ -74,6 +82,11 @@ class NetsuiteODBCStream(Stream, IncrementalMixin):
       """
       return [self.primary_key_column]
 
+    def process_stream_state(self, stream_state):
+      if 'last_date_updated' in stream_state:
+        self.incremental_most_recent_value_seen = stream_state['last_date_updated']
+      if 'last_id_seen' in stream_state:
+        self.cursor_value_last_id_seen = stream_state['last_id_seen']
 
     def read_records(
       self,
@@ -82,21 +95,30 @@ class NetsuiteODBCStream(Stream, IncrementalMixin):
       stream_slice: Optional[Mapping[str, Any]] = None,
       stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-      self.cursor.execute(self.generate_ordered_query(stream_state, stream_slice))
+      print(stream_state)
+      self.process_stream_state(stream_state)
+      self.cursor.execute(self.generate_ordered_query(stream_slice))
+      number_records = 0
       while True:
         row = self.cursor.fetchone()
-        if not row:
+        if not row and number_records < NETSUITE_PAGINATION_INTERVAL:
           break
+        # if number of rows >= page limit, we need to fetch another page
+        elif not row:
+          self.logger.info(f"Fetching another page for the stream {self.table_name}.  Last seen ID is {self.cursor_value_last_id_seen}")
+          number_records = 0
+          self.cursor.execute(self.generate_ordered_query(stream_slice))
+          continue
         # data from netsuite does not include columns, so we need to assign each value to the correct column name
         serialized_data = self.serialize_row_to_response(row)
         # before we yield record, update state
-        if self.primary_key_column in serialized_data:
-          self.cursor_value_last_id_seen = max(self.cursor_value_last_id_seen, serialized_data[self.primary_key_column])
+        self.find_highest_id(serialized_data)
         self.find_most_recent_date(serialized_data)
+        number_records = number_records + 1
         #yield response
         yield serialized_data
-      self.logger.info(f"Finished Stream Slice for Netsuite ODBC with stream slice: {stream_slice}")
-    
+      self.logger.info(f"Finished Stream Slice for Netsuite ODBC Table {self.table_name} with stream slice: {stream_slice}")
+
     def find_most_recent_date(self, result):
       date_value_received = None
       if self.incremental_column in result:
@@ -107,18 +129,20 @@ class NetsuiteODBCStream(Stream, IncrementalMixin):
         else:
           self.incremental_most_recent_value_seen = max(self.incremental_most_recent_value_seen, date_value_received)
 
+    def find_highest_id(self, result):
+      if self.primary_key_column in result:
+          self.cursor_value_last_id_seen = max(self.cursor_value_last_id_seen, result[self.primary_key_column])
 
   
-    def generate_ordered_query(self, table_state, stream_slice):
+    def generate_ordered_query(self, stream_slice):
       values = ', '.join(self.properties) # we use values instead of '*' because we want to preserve the order of the columns
       incremental_column_sorter = f", {self.incremental_column} ASC" if self.incremental_column else ""
       # per https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_156257805177.html#subsect_156330163819
       # date literals need to be warpped in a to_date function
       incremental_column_filter = f" AND {self.incremental_column} >= to_timestamp('{stream_slice['first_day']}', 'YYYY-MM-DD') AND {self.incremental_column} <= to_timestamp('{stream_slice['last_day']}', 'YYYY-MM-DD')"
-      id_filter = table_state['last_id_seen'] if table_state is not None else STARTING_CURSOR_VALUE
       query = f"""
         SELECT TOP {NETSUITE_PAGINATION_INTERVAL} {values} FROM {self.table_name} 
-        WHERE {self.primary_key_column} > {id_filter}{incremental_column_filter}
+        WHERE {self.primary_key_column} > {self.cursor_value_last_id_seen}{incremental_column_filter}
         ORDER BY {self.primary_key_column} ASC""" + incremental_column_sorter
       # print(query)
       # {self.primary_key_column} > {id_filter}
@@ -155,18 +179,12 @@ class NetsuiteODBCStream(Stream, IncrementalMixin):
       # we use an earliest date of 1980 since 1998 was when netsuite was founded.  Note that in some cases customers might have ported over older historical data
       start_slice_range = EARLIEST_DATE
       if sync_mode == SyncMode.incremental:
-        start_slice_range = date.fromisoformat(stream_state['last_date_updated'])
+        incremental_date = date.fromisoformat(stream_state['last_date_updated']) if 'last_date_updated' in stream_state else EARLIEST_DATE
+        print('IS INCREMENTAL')
+        start_slice_range = incremental_date
       elif not (sync_mode == SyncMode.full_refresh):
         raise Exception(f'Unsupported Sync Mode: {sync_mode}.  Please use either "full_refresh" or "incremental"')
       return start_slice_range, end_slice_range
-    
-    def get_slice_for_month(self, date_for_slice: date):
-      month_to_use = date_for_slice.month
-      year_to_use = date_for_slice.year
-      first_day = date(year_to_use, month_to_use, 1)
-      days_in_month = calendar.monthrange(year_to_use, month_to_use)[1]
-      last_day = date(year_to_use, month_to_use, days_in_month)
-      return {'first_day': first_day, 'last_day': last_day}
     
     def get_slice_for_year(self, date_for_slice: date):
       year_to_use = date_for_slice.year
@@ -187,25 +205,40 @@ class NetsuiteODBCStream(Stream, IncrementalMixin):
       """
       return 10000
     
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-      """State getter, should return state in form that can serialized to a string and send to the output
-      as a STATE AirbyteMessage.
-      """
-      return {
-        'last_id_seen': self.cursor_value_last_id_seen,
-        'last_date_updated': self.incremental_most_recent_value_seen,
-      }
+    # @property
+    # def state(self) -> MutableMapping[str, Any]:
+    #   """State getter, should return state in form that can serialized to a string and send to the output
+    #   as a STATE AirbyteMessage.
+    #   """
+    #   return {
+    #     'last_id_seen': self.cursor_value_last_id_seen,
+    #     'last_date_updated': self.incremental_most_recent_value_seen,
+    #   }
 
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]) -> None:
-      """State setter, accept state serialized by state getter."""
-      last_id_seen = value['last_id_seen']
-      if not last_id_seen:
-        self.cursor_value_last_id_seen = STARTING_CURSOR_VALUE
+    # @state.setter
+    # def state(self, value: MutableMapping[str, Any]) -> None:
+    #   """State setter, accept state serialized by state getter."""
+    #   last_id_seen = value['last_id_seen']
+    #   if not last_id_seen:
+    #     self.cursor_value_last_id_seen = STARTING_CURSOR_VALUE
+    #   else:
+    #     self.cursor_value_last_id_seen = value['last_id_seen']
+    #   self.incremental_most_recent_value_seen = value['last_date_updated']
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+      if 'last_date_updated' in current_stream_state:
+        last_date_updated = max(current_stream_state['last_date_updated'], self.incremental_most_recent_value_seen)
       else:
-        self.cursor_value_last_id_seen = value['last_id_seen']
-      self.incremental_most_recent_value_seen = value['last_date_updated']
+        last_date_updated = self.incremental_most_recent_value_seen
+      if 'last_id_seen' in current_stream_state:
+        last_id_seen = max(current_stream_state['last_id_seen'], self.cursor_value_last_id_seen)
+      else:
+        last_id_seen = self.cursor_value_last_id_seen
+
+      return {
+        'last_id_seen': last_id_seen,
+        'last_date_updated': last_date_updated
+      }
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """

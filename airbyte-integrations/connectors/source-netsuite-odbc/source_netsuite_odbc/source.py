@@ -43,7 +43,7 @@ class SourceNetsuiteOdbc(AbstractSource):
         for stream in streams:
             stream_name = stream.name
             # is_incremental = stream.sync_mode == "incremental"
-            netsuite_stream = NetsuiteODBCStream(cursor=cursor_constructor.create_database_cursor(config), table_name=stream_name, is_incremental=False, stream=stream)
+            netsuite_stream = NetsuiteODBCStream(cursor=cursor_constructor.create_database_cursor(config), table_name=stream_name, stream=stream)
             stream_objects.append(netsuite_stream)
         return stream_objects
     
