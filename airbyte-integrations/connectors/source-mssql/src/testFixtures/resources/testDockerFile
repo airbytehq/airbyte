@@ -1,2 +1,0 @@
-ARG BASE_IMAGE=mcr.microsoft.com/mssql/server:server:2022-latest
-FROM ${BASE_IMAGE} 

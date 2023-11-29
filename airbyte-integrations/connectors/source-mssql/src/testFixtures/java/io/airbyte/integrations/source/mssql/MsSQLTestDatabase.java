@@ -25,6 +25,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   static public final int MAX_RETRIES = 60;
 
   public static enum BaseImage {
+
     MSSQL_2022("mcr.microsoft.com/mssql/server:2022-latest"),
     MSSQL_2017("mcr.microsoft.com/mssql/server:2017-latest"),
     ;
