@@ -107,6 +107,7 @@ def test_application_roles_stream_http_error(config, application_roles_response)
 
 @responses.activate
 def test_boards_stream(config, boards_response):
+    Boards.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/agile/1.0/board?maxResults=50",
@@ -120,6 +121,8 @@ def test_boards_stream(config, boards_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 3
     assert len(responses.calls) == 1
+    Boards.use_cache = True
+
 
 
 @responses.activate
@@ -158,6 +161,7 @@ def test_dashboards_stream(config, dashboards_response):
 
 @responses.activate
 def test_filters_stream(config, filters_response):
+    Filters.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/filter/search?maxResults=50&expand=description%2Cowner%2Cjql%2CviewUrl%2CsearchUrl%2Cfavourite%2CfavouritedCount%2CsharePermissions%2CisWritable%2Csubscriptions",
@@ -171,6 +175,7 @@ def test_filters_stream(config, filters_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
     assert len(responses.calls) == 1
+    Filters.use_cache = True
 
 
 @responses.activate
@@ -192,6 +197,7 @@ def test_groups_stream(config, groups_response):
 
 @responses.activate
 def test_issues_fields_stream(config, issue_fields_response):
+    IssueFields.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/field?maxResults=50",
@@ -205,6 +211,7 @@ def test_issues_fields_stream(config, issue_fields_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 3
     assert len(responses.calls) == 1
+    IssueFields.use_cache = True
 
 
 @responses.activate
@@ -467,6 +474,7 @@ def test_projects_categories_stream(config, projects_categories_response):
 
 @responses.activate
 def test_screens_stream(config, screens_response):
+    Screens.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/screens?maxResults=50",
@@ -479,10 +487,12 @@ def test_screens_stream(config, screens_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 2
     assert len(responses.calls) == 1
+    Screens.use_cache = True
 
 
 @responses.activate
 def test_screen_tabs_stream(config, screen_tabs_response):
+    ScreenTabs.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/screens/1/tabs?maxResults=50",
@@ -500,10 +510,12 @@ def test_screen_tabs_stream(config, screen_tabs_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 3
     assert len(responses.calls) == 2
+    ScreenTabs.use_cache = True
 
 
 @responses.activate
 def test_sprints_stream(config, sprints_response):
+    Sprints.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/agile/1.0/board/1/sprint?maxResults=50",
@@ -526,6 +538,7 @@ def test_sprints_stream(config, sprints_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 3
     assert len(responses.calls) == 3
+    Sprints.use_cache = True
 
 
 @responses.activate
@@ -580,6 +593,7 @@ def test_time_tracking_stream(config, time_tracking_response):
 
 @responses.activate
 def test_users_stream(config, users_response):
+    Users.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/users/search?maxResults=50",
@@ -592,6 +606,7 @@ def test_users_stream(config, users_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
     assert len(records) == 2
     assert len(responses.calls) == 1
+    Users.use_cache = True
 
 
 @responses.activate
@@ -713,6 +728,7 @@ def test_avatars_stream_should_retry(config, caplog):
 @responses.activate
 def test_issues_stream(config, projects_response, mock_issues_responses, issues_response, caplog):
     Projects.use_cache = False
+    Issues.use_cache = False
     projects_response["values"].append({"id": "3", "key": "Project1"})
     responses.add(
         responses.GET,
@@ -724,7 +740,7 @@ def test_issues_stream(config, projects_response, mock_issues_responses, issues_
         f"https://{config['domain']}/rest/api/3/search",
         match=[
             matchers.query_param_matcher(
-                {"maxResults": 50, "fields": "*all", "jql": "project in (3)", "expand": "renderedFields,transitions,changelog"}
+                {"maxResults": 50, "fields": "*all", "jql": "project in (3) ORDER BY updated asc", "expand": "renderedFields,transitions,changelog"}
             )
         ],
         json={"errorMessages": ["The value '3' does not exist for the field 'project'."]},
@@ -735,9 +751,15 @@ def test_issues_stream(config, projects_response, mock_issues_responses, issues_
     stream = Issues(**args)
     records = list(read_full_refresh(stream))
     assert len(records) == 1
+
+    # check if only None values was filtered out from 'fields' field
+    assert "empty_field" not in records[0]["fields"]
+    assert "non_empty_field" in records[0]["fields"]
+
     assert len(responses.calls) == 3
     error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"].Check permissions for this project. Skipping for now. The user doesn't have permission to the project. Please grant the user to the project."
     assert error_message in caplog.messages
+    Issues.use_cache = True
 
 
 @responses.activate
@@ -758,6 +780,7 @@ def test_issue_comments_stream(config, mock_projects_responses, mock_issues_resp
 
 @responses.activate
 def test_issue_custom_field_contexts_stream(config, issue_custom_field_contexts_response):
+    IssueCustomFieldContexts.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/field/issuetype/context?maxResults=50",
@@ -770,10 +793,12 @@ def test_issue_custom_field_contexts_stream(config, issue_custom_field_contexts_
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"field_id": "10130"})]
     assert len(records) == 2
     assert len(responses.calls) == 1
+    IssueCustomFieldContexts.use_cache = True
 
 
 @responses.activate
 def test_issue_property_keys_stream(config, issue_property_keys_response):
+    IssuePropertyKeys.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/properties?maxResults=50",
@@ -788,6 +813,7 @@ def test_issue_property_keys_stream(config, issue_property_keys_response):
     ]
     assert len(records) == 2
     assert len(responses.calls) == 1
+    IssuePropertyKeys.use_cache = True
 
 
 @responses.activate

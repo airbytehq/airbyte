@@ -390,8 +390,10 @@ class Issues(IncrementalJiraStream):
         record["updated"] = record["fields"]["updated"]
 
         # remove fields that are None
-        record["renderedFields"] = {k: v for k, v in record["renderedFields"].items() if v is not None}
-        record["fields"] = {k: v for k, v in record["fields"].items() if v is not None}
+        if "renderedFields" in record:
+            record["renderedFields"] = {k: v for k, v in record["renderedFields"].items() if v is not None}
+        if "fields" in record:
+            record["fields"] = {k: v for k, v in record["fields"].items() if v is not None}
         return record
 
     def get_project_ids(self):
