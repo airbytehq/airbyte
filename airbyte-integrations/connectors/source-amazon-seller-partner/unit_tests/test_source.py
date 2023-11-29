@@ -26,6 +26,23 @@ def connector_config():
     }
 
 
+@pytest.fixture
+def connector_config_without_start_date():
+    return {
+        "refresh_token": "Atzr|IwEBIP-abc123",
+        "app_id": "amzn1.sp.solution.2cfa6ca8-2c35-123-456-78910",
+        "lwa_app_id": "amzn1.application-oa2-client.abc123",
+        "lwa_client_secret": "abc123",
+        "aws_environment": "SANDBOX",
+        "region": "US",
+    }
+
+
 def test_streams(connector_source, connector_config):
     for stream in connector_source.streams(connector_config):
+        assert isinstance(stream, Stream)
+
+
+def test_streams_connector_config_without_start_date(connector_source, connector_config_without_start_date):
+    for stream in connector_source.streams(connector_config_without_start_date):
         assert isinstance(stream, Stream)
