@@ -225,7 +225,7 @@ class PostgresSourceTest {
   public void testCanReadUtf8() throws Exception {
     // force the db server to start with sql_ascii encoding to verify the source can read UTF8 even when
     // default settings are in another encoding
-    try (final var asciiTestDB = PostgresTestDatabase.in(BaseImage.POSTGRES_16_ALPINE, ContainerModifier.ASCII)
+    try (final var asciiTestDB = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, ContainerModifier.ASCII)
         .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
         .with("INSERT INTO id_and_name (id, name) VALUES (1,E'\\u2013 someutfstring'),  (2, E'\\u2215');")) {
       final var config = asciiTestDB.testConfigBuilder().withSchemas(SCHEMA_NAME).withoutSsl().build();
