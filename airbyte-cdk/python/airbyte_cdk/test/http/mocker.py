@@ -1,9 +1,11 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import contextlib
 import functools
-import requests_mock
 from types import TracebackType
-from typing import List, Optional, Callable
+from typing import Callable, List, Optional
 
+import requests_mock
 from airbyte_cdk.test.http import HttpRequest, HttpRequestMatcher, HttpResponse
 
 
@@ -11,6 +13,7 @@ class HttpMocker(contextlib.ContextDecorator):
     """
     WARNING: This implementation only works if the lib used to perform HTTP requests is `requests`
     """
+
     def __init__(self) -> None:
         self._mocker = requests_mock.Mocker()
         self._matchers: List[HttpRequestMatcher] = []
@@ -55,6 +58,7 @@ class HttpMocker(contextlib.ContextDecorator):
             # query_params are provided as part of `requests_mock_request.url`
             http_request = HttpRequest(requests_mock_request.url, query_params={}, headers=requests_mock_request.headers)
             return matcher.matches(http_request)
+
         return matches
 
     def __call__(self, f):
@@ -68,10 +72,13 @@ class HttpMocker(contextlib.ContextDecorator):
                     return result
                 except requests_mock.NoMockAddress as no_mock_exception:
                     matchers_as_string = "\n\t".join(map(lambda matcher: str(matcher.request), self._matchers))
-                    raise ValueError(f"No matcher matches {no_mock_exception.args[0]}. Matchers currently configured are:\n\t{matchers_as_string}") from no_mock_exception
+                    raise ValueError(
+                        f"No matcher matches {no_mock_exception.args[0]}. Matchers currently configured are:\n\t{matchers_as_string}"
+                    ) from no_mock_exception
                 except AssertionError:
                     try:
                         self._validate_all_matchers_called()
                     except ValueError as http_mocker_exception:
                         raise ValueError(http_mocker_exception) from None
+
         return wrapper

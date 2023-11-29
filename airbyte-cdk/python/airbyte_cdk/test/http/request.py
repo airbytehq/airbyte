@@ -1,5 +1,7 @@
-from urllib.parse import parse_qs, urlencode, urlparse
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 from typing import Any, List, Mapping, Optional, Union
+from urllib.parse import parse_qs, urlencode, urlparse
 
 
 def _is_subdict(small: Mapping[str, str], big: Mapping[str, str]) -> bool:
@@ -11,7 +13,7 @@ class HttpRequest:
         self,
         url: str,
         query_params: Optional[Union[str, Mapping[str, Union[str, List[str]]]]] = None,
-        headers: Optional[Mapping[str, str]] = None
+        headers: Optional[Mapping[str, str]] = None,
     ) -> None:
         self._parsed_url = urlparse(url)
         if not self._parsed_url.query and query_params:
@@ -31,11 +33,13 @@ class HttpRequest:
         Note that headers only need to be a subset of `other` in order to match
         """
         if isinstance(other, HttpRequest):
-            return self._parsed_url.scheme == other._parsed_url.scheme\
-                and self._parsed_url.hostname == other._parsed_url.hostname\
-                and self._parsed_url.path == other._parsed_url.path\
-                and parse_qs(self._parsed_url.query) == parse_qs(other._parsed_url.query)\
+            return (
+                self._parsed_url.scheme == other._parsed_url.scheme
+                and self._parsed_url.hostname == other._parsed_url.hostname
+                and self._parsed_url.path == other._parsed_url.path
+                and parse_qs(self._parsed_url.query) == parse_qs(other._parsed_url.query)
                 and _is_subdict(other._headers, self._headers)
+            )
         return False
 
     def __str__(self) -> str:
