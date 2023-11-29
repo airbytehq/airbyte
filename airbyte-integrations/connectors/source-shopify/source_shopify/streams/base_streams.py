@@ -447,7 +447,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     data_field = "graphql"
     http_method = "POST"
-    
+
     @property
     def slice_interval_in_days(self) -> int:
         """
