@@ -59,7 +59,8 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
     DSLContext dsl = getDslContext();
     return dsl.createTable(name(schemaName, tableName))
         .column(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36).nullable(false))
-        .column(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.defaultValue(DSL.function("GETDATE", SQLDataType.TIMESTAMPWITHTIMEZONE)))
+        .column(COLUMN_NAME_AB_EXTRACTED_AT,
+            SQLDataType.TIMESTAMPWITHTIMEZONE.defaultValue(DSL.function("GETDATE", SQLDataType.TIMESTAMPWITHTIMEZONE)))
         .column(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE)
         .column(COLUMN_NAME_DATA, new DefaultDataType<>(null, String.class, "super").nullable(false))
         .getSQL();
@@ -92,15 +93,15 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
   protected void insertRecordsInternalV2(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName)
       throws Exception {
     LOGGER.info("actual size of batch: {}", records.size());
-    database.execute( connection -> {
+    database.execute(connection -> {
       final DSLContext create = DSL.using(connection, SQLDialect.POSTGRES);
       final BatchBindStep batchInsertStep = create.batch(create
-                                                             .insertInto(table(name(schemaName, tableName)),
-                                                                         field(COLUMN_NAME_AB_RAW_ID),
-                                                                         field(COLUMN_NAME_DATA),
-                                                                         field(COLUMN_NAME_AB_EXTRACTED_AT),
-                                                                         field(COLUMN_NAME_AB_LOADED_AT))
-                                                             .values(null, null, null, null)); //Jooq needs dummy values for batch binds
+          .insertInto(table(name(schemaName, tableName)),
+              field(COLUMN_NAME_AB_RAW_ID),
+              field(COLUMN_NAME_DATA),
+              field(COLUMN_NAME_AB_EXTRACTED_AT),
+              field(COLUMN_NAME_AB_LOADED_AT))
+          .values(null, null, null, null)); // Jooq needs dummy values for batch binds
       records.forEach(record -> batchInsertStep.bind(UUID.randomUUID().toString(), Jsons.serialize(record.getData()), Timestamp.from(
           Instant.ofEpochMilli(record.getEmittedAt())), null));
       batchInsertStep.execute();

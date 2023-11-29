@@ -107,7 +107,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT);
   }
 
-  //TODO: Why is this method still used with CSVSerializedBuffer in existence.
+  // TODO: Why is this method still used with CSVSerializedBuffer in existence.
   protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
     try (final PrintWriter writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
         final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
@@ -193,9 +193,9 @@ public abstract class JdbcSqlOperations implements SqlOperations {
       throws Exception;
 
   protected abstract void insertRecordsInternalV2(JdbcDatabase database,
-                                                List<AirbyteRecordMessage> records,
-                                                String schemaName,
-                                                String tableName)
+                                                  List<AirbyteRecordMessage> records,
+                                                  String schemaName,
+                                                  String tableName)
       throws Exception;
 
 }
