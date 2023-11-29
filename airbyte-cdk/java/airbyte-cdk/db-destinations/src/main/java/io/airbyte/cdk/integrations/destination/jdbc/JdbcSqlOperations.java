@@ -85,7 +85,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
     }
   }
 
-  private String createTableQueryV1(final String schemaName, final String tableName) {
+  protected String createTableQueryV1(final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -95,7 +95,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
-  private String createTableQueryV2(final String schemaName, final String tableName) {
+  protected String createTableQueryV2(final String schemaName, final String tableName) {
     return String.format(
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s VARCHAR PRIMARY KEY,\n"
@@ -107,6 +107,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
         JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT);
   }
 
+  //TODO: Why is this method still used with CSVSerializedBuffer in existence.
   protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
     try (final PrintWriter writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
         final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
@@ -178,10 +179,20 @@ public abstract class JdbcSqlOperations implements SqlOperations {
                                   final String tableName)
       throws Exception {
     dataAdapter.ifPresent(adapter -> records.forEach(airbyteRecordMessage -> adapter.adapt(airbyteRecordMessage.getData())));
-    insertRecordsInternal(database, records, schemaName, tableName);
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      insertRecordsInternalV2(database, records, schemaName, tableName);
+    } else {
+      insertRecordsInternal(database, records, schemaName, tableName);
+    }
   }
 
   protected abstract void insertRecordsInternal(JdbcDatabase database,
+                                                List<AirbyteRecordMessage> records,
+                                                String schemaName,
+                                                String tableName)
+      throws Exception;
+
+  protected abstract void insertRecordsInternalV2(JdbcDatabase database,
                                                 List<AirbyteRecordMessage> records,
                                                 String schemaName,
                                                 String tableName)
