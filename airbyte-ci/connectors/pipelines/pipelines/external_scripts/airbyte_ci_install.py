@@ -1,8 +1,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-# !IMPORTANT! This script is used to install the airbyte-ci binary on a Linux or macOS system.
+# !IMPORTANT! This script is used to install the airbyte-ci tool on a Linux or macOS system.
 # Meaning, no external dependencies are allowed as we don't want users to have to run anything
-# other than this script to install the binary.
+# other than this script to install the tool.
 
 import os
 import shutil
