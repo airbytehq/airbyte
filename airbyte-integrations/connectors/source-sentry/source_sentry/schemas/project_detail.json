@@ -439,6 +439,7 @@
     "hasProfiles": { "type": ["null", "boolean"] },
     "hasReplays": { "type": ["null", "boolean"] },
     "hasSessions": { "type": ["null", "boolean"] },
+    "hasFeedbacks": { "type": ["null", "boolean"] },
     "recapServerUrl": { "type": ["null", "string"] },
     "secondaryGroupingConfig": { "type": ["null", "string"] },
     "secondaryGroupingExpiry": { "type": ["null", "integer"] },
