@@ -92,7 +92,6 @@ public class JdbcBufferedConsumerFactory {
                                                              final TyperDeduper typerDeduper,
                                                              final TypeAndDedupeOperationValve typerDeduperValve) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired());
-    final Map<AirbyteStreamNameNamespacePair, WriteConfig> streamDescToWriteConfig = toMap(writeConfigs);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         onStartFunction(database, sqlOperations, writeConfigs),
@@ -206,7 +205,8 @@ public class JdbcBufferedConsumerFactory {
                                                                          final SqlOperations sqlOperations,
                                                                          final List<WriteConfig> writeConfigs,
                                                                          final ConfiguredAirbyteCatalog catalog) {
-    final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = toMap(writeConfigs);
+    final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = writeConfigs.stream()
+        .collect(Collectors.toUnmodifiableMap(JdbcBufferedConsumerFactory::toNameNamespacePair, Function.identity()));
 
     return (pair, records) -> {
       if (!pairToWriteConfig.containsKey(pair)) {
@@ -217,12 +217,6 @@ public class JdbcBufferedConsumerFactory {
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
       sqlOperations.insertRecords(database, records, writeConfig.getOutputSchemaName(), writeConfig.getOutputTableName());
     };
-  }
-
-  @NotNull
-  private static Map<AirbyteStreamNameNamespacePair, WriteConfig> toMap(final List<WriteConfig> writeConfigs) {
-    return writeConfigs.stream()
-        .collect(Collectors.toUnmodifiableMap(JdbcBufferedConsumerFactory::toNameNamespacePair, Function.identity()));
   }
 
   /**
