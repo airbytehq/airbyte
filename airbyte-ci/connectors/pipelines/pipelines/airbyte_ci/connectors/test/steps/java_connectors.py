@@ -21,7 +21,7 @@ from pipelines.airbyte_ci.steps.gradle import GradleTask
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.system import docker
-from pipelines.helpers.utils import export_container_to_tarball
+from pipelines.helpers.utils import export_containers_to_tarball
 from pipelines.models.steps import StepResult, StepStatus
 
 
@@ -101,15 +101,15 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
             context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
             build_normalization_results = await BuildOrPullNormalization(context, normalization_image, LOCAL_BUILD_PLATFORM).run()
             normalization_container = build_normalization_results.output_artifact
-            normalization_tar_file, _ = await export_container_to_tarball(
-                context, normalization_container, tar_file_name=f"{context.connector.normalization_repository}_{context.git_revision}.tar"
+            normalization_tar_file, _ = await export_containers_to_tarball(
+                context, [normalization_container], tar_file_name=f"{context.connector.normalization_repository}_{context.git_revision}.tar"
             )
             step_results.append(build_normalization_results)
         else:
             normalization_tar_file = None
 
         connector_container = build_connector_image_results.output_artifact[LOCAL_BUILD_PLATFORM]
-        connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
+        connector_image_tar_file, _ = await export_containers_to_tarball(context, [connector_container])
 
         async with asyncer.create_task_group() as docker_build_dependent_group:
             soon_integration_tests_results = docker_build_dependent_group.soonify(IntegrationTests(context).run)(

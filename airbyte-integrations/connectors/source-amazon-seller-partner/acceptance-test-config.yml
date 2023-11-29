@@ -4,7 +4,7 @@ acceptance_tests:
     tests:
       - spec_path: "source_amazon_seller_partner/spec.json"
         backward_compatibility_tests_config:
-          disable_for_version: "1.5.1"
+          disable_for_version: "2.0.1"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -24,6 +24,34 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         timeout_seconds: 2400
+        ignored_fields:
+          GET_MERCHANT_LISTINGS_ALL_DATA:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
+          GET_FLAT_FILE_OPEN_LISTINGS_DATA:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
+          GET_MERCHANTS_LISTINGS_FYP_REPORT:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
+          GET_MERCHANT_LISTINGS_DATA:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
+          GET_MERCHANT_LISTINGS_INACTIVE_DATA:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
+          GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
+          GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
+          GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
+          GET_XML_BROWSE_TREE_DATA:
+            - name: "dataEndTime"
+              bypass_reason: changes frequently
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no
@@ -47,8 +75,6 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA
             bypass_reason: "no records"
-          - name: GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT
-            bypass_reason: "no records"
           - name: GET_LEDGER_DETAIL_VIEW_DATA
             bypass_reason: "no records"
           - name: GET_AFN_INVENTORY_DATA_BY_COUNTRY
@@ -63,8 +89,6 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: GET_FBA_SNS_FORECAST_DATA
             bypass_reason: "no records"
-          - name: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
-            bypass_reason: "no records"
           - name: GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT
             bypass_reason: "no records"
           - name: GET_AFN_INVENTORY_DATA
@@ -78,8 +102,6 @@ acceptance_tests:
           - name: GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT
             bypass_reason: "no records"
           - name: GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT
-            bypass_reason: "no records"
-          - name: GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT
             bypass_reason: "no records"
           - name: GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT
             bypass_reason: "no records"
@@ -107,13 +129,13 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
             bypass_reason: "no records"
-          - name: ListFinancialEvents
-            bypass_reason: "no records"
-          - name: ListFinancialEventGroups
-            bypass_reason: "no records"
           - name: GET_FBA_REIMBURSEMENTS_DATA
             bypass_reason: "no records"
-          - name: GET_XML_BROWSE_TREE_DATA
+          - name: GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT
+            bypass_reason: "no records"
+          - name: GET_VENDOR_REAL_TIME_INVENTORY_REPORT
+            bypass_reason: "no records"
+          - name: GET_VENDOR_TRAFFIC_REPORT
             bypass_reason: "no records"
   incremental:
     tests:
