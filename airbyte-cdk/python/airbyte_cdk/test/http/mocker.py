@@ -1,0 +1,77 @@
+import contextlib
+import functools
+import requests_mock
+from types import TracebackType
+from typing import List, Optional, Callable
+
+from airbyte_cdk.test.http import HttpRequest, HttpRequestMatcher, HttpResponse
+
+
+class HttpMocker(contextlib.ContextDecorator):
+    """
+    WARNING: This implementation only works if the lib used to perform HTTP requests is `requests`
+    """
+    def __init__(self) -> None:
+        self._mocker = requests_mock.Mocker()
+        self._matchers: List[HttpRequestMatcher] = []
+
+    def __enter__(self) -> "HttpMocker":
+        self._mocker.__enter__()
+        return self
+
+    def __exit__(self, exc_type: Optional[BaseException], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]) -> None:
+        self._mocker.__exit__(exc_type, exc_val, exc_tb)
+
+    def _validate_all_matchers_called(self) -> None:
+        for matcher in self._matchers:
+            if not matcher.was_called():
+                raise ValueError(f"Expected all matchers to be called at least once but `{matcher}` wasn't")
+
+    def get(self, request: HttpRequest, response: HttpResponse) -> None:
+        """
+        WARNING: Given multiple requests that are not mutually exclusive, the request will match the first one. This can happen in scenarios
+        where the same request is added twice (in which case there will always be an exception because we will never match the second
+        request) or in a case like this:
+        ```
+        http_mocker.get(HttpRequest(_A_URL, headers={"less_granular": "1", "more_granular": "2"}), <...>)
+        http_mocker.get(HttpRequest(_A_URL, headers={"less_granular": "1"}), <...>)
+        requests.get(_A_URL, headers={"less_granular": "1", "more_granular": "2"})
+        ```
+        In the example above, the matcher would match the second mock as requests_mock iterate over the matcher in reverse order (see
+        https://github.com/jamielennox/requests-mock/blob/c06f124a33f56e9f03840518e19669ba41b93202/requests_mock/adapter.py#L246) even
+        though the request sent is a better match for the first `http_mocker.get`.
+        """
+        matcher = HttpRequestMatcher(request)
+        self._matchers.append(matcher)
+        self._mocker.get(
+            requests_mock.ANY,
+            additional_matcher=self._matches_wrapper(matcher),
+            text=response.body,
+            status_code=response.status_code,
+        )
+
+    def _matches_wrapper(self, matcher: HttpRequestMatcher) -> Callable[[requests_mock.request._RequestObjectProxy], bool]:
+        def matches(requests_mock_request: requests_mock.request._RequestObjectProxy) -> bool:
+            # query_params are provided as part of `requests_mock_request.url`
+            http_request = HttpRequest(requests_mock_request.url, query_params={}, headers=requests_mock_request.headers)
+            return matcher.matches(http_request)
+        return matches
+
+    def __call__(self, f):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):  # type: ignore  # this is a very generic wrapper that does not need to be typed
+            with self:
+                kwargs["http_mocker"] = self
+                try:
+                    result = f(*args, **kwargs)
+                    self._validate_all_matchers_called()
+                    return result
+                except requests_mock.NoMockAddress as no_mock_exception:
+                    matchers_as_string = "\n\t".join(map(lambda matcher: str(matcher.request), self._matchers))
+                    raise ValueError(f"No matcher matches {no_mock_exception.args[0]}. Matchers currently configured are:\n\t{matchers_as_string}") from no_mock_exception
+                except AssertionError:
+                    try:
+                        self._validate_all_matchers_called()
+                    except ValueError as http_mocker_exception:
+                        raise ValueError(http_mocker_exception) from None
+        return wrapper
