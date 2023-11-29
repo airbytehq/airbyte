@@ -8,7 +8,8 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from requests.exceptions import RequestException
-from source_shopify.shopify_graphql.graphql import ShopifyBulkGraphQl, _camel_to_snake, get_query_products
+from source_shopify.shopify_graphql.bulk.query import PARERNT_KEY, Metafields
+from source_shopify.shopify_graphql.graphql import get_query_products
 from source_shopify.utils import ApiTypeEnum
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
@@ -34,11 +35,10 @@ class MetafieldShopifySubstream(IncrementalShopifySubstream):
 
 class MetafieldShopifyGraphQlBulkStream(IncrementalShopifyGraphQlBulkStream):
     @property
-    def bulk_operation(self) -> ShopifyBulkGraphQl.Query.Metafields:
-        return self.bulk_instance.Query.Metafields
+    def bulk_query(self) -> Metafields:
+        return Metafields
 
-    @staticmethod
-    def custom_transform(record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
         The dependent resources have `__parentId` key in record, which signifies about the parnt-to-child relation.
         To match the existing JSON Schema for `Metafields` streams we need to:
@@ -53,23 +53,23 @@ class MetafieldShopifyGraphQlBulkStream(IncrementalShopifyGraphQlBulkStream):
         More info: https://shopify.dev/docs/api/usage/bulk-operations/queries#the-jsonl-data-format
         """
         # resolve parent id from `str` to `int`
-        record["owner_id"] = int(re.search(r"\d+", record[ShopifyBulkGraphQl.parent_key]).group())
+        record["owner_id"] = int(re.search(r"\d+", record[PARERNT_KEY]).group())
         # add `owner_resource` field
-        record["owner_resource"] = _camel_to_snake(record[ShopifyBulkGraphQl.parent_key].split("/")[3])
+        record["owner_resource"] = self.bulk_job.tools.camel_to_snake(record[PARERNT_KEY].split("/")[3])
         # remove `__parentId` from record
-        record.pop(ShopifyBulkGraphQl.parent_key, None)
+        record.pop(PARERNT_KEY, None)
         # convert dates from ISO-8601 to RFC-3339
-        record["created_at"] = ShopifyBulkGraphQl.Tools.convert_iso8601_to_rfc3339(record, "created_at")
-        record["updated_at"] = ShopifyBulkGraphQl.Tools.convert_iso8601_to_rfc3339(record, "updated_at")
+        record["created_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "created_at")
+        record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
         yield record
 
-    def parse_response(self, job_result_url: str, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, job_result_url: str, **kwargs) -> Iterable[Mapping[str, Any]]:
         """Overide the main method to provide the custom arguments"""
         yield from super().parse_response(
             job_result_url,
             substream=True,
             custom_transform=self.custom_transform,
-            record_identifier=self.bulk_operation.record_identifier,
+            record_identifier=self.bulk_query.record_identifier,
         )
 
 
@@ -137,7 +137,7 @@ class DraftOrders(IncrementalShopifyStream):
 
 
 class MetafieldDraftOrders(MetafieldShopifyGraphQlBulkStream):
-    query_path = "draft_orders"
+    query_path = "draftOrders"
 
 
 class Products(IncrementalShopifyStreamWithDeletedEvents):
@@ -232,7 +232,7 @@ class ProductVariants(IncrementalShopifySubstream):
 
 
 class MetafieldProductVariants(MetafieldShopifyGraphQlBulkStream):
-    query_path = "product_variants"
+    query_path = "productVariants"
     sort_key = None
 
 
