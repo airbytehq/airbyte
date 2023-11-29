@@ -248,7 +248,9 @@ const useConnectionList = (): ListConnection => {
 };
 const useConnectionStatusList = (apiData: ConnectionData): ListConnectionStatus => {
   const service = useWebConnectionService();
-  return useSuspenseQuery(connectionsKeys.connectionIdsStatus(apiData), () => service.getConnectionsStatus(apiData));
+  return useSuspenseQuery(connectionsKeys.connectionIdsStatus(apiData), () => service.getConnectionsStatus(apiData), {
+    enabled: apiData?.connectionIds?.length > 0,
+  });
 };
 const useFilteredConnectionList = (filters: FilterConnectionRequestBody): WebBackendFilteredConnectionReadList => {
   const service = useWebConnectionService();

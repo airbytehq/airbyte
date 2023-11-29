@@ -152,23 +152,38 @@ export interface SourcePageReadList {
   pageCurrent?: number;
 }
 
-export interface WebBackendConnectionPageRead {
-  connectionId: ConnectionId;
-  name: string;
-  entityName: string;
-  connectorName: string;
-  isSyncing: boolean;
-  status: ConnectionStatus;
-  /** epoch time of the latest sync job. null if no sync job has taken place. */
-  latestSyncJobCreatedAt?: number;
-  latestSyncJobStatus?: JobStatus;
-}
-
 export interface WebBackendConnectionsPageReadList {
   connections: WebBackendConnectionPageRead[];
   total?: number;
   pageSize?: number;
   pageCurrent?: number;
+}
+
+export interface WebBackendConnectionReadList {
+  connections: WebBackendConnectionRead[];
+}
+
+export interface WebBackendConnectionStatusRead {
+  connectionId: ConnectionId;
+  /** epoch time of the latest sync job. null if no sync job has taken place. */
+  latestSyncJobCreatedAt?: number;
+  latestSyncJobStatus?: JobStatus;
+}
+
+export interface WebBackendConnectionStatusReadList {
+  connectionStatusList: WebBackendConnectionStatusRead[];
+}
+
+export interface WebBackendConnectionPageRead {
+  connectionId: ConnectionId;
+  name: string;
+  entityName: string;
+  connectorName: string;
+  status: ConnectionStatus;
+}
+
+export interface WebBackendConnectionList {
+  connections: WebBackendConnectionPageRead[];
 }
 
 export interface WebBackendConnectionRead {
@@ -204,10 +219,6 @@ export interface WebBackendConnectionPageReadList {
   total?: number;
   pageSize?: number;
   pageCurrent?: number;
-}
-
-export interface WebBackendConnectionReadList {
-  connections: WebBackendConnectionRead[];
 }
 
 export interface WebBackendConnectionFilterParamItem {
@@ -265,6 +276,44 @@ export interface CompleteSourceOauthRequest {
 
 export interface OAuthConsentRead {
   consentUrl: string;
+}
+
+export interface SourceOauthConsentRequest {
+  sourceDefinitionId: SourceDefinitionId;
+  workspaceId: WorkspaceId;
+  /** The url to redirect to after getting the user consent */
+  redirectUrl: string;
+  oAuthInputConfiguration?: OAuthConfiguration;
+}
+
+export type AdvancedAuthAuthFlowType = (typeof AdvancedAuthAuthFlowType)[keyof typeof AdvancedAuthAuthFlowType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AdvancedAuthAuthFlowType = {
+  oauth20: "oauth2.0",
+  oauth10: "oauth1.0",
+} as const;
+
+export interface AdvancedAuth {
+  authFlowType?: AdvancedAuthAuthFlowType;
+  /** Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable. */
+  predicateKey?: string[];
+  /** Value of the predicate_key fields for the advanced auth to be applicable. */
+  predicateValue?: string;
+  oauthConfigSpecification?: OAuthConfigSpecification;
+}
+
+/**
+ * The values required to configure OAuth flows. The schema for this must match the `OAuthConfigSpecification.oauthUserInputFromConnectorConfigSpecification` schema.
+ */
+export type OAuthConfiguration = unknown;
+
+export interface DestinationOauthConsentRequest {
+  destinationDefinitionId: DestinationDefinitionId;
+  workspaceId: WorkspaceId;
+  /** The url to redirect to after getting the user consent */
+  redirectUrl: string;
+  oAuthInputConfiguration?: OAuthConfiguration;
 }
 
 export interface OAuthConfigSpecification {
@@ -344,44 +393,6 @@ Examples:
         }
       } */
   completeOAuthServerOutputSpecification?: OAuthConfiguration;
-}
-
-export type AdvancedAuthAuthFlowType = (typeof AdvancedAuthAuthFlowType)[keyof typeof AdvancedAuthAuthFlowType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const AdvancedAuthAuthFlowType = {
-  oauth20: "oauth2.0",
-  oauth10: "oauth1.0",
-} as const;
-
-export interface AdvancedAuth {
-  authFlowType?: AdvancedAuthAuthFlowType;
-  /** Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable. */
-  predicateKey?: string[];
-  /** Value of the predicate_key fields for the advanced auth to be applicable. */
-  predicateValue?: string;
-  oauthConfigSpecification?: OAuthConfigSpecification;
-}
-
-/**
- * The values required to configure OAuth flows. The schema for this must match the `OAuthConfigSpecification.oauthUserInputFromConnectorConfigSpecification` schema.
- */
-export type OAuthConfiguration = unknown;
-
-export interface DestinationOauthConsentRequest {
-  destinationDefinitionId: DestinationDefinitionId;
-  workspaceId: WorkspaceId;
-  /** The url to redirect to after getting the user consent */
-  redirectUrl: string;
-  oAuthInputConfiguration?: OAuthConfiguration;
-}
-
-export interface SourceOauthConsentRequest {
-  sourceDefinitionId: SourceDefinitionId;
-  workspaceId: WorkspaceId;
-  /** The url to redirect to after getting the user consent */
-  redirectUrl: string;
-  oAuthInputConfiguration?: OAuthConfiguration;
 }
 
 export type OAuthInputConfiguration = OAuthConfiguration;
@@ -527,6 +538,13 @@ export const StreamTransformTransformType = {
   update_stream: "update_stream",
 } as const;
 
+export interface StreamTransform {
+  transformType: StreamTransformTransformType;
+  streamDescriptor: StreamDescriptor;
+  /** list of field transformations. order does not matter. */
+  updateStream?: FieldTransform[];
+}
+
 /**
  * Describes the difference between two Airbyte catalogs.
  */
@@ -547,6 +565,16 @@ export const ConnectionStateType = {
 
 export interface StateBlob {
   [key: string]: any;
+}
+
+export interface StreamState {
+  streamDescriptor: StreamDescriptor;
+  streamState?: StateBlob;
+}
+
+export interface GlobalState {
+  shared_state?: StateBlob;
+  streamStates: StreamState[];
 }
 
 /**
@@ -615,12 +643,6 @@ export interface JobInfoLightRead {
 export interface JobInfoRead {
   job: JobRead;
   attempts: AttemptInfoRead[];
-}
-
-export interface JobReadList {
-  jobs: JobWithAttemptsRead[];
-  /** the total count of jobs for the specified connection */
-  totalJobCount: number;
 }
 
 export type AttemptStatus = (typeof AttemptStatus)[keyof typeof AttemptStatus];
@@ -719,23 +741,6 @@ export interface StreamDescriptor {
   namespace?: string;
 }
 
-export interface StreamTransform {
-  transformType: StreamTransformTransformType;
-  streamDescriptor: StreamDescriptor;
-  /** list of field transformations. order does not matter. */
-  updateStream?: FieldTransform[];
-}
-
-export interface StreamState {
-  streamDescriptor: StreamDescriptor;
-  streamState?: StateBlob;
-}
-
-export interface GlobalState {
-  shared_state?: StateBlob;
-  streamStates: StreamState[];
-}
-
 /**
  * contains information about how a reset was configured. only populated if the job was a reset.
  */
@@ -780,6 +785,12 @@ export interface JobRead {
 export interface JobWithAttemptsRead {
   job?: JobRead;
   attempts?: AttemptRead[];
+}
+
+export interface JobReadList {
+  jobs: JobWithAttemptsRead[];
+  /** the total count of jobs for the specified connection */
+  totalJobCount: number;
 }
 
 export interface JobIdRequestBody {
@@ -1207,6 +1218,10 @@ export interface WebBackendConnectionRequestBody {
   connectionId: ConnectionId;
 }
 
+export interface ConnectionIdListRequestBody {
+  connectionIds: ConnectionId[];
+}
+
 export interface ConnectionIdRequestBody {
   connectionId: ConnectionId;
 }
@@ -1220,6 +1235,14 @@ export const ReleaseStage = {
   generally_available: "generally_available",
   custom: "custom",
 } as const;
+
+/**
+ * The values required to configure the destination. The schema for this should have an id of the existing destination along with the configuration you want to change in case.
+ */
+export interface DestinationCloneRequestBody {
+  destinationCloneId: DestinationId;
+  destinationConfiguration?: DestinationCloneConfiguration;
+}
 
 /**
  * The values required to configure the destination. The schema for this must match the schema return by destination_definition_specifications/get for the destinationDefinition.
@@ -1257,7 +1280,7 @@ export interface DestinationReadList {
 
 export interface DestinationReadWithConnectionPage {
   DestinationRead: DestinationRead;
-  WebBackendConnectionReadList?: WebBackendConnectionReadList;
+  WebBackendConnectionReadList?: WebBackendConnectionList;
   total?: number;
   pageSize?: number;
   pageCurrent?: number;
@@ -1266,12 +1289,6 @@ export interface DestinationReadWithConnectionPage {
 export interface DestinationCloneConfiguration {
   connectionConfiguration?: DestinationConfiguration;
   name?: string;
-}
-
-export interface DestinationUpdate {
-  destinationId: DestinationId;
-  connectionConfiguration: DestinationConfiguration;
-  name: string;
 }
 
 export interface DestinationCreate {
@@ -1288,12 +1305,10 @@ export interface DestinationCoreConfig {
 
 export type DestinationId = string;
 
-/**
- * The values required to configure the destination. The schema for this should have an id of the existing destination along with the configuration you want to change in case.
- */
-export interface DestinationCloneRequestBody {
-  destinationCloneId: DestinationId;
-  destinationConfiguration?: DestinationCloneConfiguration;
+export interface DestinationUpdate {
+  destinationId: DestinationId;
+  connectionConfiguration: DestinationConfiguration;
+  name: string;
 }
 
 export interface DestinationIdPageRequestBody {
@@ -1323,6 +1338,11 @@ export interface DestinationDefinitionSpecificationRead {
   supportsNormalization?: boolean;
 }
 
+export interface PrivateDestinationDefinitionRead {
+  destinationDefinition: DestinationDefinitionRead;
+  granted: boolean;
+}
+
 export interface PrivateDestinationDefinitionReadList {
   destinationDefinitions: PrivateDestinationDefinitionRead[];
 }
@@ -1332,9 +1352,24 @@ export interface DestinationDefinitionIdWithWorkspaceId {
   workspaceId: WorkspaceId;
 }
 
+export interface DestinationDefinitionUpdate {
+  destinationDefinitionId: DestinationDefinitionId;
+  dockerImageTag?: string;
+  resourceRequirements?: ActorDefinitionResourceRequirements;
+}
+
 export interface CustomDestinationDefinitionUpdate {
   workspaceId: WorkspaceId;
   destinationDefinition: DestinationDefinitionUpdate;
+}
+
+export interface DestinationDefinitionCreate {
+  name: string;
+  dockerRepository: string;
+  dockerImageTag: string;
+  documentationUrl: string;
+  icon?: string;
+  resourceRequirements?: ActorDefinitionResourceRequirements;
 }
 
 export interface CustomDestinationDefinitionCreate {
@@ -1357,28 +1392,8 @@ export interface DestinationDefinitionRead {
   resourceRequirements?: ActorDefinitionResourceRequirements;
 }
 
-export interface PrivateDestinationDefinitionRead {
-  destinationDefinition: DestinationDefinitionRead;
-  granted: boolean;
-}
-
 export interface DestinationDefinitionReadList {
   destinationDefinitions: DestinationDefinitionRead[];
-}
-
-export interface DestinationDefinitionUpdate {
-  destinationDefinitionId: DestinationDefinitionId;
-  dockerImageTag?: string;
-  resourceRequirements?: ActorDefinitionResourceRequirements;
-}
-
-export interface DestinationDefinitionCreate {
-  name: string;
-  dockerRepository: string;
-  dockerImageTag: string;
-  documentationUrl: string;
-  icon?: string;
-  resourceRequirements?: ActorDefinitionResourceRequirements;
 }
 
 export type DestinationAuthSpecification = AuthSpecification;
@@ -1413,7 +1428,7 @@ export interface SourceReadList {
 
 export interface SourceReadWithConnectionPage {
   SourceRead: SourceRead;
-  ConnectionReadList?: WebBackendConnectionReadList;
+  WebBackendConnectionReadList?: WebBackendConnectionList;
   total?: number;
   pageSize?: number;
   pageCurrent?: number;
@@ -3322,6 +3337,24 @@ export const webBackendPageConnectionsForWorkspace = (
 };
 
 /**
+ * @summary Returns all non-deleted connections status for a workspace.
+ */
+export const webBackendConnectionStatusForWorkspace = (
+  connectionIdListRequestBody: ConnectionIdListRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<WebBackendConnectionStatusReadList>(
+    {
+      url: `/v1/web_backend/connections/status`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: connectionIdListRequestBody,
+    },
+    options
+  );
+};
+
+/**
  * @summary Returns all non-deleted connections for a workspace.
  */
 export const webBackendListConnectionsForWorkspace = (
@@ -3714,6 +3747,9 @@ export type WebBackendConnectionsFilterParamResult = NonNullable<
 >;
 export type WebBackendPageConnectionsForWorkspaceResult = NonNullable<
   Awaited<ReturnType<typeof webBackendPageConnectionsForWorkspace>>
+>;
+export type WebBackendConnectionStatusForWorkspaceResult = NonNullable<
+  Awaited<ReturnType<typeof webBackendConnectionStatusForWorkspace>>
 >;
 export type WebBackendListConnectionsForWorkspaceResult = NonNullable<
   Awaited<ReturnType<typeof webBackendListConnectionsForWorkspace>>

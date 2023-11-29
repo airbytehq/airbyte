@@ -52,12 +52,12 @@ const UserTable: React.FC<IProps> = React.memo(({ users, roles, onDelete, onChan
             control={
               <Box sx={{ display: "flex" }} pt={1}>
                 <FormattedMessage id="user.heading.role" />
-                <Box>
+                <Box pl={1}>
                   <QuestionIcon />
                 </Box>
               </Box>
             }
-            placement="top"
+            placement="top-start"
           >
             <Box>
               <Typography>
@@ -69,10 +69,12 @@ const UserTable: React.FC<IProps> = React.memo(({ users, roles, onDelete, onChan
               <br />
               .<FormattedMessage id="permission.owner.rolethree" />
               <Typography>
+                <br />
                 <FormattedMessage id="permission.admin" />
               </Typography>
               .<FormattedMessage id="permission.admin.role" />
               <Typography>
+                <br />
                 <FormattedMessage id="permission.user" />
               </Typography>
               .<FormattedMessage id="permission.user.role" />
