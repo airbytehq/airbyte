@@ -103,16 +103,10 @@ class MigrateReportOptions:
     @classmethod
     def _transform_report_options(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
         try:
-            report_options = json.loads(config.get("report_options", ""))
+            report_options = json.loads(config.get("report_options", "{}") or "{}")
         except json.JSONDecodeError:
             report_options = {}
 
-        try:
-            advanced_stream_options = json.loads(config.get("advanced_stream_options", ""))
-        except json.JSONDecodeError:
-            advanced_stream_options = {}
-
-        report_options.update(advanced_stream_options)
         report_options_list = []
         for stream_name, options in report_options.items():
             options_list = [{"option_name": name, "option_value": value} for name, value in options.items()]

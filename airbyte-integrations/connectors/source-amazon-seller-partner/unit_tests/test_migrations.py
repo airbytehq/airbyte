@@ -54,27 +54,9 @@ class TestMigrateReportOptions:
                 {"report_options": "{\"GET_REPORT\": {\"reportPeriod\": \"WEEK\"}}"},
                 [{"stream_name": "GET_REPORT", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}]}],
             ),
-            (
-                {"advanced_stream_options": "{\"GET_REPORT\": {\"reportPeriod\": \"WEEK\"}}"},
-                [{"stream_name": "GET_REPORT", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}]}],
-            ),
-            (
-                {
-                    "report_options": "{\"GET_REPORT\": {\"reportPeriod\": \"WEEK\"}}",
-                    "advanced_stream_options": "{\"GET_REPORT_2\": {\"reportPeriod_2\": \"DAY\"}}",
-                },
-                [
-                    {"stream_name": "GET_REPORT", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}]},
-                    {"stream_name": "GET_REPORT_2", "options_list": [{"option_name": "reportPeriod_2", "option_value": "DAY"}]},
-                ],
-            ),
-            (
-                {
-                    "report_options": "{\"GET_REPORT\": {\"reportPeriod\": \"WEEK\"}}",
-                    "advanced_stream_options": "{\"GET_REPORT\": {\"reportPeriod\": \"DAY\"}}",
-                },
-                [{"stream_name": "GET_REPORT", "options_list": [{"option_name": "reportPeriod", "option_value": "DAY"}]}],
-            ),
+            ({"report_options": None}, []),
+            ({"report_options": "{{}"}, []),
+            ({}, []),
         ),
     )
     def test_transform_report_options(self, input_config, expected_report_options_list):
@@ -92,7 +74,6 @@ class TestMigrateReportOptions:
         migrated_config = control_msg["control"]["connectorConfig"]["config"]
         expected_report_options_list = [
             {"stream_name": "GET_REPORT", "options_list": [{"option_name": "reportPeriod", "option_value": "WEEK"}]},
-            {"stream_name": "GET_REPORT_2", "options_list": [{"option_name": "reportPeriod_2", "option_value": "DAY"}]},
         ]
         assert migrated_config["report_options_list"] == expected_report_options_list
 
