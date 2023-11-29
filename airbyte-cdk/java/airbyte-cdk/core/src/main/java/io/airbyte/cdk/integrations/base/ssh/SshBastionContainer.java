@@ -21,7 +21,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
-public class SshBastionContainer {
+public class SshBastionContainer implements AutoCloseable {
 
   private static final String SSH_USER = "sshuser";
   private static final String SSH_PASSWORD = "secret";
@@ -36,21 +36,27 @@ public class SshBastionContainer {
     bastion.start();
   }
 
+  public JsonNode getTunnelMethod(final SshTunnel.TunnelMethod tunnelMethod,
+                                  final boolean innerAddress)
+      throws IOException, InterruptedException {
+    final var containerAddress = innerAddress ? getInnerContainerAddress(bastion) : getOuterContainerAddress(bastion);
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("tunnel_host",
+            Objects.requireNonNull(containerAddress.left))
+        .put("tunnel_method", tunnelMethod)
+        .put("tunnel_port", containerAddress.right)
+        .put("tunnel_user", SSH_USER)
+        .put("tunnel_user_password", tunnelMethod.equals(SSH_PASSWORD_AUTH) ? SSH_PASSWORD : "")
+        .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? bastion.execInContainer("cat", "var/bastion/id_rsa").getStdout() : "")
+        .build());
+  }
+
   public JsonNode getTunnelConfig(final SshTunnel.TunnelMethod tunnelMethod,
                                   final ImmutableMap.Builder<Object, Object> builderWithSchema,
                                   final boolean innerAddress)
       throws IOException, InterruptedException {
-    final var containerAddress = innerAddress ? getInnerContainerAddress(bastion) : getOuterContainerAddress(bastion);
     return Jsons.jsonNode(builderWithSchema
-        .put("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()
-            .put("tunnel_host",
-                Objects.requireNonNull(containerAddress.left))
-            .put("tunnel_method", tunnelMethod)
-            .put("tunnel_port", containerAddress.right)
-            .put("tunnel_user", SSH_USER)
-            .put("tunnel_user_password", tunnelMethod.equals(SSH_PASSWORD_AUTH) ? SSH_PASSWORD : "")
-            .put("ssh_key", tunnelMethod.equals(SSH_KEY_AUTH) ? bastion.execInContainer("cat", "var/bastion/id_rsa").getStdout() : "")
-            .build()))
+        .put("tunnel_method", getTunnelMethod(tunnelMethod, innerAddress))
         .build());
   }
 
@@ -81,6 +87,11 @@ public class SshBastionContainer {
 
   public void stopAndClose() {
     bastion.close();
+  }
+
+  @Override
+  public void close() {
+    stopAndClose();
   }
 
   public GenericContainer getContainer() {

@@ -17,7 +17,7 @@
       },
       "status": {
         "title": "Status",
-        "description": "Entity statuses based off of campaigns, ad_groups, and ads. If you do not have a status set, it will be ignored completely.",
+        "description": "For the ads, ad_groups, and campaigns streams, specifying a status will filter out records that do not match the specified ones. If a status is not specified, the source will default to records with a status of either ACTIVE or PAUSED.",
         "type": ["array", "null"],
         "items": {
           "type": "string",
@@ -26,40 +26,34 @@
         "uniqueItems": true
       },
       "credentials": {
-        "title": "Authorization Method",
+        "title": "OAuth2.0",
         "type": "object",
-        "oneOf": [
-          {
-            "type": "object",
-            "title": "OAuth2.0",
-            "required": ["auth_method", "refresh_token"],
-            "properties": {
-              "auth_method": {
-                "type": "string",
-                "const": "oauth2.0",
-                "order": 0
-              },
-              "client_id": {
-                "type": "string",
-                "title": "Client ID",
-                "description": "The Client ID of your OAuth application",
-                "airbyte_secret": true
-              },
-              "client_secret": {
-                "type": "string",
-                "title": "Client Secret",
-                "description": "The Client Secret of your OAuth application.",
-                "airbyte_secret": true
-              },
-              "refresh_token": {
-                "type": "string",
-                "title": "Refresh Token",
-                "description": "Refresh Token to obtain new Access Token, when it's expired.",
-                "airbyte_secret": true
-              }
-            }
+        "required": ["auth_method", "refresh_token", "client_id", "client_secret"],
+        "properties": {
+          "auth_method": {
+            "type": "string",
+            "const": "oauth2.0",
+            "order": 0
+          },
+          "client_id": {
+            "type": "string",
+            "title": "Client ID",
+            "description": "The Client ID of your OAuth application",
+            "airbyte_secret": true
+          },
+          "client_secret": {
+            "type": "string",
+            "title": "Client Secret",
+            "description": "The Client Secret of your OAuth application.",
+            "airbyte_secret": true
+          },
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token",
+            "description": "Refresh Token to obtain new Access Token, when it's expired.",
+            "airbyte_secret": true
           }
-        ]
+        }
       },
       "custom_reports": {
         "title": "Custom Reports",
