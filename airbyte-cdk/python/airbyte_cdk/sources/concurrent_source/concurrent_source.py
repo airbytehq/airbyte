@@ -115,15 +115,14 @@ class ConcurrentSource:
         queue: Queue[QueueItem],
         concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
-        while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=1):
+        while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
             messages = list(
                 self._handle_item(
                     airbyte_message_or_record_or_exception,
                     concurrent_stream_processor,
                 )
             )
-            if messages:
-                yield from messages
+            yield from messages
             if concurrent_stream_processor.is_done() and queue.empty():
                 # all partitions were generated and processed. we're done here
                 break
