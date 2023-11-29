@@ -104,7 +104,7 @@ The connector is restricted by Xero [API rate limits](https://developer.xero.com
 
 | Version | Date       | Pull Request                                             | Subject                           |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------|
-| 0.2.4   | 2023-11-24 | [27471](https://github.com/airbytehq/airbyte/pull/27471) | Handle 403 error                  |
+| 0.2.4   | 2023-11-24 | [32837](https://github.com/airbytehq/airbyte/pull/32837) | Handle 403 error                  |
 | 0.2.3   | 2023-06-19 | [27471](https://github.com/airbytehq/airbyte/pull/27471) | Update CDK to 0.40                |
 | 0.2.2   | 2023-06-06 | [27007](https://github.com/airbytehq/airbyte/pull/27007) | Update CDK                        |
 | 0.2.1   | 2023-03-20 | [24217](https://github.com/airbytehq/airbyte/pull/24217) | Certify to Beta                   |
