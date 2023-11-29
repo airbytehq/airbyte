@@ -6,6 +6,7 @@ import datetime
 import os
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Mapping, Optional
+from uuid import uuid4
 
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
@@ -45,6 +46,8 @@ class Products(Stream, IncrementalMixin):
         return read_json(os.path.join(dirname, "record_data", "products.json"))
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        raise ValueError(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! {uuid4()}")
+
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
 
@@ -97,6 +100,7 @@ class Users(Stream, IncrementalMixin):
         This is a multi-process implementation of read_records.
         We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
         """
+        raise ValueError(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! {uuid4()}")
 
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
@@ -157,6 +161,7 @@ class Purchases(Stream, IncrementalMixin):
         This is a multi-process implementation of read_records.
         We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
         """
+        raise ValueError(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! {uuid4()}")
 
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
