@@ -125,7 +125,7 @@ class UnstructuredParser(FileTypeParser):
 
         filetype = self._get_filetype(file_handle, remote_file)
 
-        if filetype == FileType.MD:
+        if filetype == FileType.MD or filetype == FileType.TXT or filetype == FileType.JSON:
             file_content: bytes = file_handle.read()
             decoded_content: str = unstructured_optional_decode(file_content)
             return decoded_content
@@ -190,7 +190,7 @@ class UnstructuredParser(FileTypeParser):
         return type_based_on_content
 
     def _supported_file_types(self) -> List[Any]:
-        return [FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX]
+        return [FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX, FileType.TXT, FileType.JSON]
 
     def _get_file_type_error_message(self, file_type: FileType) -> str:
         supported_file_types = ", ".join([str(type) for type in self._supported_file_types()])

@@ -131,7 +131,7 @@ unstructured_invalid_file_type_discover_scenario_no_skip = (
         FileBasedSourceBuilder()
         .set_files(
             {
-                "a.txt": {
+                "a.csv": {
                     "contents": bytes("Just a humble text file", "UTF-8"),
                     "last_modified": "2023-06-05T03:54:07.000Z",
                 },
@@ -176,7 +176,7 @@ unstructured_invalid_file_type_discover_scenario_skip = (
         FileBasedSourceBuilder()
         .set_files(
             {
-                "a.txt": {
+                "a.csv": {
                     "contents": bytes("Just a humble text file", "UTF-8"),
                     "last_modified": "2023-06-05T03:54:07.000Z",
                 },
@@ -201,11 +201,11 @@ unstructured_invalid_file_type_discover_scenario_skip = (
         [
             {
                 "data": {
-                    "document_key": "a.txt",
+                    "document_key": "a.csv",
                     "content": None,
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.txt",
-                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=a.txt message=File type FileType.TXT is not supported. Supported file types are FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX",
+                    "_ab_source_file_url": "a.csv",
+                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=a.csv message=File type FileType.CSV is not supported. Supported file types are FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX, FileType.TXT, FileType.JSON",
                 },
                 "stream": "stream1",
             }
@@ -239,7 +239,7 @@ unstructured_invalid_file_type_read_scenario = (
                     "contents": bytes("A harmless markdown file", "UTF-8"),
                     "last_modified": "2023-06-05T03:54:07.000Z",
                 },
-                "b.txt": {
+                "b.csv": {
                     "contents": bytes("An evil text file", "UTF-8"),
                     "last_modified": "2023-06-05T03:54:07.000Z",
                 },
