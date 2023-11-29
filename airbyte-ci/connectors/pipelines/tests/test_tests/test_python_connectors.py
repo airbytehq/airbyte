@@ -28,7 +28,7 @@ class TestUnitTests:
         pytest.skip("No certified connector with setup.py found.")
 
     @pytest.fixture
-    def context_for_certified_connector_with_setup(self, certified_connector_with_setup, dagger_client):
+    def context_for_certified_connector_with_setup(self, certified_connector_with_setup, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test unit tests",
             connector=certified_connector_with_setup,
@@ -37,6 +37,7 @@ class TestUnitTests:
             report_output_prefix="test",
             is_local=True,
             use_remote_secrets=True,
+            targeted_platforms=[current_platform],
         )
         context.dagger_client = dagger_client
         context.connector_secrets = {}
@@ -44,11 +45,11 @@ class TestUnitTests:
 
     @pytest.fixture
     async def certified_container_with_setup(self, context_for_certified_connector_with_setup, current_platform):
-        result = await BuildConnectorImages(context_for_certified_connector_with_setup, current_platform).run()
+        result = await BuildConnectorImages(context_for_certified_connector_with_setup).run()
         return result.output_artifact[current_platform]
 
     @pytest.fixture
-    def context_for_connector_with_poetry(self, connector_with_poetry, dagger_client):
+    def context_for_connector_with_poetry(self, connector_with_poetry, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test unit tests",
             connector=connector_with_poetry,
@@ -57,6 +58,7 @@ class TestUnitTests:
             report_output_prefix="test",
             is_local=True,
             use_remote_secrets=True,
+            targeted_platforms=[current_platform],
         )
         context.dagger_client = dagger_client
         context.connector_secrets = {}
@@ -64,7 +66,7 @@ class TestUnitTests:
 
     @pytest.fixture
     async def container_with_poetry(self, context_for_connector_with_poetry, current_platform):
-        result = await BuildConnectorImages(context_for_connector_with_poetry, current_platform).run()
+        result = await BuildConnectorImages(context_for_connector_with_poetry).run()
         return result.output_artifact[current_platform]
 
     async def test__run_for_setup_py(self, context_for_certified_connector_with_setup, certified_container_with_setup):
