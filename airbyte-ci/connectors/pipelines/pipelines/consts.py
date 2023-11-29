@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 import platform
 from enum import Enum
 
@@ -58,7 +59,6 @@ class CIContext(str, Enum):
 
     MANUAL = "manual"
     PULL_REQUEST = "pull_request"
-    NIGHTLY_BUILDS = "nightly_builds"
     MASTER = "master"
 
     def __str__(self) -> str:

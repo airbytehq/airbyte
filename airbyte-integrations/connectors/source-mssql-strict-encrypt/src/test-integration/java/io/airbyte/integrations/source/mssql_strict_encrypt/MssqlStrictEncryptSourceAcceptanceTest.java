@@ -5,94 +5,48 @@
 package io.airbyte.integrations.source.mssql_strict_encrypt;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.source.mssql.MsSQLContainerFactory;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.jooq.DSLContext;
-import org.junit.jupiter.api.AfterAll;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
   protected static final String SCHEMA_NAME = "dbo";
   protected static final String STREAM_NAME = "id_and_name";
-  protected static MSSQLServerContainer<?> db;
-  protected JsonNode config;
 
-  @AfterAll
-  public static void closeContainer() {
-    if (db != null) {
-      db.close();
-      db.stop();
-    }
+  private MsSQLTestDatabase testdb;
+
+  @Override
+  protected void setupEnvironment(final TestDestinationEnv environment) {
+    final var container = new MsSQLContainerFactory().shared("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04");
+    testdb = new MsSQLTestDatabase(container);
+    testdb = testdb
+        .withConnectionProperty("encrypt", "true")
+        .withConnectionProperty("trustServerCertificate", "true")
+        .withConnectionProperty("databaseName", testdb.getDatabaseName())
+        .initialized()
+        .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));")
+        .with("INSERT INTO id_and_name (id, name, born) VALUES " +
+            "(1,'picard', '2124-03-04T01:01:01Z'),  " +
+            "(2, 'crusher', '2124-03-04T01:01:01Z'), " +
+            "(3, 'vash', '2124-03-04T01:01:01Z');");
   }
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
-    if (db == null) {
-      db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04").acceptLicense();
-      db.start();
-    }
-
-    final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .build());
-    final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
-
-    try (final DSLContext dslContext = DSLContextFactory.create(
-        configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
-        configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;encrypt=true;trustServerCertificate=true;",
-            db.getHost(),
-            db.getFirstMappedPort()),
-        null)) {
-      final Database database = getDatabase(dslContext);
-      database.query(ctx -> {
-        ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
-        ctx.fetch(String.format("USE %s;", dbName));
-        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));");
-        ctx.fetch(
-            "INSERT INTO id_and_name (id, name, born) VALUES " +
-                "(1,'picard', '2124-03-04T01:01:01Z'),  " +
-                "(2, 'crusher', '2124-03-04T01:01:01Z'), " +
-                "(3, 'vash', '2124-03-04T01:01:01Z');");
-        return null;
-      });
-    }
-
-    config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
-    ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "encrypted_trust_server_certificate")));
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    testdb.close();
   }
-
-  private static Database getDatabase(final DSLContext dslContext) {
-    return new Database(dslContext);
-  }
-
-  @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {}
 
   @Override
   protected String getImageName() {
@@ -106,7 +60,9 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
 
   @Override
   protected JsonNode getConfig() {
-    return config;
+    return testdb.integrationTestConfigBuilder()
+        .withSsl(Map.of("ssl_method", "encrypted_trust_server_certificate"))
+        .build();
   }
 
   @Override

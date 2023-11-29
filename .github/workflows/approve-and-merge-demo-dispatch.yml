@@ -1,4 +1,4 @@
-name: Approve and Merge Command Dispatch
+name: Approve and Merge Demo Command Dispatch
 
 # Note: We have a two stage dispatch so that we can wait for the formatters to run before approving and merging.
 on:
@@ -13,7 +13,7 @@ jobs:
         id: wait-for-formatters
         uses: lewagon/wait-on-check-action@v1.3.1
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
           check-name: "Apply All Formatting Rules"
           repo-token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
           wait-interval: 30
