@@ -20,7 +20,9 @@ class UnauthorizedOauthError(Exception):
 
 class UnauthorizedServiceAccountError(Exception):
     def __init__(self):
-        message = "Unable to connect with provided Service Account credentials. Make sure the `sevice account credentials` provided are valid."
+        message = (
+            "Unable to connect with provided Service Account credentials. Make sure the `sevice account credentials` provided are valid."
+        )
         super().__init__(message)
 
 
