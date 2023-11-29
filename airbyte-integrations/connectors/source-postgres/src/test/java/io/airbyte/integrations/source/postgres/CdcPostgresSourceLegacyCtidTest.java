@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import org.junit.jupiter.api.Order;
+
+@Order(2)
 public class CdcPostgresSourceLegacyCtidTest extends CdcPostgresSourceTest {
 
   protected static String getServerImageName() {

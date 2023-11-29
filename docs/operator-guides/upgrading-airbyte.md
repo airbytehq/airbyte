@@ -1,5 +1,12 @@
 # Upgrading Airbyte
 
+:::info
+
+If you run on [Airbyte Cloud](https://cloud.airbyte.com/signup) you'll always run on the newest
+Airbyte version automatically. This documentation only applies to users deploying our self-managed
+version.
+:::
+
 ## Overview
 
 This tutorial will describe how to determine if you need to run this upgrade process, and if you do, how to do so. This process does require temporarily turning off Airbyte.

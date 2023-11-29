@@ -4,6 +4,7 @@ You can specify for each connection how Airbyte should handle any change of sche
 
 Airbyte checks for any changes in your source schema immediately before syncing, at most once every 24 hours.
 
+## Detection and Propagate Schema Changes
 Based on your configured settings for **Detect and propagate schema changes**, Airbyte will automatically sync those changes or ignore them: 
 
 | Setting              | Description                                                                                                         |
@@ -13,6 +14,7 @@ Based on your configured settings for **Detect and propagate schema changes**, A
 | Ignore | Schema changes will be detected, but not propagated. Syncs will continue running with the schema you've set up. To propagate the detected schema changes, you will need to approve the changes manually | 
 | Pause Connection | Connections will be automatically disabled as soon as any schema changes are detected |
 
+## Types of Schema Changes
 When propagation is enabled, your data in the destination will automatically shift to bring in the new changes. 
 
 | Type of Schema Change              | Propagation Behavior                                                                                                         |
@@ -22,6 +24,10 @@ When propagation is enabled, your data in the destination will automatically shi
 | New stream | The first sync will create the new stream in the destination and fill all data in as if it is a historical sync. | 
 | Removal of stream | The stream will stop updating, and any existing data in the destination will remain. |
 | Column data type changes | The data in the destination will remain the same. Any new or updated rows with incompatible data types will result in a row error in the raw Airbyte tables. You will need to refresh the schema and do a full resync to ensure the data types are consistent. 
+
+:::tip
+Ensure you receive webhook notifications for your connection by enabling `Schema update notifications` in the connection's settings.
+:::
 
 In all cases, if a breaking schema change is detected, the connection will be paused immediately for manual review to prevent future syncs from failing. Breaking schema changes occur when:
 * An existing primary key is removed from the source
@@ -33,7 +39,7 @@ To re-enable the streams, ensure the correct **Primary Key** and **Cursor** are 
 
 If the connection is set to **Ignore** any schema changes, Airbyte continues syncing according to your last saved schema. You need to manually approve any detected schema changes for the schema in the destination to change.
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections**. Select a connection and navigate to the **Replication** tab. If schema changes are detected, you'll see a blue "i" icon next to the Replication ab. 
+1. In the Airbyte UI, click **Connections**. Select a connection and navigate to the **Replication** tab. If schema changes are detected, you'll see a blue "i" icon next to the Replication ab. 
 
 2. Click **Review changes**.
 
@@ -62,7 +68,7 @@ A major version upgrade will include a breaking change if any of these apply:
 | State Changes          | The format of the source’s state has changed, and the full dataset will need to be re-synced                |
 
 To review and fix breaking schema changes:
-1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection with breaking changes.
+1. In the Airbyte UI, click **Connections** and select the connection with breaking changes.
 
 2. Review the description of what has changed in the new version. The breaking change will require you to upgrade your source or destination to a new version by a specific cutoff date. 
 
@@ -74,13 +80,10 @@ In addition to Airbyte Cloud’s automatic schema change detection, you can manu
 
  To manually refresh the source schema:
 
- 1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to refresh.
+ 1. In the Airbyte UI, click **Connections** and then click the connection you want to refresh.
 
  2. Click the **Replication** tab.
 
  3. In the **Activate the streams you want to sync** table, click **Refresh source schema** to fetch the schema of your data source.
 
  4. If there are changes to the schema, you can review them in the **Refreshed source schema** dialog.
-
-## Manage Schema Change Notifications
-[Refer to our notification documentation](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications#enable-schema-update-notifications) to understand how to stay updated on any schema updates to your connections.
