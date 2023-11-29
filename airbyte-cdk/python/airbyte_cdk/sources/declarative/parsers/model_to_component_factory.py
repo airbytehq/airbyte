@@ -25,6 +25,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
+from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
 from airbyte_cdk.sources.declarative.incremental import Cursor, CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
@@ -113,6 +114,9 @@ from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTra
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
+from airbyte_cdk.sources.utils.transform import TransformConfig
+from airbyte_cdk.sources.utils.transform import TypeTransformer
+from airbyte_cdk.sources.utils.transform import TypeTransformer as TypeTransformerModel
 from isodate import parse_duration
 from pydantic import BaseModel
 
@@ -183,6 +187,7 @@ class ModelToComponentFactory:
             ParentStreamConfigModel: self.create_parent_stream_config,
             RecordFilterModel: self.create_record_filter,
             RecordSelectorModel: self.create_record_selector,
+            TypeTransformerModel: self.create_schema_transformer,
             RemoveFieldsModel: self.create_remove_fields,
             RequestPathModel: self.create_request_path,
             RequestOptionModel: self.create_request_option,
@@ -878,18 +883,29 @@ class ModelToComponentFactory:
         return RequestOption(field_name=model.field_name, inject_into=inject_into, parameters={})
 
     def create_record_selector(
-        self, model: RecordSelectorModel, config: Config, *, transformations: List[RecordTransformation], **kwargs: Any
+        self,
+        model: RecordSelectorModel,
+        config: Config,
+        *,
+        transformations: List[RecordTransformation],
+        **kwargs: Any,
     ) -> RecordSelector:
         extractor = self._create_component_from_model(model=model.extractor, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
+        schema_normalization = TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization])
 
         return RecordSelector(
             extractor=extractor,
             config=config,
             record_filter=record_filter,
             transformations=transformations,
+            schema_normalization=schema_normalization,
             parameters=model.parameters or {},
         )
+
+    @staticmethod
+    def create_schema_transformer(config: TransformConfig) -> TypeTransformer:
+        return TypeTransformer(config)
 
     @staticmethod
     def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs: Any) -> RemoveFields:

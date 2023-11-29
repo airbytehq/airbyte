@@ -1773,9 +1773,22 @@ definitions:
         title: Record Filter
         description: Responsible for filtering records to be emitted by the Source.
         "$ref": "#/definitions/RecordFilter"
+      schema_normalization:
+        "$ref": "#/definitions/SchemaNormalization"
       $parameters:
         type: object
         additionalProperties: true
+  SchemaNormalization:
+    title: Schema Normalization
+    description: Responsible for normalization according to the schema.
+    type: string
+    enum:
+      - no
+      - default
+    default: no
+    examples:
+      - no
+      - default
   RemoveFields:
     title: Remove Fields
     description: A transformation which removes fields from a record. The fields removed are designated using FieldPointers. During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
