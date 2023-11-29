@@ -44,7 +44,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
 
   @Override
   public boolean isFinalTableEmpty(final StreamId id) throws Exception {
-    //TODO: This is broken with exception
+    // TODO: This is broken with exception
     // com.amazon.redshift.util.RedshiftException: ERROR: column "row_count" does not exist in tables
     final int rowCount = jdbcDatabase.queryInt(
         """
