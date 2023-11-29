@@ -8,7 +8,6 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWr
 import io.airbyte.cdk.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
 import io.airbyte.cdk.integrations.destination_async.DestinationFlushFunction;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.stream.Stream;
