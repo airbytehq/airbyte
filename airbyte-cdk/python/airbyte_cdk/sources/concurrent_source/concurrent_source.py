@@ -129,7 +129,6 @@ class ConcurrentSource:
         queue_item: QueueItem,
         concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> List[AirbyteMessage]:
-        ret = []
         # handle queue item and call the appropriate handler depending on the type of the queue item
         if isinstance(queue_item, Exception):
             # ret += [m for m in concurrent_stream_processor.on_exception(queue_item)]
@@ -148,7 +147,6 @@ class ConcurrentSource:
             yield from concurrent_stream_processor.on_record(queue_item)
         else:
             raise ValueError(f"Unknown queue item type: {type(queue_item)}")
-        return ret
 
     def _get_streams_to_read_from(self, streams: List[AbstractStream]) -> List[AbstractStream]:
         """
