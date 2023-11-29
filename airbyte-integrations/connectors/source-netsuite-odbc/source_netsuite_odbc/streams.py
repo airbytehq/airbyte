@@ -60,27 +60,15 @@ class NetsuiteODBCStream(Stream):
 
     @property
     def name(self) -> str:
-      """
-      :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
-      """
       return self.table_name
-  
   
     @property
     def cursor_field(self) -> Union[str, List[str]]:
-      """
-      Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
-      :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
-      """
-      return [self.incremental_column]
+      return self.incremental_column
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-      """
-      :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
-        If the stream has no primary keys, return None.
-      """
-      return [self.primary_key_column]
+      return self.primary_key_column
 
     def process_stream_state(self, stream_state):
       if 'last_date_updated' in stream_state:
@@ -144,8 +132,6 @@ class NetsuiteODBCStream(Stream):
         SELECT TOP {NETSUITE_PAGINATION_INTERVAL} {values} FROM {self.table_name} 
         WHERE {self.primary_key_column} > {self.cursor_value_last_id_seen}{incremental_column_filter}
         ORDER BY {self.primary_key_column} ASC""" + incremental_column_sorter
-      # print(query)
-      # {self.primary_key_column} > {id_filter}
       return query
   
     def serialize_row_to_response(self, row):
@@ -180,7 +166,6 @@ class NetsuiteODBCStream(Stream):
       start_slice_range = EARLIEST_DATE
       if sync_mode == SyncMode.incremental:
         incremental_date = date.fromisoformat(stream_state['last_date_updated']) if 'last_date_updated' in stream_state else EARLIEST_DATE
-        print('IS INCREMENTAL')
         start_slice_range = incremental_date
       elif not (sync_mode == SyncMode.full_refresh):
         raise Exception(f'Unsupported Sync Mode: {sync_mode}.  Please use either "full_refresh" or "incremental"')
@@ -204,26 +189,6 @@ class NetsuiteODBCStream(Stream):
       a sustainable way, and we should be able to restart successfully after each page.
       """
       return 10000
-    
-    # @property
-    # def state(self) -> MutableMapping[str, Any]:
-    #   """State getter, should return state in form that can serialized to a string and send to the output
-    #   as a STATE AirbyteMessage.
-    #   """
-    #   return {
-    #     'last_id_seen': self.cursor_value_last_id_seen,
-    #     'last_date_updated': self.incremental_most_recent_value_seen,
-    #   }
-
-    # @state.setter
-    # def state(self, value: MutableMapping[str, Any]) -> None:
-    #   """State setter, accept state serialized by state getter."""
-    #   last_id_seen = value['last_id_seen']
-    #   if not last_id_seen:
-    #     self.cursor_value_last_id_seen = STARTING_CURSOR_VALUE
-    #   else:
-    #     self.cursor_value_last_id_seen = value['last_id_seen']
-    #   self.incremental_most_recent_value_seen = value['last_date_updated']
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
       if 'last_date_updated' in current_stream_state:

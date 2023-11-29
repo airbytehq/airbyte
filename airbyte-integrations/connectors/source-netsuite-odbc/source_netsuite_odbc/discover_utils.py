@@ -4,8 +4,6 @@ from airbyte_cdk.models import (
 )
 import json
 
-
-
 # See https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4407755805.html#SuiteAnalytics-Connect-System-Tables
 # for descriptions of the system tables used
 class NetsuiteODBCTableDiscoverer():
