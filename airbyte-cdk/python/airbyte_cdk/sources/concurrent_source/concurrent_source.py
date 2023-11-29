@@ -116,13 +116,10 @@ class ConcurrentSource:
         concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
-            messages = list(
-                self._handle_item(
-                    airbyte_message_or_record_or_exception,
-                    concurrent_stream_processor,
-                )
+            yield from self._handle_item(
+                airbyte_message_or_record_or_exception,
+                concurrent_stream_processor,
             )
-            yield from messages
             if concurrent_stream_processor.is_done() and queue.empty():
                 # all partitions were generated and processed. we're done here
                 break
@@ -135,16 +132,20 @@ class ConcurrentSource:
         ret = []
         # handle queue item and call the appropriate handler depending on the type of the queue item
         if isinstance(queue_item, Exception):
-            ret += [m for m in concurrent_stream_processor.on_exception(queue_item)]
+            # ret += [m for m in concurrent_stream_processor.on_exception(queue_item)]
+            yield from concurrent_stream_processor.on_exception(queue_item)
 
         elif isinstance(queue_item, PartitionGenerationCompletedSentinel):
-            ret += [m for m in concurrent_stream_processor.on_partition_generation_completed(queue_item)]
+            # ret += [m for m in concurrent_stream_processor.on_partition_generation_completed(queue_item)]
+            yield from concurrent_stream_processor.on_partition_generation_completed(queue_item)
         elif isinstance(queue_item, Partition):
             concurrent_stream_processor.on_partition(queue_item)
         elif isinstance(queue_item, PartitionCompleteSentinel):
-            ret += [m for m in concurrent_stream_processor.on_partition_complete_sentinel(queue_item)]
+            # ret += [m for m in concurrent_stream_processor.on_partition_complete_sentinel(queue_item)]
+            yield from concurrent_stream_processor.on_partition_complete_sentinel(queue_item)
         elif isinstance(queue_item, Record):
-            ret += [m for m in concurrent_stream_processor.on_record(queue_item)]
+            # ret += [m for m in concurrent_stream_processor.on_record(queue_item)]
+            yield from concurrent_stream_processor.on_record(queue_item)
         else:
             raise ValueError(f"Unknown queue item type: {type(queue_item)}")
         return ret

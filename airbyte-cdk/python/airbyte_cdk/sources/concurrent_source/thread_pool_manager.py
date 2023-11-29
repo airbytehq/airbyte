@@ -41,7 +41,6 @@ class ThreadPoolManager:
 
     def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]]) -> None:
         # Wait until the number of pending tasks is < self._max_concurrent_tasks
-        print(f"len(futures): {len(futures)}")
         while True:
             self._prune_futures(futures)
             if len(futures) < self._max_concurrent_tasks:
