@@ -23,7 +23,9 @@ class HttpRequestMatcher:
         return self._request_to_match
 
     def __str__(self) -> str:
-        return f"HttpRequestMatcher(" \
-               f"request_to_match={self._request_to_match}, " \
-               f"minimum_number_of_expected_match={self._minimum_number_of_expected_match}, " \
-               f"actual_number_of_match={self._actual_number_of_match})"
+        return (
+            f"HttpRequestMatcher("
+            f"request_to_match={self._request_to_match}, "
+            f"minimum_number_of_expected_match={self._minimum_number_of_expected_match}, "
+            f"actual_number_of_match={self._actual_number_of_match})"
+        )

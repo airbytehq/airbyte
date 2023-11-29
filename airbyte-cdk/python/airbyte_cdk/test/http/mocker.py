@@ -52,7 +52,7 @@ class HttpMocker(contextlib.ContextDecorator):
         self._mocker.get(
             requests_mock.ANY,
             additional_matcher=self._matches_wrapper(matcher),
-            response_list=[{"text": response.body, "status_code": response.status_code} for response in responses]
+            response_list=[{"text": response.body, "status_code": response.status_code} for response in responses],
         )
 
     def _matches_wrapper(self, matcher: HttpRequestMatcher) -> Callable[[requests_mock.request._RequestObjectProxy], bool]:
