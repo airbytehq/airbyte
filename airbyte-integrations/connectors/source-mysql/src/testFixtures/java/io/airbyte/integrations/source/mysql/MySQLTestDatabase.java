@@ -31,6 +31,7 @@ public class MySQLTestDatabase extends
   }
 
   public static enum ContainerModifier {
+
     MOSCOW_TIMEZONE("withMoscowTimezone"),
     INVALID_TIMEZONE_CEST("withInvalidTimezoneCEST"),
     ROOT_AND_SERVER_CERTIFICATES("withRootAndServerCertificates"),
@@ -39,13 +40,15 @@ public class MySQLTestDatabase extends
     ;
 
     private final String methodName;
+
     private ContainerModifier(String methodName) {
       this.methodName = methodName;
     }
+
   }
 
   static public MySQLTestDatabase in(BaseImage baseImage, ContainerModifier... methods) {
-    String[] methodNames = Stream.of(methods).map(im->im.methodName).toList().toArray(new String[0]);
+    String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
     final var container = new MySQLContainerFactory().shared(baseImage.reference, methodNames);
     return new MySQLTestDatabase(container).initialized();
   }
