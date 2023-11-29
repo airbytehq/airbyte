@@ -31,7 +31,10 @@ class PartitionReader:
         :return: None
         """
         try:
+            # print(f"Processing partition: {partition}")
             for record in partition.read():
+                # print(f"Putting record in queue: {record} for partition {partition}")
+                # print(f"itemsinqueue: {self._queue.qsize()}")
                 self._queue.put(record)
             self._queue.put(PartitionCompleteSentinel(partition))
         except Exception as e:

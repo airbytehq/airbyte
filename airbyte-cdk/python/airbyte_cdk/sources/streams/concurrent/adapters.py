@@ -297,6 +297,7 @@ class StreamPartition(Partition):
                 stream_slice=copy.deepcopy(self._slice),
                 stream_state=self._state,
             ):
+                print(f"partition.adapters.read: {record_data}")
                 if isinstance(record_data, Mapping):
                     data_to_return = dict(record_data)
                     self._stream.transformer.transform(data_to_return, self._stream.get_json_schema())
