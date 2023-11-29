@@ -40,6 +40,7 @@ from source_stripe.streams import (
 logger = logging.getLogger("airbyte")
 
 _MAX_CONCURRENCY = 20
+_DEFAULT_CONCURRENCY = 10
 _CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
 USE_CACHE = not _CACHE_DISABLED
 STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
@@ -50,7 +51,10 @@ class SourceStripe(ConcurrentSourceAdapter):
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
 
     def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], **kwargs):
-        concurrency_level = min(config.get("num_workers", 10), _MAX_CONCURRENCY)
+        if config:
+            concurrency_level = min(config.get("num_workers", _DEFAULT_CONCURRENCY), _MAX_CONCURRENCY)
+        else:
+            concurrency_level = _DEFAULT_CONCURRENCY
         logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
         concurrent_source = ConcurrentSource.create(
             concurrency_level, concurrency_level / 2, logger, self._slice_logger, self.message_repository
