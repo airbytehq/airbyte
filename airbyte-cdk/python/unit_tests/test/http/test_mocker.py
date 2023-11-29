@@ -11,6 +11,7 @@ from airbyte_cdk.test.http import HttpMocker, HttpRequest, HttpRequestMatcher, H
 _A_URL = "http://test.com/"
 _ANOTHER_URL = "http://another-test.com/"
 _A_BODY = "a body"
+_ANOTHER_BODY = "another body"
 _A_RESPONSE = HttpResponse("any response")
 _SOME_QUERY_PARAMS = {"q1": "query value"}
 _SOME_HEADERS = {"h1": "header value"}
@@ -30,6 +31,33 @@ class HttpMockerTest(TestCase):
         assert response.status_code == 474
 
     @HttpMocker()
+    def test_given_multiple_responses_when_decorate_then_return_response(self, http_mocker):
+        http_mocker.get(
+            HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS),
+            [HttpResponse(_A_BODY, 1), HttpResponse(_ANOTHER_BODY, 2)],
+        )
+
+        first_response = requests.get(_A_URL, params=_SOME_QUERY_PARAMS, headers=_SOME_HEADERS)
+        second_response = requests.get(_A_URL, params=_SOME_QUERY_PARAMS, headers=_SOME_HEADERS)
+
+        assert first_response.text == _A_BODY
+        assert first_response.status_code == 1
+        assert second_response.text == _ANOTHER_BODY
+        assert second_response.status_code == 2
+
+    @HttpMocker()
+    def test_given_more_requests_than_responses_when_decorate_then_raise_error(self, http_mocker):
+        http_mocker.get(
+            HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS),
+            [HttpResponse(_A_BODY, 1), HttpResponse(_ANOTHER_BODY, 2)],
+        )
+
+        last_response = [requests.get(_A_URL, params=_SOME_QUERY_PARAMS, headers=_SOME_HEADERS) for _ in range(10)][-1]
+
+        assert last_response.text == _ANOTHER_BODY
+        assert last_response.status_code == 2
+
+    @HttpMocker()
     def test_given_all_requests_match_when_decorate_then_do_not_raise(self, http_mocker):
         http_mocker.get(
             HttpRequest(_A_URL, _SOME_QUERY_PARAMS, _SOME_HEADERS),
@@ -47,7 +75,7 @@ class HttpMockerTest(TestCase):
 
         with pytest.raises(ValueError) as exc_info:
             decorated_function()
-        assert "Expected all matchers to be called at least once" in str(exc_info.value)
+        assert "Invalid number of matches" in str(exc_info.value)
 
     def test_given_assertion_error_but_missing_request_when_decorate_then_raise_missing_http_request(self):
         @HttpMocker()
@@ -60,7 +88,7 @@ class HttpMockerTest(TestCase):
 
         with pytest.raises(ValueError) as exc_info:
             decorated_function()
-        assert "Expected all matchers to be called at least once" in str(exc_info.value)
+        assert "Invalid number of matches" in str(exc_info.value)
 
     def test_given_request_does_not_match_when_decorate_then_raise(self):
         @HttpMocker()

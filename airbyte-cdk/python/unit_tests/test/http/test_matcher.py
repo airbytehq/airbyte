@@ -12,20 +12,34 @@ class HttpRequestMatcherTest(TestCase):
         self._a_request = Mock(spec=HttpRequest)
         self._another_request = Mock(spec=HttpRequest)
         self._request_to_match = Mock(spec=HttpRequest)
-        self._matcher = HttpRequestMatcher(self._request_to_match)
+        self._matcher = HttpRequestMatcher(self._request_to_match, 1)
 
-    def test_given_request_matches_when_matches_then_was_called(self):
+    def test_given_request_matches_when_matches_then_has_expected_match_count(self):
         self._a_request.matches.return_value = True
         self._matcher.matches(self._a_request)
-        assert self._matcher.was_called()
+        assert self._matcher.has_expected_match_count()
 
-    def test_given_request_does_not_match_when_matches_then_was_not_called(self):
+    def test_given_request_does_not_match_when_matches_then_does_not_have_expected_match_count(self):
         self._a_request.matches.return_value = False
         self._matcher.matches(self._a_request)
-        assert not self._matcher.was_called()
+        assert not self._matcher.has_expected_match_count()
 
-    def test_given_many_requests_with_some_match_when_matches_then_was_called(self):
+    def test_given_many_requests_with_some_match_when_matches_then_has_expected_match_count(self):
         self._a_request.matches.side_effect = [True, False]
         self._matcher.matches(self._a_request)
         self._matcher.matches(self._another_request)
-        assert self._matcher.was_called()
+        assert self._matcher.has_expected_match_count()
+
+    def test_given_many_matches_the_expected_number_of_requests_when_matches_then_has_expected_match_count(self):
+        _matcher = HttpRequestMatcher(self._request_to_match, 2)
+        self._a_request.matches.return_value = True
+        _matcher.matches(self._a_request)
+        _matcher.matches(self._a_request)
+        assert _matcher.has_expected_match_count()
+
+    def test_given_many_matches_the_expected_number_of_requests_when_matches_then_does_not_have_expected_match_count(self):
+        _matcher = HttpRequestMatcher(self._request_to_match, 2)
+        self._a_request.matches.side_effect = [True, False]
+        _matcher.matches(self._a_request)
+        _matcher.matches(self._a_request)
+        assert not _matcher.has_expected_match_count()

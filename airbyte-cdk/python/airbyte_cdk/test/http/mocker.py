@@ -3,7 +3,7 @@
 import contextlib
 import functools
 from types import TracebackType
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 
 import requests_mock
 from airbyte_cdk.test.http import HttpRequest, HttpRequestMatcher, HttpResponse
@@ -27,10 +27,10 @@ class HttpMocker(contextlib.ContextDecorator):
 
     def _validate_all_matchers_called(self) -> None:
         for matcher in self._matchers:
-            if not matcher.was_called():
-                raise ValueError(f"Expected all matchers to be called at least once but `{matcher}` wasn't")
+            if not matcher.has_expected_match_count():
+                raise ValueError(f"Invalid number of matches for `{matcher}`")
 
-    def get(self, request: HttpRequest, response: HttpResponse) -> None:
+    def get(self, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]) -> None:
         """
         WARNING: Given multiple requests that are not mutually exclusive, the request will match the first one. This can happen in scenarios
         where the same request is added twice (in which case there will always be an exception because we will never match the second
@@ -44,13 +44,15 @@ class HttpMocker(contextlib.ContextDecorator):
         https://github.com/jamielennox/requests-mock/blob/c06f124a33f56e9f03840518e19669ba41b93202/requests_mock/adapter.py#L246) even
         though the request sent is a better match for the first `http_mocker.get`.
         """
-        matcher = HttpRequestMatcher(request)
+        if isinstance(responses, HttpResponse):
+            responses = [responses]
+
+        matcher = HttpRequestMatcher(request, len(responses))
         self._matchers.append(matcher)
         self._mocker.get(
             requests_mock.ANY,
             additional_matcher=self._matches_wrapper(matcher),
-            text=response.body,
-            status_code=response.status_code,
+            response_list=[{"text": response.body, "status_code": response.status_code} for response in responses]
         )
 
     def _matches_wrapper(self, matcher: HttpRequestMatcher) -> Callable[[requests_mock.request._RequestObjectProxy], bool]:
