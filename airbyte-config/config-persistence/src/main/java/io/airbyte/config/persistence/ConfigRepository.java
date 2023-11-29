@@ -629,11 +629,7 @@ public class ConfigRepository {
         .from(CONNECTION)
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).and(ACTOR.ID.eq(sourceId)).limit(pageSize).offset(pageSize * (pageCurrent - 1)).fetch();
-    final List<StandardSync> standardSyncs = new ArrayList<>();
-    for (final Record record : result) {
-      standardSyncs.add(DbConverter.buildStandardSync(record, Collections.emptyList()));
-    }
-    return standardSyncs;
+    return getStandardSyncsWithoutOperationFromResult(result);
   }
 
   public List<StandardSync> listDestinationStandardSyncsWithoutOperations(final UUID workspaceId,
@@ -646,11 +642,7 @@ public class ConfigRepository {
         .join(ACTOR).on(CONNECTION.DESTINATION_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).and(ACTOR.ID.eq(destination)).limit(pageSize).offset(pageSize * (pageCurrent - 1)).fetch();
 
-    final List<StandardSync> standardSyncs = new ArrayList<>();
-    for (final Record record : result) {
-      standardSyncs.add(DbConverter.buildStandardSync(record, Collections.emptyList()));
-    }
-    return standardSyncs;
+    return getStandardSyncsWithoutOperationFromResult(result);
   }
 
   public Long pageSourceStandardSyncsCount(final UUID workspaceId, final UUID sourceId) throws IOException {

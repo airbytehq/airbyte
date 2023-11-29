@@ -195,39 +195,29 @@ public class WebBackendConnectionsHandler {
     return webBackendConnectionPageRead;
   }
 
-  public WebBackendConnectionReadList listConnectionsPageWithoutOperation(final UUID workspaceId,
-                                                                          UUID sourceId,
-                                                                          UUID destinationId,
-                                                                          final boolean includeDeleted,
-                                                                          final Integer pageSize,
-                                                                          final Integer pageCurrent)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    ConnectionReadList connectionReadList = new ConnectionReadList();
-    if (!ObjectUtils.isEmpty(sourceId)) {
-      connectionReadList = getConnectionReadList(
-          configRepository.listSourceStandardSyncsWithoutOperations(workspaceId, sourceId, pageSize, pageCurrent), includeDeleted);
-    } else if (!ObjectUtils.isEmpty(destinationId)) {
-      connectionReadList =
-          getConnectionReadList(configRepository.listDestinationStandardSyncsWithoutOperations(workspaceId, destinationId, pageSize, pageCurrent),
-              includeDeleted);
-    }
-    final List<WebBackendConnectionRead> reads = Lists.newArrayList();
-    for (final ConnectionRead connection : connectionReadList.getConnections()) {
-      reads.add(buildWebBackendConnectionRead(connection));
-    }
-    return new WebBackendConnectionReadList().connections(reads);
-
-  }
-
-  private ConnectionReadList getConnectionReadList(final List<StandardSync> standardSync, final boolean includeDeleted) {
+  public WebBackendConnectionList listConnectionsPageWithoutOperation(final UUID workspaceId,
+                                                                      UUID sourceId,
+                                                                      UUID destinationId,
+                                                                      final Integer pageSize,
+                                                                      final Integer pageCurrent)
+      throws IOException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
-    for (final StandardSync sync : standardSync) {
-      if (sync.getStatus() == StandardSync.Status.DEPRECATED && !includeDeleted) {
-        continue;
+    if (!ObjectUtils.isEmpty(sourceId)) {
+      for (final StandardSync standardSync : configRepository.listSourceStandardSyncsWithoutOperations(workspaceId, sourceId, pageSize,
+          pageCurrent)) {
+        connectionReads.add(ApiPojoConverters.internalToConnectionPageRead(standardSync));
       }
-      connectionReads.add(ApiPojoConverters.internalToConnectionRead(sync));
+    } else if (!ObjectUtils.isEmpty(destinationId)) {
+      for (final StandardSync standardSync : configRepository.listDestinationStandardSyncsWithoutOperations(workspaceId, destinationId, pageSize,
+          pageCurrent)) {
+        connectionReads.add(ApiPojoConverters.internalToConnectionPageRead(standardSync));
+      }
     }
-    return new ConnectionReadList().connections(connectionReads);
+    final List<WebBackendConnectionPageRead> reads = Lists.newArrayList();
+    for (final ConnectionRead connection : connectionReads) {
+      reads.add(buildWebBackendConnectionPageRead(connection));
+    }
+    return new WebBackendConnectionList().connections(reads);
   }
 
   private static boolean isRunningJob(final JobRead job) {
