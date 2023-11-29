@@ -50,6 +50,8 @@ acceptance_tests:
           items:
             - name: "SalesDetails"
               bypass_reason: "may change"
+            - name: "PurchaseDetails"
+              bypass_reason: "may change"
   incremental:
     tests:
       - config_path: "secrets/config.json"
