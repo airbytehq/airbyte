@@ -47,6 +47,9 @@ acceptance_tests:
           accounts:
             - name: "TaxType"
               bypass_reason: "may change"
+          items:
+            - name: "SalesDetails"
+              bypass_reason: "may change"
   incremental:
     tests:
       - config_path: "secrets/config.json"
