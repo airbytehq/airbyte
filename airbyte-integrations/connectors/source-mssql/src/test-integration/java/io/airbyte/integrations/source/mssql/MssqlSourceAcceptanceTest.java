@@ -27,7 +27,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
-    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022_UBUNTU_20_04)
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022)
         .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));")
         .with("INSERT INTO id_and_name (id, name, born) VALUES " +
             "(1, 'picard', '2124-03-04T01:01:01Z'), " +

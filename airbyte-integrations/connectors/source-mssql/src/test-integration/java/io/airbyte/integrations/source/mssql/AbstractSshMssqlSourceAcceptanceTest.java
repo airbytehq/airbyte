@@ -51,7 +51,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2017_LATEST, ContainerModifier.NETWORK);
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2017, ContainerModifier.NETWORK);
     testdb = testdb
         .with("ALTER DATABASE %s SET AUTO_CLOSE OFF WITH NO_WAIT;", testdb.getDatabaseName())
         .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200), born DATETIMEOFFSET(7));")
