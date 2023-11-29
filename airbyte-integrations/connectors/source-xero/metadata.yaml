@@ -7,6 +7,8 @@ data:
   definitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
   dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-xero
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   githubIssueLabel: source-xero
   icon: xero.svg
   license: MIT
