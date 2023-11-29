@@ -99,7 +99,7 @@ public class JdbcBufferedConsumerFactory {
         io.airbyte.cdk.integrations.destination_async.OnCloseFunction.fromNonAsync(onCloseFunction()),
         new JdbcInsertFlushFunction(recordWriterFunction(database, sqlOperations, writeConfigs, catalog)),
         catalog,
-        new BufferManager((long) (Runtime.getRuntime().maxMemory() * 0.4)),
+        new BufferManager((long) (Runtime.getRuntime().maxMemory() * 0.2)),
         defaultNamespace,
         Executors.newFixedThreadPool(2));
   }
