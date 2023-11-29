@@ -57,7 +57,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             concurrency_level = _DEFAULT_CONCURRENCY
         logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
         concurrent_source = ConcurrentSource.create(
-            concurrency_level, concurrency_level / 2, logger, self._slice_logger, self.message_repository
+            concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository
         )
         super().__init__(concurrent_source)
         if catalog:
