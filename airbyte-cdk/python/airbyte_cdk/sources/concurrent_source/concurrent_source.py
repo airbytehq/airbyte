@@ -116,17 +116,14 @@ class ConcurrentSource:
         concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=1):
-            print(f"airbyte_message_or_record_or_exception: {airbyte_message_or_record_or_exception}")
             messages = list(
                 self._handle_item(
                     airbyte_message_or_record_or_exception,
                     concurrent_stream_processor,
                 )
             )
-            # print(f"mainthread done handling item. messages: {messages}")
             if messages:
                 yield from messages
-            print(f"mainthread: there are {queue.qsize()} items in the queue")
             if concurrent_stream_processor.is_done() and queue.empty():
                 # all partitions were generated and processed. we're done here
                 break
@@ -151,7 +148,6 @@ class ConcurrentSource:
             ret += [m for m in concurrent_stream_processor.on_record(queue_item)]
         else:
             raise ValueError(f"Unknown queue item type: {type(queue_item)}")
-        print(f"mainthread ret values: {ret}")
         return ret
 
     def _get_streams_to_read_from(self, streams: List[AbstractStream]) -> List[AbstractStream]:

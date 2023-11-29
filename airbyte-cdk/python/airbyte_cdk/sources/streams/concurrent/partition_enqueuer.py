@@ -35,7 +35,6 @@ class PartitionEnqueuer:
         try:
             for partition in stream.generate_partitions():
                 self._queue.put(partition)
-                print(f"itemsinqueue: {self._queue.qsize()}")
             self._queue.put(PartitionGenerationCompletedSentinel(stream))
         except Exception as e:
             self._queue.put(e)
