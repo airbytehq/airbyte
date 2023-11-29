@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.55.0
+concurrent cdk: read multiple streams concurrently
+
+## 0.54.0
+low-code: fix injection of page token if first request
+
 ## 0.53.9
 Fix of generate the error message using _try_get_error based on list of errors
 

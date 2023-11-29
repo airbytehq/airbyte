@@ -68,6 +68,7 @@ public class PostgresCdcCtidInitializer {
     try {
       final JsonNode sourceConfig = database.getSourceConfig();
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
+      final Duration subsequentRecordWaitTime = PostgresUtils.getSubsequentRecordWaitTime(sourceConfig);
       final OptionalInt queueSize = OptionalInt.of(PostgresUtils.getQueueSize(sourceConfig));
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
       LOGGER.info("Queue size: {}", queueSize.getAsInt());
@@ -163,19 +164,8 @@ public class PostgresCdcCtidInitializer {
 
       final var targetPosition = PostgresCdcTargetPosition.targetPosition(database);
       final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
-          targetPosition, false, firstRecordWaitTime, queueSize);
+          targetPosition, false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
-
-      final boolean canShortCircuitDebeziumEngine = savedOffset.isPresent() &&
-      // Until the need presents itself in production, short-circuiting should only be done in tests.
-          sourceConfig.has("is_test") && sourceConfig.get("is_test").asBoolean() &&
-          !postgresDebeziumStateUtil.maybeReplicationStreamIntervalHasRecords(
-              database.getDatabaseConfig(),
-              sourceConfig.get("replication_method").get("replication_slot").asText(),
-              sourceConfig.get("replication_method").get("publication").asText(),
-              PostgresUtils.getPluginValue(sourceConfig.get("replication_method")),
-              savedOffset.getAsLong(),
-              targetPosition.targetLsn.asLong());
 
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
           catalog,
@@ -185,8 +175,7 @@ public class PostgresCdcCtidInitializer {
           PostgresCdcProperties.getDebeziumDefaultProperties(database),
           DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt,
-          false,
-          canShortCircuitDebeziumEngine);
+          false);
 
       if (initialSyncCtidIterators.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
