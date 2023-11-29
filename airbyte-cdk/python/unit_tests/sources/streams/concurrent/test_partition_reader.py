@@ -16,8 +16,8 @@ def test_partition_reader():
 
     stream_partition = Mock()
     records = [
-        Record({"id": 1, "name": "Jack"}),
-        Record({"id": 2, "name": "John"}),
+        Record({"id": 1, "name": "Jack"}, "stream"),
+        Record({"id": 2, "name": "John"}, "stream"),
     ]
     stream_partition.read.return_value = iter(records)
 

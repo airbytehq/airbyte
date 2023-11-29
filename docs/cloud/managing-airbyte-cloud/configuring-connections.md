@@ -1,6 +1,6 @@
 # Configuring connections
 
-A connection links a source to a destination and defines how your data will sync. After you have created a connection, you can modify any of the [configuration settings](#configure-connection-settings) or  [stream settings](#modify-streams-in-your-connection).
+A connection links a source to a destination and defines how your data will sync. After you have created a connection, you can modify any of the configuration settings or stream settings.
 
 ## Configure Connection Settings
 
@@ -8,7 +8,7 @@ Configuring the connection settings allows you to manage various aspects of the 
 
 To configure these settings:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to change. 
+1. In the Airbyte UI, click **Connections** and then click the connection you want to change. 
 
 2. Click the **Replication** tab.
 
@@ -24,25 +24,11 @@ You can configure the following settings:
 
 | Setting                              | Description                                                                         |
 |--------------------------------------|-------------------------------------------------------------------------------------|
-| Replication frequency                | How often the data syncs                                                            |
-| Destination namespace                | Where the replicated data is written                                                |
+| [Replication frequency](/using-airbyte/core-concepts/sync-schedules.md)                | How often the data syncs                                                            |
+| [Destination namespace](/using-airbyte/core-concepts/namespaces.md)                | Where the replicated data is written                                                |
 | Destination stream prefix            | How you identify streams from different connectors                                  |
-| [Detect and propagate schema changes](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-schema-changes/#review-non-breaking-schema-changes) | How Airbyte handles syncs when it detects schema changes in the source |
-| Connection Data Residency | Where data will be processed |
-
-To use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html):
-
-1. In the **Replication Frequency** dropdown, click **Cron**. 
-
-2. Enter a cron expression and choose a time zone to create a sync schedule.
-
-:::note
-
-* Only one sync per connection can run at a time. 
-* If a sync is scheduled to run before the previous sync finishes, the scheduled sync will start after the completion of the previous sync.
-* Reach out to [Sales](https://airbyte.com/company/talk-to-sales) if you require replication more frequently than once per hour. 
-
-:::
+| [Detect and propagate schema changes](/cloud/managing-airbyte-cloud/manage-schema-changes.md) | How Airbyte handles syncs when it detects schema changes in the source |
+| [Connection Data Residency](/cloud/managing-airbyte-cloud/manage-data-residency.md) | Where data will be processed |
 
 ## Modify streams in your connection
 
@@ -54,7 +40,7 @@ A connection's schema consists of one or many streams. Each stream is most commo
 
 To modify streams:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection you want to change. 
+1. In the Airbyte UI, click **Connections** and then click the connection you want to change. 
 
 2. Click the **Replication** tab.
 
@@ -74,7 +60,7 @@ Source-defined cursors and primary keys are selected automatically and cannot be
 
 3. Click on a stream to display the stream details panel. You'll see each column we detect from the source.
 
-4. Toggle individual fields or columns to include or exclude them in the sync, or use the toggle in the table header to select all fields at once.
+4. Column selection is available to protect PII or sensitive data from being synced to the destination. Toggle individual fields to include or exclude them in the sync, or use the toggle in the table header to select all fields at once.
 
 :::info
 

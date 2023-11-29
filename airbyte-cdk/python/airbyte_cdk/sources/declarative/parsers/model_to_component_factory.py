@@ -311,11 +311,13 @@ class ModelToComponentFactory:
         )
         if model.request_authentication.type == "Bearer":
             return ModelToComponentFactory.create_bearer_authenticator(
-                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""), config, token_provider=token_provider
+                BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""),
+                config,
+                token_provider=token_provider,  # type: ignore # $parameters defaults to None
             )
         else:
             return ModelToComponentFactory.create_api_key_authenticator(
-                ApiKeyAuthenticatorModel(type="ApiKeyAuthenticator", api_token="", inject_into=model.request_authentication.inject_into),
+                ApiKeyAuthenticatorModel(type="ApiKeyAuthenticator", api_token="", inject_into=model.request_authentication.inject_into),  # type: ignore # $parameters and headers default to None
                 config=config,
                 token_provider=token_provider,
             )
@@ -834,11 +836,21 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_offset_increment(model: OffsetIncrementModel, config: Config, **kwargs: Any) -> OffsetIncrement:
-        return OffsetIncrement(page_size=model.page_size, config=config, parameters=model.parameters or {})
+        return OffsetIncrement(
+            page_size=model.page_size,
+            config=config,
+            inject_on_first_request=model.inject_on_first_request or False,
+            parameters=model.parameters or {},
+        )
 
     @staticmethod
     def create_page_increment(model: PageIncrementModel, config: Config, **kwargs: Any) -> PageIncrement:
-        return PageIncrement(page_size=model.page_size, start_from_page=model.start_from_page or 0, parameters=model.parameters or {})
+        return PageIncrement(
+            page_size=model.page_size,
+            start_from_page=model.start_from_page or 0,
+            inject_on_first_request=model.inject_on_first_request or False,
+            parameters=model.parameters or {},
+        )
 
     def create_parent_stream_config(self, model: ParentStreamConfigModel, config: Config, **kwargs: Any) -> ParentStreamConfig:
         declarative_stream = self._create_component_from_model(model.stream, config=config)
