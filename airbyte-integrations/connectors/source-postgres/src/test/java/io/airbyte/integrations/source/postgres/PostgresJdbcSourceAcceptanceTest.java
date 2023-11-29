@@ -406,7 +406,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
     ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     final AirbyteConnectionStatus status = source().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 08001;"));
+    assertTrue(status.getMessage().contains("Connection is not available"));
   }
 
   @Test
