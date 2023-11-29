@@ -113,7 +113,6 @@ def export_address(config, orderNo):
 
 
 class order_list(HttpStream):
-    url_base = BASE_URL + ORDER_LIST_PATH
     primary_key = None
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
@@ -130,6 +129,10 @@ class order_list(HttpStream):
     def http_method(self) -> str:
         return "POST"
 
+    @property
+    def url_base(self) -> str:
+        return BASE_URL
+    
     def path(self, **kwargs) -> str:
         return ORDER_LIST_PATH
 
@@ -152,7 +155,7 @@ class order_list(HttpStream):
             next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         body = {
-            "queryType": 2,
+            "queryType": 1,
             "page": self.current_page,
             "pageSize": self.page_size
         }
@@ -160,7 +163,8 @@ class order_list(HttpStream):
         if self.start_time is None:
             if self.config_param["tunnel_method"]["tunnel_method"] == "PERIODIC":
                 hours = self.config_param["tunnel_method"]["hours"]
-                today = datetime.today()
+                # request time and response time time zoneId is UTC + 8
+                today = datetime.utcnow() + relativedelta(hours=8)
                 end_time = today.strftime("%Y-%m-%d %H:%M:%S")
                 hours_ago = today + relativedelta(hours=-1 * hours)
                 start_time = hours_ago.strftime("%Y-%m-%d %H:%M:%S")
@@ -216,7 +220,7 @@ class SourceShein(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
 
         headers = get_header(config["open_key_id"], config["secret_key"], ORDER_LIST_PATH)
-        today = datetime.today()
+        today = datetime.utcnow() + relativedelta(hours=8)
         end_time = today.strftime("%Y-%m-%d %H:%M:%S")
         day_ago = today + relativedelta(days=-1 * 1)
         start_time = day_ago.strftime("%Y-%m-%d %H:%M:%S")
@@ -240,7 +244,6 @@ class SourceShein(AbstractSource):
         url = BASE_URL+ORDER_LIST_PATH
         resp = requests.post(url, headers=headers, json=body)
         resp_json = resp.json()
-        print(resp.text)
         if resp_json.get("code") == '0':
             return True, None
         else:
