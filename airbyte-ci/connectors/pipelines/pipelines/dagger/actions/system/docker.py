@@ -5,6 +5,7 @@
 import json
 import uuid
 from typing import Callable, Optional
+from urllib.parse import urlparse
 
 from dagger import Client, Container, File, Secret
 from pipelines import consts
@@ -112,7 +113,8 @@ def bind_to_tailscale(dagger_client: Client, container_to_bind: Container, tails
 
     return (
         container_to_bind.with_service_binding("tailscale", tailscale).with_env_variable("ALL_PROXY", "socks5://tailscale:1055/")
-        # TODO remove if working, this is a dummy example that will succeed if the tailscale setup works
+        # TODO (Conor)
+        # remove this exec if working, this is a dummy example that will succeed if the tailscale setup works
         # This exec will fail if the tailscale setup doesn't work as this url is only reachable through VPN
         .with_exec(["curl", "prefect.airbyte.com"], skip_entrypoint=True)
     )
@@ -169,8 +171,11 @@ def with_global_dockerd_service(
     dockerd_container = get_base_dockerd_container(dagger_client)
     if TAILSCALE_AUTH_KEY is not None:
         dockerd_container = bind_to_tailscale(dagger_client, dockerd_container, TAILSCALE_AUTH_KEY)
-        # TODO remove if working, ping will succeed if the registry mirror is reachable through VPN
-        dockerd_container = dockerd_container.with_exec(["ping", "-c", "2", "172.20.83.84:5000"], skip_entrypoint=True)
+        # Ping the registry mirror host to make sure it's reachable through VPN
+        parsed_registry_mirror_url = urlparse(DOCKER_REGISTRY_MIRROR_URL)
+        dockerd_container = dockerd_container.with_exec(
+            ["ping", "-c", "2", f"{parsed_registry_mirror_url.hostname}:{parsed_registry_mirror_url.port}"], skip_entrypoint=True
+        )
         daemon_config_json = get_daemon_config_json(DOCKER_REGISTRY_MIRROR_URL)
     else:
         daemon_config_json = get_daemon_config_json()

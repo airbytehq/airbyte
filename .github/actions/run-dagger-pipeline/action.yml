@@ -1,6 +1,10 @@
 name: "Run Dagger pipeline"
 description: "Runs a given dagger pipeline"
 inputs:
+  airbyte_ci_binary_url:
+    description: "URL to airbyte-ci binary"
+    required: false
+    default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
   subcommand:
     description: "Subcommand for airbyte-ci"
     required: true
@@ -16,6 +20,11 @@ inputs:
   docker_hub_password:
     description: "Dockerhub password"
     required: true
+  docker_registry_mirror_url:
+    description: "Docker registry mirror URL"
+    required: false
+    # TODO (Conor): Change this value to the correct URL once we have a reachable mirror
+    default: "http://172.20.83.84:5000"
   options:
     description: "Options for the subcommand"
     required: false
@@ -69,10 +78,6 @@ inputs:
   s3_build_cache_secret_key:
     description: "Gradle S3 Build Cache AWS secret key"
     required: false
-  airbyte_ci_binary_url:
-    description: "URL to airbyte-ci binary"
-    required: false
-    default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
   tailscale_auth_key:
     description: "Tailscale auth key"
     required: false
@@ -134,3 +139,4 @@ runs:
         S3_BUILD_CACHE_SECRET_KEY: ${{ inputs.s3_build_cache_secret_key }}
         CI: "True"
         TAILSCALE_AUTH_KEY: ${{ inputs.tailscale_auth_key }}
+        DOCKER_REGISTRY_MIRROR_URL: ${{ inputs.docker_registry_mirror_url }}

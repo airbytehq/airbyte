@@ -23,6 +23,11 @@ on:
       airbyte_ci_binary_url:
         description: "The URL to the airbyte-ci binary to use"
         default: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
+      # TODO (Conor): Remove this once the default value is correctly set in ./.github/actions/run-dagger-pipeline
+      docker_registry_mirror_url:
+        description: "Docker registry mirror URL"
+        default: "http://172.20.83.84:5000"
+
   pull_request:
     types:
       - opened
@@ -62,6 +67,8 @@ jobs:
           context: "manual"
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          # TODO (Conor): Remove this once the default value is correctly set in ./.github/actions/run-dagger-pipeline
+          docker_registry_mirror_url: ${{ inputs.docker_registry_mirror_url }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ steps.extract_branch.outputs.branch }}
