@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import concurrent
 import logging
 import os
 from datetime import timedelta
@@ -15,7 +14,6 @@ from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
-from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
@@ -58,11 +56,9 @@ class SourceStripe(ConcurrentSourceAdapter):
         else:
             concurrency_level = _DEFAULT_CONCURRENCY
         logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
-        threadpool = ThreadPoolManager(
-            concurrent.futures.ThreadPoolExecutor(max_workers=concurrency_level, thread_name_prefix="workerpool"),
-            logger,
+        concurrent_source = ConcurrentSource.create(
+            concurrency_level, concurrency_level // 2, logger, self._slice_logger, self.message_repository
         )
-        concurrent_source = ConcurrentSource(threadpool, logger, self._slice_logger, self.message_repository, concurrency_level // 2, 900)
         super().__init__(concurrent_source)
         if catalog:
             self._streams_configured_as_full_refresh = {
