@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.55.2
+concurrent-cdk: factory method initializes concurrent source with default number of max tasks
+
 ## 0.55.1
 Vector DB CDK: Add omit_raw_text flag
 
