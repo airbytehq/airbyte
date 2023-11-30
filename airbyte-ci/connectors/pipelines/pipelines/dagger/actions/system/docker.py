@@ -174,7 +174,7 @@ def with_global_dockerd_service(
         # Ping the registry mirror host to make sure it's reachable through VPN
         parsed_registry_mirror_url = urlparse(DOCKER_REGISTRY_MIRROR_URL)
         dockerd_container = dockerd_container.with_exec(
-            ["ping", "-c", "2", f"{parsed_registry_mirror_url.hostname}:{parsed_registry_mirror_url.port}"], skip_entrypoint=True
+            ["curl", "-c", "2", f"{parsed_registry_mirror_url.hostname}/v2/"], skip_entrypoint=True
         )
         daemon_config_json = get_daemon_config_json(DOCKER_REGISTRY_MIRROR_URL)
     else:
