@@ -26,7 +26,7 @@ on:
       # TODO (Conor): Remove this once the default value is correctly set in ./.github/actions/run-dagger-pipeline
       docker_registry_mirror_url:
         description: "Docker registry mirror URL"
-        default: "ci-dockerhub-registry.airbyte.com"
+        default: "http://ci-dockerhub-registry.airbyte.com"
 
   pull_request:
     types:
