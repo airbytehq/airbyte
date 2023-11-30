@@ -93,12 +93,12 @@ const AllConnectionsPage: React.FC = () => {
   const [filters, setFilters] = useState<FilterConnectionRequestBody>(initialFiltersState);
 
   const { connections, total, pageSize } = useFilteredConnectionList(filters);
-
-  const connectionIds = connections?.filter((con) => con?.connectionId)?.map((con) => con?.connectionId);
+  const connectionIds = connections?.filter((con: any) => con?.connectionId)?.map((con: any) => con?.connectionId);
   const apiData = {
     connectionIds,
   };
-  const { connectionStatusList } = useConnectionStatusList(apiData);
+
+  const { connectionStatusList } = useConnectionStatusList(apiData) || [];
 
   const onSelectFilter = useCallback(
     (
