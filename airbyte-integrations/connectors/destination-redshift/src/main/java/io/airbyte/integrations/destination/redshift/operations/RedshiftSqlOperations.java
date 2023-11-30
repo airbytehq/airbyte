@@ -12,6 +12,7 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DAT
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
 import static org.jooq.impl.DSL.*;
 
+import com.google.common.collect.Iterables;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
@@ -92,22 +93,35 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
   protected void insertRecordsInternalV2(final JdbcDatabase database,
                                          final List<PartialAirbyteMessage> records,
                                          final String schemaName,
-                                         final String tableName)
-      throws Exception {
-    LOGGER.info("actual size of batch: {}", records.size());
-    database.execute(connection -> {
-      final DSLContext create = DSL.using(connection, SQLDialect.POSTGRES);
-      final BatchBindStep batchInsertStep = create.batch(create
-          .insertInto(table(name(schemaName, tableName)),
-              field(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36)),
-              field(COLUMN_NAME_DATA, new DefaultDataType<>(null, String.class, "super")),
-              field(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE),
-              field(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE))
-          .values(null, DSL.function("JSON_PARSE", String.class, val((String) null)), null, null)); // Jooq needs dummy values for batch binds
-      records.forEach(record -> batchInsertStep.bind(val(UUID.randomUUID().toString()), val(record.getSerialized()), val(Timestamp.from(
-          Instant.ofEpochMilli(record.getRecord().getEmittedAt()))), null));
-      batchInsertStep.execute();
-    });
+                                         final String tableName) {
+    LOGGER.info("Total records received to insert: {}", records.size());
+    for (List<PartialAirbyteMessage> batch : Iterables.partition(records, 5_000)) {
+      try {
+        // Execute only a subset of prepared statements on each connection. This code hangs (or rather runs very slow) in redshift with batch size more than 10K records.
+        database.execute(connection -> {
+          LOGGER.info("Prepared batch size: {}, {}, {}", batch.size(), schemaName, tableName);
+          final DSLContext create = using(connection, SQLDialect.POSTGRES);
+          final BatchBindStep batchInsertStep = create.batch(create
+                                                                 .insertInto(table(name(schemaName, tableName)),
+                                                                             field(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36)),
+                                                                             field(COLUMN_NAME_DATA,
+                                                                                   new DefaultDataType<>(null, String.class, "super")),
+                                                                             field(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE),
+                                                                             field(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE))
+                                                                 .values(null, function("JSON_PARSE", String.class, val((String) null)), null,
+                                                                         null)); // Jooq needs dummy values for batch binds
+          for (PartialAirbyteMessage record : batch) {
+            batchInsertStep.bind(val(UUID.randomUUID().toString()), val(record.getSerialized()), val(Timestamp.from(
+                Instant.ofEpochMilli(record.getRecord().getEmittedAt()))), null);
+          }
+          batchInsertStep.execute();
+          LOGGER.info("Executed batch size: {}, {}, {}", batch.size(), schemaName, tableName);
+        });
+      } catch (Exception e) {
+        LOGGER.error("Error while inserting records", e);
+        throw new RuntimeException(e);
+      }
+    }
   }
 
 }
