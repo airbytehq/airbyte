@@ -30,7 +30,6 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
 
   private final Logger LOGGER = LoggerFactory.getLogger(MSSQLConverter.class);
 
-
   private final Set<String> BINARY = Set.of("VARBINARY", "BINARY");
   private final Set<String> DATETIME_TYPES = Set.of("DATETIME", "DATETIME2", "SMALLDATETIME");
   private final String DATE = "DATE";
