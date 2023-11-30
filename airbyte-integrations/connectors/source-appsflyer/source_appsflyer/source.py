@@ -728,6 +728,7 @@ class SourceAppsflyer(AbstractSource):
         timezone = pendulum.timezone(config["timezone"])
         config["backward_dates_campatibility_mode"] = False
         now_date = pendulum.now().replace(tzinfo=timezone)
+        load_today = config.get("load_today", False)
 
         if config.get("start_date") and config.get("end_date"):
             config["start_date"] = pendulum.parse(config["start_date"]).replace(tzinfo=timezone)
@@ -743,6 +744,8 @@ class SourceAppsflyer(AbstractSource):
                 .replace(tzinfo=timezone, hour=0, minute=0, second=0, microsecond=0)
             )
             config["end_date"] = now_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            if not load_today:
+                config["end_date"] = config["end_date"].subtract(days=1)
         elif (
             not config.get("start_date")
             and not config.get("end_date")
@@ -750,6 +753,8 @@ class SourceAppsflyer(AbstractSource):
         ):
             config["start_date"] = pendulum.now().subtract(days=5).replace(tzinfo=timezone)
             config["end_date"] = now_date
+            if not load_today:
+                config["end_date"] = config["end_date"].subtract(days=1)
         else:
             raise Exception("Invalid dates format or options")
 

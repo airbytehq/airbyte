@@ -1,0 +1,456 @@
+{
+    "title": "Report",
+    "type": "object",
+    "properties": {
+        "network_cost": {
+            "title": "Network Cost",
+            "description": "Ad Spend (Network).",
+            "type": "number"
+        },
+        "network_cost_diff": {
+            "title": "Network Cost Diff",
+            "description": "Ad Spend Diff (Network).",
+            "type": "number"
+        },
+        "network_clicks": {
+            "title": "Network Clicks",
+            "description": "Clicks (Network).",
+            "type": "integer"
+        },
+        "network_impressions": {
+            "title": "Network Impressions",
+            "description": "Impressions (Network).",
+            "type": "integer"
+        },
+        "network_installs": {
+            "title": "Network Installs",
+            "description": "Installs (Network).",
+            "type": "integer"
+        },
+        "network_installs_diff": {
+            "title": "Network Installs Diff",
+            "description": "Installs Diff (Network).",
+            "type": "integer"
+        },
+        "network_ecpc": {
+            "title": "Network Ecpc",
+            "description": "eCPC (Network).",
+            "type": "number"
+        },
+        "network_ecpi": {
+            "title": "Network Ecpi",
+            "description": "eCPI (Network).",
+            "type": "number"
+        },
+        "network_ecpm": {
+            "title": "Network Ecpm",
+            "description": "eCPM (Network).",
+            "type": "number"
+        },
+        "arpdau_ad": {
+            "title": "Arpdau Ad",
+            "description": "ARPDAU (Ad).",
+            "type": "number"
+        },
+        "arpdau": {
+            "title": "Arpdau",
+            "description": "ARPDAU (All).",
+            "type": "number"
+        },
+        "arpdau_iap": {
+            "title": "Arpdau Iap",
+            "description": "ARPDAU (IAP).",
+            "type": "number"
+        },
+        "ad_impressions": {
+            "title": "Ad Impressions",
+            "description": "Ad Impressions.",
+            "type": "integer"
+        },
+        "ad_rpm": {
+            "title": "Ad Rpm",
+            "description": "Ad RPM.",
+            "type": "number"
+        },
+        "ad_revenue": {
+            "title": "Ad Revenue",
+            "description": "Ad Revenue.",
+            "type": "number"
+        },
+        "cohort_ad_revenue": {
+            "title": "Cohort Ad Revenue",
+            "description": "Ad Revenue (Cohort).",
+            "type": "number"
+        },
+        "cost": {
+            "title": "Cost",
+            "description": "Ad Spend.",
+            "type": "number"
+        },
+        "adjust_cost": {
+            "title": "Adjust Cost",
+            "description": "Ad Spend (Attribution).",
+            "type": "number"
+        },
+        "all_revenue": {
+            "title": "All Revenue",
+            "description": "All Revenue.",
+            "type": "number"
+        },
+        "cohort_all_revenue": {
+            "title": "Cohort All Revenue",
+            "description": "All Revenue (Cohort).",
+            "type": "number"
+        },
+        "daus": {
+            "title": "Daus",
+            "description": "Avg. DAUs.",
+            "type": "number"
+        },
+        "maus": {
+            "title": "Maus",
+            "description": "Avg. MAUs.",
+            "type": "number"
+        },
+        "waus": {
+            "title": "Waus",
+            "description": "Avg. WAUs.",
+            "type": "number"
+        },
+        "base_sessions": {
+            "title": "Base Sessions",
+            "description": "Base Sessions.",
+            "type": "integer"
+        },
+        "ctr": {
+            "title": "Ctr",
+            "description": "CTR.",
+            "type": "number"
+        },
+        "click_conversion_rate": {
+            "title": "Click Conversion Rate",
+            "description": "Click Conversion Rate (CCR).",
+            "type": "number"
+        },
+        "click_cost": {
+            "title": "Click Cost",
+            "description": "Click Cost.",
+            "type": "number"
+        },
+        "clicks": {
+            "title": "Clicks",
+            "description": "Clicks.",
+            "type": "integer"
+        },
+        "paid_clicks": {
+            "title": "Paid Clicks",
+            "description": "Clicks (paid).",
+            "type": "integer"
+        },
+        "deattributions": {
+            "title": "Deattributions",
+            "description": "Deattributions.",
+            "type": "integer"
+        },
+        "ecpc": {
+            "title": "Ecpc",
+            "description": "Effective Cost per Click (eCPC).",
+            "type": "number"
+        },
+        "gdpr_forgets": {
+            "title": "Gdpr Forgets",
+            "description": "GDPR Forgets.",
+            "type": "integer"
+        },
+        "gross_profit": {
+            "title": "Gross Profit",
+            "description": "Gross profit.",
+            "type": "number"
+        },
+        "cohort_gross_profit": {
+            "title": "Cohort Gross Profit",
+            "description": "Gross profit (Cohort).",
+            "type": "number"
+        },
+        "impression_conversion_rate": {
+            "title": "Impression Conversion Rate",
+            "description": "Impression Conversion Rate (ICR).",
+            "type": "number"
+        },
+        "impression_cost": {
+            "title": "Impression Cost",
+            "description": "Impression Cost.",
+            "type": "number"
+        },
+        "impressions": {
+            "title": "Impressions",
+            "description": "Impressions.",
+            "type": "integer"
+        },
+        "paid_impressions": {
+            "title": "Paid Impressions",
+            "description": "Impressions (paid).",
+            "type": "integer"
+        },
+        "install_cost": {
+            "title": "Install Cost",
+            "description": "Install Cost.",
+            "type": "number"
+        },
+        "installs": {
+            "title": "Installs",
+            "description": "Installs.",
+            "type": "integer"
+        },
+        "paid_installs": {
+            "title": "Paid Installs",
+            "description": "Installs (paid).",
+            "type": "integer"
+        },
+        "installs_per_mile": {
+            "title": "Installs Per Mile",
+            "description": "Installs per Mille (IPM).",
+            "type": "integer"
+        },
+        "limit_ad_tracking_installs": {
+            "title": "Limit Ad Tracking Installs",
+            "description": "Limit Ad Tracking Installs.",
+            "type": "integer"
+        },
+        "limit_ad_tracking_install_rate": {
+            "title": "Limit Ad Tracking Install Rate",
+            "description": "Limit Ad Tracking Rate.",
+            "type": "number"
+        },
+        "limit_ad_tracking_reattribution_rate": {
+            "title": "Limit Ad Tracking Reattribution Rate",
+            "description": "Limit Ad Tracking Reattribution Rate.",
+            "type": "number"
+        },
+        "limit_ad_tracking_reattributions": {
+            "title": "Limit Ad Tracking Reattributions",
+            "description": "Limit Ad Tracking Reattributions.",
+            "type": "integer"
+        },
+        "non_organic_installs": {
+            "title": "Non Organic Installs",
+            "description": "Non-Organic Installs.",
+            "type": "integer"
+        },
+        "organic_installs": {
+            "title": "Organic Installs",
+            "description": "Organic Installs.",
+            "type": "integer"
+        },
+        "roas_ad": {
+            "title": "Roas Ad",
+            "description": "ROAS (Ad Revenue).",
+            "type": "number"
+        },
+        "roas": {
+            "title": "Roas",
+            "description": "ROAS (All Revenue).",
+            "type": "number"
+        },
+        "roas_iap": {
+            "title": "Roas Iap",
+            "description": "ROAS (IAP Revenue).",
+            "type": "number"
+        },
+        "reattributions": {
+            "title": "Reattributions",
+            "description": "Reattributions.",
+            "type": "integer"
+        },
+        "return_on_investment": {
+            "title": "Return On Investment",
+            "description": "Return On Investment (ROI).",
+            "type": "number"
+        },
+        "revenue": {
+            "title": "Revenue",
+            "description": "Revenue.",
+            "type": "number"
+        },
+        "cohort_revenue": {
+            "title": "Cohort Revenue",
+            "description": "Revenue (Cohort).",
+            "type": "number"
+        },
+        "revenue_events": {
+            "title": "Revenue Events",
+            "description": "Revenue Events.",
+            "type": "integer"
+        },
+        "revenue_to_cost": {
+            "title": "Revenue To Cost",
+            "description": "Revenue To Cost Ratio (RCR).",
+            "type": "number"
+        },
+        "sessions": {
+            "title": "Sessions",
+            "description": "Sessions.",
+            "type": "integer"
+        },
+        "events": {
+            "title": "Events",
+            "description": "Total Events.",
+            "type": "integer"
+        },
+        "ecpi_all": {
+            "title": "Ecpi All",
+            "description": "eCPI (All Installs).",
+            "type": "number"
+        },
+        "ecpi": {
+            "title": "Ecpi",
+            "description": "eCPI (Paid Installs).",
+            "type": "number"
+        },
+        "ecpm": {
+            "title": "Ecpm",
+            "description": "eCPM (Attribution).",
+            "type": "number"
+        },
+        "day": {
+            "title": "Day",
+            "description": "Date.",
+            "type": "string",
+            "format": "date"
+        },
+        "os_name": {
+            "title": "Os Name",
+            "description": "Operating system.",
+            "type": "string"
+        },
+        "device_type": {
+            "title": "Device Type",
+            "description": "Device, e.g., phone or tablet.",
+            "type": "string"
+        },
+        "app": {
+            "title": "App",
+            "description": "Name of the app.",
+            "type": "string"
+        },
+        "app_token": {
+            "title": "App Token",
+            "description": "App ID in the Adjust system.",
+            "type": "string"
+        },
+        "store_id": {
+            "title": "Store Id",
+            "description": "Store App ID.",
+            "type": "string"
+        },
+        "store_type": {
+            "title": "Store Type",
+            "description": "Store from where the app was installed.",
+            "type": "string"
+        },
+        "app_network": {
+            "title": "App Network",
+            "description": "Value with format: <store_type>:<store_id>",
+            "type": "string"
+        },
+        "currency": {
+            "title": "Currency",
+            "description": "Currency name.",
+            "type": "string"
+        },
+        "currency_code": {
+            "title": "Currency Code",
+            "description": "3-character value ISO 4217.",
+            "type": "string"
+        },
+        "network": {
+            "title": "Network",
+            "description": "The name of the advertising network.",
+            "type": "string"
+        },
+        "campaign": {
+            "title": "Campaign",
+            "description": "Tracker sub-level 1. String value usually contains campaign name and id.",
+            "type": "string"
+        },
+        "campaign_network": {
+            "title": "Campaign Network",
+            "description": "Campaign name from the network.",
+            "type": "string"
+        },
+        "campaign_id_network": {
+            "title": "Campaign Id Network",
+            "description": "Campaign ID from the network.",
+            "type": "string"
+        },
+        "adgroup": {
+            "title": "Adgroup",
+            "description": "Tracker sub-level 2. String value usually contains adgroup name and id.",
+            "type": "string"
+        },
+        "adgroup_network": {
+            "title": "Adgroup Network",
+            "description": "Adgroup name from the network.",
+            "type": "string"
+        },
+        "adgroup_id_network": {
+            "title": "Adgroup Id Network",
+            "description": "Adgroup ID from the network.",
+            "type": "string"
+        },
+        "source_network": {
+            "title": "Source Network",
+            "description": "Optional value dependent on the network. Usually the same as adgroup_network.",
+            "type": "string"
+        },
+        "source_id_network": {
+            "title": "Source Id Network",
+            "description": "Value for source_app.",
+            "type": "string"
+        },
+        "creative": {
+            "title": "Creative",
+            "description": "Tracker sub-level 3. String value usually contains creative name and id.",
+            "type": "string"
+        },
+        "creative_network": {
+            "title": "Creative Network",
+            "description": "Creative name from the network.",
+            "type": "string"
+        },
+        "creative_id_network": {
+            "title": "Creative Id Network",
+            "description": "Creative ID from the network.",
+            "type": "string"
+        },
+        "country": {
+            "title": "Country",
+            "description": "Country name.",
+            "type": "string"
+        },
+        "country_code": {
+            "title": "Country Code",
+            "description": "2-character value ISO 3166.",
+            "type": "string"
+        },
+        "region": {
+            "title": "Region",
+            "description": "Business region.",
+            "type": "string"
+        },
+        "partner_name": {
+            "title": "Partner Name",
+            "description": "Partner's name in the Adjust system.",
+            "type": "string"
+        },
+        "partner_id": {
+            "title": "Partner Id",
+            "description": "Partner\u2019s id in the Adjust system.",
+            "type": "string"
+        }
+    },
+    "required": [
+        "day"
+    ],
+    "$schema": "http://json-schema.org/draft-07/schema#"
+}
