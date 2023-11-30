@@ -269,7 +269,7 @@ class VectorDBConfigModel(BaseModel):
     @classmethod
     def schema(cls, by_alias: bool = True, ref_template: str = "") -> Dict[str, Any]:
         """we're overriding the schema classmethod to enable some post-processing"""
-        schema = super().schema()
+        schema: Dict[str, Any] = super().schema()
         schema = resolve_refs(schema)
         cls.remove_discriminator(schema)
         return schema
