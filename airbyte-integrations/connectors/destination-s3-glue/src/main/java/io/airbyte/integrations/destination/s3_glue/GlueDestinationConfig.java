@@ -7,8 +7,8 @@ package io.airbyte.integrations.destination.s3_glue;
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.ACCESS_KEY_ID;
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.SECRET_ACCESS_KEY;
 import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_REGION;
-import static io.airbyte.integrations.destination.s3_glue.GlueConstants.GLUE_DATABASE;
-import static io.airbyte.integrations.destination.s3_glue.GlueConstants.SERIALIZATION_LIBRARY;
+import static io.airbyte.integrations.destination.s3_glue.MetastoreConstants.GLUE_DATABASE;
+import static io.airbyte.integrations.destination.s3_glue.MetastoreConstants.SERIALIZATION_LIBRARY;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -19,8 +19,8 @@ import com.amazonaws.services.glue.AWSGlue;
 import com.amazonaws.services.glue.AWSGlueClient;
 import com.amazonaws.services.glue.AWSGlueClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.s3.S3FormatConfig;
-import io.airbyte.integrations.destination.s3.S3FormatConfigs;
+import io.airbyte.cdk.integrations.destination.s3.S3FormatConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3FormatConfigs;
 import org.apache.commons.lang3.StringUtils;
 
 public class GlueDestinationConfig {

@@ -1,7 +1,7 @@
 package io.airbyte.integrations.destination.s3_glue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
+import io.airbyte.cdk.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
 
 public class MetastoreJsonlFormatConfig extends S3JsonlFormatConfig implements MetastoreFormatConfig {
 
