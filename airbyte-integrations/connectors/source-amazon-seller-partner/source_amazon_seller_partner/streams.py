@@ -275,8 +275,9 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
-        end_date = pendulum.now("utc")
+        now = pendulum.now("utc")
+        start_date = max(pendulum.parse(self._replication_start_date), now.subtract(days=90))
+        end_date = now
         if self._replication_end_date:
             # if replication_start_date is older than 90 days(from current date), we are overriding the value above.
             # when replication_end_date is present, we should use the user provided replication_start_date.
@@ -353,8 +354,27 @@ class ReportsAmazonSPStream(HttpStream, ABC):
             raise Exception(f"Unknown response for stream `{self.name}`. Response body {report_payload}")
 
 
-class MerchantListingsReports(ReportsAmazonSPStream):
+class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
+    @property
+    @abstractmethod
+    def cursor_field(self) -> Union[str, List[str]]:
+        pass
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        latest_benchmark = latest_record[self.cursor_field]
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+        return {self.cursor_field: latest_benchmark}
+
+
+class MerchantListingsReports(IncrementalReportsAmazonSPStream):
     name = "GET_MERCHANT_LISTINGS_ALL_DATA"
+    primary_key = "listing-id"
+    cursor_field = "dataEndTime"
 
 
 class NetPureProductMarginReport(ReportsAmazonSPStream):
@@ -365,58 +385,65 @@ class RapidRetailAnalyticsInventoryReport(ReportsAmazonSPStream):
     name = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
 
 
-class FlatFileOrdersReports(ReportsAmazonSPStream):
+class FlatFileOrdersReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
     """
 
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
+    cursor_field = "dataEndTime"
 
 
-class FbaStorageFeesReports(ReportsAmazonSPStream):
+class FbaStorageFeesReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202086720
     """
 
     name = "GET_FBA_STORAGE_FEE_CHARGES_DATA"
+    cursor_field = "dataEndTime"
 
 
-class FulfilledShipmentsReports(ReportsAmazonSPStream):
+class FulfilledShipmentsReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
     """
 
     name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
+    cursor_field = "dataEndTime"
 
     replication_start_date_limit_in_days = 30
 
 
-class FlatFileOpenListingsReports(ReportsAmazonSPStream):
+class FlatFileOpenListingsReports(IncrementalReportsAmazonSPStream):
     name = "GET_FLAT_FILE_OPEN_LISTINGS_DATA"
+    cursor_field = "dataEndTime"
 
 
-class FbaOrdersReports(ReportsAmazonSPStream):
+class FbaOrdersReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110
     """
 
     name = "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
+    cursor_field = "last-updated-date"
 
 
-class FlatFileActionableOrderDataShipping(ReportsAmazonSPStream):
+class FlatFileActionableOrderDataShipping(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_flat_file_actionable_order_data_shipping
     """
 
     name = "GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING"
+    cursor_field = "dataEndTime"
 
 
-class OrderReportDataShipping(ReportsAmazonSPStream):
+class OrderReportDataShipping(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_order_report_data_shipping
     """
 
     name = "GET_ORDER_REPORT_DATA_SHIPPING"
+    cursor_field = "dataEndTime"
 
     def parse_document(self, document):
         try:
@@ -433,31 +460,34 @@ class OrderReportDataShipping(ReportsAmazonSPStream):
         return result
 
 
-class FbaShipmentsReports(ReportsAmazonSPStream):
+class FbaShipmentsReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100
     """
 
     name = "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA"
+    cursor_field = "dataEndTime"
 
 
-class FbaReplacementsReports(ReportsAmazonSPStream):
+class FbaReplacementsReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/help/hub/reference/200453300
     """
 
     name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA"
+    cursor_field = "dataEndTime"
 
 
-class RestockInventoryReports(ReportsAmazonSPStream):
+class RestockInventoryReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: 	https://sellercentral.amazon.com/help/hub/reference/202105670
     """
 
     name = "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT"
+    cursor_field = "dataEndTime"
 
 
-class GetXmlBrowseTreeData(ReportsAmazonSPStream):
+class GetXmlBrowseTreeData(IncrementalReportsAmazonSPStream):
     def parse_document(self, document):
         try:
             parsed = xmltodict.parse(
@@ -470,33 +500,43 @@ class GetXmlBrowseTreeData(ReportsAmazonSPStream):
         return parsed.get("Result", {}).get("Node", [])
 
     name = "GET_XML_BROWSE_TREE_DATA"
+    primary_key = "browseNodeId"
+    cursor_field = "dataEndTime"
 
 
-class FbaEstimatedFbaFeesTxtReport(ReportsAmazonSPStream):
+class FbaEstimatedFbaFeesTxtReport(IncrementalReportsAmazonSPStream):
     name = "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA"
+    cursor_field = "dataEndTime"
 
 
-class FbaFulfillmentCustomerShipmentPromotionReport(ReportsAmazonSPStream):
+class FbaFulfillmentCustomerShipmentPromotionReport(IncrementalReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA"
+    cursor_field = "dataEndTime"
 
 
-class FbaMyiUnsuppressedInventoryReport(ReportsAmazonSPStream):
+class FbaMyiUnsuppressedInventoryReport(IncrementalReportsAmazonSPStream):
     name = "GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA"
+    cursor_field = "dataEndTime"
 
 
-class MerchantListingsReport(ReportsAmazonSPStream):
+class MerchantListingsReport(IncrementalReportsAmazonSPStream):
     name = "GET_MERCHANT_LISTINGS_DATA"
+    primary_key = "listing-id"
+    cursor_field = "dataEndTime"
 
 
-class MerchantListingsInactiveData(ReportsAmazonSPStream):
+class MerchantListingsInactiveData(IncrementalReportsAmazonSPStream):
     name = "GET_MERCHANT_LISTINGS_INACTIVE_DATA"
+    primary_key = "listing-id"
+    cursor_field = "dataEndTime"
 
 
-class StrandedInventoryUiReport(ReportsAmazonSPStream):
+class StrandedInventoryUiReport(IncrementalReportsAmazonSPStream):
     name = "GET_STRANDED_INVENTORY_UI_DATA"
+    cursor_field = "dataEndTime"
 
 
-class XmlAllOrdersDataByOrderDataGeneral(ReportsAmazonSPStream):
+class XmlAllOrdersDataByOrderDataGeneral(IncrementalReportsAmazonSPStream):
     def parse_document(self, document):
         try:
             parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message", "OrderItem"})
@@ -513,44 +553,50 @@ class XmlAllOrdersDataByOrderDataGeneral(ReportsAmazonSPStream):
         return result
 
     name = "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
+    cursor_field = "LastUpdatedDate"
 
 
-class MerchantListingsReportBackCompat(ReportsAmazonSPStream):
+class MerchantListingsReportBackCompat(IncrementalReportsAmazonSPStream):
     name = "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT"
+    primary_key = "listing-id"
+    cursor_field = "dataEndTime"
 
 
-class MerchantCancelledListingsReport(ReportsAmazonSPStream):
+class MerchantCancelledListingsReport(IncrementalReportsAmazonSPStream):
     name = "GET_MERCHANT_CANCELLED_LISTINGS_DATA"
+    cursor_field = "dataEndTime"
 
 
-class MerchantListingsFypReport(ReportsAmazonSPStream):
+class MerchantListingsFypReport(IncrementalReportsAmazonSPStream):
     name = "GET_MERCHANTS_LISTINGS_FYP_REPORT"
+    cursor_field = "dataEndTime"
 
 
-class FbaSnsForecastReport(ReportsAmazonSPStream):
+class FbaSnsForecastReport(IncrementalReportsAmazonSPStream):
     name = "GET_FBA_SNS_FORECAST_DATA"
+    cursor_field = "dataEndTime"
 
 
-class FbaSnsPerformanceReport(ReportsAmazonSPStream):
+class FbaSnsPerformanceReport(IncrementalReportsAmazonSPStream):
     name = "GET_FBA_SNS_PERFORMANCE_DATA"
+    cursor_field = "dataEndTime"
 
 
-class FlatFileArchivedOrdersDataByOrderDate(ReportsAmazonSPStream):
+class FlatFileArchivedOrdersDataByOrderDate(IncrementalReportsAmazonSPStream):
     name = "GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE"
+    cursor_field = "last-updated-date"
 
 
-class FlatFileReturnsDataByReturnDate(ReportsAmazonSPStream):
+class FlatFileReturnsDataByReturnDate(IncrementalReportsAmazonSPStream):
     name = "GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE"
+    cursor_field = "dataEndTime"
 
     replication_start_date_limit_in_days = 60
 
 
-class FbaInventoryPlaningReport(ReportsAmazonSPStream):
+class FbaInventoryPlaningReport(IncrementalReportsAmazonSPStream):
     name = "GET_FBA_INVENTORY_PLANNING_DATA"
-
-
-class LedgerSummaryViewReport(ReportsAmazonSPStream):
-    name = "GET_LEDGER_SUMMARY_VIEW_DATA"
+    cursor_field = "dataEndTime"
 
 
 class AnalyticsStream(ReportsAmazonSPStream):
@@ -646,23 +692,6 @@ class VendorInventoryReports(AnalyticsStream):
 class VendorTrafficReport(AnalyticsStream):
     name = "GET_VENDOR_TRAFFIC_REPORT"
     result_key = "trafficByAsin"
-
-
-class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
-    @property
-    @abstractmethod
-    def cursor_field(self) -> Union[str, List[str]]:
-        pass
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
-        and returning an updated state object.
-        """
-        latest_benchmark = latest_record[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
 
 
 class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
@@ -900,6 +929,10 @@ class LedgerDetailedViewReports(IncrementalReportsAmazonSPStream):
         return transform_function
 
 
+class LedgerSummaryViewReport(LedgerDetailedViewReports):
+    name = "GET_LEDGER_SUMMARY_VIEW_DATA"
+
+
 class IncrementalAnalyticsStream(AnalyticsStream):
 
     fixed_period_in_days = 0
@@ -1017,7 +1050,7 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     """
 
     name = "VendorDirectFulfillmentShipping"
-    primary_key = None
+    primary_key = "purchaseOrderNumber"
     replication_start_date_field = "createdAfter"
     replication_end_date_field = "createdBefore"
     next_page_token_field = "nextToken"
@@ -1111,6 +1144,7 @@ class ListFinancialEventGroups(FinanceStream):
     """
 
     name = "ListFinancialEventGroups"
+    primary_key = "FinancialEventGroupId"
     replication_start_date_field = "FinancialEventGroupStartedAfter"
     replication_end_date_field = "FinancialEventGroupStartedBefore"
 
@@ -1138,9 +1172,10 @@ class ListFinancialEvents(FinanceStream):
         yield from [response.json().get(self.data_field, {}).get("FinancialEvents", {})]
 
 
-class FbaCustomerReturnsReports(ReportsAmazonSPStream):
+class FbaCustomerReturnsReports(IncrementalReportsAmazonSPStream):
 
     name = "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA"
+    cursor_field = "dataEndTime"
 
 
 class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
@@ -1215,9 +1250,10 @@ class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
                 complete = True
 
 
-class FbaReimbursementsReports(ReportsAmazonSPStream):
+class FbaReimbursementsReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/help/hub/reference/G200732720
     """
 
     name = "GET_FBA_REIMBURSEMENTS_DATA"
+    cursor_field = "dataEndTime"
