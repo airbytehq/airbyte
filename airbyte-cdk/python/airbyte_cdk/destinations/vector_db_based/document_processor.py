@@ -24,7 +24,7 @@ CDC_DELETED_FIELD = "_ab_cdc_deleted_at"
 
 @dataclass
 class Chunk:
-    page_content: str
+    page_content: Optional[str]
     metadata: Dict[str, Any]
     record: AirbyteRecordMessage
     embedding: Optional[List[float]] = None
