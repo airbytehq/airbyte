@@ -228,6 +228,9 @@
         "app_install": {
           "type": ["null", "number"]
         },
+        "skan_app_install": {
+          "type": ["null", "number"]
+        },
         "profile_visits_rate": {
           "type": ["null", "number"]
         },
