@@ -48,7 +48,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
   protected String createTableQueryV1(final String schemaName, final String tableName) {
     final DSLContext dsl = getDslContext();
     return dsl.createTableIfNotExists(name(schemaName, tableName))
-        .column(COLUMN_NAME_AB_ID, SQLDataType.VARCHAR(36).nullable(false))
+        .column(COLUMN_NAME_AB_ID, SQLDataType.VARCHAR.nullable(false))
         .column(COLUMN_NAME_EMITTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.defaultValue(DSL.function("GETDATE", SQLDataType.TIMESTAMPWITHTIMEZONE)))
         .column(COLUMN_NAME_DATA, new DefaultDataType<>(null, String.class, "super").nullable(false))
         .getSQL();
