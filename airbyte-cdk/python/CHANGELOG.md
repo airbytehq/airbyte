@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.55.1
+Vector DB CDK: Add omit_raw_text flag
+
 ## 0.55.0
 concurrent cdk: read multiple streams concurrently
 
