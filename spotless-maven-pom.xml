@@ -26,10 +26,13 @@
                             <includes>
                                 <include>**/*.java</include>
                             </includes>
+                            <importOrder />
                             <eclipse>
                                 <version>4.21</version>
                                 <file>tools/gradle/codestyle/java-google-style.xml</file>
                             </eclipse>
+                            <removeUnusedImports />
+                            <trimTrailingWhitespace />
                         </java>
                     </configuration>
                 </plugin>
