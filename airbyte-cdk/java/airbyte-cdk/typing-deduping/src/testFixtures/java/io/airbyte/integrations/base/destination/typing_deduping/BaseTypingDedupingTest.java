@@ -738,7 +738,8 @@ public abstract class BaseTypingDedupingTest {
     return readMessages(filename, streamNamespace, streamName);
   }
 
-  protected static List<AirbyteMessage> readMessages(final String filename, final String streamNamespace, final String streamName) throws IOException {
+  protected static List<AirbyteMessage> readMessages(final String filename, final String streamNamespace, final String streamName)
+      throws IOException {
     return readRecords(filename).stream()
         .map(record -> Jsons.convertValue(record, AirbyteMessage.class))
         .peek(message -> {

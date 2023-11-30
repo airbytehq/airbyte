@@ -97,19 +97,20 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
     LOGGER.info("Total records received to insert: {}", records.size());
     for (List<PartialAirbyteMessage> batch : Iterables.partition(records, 5_000)) {
       try {
-        // Execute only a subset of prepared statements on each connection. This code hangs (or rather runs very slow) in redshift with batch size more than 10K records.
+        // Execute only a subset of prepared statements on each connection. This code hangs (or rather runs
+        // very slow) in redshift with batch size more than 10K records.
         database.execute(connection -> {
           LOGGER.info("Prepared batch size: {}, {}, {}", batch.size(), schemaName, tableName);
           final DSLContext create = using(connection, SQLDialect.POSTGRES);
           final BatchBindStep batchInsertStep = create.batch(create
-                                                                 .insertInto(table(name(schemaName, tableName)),
-                                                                             field(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36)),
-                                                                             field(COLUMN_NAME_DATA,
-                                                                                   new DefaultDataType<>(null, String.class, "super")),
-                                                                             field(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE),
-                                                                             field(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE))
-                                                                 .values(null, function("JSON_PARSE", String.class, val((String) null)), null,
-                                                                         null)); // Jooq needs dummy values for batch binds
+              .insertInto(table(name(schemaName, tableName)),
+                  field(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36)),
+                  field(COLUMN_NAME_DATA,
+                      new DefaultDataType<>(null, String.class, "super")),
+                  field(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE),
+                  field(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE))
+              .values(null, function("JSON_PARSE", String.class, val((String) null)), null,
+                  null)); // Jooq needs dummy values for batch binds
           for (PartialAirbyteMessage record : batch) {
             batchInsertStep.bind(val(UUID.randomUUID().toString()), val(record.getSerialized()), val(Timestamp.from(
                 Instant.ofEpochMilli(record.getRecord().getEmittedAt()))), null);

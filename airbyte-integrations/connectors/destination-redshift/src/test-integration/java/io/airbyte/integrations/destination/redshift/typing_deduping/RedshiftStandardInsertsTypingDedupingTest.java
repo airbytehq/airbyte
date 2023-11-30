@@ -24,9 +24,12 @@ public class RedshiftStandardInsertsTypingDedupingTest extends AbstractRedshiftT
   }
 
   /**
-   * This test is identical to the one in {@link io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest}, except that it only
-   * emits just 1K messages instead of 100k. Redshift isn't optimized for standard inserts, so it takes painfully long time for the test to complete.
-   * In manual test observation, it took 2 mins to insert 2K records and keeps increasing as the batch size grows.
+   * This test is identical to the one in
+   * {@link io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest}, except
+   * that it only emits just 1K messages instead of 100k. Redshift isn't optimized for standard
+   * inserts, so it takes painfully long time for the test to complete. In manual test observation, it
+   * took 2 mins to insert 2K records and keeps increasing as the batch size grows.
+   *
    * @throws Exception
    */
   @Test
@@ -40,9 +43,9 @@ public class RedshiftStandardInsertsTypingDedupingTest extends AbstractRedshiftT
             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
             .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
-                            .withNamespace(namespace1)
-                            .withName(streamName)
-                            .withJsonSchema(SCHEMA))));
+                .withNamespace(namespace1)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
 
     final String namespace2 = streamNamespace + "_2";
     final ConfiguredAirbyteCatalog catalog2 = new ConfiguredAirbyteCatalog().withStreams(List.of(
@@ -52,9 +55,9 @@ public class RedshiftStandardInsertsTypingDedupingTest extends AbstractRedshiftT
             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
             .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
-                            .withNamespace(namespace2)
-                            .withName(streamName)
-                            .withJsonSchema(SCHEMA))));
+                .withNamespace(namespace2)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
 
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl", namespace1, streamName);
     final List<AirbyteMessage> messages2 = readMessages("dat/sync1_messages2.jsonl", namespace2, streamName);
