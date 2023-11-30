@@ -6,20 +6,21 @@ package io.airbyte.integrations.destination.clickhouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.ssh.SshBastionContainer;
-import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -154,7 +155,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     bastion.initAndStartBastion(network);
     db = (ClickHouseContainer) new ClickHouseContainer("clickhouse/clickhouse-server:22.5").withNetwork(network);
     db.start();

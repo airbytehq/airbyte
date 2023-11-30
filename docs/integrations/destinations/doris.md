@@ -20,7 +20,7 @@ This section should contain a table with the following format:
 | :------------------------------------- | :----------------- | :----------------------- |
 | Full Refresh Sync                      | Yes                |                          |
 | Incremental - Append Sync              | Yes                |                          |
-| Incremental - Deduped History          | No                 | it will soon be realized |
+| Incremental - Append + Deduped         | No                 | it will soon be realized |
 | For databases, WAL/Logical replication | Yes                |                          |
 
 ### Performance considerations

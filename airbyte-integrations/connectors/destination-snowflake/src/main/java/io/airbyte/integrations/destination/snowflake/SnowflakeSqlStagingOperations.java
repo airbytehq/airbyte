@@ -4,12 +4,12 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer;
+import io.airbyte.cdk.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
+import io.airbyte.cdk.integrations.destination.staging.StagingOperations;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
-import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
-import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
-import io.airbyte.integrations.destination.staging.StagingOperations;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.Map;
 
@@ -25,7 +25,7 @@ public abstract class SnowflakeSqlStagingOperations extends SnowflakeSqlOperatio
 
     final CsvSerializedBuffer csvSerializedBuffer = new CsvSerializedBuffer(
         new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
-        new StagingDatabaseCsvSheetGenerator(),
+        new StagingDatabaseCsvSheetGenerator(true),
         true);
 
     // create a dummy stream\records that will bed used to test uploading

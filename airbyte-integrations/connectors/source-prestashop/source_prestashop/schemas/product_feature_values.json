@@ -1,18 +1,18 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_feature": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "custom": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "value": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

@@ -3,12 +3,13 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, Optional, Tuple, Union
+from typing import Any, List, Mapping, Optional, Union
 
 import pendulum
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 
@@ -31,8 +32,10 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         scopes (Optional[List[str]]): The scopes to request
         token_expiry_date (Optional[Union[InterpolatedString, str]]): The access token expiration date
         token_expiry_date_format str: format of the datetime; provide it if expires_in is returned in datetime instead of seconds
+        token_expiry_is_time_of_expiration bool: set True it if expires_in is returned as time of expiration instead of the number seconds until expiration
         refresh_request_body (Optional[Mapping[str, Any]]): The request body to send in the refresh request
         grant_type: The grant_type to request for access_token. If set to refresh_token, the refresh_token parameter has to be provided
+        message_repository (MessageRepository): the message repository used to emit logs on HTTP requests
     """
 
     token_refresh_endpoint: Union[InterpolatedString, str]
@@ -45,10 +48,12 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     token_expiry_date: Optional[Union[InterpolatedString, str]] = None
     _token_expiry_date: pendulum.DateTime = field(init=False, repr=False, default=None)
     token_expiry_date_format: str = None
+    token_expiry_is_time_of_expiration: bool = False
     access_token_name: Union[InterpolatedString, str] = "access_token"
     expires_in_name: Union[InterpolatedString, str] = "expires_in"
     refresh_request_body: Optional[Mapping[str, Any]] = None
     grant_type: Union[InterpolatedString, str] = "refresh_token"
+    message_repository: MessageRepository = NoopMessageRepository()
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.token_refresh_endpoint = InterpolatedString.create(self.token_refresh_endpoint, parameters=parameters)
@@ -97,35 +102,11 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         return self._refresh_request_body.eval(self.config)
 
-    def refresh_access_token(self) -> Tuple[str, Any]:
-        """
-        This overrides the parent class method because the parent class assumes the "expires_in" field is always an int representing
-         seconds till token expiry.
-
-        However, this class provides the ability to determine the expiry date of an access token either by using (pseudocode):
-        * expiry_datetime = datetime.now() + seconds_till_access_token_expiry # in this option we have to calculate expiry timestamp, OR
-        * expiry_datetime = parse(response.body["expires_at"]) # in this option the API tells us exactly when access token expires
-
-        :return: a tuple of (access_token, either token_lifespan_in_seconds or datetime_of_token_expiry)
-
-        # TODO this is a hack and should be better encapsulated/enabled by the AbstractOAuthAuthenticator i.e: that class should have
-                a method which takes the HTTP response and returns a timestamp for when the access token will expire which subclasses
-                such as this one can override or just configure directly.
-        """
-        response_json = self._get_refresh_access_token_response()
-        return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
-
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
     def set_token_expiry_date(self, value: Union[str, int]):
-        if self.token_expiry_date_format:
-            self._token_expiry_date = pendulum.from_format(value, self.token_expiry_date_format)
-        else:
-            try:
-                self._token_expiry_date = pendulum.now().add(seconds=int(float(value)))
-            except ValueError:
-                raise ValueError(f"Invalid token expiry value {value}; a number is required.")
+        self._token_expiry_date = self._parse_token_expiration_date(value)
 
     @property
     def access_token(self) -> str:
@@ -134,6 +115,13 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     @access_token.setter
     def access_token(self, value: str):
         self._access_token = value
+
+    @property
+    def _message_repository(self) -> MessageRepository:
+        """
+        Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs
+        """
+        return self.message_repository
 
 
 @dataclass

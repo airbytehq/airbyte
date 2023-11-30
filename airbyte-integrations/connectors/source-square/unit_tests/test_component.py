@@ -10,7 +10,6 @@ import freezegun
 import pendulum
 import pytest
 import requests_mock
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from source_square.components import SquareSubstreamIncrementalSync
@@ -58,6 +57,7 @@ def test_refresh_access_token(req_mock):
         client_id="client_id",
         refresh_token="refresh_token",
         token_expiry_date_format="YYYY-MM-DDTHH:mm:ss[Z]",
+        token_expiry_is_time_of_expiration=True,
         config=config,
         parameters=parameters,
     )
@@ -109,16 +109,15 @@ def test_substream_incremental_sync(state, last_record, expected, expected_strea
         parent_stream=parent_stream,
     )
 
-    actual_stream_slice = next(slicer.stream_slices(SyncMode, state)) if records else {}
+    slicer.set_initial_state(state)
+    actual_stream_slice = next(slicer.stream_slices()) if records else {}
 
     # Covers the test case for abnormal state that is greater than the current time
     if "updated_at" in state and state["updated_at"] > datetime.now().strftime(DATETIME_FORMAT):
         assert actual_stream_slice["updated_at"] != state["updated_at"]
-        slicer.update_cursor(stream_slice=actual_stream_slice, last_record=last_record)
-        assert slicer.get_stream_state()["updated_at"] < state["updated_at"]
     else:
         assert actual_stream_slice == expected_stream_slice
-        slicer.update_cursor(stream_slice=actual_stream_slice, last_record=last_record)
+        slicer.close_slice(actual_stream_slice, last_record)
         assert slicer.get_stream_state() == expected
 
 
@@ -152,7 +151,7 @@ def test_sub_slicer_request_body(last_record, records, expected_data):
         parent_key="id",
         parent_stream=parent_stream,
     )
-    stream_slice = next(slicer.stream_slices(SyncMode, {})) if records else {}
+    stream_slice = next(slicer.stream_slices()) if records else {}
     expected_request_body = {
         "location_ids": expected_data.get("location_ids"),
         "query": {

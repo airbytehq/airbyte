@@ -41,6 +41,6 @@ Together, these two invariants guarantee that the templates produce a valid modu
 
 The way this is performed is as follows: 
 
-1. [in CI ](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/gradle.yml) we trigger the task `:airbyte-integrations:connector-templates:generator:testScaffoldTemplates`. This task deletes the checked in `java-jdbc-scaffolding`. Then the task generates a fresh instance of the module with the same name `java-jdbc-scaffolding`. 
+1. [in CI ](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/gradle.yml) we trigger the task `:airbyte-integrations:connector-templates:generator:generateScaffolds`. This task deletes the checked in `java-jdbc-scaffolding`. Then the task generates a fresh instance of the module with the same name `java-jdbc-scaffolding`. 
 1. We run a `git diff`. If there is a diff, then fail the build (this means the latest version of the templates produce code which has not been manually reviewed by someone who checked them in intentionally). Steps 1 & 2 test the first invariant. 
 1. Separately, in `settings.gradle`, the `java-jdbc-scaffolding` module is registered as a java submodule. This causes it to be built as part of the normal build cycle triggered in CI. If the generated code does not compile for whatever reason, the build will fail on building the `java-jdbc-scaffolding` module. 

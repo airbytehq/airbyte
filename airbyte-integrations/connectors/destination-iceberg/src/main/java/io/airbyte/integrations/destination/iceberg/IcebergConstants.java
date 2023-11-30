@@ -27,6 +27,9 @@ public class IcebergConstants {
   public static final String JDBC_PASSWORD_CONFIG_KEY = "password";
   public static final String JDBC_SSL_CONFIG_KEY = "ssl";
   public static final String JDBC_CATALOG_SCHEMA_CONFIG_KEY = "catalog_schema";
+  public static final String REST_CATALOG_URI_CONFIG_KEY = "rest_uri";
+  public static final String REST_CATALOG_CREDENTIAL_CONFIG_KEY = "rest_credential";
+  public static final String REST_CATALOG_TOKEN_CONFIG_KEY = "rest_token";
 
   /**
    * Storage Config keys
@@ -38,6 +41,7 @@ public class IcebergConstants {
   public static final String S3_BUCKET_REGION_CONFIG_KEY = "s3_bucket_region";
   public static final String S3_ENDPOINT_CONFIG_KEY = "s3_endpoint";
   public static final String S3_PATH_STYLE_ACCESS_CONFIG_KEY = "s3_path_style_access";
+  public static final String MANAGED_WAREHOUSE_NAME = "managed_warehouse_name";
 
   /**
    * Format Config keys

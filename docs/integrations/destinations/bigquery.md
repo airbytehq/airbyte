@@ -14,13 +14,6 @@ This page guides you through setting up the BigQuery destination connector.
 
 - (Required for Airbyte Cloud; Optional for Airbyte Open Source) A Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the [`BigQuery User`](https://cloud.google.com/bigquery/docs/access-control#bigquery) and [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and the [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
 
-## Connector modes
-
-While setting up the connector, you can configure it in the following modes:
-
-- **BigQuery**: Produces a normalized output by storing the JSON blob data in `_airbyte_raw_*` tables and then transforming and normalizing the data into separate tables, potentially `exploding` nested streams into their own tables if basic normalization is configured.
-- **BigQuery (Denormalized)**: Leverages BigQuery capabilities with Structured and Repeated fields to produce a single "big" table per stream. Airbyte does not support normalization for this option at this time.
-
 ## Setup guide
 
 ### Step 1: Set up a data loading method
@@ -33,7 +26,7 @@ To use a Google Cloud Storage bucket:
 
 1. [Create a Cloud Storage bucket](https://cloud.google.com/storage/docs/creating-buckets) with the Protection Tools set to `none` or `Object versioning`. Make sure the bucket does not have a [retention policy](https://cloud.google.com/storage/docs/samples/storage-set-retention-policy).
 2. [Create an HMAC key and access ID](https://cloud.google.com/storage/docs/authentication/managing-hmackeys#create).
-3. Grant the [`Storage Object Admin` role](https://cloud.google.com/storage/docs/access-control/iam-roles#standard-roles) to the Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts).
+3. Grant the [`Storage Object Admin` role](https://cloud.google.com/storage/docs/access-control/iam-roles#standard-roles) to the Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts). This must be the same service account as the one you configure for BigQuery access in the [BigQuery connector setup step](#step-2-set-up-the-bigquery-connector).
 4. Make sure your Cloud Storage bucket is accessible from the machine running Airbyte. The easiest way to verify if Airbyte is able to connect to your bucket is via the check connection tool in the UI.
 
 Your bucket must be encrypted using a Google-managed encryption key (this is the default setting when creating a new bucket). We currently do not support buckets using customer-managed encryption keys (CMEK). You can view this setting under the "Configuration" tab of your GCS bucket, in the `Encryption type` row.
@@ -46,7 +39,7 @@ You can use BigQuery's [`INSERT`](https://cloud.google.com/bigquery/docs/referen
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Destinations** and then click **+ New destination**.
-3. On the Set up the destination page, select **BigQuery** or **BigQuery (denormalized typed struct)** from the **Destination type** dropdown depending on whether you want to set up the connector in [BigQuery](#connector-modes) or [BigQuery (Denormalized)](#connector-modes) mode.
+3. On the Set up the destination page, select **BigQuery** from the **Destination type** dropdown.
 4. Enter the name for the BigQuery connector.
 5. For **Project ID**, enter your [Google Cloud project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects).
 6. For **Dataset Location**, select the location of your BigQuery dataset.
@@ -73,17 +66,31 @@ The BigQuery destination connector supports the following [sync modes](https://d
 
 - Full Refresh Sync
 - Incremental - Append Sync
-- Incremental - Deduped History
+- Incremental - Append + Deduped
 
 ## Output schema
 
-Airbyte outputs each stream into its own table in BigQuery. Each table contains three columns:
+Airbyte outputs each stream into its own raw table in `airbyte_internal` dataset by default (can be overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_ deduplicated.
 
-- `_airbyte_ab_id`: A UUID assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
-- `_airbyte_emitted_at`: A timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
-- `_airbyte_data`: A JSON blob representing the event data. The column type in BigQuery is `String`.
+### Raw Table schema
 
-The output tables in BigQuery are partitioned and clustered by the Time-unit column `_airbyte_emitted_at` at a daily granularity. Partitions boundaries are based on UTC time.
+| Airbyte field          | Description                                                        | Column type |
+| ---------------------- | ------------------------------------------------------------------ | ----------- |
+| \_airbyte_raw_id       | A UUID assigned to each processed event                            | STRING      |
+| \_airbyte_extracted_at | A timestamp for when the event was pulled from the data source     | TIMESTAMP   |
+| \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP   |
+| \_airbyte_data         | A JSON blob with the event data.                                   | STRING      |
+
+**Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table could be subject to change in future versions.
+
+### Final Table schema
+
+- `airbyte_raw_id`: A UUID assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
+- `airbyte_extracted_at`: A timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
+- `_airbyte_meta`: A JSON blob representing typing errors. You can query these results to audit misformatted or unexpected data. The column type in BigQuery is `JSON`.
+  ... and a column of the proper data type for each of the top-level properties from your source's schema. Arrays and Objects will remain as JSON columns in BigQuery. Learn more about Typing and Deduping [here](/understanding-airbyte/typing-deduping)
+
+The output tables in BigQuery are partitioned by the Time-unit column `airbyte_extracted_at` at a daily granularity and clustered by `airbyte_extracted_at` and the table Primary Keys. Partitions boundaries are based on UTC time.
 This is useful to limit the number of partitions scanned when querying these partitioned tables, by using a predicate filter (a `WHERE` clause). Filters on the partitioning column are used to prune the partitions and reduce the query cost. (The parameter **Require partition filter** is not enabled by Airbyte, but you may toggle it by updating the produced tables.)
 
 ## BigQuery Naming Conventions
@@ -94,20 +101,20 @@ Airbyte converts any invalid characters into `_` characters when writing data. H
 
 ## Data type map
 
-| Airbyte type                        | BigQuery type | BigQuery denormalized type |
-| :---------------------------------- | :------------ | :------------------------- |
-| DATE                                | DATE          | DATE                       |
-| STRING (BASE64)                     | STRING        | STRING                     |
-| NUMBER                              | FLOAT         | NUMBER                     |
-| OBJECT                              | STRING        | RECORD                     |
-| STRING                              | STRING        | STRING                     |
-| BOOLEAN                             | BOOLEAN       | BOOLEAN                    |
-| INTEGER                             | INTEGER       | INTEGER                    |
-| STRING (BIG_NUMBER)                 | STRING        | STRING                     |
-| STRING (BIG_INTEGER)                | STRING        | STRING                     |
-| ARRAY                               | REPEATED      | REPEATED                   |
-| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP     | DATETIME                   |
-| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP     | DATETIME                   |
+| Airbyte type                        | BigQuery type |
+| :---------------------------------- | :------------ |
+| DATE                                | DATE          |
+| STRING (BASE64)                     | STRING        |
+| NUMBER                              | FLOAT         |
+| OBJECT                              | STRING        |
+| STRING                              | STRING        |
+| BOOLEAN                             | BOOLEAN       |
+| INTEGER                             | INTEGER       |
+| STRING (BIG_NUMBER)                 | STRING        |
+| STRING (BIG_INTEGER)                | STRING        |
+| ARRAY                               | REPEATED      |
+| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP     |
+| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP     |
 
 ## Troubleshooting permission issues
 
@@ -131,76 +138,154 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 ## Changelog
 
-### bigquery
-
-| Version | Date       | Pull Request                                               | Subject                                                                                                                  |
-|:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
-| 1.4.4   | 2023-05-25 | [\#26585](https://github.com/airbytehq/airbyte/pull/26585) | Small tweak in logs for clarity                                                                                          |
-| 1.4.3   | 2023-05-17 | [\#26213](https://github.com/airbytehq/airbyte/pull/26213) | Fix bug in parsing file buffer config count                                                                              |
-| 1.4.2   | 2023-05-10 | [\#25925](https://github.com/airbytehq/airbyte/pull/25925) | Testing update. Normalization tests are now done in the destination container.                                           |
-| 1.4.1   | 2023-05-11 | [\#25993](https://github.com/airbytehq/airbyte/pull/25993) | Internal library update                                                                                                  |
-| 1.4.0   | 2023-04-29 | [\#25570](https://github.com/airbytehq/airbyte/pull/25570) | Internal library update. Bumping version to stay in sync with BigQuery-denormalized.                                     |
-| 1.3.4   | 2023-04-28 | [\#25588](https://github.com/airbytehq/airbyte/pull/25588) | Internal scaffolding change for future development                                                                       |
-| 1.3.3   | 2023-04-27 | [\#25346](https://github.com/airbytehq/airbyte/pull/25346) | Internal code cleanup                                                                                                    |
-| 1.3.1   | 2023-04-20 | [\#25097](https://github.com/airbytehq/airbyte/pull/25097) | Internal scaffolding change for future development                                                                       |
-| 1.3.0   | 2023-04-19 | [\#25287](https://github.com/airbytehq/airbyte/pull/25287) | Add parameter to configure the number of file buffers when GCS is used as the loading method                             |
-| 1.2.20  | 2023-04-12 | [\#25122](https://github.com/airbytehq/airbyte/pull/25122) | Add additional data centers                                                                                              |
-| 1.2.19  | 2023-03-29 | [\#24671](https://github.com/airbytehq/airbyte/pull/24671) | Fail faster in certain error cases                                                                                       |
-| 1.2.18  | 2023-03-23 | [\#24447](https://github.com/airbytehq/airbyte/pull/24447) | Set the Service Account Key JSON field to always_show: true so that it isn't collapsed into an optional fields section   |
-| 1.2.17  | 2023-03-17 | [\#23788](https://github.com/airbytehq/airbyte/pull/23788) | S3-Parquet: added handler to process null values in arrays                                                               |
-| 1.2.16  | 2023-03-10 | [\#23931](https://github.com/airbytehq/airbyte/pull/23931) | Added support for periodic buffer flush                                                                                  |
-| 1.2.15  | 2023-03-10 | [\#23466](https://github.com/airbytehq/airbyte/pull/23466) | Changed S3 Avro type from Int to Long                                                                                    |
-| 1.2.14  | 2023-02-08 | [\#22497](https://github.com/airbytehq/airbyte/pull/22497) | Fixed table already exists error                                                                                         |
-| 1.2.13  | 2023-01-26 | [\#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                 |
-| 1.2.12  | 2023-01-18 | [\#21087](https://github.com/airbytehq/airbyte/pull/21087) | Wrap Authentication Errors as Config Exceptions                                                                          |
-| 1.2.11  | 2023-01-18 | [\#21144](https://github.com/airbytehq/airbyte/pull/21144) | Added explicit error message if sync fails due to a config issue                                                         |
-| 1.2.9   | 2022-12-14 | [\#20501](https://github.com/airbytehq/airbyte/pull/20501) | Report GCS staging failures that occur during connection check                                                           |
-| 1.2.8   | 2022-11-22 | [\#19489](https://github.com/airbytehq/airbyte/pull/19489) | Added non-billable projects handle to check connection stage                                                             |
-| 1.2.7   | 2022-11-11 | [\#19358](https://github.com/airbytehq/airbyte/pull/19358) | Fixed check method to capture mismatch dataset location                                                                  |
-| 1.2.6   | 2022-11-10 | [\#18554](https://github.com/airbytehq/airbyte/pull/18554) | Improve check connection method to handle more errors                                                                    |
-| 1.2.5   | 2022-10-19 | [\#18162](https://github.com/airbytehq/airbyte/pull/18162) | Improve error logs                                                                                                       |
-| 1.2.4   | 2022-09-26 | [\#16890](https://github.com/airbytehq/airbyte/pull/16890) | Add user-agent header                                                                                                    |
-| 1.2.3   | 2022-09-22 | [\#17054](https://github.com/airbytehq/airbyte/pull/17054) | Respect stream namespace                                                                                                 |
-| 1.2.1   | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | (bugged, do not use) Wrap logs in AirbyteLogMessage                                                                      |
-| 1.2.0   | 2022-09-09 | [\#14023](https://github.com/airbytehq/airbyte/pull/14023) | (bugged, do not use) Cover arrays only if they are nested                                                                |
-| 1.1.16  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |
-| 1.1.15  | 2022-08-22 | [\#15787](https://github.com/airbytehq/airbyte/pull/15787) | Throw exception if job failed                                                                                            |
-| 1.1.14  | 2022-08-03 | [\#14784](https://github.com/airbytehq/airbyte/pull/14784) | Enabling Application Default Credentials                                                                                 |
-| 1.1.13  | 2022-08-02 | [\#14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                                                |
-| 1.1.12  | 2022-08-02 | [\#15180](https://github.com/airbytehq/airbyte/pull/15180) | Fix standard loading mode                                                                                                |
-| 1.1.11  | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging                                              |
-| 1.1.10  | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors                                                                   |
-| 1.1.9   | 2022-06-17 | [\#13753](https://github.com/airbytehq/airbyte/pull/13753) | Deprecate and remove PART_SIZE_MB fields from connectors based on StreamTransferManager                                  |
-| 1.1.8   | 2022-06-07 | [\#13579](https://github.com/airbytehq/airbyte/pull/13579) | Always check GCS bucket for GCS loading method to catch invalid HMAC keys.                                               |
-| 1.1.7   | 2022-06-07 | [\#13424](https://github.com/airbytehq/airbyte/pull/13424) | Reordered fields for specification.                                                                                      |
-| 1.1.6   | 2022-05-15 | [\#12768](https://github.com/airbytehq/airbyte/pull/12768) | Clarify that the service account key json field is required on cloud.                                                    |
-| 1.1.5   | 2022-05-12 | [\#12805](https://github.com/airbytehq/airbyte/pull/12805) | Updated to latest base-java to emit AirbyteTraceMessage on error.                                                        |
-| 1.1.4   | 2022-05-04 | [\#12578](https://github.com/airbytehq/airbyte/pull/12578) | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging.                          |
-| 1.1.3   | 2022-05-02 | [\#12528](https://github.com/airbytehq/airbyte/pull/12528) | Update Dataset location field description                                                                                |
-| 1.1.2   | 2022-04-29 | [\#12477](https://github.com/airbytehq/airbyte/pull/12477) | Dataset location is a required field                                                                                     |
-| 1.1.1   | 2022-04-15 | [\#12068](https://github.com/airbytehq/airbyte/pull/12068) | Fixed bug with GCS bucket conditional binding                                                                            |
-| 1.1.0   | 2022-04-06 | [\#11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption.                                                          |
-| 1.0.2   | 2022-03-30 | [\#11620](https://github.com/airbytehq/airbyte/pull/11620) | Updated spec                                                                                                             |
-| 1.0.1   | 2022-03-24 | [\#11350](https://github.com/airbytehq/airbyte/pull/11350) | Improve check performance                                                                                                |
-| 1.0.0   | 2022-03-18 | [\#11238](https://github.com/airbytehq/airbyte/pull/11238) | Updated spec and documentation                                                                                           |
-| 0.6.12  | 2022-03-18 | [\#10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters                                                                                    |
-| 0.6.11  | 2022-03-03 | [\#10755](https://github.com/airbytehq/airbyte/pull/10755) | Make sure to kill children threads and stop JVM                                                                          |
-| 0.6.8   | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                             |
-| 0.6.6   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959)   | Fix null pointer exception from buffered stream consumer.                                                                |
-| 0.6.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745)   | Integrate with Sentry.                                                                                                   |
-| 0.6.5   | 2022-01-18 | [\#9573](https://github.com/airbytehq/airbyte/pull/9573)   | BigQuery Destination : update description for some input fields                                                          |
-| 0.6.4   | 2022-01-17 | [\#8383](https://github.com/airbytehq/airbyte/issues/8383) | Support dataset-id prefixed by project-id                                                                                |
-| 0.6.3   | 2022-01-12 | [\#9415](https://github.com/airbytehq/airbyte/pull/9415)   | BigQuery Destination : Fix GCS processing of Facebook data                                                               |
-| 0.6.2   | 2022-01-10 | [\#9121](https://github.com/airbytehq/airbyte/pull/9121)   | Fixed check method for GCS mode to verify if all roles assigned to user                                                  |
-| 0.6.1   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging                                                                      |
-| 0.6.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/issues/8788) | BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files                              |
-| 0.5.1   | 2021-12-16 | [\#8816](https://github.com/airbytehq/airbyte/issues/8816) | Update dataset locations                                                                                                 |
-| 0.5.0   | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables                                                                                      |
-| 0.4.1   | 2021-10-04 | [\#6733](https://github.com/airbytehq/airbyte/issues/6733) | Support dataset starting with numbers                                                                                    |
-| 0.4.0   | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added GCS Staging uploading option                                                                                       |
-| 0.3.12  | 2021-08-03 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size                                 |
-| 0.3.11  | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                                                             |
-| 0.3.10  | 2021-07-28 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add extended logs and made JobId filled with region and projectId                                                        |
-| 0.3.9   | 2021-07-28 | [\#5026](https://github.com/airbytehq/airbyte/pull/5026)   | Add sanitized json fields in raw tables to handle quotes in column names                                                 |
-| 0.3.6   | 2021-06-18 | [\#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional.                                                                            |
-| 0.3.4   | 2021-06-07 | [\#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option                                                                                              |
+| Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
+| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.3.16  | 2023-11-14 | [\#32526](https://github.com/airbytehq/airbyte/pull/32526) | Clean up memory manager logs.                                                                                                                                   |
+| 2.3.15  | 2023-11-13 | [\#32468](https://github.com/airbytehq/airbyte/pull/32468) | Further error grouping enhancments                                                                                                                              |
+| 2.3.14  | 2023-11-06 | [\#32234](https://github.com/airbytehq/airbyte/pull/32234) | Remove unused config option.                                                                                                                                    |
+| 2.3.13  | 2023-11-08 | [\#32125](https://github.com/airbytehq/airbyte/pull/32125) | fix compiler warnings                                                                                                                                           |
+| 2.3.12  | 2023-11-08 | [\#32309](https://github.com/airbytehq/airbyte/pull/32309) | Revert: Use Typed object for connection config                                                                                                                  |
+| 2.3.11  | 2023-11-07 | [\#32147](https://github.com/airbytehq/airbyte/pull/32147) | Use Typed object for connection config                                                                                                                          |
+| 2.3.10  | 2023-11-07 | [\#32261](https://github.com/airbytehq/airbyte/pull/32261) | Further improve error reporting                                                                                                                                 |
+| 2.3.9   | 2023-11-07 | [\#32112](https://github.com/airbytehq/airbyte/pull/32112) | GCS staging mode: reduce flush frequency to use rate limit more efficiently                                                                                     |
+| 2.3.8   | 2023-11-06 | [\#32026](https://github.com/airbytehq/airbyte/pull/32026) | Move SAFE_CAST transaction to separate transactions                                                                                                             |
+| 2.3.7   | 2023-11-06 | [\#32190](https://github.com/airbytehq/airbyte/pull/32190) | Further improve error reporting                                                                                                                                 |
+| 2.3.6   | 2023-11-06 | [\#32193](https://github.com/airbytehq/airbyte/pull/32193) | Adopt java CDK version 0.4.1.                                                                                                                                   |
+| 2.3.5   | 2023-11-02 | [\#31983](https://github.com/airbytehq/airbyte/pull/31983) | Improve error reporting                                                                                                                                         |
+| 2.3.4   | 2023-10-31 | [\#32010](https://github.com/airbytehq/airbyte/pull/32010) | Add additional data centers.                                                                                                                                    |
+| 2.3.3   | 2023-10-30 | [\#31985](https://github.com/airbytehq/airbyte/pull/31985) | Delay upgrade deadline to Nov 7                                                                                                                                 |
+| 2.3.2   | 2023-10-30 | [\#31960](https://github.com/airbytehq/airbyte/pull/31960) | Adopt java CDK version 0.2.0.                                                                                                                                   |
+| 2.3.1   | 2023-10-27 | [\#31529](https://github.com/airbytehq/airbyte/pull/31529) | Performance enhancement (switch to a `merge` statement for incremental-dedup syncs)                                                                             |
+| 2.3.0   | 2023-10-25 | [\#31686](https://github.com/airbytehq/airbyte/pull/31686) | Opt out flag for typed and deduped tables                                                                                                                       |
+| 2.2.0   | 2023-10-25 | [\#31520](https://github.com/airbytehq/airbyte/pull/31520) | Stop deduping raw table                                                                                                                                         |
+| 2.1.6   | 2023-10-23 | [\#31717](https://github.com/airbytehq/airbyte/pull/31717) | Remove inadvertent Destination v2 check                                                                                                                         |
+| 2.1.5   | 2023-10-17 | [\#30069](https://github.com/airbytehq/airbyte/pull/30069) | Staging destination async                                                                                                                                       |
+| 2.1.4   | 2023-10-17 | [\#31191](https://github.com/airbytehq/airbyte/pull/31191) | Improve typing+deduping performance by filtering new raw records on extracted_at                                                                                |
+| 2.1.3   | 2023-10-10 | [\#31358](https://github.com/airbytehq/airbyte/pull/31358) | Stringify array and object types for type:string column in final table                                                                                          |
+| 2.1.2   | 2023-10-10 | [\#31194](https://github.com/airbytehq/airbyte/pull/31194) | Deallocate unused per stream buffer memory when empty                                                                                                           |
+| 2.1.1   | 2023-10-10 | [\#31083](https://github.com/airbytehq/airbyte/pull/31083) | Fix precision of numeric values in async destinations                                                                                                           |
+| 2.1.0   | 2023-10-09 | [\#31149](https://github.com/airbytehq/airbyte/pull/31149) | No longer fail syncs when PKs are null - try do dedupe anyway                                                                                                   |
+| 2.0.26  | 2023-10-09 | [\#31198](https://github.com/airbytehq/airbyte/pull/31198) | Clarify configuration groups                                                                                                                                    |
+| 2.0.25  | 2023-10-09 | [\#31185](https://github.com/airbytehq/airbyte/pull/31185) | Increase staging file upload timeout to 5 minutes                                                                                                               |
+| 2.0.24  | 2023-10-06 | [\#31139](https://github.com/airbytehq/airbyte/pull/31139) | Bump CDK version                                                                                                                                                |
+| 2.0.23  | 2023-10-06 | [\#31129](https://github.com/airbytehq/airbyte/pull/31129) | Reduce async buffer size                                                                                                                                        |
+| 2.0.22  | 2023-10-04 | [\#31082](https://github.com/airbytehq/airbyte/pull/31082) | Revert null PK checks                                                                                                                                           |
+| 2.0.21  | 2023-10-03 | [\#31028](https://github.com/airbytehq/airbyte/pull/31028) | Update timeout                                                                                                                                                  |
+| 2.0.20  | 2023-09-26 | [\#30779](https://github.com/airbytehq/airbyte/pull/30779) | Final table PK columns become non-null and skip check for null PKs in raw records (performance)                                                                 |
+| 2.0.19  | 2023-09-26 | [\#30775](https://github.com/airbytehq/airbyte/pull/30775) | Increase async block size                                                                                                                                       |
+| 2.0.18  | 2023-09-27 | [\#30739](https://github.com/airbytehq/airbyte/pull/30739) | Fix column name collision detection                                                                                                                             |
+| 2.0.17  | 2023-09-26 | [\#30696](https://github.com/airbytehq/airbyte/pull/30696) | Attempt unsafe typing operations with an exception clause                                                                                                       |
+| 2.0.16  | 2023-09-22 | [\#30697](https://github.com/airbytehq/airbyte/pull/30697) | Improve resiliency to unclean exit during schema change                                                                                                         |
+| 2.0.15  | 2023-09-21 | [\#30640](https://github.com/airbytehq/airbyte/pull/30640) | Handle streams with identical name and namespace                                                                                                                |
+| 2.0.14  | 2023-09-20 | [\#30069](https://github.com/airbytehq/airbyte/pull/30069) | Staging destination async                                                                                                                                       |
+| 2.0.13  | 2023-09-19 | [\#30592](https://github.com/airbytehq/airbyte/pull/30592) | Internal code changes                                                                                                                                           |
+| 2.0.12  | 2023-09-19 | [\#30319](https://github.com/airbytehq/airbyte/pull/30319) | Improved testing                                                                                                                                                |
+| 2.0.11  | 2023-09-18 | [\#30551](https://github.com/airbytehq/airbyte/pull/30551) | GCS Staging is first loading method option                                                                                                                      |
+| 2.0.10  | 2023-09-15 | [\#30491](https://github.com/airbytehq/airbyte/pull/30491) | Improve error message display                                                                                                                                   |
+| 2.0.9   | 2023-09-14 | [\#30439](https://github.com/airbytehq/airbyte/pull/30439) | Fix a transient error                                                                                                                                           |
+| 2.0.8   | 2023-09-12 | [\#30364](https://github.com/airbytehq/airbyte/pull/30364) | Add log message                                                                                                                                                 |
+| 2.0.7   | 2023-08-29 | [\#29878](https://github.com/airbytehq/airbyte/pull/29878) | Internal code changes                                                                                                                                           |
+| 2.0.6   | 2023-09-05 | [\#29917](https://github.com/airbytehq/airbyte/pull/29917) | Improve performance by changing metadata error array construction from ARRAY_CONCAT to ARRAY_AGG                                                                |
+| 2.0.5   | 2023-08-31 | [\#30020](https://github.com/airbytehq/airbyte/pull/30020) | Run typing and deduping tasks in parallel                                                                                                                       |
+| 2.0.4   | 2023-09-05 | [\#30117](https://github.com/airbytehq/airbyte/pull/30117) | Type and Dedupe at sync start and then every 6 hours                                                                                                            |
+| 2.0.3   | 2023-09-01 | [\#30056](https://github.com/airbytehq/airbyte/pull/30056) | Internal refactor, no behavior change                                                                                                                           |
+| 2.0.2   | 2023-09-01 | [\#30120](https://github.com/airbytehq/airbyte/pull/30120) | Improve performance on very wide streams by skipping SAFE_CAST on strings                                                                                       |
+| 2.0.1   | 2023-08-29 | [\#29972](https://github.com/airbytehq/airbyte/pull/29972) | Publish a new version to supersede old v2.0.0                                                                                                                   |
+| 2.0.0   | 2023-08-27 | [\#29783](https://github.com/airbytehq/airbyte/pull/29783) | Destinations V2                                                                                                                                                 |
+| 1.10.2  | 2023-08-24 | [\#29805](https://github.com/airbytehq/airbyte/pull/29805) | Destinations v2: Don't soft reset in migration                                                                                                                  |
+| 1.10.1  | 2023-08-23 | [\#29774](https://github.com/airbytehq/airbyte/pull/29774) | Destinations v2: Don't soft reset overwrite syncs                                                                                                               |
+| 1.10.0  | 2023-08-21 | [\#29636](https://github.com/airbytehq/airbyte/pull/29636) | Destinations v2: Several Critical Bug Fixes (cursorless dedup, improved floating-point handling, improved special characters handling; improved error handling) |
+| 1.9.1   | 2023-08-21 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Under the hood: Add dependency on Java CDK v0.0.1.                                                                                                              |
+| 1.9.0   | 2023-08-17 | [\#29560](https://github.com/airbytehq/airbyte/pull/29560) | Destinations v2: throw an error on disallowed column name prefixes                                                                                              |
+| 1.8.1   | 2023-08-17 | [\#29522](https://github.com/airbytehq/airbyte/pull/29522) | Migration BugFix - ensure raw dataset created                                                                                                                   |
+| 1.8.0   | 2023-08-17 | [\#29498](https://github.com/airbytehq/airbyte/pull/29498) | Fix checkpointing logic in GCS staging mode                                                                                                                     |
+| 1.7.8   | 2023-08-15 | [\#29461](https://github.com/airbytehq/airbyte/pull/29461) | Migration BugFix - ensure migration happens before table creation for GCS staging.                                                                              |
+| 1.7.7   | 2023-08-11 | [\#29381](https://github.com/airbytehq/airbyte/pull/29381) | Destinations v2: Add support for streams with no columns                                                                                                        |
+| 1.7.6   | 2023-08-04 | [\#28894](https://github.com/airbytehq/airbyte/pull/28894) | Destinations v2: Add v1 -> v2 migration Logic                                                                                                                   |
+| 1.7.5   | 2023-08-04 | [\#29106](https://github.com/airbytehq/airbyte/pull/29106) | Destinations v2: handle unusual CDC deletion edge case                                                                                                          |
+| 1.7.4   | 2023-08-04 | [\#29089](https://github.com/airbytehq/airbyte/pull/29089) | Destinations v2: improve special character handling in column names                                                                                             |
+| 1.7.3   | 2023-08-03 | [\#28890](https://github.com/airbytehq/airbyte/pull/28890) | Internal code updates; improved testing                                                                                                                         |
+| 1.7.2   | 2023-08-02 | [\#28976](https://github.com/airbytehq/airbyte/pull/28976) | Fix composite PK handling in v1 mode                                                                                                                            |
+| 1.7.1   | 2023-08-02 | [\#28959](https://github.com/airbytehq/airbyte/pull/28959) | Destinations v2: Fix CDC syncs in non-dedup mode                                                                                                                |
+| 1.7.0   | 2023-08-01 | [\#28894](https://github.com/airbytehq/airbyte/pull/28894) | Destinations v2: Open up early access program opt-in                                                                                                            |
+| 1.6.0   | 2023-07-26 | [\#28723](https://github.com/airbytehq/airbyte/pull/28723) | Destinations v2: Change raw table dataset and naming convention                                                                                                 |
+| 1.5.8   | 2023-07-25 | [\#28721](https://github.com/airbytehq/airbyte/pull/28721) | Destinations v2: Handle cursor change across syncs                                                                                                              |
+| 1.5.7   | 2023-07-24 | [\#28625](https://github.com/airbytehq/airbyte/pull/28625) | Destinations v2: Limit Clustering Columns to 4                                                                                                                  |
+| 1.5.6   | 2023-07-21 | [\#28580](https://github.com/airbytehq/airbyte/pull/28580) | Destinations v2: Create dataset in user-specified location                                                                                                      |
+| 1.5.5   | 2023-07-20 | [\#28490](https://github.com/airbytehq/airbyte/pull/28490) | Destinations v2: Fix schema change detection in OVERWRITE mode when existing table is empty; other code refactoring                                             |
+| 1.5.4   | 2023-07-17 | [\#28382](https://github.com/airbytehq/airbyte/pull/28382) | Destinations v2: Schema Change Detection                                                                                                                        |
+| 1.5.3   | 2023-07-14 | [\#28345](https://github.com/airbytehq/airbyte/pull/28345) | Increment patch to trigger a rebuild                                                                                                                            |
+| 1.5.2   | 2023-07-05 | [\#27936](https://github.com/airbytehq/airbyte/pull/27936) | Internal scaffolding change for future development                                                                                                              |
+| 1.5.1   | 2023-06-30 | [\#27891](https://github.com/airbytehq/airbyte/pull/27891) | Revert bugged update                                                                                                                                            |
+| 1.5.0   | 2023-06-27 | [\#27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                                                                            |
+| 1.4.6   | 2023-06-28 | [\#27268](https://github.com/airbytehq/airbyte/pull/27268) | Internal scaffolding change for future development                                                                                                              |
+| 1.4.5   | 2023-06-21 | [\#27555](https://github.com/airbytehq/airbyte/pull/27555) | Reduce image size                                                                                                                                               |
+| 1.4.4   | 2023-05-25 | [\#26585](https://github.com/airbytehq/airbyte/pull/26585) | Small tweak in logs for clarity                                                                                                                                 |
+| 1.4.3   | 2023-05-17 | [\#26213](https://github.com/airbytehq/airbyte/pull/26213) | Fix bug in parsing file buffer config count                                                                                                                     |
+| 1.4.2   | 2023-05-10 | [\#25925](https://github.com/airbytehq/airbyte/pull/25925) | Testing update. Normalization tests are now done in the destination container.                                                                                  |
+| 1.4.1   | 2023-05-11 | [\#25993](https://github.com/airbytehq/airbyte/pull/25993) | Internal library update                                                                                                                                         |
+| 1.4.0   | 2023-04-29 | [\#25570](https://github.com/airbytehq/airbyte/pull/25570) | Internal library update. Bumping version to stay in sync with BigQuery-denormalized.                                                                            |
+| 1.3.4   | 2023-04-28 | [\#25588](https://github.com/airbytehq/airbyte/pull/25588) | Internal scaffolding change for future development                                                                                                              |
+| 1.3.3   | 2023-04-27 | [\#25346](https://github.com/airbytehq/airbyte/pull/25346) | Internal code cleanup                                                                                                                                           |
+| 1.3.1   | 2023-04-20 | [\#25097](https://github.com/airbytehq/airbyte/pull/25097) | Internal scaffolding change for future development                                                                                                              |
+| 1.3.0   | 2023-04-19 | [\#25287](https://github.com/airbytehq/airbyte/pull/25287) | Add parameter to configure the number of file buffers when GCS is used as the loading method                                                                    |
+| 1.2.20  | 2023-04-12 | [\#25122](https://github.com/airbytehq/airbyte/pull/25122) | Add additional data centers                                                                                                                                     |
+| 1.2.19  | 2023-03-29 | [\#24671](https://github.com/airbytehq/airbyte/pull/24671) | Fail faster in certain error cases                                                                                                                              |
+| 1.2.18  | 2023-03-23 | [\#24447](https://github.com/airbytehq/airbyte/pull/24447) | Set the Service Account Key JSON field to always_show: true so that it isn't collapsed into an optional fields section                                          |
+| 1.2.17  | 2023-03-17 | [\#23788](https://github.com/airbytehq/airbyte/pull/23788) | S3-Parquet: added handler to process null values in arrays                                                                                                      |
+| 1.2.16  | 2023-03-10 | [\#23931](https://github.com/airbytehq/airbyte/pull/23931) | Added support for periodic buffer flush                                                                                                                         |
+| 1.2.15  | 2023-03-10 | [\#23466](https://github.com/airbytehq/airbyte/pull/23466) | Changed S3 Avro type from Int to Long                                                                                                                           |
+| 1.2.14  | 2023-02-08 | [\#22497](https://github.com/airbytehq/airbyte/pull/22497) | Fixed table already exists error                                                                                                                                |
+| 1.2.13  | 2023-01-26 | [\#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                                                        |
+| 1.2.12  | 2023-01-18 | [\#21087](https://github.com/airbytehq/airbyte/pull/21087) | Wrap Authentication Errors as Config Exceptions                                                                                                                 |
+| 1.2.11  | 2023-01-18 | [\#21144](https://github.com/airbytehq/airbyte/pull/21144) | Added explicit error message if sync fails due to a config issue                                                                                                |
+| 1.2.9   | 2022-12-14 | [\#20501](https://github.com/airbytehq/airbyte/pull/20501) | Report GCS staging failures that occur during connection check                                                                                                  |
+| 1.2.8   | 2022-11-22 | [\#19489](https://github.com/airbytehq/airbyte/pull/19489) | Added non-billable projects handle to check connection stage                                                                                                    |
+| 1.2.7   | 2022-11-11 | [\#19358](https://github.com/airbytehq/airbyte/pull/19358) | Fixed check method to capture mismatch dataset location                                                                                                         |
+| 1.2.6   | 2022-11-10 | [\#18554](https://github.com/airbytehq/airbyte/pull/18554) | Improve check connection method to handle more errors                                                                                                           |
+| 1.2.5   | 2022-10-19 | [\#18162](https://github.com/airbytehq/airbyte/pull/18162) | Improve error logs                                                                                                                                              |
+| 1.2.4   | 2022-09-26 | [\#16890](https://github.com/airbytehq/airbyte/pull/16890) | Add user-agent header                                                                                                                                           |
+| 1.2.3   | 2022-09-22 | [\#17054](https://github.com/airbytehq/airbyte/pull/17054) | Respect stream namespace                                                                                                                                        |
+| 1.2.1   | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | (bugged, do not use) Wrap logs in AirbyteLogMessage                                                                                                             |
+| 1.2.0   | 2022-09-09 | [\#14023](https://github.com/airbytehq/airbyte/pull/14023) | (bugged, do not use) Cover arrays only if they are nested                                                                                                       |
+| 1.1.16  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields)                                        |
+| 1.1.15  | 2022-08-22 | [\#15787](https://github.com/airbytehq/airbyte/pull/15787) | Throw exception if job failed                                                                                                                                   |
+| 1.1.14  | 2022-08-03 | [\#14784](https://github.com/airbytehq/airbyte/pull/14784) | Enabling Application Default Credentials                                                                                                                        |
+| 1.1.13  | 2022-08-02 | [\#14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                                                                                       |
+| 1.1.12  | 2022-08-02 | [\#15180](https://github.com/airbytehq/airbyte/pull/15180) | Fix standard loading mode                                                                                                                                       |
+| 1.1.11  | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging                                                                                     |
+| 1.1.10  | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors                                                                                                          |
+| 1.1.9   | 2022-06-17 | [\#13753](https://github.com/airbytehq/airbyte/pull/13753) | Deprecate and remove PART_SIZE_MB fields from connectors based on StreamTransferManager                                                                         |
+| 1.1.8   | 2022-06-07 | [\#13579](https://github.com/airbytehq/airbyte/pull/13579) | Always check GCS bucket for GCS loading method to catch invalid HMAC keys.                                                                                      |
+| 1.1.7   | 2022-06-07 | [\#13424](https://github.com/airbytehq/airbyte/pull/13424) | Reordered fields for specification.                                                                                                                             |
+| 1.1.6   | 2022-05-15 | [\#12768](https://github.com/airbytehq/airbyte/pull/12768) | Clarify that the service account key json field is required on cloud.                                                                                           |
+| 1.1.5   | 2022-05-12 | [\#12805](https://github.com/airbytehq/airbyte/pull/12805) | Updated to latest base-java to emit AirbyteTraceMessage on error.                                                                                               |
+| 1.1.4   | 2022-05-04 | [\#12578](https://github.com/airbytehq/airbyte/pull/12578) | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging.                                                                 |
+| 1.1.3   | 2022-05-02 | [\#12528](https://github.com/airbytehq/airbyte/pull/12528) | Update Dataset location field description                                                                                                                       |
+| 1.1.2   | 2022-04-29 | [\#12477](https://github.com/airbytehq/airbyte/pull/12477) | Dataset location is a required field                                                                                                                            |
+| 1.1.1   | 2022-04-15 | [\#12068](https://github.com/airbytehq/airbyte/pull/12068) | Fixed bug with GCS bucket conditional binding                                                                                                                   |
+| 1.1.0   | 2022-04-06 | [\#11776](https://github.com/airbytehq/airbyte/pull/11776) | Use serialized buffering strategy to reduce memory consumption.                                                                                                 |
+| 1.0.2   | 2022-03-30 | [\#11620](https://github.com/airbytehq/airbyte/pull/11620) | Updated spec                                                                                                                                                    |
+| 1.0.1   | 2022-03-24 | [\#11350](https://github.com/airbytehq/airbyte/pull/11350) | Improve check performance                                                                                                                                       |
+| 1.0.0   | 2022-03-18 | [\#11238](https://github.com/airbytehq/airbyte/pull/11238) | Updated spec and documentation                                                                                                                                  |
+| 0.6.12  | 2022-03-18 | [\#10793](https://github.com/airbytehq/airbyte/pull/10793) | Fix namespace with invalid characters                                                                                                                           |
+| 0.6.11  | 2022-03-03 | [\#10755](https://github.com/airbytehq/airbyte/pull/10755) | Make sure to kill children threads and stop JVM                                                                                                                 |
+| 0.6.8   | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                                                                    |
+| 0.6.6   | 2022-02-01 | [\#9959](https://github.com/airbytehq/airbyte/pull/9959)   | Fix null pointer exception from buffered stream consumer.                                                                                                       |
+| 0.6.6   | 2022-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745)   | Integrate with Sentry.                                                                                                                                          |
+| 0.6.5   | 2022-01-18 | [\#9573](https://github.com/airbytehq/airbyte/pull/9573)   | BigQuery Destination : update description for some input fields                                                                                                 |
+| 0.6.4   | 2022-01-17 | [\#8383](https://github.com/airbytehq/airbyte/issues/8383) | Support dataset-id prefixed by project-id                                                                                                                       |
+| 0.6.3   | 2022-01-12 | [\#9415](https://github.com/airbytehq/airbyte/pull/9415)   | BigQuery Destination : Fix GCS processing of Facebook data                                                                                                      |
+| 0.6.2   | 2022-01-10 | [\#9121](https://github.com/airbytehq/airbyte/pull/9121)   | Fixed check method for GCS mode to verify if all roles assigned to user                                                                                         |
+| 0.6.1   | 2021-12-22 | [\#9039](https://github.com/airbytehq/airbyte/pull/9039)   | Added part_size configuration to UI for GCS staging                                                                                                             |
+| 0.6.0   | 2021-12-17 | [\#8788](https://github.com/airbytehq/airbyte/issues/8788) | BigQuery/BiqQuery denorm Destinations : Add possibility to use different types of GCS files                                                                     |
+| 0.5.1   | 2021-12-16 | [\#8816](https://github.com/airbytehq/airbyte/issues/8816) | Update dataset locations                                                                                                                                        |
+| 0.5.0   | 2021-10-26 | [\#7240](https://github.com/airbytehq/airbyte/issues/7240) | Output partitioned/clustered tables                                                                                                                             |
+| 0.4.1   | 2021-10-04 | [\#6733](https://github.com/airbytehq/airbyte/issues/6733) | Support dataset starting with numbers                                                                                                                           |
+| 0.4.0   | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added GCS Staging uploading option                                                                                                                              |
+| 0.3.12  | 2021-08-03 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add optional arg to make a possibility to change the BigQuery client's chunk\buffer size                                                                        |
+| 0.3.11  | 2021-07-30 | [\#5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                                                                                                    |
+| 0.3.10  | 2021-07-28 | [\#3549](https://github.com/airbytehq/airbyte/issues/3549) | Add extended logs and made JobId filled with region and projectId                                                                                               |
+| 0.3.9   | 2021-07-28 | [\#5026](https://github.com/airbytehq/airbyte/pull/5026)   | Add sanitized json fields in raw tables to handle quotes in column names                                                                                        |
+| 0.3.6   | 2021-06-18 | [\#3947](https://github.com/airbytehq/airbyte/issues/3947) | Service account credentials are now optional.                                                                                                                   |
+| 0.3.4   | 2021-06-07 | [\#3277](https://github.com/airbytehq/airbyte/issues/3277) | Add dataset location option                                                                                                                                     |

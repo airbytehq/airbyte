@@ -1,4 +1,4 @@
-name: Connector metadata service deploy orchestrator
+name: Connector Ops CI - Metadata Service Deploy Orchestrator
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
 jobs:
   connector_metadata_service_deploy_orchestrator:
     name: Connector metadata service deploy orchestrator
-    runs-on: medium-runner
+    runs-on: ci-runner-connector-test-large-dagger-0-6-4
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -19,6 +19,10 @@ jobs:
         uses: ./.github/actions/run-dagger-pipeline
         with:
           subcommand: "metadata deploy orchestrator"
+          context: "master"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
         env:
           DAGSTER_CLOUD_METADATA_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_METADATA_API_TOKEN }}
-          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}

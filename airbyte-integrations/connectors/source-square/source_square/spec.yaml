@@ -67,7 +67,7 @@ connectionSpecification:
       title: Start Date
       default: "2021-01-01"
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
-      order: 2,
+      order: 2
       format: date
     include_deleted_objects:
       type: boolean

@@ -2,16 +2,22 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Any, Dict, Mapping
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+
+
+class MissingAccessTokenError(Exception):
+    """
+    Raised when the token is `None` instead of the real value
+    """
 
 
 class NotImplementedAuth(Exception):
     """Not implemented Auth option error"""
 
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     def __init__(self, auth_method: str = None):
         self.message = f"Not implemented Auth method = {auth_method}"
@@ -34,7 +40,11 @@ class ShopifyAuthenticator(TokenAuthenticator):
         auth_method: str = credentials.get("auth_method")
 
         if auth_method in ["oauth2.0", "access_token"]:
-            return {auth_header: credentials.get("access_token")}
+            access_token = credentials.get("access_token")
+            if access_token:
+                return {auth_header: access_token}
+            else:
+                raise MissingAccessTokenError
         elif auth_method == "api_password":
             return {auth_header: credentials.get("api_password")}
         else:

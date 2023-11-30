@@ -1,78 +1,101 @@
-# Connector Acceptance Tests
+# Connector Acceptance Tests (CAT)
 This package gathers multiple test suites to assess the sanity of any Airbyte connector.
 It is shipped as a [pytest](https://docs.pytest.org/en/7.1.x/) plugin and relies on pytest to discover, configure and execute tests.
 Test-specific documentation can be found [here](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/)).
 
-## Running the acceptance tests on a source connector:
+## Configuration
+The acceptance tests are configured via the `acceptance-test-config.yml` YAML file, which is passed to the plugin via the `--acceptance-test-config` option.
+
+## Running the acceptance tests locally
+Note there are MANY ways to do this at this time, but we are working on consolidating them.
+
+Which method you choose to use depends on the context you are in.
+
+Pre-requisites:
+- Setting up a Service Account for Google Secrets Manager (GSM) access. See [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md)
+- Ensuring that you have the `GCP_GSM_CREDENTIALS` environment variable set to the contents of your GSM service account key file.
+- [Poetry](https://python-poetry.org/docs/#installation) installed
+- [Pipx](https://pypa.github.io/pipx/installation/) installed
+
+### Running CAT in the same environment as our CI/CD pipeline (`airbyte-ci`)
+
+_Note: Install instructions for airbyte-ci are [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) _
+
+**This runs connector acceptance and other tests that run in our CI**
+```bash
+airbyte-ci connectors --name=<connector-name> test
+```
+
+### Running CAT locally for Debugging/Development Purposes
+
+**Pre-requisites:**
+
+To learn how to set up `ci_credentials` and your GSM Service account see [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md)
+
+```bash
+# Hook up your GSM service account
+export GCP_GSM_CREDENTIALS=`cat <path-to-gsm-service-account-key-file>`
+
+# Install the credentials tool
+pipx install airbyte-ci/connectors/ci_credentials/ --force --editable
+```
+
+**Retrieve a connectors sandbox secrets**
+
+```bash
+# From the root of the airbyte repo
+
+# Writes the secrets to airbyte-integrations/connectors/source-faker/secrets
+VERSION=dev ci_credentials connectors/source-faker write-to-storage
+```
+
+**Run install dependencies**
+
+```bash
+# Navigate to our CAT test directory
+cd airbyte-integrations/bases/connector-acceptance-test/
+
+# Install dependencies
+poetry install
+```
+
+**Run the tests**
+
+```bash
+# Run tests against your connector
+poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-faker --pdb
+```
+
+
+### Manually
 1. `cd` into your connector project (e.g. `airbyte-integrations/connectors/source-pokeapi`)
 2. Edit `acceptance-test-config.yml` according to your need. Please refer to our [Connector Acceptance Test Reference](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/) if you need details about the available options.
-3. Build the connector docker image ( e.g.: `docker build . -t airbyte/source-pokeapi:dev`)
+3. Build the connector docker image ( e.g.: `airbyte-ci connectors --name=source-pokeapi build`)
 4. Use one of the following ways to run tests (**from your connector project directory**)
 
-### Using python
-_Note: these will assume that docker image for connector is already built_
-
-**Running the whole suite**
-```bash
-python -m pytest integration_tests -p integration_tests.acceptance
-```
-
-**Running a specific test**
-```bash
-python -m pytest integration_tests -p integration_tests.acceptance -k "<TEST_NAME>"
-```
-
-
-### Using Gradle
-```bash
-./gradlew :airbyte-integrations:connectors:source-<name>:connectorAcceptanceTest
-```
-_Note: this way will also build docker image for the connector_
-
-### Using Bash
-```bash
-./acceptance-test-docker.sh
-```
-_Note: this will use the latest docker image for connector-acceptance-test and will also build docker image for the connector_
-
-You can also use the following environment variables with the Gradle and Bash commands:
-- `LOCAL_CDK=1`: Run tests against the local python CDK, if relevant. If not set, tests against the latest package published to pypi, or the version specified in the connector's setup.py.
-- `FETCH_SECRETS=1`: Fetch secrets required by CATs. This requires you to have a Google Service Account, and the GCP_GSM_CREDENTIALS environment variable to be set, per the instructions [here](https://github.com/airbytehq/airbyte/tree/b03653a24ef16be641333380f3a4d178271df0ee/tools/ci_credentials).
-
-## Running the acceptance tests on multiple connectors:
-If you are contributing to the python CDK, you may want to validate your changes by running acceptance tests against multiple connectors.
-
-To do so, from the root of the `airbyte` repo, run `./airbyte-cdk/python/bin/run-cats-with-local-cdk.sh -c <connector1>,<connector2>,...`
-
-## When does acceptance test run?
-* When running local acceptance tests on connector:
-  * When running `connectorAcceptanceTest` `gradle` task
-  * When running or `./acceptance-test-docker.sh` in a connector project
-* When running `/test` command on a GitHub pull request.
-* When running ` integration-test` GitHub action. This is the same action that creates and uploads the test report JSON files that power the badges in the [connector registry summary report](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html).
 
 ## Developing on the acceptance tests
 You may want to iterate on the acceptance test project itself: adding new tests, fixing a bug etc.
 These iterations are more conveniently achieved by remaining in the current directory.
 
-1. Create a `virtualenv`: `python -m venv .venv`
-2. Activate the `virtualenv`: `source ./.venv/bin/activate`
-3. Install requirements: `pip install -e .`
-4. Run the unit tests on the acceptance tests themselves: `python -m pytest unit_tests` (add the `--pdb` option if you want to enable the debugger on test failure)
-5. Make the changes you want:
+1. Install dependencies via `poetry install`
+2. Run the unit tests on the acceptance tests themselves: `poetry run pytest unit_tests` (add the `--pdb` option if you want to enable the debugger on test failure)
+3. To run specific unit test(s), add `-k` to the above command, e.g. `poetry run python -m pytest unit_tests -k 'test_property_can_store_secret'`. You can use wildcards `*` here as well.
+4. Make the changes you want:
     * Global pytest fixtures are defined in `./connector_acceptance_test/conftest.py`
     * Existing test modules are defined in `./connector_acceptance_test/tests`
     * `acceptance-test-config.yaml` structure is defined in `./connector_acceptance_test/config.py`
-6. Unit test your changes by adding tests to `./unit_tests`
-7. Run the unit tests on the acceptance tests again: `python -m pytest unit_tests`, make sure the coverage did not decrease. You can bypass slow tests by using the `slow` marker: `python -m pytest unit_tests -m "not slow"`.
-8. Manually test the changes you made by running acceptance tests on a specific connector. e.g. `python -m pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-pokeapi`
-9. Make sure you updated `docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md` according to your changes
-10. Bump the acceptance test docker image version in `airbyte-integrations/bases/connector-acceptance-test/Dockerfile`
-11. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`
-12. Open a PR on our GitHub repository
-13. Run the unit test on the CI by running `/test connector=bases/connector-acceptance-test` in a GitHub comment
-14. Publish the new acceptance test version if your PR is approved by running `/publish connector=bases/connector-acceptance-test auto-bump-version=false` in a GitHub comment
-15. Merge your PR
+5. Unit test your changes by adding tests to `./unit_tests`
+6. Run the unit tests on the acceptance tests again: `poetry run pytest unit_tests`, make sure the coverage did not decrease. You can bypass slow tests by using the `slow` marker: `poetry run pytest unit_tests -m "not slow"`.
+7. Manually test the changes you made by running acceptance tests on a specific connector:
+    * First build the connector to ensure your local image is up-to-date: `airbyte-ci connectors --name=source-pokeapi build`
+    * Then run the acceptance tests on the connector: `poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-pokeapi`
+8. Make sure you updated `docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md` according to your changes
+9. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`
+10. Open a PR on our GitHub repository
+11. This [Github action workflow](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/cat-tests.yml) will be triggered an run the unit tests on your branch.
+12. Publish the new acceptance test version if your PR is approved by running `/legacy-publish connector=bases/connector-acceptance-test run-tests=false` in a GitHub comment
+13. Merge your PR
 
 ## Migrating `acceptance-test-config.yml` to latest configuration format
 We introduced changes in the structure of `acceptance-test-config.yml` files in version 0.2.12.

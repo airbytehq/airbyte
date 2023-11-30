@@ -12,18 +12,18 @@ Each stream will be output into its own index in MeiliSearch. Each table will be
 
 #### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces | No |  |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | No                   |       |
+| Namespaces                     | No                   |       |
 
 ## Getting started
 
 ### Requirements
 
-To use the MeiliSearch destination, you'll need an existing MeiliSearch instance. You can learn about how to create one in the [MeiliSearch docs](https://docs.meilisearch.com/reference/features/installation.html#download-and-launch).
+To use the MeiliSearch destination, you'll need an existing MeiliSearch instance. You can learn about how to create one in the [MeiliSearch docs](https://www.meilisearch.com/docs/learn/getting_started/installation).
 
 ### Setup guide
 
@@ -31,9 +31,9 @@ The setup only requires two fields. First is the `host` which is the address at 
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 1.0.0 | 2022-10-26 | [18036](https://github.com/airbytehq/airbyte/pull/18036) |  Migrate MeiliSearch to Python CDK |
-| 0.2.13 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
-| 0.2.12 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.2.11 | 2021-12-28 | [9156](https://github.com/airbytehq/airbyte/pull/9156) | Update connector fields title/description |
+| Version | Date       | Pull Request                                             | Subject                                                |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------- |
+| 1.0.0   | 2022-10-26 | [18036](https://github.com/airbytehq/airbyte/pull/18036) | Migrate MeiliSearch to Python CDK                      |
+| 0.2.13  | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
+| 0.2.12  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option           |
+| 0.2.11  | 2021-12-28 | [9156](https://github.com/airbytehq/airbyte/pull/9156)   | Update connector fields title/description              |

@@ -90,7 +90,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         required to run this integration.
         """
         # make dummy instance of stream_class in order to get 'supports_incremental' property
-        incremental = self.stream_class(dataset="", provider="", format="", path_pattern="").supports_incremental
+        incremental = self.stream_class(dataset="", provider={}, format="", path_pattern="").supports_incremental
 
         supported_dest_sync_modes = [DestinationSyncMode.overwrite]
         if incremental:

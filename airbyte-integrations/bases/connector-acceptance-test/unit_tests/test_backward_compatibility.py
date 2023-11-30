@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import MutableMapping, Union
 
 import pytest
-from airbyte_cdk.models import AirbyteStream, ConnectorSpecification
+from airbyte_protocol.models import AirbyteStream, ConnectorSpecification
 from connector_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
 from connector_acceptance_test.tests.test_core import TestSpec as _TestSpec
 from connector_acceptance_test.utils.backward_compatibility import NonBackwardCompatibleError, validate_previous_configs
@@ -485,6 +485,132 @@ FAILING_SPEC_TRANSITIONS = [
             }
         ),
         name="Changing a 'type' field from a list to something else than a string should fail.",
+        should_fail=True,
+        is_valid_json_schema=False,
+    ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "string"},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "string", "format": "date"},
+                },
+            }
+        ),
+        name="Adding a 'format' field should fail.",
+        should_fail=True,
+        is_valid_json_schema=False,
+    ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "string", "format": "date"},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "string"},
+                },
+            }
+        ),
+        name="Removing a 'format' field should fail.",
+        should_fail=True,
+        is_valid_json_schema=False,
+    ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "string", "format": "date"},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "string", "format": "date-time"},
+                },
+            }
+        ),
+        name="Changing a 'format' field value should fail.",
+        should_fail=True,
+        is_valid_json_schema=False,
+    ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "string", "format": "time"},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "string", "format": "time", "airbyte_type": "time_with_timezone"},
+                },
+            }
+        ),
+        name="Adding an 'airbyte_type' field should fail.",
+        should_fail=True,
+        is_valid_json_schema=False,
+    ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "string", "format": "time", "airbyte_type": "time_with_timezone"},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "string", "format": "time"},
+                },
+            }
+        ),
+        name="Removing an 'airbyte_type' field should fail.",
+        should_fail=True,
+        is_valid_json_schema=False,
+    ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "string", "format": "time", "airbyte_type": "time_with_timezone"},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "string", "format": "time", "airbyte_type": "time_without_timezone"},
+                },
+            }
+        ),
+        name="Changing an 'airbyte_type' field value should fail.",
         should_fail=True,
         is_valid_json_schema=False,
     ),
@@ -1043,6 +1169,178 @@ FAILING_CATALOG_TRANSITIONS = [
         },
     ),
     Transition(
+        name="Removing a field format should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "date"}}}}
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"created": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+    ),
+    Transition(
+        name="Adding a field format should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"created": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "date"}}}}
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+    ),
+    Transition(
+        name="Changing a field format should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "date-time"}}}}
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "date"}}}}
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+    ),
+    Transition(
+        name="Removing a field airbyte type should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {
+                            "user": {
+                                "type": "object",
+                                "properties": {"created": {"type": "string", "format": "time", "airbyte_type": "type_with_timezone"}},
+                            }
+                        }
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "time"}}}}
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+    ),
+    Transition(
+        name="Adding a field airbyte type should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "time"}}}}
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {
+                            "user": {
+                                "type": "object",
+                                "properties": {"created": {"type": "string", "format": "time", "airbyte_type": "time_with_timezone"}},
+                            }
+                        }
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+    ),
+    Transition(
+        name="Changing a field airbyte type should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {
+                            "user": {
+                                "type": "object",
+                                "properties": {"created": {"type": "string", "format": "time", "airbyte_type": "time_with_timezone"}},
+                            }
+                        }
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {
+                            "user": {
+                                "type": "object",
+                                "properties": {"created": {"type": "string", "format": "time", "airbyte_type": "time_without_timezone"}},
+                            }
+                        }
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+    ),
+    Transition(
         name="Renaming a stream should fail.",
         should_fail=True,
         previous={
@@ -1193,6 +1491,58 @@ FAILING_CATALOG_TRANSITIONS = [
             ),
         },
     ),
+    Transition(
+        name="Removing a top level field should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {"username": {"type": "string"}, "email": {"type": "string"}},
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {"username": {"type": "string"}},
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+    ),
+    Transition(
+        name="Removing a nested field should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {
+                            "user": {"type": "object", "properties": {"username": {"type": "string"}, "email": {"type": "string"}}}
+                        }
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+    ),
 ]
 
 VALID_CATALOG_TRANSITIONS = [
@@ -1264,32 +1614,6 @@ VALID_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": ["string"]}}}}},
-                    "supported_sync_modes": ["full_refresh"],
-                }
-            )
-        },
-    ),
-    Transition(
-        name="Removing a field should not fail.",
-        should_fail=False,
-        previous={
-            "test_stream": AirbyteStream.parse_obj(
-                {
-                    "name": "test_stream",
-                    "json_schema": {
-                        "properties": {
-                            "user": {"type": "object", "properties": {"username": {"type": "string"}, "email": {"type": "string"}}}
-                        }
-                    },
-                    "supported_sync_modes": ["full_refresh"],
-                }
-            )
-        },
-        current={
-            "test_stream": AirbyteStream.parse_obj(
-                {
-                    "name": "test_stream",
-                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
                     "supported_sync_modes": ["full_refresh"],
                 }
             )

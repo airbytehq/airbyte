@@ -1,43 +1,58 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.4.11'
+    features = ['db-destinations', 's3-destinations']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
+                                 '-XX:NativeMemoryTracking=detail', '-XX:+UnlockDiagnosticVMOptions',
+                                 '-XX:GCLockerRetryAllocationCount=100',
+//            '-Djava.rmi.server.hostname=localhost',
+//            '-Dcom.sun.management.jmxremote=true',
+//            '-Dcom.sun.management.jmxremote.port=6000',
+//            '-Dcom.sun.management.jmxremote.rmi.port=6000',
+//            '-Dcom.sun.management.jmxremote.local.only=false',
+//            '-Dcom.sun.management.jmxremote.authenticate=false',
+//            '-Dcom.sun.management.jmxremote.ssl=false'
+    ]
 }
 
+airbyteJavaConnector.addCdkDependencies()
+
 dependencies {
-    implementation 'com.google.cloud:google-cloud-bigquery:1.122.2'
+    implementation project(':airbyte-integrations:connectors:destination-gcs')
+
+    implementation 'com.google.cloud:google-cloud-bigquery:2.31.1'
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'org.apache.commons:commons-csv:1.4'
-    implementation group: 'org.apache.parquet', name: 'parquet-avro', version: '1.12.0'
+    implementation 'org.apache.commons:commons-text:1.10.0'
 
     implementation group: 'com.google.cloud', name: 'google-cloud-storage', version: '2.4.5'
     implementation group: 'com.codepoetics', name: 'protonpack', version: '1.13'
 
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java-s3')
-    implementation project(':airbyte-integrations:connectors:destination-gcs')
-    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+    implementation (libs.airbyte.protocol) {
+        exclude group: 'io.airbyte', module: 'airbyte-commons'
+    }
+    // implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
-    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
-    integrationTestJavaImplementation project(':airbyte-db:db-lib')
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-}
+    // TODO: declare typing-deduping as a CDK feature instead of importing from source.
+    implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
+    integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
 
-tasks.named("airbyteDocker") {
-    // this is really inefficent (because base-normalization:airbyteDocker builds 9 docker images)
-    // but it's also just simple to implement
-    dependsOn project(':airbyte-integrations:bases:base-normalization').airbyteDocker
+    // TODO: remove these dependencies (what's S3 doing here???)
+    implementation libs.aws.java.sdk.s3
+    implementation libs.s3
 }
 
 configurations.all {

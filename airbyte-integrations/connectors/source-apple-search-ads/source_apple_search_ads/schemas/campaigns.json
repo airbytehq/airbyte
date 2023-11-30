@@ -78,16 +78,10 @@
           "type": "string"
         },
         "clientName": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "orderNumber": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
       "type": "object"

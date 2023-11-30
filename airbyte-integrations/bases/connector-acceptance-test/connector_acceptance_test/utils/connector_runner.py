@@ -5,188 +5,292 @@
 
 import json
 import logging
+import os
+import uuid
 from pathlib import Path
-from typing import Iterable, List, Mapping, Optional
+from typing import Any, List, Mapping, Optional, Union
 
+import dagger
 import docker
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, OrchestratorType
-from airbyte_cdk.models import Type as AirbyteMessageType
-from docker.errors import ContainerError, NotFound
-from docker.models.containers import Container
+import pytest
+from airbyte_protocol.models import AirbyteMessage, ConfiguredAirbyteCatalog, OrchestratorType
+from airbyte_protocol.models import Type as AirbyteMessageType
+from anyio import Path as AnyioPath
+from connector_acceptance_test.utils import SecretDict
 from pydantic import ValidationError
 
 
+async def get_container_from_id(dagger_client: dagger.Client, container_id: str) -> dagger.Container:
+    """Get a dagger container from its id.
+    Please remind that container id are not persistent and can change between Dagger sessions.
+
+    Args:
+        dagger_client (dagger.Client): The dagger client to use to import the connector image
+    """
+    try:
+        return await dagger_client.container(dagger.ContainerID(container_id))
+    except dagger.DaggerError as e:
+        pytest.exit(f"Failed to load connector container: {e}")
+
+
+async def get_container_from_tarball_path(dagger_client: dagger.Client, tarball_path: Path):
+    if not tarball_path.exists():
+        pytest.exit(f"Connector image tarball {tarball_path} does not exist")
+    container_under_test_tar_file = (
+        dagger_client.host().directory(str(tarball_path.parent), include=tarball_path.name).file(tarball_path.name)
+    )
+    try:
+        return await dagger_client.container().import_(container_under_test_tar_file)
+    except dagger.DaggerError as e:
+        pytest.exit(f"Failed to import connector image from tarball: {e}")
+
+
+async def get_container_from_local_image(dagger_client: dagger.Client, local_image_name: str) -> Optional[dagger.Container]:
+    """Get a dagger container from a local image.
+    It will use Docker python client to export the image to a tarball and then import it into dagger.
+
+    Args:
+        dagger_client (dagger.Client): The dagger client to use to import the connector image
+        local_image_name (str): The name of the local image to import
+
+    Returns:
+        Optional[dagger.Container]: The dagger container for the local image or None if the image does not exist
+    """
+    docker_client = docker.from_env()
+
+    try:
+        image = docker_client.images.get(local_image_name)
+    except docker.errors.ImageNotFound:
+        return None
+
+    image_digest = image.id.replace("sha256:", "")
+    tarball_path = Path(f"/tmp/{image_digest}.tar")
+    if not tarball_path.exists():
+        logging.info(f"Exporting local connector image {local_image_name} to tarball {tarball_path}")
+        with open(tarball_path, "wb") as f:
+            for chunk in image.save(named=True):
+                f.write(chunk)
+    return await get_container_from_tarball_path(dagger_client, tarball_path)
+
+
+async def get_container_from_dockerhub_image(dagger_client: dagger.Client, dockerhub_image_name: str) -> dagger.Container:
+    """Get a dagger container from a dockerhub image.
+
+    Args:
+        dagger_client (dagger.Client): The dagger client to use to import the connector image
+        dockerhub_image_name (str): The name of the dockerhub image to import
+
+    Returns:
+        dagger.Container: The dagger container for the dockerhub image
+    """
+    try:
+        return await dagger_client.container().from_(dockerhub_image_name)
+    except dagger.DaggerError as e:
+        pytest.exit(f"Failed to import connector image from DockerHub: {e}")
+
+
+async def get_connector_container(dagger_client: dagger.Client, image_name_with_tag: str) -> dagger.Container:
+    """Get a dagger container for the connector image to test.
+
+    Args:
+        dagger_client (dagger.Client): The dagger client to use to import the connector image
+        image_name_with_tag (str): The docker image name and tag of the connector image to test
+
+    Returns:
+        dagger.Container: The dagger container for the connector image to test
+    """
+    # If a container_id.txt file is available, we'll use it to load the connector container
+    # We use a txt file as container ids can be too long to be passed as env vars
+    # It's used for dagger-in-dagger use case with airbyte-ci, when the connector container is built via an upstream dagger operation
+    connector_container_id_path = Path("/tmp/container_id.txt")
+    if connector_container_id_path.exists():
+        # If the CONNECTOR_CONTAINER_ID env var is set, we'll use it to load the connector container
+        return await get_container_from_id(dagger_client, connector_container_id_path.read_text())
+
+    # If the CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH env var is set, we'll use it to import the connector image from the tarball
+    if connector_image_tarball_path := os.environ.get("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"):
+        tarball_path = Path(connector_image_tarball_path)
+        return await get_container_from_tarball_path(dagger_client, tarball_path)
+
+    # Let's try to load the connector container from a local image
+    if connector_container := await get_container_from_local_image(dagger_client, image_name_with_tag):
+        return connector_container
+
+    # If we get here, we'll try to pull the connector image from DockerHub
+    return await get_container_from_dockerhub_image(dagger_client, image_name_with_tag)
+
+
 class ConnectorRunner:
+    IN_CONTAINER_CONFIG_PATH = "/data/config.json"
+    IN_CONTAINER_CATALOG_PATH = "/data/catalog.json"
+    IN_CONTAINER_STATE_PATH = "/data/state.json"
+    IN_CONTAINER_OUTPUT_PATH = "/output.txt"
+
     def __init__(
         self,
-        image_name: str,
-        volume: Path,
+        connector_container: dagger.Container,
         connector_configuration_path: Optional[Path] = None,
         custom_environment_variables: Optional[Mapping] = {},
+        deployment_mode: Optional[str] = None,
     ):
-        self._client = docker.from_env()
-        try:
-            self._image = self._client.images.get(image_name)
-        except docker.errors.ImageNotFound:
-            print("Pulling docker image", image_name)
-            self._image = self._client.images.pull(image_name)
-            print("Pulling completed")
-        self._runs = 0
-        self._volume_base = volume
-        self._connector_configuration_path = connector_configuration_path
-        self._custom_environment_variables = custom_environment_variables
-
-    @property
-    def output_folder(self) -> Path:
-        return self._volume_base / f"run_{self._runs}" / "output"
-
-    @property
-    def input_folder(self) -> Path:
-        return self._volume_base / f"run_{self._runs}" / "input"
-
-    def _prepare_volumes(self, config: Optional[Mapping], state: Optional[Mapping], catalog: Optional[ConfiguredAirbyteCatalog]):
-        self.input_folder.mkdir(parents=True)
-        self.output_folder.mkdir(parents=True)
-
-        # using "is not None" to allow falsey config objects like {} to still write
-        if config is not None:
-            with open(str(self.input_folder / "tap_config.json"), "w") as outfile:
-                json.dump(dict(config), outfile)
-
-        if state:
-            with open(str(self.input_folder / "state.json"), "w") as outfile:
-                if isinstance(state, List):
-                    json.dump(state, outfile)
-                else:
-                    json.dump(dict(state), outfile)
-
-        if catalog:
-            with open(str(self.input_folder / "catalog.json"), "w") as outfile:
-                outfile.write(catalog.json())
-
-        volumes = {
-            str(self.input_folder): {
-                "bind": "/data",
-                # "mode": "ro",
-            },
-            str(self.output_folder): {
-                "bind": "/local",
-                "mode": "rw",
-            },
-        }
-        return volumes
-
-    def call_spec(self, **kwargs) -> List[AirbyteMessage]:
-        cmd = "spec"
-        output = list(self.run(cmd=cmd, **kwargs))
-        return output
-
-    def call_check(self, config, **kwargs) -> List[AirbyteMessage]:
-        cmd = "check --config /data/tap_config.json"
-        output = list(self.run(cmd=cmd, config=config, **kwargs))
-        return output
-
-    def call_discover(self, config, **kwargs) -> List[AirbyteMessage]:
-        cmd = "discover --config /data/tap_config.json"
-        output = list(self.run(cmd=cmd, config=config, **kwargs))
-        return output
-
-    def call_read(self, config, catalog, **kwargs) -> List[AirbyteMessage]:
-        cmd = "read --config /data/tap_config.json --catalog /data/catalog.json"
-        output = list(self.run(cmd=cmd, config=config, catalog=catalog, **kwargs))
-        return output
-
-    def call_read_with_state(self, config, catalog, state, **kwargs) -> List[AirbyteMessage]:
-        cmd = "read --config /data/tap_config.json --catalog /data/catalog.json --state /data/state.json"
-        output = list(self.run(cmd=cmd, config=config, catalog=catalog, state=state, **kwargs))
-        return output
-
-    def run(self, cmd, config=None, state=None, catalog=None, raise_container_error: bool = True, **kwargs) -> Iterable[AirbyteMessage]:
-
-        self._runs += 1
-        volumes = self._prepare_volumes(config, state, catalog)
-        logging.debug(f"Docker run {self._image}: \n{cmd}\n" f"input: {self.input_folder}\noutput: {self.output_folder}")
-
-        container = self._client.containers.run(
-            image=self._image,
-            command=cmd,
-            volumes=volumes,
-            network_mode="host",
-            detach=True,
-            environment=self._custom_environment_variables,
-            **kwargs,
+        env_vars = (
+            custom_environment_variables
+            if deployment_mode is None
+            else {**custom_environment_variables, "DEPLOYMENT_MODE": deployment_mode.upper()}
         )
-        with open(self.output_folder / "raw", "wb+") as f:
-            for line in self.read(container, command=cmd, with_ext=raise_container_error):
-                f.write(line.encode())
-                try:
-                    airbyte_message = AirbyteMessage.parse_raw(line)
-                    if (
-                        airbyte_message.type is AirbyteMessageType.CONTROL
-                        and airbyte_message.control.type is OrchestratorType.CONNECTOR_CONFIG
-                    ):
-                        self._persist_new_configuration(
-                            airbyte_message.control.connectorConfig.config, int(airbyte_message.control.emitted_at)
-                        )
-                    yield airbyte_message
-                except ValidationError as exc:
-                    logging.warning("Unable to parse connector's output %s, error: %s", line, exc)
+        self._connector_under_test_container = self.set_env_vars(connector_container, env_vars)
+        self._connector_configuration_path = connector_configuration_path
 
-    @classmethod
-    def read(cls, container: Container, command: str = None, with_ext: bool = True) -> Iterable[str]:
-        """Reads connector's logs per line"""
-        buffer = b""
-        exception = ""
-        line = ""
-        for chunk in container.logs(stdout=True, stderr=True, stream=True, follow=True):
+    def set_env_vars(self, container: dagger.Container, env_vars: Mapping[str, Any]) -> dagger.Container:
+        """Set environment variables on a dagger container.
 
-            buffer += chunk
-            while True:
-                # every chunk can include several lines
-                found = buffer.find(b"\n")
-                if found <= -1:
-                    break
+        Args:
+            container (dagger.Container): The dagger container to set the environment variables on.
+            env_vars (Mapping[str, str]): The environment variables to set.
 
-                line = buffer[: found + 1].decode("utf-8")
-                if len(exception) > 0 or line.startswith("Traceback (most recent call last)"):
-                    exception += line
-                else:
-                    yield line
-                buffer = buffer[found + 1 :]
+        Returns:
+            dagger.Container: The dagger container with the environment variables set.
+        """
+        for k, v in env_vars.items():
+            container = container.with_env_variable(k, str(v))
+        return container
 
-        if buffer:
-            # send the latest chunk if exists
-            line = buffer.decode("utf-8")
-            if exception:
-                exception += line
-            else:
-                yield line
+    async def call_spec(self, raise_container_error=False) -> List[AirbyteMessage]:
+        return await self._run(["spec"], raise_container_error)
+
+    async def call_check(self, config: SecretDict, raise_container_error: bool = False) -> List[AirbyteMessage]:
+        return await self._run(
+            ["check", "--config", self.IN_CONTAINER_CONFIG_PATH],
+            raise_container_error,
+            config=config,
+        )
+
+    async def call_discover(self, config: SecretDict, raise_container_error: bool = False) -> List[AirbyteMessage]:
+        return await self._run(
+            ["discover", "--config", self.IN_CONTAINER_CONFIG_PATH],
+            raise_container_error,
+            config=config,
+        )
+
+    async def call_read(
+        self, config: SecretDict, catalog: ConfiguredAirbyteCatalog, raise_container_error: bool = False, enable_caching: bool = True
+    ) -> List[AirbyteMessage]:
+        return await self._run(
+            ["read", "--config", self.IN_CONTAINER_CONFIG_PATH, "--catalog", self.IN_CONTAINER_CATALOG_PATH],
+            raise_container_error,
+            config=config,
+            catalog=catalog,
+            enable_caching=enable_caching,
+        )
+
+    async def call_read_with_state(
+        self,
+        config: SecretDict,
+        catalog: ConfiguredAirbyteCatalog,
+        state: dict,
+        raise_container_error: bool = False,
+        enable_caching: bool = True,
+    ) -> List[AirbyteMessage]:
+        return await self._run(
+            [
+                "read",
+                "--config",
+                self.IN_CONTAINER_CONFIG_PATH,
+                "--catalog",
+                self.IN_CONTAINER_CATALOG_PATH,
+                "--state",
+                self.IN_CONTAINER_STATE_PATH,
+            ],
+            raise_container_error,
+            config=config,
+            catalog=catalog,
+            state=state,
+            enable_caching=enable_caching,
+        )
+
+    async def get_container_env_variable_value(self, name: str) -> str:
+        return await self._connector_under_test_container.env_variable(name)
+
+    async def get_container_label(self, label: str):
+        return await self._connector_under_test_container.label(label)
+
+    async def get_container_entrypoint(self):
+        entrypoint = await self._connector_under_test_container.entrypoint()
+        return " ".join(entrypoint)
+
+    async def _run(
+        self,
+        airbyte_command: List[str],
+        raise_container_error: bool,
+        config: SecretDict = None,
+        catalog: dict = None,
+        state: Union[dict, list] = None,
+        enable_caching=True,
+    ) -> List[AirbyteMessage]:
+        """Run a command in the connector container and return the list of AirbyteMessages emitted by the connector.
+
+        Args:
+            airbyte_command (List[str]): The command to run in the connector container.
+            raise_container_error (bool): Whether to raise an error if the container fails to run the command.
+            config (SecretDict, optional): The config to mount to the container. Defaults to None.
+            catalog (dict, optional): The catalog to mount to the container. Defaults to None.
+            state (Union[dict, list], optional): The state to mount to the container. Defaults to None.
+            enable_caching (bool, optional): Whether to enable command output caching. Defaults to True.
+
+        Returns:
+            List[AirbyteMessage]: The list of AirbyteMessages emitted by the connector.
+        """
+        container = self._connector_under_test_container
+        if not enable_caching:
+            container = container.with_env_variable("CAT_CACHEBUSTER", str(uuid.uuid4()))
+        if config:
+            container = container.with_new_file(self.IN_CONTAINER_CONFIG_PATH, json.dumps(dict(config)))
+        if state:
+            container = container.with_new_file(self.IN_CONTAINER_STATE_PATH, json.dumps(state))
+        if catalog:
+            container = container.with_new_file(self.IN_CONTAINER_CATALOG_PATH, catalog.json())
         try:
-            exit_status = container.wait()
-            container.remove()
-        except NotFound as err:
-            logging.error(f"Waiting error: {err}, logs: {exception or line}")
-            raise
-        if exit_status["StatusCode"]:
-            error = exit_status.get("Error") or exception or line
-            logging.error(f"Docker container failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')
-            if with_ext:
-                raise ContainerError(
-                    container=container,
-                    exit_status=exit_status["StatusCode"],
-                    command=command,
-                    image=container.image,
-                    stderr=error,
-                )
+            output = await self._read_output_from_stdout(airbyte_command, container)
+        except dagger.QueryError as e:
+            output_too_big = bool([error for error in e.errors if error.message.startswith("file size")])
+            if output_too_big:
+                output = await self._read_output_from_file(airbyte_command, container)
+            elif raise_container_error:
+                raise e
+            else:
+                if isinstance(e, dagger.ExecError):
+                    output = e.stdout + e.stderr
+                else:
+                    pytest.fail(f"Failed to run command {airbyte_command} in container {self.image_tag} with error: {e}")
+        return self.parse_airbyte_messages_from_command_output(output)
 
-    @property
-    def env_variables(self):
-        env_vars = self._image.attrs["Config"]["Env"]
-        return {env.split("=", 1)[0]: env.split("=", 1)[1] for env in env_vars}
+    async def _read_output_from_stdout(self, airbyte_command: list, container: dagger.Container) -> str:
+        return await container.with_exec(airbyte_command).stdout()
 
-    @property
-    def entry_point(self):
-        return self._image.attrs["Config"]["Entrypoint"]
+    async def _read_output_from_file(self, airbyte_command: list, container: dagger.Container) -> str:
+        local_output_file_path = f"/tmp/{str(uuid.uuid4())}"
+        entrypoint = await container.entrypoint()
+        airbyte_command = entrypoint + airbyte_command
+        container = container.with_exec(
+            ["sh", "-c", " ".join(airbyte_command) + f" > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}"],
+            skip_entrypoint=True,
+        )
+        await container.file(self.IN_CONTAINER_OUTPUT_PATH).export(local_output_file_path)
+        output = await AnyioPath(local_output_file_path).read_text()
+        await AnyioPath(local_output_file_path).unlink()
+        return output
+
+    def parse_airbyte_messages_from_command_output(self, command_output: str) -> List[AirbyteMessage]:
+        airbyte_messages = []
+        for line in command_output.splitlines():
+            try:
+                airbyte_message = AirbyteMessage.parse_raw(line)
+                if airbyte_message.type is AirbyteMessageType.CONTROL and airbyte_message.control.type is OrchestratorType.CONNECTOR_CONFIG:
+                    self._persist_new_configuration(airbyte_message.control.connectorConfig.config, int(airbyte_message.control.emitted_at))
+                airbyte_messages.append(airbyte_message)
+            except ValidationError as exc:
+                logging.warning("Unable to parse connector's output %s, error: %s", line, exc)
+        return airbyte_messages
 
     def _persist_new_configuration(self, new_configuration: dict, configuration_emitted_at: int) -> Optional[Path]:
         """Store new configuration values to an updated_configurations subdir under the original configuration path.

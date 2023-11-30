@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qs, urlparse
 
 import requests
@@ -34,19 +34,16 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
     data_field: str = "data"
     cursor_field: str = "date"
     min_date: str = "90"  # days
+    funnels = {}
 
     def path(self, **kwargs) -> str:
         return "funnels"
 
-    def get_funnel_slices(self, sync_mode) -> List[dict]:
+    def get_funnel_slices(self, sync_mode) -> Iterator[dict]:
         stream = FunnelsList(**self.get_stream_params())
-        funnel_slices = list(read_full_refresh(stream))  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
+        return read_full_refresh(stream)  # [{'funnel_id': <funnel_id1>, 'name': <name1>}, {...}]
 
-        # save all funnels in dict(<funnel_id1>:<name1>, ...)
-        self.funnels = {funnel["funnel_id"]: funnel["name"] for funnel in funnel_slices}
-        return funnel_slices
-
-    def funnel_slices(self, sync_mode) -> List[dict]:
+    def funnel_slices(self, sync_mode) -> Iterator[dict]:
         return self.get_funnel_slices(sync_mode)
 
     def stream_slices(
@@ -80,17 +77,16 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         stream_state: Dict = stream_state or {}
 
         # One stream slice is a combination of all funnel_slices and date_slices
-        stream_slices: List = []
         funnel_slices = self.funnel_slices(sync_mode)
         for funnel_slice in funnel_slices:
             # get single funnel state
+            # save all funnels in dict(<funnel_id1>:<name1>, ...)
+            self.funnels[funnel_slice["funnel_id"]] = funnel_slice["name"]
             funnel_id = str(funnel_slice["funnel_id"])
             funnel_state = stream_state.get(funnel_id)
             date_slices = super().stream_slices(sync_mode, cursor_field=cursor_field, stream_state=funnel_state)
             for date_slice in date_slices:
-                stream_slices.append({**funnel_slice, **date_slice})
-
-        return stream_slices
+                yield {**funnel_slice, **date_slice}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None

@@ -1,29 +1,25 @@
 plugins {
     id 'airbyte-python'
-    id 'airbyte-docker'
+    id 'airbyte-docker-legacy'
 }
 
-airbytePython {
-    moduleDirectory 'airbyte_cdk'
-}
-
-task generateComponentManifestClassFiles(type: Exec) {
+def generateComponentManifestClassFiles = tasks.register('generateComponentManifestClassFiles', Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/generate-component-manifest-files.sh'
-    dependsOn ':tools:code-generator:airbyteDocker'
+}
+generateComponentManifestClassFiles.configure {
+    dependsOn project(':tools:code-generator').tasks.named('assemble')
+}
+tasks.register('generate').configure {
+    dependsOn generateComponentManifestClassFiles
 }
 
-task validateSourceYamlManifest(type: Exec) {
+tasks.register('validateSourceYamlManifest', Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/validate-yaml-schema.sh'
 }
 
-task runLowCodeConnectorUnitTests(type: Exec) {
+tasks.register('runLowCodeConnectorUnitTests', Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/low-code-unit-tests.sh'
 }
-
-blackFormat.dependsOn generateComponentManifestClassFiles
-isortFormat.dependsOn generateComponentManifestClassFiles
-flakeCheck.dependsOn generateComponentManifestClassFiles
-installReqs.dependsOn generateComponentManifestClassFiles

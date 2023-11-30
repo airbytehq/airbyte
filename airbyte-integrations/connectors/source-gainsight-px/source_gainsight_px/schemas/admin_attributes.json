@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "User Attributes Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "apiName": {
+      "type": ["null", "string"]
+    },
+    "internalName": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "origin": {
+      "type": ["null", "string"]
+    },
+    "createdDate": {
+      "type": ["null", "number"]
+    },
+    "modifiedDate": {
+      "type": ["null", "number"]
+    },
+    "defaultValue": {
+      "type": ["null", "string"]
+    }
+  }
+}

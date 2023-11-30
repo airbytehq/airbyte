@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.mysql;
 
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 
 /**
  * Note that MySQL documentation discusses about identifiers case sensitivity using the

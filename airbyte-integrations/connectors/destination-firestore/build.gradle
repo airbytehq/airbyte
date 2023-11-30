@@ -1,8 +1,0 @@
-plugins {
-    id 'airbyte-python'
-    id 'airbyte-docker'
-}
-
-airbytePython {
-    moduleDirectory 'destinationfirestore'
-}

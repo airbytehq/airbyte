@@ -1,42 +1,42 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_product": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_product_attribute": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_warehouse": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_currency": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "management_type": {
       "type": ["null", "string"]
     },
     "id_employee": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_stock": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_stock_mvt_reason": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_order": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_supply_order": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_name": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "ean13": {
       "type": ["null", "string"]
@@ -51,22 +51,22 @@
       "type": ["null", "string"]
     },
     "physical_quantity": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "sign": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "last_wa": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "current_wa": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "price_te": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     }
   }

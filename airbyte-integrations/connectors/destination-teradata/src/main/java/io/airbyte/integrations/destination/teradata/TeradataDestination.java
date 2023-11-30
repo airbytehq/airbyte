@@ -6,12 +6,12 @@ package io.airbyte.integrations.destination.teradata;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -31,15 +31,23 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
   /**
    * Default schema name
    */
-  public static final String DEFAULT_SCHEMA_NAME = "def_airbyte_db";
-  public static final String PARAM_MODE = "mode";
-  public static final String PARAM_SSL = "ssl";
-  public static final String PARAM_SSL_MODE = "ssl_mode";
-  public static final String PARAM_SSLMODE = "sslmode";
-  public static final String PARAM_SSLCA = "sslca";
-  public static final String REQUIRE = "require";
+  protected static final String DEFAULT_SCHEMA_NAME = "def_airbyte_db";
+  protected static final String PARAM_MODE = "mode";
+  protected static final String PARAM_SSL = "ssl";
+  protected static final String PARAM_SSL_MODE = "ssl_mode";
+  protected static final String PARAM_SSLMODE = "sslmode";
+  protected static final String PARAM_SSLCA = "sslca";
+  protected static final String REQUIRE = "require";
 
-  private static final String CA_CERTIFICATE = "ca.pem";
+  protected static final String VERIFY_CA = "verify-ca";
+
+  protected static final String VERIFY_FULL = "verify-full";
+
+  protected static final String ALLOW = "allow";
+
+  protected static final String CA_CERTIFICATE = "ca.pem";
+
+  protected static final String CA_CERT_KEY = "ssl_ca_certificate";
 
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new TeradataDestination()).run(args);

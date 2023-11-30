@@ -5,13 +5,14 @@
 
 import pytest
 import requests
-from source_shopify.source import BalanceTransactions, DiscountCodes, PriceRules, ShopifyStream, SourceShopify
+from source_shopify.source import BalanceTransactions, DiscountCodes, FulfillmentOrders, PriceRules, SourceShopify
 
 
-def test_get_next_page_token(requests_mock):
+def test_get_next_page_token(requests_mock, auth_config):
     """
     Test shows that next_page parameters are parsed correctly from the response object and could be passed for next request API call,
     """
+    stream = PriceRules(auth_config)
     response_header_links = {
         "Date": "Thu, 32 Jun 2099 24:24:24 GMT",
         "Content-Type": "application/json; charset=utf-8",
@@ -25,7 +26,7 @@ def test_get_next_page_token(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=response_header_links)
     response = requests.get("https://test.myshopify.com/")
 
-    test = ShopifyStream.next_page_token(response)
+    test = stream.next_page_token(response=response)
     assert test == expected_output_token
 
 
@@ -47,27 +48,30 @@ def test_privileges_validation(requests_mock, basic_config):
         "shop",
         "tender_transactions",
         "transactions",
+        "countries",
     ]
 
     assert [stream.name for stream in source.streams(basic_config)] == expected
 
 
 @pytest.mark.parametrize(
-    "stream, status, json_response, expected_output",
+    "stream, slice, status, json_response, expected_output",
     [
-        (BalanceTransactions, 404, {"errors": "Not Found"}, False),
-        (PriceRules, 403, {"errors": "Forbidden"}, False)
+        (BalanceTransactions, None, 404, {"errors": "Not Found"}, False),
+        (PriceRules, None, 403, {"errors": "Forbidden"}, False),
+        (FulfillmentOrders, {"order_id": 123}, 500, {"errors": "Internal Server Error"}, False),
     ],
     ids=[
         "Stream not found (404)",
         "No permissions (403)",
+        "Internal Server Error for slice (500)",
     ],
 )
-def test_unavailable_stream(requests_mock, basic_config, stream, status, json_response, expected_output):
+def test_unavailable_stream(requests_mock, basic_config, stream, slice, status, json_response, expected_output):
     config = basic_config
     config["authenticator"] = None
     stream = stream(config)
-    url = stream.url_base + stream.path()
+    url = stream.url_base + stream.path(stream_slice=slice)
     requests_mock.get(url=url, json=json_response, status_code=status)
     response = requests.get(url)
     assert stream.should_retry(response) is expected_output

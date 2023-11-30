@@ -1,4 +1,6 @@
 {
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Users",
   "type": ["null", "object"],
   "properties": {
     "verified": {
@@ -192,6 +194,9 @@
     },
     "report_csv": {
       "type": ["null", "boolean"]
+    },
+    "iana_time_zone": {
+      "type": ["null", "string"]
     }
   }
 }
