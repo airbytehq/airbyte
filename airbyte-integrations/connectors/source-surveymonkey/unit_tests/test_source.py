@@ -3,7 +3,6 @@
 #
 
 import pytest
-from unittest.mock import MagicMock, patch
 from source_surveymonkey.source import SourceSurveymonkey
 
 source_config = {"start_date": "2021-01-01T00:00:00", "access_token": "something"}
@@ -49,11 +48,10 @@ def test_source_check_connection_config_with_survey_id_errors(requests_mock):
     mock_msg = f"{mock_status_code} None: {mock_survey_id}"
 
     new_source_config['survey_ids'] = [mock_survey_id]
-    response = requests_mock.get(
+    requests_mock.get(
         "https://api.surveymonkey.com/v3/users/me", json={"scopes": {"granted": ["responses_read_detail", "surveys_read", "users_read"]}}
     )
 
-    print(response)
     requests_mock.head(
         f"https://api.surveymonkey.com/v3/surveys/{mock_survey_id}/details", status_code=mock_status_code
     )
