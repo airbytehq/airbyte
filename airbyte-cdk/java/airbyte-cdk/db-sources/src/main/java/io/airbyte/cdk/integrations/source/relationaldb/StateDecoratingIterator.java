@@ -11,6 +11,7 @@ import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.Iterator;
 import java.util.Objects;
@@ -202,17 +203,16 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   public AirbyteMessage createStateMessage(final boolean isFinalState, final int totalRecordCount) {
     final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, currentMaxCursor, currentMaxCursorRecordCount);
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
-    // logging once every 100 messages to reduce log verbosity
-    if (totalRecordCount % 100 == 0) {
-      LOGGER.info("State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
-          pair,
-          cursorInfo.map(CursorInfo::getOriginalCursorField).orElse(null),
-          cursorInfo.map(CursorInfo::getOriginalCursor).orElse(null),
-          cursorInfo.map(CursorInfo::getOriginalCursorRecordCount).orElse(null),
-          cursorInfo.map(CursorInfo::getCursorField).orElse(null),
-          cursorInfo.map(CursorInfo::getCursor).orElse(null),
-          cursorInfo.map(CursorInfo::getCursorRecordCount).orElse(null));
-    }
+    LOGGER.info("State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
+        pair,
+        cursorInfo.map(CursorInfo::getOriginalCursorField).orElse(null),
+        cursorInfo.map(CursorInfo::getOriginalCursor).orElse(null),
+        cursorInfo.map(CursorInfo::getOriginalCursorRecordCount).orElse(null),
+        cursorInfo.map(CursorInfo::getCursorField).orElse(null),
+        cursorInfo.map(CursorInfo::getCursor).orElse(null),
+        cursorInfo.map(CursorInfo::getCursorRecordCount).orElse(null));
+    stateMessage.withSourceStats(new AirbyteStateStats().withRecordCount((double) totalRecordCount));
+
     if (isFinalState) {
       hasEmittedFinalState = true;
       if (stateManager.getCursor(pair).isEmpty()) {

@@ -11,6 +11,7 @@ import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager.DebeziumConnectorType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Duration;
 import java.time.Instant;
@@ -140,7 +141,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
 
     if (cdcStateHandler.isCdcCheckpointEnabled() && sendCheckpointMessage) {
       LOGGER.info("Sending CDC checkpoint state message.");
-      final AirbyteMessage stateMessage = createStateMessage(checkpointOffsetToSend);
+      final AirbyteMessage stateMessage = createStateMessage(checkpointOffsetToSend, recordsLastSync);
       previousCheckpointOffset.clear();
       previousCheckpointOffset.putAll(checkpointOffsetToSend);
       resetCheckpointValues();
@@ -178,7 +179,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
     }
 
     isSyncFinished = true;
-    return createStateMessage(offsetManager.read());
+    return createStateMessage(offsetManager.read(), recordsLastSync);
   }
 
   /**
@@ -197,7 +198,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
    *
    * @return {@link AirbyteStateMessage} which includes offset and schema history if used.
    */
-  private AirbyteMessage createStateMessage(final Map<String, String> offset) {
+  private AirbyteMessage createStateMessage(final Map<String, String> offset, final long recordCount) {
     if (trackSchemaHistory && schemaHistoryManager == null) {
       throw new RuntimeException("Schema History Tracking is true but manager is not initialised");
     }
@@ -205,7 +206,9 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
       throw new RuntimeException("Offset can not be null");
     }
 
-    return cdcStateHandler.saveState(offset, schemaHistoryManager != null ? schemaHistoryManager.read() : null);
+    final AirbyteMessage message = cdcStateHandler.saveState(offset, schemaHistoryManager != null ? schemaHistoryManager.read() : null);
+    message.getState().withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
+    return message;
   }
 
 }
