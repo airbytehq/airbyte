@@ -58,7 +58,6 @@ class CloseComStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-
         params = {}
         if self.number_of_items_per_page:
             params.update({"_limit": self.number_of_items_per_page})
@@ -68,6 +67,21 @@ class CloseComStream(HttpStream, ABC):
             params.update(next_page_token)
 
         return params
+
+    def get_custom_field_schema(self) -> Mapping[str, Any]:
+        """Get custom field schema if it exists."""
+        if self.path() not in {"lead", "contact", "opportunity", "activity"}:
+            return {}
+        resp = requests.request("GET", url=f"{self.url_base}/custom_field/{self.path()}/", headers=self.authenticator.get_auth_header())
+        resp.raise_for_status()
+        resp_json: Mapping[str, Any] = resp.json()["data"]
+        return {f"custom.{data['id']}": {"type": ["null", "string", "number", "boolean"]} for data in resp_json}
+
+    def get_json_schema(self):
+        """Override default get_json_schema method to add custom fields to schema."""
+        schema = super().get_json_schema()
+        schema["properties"].update(self.get_custom_field_schema())
+        return schema
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()["data"]
@@ -88,7 +102,6 @@ class CloseComStream(HttpStream, ABC):
 
 
 class IncrementalCloseComStream(CloseComStream):
-
     cursor_field = "date_updated"
 
     def get_updated_state(
