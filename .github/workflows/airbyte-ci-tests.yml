@@ -69,6 +69,7 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/connector_ops"
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run airbyte-ci/connectors/pipelines tests
         id: run-airbyte-ci-connectors-pipelines-tests
@@ -82,6 +83,7 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/pipelines"
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run airbyte-ci/connectors/base_images tests
         id: run-airbyte-ci-connectors-base-images-tests
@@ -95,6 +97,7 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/base_images"
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run test pipeline for the metadata lib
         id: metadata_lib-test-pipeline
@@ -106,6 +109,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
+
       - name: Run test for the metadata orchestrator
         id: metadata_orchestrator-test-pipeline
         if: steps.changes.outputs.metadata_orchestrator_any_changed == 'true'
@@ -116,3 +121,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
