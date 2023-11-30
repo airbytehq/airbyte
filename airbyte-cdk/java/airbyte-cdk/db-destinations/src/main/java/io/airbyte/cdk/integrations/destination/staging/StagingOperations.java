@@ -28,9 +28,9 @@ public interface StagingOperations extends SqlOperations {
   String getStageName(String namespace, String streamName);
 
   /**
-   * @param outputTableName The name of the table this staging file will be loaded into (typically a raw table).
-   *                        Not all destinations use the table name in the staging path (e.g. Snowflake simply uses
-   *                        a timestamp + UUID), but e.g. Redshift does rely on this to ensure uniqueness.
+   * @param outputTableName The name of the table this staging file will be loaded into (typically a
+   *        raw table). Not all destinations use the table name in the staging path (e.g. Snowflake
+   *        simply uses a timestamp + UUID), but e.g. Redshift does rely on this to ensure uniqueness.
    */
   String getStagingPath(UUID connectionId, String namespace, String streamName, String outputTableName, DateTime writeDatetime);
 
