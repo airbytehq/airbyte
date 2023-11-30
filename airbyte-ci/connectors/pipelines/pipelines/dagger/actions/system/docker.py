@@ -170,7 +170,7 @@ def with_global_dockerd_service(
     if TAILSCALE_AUTH_KEY is not None:
         dockerd_container = bind_to_tailscale(dagger_client, dockerd_container, TAILSCALE_AUTH_KEY)
         # TODO remove if working, ping will succeed if the registry mirror is reachable through VPN
-        dockerd_container = dockerd_container.with_exec(["ping", "172.20.83.84:5000"], skip_entrypoint=True)
+        dockerd_container = dockerd_container.with_exec(["ping", "-c", "2", "172.20.83.84:5000"], skip_entrypoint=True)
         daemon_config_json = get_daemon_config_json(DOCKER_REGISTRY_MIRROR_URL)
     else:
         daemon_config_json = get_daemon_config_json()
