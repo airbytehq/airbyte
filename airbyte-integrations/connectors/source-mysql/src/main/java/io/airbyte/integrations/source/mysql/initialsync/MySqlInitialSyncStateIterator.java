@@ -15,6 +15,7 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -65,11 +66,14 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
       if ((recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
           && Objects.nonNull(pkStatus)) {
         LOGGER.info("Emitting initial sync pk state for stream {}, state is {}", pair, pkStatus);
-        recordCount = 0L;
+
         lastCheckpoint = Instant.now();
-        return new AirbyteMessage()
+        final AirbyteMessage message = new AirbyteMessage()
             .withType(Type.STATE)
             .withState(stateManager.createIntermediateStateMessage(pair, pkStatus));
+        message.getState().withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
+        recordCount = 0L;
+        return message;
       }
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
@@ -93,9 +97,12 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
       hasEmittedFinalState = true;
       final AirbyteStateMessage finalStateMessage = stateManager.createFinalStateMessage(pair, streamStateForIncrementalRun);
       LOGGER.info("Finished initial sync of stream {}, Emitting final state, state is {}", pair, finalStateMessage);
-      return new AirbyteMessage()
+      final AirbyteMessage message = new AirbyteMessage()
           .withType(Type.STATE)
           .withState(finalStateMessage);
+      message.getState().withSourceStats(new AirbyteStateStats().withRecordCount((double) recordCount));
+
+      return message;
     } else {
       return endOfData();
     }
