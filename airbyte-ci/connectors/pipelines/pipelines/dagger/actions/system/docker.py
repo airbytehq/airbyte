@@ -3,13 +3,21 @@
 #
 
 import json
+import os
 import uuid
 from typing import Callable, Optional
 
 from dagger import Client, Container, File, Secret
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.consts import DOCKER_HOST_NAME, DOCKER_HOST_PORT, DOCKER_TMP_VOLUME_NAME, DOCKER_VAR_LIB_VOLUME_NAME
+from pipelines.consts import (
+    DOCKER_HOST_NAME,
+    DOCKER_HOST_PORT,
+    DOCKER_TMP_VOLUME_NAME,
+    DOCKER_VAR_LIB_VOLUME_NAME,
+    TAILSCALE_IMAGE_NAME,
+    TAILSCALE_PORT,
+)
 from pipelines.helpers.utils import sh_dash_c
 
 
@@ -17,7 +25,6 @@ def with_global_dockerd_service(
     dagger_client: Client,
     docker_hub_username_secret: Optional[Secret] = None,
     docker_hub_password_secret: Optional[Secret] = None,
-    tailscale_auth_key_secret: Optional[Secret] = None,
 ) -> Container:
     """Create a container with a docker daemon running.
     We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
@@ -28,26 +35,36 @@ def with_global_dockerd_service(
     Returns:
         Container: The container running dockerd as a service
     """
-    # TODO: Hide this behind a flag, only instantiate if we pass in a secret
-    tailscale = (
-        dagger_client.container()
-        .from_("tailscale/tailscale:stable")
-        .with_secret_variable(name="TAILSCALE_AUTHKEY", secret=tailscale_auth_key_secret)
-        .with_exec(
-            [
-                "/bin/sh",
-                "-c",
-                "tailscaled --tun=userspace-networking --socks5-server=0.0.0.0:1055 --outbound-http-proxy-listen=0.0.0.0:1055 & tailscale up --authkey $TAILSCALE_AUTHKEY &",
-            ]
+
+    dockerd_container = dagger_client.container().from_(consts.DOCKER_DIND_IMAGE)
+
+    if tailscale_auth_key := os.environ.get("TAILSCALE_AUTHKEY"):
+        tailscale_auth_key_secret = dagger_client.set_secret("TAILSCALE_AUTHKEY", tailscale_auth_key)
+        tailscale = (
+            dagger_client.container()
+            .from_(TAILSCALE_IMAGE_NAME)
+            .with_secret_variable(name="TAILSCALE_AUTHKEY", secret=tailscale_auth_key_secret)
+            .with_exec(
+                sh_dash_c(
+                    [
+                        f"tailscaled --tun=userspace-networking --socks5-server=0.0.0.0:{TAILSCALE_PORT} --outbound-http-proxy-listen=0.0.0.0:{TAILSCALE_PORT}",
+                        "tailscale up --authkey $TAILSCALE_AUTHKEY",
+                        "",
+                    ],
+                    skip_entrypoint=True,
+                )
+            )
+            .with_exposed_port(TAILSCALE_PORT)
         )
-        .with_exposed_port(1055)
-    )
+
+        dockerd_container = (
+            dockerd_container.with_service_binding("tailscale", tailscale)
+            .with_env_variable("ALL_PROXY", "socks5://tailscale:1055/")
+            .with_exec(["curl prefect.airbyte.com"])  # this is a dummy example that will succeed if the tailscale setup works
+        )
+
     dockerd_container = (
-        dagger_client.container()
-        .from_(consts.DOCKER_DIND_IMAGE)
-        .with_service_binding("tailscale", tailscale)  # TODO: Hide this behind a flag, only instantiate if we pass in a secret
-        .with_env_variable("ALL_PROXY", "socks5://tailscale:1055/")
-        .with_exec(["curl prefect.airbyte.com"])  # this is a dummy example that will succeed if the tailscale setup works
+        dockerd_container
         # We set this env var because we need to use a non-default zombie reaper setting.
         # The reason for this is that by default it will want to set its parent process ID to 1 when reaping.
         # This won't be possible because of container-ception: dind is running inside the dagger engine.
@@ -70,9 +87,11 @@ def with_global_dockerd_service(
         # Expose the docker host port.
         .with_exposed_port(DOCKER_HOST_PORT)
         # Mount the docker cache volumes.
-        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
-        .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
+        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME)).with_mounted_cache(
+            "/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME)
+        )
     )
+
     if docker_hub_username_secret and docker_hub_password_secret:
         dockerd_container = (
             dockerd_container
