@@ -28,3 +28,7 @@ class PineconeIndexingModel(BaseModel):
 
 class ConfigModel(VectorDBConfigModel):
     indexing: PineconeIndexingModel
+
+    class Config:
+        title = "Pinecone Destination Config"
+        schema_extra = {"description": "Configuration for the Pinecone destination connector, derived from the Vector DB CDK base config."}

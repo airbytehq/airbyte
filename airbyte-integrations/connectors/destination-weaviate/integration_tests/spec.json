@@ -2,6 +2,7 @@
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/weaviate",
   "connectionSpecification": {
     "title": "Weaviate Destination Config",
+    "description": "Configuration for the Weaviate destination connector, derived from the Vector DB CDK base config.",
     "type": "object",
     "properties": {
       "processing": {
@@ -486,7 +487,7 @@
         "type": "boolean"
       }
     },
-    "required": ["processing", "embedding", "indexing"],
+    "required": ["embedding", "processing", "indexing"],
     "groups": [
       { "id": "processing", "title": "Processing" },
       { "id": "embedding", "title": "Embedding" },

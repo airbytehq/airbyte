@@ -64,3 +64,7 @@ class MilvusIndexingConfigModel(BaseModel):
 
 class ConfigModel(VectorDBConfigModel):
     indexing: MilvusIndexingConfigModel
+
+    class Config:
+        title = "Milvus Destination Config"
+        schema_extra = {"description": "Configuration for the Milvus destination connector, derived from the Vector DB CDK base config."}
