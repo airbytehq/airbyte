@@ -477,13 +477,21 @@
         "required": ["host", "auth"],
         "group": "indexing",
         "description": "Indexing configuration"
+      },
+      "omit_raw_text": {
+        "title": "Do not store raw text",
+        "description": "Do not store the text that gets embedded along with the vector and the metadata in the destination. If set to true, only the vector and the metadata will be stored - in this case raw text for LLM use cases needs to be retrieved from another source.",
+        "default": false,
+        "group": "advanced",
+        "type": "boolean"
       }
     },
     "required": ["processing", "embedding", "indexing"],
     "groups": [
       { "id": "processing", "title": "Processing" },
       { "id": "embedding", "title": "Embedding" },
-      { "id": "indexing", "title": "Indexing" }
+      { "id": "indexing", "title": "Indexing" },
+      { "id": "advanced", "title": "Advanced" }
     ]
   },
   "supportsIncremental": true,
