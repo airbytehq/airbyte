@@ -74,7 +74,7 @@ inputs:
     required: false
     default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
   tailscale_auth_key:
-    description: "TailScale auth key"
+    description: "Tailscale auth key"
     required: false
 
 runs:
@@ -133,4 +133,4 @@ runs:
         S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ inputs.s3_build_cache_access_key_id }}
         S3_BUILD_CACHE_SECRET_KEY: ${{ inputs.s3_build_cache_secret_key }}
         CI: "True"
-        TAILSCALE_AUTHKEY: ${{ inputs.tailscale_auth_key }}
+        TAILSCALE_AUTH_KEY: ${{ inputs.tailscale_auth_key }}
