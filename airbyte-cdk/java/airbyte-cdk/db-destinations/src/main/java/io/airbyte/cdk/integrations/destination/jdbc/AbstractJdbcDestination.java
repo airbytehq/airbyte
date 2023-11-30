@@ -278,7 +278,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
           namingResolver,
           config,
           catalog,
-          null,
+          defaultNamespace,
           typerDeduper);
     }
     return JdbcBufferedConsumerFactory.createAsync(
