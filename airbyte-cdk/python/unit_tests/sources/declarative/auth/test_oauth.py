@@ -278,6 +278,28 @@ class TestOauth2Authenticator:
             assert "access_token" == token
             assert oauth.get_token_expiry_date() == pendulum.parse(next_day)
 
+    def test_error_handling(self, mocker):
+        oauth = DeclarativeOauth2Authenticator(
+            token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+            client_id="{{ config['client_id'] }}",
+            client_secret="{{ config['client_secret'] }}",
+            refresh_token="{{ config['refresh_token'] }}",
+            config=config,
+            scopes=["scope1", "scope2"],
+            refresh_request_body={
+                "custom_field": "{{ config['custom_field'] }}",
+                "another_field": "{{ config['another_field'] }}",
+                "scopes": ["no_override"],
+            },
+            parameters={},
+        )
+        resp.status_code = 400
+        mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": 123})
+        mocker.patch.object(requests, "request", side_effect=mock_request, autospec=True)
+        with pytest.raises(requests.exceptions.HTTPError) as e:
+            oauth.refresh_access_token()
+            assert e.value.errno == 400
+
 
 def mock_request(method, url, data):
     if url == "refresh_end":
