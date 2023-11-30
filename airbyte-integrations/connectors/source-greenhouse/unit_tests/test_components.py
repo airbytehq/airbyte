@@ -67,7 +67,7 @@ def test_sub_slicer(last_record, expected, records):
 )
 def test_slicer_set_initial_state(stream_state, cursor_field, expected_state):
     slicer = GreenHouseSlicer(cursor_field=cursor_field, parameters={}, request_cursor_field=None)
-
+    # Set initial state
     slicer.set_initial_state(stream_state)
     assert slicer.get_stream_state() == expected_state
 
@@ -100,7 +100,6 @@ def test_slicer_set_initial_state(stream_state, cursor_field, expected_state):
     ]
 )
 def test_substream_set_initial_state(greenhouse_substream_slicer, stream_state, initial_state, expected_state):
-    parent_slicer = MagicMock(spec=Stream)
     slicer = greenhouse_substream_slicer    
     # Set initial state
     slicer._state = initial_state

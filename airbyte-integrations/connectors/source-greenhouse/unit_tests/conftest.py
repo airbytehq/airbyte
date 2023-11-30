@@ -19,13 +19,3 @@ def greenhouse_slicer():
 def greenhouse_substream_slicer():
     parent_stream = MagicMock(spec=Stream)
     return GreenHouseSubstreamSlicer(cursor_field='cursor_field', stream_slice_field='slice_field', parent_stream=parent_stream, parent_key='parent_key', parameters={}, request_cursor_field=None)
-
-
-@pytest.fixture
-def mock_parent_stream():
-    return Mock(spec=Stream)
-
-
-@pytest.fixture
-def date_time():
-    return "2022-09-05T10:10:10.000000Z"
