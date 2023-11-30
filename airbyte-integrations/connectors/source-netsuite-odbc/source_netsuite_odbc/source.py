@@ -4,20 +4,20 @@
 
 import logging
 from datetime import datetime
-from typing import Mapping, Tuple, Any, List, Optional
+from typing import Any, List, Mapping, Optional, Tuple
 
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
 from source_netsuite_odbc.discover_utils import NetsuiteODBCTableDiscoverer
-from source_netsuite_odbc.reader_utils import NetsuiteODBCTableReader, NETSUITE_PAGINATION_INTERVAL
-from .streams import NetsuiteODBCStream
-from .odbc_utils import NetsuiteODBCCursorConstructor
+from source_netsuite_odbc.reader_utils import NETSUITE_PAGINATION_INTERVAL, NetsuiteODBCTableReader
 
+from .odbc_utils import NetsuiteODBCCursorConstructor
+from .streams import NetsuiteODBCStream
 
 
 class SourceNetsuiteOdbc(AbstractSource):
     logger: logging.Logger = logging.getLogger("airbyte")
-    
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         cursor_constructor = NetsuiteODBCCursorConstructor()
         discoverer = NetsuiteODBCTableDiscoverer(cursor_constructor.create_database_cursor(config))
@@ -25,10 +25,12 @@ class SourceNetsuiteOdbc(AbstractSource):
         stream_objects = []
         for stream in streams:
             stream_name = stream.name
-            netsuite_stream = NetsuiteODBCStream(cursor=cursor_constructor.create_database_cursor(config), table_name=stream_name, stream=stream)
+            netsuite_stream = NetsuiteODBCStream(
+                cursor=cursor_constructor.create_database_cursor(config), table_name=stream_name, stream=stream
+            )
             stream_objects.append(netsuite_stream)
         return stream_objects
-    
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         :param logger: source logger
@@ -63,5 +65,3 @@ class SourceNetsuiteOdbc(AbstractSource):
 
     def find_emitted_at(self):
         return int(datetime.now().timestamp()) * 1000
-
-
