@@ -130,11 +130,11 @@ def test_stream_slices_report(advertiser_ids, granularity, slices_expected, pend
     "stream, metrics_number",
     [
         (AdsReports, 75),
-        (AdGroupsReports, 51),
-        (AdvertisersReports, 29),
-        (CampaignsReports, 28),
+        (AdGroupsReports, 52),
+        (AdvertisersReports, 30),
+        (CampaignsReports, 29),
         (AdvertisersAudienceReports, 6),
-        (AdsAudienceReports, 38),
+        (AdsAudienceReports, 37),
     ],
 )
 def test_basic_reports_get_metrics_day(stream, metrics_number):
@@ -146,9 +146,9 @@ def test_basic_reports_get_metrics_day(stream, metrics_number):
     "stream, metrics_number",
     [
         (AdsReports, 75),
-        (AdGroupsReports, 51),
-        (AdvertisersReports, 27),
-        (CampaignsReports, 28),
+        (AdGroupsReports, 52),
+        (AdvertisersReports, 28),
+        (CampaignsReports, 29),
         (AdvertisersAudienceReports, 6),
     ],
 )
