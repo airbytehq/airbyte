@@ -7,7 +7,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.5.1'
+    cdkVersionRequired = '0.5.4'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -17,6 +17,7 @@ configurations.all {
         force libs.jooq
     }
 }
+
 
 
 application {
@@ -35,7 +36,6 @@ dependencies {
     testImplementation libs.junit.jupiter.system.stubs
     testImplementation libs.testcontainers.mysql
     testFixturesImplementation libs.testcontainers.mysql
-
     performanceTestJavaImplementation project(':airbyte-integrations:connectors:source-mysql')
 
 }
