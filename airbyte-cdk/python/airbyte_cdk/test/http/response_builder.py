@@ -2,7 +2,6 @@
 
 import functools
 import json
-import os
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -93,17 +92,17 @@ class HttpResponseBuilder:
         return HttpResponse(json.dumps(self._response), self._status_code)
 
 
-def _get_unit_test_folder() -> Path:
-    path = Path(os.getcwd())
+def _get_unit_test_folder(execution_folder: str) -> Path:
+    path = Path(execution_folder)
     while path.name != "unit_tests":
         if path.name == path.root or path.name == path.drive:
-            raise ValueError(f"Could not fing `unit_tests` folder as a parent of {os.getcwd()}")
+            raise ValueError(f"Could not find `unit_tests` folder as a parent of {execution_folder}")
         path = path.parent
     return path
 
 
-def from_resource_file(resource: str) -> Dict[str, Any]:
-    response_template_filepath = str(_get_unit_test_folder() / "resource" / "http" / "response" / f"{resource}.json")
+def find_template(resource: str, execution_folder: str) -> Dict[str, Any]:
+    response_template_filepath = str(_get_unit_test_folder(execution_folder) / "resource" / "http" / "response" / f"{resource}.json")
     with open(response_template_filepath, "r") as template_file:
         return json.load(template_file)  # type: ignore  # we assume the dev correctly set up the resource file
 

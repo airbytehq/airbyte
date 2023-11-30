@@ -1,6 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 import json
-import os
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
@@ -139,13 +138,12 @@ class HttpResponseBuilderTest(TestCase):
 
 class UtilMethodsTest(TestCase):
     def test_from_resource_file(self):
-        template = from_resource_file("test-resource")
+        template = find_template("test-resource", __file__)
         assert template == {"test-source template": "this is a template for test-resource"}
 
     def test_given_cwd_doesnt_have_unit_tests_as_parent_when_from_resource_file__then_raise_error(self):
-        os.chdir(str(Path(__file__).parent.parent.parent.parent))
         with pytest.raises(ValueError):
-            from_resource_file("test-resource")
+            find_template("test-resource", str(Path(__file__).parent.parent.parent.parent))
 
     def test_given_records_path_invalid_when_create_builders_from_resource_then_raise_exception(self):
         with pytest.raises(ValueError):
