@@ -293,6 +293,9 @@
     "is_new_structure": {
       "type": "boolean"
     },
+    "is_smart_performance_campaign": {
+      "type": ["null", "boolean"]
+    },
     "catalog_id": {
       "type": ["null", "integer"]
     },
@@ -428,6 +431,39 @@
     },
     "delivery_mode": {
       "type": ["null", "string"]
+    },
+    "category_exclusion_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "contextual_tag_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "household_income": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "isp_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "spending_power": {
+      "type": ["null", "string"]
+    },
+    "zipcode_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

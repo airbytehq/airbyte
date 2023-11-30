@@ -1,13 +1,29 @@
 {
   "type": "object",
+  "additionalProperties": true,
   "properties": {
-    "object": { "type": "string" },
+    "type": { "type": "string" },
     "id": { "type": "string" },
-    "name": { "type": "string" },
-    "status": { "type": "string" },
-    "created": { "type": "string", "format": "date-time" },
     "updated": { "type": "string", "format": "date-time" },
-    "customer_filter": { "type": ["null", "object"] },
-    "trigger": { "type": "object" }
+    "attributes": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string" },
+        "status": { "type": "string" },
+        "archived": { "type": "boolean" },
+        "created": { "type": "string", "format": "date-time" },
+        "updated": { "type": "string", "format": "date-time" },
+        "trigger_type": { "type": "string" }
+      }
+    },
+    "links": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "relationships": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    }
   }
 }

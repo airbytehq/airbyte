@@ -41,7 +41,7 @@ delete_previous_alias() {
 
 pull_image() {
     echo "🐙 - Pulling image for octavia ${VERSION}"
-    docker pull airbyte/octavia-cli:${VERSION} > /dev/null 2>&1
+    docker pull airbyte/octavia-cli:${VERSION} > /dev/null
     echo "🐙 - 🎉 octavia ${VERSION} image was pulled"
 }
 

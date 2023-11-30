@@ -14,7 +14,6 @@ TEST_REQUIREMENTS = [
     "pytest-faker==2.0.0",
     "pytest-mock~=3.6.1",
     "requests-mock",
-    "connector-acceptance-test",
 ]
 
 setup(

@@ -17,6 +17,7 @@ Check the documentation of the API you want to integrate for the used authentica
 * [Bearer Token](#bearer-token)
 * [API Key](#api-key)
 * [OAuth](#oauth)
+* [Session Token](#session-token)
 
 Select the matching authentication method for your API and check the sections below for more information about individual methods.
 
@@ -102,7 +103,7 @@ Depending on how the refresh endpoint is implemented exactly, additional configu
 * **Token expire property date format** - if not specified, the expiry property is interpreted as the number of seconds the access token will be valid
 * **Access token property name** - the name of the property in the response that contains the access token to do requests. If not specified, it's set to `access_token`
 
-If the API uses a short-lived refresh token that expires after a short amount of time and needs to be refreshed as well or if other grant types like PKCE are required, it's not possible to use the connector builder with OAuth authentication - check out the [compatibility guide](/connector-development/connector-builder-ui/connector-builder-compatibility#oauth) for more information.
+If the API uses other grant types like PKCE are required, it's not possible to use the connector builder with OAuth authentication - check out the [compatibility guide](/connector-development/connector-builder-ui/connector-builder-compatibility#oauth) for more information.
 
 Keep in mind that the OAuth authentication method does not implement a single-click authentication experience for the end user configuring the connector - it will still be necessary to obtain client id, client secret and refresh token from the API and manually enter them into the configuration form.
 
@@ -136,6 +137,56 @@ curl -X GET \
   -H "Authorization: Bearer <access-token>" \
   https://connect.squareup.com/v2/<stream path>
 ```
+
+#### Update refresh token from authentication response
+
+In a lot of cases, OAuth refresh tokens are long-lived and can be used to create access tokens for every sync. In some cases however, a refresh token becomes invalid after it has been used to create an access token. In these situations, a new refresh token is returned along with the access token. One example of this behavior is the [Smartsheets API](https://smartsheet.redoc.ly/#section/OAuth-Walkthrough/Get-or-Refresh-an-Access-Token). In these cases, it's necessary to update the refresh token in the configuration every time an access token is generated, so the next sync will still succeed.
+
+This can be done using the "Overwrite config with refresh token response" setting. If enabled, the authenticator expects a new refresh token to be returned from the token refresh endpoint. By default, the property `refresh_token` is used to extract the new refresh token, but this can be configured using the "Refresh token property name" setting. The connector then updates its own configuration with the new refresh token and uses it the next time an access token needs to be generated. If this option is used, it's necessary to specify an initial access token along with its expiry date in the "Testing values" menu.
+
+### Session Token
+Some APIs require callers to first fetch a unique token from one endpoint, then make the rest of their calls to all other endpoints using that token to authenticate themselves. These tokens usually have an expiration time, after which a new token needs to be re-fetched to continue making requests. This flow can be achieved through using the Session Token Authenticator.
+
+If requests are authenticated using the Session Token authentication method, the API documentation page will likely contain one of the following keywords:
+- "Session Token"
+- "Session ID"
+- "Auth Token"
+- "Access Token"
+- "Temporary Token"
+
+#### Configuration
+The configuration of a Session Token authenticator is a bit more involved than other authenticators, as you need to configure both how to make requests to the session token retrieval endpoint (which requires its own authentication method), as well as how the token is extracted from that response and used for the data requests.
+
+We will walk through each part of the configuration below. Throughout this, we will refer to the [Metabase API](https://www.metabase.com/learn/administration/metabase-api#authenticate-your-requests-with-a-session-token) as an example of an API that uses session token authentication.
+- `Session Token Retrieval` - this is a group of fields which configures how the session token is fetched from the session token endpoint in your API. Once the session token is retrieved, your connector will reuse that token until it expires, at which point it will retrieve a new session token using this configuration.
+  - `URL` - the full URL of the session token endpoint
+    - For Metabase, this would be `https://<app_name>.metabaseapp.com/api/session`.
+  - `HTTP Method` - the HTTP method that should be used when retrieving the session token endpoint, either `GET` or `POST`
+    - Metabase requires `POST` for its `/api/session` requests.
+  - `Authentication Method` - configures the method of authentication to use **for the session token retrieval request only**
+    - Note that this is separate from the parent Session Token Authenticator. It contains the same options as the parent Authenticator Method dropdown, except for OAuth (which is unlikely to be used for obtaining session tokens) and Session Token (as it does not make sense to nest). 
+    - For Metabase, the `/api/session` endpoint takes in a `username` and `password` in the request body. Since this is a non-standard authentication method, we must set this inner `Authentication Method` to `No Auth`, and instead configure the `Request Body` to pass these credentials (discussed below).
+  - `Query Parameters` - used to attach query parameters to the session token retrieval request
+    - Metabase does not require any query parameters in the `/api/session` request, so this is left unset.
+  - `Request Headers` - used to attach headers to the sesssion token retrieval request
+    - Metabase does not require any headers in the `/api/session` request, so this is left unset.
+  - `Request Body` - used to attach a request body to the session token retrieval request
+    - As mentioned above, Metabase requires the username and password to be sent in the request body, so we can select `JSON (key-value pairs)` here and set the username and password fields (using User Inputs for the values to make the connector reusable), so this would end up looking like:
+      - Key: `username`, Value: `{{ config['username'] }}`
+      - Key: `password`, Value: `{{ config['password'] }}`
+  - `Error Handler` - used to handle errors encountered when retrieving the session token
+    - See the [Error Handling](/connector-development/connector-builder-ui/error-handling) page for more info about configuring this component.
+- `Session Token Path` - an array of values to form a path into the session token retrieval response which points to the session token value
+  - For Metabase, the `/api/session` response looks like `{"id":"<session-token-value>"}`, so the value here would simply be `id`.
+- `Expiration Duration` - an [ISO 8601 duration](https://en.wikipedia.org/wiki/ISO_8601#Durations) indicating how long the session token has until it expires
+  - Once this duration is reached, your connector will automatically fetch a new session token, and continue making data requests with that new one.
+  - If this is left unset, the session token will be refreshed before every single data request. This is **not recommended** if it can be avoided, as this will cause the connector to run much slower, as it will need to make an extra token request for every data request.
+  - Note: this **does _not_ support dynamic expiration durations of session tokens**. If your token expiration duration is dynamic, you should set the `Expiration Duration` field to the expected minimum duration to avoid problems during syncing.
+  - For Metabase, the token retrieved from the `/api/session` endpoint expires after 14 days by default, so this value can be set to `P2W` or `P14D`.
+- `Data Request Authentication` - configures how the session token is used to authenticate the data requests made to the API
+  - Choose `API Key` if your session token needs to be injected into a query parameter or header of the data requests.
+    - Metabase takes in the session token through a specific header, so this would be set to `API Key`, Inject Session Token into outgoing HTTP Request would be set to `Header`, and Header Name would be set to `X-Metabase-Session`.
+  - Choose `Bearer` if your session token needs to be sent as a standard Bearer token.
 
 ### Custom authentication methods
 

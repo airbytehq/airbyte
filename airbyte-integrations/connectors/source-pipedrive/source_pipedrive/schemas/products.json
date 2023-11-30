@@ -1,6 +1,7 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "integer"]
@@ -39,9 +40,6 @@
       "type": ["null", "integer"]
     },
     "files_count": {
-      "type": ["null", "integer"]
-    },
-    "followers_count": {
       "type": ["null", "integer"]
     },
     "add_time": {

@@ -16,11 +16,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.s3.S3CopyConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -61,6 +63,7 @@ class RedshiftStreamCopierTest {
 
   @BeforeEach
   public void setup() {
+    DestinationConfig.initialize(Jsons.emptyObject());
     s3Client = mock(AmazonS3Client.class, RETURNS_DEEP_STUBS);
     db = mock(JdbcDatabase.class);
     sqlOperations = mock(SqlOperations.class);

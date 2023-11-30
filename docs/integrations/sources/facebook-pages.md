@@ -11,15 +11,16 @@ The Facebook Pages souce connector is currently only compatible with v15 of the 
 :::
 
 ## Setup guide
+
 ### Step 1: Set up Facebook Pages
 
 1. Create Facebook Developer Account. Follow [instruction](https://developers.facebook.com/async/registration/) to create one.
 2. Create [Facebook App](https://developers.facebook.com/apps/). Choose "Company" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Connect a User Page" section.
 3. Connect a User [Page](https://developers.facebook.com/tools/explorer/). Choose your app at `Meta App` field. Choose your Page at `User or Page` field. Add next permission:
-   * pages\_read\_engagement
-   * pages\_read\_user\_content 
-   * pages\_show\_list
-   * read\_insights
+   - pages_read_engagement
+   - pages_read_user_content
+   - pages_show_list
+   - read_insights
 4. Click Generate Access Token and follow instructions.
 
 After all the steps, it should look something like this
@@ -40,8 +41,9 @@ After all the steps, it should look something like this
 5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`)
 
 ### For Airbyte OSS:
+
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
+2. Set the name for your source.
 3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
 4. Fill in Page Access Token with Long-Lived Page Token
 5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`)
@@ -49,27 +51,25 @@ After all the steps, it should look something like this
 ## Supported sync modes
 
 The Facebook Pages source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 
 ## Supported Streams
 
-* [Page](https://developers.facebook.com/docs/graph-api/reference/v15.0/page/#overview)
-* [Post](https://developers.facebook.com/docs/graph-api/reference/v15.0/page/feed)
-* [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v15.0/page/insights)
-* [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v15.0/insights)
+- [Page](https://developers.facebook.com/docs/graph-api/reference/v15.0/page/#overview)
+- [Post](https://developers.facebook.com/docs/graph-api/reference/v15.0/page/feed)
+- [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v15.0/page/insights)
+- [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v15.0/insights)
 
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-|:-----------------|:-------------|:------|
+| :--------------- | :----------- | :---- |
 | `string`         | `string`     |       |
 | `number`         | `number`     |       |
 | `array`          | `array`      |       |
 | `object`         | `object`     |       |
-
-
 
 ## Performance considerations
 
@@ -77,11 +77,11 @@ Facebook heavily throttles API tokens generated from Facebook Apps by default, m
 
 See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
 
-
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 0.3.0   | 2023-06-26 | [27728](https://github.com/airbytehq/airbyte/pull/27728) | License Update: Elv2                                                      |
 | 0.2.5   | 2023-04-13 | [26939](https://github.com/airbytehq/airbyte/pull/26939) | Add advancedAuth to the connector spec                                    |
 | 0.2.4   | 2023-04-13 | [25143](https://github.com/airbytehq/airbyte/pull/25143) | Update insight metrics request params                                     |
 | 0.2.3   | 2023-02-23 | [23395](https://github.com/airbytehq/airbyte/pull/23395) | Parse datetime to rfc3339                                                 |

@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "lago_id": {
       "type": ["null", "string"]
@@ -48,6 +49,12 @@
       "type": ["null", "string"]
     },
     "downgrade_plan_date": {
+      "type": ["null", "string"]
+    },
+    "ending_at": {
+      "type": ["null", "string"]
+    },
+    "subscription_at": {
       "type": ["null", "string"]
     }
   }

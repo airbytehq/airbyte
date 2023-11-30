@@ -19,6 +19,8 @@ from facebook_business.adobjects.objectparser import ObjectParser
 from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
 from source_facebook_marketing.streams.common import retry_pattern
 
+from ..utils import validate_start_date
+
 logger = logging.getLogger("airbyte")
 
 
@@ -189,7 +191,6 @@ class InsightAsyncJob(AsyncJob):
 
     job_timeout = pendulum.duration(hours=1)
     page_size = 100
-    INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
 
     def __init__(self, edge_object: Union[AdAccount, Campaign, AdSet, Ad], params: Mapping[str, Any], **kwargs):
         """Initialize
@@ -242,10 +243,9 @@ class InsightAsyncJob(AsyncJob):
         params = dict(copy.deepcopy(self._params))
         # get objects from attribution window as well (28 day + 1 current day)
         new_start = self._interval.start - pendulum.duration(days=28 + 1)
-        oldest_date = pendulum.today().date() - self.INSIGHTS_RETENTION_PERIOD
-        new_start = max(new_start, oldest_date)
-        params.update(fields=[pk_name], level=level)
+        new_start = validate_start_date(new_start)
         params["time_range"].update(since=new_start.to_date_string())
+        params.update(fields=[pk_name], level=level)
         params.pop("time_increment")  # query all days
         result = self._edge_object.get_insights(params=params)
         ids = set(row[pk_name] for row in result)

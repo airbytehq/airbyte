@@ -226,6 +226,46 @@ class Groups(SalesloftStream):
         return "groups"
 
 
+class CustomFields(SalesloftStream):
+    def path(self, **kwargs) -> str:
+        return "custom_fields"
+
+
+class CallDataRecords(IncrementalSalesloftStream):
+    created_at_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return "call_data_records"
+
+
+class CallDispositions(SalesloftStream):
+    def path(self, **kwargs) -> str:
+        return "call_dispositions"
+
+
+class CallSentiments(SalesloftStream):
+    def path(self, **kwargs) -> str:
+        return "call_sentiments"
+
+
+class Meetings(SalesloftStream):
+    created_at_field = "created_at"
+
+    def path(self, **kwargs) -> str:
+        return "meetings"
+
+
+class Searches(IncrementalSalesloftStream):
+    created_at_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return "meetings/settings/searches"
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+
 # Source
 class SourceSalesloft(AbstractSource):
     def _create_authenticator(self, config) -> AuthBase:
@@ -272,4 +312,10 @@ class SourceSalesloft(AbstractSource):
             Groups(*args),
             Successes(*args),
             EmailTemplateAttachments(*args),
+            CustomFields(*args),
+            CallDataRecords(*args),
+            CallDispositions(*args),
+            CallSentiments(*args),
+            Meetings(*args),
+            Searches(*args),
         ]

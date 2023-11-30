@@ -5,8 +5,8 @@
 package io.airbyte.integrations.source.oracle;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.db.jdbc.DateTimeConverter;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
+import io.airbyte.cdk.db.jdbc.DateTimeConverter;
+import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.slf4j.Logger;

@@ -9,6 +9,7 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 ## Setup guide
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces).
@@ -22,6 +23,7 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
@@ -38,38 +40,38 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 
 The Harvest source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
-* [Client Contacts](https://help.getharvest.com/api-v2/clients-api/clients/contacts/) \(Incremental\)
-* [Clients](https://help.getharvest.com/api-v2/clients-api/clients/clients/) \(Incremental\)
-* [Company](https://help.getharvest.com/api-v2/company-api/company/company/)
-* [Invoice Messages](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-messages/) \(Incremental\)
-* [Invoice Payments](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-payments/) \(Incremental\)
-* [Invoices](https://help.getharvest.com/api-v2/invoices-api/invoices/invoices/) \(Incremental\)
-* [Invoice Item Categories](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-item-categories/) \(Incremental\)
-* [Estimate Messages](https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-messages/) \(Incremental\)
-* [Estimates](https://help.getharvest.com/api-v2/estimates-api/estimates/estimates/) \(Incremental\)
-* [Estimate Item Categories](https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-item-categories/) \(Incremental\)
-* [Expenses](https://help.getharvest.com/api-v2/expenses-api/expenses/expenses/) \(Incremental\)
-* [Expense Categories](https://help.getharvest.com/api-v2/expenses-api/expenses/expense-categories/) \(Incremental\)
-* [Tasks](https://help.getharvest.com/api-v2/tasks-api/tasks/tasks/) \(Incremental\)
-* [Time Entries](https://help.getharvest.com/api-v2/timesheets-api/timesheets/time-entries/) \(Incremental\)
-* [Project User Assignments](https://help.getharvest.com/api-v2/projects-api/projects/user-assignments/) \(Incremental\)
-* [Project Task Assignments](https://help.getharvest.com/api-v2/projects-api/projects/task-assignments/) \(Incremental\)
-* [Projects](https://help.getharvest.com/api-v2/projects-api/projects/projects/) \(Incremental\)
-* [Roles](https://help.getharvest.com/api-v2/roles-api/roles/roles/) \(Incremental\)
-* [User Billable Rates](https://help.getharvest.com/api-v2/users-api/users/billable-rates/)
-* [User Cost Rates](https://help.getharvest.com/api-v2/users-api/users/cost-rates/)
-* [User Project Assignments](https://help.getharvest.com/api-v2/users-api/users/project-assignments/) \(Incremental\)
-* [Expense Reports](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/)
-* [Uninvoiced Report](https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/)
-* [Time Reports](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/)
-* [Project Budget Report](https://help.getharvest.com/api-v2/reports-api/reports/project-budget-report/)
+- [Client Contacts](https://help.getharvest.com/api-v2/clients-api/clients/contacts/) \(Incremental\)
+- [Clients](https://help.getharvest.com/api-v2/clients-api/clients/clients/) \(Incremental\)
+- [Company](https://help.getharvest.com/api-v2/company-api/company/company/)
+- [Invoice Messages](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-messages/) \(Incremental\)
+- [Invoice Payments](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-payments/) \(Incremental\)
+- [Invoices](https://help.getharvest.com/api-v2/invoices-api/invoices/invoices/) \(Incremental\)
+- [Invoice Item Categories](https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-item-categories/) \(Incremental\)
+- [Estimate Messages](https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-messages/) \(Incremental\)
+- [Estimates](https://help.getharvest.com/api-v2/estimates-api/estimates/estimates/) \(Incremental\)
+- [Estimate Item Categories](https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-item-categories/) \(Incremental\)
+- [Expenses](https://help.getharvest.com/api-v2/expenses-api/expenses/expenses/) \(Incremental\)
+- [Expense Categories](https://help.getharvest.com/api-v2/expenses-api/expenses/expense-categories/) \(Incremental\)
+- [Tasks](https://help.getharvest.com/api-v2/tasks-api/tasks/tasks/) \(Incremental\)
+- [Time Entries](https://help.getharvest.com/api-v2/timesheets-api/timesheets/time-entries/) \(Incremental\)
+- [Project User Assignments](https://help.getharvest.com/api-v2/projects-api/projects/user-assignments/) \(Incremental\)
+- [Project Task Assignments](https://help.getharvest.com/api-v2/projects-api/projects/task-assignments/) \(Incremental\)
+- [Projects](https://help.getharvest.com/api-v2/projects-api/projects/projects/) \(Incremental\)
+- [Roles](https://help.getharvest.com/api-v2/roles-api/roles/roles/) \(Incremental\)
+- [User Billable Rates](https://help.getharvest.com/api-v2/users-api/users/billable-rates/)
+- [User Cost Rates](https://help.getharvest.com/api-v2/users-api/users/cost-rates/)
+- [User Project Assignments](https://help.getharvest.com/api-v2/users-api/users/project-assignments/) \(Incremental\)
+- [Expense Reports](https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/)
+- [Uninvoiced Report](https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/)
+- [Time Reports](https://help.getharvest.com/api-v2/reports-api/reports/time-reports/)
+- [Project Budget Report](https://help.getharvest.com/api-v2/reports-api/reports/project-budget-report/)
 
 ## Performance considerations
 
@@ -78,7 +80,9 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
+| 0.1.20 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.19  | 2023-07-26 | [28755](https://github.com/airbytehq/airbyte/pull/28755) | Changed parameters for Time Reports to use 365 days as opposed to 1 year           |
 | 0.1.18  | 2023-05-29 | [26714](https://github.com/airbytehq/airbyte/pull/26714) | Remove `authSpecification` from spec in favour of `advancedAuth`                   |
 | 0.1.17  | 2023-03-03 | [22983](https://github.com/airbytehq/airbyte/pull/22983) | Specified date formatting in specification                                         |
 | 0.1.16  | 2023-02-07 | [22417](https://github.com/airbytehq/airbyte/pull/22417) | Turn on default HttpAvailabilityStrategy                                           |

@@ -23,13 +23,13 @@ import static io.airbyte.integrations.source.postgres.PostgresType.TINYINT;
 import static io.airbyte.integrations.source.postgres.PostgresType.VARCHAR;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +45,8 @@ public class PostgresUtils {
   public static final Duration MIN_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(2);
   public static final Duration MAX_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(20);
   public static final Duration DEFAULT_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(5);
+  public static final Duration DEFAULT_SUBSEQUENT_RECORD_WAIT_TIME = Duration.ofMinutes(1);
+
   private static final int MIN_QUEUE_SIZE = 1000;
   private static final int MAX_QUEUE_SIZE = 10000;
 
@@ -157,6 +159,18 @@ public class PostgresUtils {
     return firstRecordWaitTime;
   }
 
+  public static Duration getSubsequentRecordWaitTime(final JsonNode config) {
+    Duration subsequentRecordWaitTime = DEFAULT_SUBSEQUENT_RECORD_WAIT_TIME;
+    final boolean isTest = config.has("is_test") && config.get("is_test").asBoolean();
+    final Optional<Integer> firstRecordWaitSeconds = getFirstRecordWaitSeconds(config);
+    if (isTest && firstRecordWaitSeconds.isPresent()) {
+      // In tests, reuse the initial_waiting_seconds property to speed things up.
+      subsequentRecordWaitTime = Duration.ofSeconds(firstRecordWaitSeconds.get());
+    }
+    LOGGER.info("Subsequent record waiting time: {} seconds", subsequentRecordWaitTime.getSeconds());
+    return subsequentRecordWaitTime;
+  }
+
   public static boolean isXmin(final JsonNode config) {
     final boolean isXmin = config.hasNonNull("replication_method")
         && config.get("replication_method").get("method").asText().equals("Xmin");
@@ -164,9 +178,8 @@ public class PostgresUtils {
     return isXmin;
   }
 
-  public static boolean isIncrementalSyncMode(final ConfiguredAirbyteCatalog catalog) {
-    return catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
-        .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
+  public static String prettyPrintConfiguredAirbyteStreamList(final List<ConfiguredAirbyteStream> streamList) {
+    return streamList.stream().map(s -> "%s.%s".formatted(s.getStream().getNamespace(), s.getStream().getName())).collect(Collectors.joining(", "));
   }
 
 }

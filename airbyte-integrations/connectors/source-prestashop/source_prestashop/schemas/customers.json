@@ -1,42 +1,42 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_default_group": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_lang": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "newsletter_date_add": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "ip_registration_newsletter": {
       "type": ["null", "string"]
     },
     "last_passwd_gen": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "secure_key": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "deleted": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "passwd": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "lastname": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "firstname": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_gender": {
       "type": ["null", "string"]
@@ -63,38 +63,38 @@
       "type": ["null", "string"]
     },
     "outstanding_allow_amount": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "show_public_prices": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_risk": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "max_payment_days": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "active": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "note": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "is_guest": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_shop": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_shop_group": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date_add": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "date_upd": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "reset_password_token": {
@@ -113,7 +113,7 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           }

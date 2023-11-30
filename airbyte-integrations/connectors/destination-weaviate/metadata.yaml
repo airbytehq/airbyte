@@ -1,20 +1,47 @@
 data:
-  connectorSubtype: database
+  ab_internal:
+    ql: 300
+    sl: 200
+  allowedHosts:
+    hosts:
+      - ${indexing.host}
+      - api.openai.com
+      - api.cohere.ai
+      - ${embedding.api_base}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+  connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.2.9
   dockerRepository: airbyte/destination-weaviate
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
   githubIssueLabel: destination-weaviate
   icon: weaviate.svg
   license: MIT
   name: Weaviate
   registries:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
+  releases:
+    breakingChanges:
+      0.2.0:
+        message:
+          "After upgrading, you need to reconfigure the source. For more details
+          check out the migration guide.
+
+          "
+        upgradeDeadline: "2023-10-01"
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
+  supportLevel: certified
   tags:
     - language:python
 metadataSpecVersion: "1.0"

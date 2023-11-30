@@ -29,11 +29,11 @@ connectionSpecification:
       title: Project Name
       type: string
       description: >-
-         Use this if you want to filter the API call for only one given project (can be used in addition to the "Feature Name Prefix" field).
-         See <a href="https://docs.getunleash.io/reference/api/legacy/unleash/client/features#filter-feature-toggles">here</a>
+        Use this if you want to filter the API call for only one given project (can be used in addition to the "Feature Name Prefix" field).
+        See <a href="https://docs.getunleash.io/reference/api/legacy/unleash/client/features#filter-feature-toggles">here</a>
     nameprefix:
       title: Feature Name Prefix
       type: string
       description: >-
-         Use this if you want to filter the API call for only one given project (can be used in addition to the "Feature Name Prefix" field).
-         See <a href="https://docs.getunleash.io/reference/api/legacy/unleash/client/features#filter-feature-toggles">here</a>
+        Use this if you want to filter the API call for only one given project (can be used in addition to the "Feature Name Prefix" field).
+        See <a href="https://docs.getunleash.io/reference/api/legacy/unleash/client/features#filter-feature-toggles">here</a>

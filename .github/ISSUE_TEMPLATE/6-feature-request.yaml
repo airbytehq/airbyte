@@ -14,7 +14,7 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: Revelant Information
+      label: Relevant Information
       description: >-
         What are you trying to do, and why is it hard? A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
         A clear and concise description of what you want to see happen, or the change you would like to see

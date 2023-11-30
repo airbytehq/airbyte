@@ -91,7 +91,7 @@ GET https://api.example.com/products?limit=3&offset=4
      // less than 2 records returned -> stop
 ```
 
-The Connector Builder currently supports injecting these values into the request parameters (i.e. query parameters), headers, or body.
+The Connector Builder currently supports injecting these values into the query parameters (i.e. request parameters), headers, or body.
 
 #### Examples
 
@@ -189,7 +189,7 @@ GET https://api.example.com/products?page_size=3&page=3
      // less than 2 records returned -> stop
 ```
 
-The Connector Builder currently supports injecting these values into the request parameters (i.e. query parameters), headers, or body.
+The Connector Builder currently supports injecting these values into the query parameters (i.e. request parameters), headers, or body.
 
 #### Examples
 
@@ -264,7 +264,7 @@ This API also has a boolean `has_more` property included in the response to indi
 
 The following APIs implement cursor pagination in various ways:
 
-- [Twitter API](https://developer.twitter.com/en/docs/twitter-api/pagination) - includes `next_token` IDs in its responses which are passed in as request parameters to subsequent requests
+- [Twitter API](https://developer.twitter.com/en/docs/twitter-api/pagination) - includes `next_token` IDs in its responses which are passed in as query parameters to subsequent requests
 - [GitHub API](https://docs.github.com/en/rest/guides/using-pagination-in-the-rest-api?apiVersion=2022-11-28) - includes full-URL `link`s to subsequent pages of results
 - [FourSquare API](https://location.foursquare.com/developer/reference/pagination) - includes full-URL `link`s to subsequent pages of results
 
@@ -278,5 +278,5 @@ Using the "Inject page size / limit / offset into outgoing HTTP request" option 
 
 To handle these cases, disable injection in the pagination form and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](/connector-development/config-based/understanding-the-yaml-file/reference/#/variables). You can also use these variables as part of the URL path.
 
-For example the [Prestashop API](https://devdocs.prestashop-project.org/8/webservice/cheat-sheet/#list-options) requires to set offset and limit separated by a comma into a single request parameter (`?limit=<offset>,<limit>`)
-For this case, you can use the `next_page_token` variable to configure a request parameter with key `limit` and value `{{ next_page_token['next_page_token'] or '0' }},50` to inject the offset from the pagination strategy and a hardcoded limit of 50 into the same parameter.
+For example the [Prestashop API](https://devdocs.prestashop-project.org/8/webservice/cheat-sheet/#list-options) requires to set offset and limit separated by a comma into a single query parameter (`?limit=<offset>,<limit>`)
+For this case, you can use the `next_page_token` variable to configure a query parameter with key `limit` and value `{{ next_page_token['next_page_token'] or '0' }},50` to inject the offset from the pagination strategy and a hardcoded limit of 50 into the same parameter.

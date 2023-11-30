@@ -390,8 +390,9 @@ def test_retry_get_access_token(requests_mock):
 
 
 def test_should_retry_403_error(requests_mock):
-    requests_mock.register_uri("GET", "https://adsapi.snapchat.com/v1/me/organizations",
-                               [{"status_code": 403, "json": {"organizations": []}}])
+    requests_mock.register_uri(
+        "GET", "https://adsapi.snapchat.com/v1/me/organizations", [{"status_code": 403, "json": {"organizations": []}}]
+    )
     stream = Organizations(**config_mock)
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
 

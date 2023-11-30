@@ -1,20 +1,21 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
   "properties": {
     "billable": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "customFieldValues": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "description": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "isLocked": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "kioskId": {
       "type": ["null", "string"]
@@ -29,9 +30,9 @@
         },
         {
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           },
-          "type": "array"
+          "type": ["null", "array"]
         }
       ]
     },
@@ -41,25 +42,25 @@
     "timeInterval": {
       "properties": {
         "duration": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "end": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "start": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
-      "type": "object"
+      "type": ["null", "object"]
     },
     "type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "userId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "workspaceId": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   },
   "type": "object"

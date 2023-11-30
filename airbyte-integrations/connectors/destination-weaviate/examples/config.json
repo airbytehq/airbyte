@@ -1,0 +1,20 @@
+{
+  "processing": {
+    "text_fields": ["str_col", "title"],
+    "metadata_fields": ["field2"],
+    "chunk_size": 1000
+  },
+  "embedding": {
+    "mode": "fake"
+  },
+  "indexing": {
+    "host": "https://my-cluster.weaviate.network",
+    "class_name": "Test",
+    "auth": {
+      "mode": "token",
+      "token": "mytoken"
+    },
+    "text_field": "text",
+    "batch_size": 128
+  }
+}

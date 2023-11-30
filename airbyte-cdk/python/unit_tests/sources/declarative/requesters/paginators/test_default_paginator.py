@@ -179,12 +179,19 @@ def test_page_size_option_cannot_be_set_if_strategy_has_no_limit():
         pass
 
 
-def test_reset():
+@pytest.mark.parametrize(
+    "test_name, inject_on_first_request",
+    [
+        pytest.param("test_reset_inject_on_first_request", True),
+        pytest.param("test_reset_no_inject_on_first_request", False),
+    ],
+)
+def test_reset(test_name, inject_on_first_request):
     page_size_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit", parameters={})
     page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", parameters={})
     url_base = "https://airbyte.io"
     config = {}
-    strategy = OffsetIncrement(config={}, page_size=2, parameters={})
+    strategy = OffsetIncrement(config={}, page_size=2, inject_on_first_request=inject_on_first_request, parameters={})
     paginator = DefaultPaginator(
         strategy, config, url_base, parameters={}, page_size_option=page_size_request_option, page_token_option=page_token_request_option
     )
@@ -195,6 +202,20 @@ def test_reset():
     request_parameters_after_reset = paginator.get_request_params()
     assert initial_request_parameters == request_parameters_after_reset
     assert request_parameters_for_second_request != request_parameters_after_reset
+
+
+def test_initial_token_with_offset_pagination():
+    page_size_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit", parameters={})
+    page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", parameters={})
+    url_base = "https://airbyte.io"
+    config = {}
+    strategy = OffsetIncrement(config={}, page_size=2, parameters={}, inject_on_first_request=True)
+    paginator = DefaultPaginator(
+        strategy, config, url_base, parameters={}, page_size_option=page_size_request_option, page_token_option=page_token_request_option
+    )
+    initial_request_parameters = paginator.get_request_params()
+
+    assert initial_request_parameters == {"limit": 2, "offset": 0}
 
 
 def test_limit_page_fetched():

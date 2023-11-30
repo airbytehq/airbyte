@@ -25,6 +25,9 @@
     "id": {
       "type": "string",
       "description": "The ID of the issue priority."
+    },
+    "isDefault": {
+      "type": ["null", "boolean"]
     }
   },
   "additionalProperties": true,

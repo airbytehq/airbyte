@@ -12,9 +12,9 @@
     "required": ["test_destination"],
     "properties": {
       "test_destination": {
-        "title" : "Test Destination",
-        "type" : "object",
-        "description" : "The type of destination to be used",
+        "title": "Test Destination",
+        "type": "object",
+        "description": "The type of destination to be used",
         "oneOf": [
           {
             "title": "Silent",
