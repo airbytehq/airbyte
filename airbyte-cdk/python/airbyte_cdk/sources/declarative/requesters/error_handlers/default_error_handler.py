@@ -16,7 +16,6 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_fil
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.types import Config
-from requests_cache.models import CachedRequest
 
 
 @dataclass
@@ -130,11 +129,6 @@ class DefaultErrorHandler(ErrorHandler):
 
     def interpret_response(self, response: requests.Response) -> ResponseStatus:
         request = response.request
-
-        if isinstance(request, CachedRequest):
-            if response.ok:
-                return response_status.SUCCESS
-            return response_status.FAIL
 
         if request not in self._last_request_to_attempt_count:
             self._last_request_to_attempt_count = {request: 1}
