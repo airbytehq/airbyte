@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
 from unittest.mock import MagicMock, Mock
-from source_greenhouse.components import GreenHouseSlicer, GreenHouseSubstreamSlicer
+
+import pytest
 from airbyte_cdk.sources.streams import Stream
+from source_greenhouse.components import GreenHouseSlicer, GreenHouseSubstreamSlicer
 
 
 @pytest.fixture
