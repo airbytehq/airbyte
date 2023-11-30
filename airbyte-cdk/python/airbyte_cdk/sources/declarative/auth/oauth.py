@@ -56,6 +56,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     message_repository: MessageRepository = NoopMessageRepository()
 
     def __post_init__(self, parameters: Mapping[str, Any]):
+        super().__init__()
         self.token_refresh_endpoint = InterpolatedString.create(self.token_refresh_endpoint, parameters=parameters)
         self.client_id = InterpolatedString.create(self.client_id, parameters=parameters)
         self.client_secret = InterpolatedString.create(self.client_secret, parameters=parameters)
