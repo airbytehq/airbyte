@@ -19,7 +19,6 @@ configurations.all {
 }
 
 
-
 application {
     mainClass = 'io.airbyte.integrations.source.mysql.MySqlSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']

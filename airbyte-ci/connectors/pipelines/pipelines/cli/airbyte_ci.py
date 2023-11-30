@@ -4,7 +4,6 @@
 
 """This module is the CLI entrypoint to the airbyte-ci commands."""
 
-import importlib
 import logging
 import multiprocessing
 import os
@@ -17,74 +16,14 @@ import docker
 import git
 from github import PullRequest
 from pipelines import main_logger
+from pipelines.cli.auto_update import __installed_version__, check_for_upgrade
 from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
-from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, LOCAL_PIPELINE_PACKAGE_PATH, CIContext
+from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, CIContext
 from pipelines.helpers import github
 from pipelines.helpers.git import get_current_git_branch, get_current_git_revision
 from pipelines.helpers.utils import get_current_epoch_time
-
-# HELPERS
-
-__installed_version__ = importlib.metadata.version("pipelines")
-
-
-def display_welcome_message() -> None:
-    print(
-        """
-        ╔─────────────────────────────────────────────────────────────────────────────────────────────────╗
-        │                                                                                                 │
-        │                                                                                                 │
-        │    /$$$$$$  /$$$$$$ /$$$$$$$  /$$$$$$$  /$$     /$$ /$$$$$$$$ /$$$$$$$$       /$$$$$$  /$$$$$$  │
-        │   /$$__  $$|_  $$_/| $$__  $$| $$__  $$|  $$   /$$/|__  $$__/| $$_____/      /$$__  $$|_  $$_/  │
-        │  | $$  \ $$  | $$  | $$  \ $$| $$  \ $$ \  $$ /$$/    | $$   | $$           | $$  \__/  | $$    │
-        │  | $$$$$$$$  | $$  | $$$$$$$/| $$$$$$$   \  $$$$/     | $$   | $$$$$ /$$$$$$| $$        | $$    │
-        │  | $$__  $$  | $$  | $$__  $$| $$__  $$   \  $$/      | $$   | $$__/|______/| $$        | $$    │
-        │  | $$  | $$  | $$  | $$  \ $$| $$  \ $$    | $$       | $$   | $$           | $$    $$  | $$    │
-        │  | $$  | $$ /$$$$$$| $$  | $$| $$$$$$$/    | $$       | $$   | $$$$$$$$     |  $$$$$$/ /$$$$$$  │
-        │  |__/  |__/|______/|__/  |__/|_______/     |__/       |__/   |________/      \______/ |______/  │
-        │                                                                                                 │
-        │                                                                                                 │
-        ╚─────────────────────────────────────────────────────────────────────────────────────────────────╝
-        """  # noqa: W605
-    )
-
-
-def check_up_to_date(throw_as_error=False) -> bool:
-    """Check if the installed version of pipelines is up to date."""
-    latest_version = get_latest_version()
-    if latest_version != __installed_version__:
-        upgrade_error_message = f"""
-        🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
-
-        airbyte-ci is not up to date. Installed version: {__installed_version__}. Latest version: {latest_version}
-        Please run `pipx reinstall pipelines` to upgrade to the latest version.
-
-        🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
-        """
-
-        if throw_as_error:
-            raise Exception(upgrade_error_message)
-        else:
-            logging.warning(upgrade_error_message)
-            return False
-
-    main_logger.info(f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
-    return True
-
-
-def get_latest_version() -> str:
-    """
-    Get the version of the latest release, which is just in the pyproject.toml file of the pipelines package
-    as this is an internal tool, we don't need to check for the latest version on PyPI
-    """
-    path_to_pyproject_toml = LOCAL_PIPELINE_PACKAGE_PATH + "pyproject.toml"
-    with open(path_to_pyproject_toml, "r") as f:
-        for line in f.readlines():
-            if "version" in line:
-                return line.split("=")[1].strip().replace('"', "")
-    raise Exception("Could not find version in pyproject.toml. Please ensure you are running from the root of the airbyte repo.")
 
 
 def _validate_airbyte_repo(repo: git.Repo) -> bool:
@@ -224,10 +163,13 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
         "format": "pipelines.airbyte_ci.format.commands.format_code",
         "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
         "test": "pipelines.airbyte_ci.test.commands.test",
+        "update": "pipelines.airbyte_ci.update.commands.update",
     },
 )
 @click.version_option(__installed_version__)
 @click.option("--enable-dagger-run/--disable-dagger-run", default=is_dagger_run_enabled_by_default)
+@click.option("--enable-update-check/--disable-update-check", default=True)
+@click.option("--enable-auto-update/--disable-auto-update", default=True)
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
@@ -264,7 +206,13 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.pass_context
 @click_ignore_unused_kwargs
 async def airbyte_ci(ctx: click.Context):  # noqa D103
-    display_welcome_message()
+    # Check that the command being run is not upgrade
+    is_update_command = ctx.invoked_subcommand == "update"
+    if ctx.obj["enable_update_check"] and ctx.obj["is_local"] and not is_update_command:
+        check_for_upgrade(
+            require_update=ctx.obj["is_local"],
+            enable_auto_update=ctx.obj["is_local"] and ctx.obj["enable_auto_update"],
+        )
 
     if ctx.obj["enable_dagger_run"] and not is_current_process_wrapped_by_dagger_run():
         main_logger.debug("Re-Running airbyte-ci with dagger run.")
@@ -277,8 +225,6 @@ async def airbyte_ci(ctx: click.Context):  # noqa D103
         # This check is meaningful only when running locally
         # In our CI the docker host used by the Dagger Engine is different from the one used by the runner.
         check_local_docker_configuration()
-
-    check_up_to_date(throw_as_error=ctx.obj["is_local"])
 
     if not ctx.obj["is_local"]:
         log_git_info(ctx)
