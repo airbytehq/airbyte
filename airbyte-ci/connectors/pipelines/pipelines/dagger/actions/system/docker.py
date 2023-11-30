@@ -3,7 +3,6 @@
 #
 
 import json
-import os
 import uuid
 from typing import Callable, Optional
 
@@ -17,6 +16,7 @@ from pipelines.consts import (
     DOCKER_TMP_VOLUME_NAME,
     DOCKER_VAR_LIB_VOLUME_NAME,
     STORAGE_DRIVER,
+    TAILSCALE_AUTH_KEY,
     TAILSCALE_IMAGE_NAME,
     TAILSCALE_PORT,
 )
@@ -167,8 +167,8 @@ def with_global_dockerd_service(
     """
 
     dockerd_container = get_base_dockerd_container(dagger_client)
-    if tailscale_auth_key := os.environ.get("TAILSCALE_AUTHKEY"):
-        dockerd_container = bind_to_tailscale(dagger_client, dockerd_container, tailscale_auth_key)
+    if TAILSCALE_AUTH_KEY is not None:
+        dockerd_container = bind_to_tailscale(dagger_client, dockerd_container, TAILSCALE_AUTH_KEY)
         # TODO remove if working, ping will succeed if the registry mirror is reachable through VPN
         dockerd_container = dockerd_container.with_exec(["ping", "172.20.83.84:5000"], skip_entrypoint=True)
         daemon_config_json = get_daemon_config_json(DOCKER_REGISTRY_MIRROR_URL)
