@@ -35,7 +35,13 @@ class DestinationWeaviate(Destination):
     ) -> Iterable[AirbyteMessage]:
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)
-        writer = Writer(config_model.processing, self.indexer, self.embedder, batch_size=config_model.indexing.batch_size, omit_raw_text=config_model.omit_raw_text)
+        writer = Writer(
+            config_model.processing,
+            self.indexer,
+            self.embedder,
+            batch_size=config_model.indexing.batch_size,
+            omit_raw_text=config_model.omit_raw_text,
+        )
         yield from writer.write(configured_catalog, input_messages)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
