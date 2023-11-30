@@ -96,15 +96,21 @@ public class SqlOperationsUtils {
           for (final PartialAirbyteMessage message : partition) {
             // Airbyte Raw ID
             statement.setString(i, uuidSupplier.get().toString());
+            i++;
+
             // Message Data
-            statement.setString(i++, message.getSerialized());
+            statement.setString(i, message.getSerialized());
+            i++;
+
             // Extracted At
-            statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getRecord().getEmittedAt())));
+            statement.setTimestamp(i, Timestamp.from(Instant.ofEpochMilli(message.getRecord().getEmittedAt())));
+            i++;
+
             if (TypingAndDedupingFlag.isDestinationV2()) {
               // Loaded At
-              statement.setTimestamp(i++, null);
+              statement.setTimestamp(i, null);
+              i++;
             }
-            i++;
           }
 
           statement.execute();
