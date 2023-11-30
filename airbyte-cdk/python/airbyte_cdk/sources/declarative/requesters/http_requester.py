@@ -149,7 +149,7 @@ class HttpRequester(Requester):
         request = response.request
         if isinstance(request, requests_cache.CachedRequest):
             response.request = request.prepare()
-        elif not isinstance(request, requests.PreparedRequest):
+        elif not isinstance(request, (requests.PreparedRequest, requests.Request)):
             raise TypeError(f"Got unexpected request type: `{type(request).__name__}`")
 
         return self.error_handler.interpret_response(response)

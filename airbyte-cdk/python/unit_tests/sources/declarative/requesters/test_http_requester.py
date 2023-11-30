@@ -110,7 +110,10 @@ def test_http_requester():
     assert requester.get_request_params(stream_state={}, stream_slice=None, next_page_token=None) == request_params
     assert requester.get_request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
     assert requester.get_request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
-    assert requester.interpret_response_status(requests.Response()) == response_status
+
+    resp = requests.Response()
+    resp.request = requests.PreparedRequest()
+    assert requester.interpret_response_status(resp) == response_status
 
 
 @pytest.mark.parametrize(
@@ -614,6 +617,7 @@ def test_stub_custom_backoff_http_stream_retries(mocker, retries):
     error_handler = DefaultErrorHandler(parameters={}, config={}, max_retries=retries)
     requester = create_requester(error_handler=error_handler)
     req = requests.Response()
+    req.request = requests.PreparedRequest()
     req.status_code = HTTPStatus.TOO_MANY_REQUESTS
     requester._session.send.return_value = req
 
@@ -637,6 +641,7 @@ def test_stub_custom_backoff_http_stream_endless_retries(mocker):
 
     req = requests.Response()
     req.status_code = HTTPStatus.TOO_MANY_REQUESTS
+    req.request = requests.PreparedRequest()
     send_mock = mocker.patch.object(requester._session, "send", side_effect=[req] * infinite_number)
 
     # Expecting mock object to raise a RuntimeError when the end of side_effect list parameter reached.
