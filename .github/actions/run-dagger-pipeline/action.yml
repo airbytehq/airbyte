@@ -24,7 +24,7 @@ inputs:
     description: "Docker registry mirror URL"
     required: false
     # TODO (Conor): Change this value to the correct URL once we have a reachable mirror
-    default: "http://172.20.83.84:5000"
+    default: "ci-dockerhub-registry.airbyte.com"
   options:
     description: "Options for the subcommand"
     required: false
