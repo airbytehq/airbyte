@@ -5,11 +5,9 @@
 package io.airbyte.integrations.destination.redshift.operations;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT;
-import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_ID;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
-import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
 import static org.jooq.impl.DSL.*;
 
 import com.google.common.collect.Iterables;
@@ -52,9 +50,9 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
                           %s SUPER,
                           %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
                           """, schemaName, tableName,
-                         JavaBaseConstants.COLUMN_NAME_AB_ID,
-                         JavaBaseConstants.COLUMN_NAME_DATA,
-                         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   @Override
