@@ -6,10 +6,10 @@ package io.airbyte.integrations.destination.databricks.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.constant.S3Constants;
+import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 import io.airbyte.integrations.destination.databricks.DatabricksStorageConfigProvider;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.constant.S3Constants;
-import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 
 public class DatabricksS3StorageConfigProvider extends DatabricksStorageConfigProvider {
 

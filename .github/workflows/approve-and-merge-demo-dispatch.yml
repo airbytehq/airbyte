@@ -1,0 +1,50 @@
+name: Approve and Merge Demo Command Dispatch
+
+# Note: We have a two stage dispatch so that we can wait for the formatters to run before approving and merging.
+on:
+  repository_dispatch:
+    types: [approve-and-merge-demo-command]
+
+jobs:
+  checkFormat:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for formatters to succeed
+        id: wait-for-formatters
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+          check-name: "Apply All Formatting Rules"
+          repo-token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          wait-interval: 30
+      - name: Comment if formatters failed
+        if: failure()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          body: |
+            > Error: Formatters failed. Ensure formatting is passing before using approve-and-merge.
+
+  approveAndMergeDispatch:
+    runs-on: ubuntu-latest
+    needs: [checkFormat]
+    steps:
+      - name: Auto Approve Slash Command Dispatch
+        uses: peter-evans/slash-command-dispatch@v3
+        id: scd
+        with:
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          permission: write
+          issue-type: pull-request
+          repository: airbytehq/airbyte-cloud
+          dispatch-type: repository
+          commands: |
+            approve-and-merge
+
+      - name: Edit comment with error message
+        if: steps.scd.outputs.error-message
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          body: |
+            > Error: ${{ steps.scd.outputs.error-message }}

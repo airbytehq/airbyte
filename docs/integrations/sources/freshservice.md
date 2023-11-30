@@ -54,6 +54,7 @@ Please read [How to find your API key](https://api.freshservice.com/#authenticat
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.2.0 | 2023-08-06 | [29126](https://github.com/airbytehq/airbyte/pull/29126) | Migrated to Low-Code CDK |
 | 1.1.0 | 2023-05-09 | [25929](https://github.com/airbytehq/airbyte/pull/25929) | Add stream for customer satisfaction survey responses endpoint  |
 | 1.0.0 | 2023-05-02 | [25743](https://github.com/airbytehq/airbyte/pull/25743) | Correct data types in tickets, agents and requesters schemas to match Freshservice API |
 | 0.1.1 | 2021-12-28 | [9143](https://github.com/airbytehq/airbyte/pull/9143) | Update titles and descriptions |

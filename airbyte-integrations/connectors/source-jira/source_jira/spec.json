@@ -17,7 +17,11 @@
       "domain": {
         "type": "string",
         "title": "Domain",
-        "examples": ["<your-domain>.atlassian.net", "<your-domain>.jira.com", "jira.<your-domain>.com"],
+        "examples": [
+          "<your-domain>.atlassian.net",
+          "<your-domain>.jira.com",
+          "jira.<your-domain>.com"
+        ],
         "description": "The Domain for your Jira account, e.g. airbyteio.atlassian.net, airbyteio.jira.com, jira.your-domain.com",
         "order": 1
       },
@@ -49,23 +53,41 @@
       "expand_issue_changelog": {
         "type": "boolean",
         "title": "Expand Issue Changelog",
-        "description": "Expand the changelog when replicating issues.",
-        "default": false,
-        "order": 5
+        "airbyte_hidden": true,
+        "description": "(DEPRECATED) Expand the changelog when replicating issues.",
+        "default": false
       },
       "render_fields": {
         "type": "boolean",
         "title": "Render Issue Fields",
-        "description": "Render issue fields in HTML format in addition to Jira JSON-like format.",
-        "default": false,
-        "order": 6
+        "airbyte_hidden": true,
+        "description": "(DEPRECATED) Render issue fields in HTML format in addition to Jira JSON-like format.",
+        "default": false
+      },
+      "expand_issue_transition": {
+        "type": "boolean",
+        "title": "Expand Issue Transitions",
+        "airbyte_hidden": true,
+        "description": "(DEPRECATED) Expand the transitions when replicating issues.",
+        "default": false
+      },
+      "issues_stream_expand_with": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": ["renderedFields", "transitions", "changelog"]
+        },
+        "title": "Expand Issues stream",
+        "airbyte_hidden": true,
+        "description": "Select fields to Expand the `Issues` stream when replicating with: ",
+        "default": []
       },
       "enable_experimental_streams": {
         "type": "boolean",
         "title": "Enable Experimental Streams",
         "description": "Allow the use of experimental streams which rely on undocumented Jira API endpoints. See https://docs.airbyte.com/integrations/sources/jira#experimental-tables for more info.",
         "default": false,
-        "order": 7
+        "order": 5
       }
     }
   }

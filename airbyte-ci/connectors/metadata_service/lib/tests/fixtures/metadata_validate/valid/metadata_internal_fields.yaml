@@ -10,8 +10,8 @@ data:
   connectorSubtype: database
   releaseStage: generally_available
   license: MIT
-  _ab_internal:
-    _sl: 200
-    _ql: 600
+  ab_internal:
+    sl: 200
+    ql: 600
   tags:
     - language:java

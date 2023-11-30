@@ -1,22 +1,24 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import json
-from google.cloud import storage
-
-from dagster import asset, OpExecutionContext, MetadataValue, Output
-from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
-
-from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
-from metadata_service.utils import to_json_sanitized_dict
-from orchestrator.assets.registry_entry import read_registry_entry_blob
-
 from typing import List
 
+import sentry_sdk
+from dagster import MetadataValue, OpExecutionContext, Output, asset
+from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
+from google.cloud import storage
+from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from metadata_service.models.transform import to_json_sanitized_dict
+from orchestrator.assets.registry_entry import read_registry_entry_blob
+from orchestrator.logging import sentry
+from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
 
 GROUP_NAME = "registry"
 
 
+@sentry_sdk.trace
 def persist_registry_to_json(
     registry: ConnectorRegistryV0, registry_name: str, registry_directory_manager: GCSFileManager
 ) -> GCSFileHandle:
@@ -37,7 +39,9 @@ def persist_registry_to_json(
     return file_handle
 
 
+@sentry_sdk.trace
 def generate_and_persist_registry(
+    context: OpExecutionContext,
     registry_entry_file_blobs: List[storage.Blob],
     registry_directory_manager: GCSFileManager,
     registry_name: str,
@@ -51,6 +55,12 @@ def generate_and_persist_registry(
     Returns:
         Output[ConnectorRegistryV0]: The registry.
     """
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.REGISTRY_GENERATION,
+        StageStatus.IN_PROGRESS,
+        f"Generating {registry_name} registry...",
+    )
     registry_dict = {"sources": [], "destinations": []}
     for blob in registry_entry_file_blobs:
         registry_entry, connector_type = read_registry_entry_blob(blob)
@@ -70,13 +80,21 @@ def generate_and_persist_registry(
         "gcs_path": MetadataValue.url(file_handle.public_url),
     }
 
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.REGISTRY_GENERATION,
+        StageStatus.SUCCESS,
+        f"New {registry_name} registry available at {file_handle.public_url}",
+    )
+
     return Output(metadata=metadata, value=registry_model)
 
 
 # Registry Generation
 
 
-@asset(required_resource_keys={"registry_directory_manager", "latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"slack", "registry_directory_manager", "latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the oss registry from the registry entries.
@@ -86,13 +104,15 @@ def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegis
     latest_oss_registry_entries_file_blobs = context.resources.latest_oss_registry_entries_file_blobs
 
     return generate_and_persist_registry(
+        context=context,
         registry_entry_file_blobs=latest_oss_registry_entries_file_blobs,
         registry_directory_manager=registry_directory_manager,
         registry_name=registry_name,
     )
 
 
-@asset(required_resource_keys={"registry_directory_manager", "latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"slack", "registry_directory_manager", "latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the cloud registry from the registry entries.
@@ -102,6 +122,7 @@ def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorReg
     latest_cloud_registry_entries_file_blobs = context.resources.latest_cloud_registry_entries_file_blobs
 
     return generate_and_persist_registry(
+        context=context,
         registry_entry_file_blobs=latest_cloud_registry_entries_file_blobs,
         registry_directory_manager=registry_directory_manager,
         registry_name=registry_name,
@@ -112,16 +133,19 @@ def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorReg
 
 
 @asset(required_resource_keys={"latest_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
-def latest_cloud_registry(latest_cloud_registry_dict: dict) -> ConnectorRegistryV0:
+@sentry.instrument_asset_op
+def latest_cloud_registry(_context: OpExecutionContext, latest_cloud_registry_dict: dict) -> ConnectorRegistryV0:
     return ConnectorRegistryV0.parse_obj(latest_cloud_registry_dict)
 
 
 @asset(required_resource_keys={"latest_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
-def latest_oss_registry(latest_oss_registry_dict: dict) -> ConnectorRegistryV0:
+@sentry.instrument_asset_op
+def latest_oss_registry(_context: OpExecutionContext, latest_oss_registry_dict: dict) -> ConnectorRegistryV0:
     return ConnectorRegistryV0.parse_obj(latest_oss_registry_dict)
 
 
 @asset(required_resource_keys={"latest_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def latest_cloud_registry_dict(context: OpExecutionContext) -> dict:
     oss_registry_file = context.resources.latest_cloud_registry_gcs_blob
     json_string = oss_registry_file.download_as_string().decode("utf-8")
@@ -130,6 +154,7 @@ def latest_cloud_registry_dict(context: OpExecutionContext) -> dict:
 
 
 @asset(required_resource_keys={"latest_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def latest_oss_registry_dict(context: OpExecutionContext) -> dict:
     oss_registry_file = context.resources.latest_oss_registry_gcs_blob
     json_string = oss_registry_file.download_as_string().decode("utf-8")

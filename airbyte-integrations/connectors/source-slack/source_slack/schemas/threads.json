@@ -5,6 +5,9 @@
     "channel_id": {
       "type": ["null", "string"]
     },
+    "bot_id": {
+      "type": ["null", "string"]
+    },
     "client_msg_id": {
       "type": ["null", "string"]
     },
@@ -22,6 +25,18 @@
     },
     "float_ts": {
       "type": ["null", "number"]
+    },
+    "subtype": {
+      "type": ["null", "string"]
+    },
+    "is_locked": {
+      "type": ["null", "boolean"]
+    },
+    "last_read": {
+      "type": ["null", "string"]
+    },
+    "parent_user_id": {
+      "type": ["null", "string"]
     },
     "team": {
       "type": ["null", "string"]

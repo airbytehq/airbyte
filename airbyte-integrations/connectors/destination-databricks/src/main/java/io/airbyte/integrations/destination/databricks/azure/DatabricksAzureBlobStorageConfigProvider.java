@@ -5,8 +5,8 @@
 package io.airbyte.integrations.destination.databricks.azure;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import io.airbyte.integrations.destination.databricks.DatabricksStorageConfigProvider;
-import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 
 public class DatabricksAzureBlobStorageConfigProvider extends DatabricksStorageConfigProvider {
 

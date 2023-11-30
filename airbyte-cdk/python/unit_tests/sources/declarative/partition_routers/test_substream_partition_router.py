@@ -64,7 +64,11 @@ class MockStream(Stream):
             "test_single_parent_slices_no_records",
             [
                 ParentStreamConfig(
-                    stream=MockStream([{}], [], "first_stream"), parent_key="id", partition_field="first_stream_id", parameters={}, config={}
+                    stream=MockStream([{}], [], "first_stream"),
+                    parent_key="id",
+                    partition_field="first_stream_id",
+                    parameters={},
+                    config={},
                 )
             ],
             [],
@@ -136,7 +140,11 @@ class MockStream(Stream):
                     config={},
                 )
             ],
-            [{"first_stream_id": 0, "parent_slice": {}}, {"first_stream_id": 1, "parent_slice": {}}, {"first_stream_id": 3, "parent_slice": {}}],
+            [
+                {"first_stream_id": 0, "parent_slice": {}},
+                {"first_stream_id": 1, "parent_slice": {}},
+                {"first_stream_id": 3, "parent_slice": {}},
+            ],
         ),
         (
             "test_dpath_extraction",
@@ -149,7 +157,11 @@ class MockStream(Stream):
                     config={},
                 )
             ],
-            [{"first_stream_id": 0, "parent_slice": {}}, {"first_stream_id": 1, "parent_slice": {}}, {"first_stream_id": 3, "parent_slice": {}}],
+            [
+                {"first_stream_id": 0, "parent_slice": {}},
+                {"first_stream_id": 1, "parent_slice": {}},
+                {"first_stream_id": 3, "parent_slice": {}},
+            ],
         ),
     ],
 )
@@ -268,15 +280,23 @@ def test_given_record_is_airbyte_message_when_stream_slices_then_use_record_data
     partition_router = SubstreamPartitionRouter(
         parent_stream_configs=[
             ParentStreamConfig(
-                stream=MockStream([parent_slice], [AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(data={"id": "record value"}, emitted_at=0, stream="stream"))], "first_stream"),
+                stream=MockStream(
+                    [parent_slice],
+                    [
+                        AirbyteMessage(
+                            type=Type.RECORD, record=AirbyteRecordMessage(data={"id": "record value"}, emitted_at=0, stream="stream")
+                        )
+                    ],
+                    "first_stream",
+                ),
                 parent_key="id",
                 partition_field="partition_field",
                 parameters={},
-                config={}
+                config={},
             )
         ],
         parameters={},
-        config={}
+        config={},
     )
 
     slices = list(partition_router.stream_slices())
@@ -292,11 +312,11 @@ def test_given_record_is_record_object_when_stream_slices_then_use_record_data()
                 parent_key="id",
                 partition_field="partition_field",
                 parameters={},
-                config={}
+                config={},
             )
         ],
         parameters={},
-        config={}
+        config={},
     )
 
     slices = list(partition_router.stream_slices())

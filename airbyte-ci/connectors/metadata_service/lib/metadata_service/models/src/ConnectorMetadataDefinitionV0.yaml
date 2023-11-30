@@ -34,6 +34,8 @@ properties:
       definitionId:
         type: string
         format: uuid
+      connectorBuildOptions:
+        "$ref": ConnectorBuildOptions.yaml
       connectorType:
         type: string
         enum:
@@ -69,10 +71,12 @@ properties:
         enum:
           - api
           - database
+          - datalake
           - file
           - custom
           - message_queue
           - unknown
+          - vectorstore
       releaseStage:
         "$ref": ReleaseStage.yaml
       supportLevel:
@@ -105,5 +109,5 @@ properties:
         "$ref": SuggestedStreams.yaml
       resourceRequirements:
         "$ref": ActorDefinitionResourceRequirements.yaml
-      _ab_internal:
+      ab_internal:
         "$ref": AirbyteInternal.yaml

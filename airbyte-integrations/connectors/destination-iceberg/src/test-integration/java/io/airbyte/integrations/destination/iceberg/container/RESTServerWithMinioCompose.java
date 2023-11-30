@@ -4,19 +4,6 @@
 
 package io.airbyte.integrations.destination.iceberg.container;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
-import io.airbyte.integrations.destination.iceberg.hive.IcebergHiveCatalogS3ParquetIntegrationTest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.DockerComposeContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.Map;
-
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_CATALOG_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_CATALOG_TYPE_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBERG_FORMAT_CONFIG_KEY;
@@ -31,6 +18,18 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_WA
 import static java.util.Map.entry;
 import static java.util.Map.ofEntries;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
+import io.airbyte.integrations.destination.iceberg.hive.IcebergHiveCatalogS3ParquetIntegrationTest;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.DockerComposeContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+
 public class RESTServerWithMinioCompose extends DockerComposeContainer<RESTServerWithMinioCompose> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IcebergHiveCatalogS3ParquetIntegrationTest.class);
@@ -44,12 +43,12 @@ public class RESTServerWithMinioCompose extends DockerComposeContainer<RESTServe
   public RESTServerWithMinioCompose() {
     super(Path.of(COMPOSE_PATH).toFile());
     super.withExposedService(REST_SERVICE_NAME,
-            REST_SERVER_PORT,
-            Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(30)))
-        .withExposedService(MINIO_SERVICE_NAME,
-            MinioContainer.MINIO_PORT,
-            Wait.forHttp(MinioContainer.HEALTH_ENDPOINT).withStartupTimeout(Duration.ofSeconds(60)))
-        .withLocalCompose(true);
+        REST_SERVER_PORT,
+        Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(30)))
+            .withExposedService(MINIO_SERVICE_NAME,
+                MinioContainer.MINIO_PORT,
+                Wait.forHttp(MinioContainer.HEALTH_ENDPOINT).withStartupTimeout(Duration.ofSeconds(60)))
+            .withLocalCompose(true);
   }
 
   @Override
@@ -104,4 +103,5 @@ public class RESTServerWithMinioCompose extends DockerComposeContainer<RESTServe
                 entry(S3_ENDPOINT_CONFIG_KEY, this.s3Endpoint())))),
         entry(ICEBERG_FORMAT_CONFIG_KEY, Jsons.jsonNode(Map.of("format", "wrong-format")))));
   }
+
 }

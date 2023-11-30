@@ -8,9 +8,9 @@ import pytest
 from source_commcare.source import SourceCommcare
 
 
-@pytest.fixture(name='config')
+@pytest.fixture(name="config")
 def config_fixture():
-    return {'api_key': 'apikey', 'app_id': 'appid', 'start_date': '2022-01-01T00:00:00Z'}
+    return {"api_key": "apikey", "app_id": "appid", "start_date": "2022-01-01T00:00:00Z"}
 
 
 def test_check_connection_ok(mocker, config):

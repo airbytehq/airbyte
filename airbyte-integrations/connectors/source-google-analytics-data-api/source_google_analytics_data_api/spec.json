@@ -4,7 +4,7 @@
     "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Google Analytics (Data API) Spec",
     "type": "object",
-    "required": ["property_id", "date_ranges_start_date"],
+    "required": ["property_ids"],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -65,7 +65,7 @@
               "credentials_json": {
                 "title": "Service Account JSON Key",
                 "type": "string",
-                "description": "The JSON key of the service account to use for authorization",
+                "description": "The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide\">the setup guide</a>.",
                 "examples": [
                   "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
                 ],
@@ -76,13 +76,16 @@
           }
         ]
       },
-      "property_id": {
-        "type": "string",
-        "title": "Property ID",
-        "description": "A Google Analytics GA4 property identifier whose events are tracked. Specified in the URL path and not the body such as \"123...\". See <a href=\"https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id\">the docs</a> for more details.",
-        "pattern": "^[0-9]*$",
-        "pattern_descriptor": "such as \"123...\"",
-        "order": 1
+      "property_ids": {
+        "title": "Property IDs",
+        "description": "A list of your Property IDs. The Property ID is a unique number assigned to each property in Google Analytics, found in your GA4 property URL. This ID allows the connector to track the specific events associated with your property. Refer to the <a href='https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id'>Google Analytics documentation</a> to locate your property ID.",
+        "order": 1,
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^[0-9]*$"
+        },
+        "examples": [["1738294", "5729978930"]]
       },
       "date_ranges_start_date": {
         "type": "string",
@@ -94,30 +97,2024 @@
         "examples": ["2021-01-01"],
         "order": 2
       },
-      "custom_reports": {
-        "order": 3,
-        "type": "string",
+      "custom_reports_array": {
         "title": "Custom Reports",
-        "description": "A JSON array describing the custom reports you want to sync from Google Analytics. See <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#custom-reports\">the docs</a> for more information about the exact format you can use to fill out this field."
+        "description": "You can add your Custom Analytics report by creating one.",
+        "order": 4,
+        "type": "array",
+        "items": {
+          "title": "Custom Report Config",
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Name",
+              "description": "The name of the custom report, this name would be used as stream name.",
+              "type": "string",
+              "order": 0
+            },
+            "dimensions": {
+              "title": "Dimensions",
+              "description": "A list of dimensions.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "order": 1
+            },
+            "metrics": {
+              "title": "Metrics",
+              "description": "A list of metrics.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "order": 2
+            },
+            "dimensionFilter": {
+              "title": "Dimensions filter",
+              "description": "Dimensions filter",
+              "type": "object",
+              "order": 3,
+              "oneOf": [
+                {
+                  "title": "andGroup",
+                  "description": "The FilterExpressions in andGroup have an AND relationship.",
+                  "type": "object",
+                  "properties": {
+                    "filter_type": {
+                      "type": "string",
+                      "const": "andGroup",
+                      "order": 0
+                    },
+                    "expressions": {
+                      "title": "Expressions",
+                      "type": "array",
+                      "order": 1,
+                      "items": {
+                        "title": "Expression",
+                        "type": "object",
+                        "properties": {
+                          "field_name": {
+                            "title": "fieldName",
+                            "type": "string",
+                            "order": 1
+                          },
+                          "filter": {
+                            "title": "filter",
+                            "type": "object",
+                            "order": 2,
+                            "oneOf": [
+                              {
+                                "title": "stringFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "stringFilter"
+                                  },
+                                  "matchType": {
+                                    "title": "matchType",
+                                    "type": "array",
+                                    "order": 1,
+                                    "items": {
+                                      "title": "ValidEnums",
+                                      "enum": [
+                                        "MATCH_TYPE_UNSPECIFIED",
+                                        "EXACT",
+                                        "BEGINS_WITH",
+                                        "ENDS_WITH",
+                                        "CONTAINS",
+                                        "FULL_REGEXP",
+                                        "PARTIAL_REGEXP"
+                                      ]
+                                    }
+                                  },
+                                  "value": {
+                                    "tittle": "value",
+                                    "type": "string",
+                                    "order": 0
+                                  },
+                                  "caseSensitive": {
+                                    "tittle": "caseSensitive",
+                                    "type": "boolean",
+                                    "order": 2
+                                  }
+                                },
+                                "required": ["filter_name", "value"]
+                              },
+                              {
+                                "title": "inListFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "inListFilter"
+                                  },
+                                  "values": {
+                                    "tittle": "values",
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "order": 0,
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "caseSensitive": {
+                                    "tittle": "caseSensitive",
+                                    "type": "boolean",
+                                    "order": 1
+                                  }
+                                },
+                                "required": ["filter_name", "values"]
+                              },
+                              {
+                                "title": "numericFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "numericFilter"
+                                  },
+                                  "operation": {
+                                    "title": "operation",
+                                    "type": "array",
+                                    "order": 1,
+                                    "items": {
+                                      "title": "ValidEnums",
+                                      "enum": [
+                                        "OPERATION_UNSPECIFIED",
+                                        "EQUAL",
+                                        "LESS_THAN",
+                                        "LESS_THAN_OR_EQUAL",
+                                        "GREATER_THAN",
+                                        "GREATER_THAN_OR_EQUAL"
+                                      ]
+                                    }
+                                  },
+                                  "value": {
+                                    "tittle": "value",
+                                    "type": "object",
+                                    "order": 0,
+                                    "oneOf": [
+                                      {
+                                        "title": "int64Value",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "int64Value"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      },
+                                      {
+                                        "title": "doubleValue",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "doubleValue"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "filter_name",
+                                  "operation",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "title": "betweenFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "betweenFilter"
+                                  },
+                                  "fromValue": {
+                                    "tittle": "fromValue",
+                                    "type": "object",
+                                    "order": 0,
+                                    "oneOf": [
+                                      {
+                                        "title": "int64Value",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "int64Value"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      },
+                                      {
+                                        "title": "doubleValue",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "doubleValue"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      }
+                                    ]
+                                  },
+                                  "toValue": {
+                                    "tittle": "toValue",
+                                    "type": "object",
+                                    "order": 1,
+                                    "oneOf": [
+                                      {
+                                        "title": "int64Value",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "int64Value"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      },
+                                      {
+                                        "title": "doubleValue",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "doubleValue"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "filter_name",
+                                  "fromValue",
+                                  "toValue"
+                                ]
+                              }
+                            ]
+                          }
+                        },
+                        "required": ["field_name", "filter"]
+                      }
+                    }
+                  },
+                  "required": ["filter_type", "expressions"]
+                },
+                {
+                  "title": "orGroup",
+                  "type": "object",
+                  "description": "The FilterExpressions in orGroup have an OR relationship.",
+                  "properties": {
+                    "filter_type": {
+                      "type": "string",
+                      "const": "orGroup",
+                      "order": 0
+                    },
+                    "expressions": {
+                      "title": "Expressions",
+                      "type": "array",
+                      "order": 1,
+                      "items": {
+                        "title": "Expression",
+                        "type": "object",
+                        "properties": {
+                          "field_name": {
+                            "title": "fieldName",
+                            "type": "string",
+                            "order": 1
+                          },
+                          "filter": {
+                            "title": "filter",
+                            "type": "object",
+                            "order": 2,
+                            "oneOf": [
+                              {
+                                "title": "stringFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "stringFilter"
+                                  },
+                                  "matchType": {
+                                    "title": "matchType",
+                                    "type": "array",
+                                    "order": 1,
+                                    "items": {
+                                      "title": "ValidEnums",
+                                      "enum": [
+                                        "MATCH_TYPE_UNSPECIFIED",
+                                        "EXACT",
+                                        "BEGINS_WITH",
+                                        "ENDS_WITH",
+                                        "CONTAINS",
+                                        "FULL_REGEXP",
+                                        "PARTIAL_REGEXP"
+                                      ]
+                                    }
+                                  },
+                                  "value": {
+                                    "tittle": "value",
+                                    "type": "string",
+                                    "order": 0
+                                  },
+                                  "caseSensitive": {
+                                    "tittle": "caseSensitive",
+                                    "type": "boolean",
+                                    "order": 2
+                                  }
+                                },
+                                "required": ["filter_name", "value"]
+                              },
+                              {
+                                "title": "inListFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "inListFilter"
+                                  },
+                                  "values": {
+                                    "tittle": "values",
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "order": 0,
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "caseSensitive": {
+                                    "tittle": "caseSensitive",
+                                    "type": "boolean",
+                                    "order": 1
+                                  }
+                                },
+                                "required": ["filter_name", "values"]
+                              },
+                              {
+                                "title": "numericFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "numericFilter"
+                                  },
+                                  "operation": {
+                                    "title": "operation",
+                                    "type": "array",
+                                    "order": 1,
+                                    "items": {
+                                      "title": "ValidEnums",
+                                      "enum": [
+                                        "OPERATION_UNSPECIFIED",
+                                        "EQUAL",
+                                        "LESS_THAN",
+                                        "LESS_THAN_OR_EQUAL",
+                                        "GREATER_THAN",
+                                        "GREATER_THAN_OR_EQUAL"
+                                      ]
+                                    }
+                                  },
+                                  "value": {
+                                    "tittle": "value",
+                                    "type": "object",
+                                    "order": 0,
+                                    "oneOf": [
+                                      {
+                                        "title": "int64Value",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "int64Value"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      },
+                                      {
+                                        "title": "doubleValue",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "doubleValue"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "filter_name",
+                                  "operation",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "title": "betweenFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "betweenFilter"
+                                  },
+                                  "fromValue": {
+                                    "tittle": "fromValue",
+                                    "type": "object",
+                                    "order": 0,
+                                    "oneOf": [
+                                      {
+                                        "title": "int64Value",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "int64Value"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      },
+                                      {
+                                        "title": "doubleValue",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "doubleValue"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      }
+                                    ]
+                                  },
+                                  "toValue": {
+                                    "tittle": "toValue",
+                                    "type": "object",
+                                    "order": 1,
+                                    "oneOf": [
+                                      {
+                                        "title": "int64Value",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "int64Value"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      },
+                                      {
+                                        "title": "doubleValue",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "doubleValue"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "filter_name",
+                                  "fromValue",
+                                  "toValue"
+                                ]
+                              }
+                            ]
+                          }
+                        },
+                        "required": ["field_name", "filter"]
+                      }
+                    }
+                  },
+                  "required": ["filter_type", "expressions"]
+                },
+                {
+                  "title": "notExpression",
+                  "type": "object",
+                  "description": "The FilterExpression is NOT of notExpression.",
+                  "properties": {
+                    "filter_type": {
+                      "type": "string",
+                      "const": "notExpression",
+                      "order": 0
+                    },
+                    "expression": {
+                      "title": "Expression",
+                      "type": "object",
+                      "properties": {
+                        "field_name": {
+                          "title": "fieldName",
+                          "type": "string",
+                          "order": 1
+                        },
+                        "filter": {
+                          "title": "filter",
+                          "type": "object",
+                          "order": 2,
+                          "oneOf": [
+                            {
+                              "title": "stringFilter",
+                              "type": "object",
+                              "properties": {
+                                "filter_name": {
+                                  "type": "string",
+                                  "const": "stringFilter"
+                                },
+                                "matchType": {
+                                  "title": "matchType",
+                                  "type": "array",
+                                  "order": 1,
+                                  "items": {
+                                    "title": "ValidEnums",
+                                    "enum": [
+                                      "MATCH_TYPE_UNSPECIFIED",
+                                      "EXACT",
+                                      "BEGINS_WITH",
+                                      "ENDS_WITH",
+                                      "CONTAINS",
+                                      "FULL_REGEXP",
+                                      "PARTIAL_REGEXP"
+                                    ]
+                                  }
+                                },
+                                "value": {
+                                  "tittle": "value",
+                                  "type": "string",
+                                  "order": 0
+                                },
+                                "caseSensitive": {
+                                  "tittle": "caseSensitive",
+                                  "type": "boolean",
+                                  "order": 2
+                                }
+                              },
+                              "required": ["filter_name", "value"]
+                            },
+                            {
+                              "title": "inListFilter",
+                              "type": "object",
+                              "properties": {
+                                "filter_name": {
+                                  "type": "string",
+                                  "const": "inListFilter"
+                                },
+                                "values": {
+                                  "tittle": "values",
+                                  "type": "array",
+                                  "minItems": 1,
+                                  "order": 0,
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "caseSensitive": {
+                                  "tittle": "caseSensitive",
+                                  "type": "boolean",
+                                  "order": 1
+                                }
+                              },
+                              "required": ["filter_name", "values"]
+                            },
+                            {
+                              "title": "numericFilter",
+                              "type": "object",
+                              "properties": {
+                                "filter_name": {
+                                  "type": "string",
+                                  "const": "numericFilter"
+                                },
+                                "operation": {
+                                  "title": "operation",
+                                  "type": "array",
+                                  "order": 1,
+                                  "items": {
+                                    "title": "ValidEnums",
+                                    "enum": [
+                                      "OPERATION_UNSPECIFIED",
+                                      "EQUAL",
+                                      "LESS_THAN",
+                                      "LESS_THAN_OR_EQUAL",
+                                      "GREATER_THAN",
+                                      "GREATER_THAN_OR_EQUAL"
+                                    ]
+                                  }
+                                },
+                                "value": {
+                                  "tittle": "value",
+                                  "type": "object",
+                                  "order": 0,
+                                  "oneOf": [
+                                    {
+                                      "title": "int64Value",
+                                      "type": "object",
+                                      "properties": {
+                                        "value_type": {
+                                          "type": "string",
+                                          "const": "int64Value"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": ["value_type", "value"]
+                                    },
+                                    {
+                                      "title": "doubleValue",
+                                      "type": "object",
+                                      "properties": {
+                                        "value_type": {
+                                          "type": "string",
+                                          "const": "doubleValue"
+                                        },
+                                        "value": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": ["value_type", "value"]
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["filter_name", "operation", "value"]
+                            },
+                            {
+                              "title": "betweenFilter",
+                              "type": "object",
+                              "properties": {
+                                "filter_name": {
+                                  "type": "string",
+                                  "const": "betweenFilter"
+                                },
+                                "fromValue": {
+                                  "tittle": "fromValue",
+                                  "type": "object",
+                                  "order": 0,
+                                  "oneOf": [
+                                    {
+                                      "title": "int64Value",
+                                      "type": "object",
+                                      "properties": {
+                                        "value_type": {
+                                          "type": "string",
+                                          "const": "int64Value"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": ["value_type", "value"]
+                                    },
+                                    {
+                                      "title": "doubleValue",
+                                      "type": "object",
+                                      "properties": {
+                                        "value_type": {
+                                          "type": "string",
+                                          "const": "doubleValue"
+                                        },
+                                        "value": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": ["value_type", "value"]
+                                    }
+                                  ]
+                                },
+                                "toValue": {
+                                  "tittle": "toValue",
+                                  "type": "object",
+                                  "order": 1,
+                                  "oneOf": [
+                                    {
+                                      "title": "int64Value",
+                                      "type": "object",
+                                      "properties": {
+                                        "value_type": {
+                                          "type": "string",
+                                          "const": "int64Value"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": ["value_type", "value"]
+                                    },
+                                    {
+                                      "title": "doubleValue",
+                                      "type": "object",
+                                      "properties": {
+                                        "value_type": {
+                                          "type": "string",
+                                          "const": "doubleValue"
+                                        },
+                                        "value": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": ["value_type", "value"]
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "filter_name",
+                                "fromValue",
+                                "toValue"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "required": ["field_name", "filter"]
+                    }
+                  }
+                },
+                {
+                  "title": "filter",
+                  "type": "object",
+                  "description": "A primitive filter. In the same FilterExpression, all of the filter's field names need to be either all dimensions.",
+                  "properties": {
+                    "filter_type": {
+                      "type": "string",
+                      "const": "filter",
+                      "order": 0
+                    },
+                    "field_name": {
+                      "title": "fieldName",
+                      "type": "string",
+                      "order": 1
+                    },
+                    "filter": {
+                      "title": "filter",
+                      "type": "object",
+                      "order": 2,
+                      "oneOf": [
+                        {
+                          "title": "stringFilter",
+                          "type": "object",
+                          "properties": {
+                            "filter_name": {
+                              "type": "string",
+                              "const": "stringFilter"
+                            },
+                            "matchType": {
+                              "title": "matchType",
+                              "type": "array",
+                              "order": 1,
+                              "items": {
+                                "title": "ValidEnums",
+                                "enum": [
+                                  "MATCH_TYPE_UNSPECIFIED",
+                                  "EXACT",
+                                  "BEGINS_WITH",
+                                  "ENDS_WITH",
+                                  "CONTAINS",
+                                  "FULL_REGEXP",
+                                  "PARTIAL_REGEXP"
+                                ]
+                              }
+                            },
+                            "value": {
+                              "tittle": "value",
+                              "type": "string",
+                              "order": 0
+                            },
+                            "caseSensitive": {
+                              "tittle": "caseSensitive",
+                              "type": "boolean",
+                              "order": 2
+                            }
+                          },
+                          "required": ["filter_name", "value"]
+                        },
+                        {
+                          "title": "inListFilter",
+                          "type": "object",
+                          "properties": {
+                            "filter_name": {
+                              "type": "string",
+                              "const": "inListFilter"
+                            },
+                            "values": {
+                              "tittle": "values",
+                              "type": "array",
+                              "minItems": 1,
+                              "order": 0,
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "caseSensitive": {
+                              "tittle": "caseSensitive",
+                              "type": "boolean",
+                              "order": 1
+                            }
+                          },
+                          "required": ["filter_name", "values"]
+                        },
+                        {
+                          "title": "numericFilter",
+                          "type": "object",
+                          "properties": {
+                            "filter_name": {
+                              "type": "string",
+                              "const": "numericFilter"
+                            },
+                            "operation": {
+                              "title": "operation",
+                              "type": "array",
+                              "order": 1,
+                              "items": {
+                                "title": "ValidEnums",
+                                "enum": [
+                                  "OPERATION_UNSPECIFIED",
+                                  "EQUAL",
+                                  "LESS_THAN",
+                                  "LESS_THAN_OR_EQUAL",
+                                  "GREATER_THAN",
+                                  "GREATER_THAN_OR_EQUAL"
+                                ]
+                              }
+                            },
+                            "value": {
+                              "tittle": "value",
+                              "type": "object",
+                              "order": 0,
+                              "oneOf": [
+                                {
+                                  "title": "int64Value",
+                                  "type": "object",
+                                  "properties": {
+                                    "value_type": {
+                                      "type": "string",
+                                      "const": "int64Value"
+                                    },
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": ["value_type", "value"]
+                                },
+                                {
+                                  "title": "doubleValue",
+                                  "type": "object",
+                                  "properties": {
+                                    "value_type": {
+                                      "type": "string",
+                                      "const": "doubleValue"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": ["value_type", "value"]
+                                }
+                              ]
+                            }
+                          },
+                          "required": ["filter_name", "operation", "value"]
+                        },
+                        {
+                          "title": "betweenFilter",
+                          "type": "object",
+                          "properties": {
+                            "filter_name": {
+                              "type": "string",
+                              "const": "betweenFilter"
+                            },
+                            "fromValue": {
+                              "tittle": "fromValue",
+                              "type": "object",
+                              "order": 0,
+                              "oneOf": [
+                                {
+                                  "title": "int64Value",
+                                  "type": "object",
+                                  "properties": {
+                                    "value_type": {
+                                      "type": "string",
+                                      "const": "int64Value"
+                                    },
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": ["value_type", "value"]
+                                },
+                                {
+                                  "title": "doubleValue",
+                                  "type": "object",
+                                  "properties": {
+                                    "value_type": {
+                                      "type": "string",
+                                      "const": "doubleValue"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": ["value_type", "value"]
+                                }
+                              ]
+                            },
+                            "toValue": {
+                              "tittle": "toValue",
+                              "type": "object",
+                              "order": 1,
+                              "oneOf": [
+                                {
+                                  "title": "int64Value",
+                                  "type": "object",
+                                  "properties": {
+                                    "value_type": {
+                                      "type": "string",
+                                      "const": "int64Value"
+                                    },
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": ["value_type", "value"]
+                                },
+                                {
+                                  "title": "doubleValue",
+                                  "type": "object",
+                                  "properties": {
+                                    "value_type": {
+                                      "type": "string",
+                                      "const": "doubleValue"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": ["value_type", "value"]
+                                }
+                              ]
+                            }
+                          },
+                          "required": ["filter_name", "fromValue", "toValue"]
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["field_name", "filter"]
+                }
+              ]
+            },
+            "metricFilter": {
+              "title": "Metrics filter",
+              "description": "Metrics filter",
+              "type": "object",
+              "order": 4,
+              "oneOf": [
+                {
+                  "title": "andGroup",
+                  "description": "The FilterExpressions in andGroup have an AND relationship.",
+                  "type": "object",
+                  "properties": {
+                    "filter_type": {
+                      "type": "string",
+                      "const": "andGroup",
+                      "order": 0
+                    },
+                    "expressions": {
+                      "title": "Expressions",
+                      "type": "array",
+                      "order": 1,
+                      "items": {
+                        "title": "Expression",
+                        "type": "object",
+                        "properties": {
+                          "field_name": {
+                            "title": "fieldName",
+                            "type": "string",
+                            "order": 1
+                          },
+                          "filter": {
+                            "title": "filter",
+                            "type": "object",
+                            "order": 2,
+                            "oneOf": [
+                              {
+                                "title": "stringFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "stringFilter"
+                                  },
+                                  "matchType": {
+                                    "title": "matchType",
+                                    "type": "array",
+                                    "order": 1,
+                                    "items": {
+                                      "title": "ValidEnums",
+                                      "enum": [
+                                        "MATCH_TYPE_UNSPECIFIED",
+                                        "EXACT",
+                                        "BEGINS_WITH",
+                                        "ENDS_WITH",
+                                        "CONTAINS",
+                                        "FULL_REGEXP",
+                                        "PARTIAL_REGEXP"
+                                      ]
+                                    }
+                                  },
+                                  "value": {
+                                    "tittle": "value",
+                                    "type": "string",
+                                    "order": 0
+                                  },
+                                  "caseSensitive": {
+                                    "tittle": "caseSensitive",
+                                    "type": "boolean",
+                                    "order": 2
+                                  }
+                                },
+                                "required": ["filter_name", "value"]
+                              },
+                              {
+                                "title": "inListFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "inListFilter"
+                                  },
+                                  "values": {
+                                    "tittle": "values",
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "order": 0,
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "caseSensitive": {
+                                    "tittle": "caseSensitive",
+                                    "type": "boolean",
+                                    "order": 1
+                                  }
+                                },
+                                "required": ["filter_name", "values"]
+                              },
+                              {
+                                "title": "numericFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "numericFilter"
+                                  },
+                                  "operation": {
+                                    "title": "operation",
+                                    "type": "array",
+                                    "order": 1,
+                                    "items": {
+                                      "title": "ValidEnums",
+                                      "enum": [
+                                        "OPERATION_UNSPECIFIED",
+                                        "EQUAL",
+                                        "LESS_THAN",
+                                        "LESS_THAN_OR_EQUAL",
+                                        "GREATER_THAN",
+                                        "GREATER_THAN_OR_EQUAL"
+                                      ]
+                                    }
+                                  },
+                                  "value": {
+                                    "tittle": "value",
+                                    "type": "object",
+                                    "order": 0,
+                                    "oneOf": [
+                                      {
+                                        "title": "int64Value",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "int64Value"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      },
+                                      {
+                                        "title": "doubleValue",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "doubleValue"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "filter_name",
+                                  "operation",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "title": "betweenFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "betweenFilter"
+                                  },
+                                  "fromValue": {
+                                    "tittle": "fromValue",
+                                    "type": "object",
+                                    "order": 0,
+                                    "oneOf": [
+                                      {
+                                        "title": "int64Value",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "int64Value"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      },
+                                      {
+                                        "title": "doubleValue",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "doubleValue"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      }
+                                    ]
+                                  },
+                                  "toValue": {
+                                    "tittle": "toValue",
+                                    "type": "object",
+                                    "order": 1,
+                                    "oneOf": [
+                                      {
+                                        "title": "int64Value",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "int64Value"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      },
+                                      {
+                                        "title": "doubleValue",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "doubleValue"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "filter_name",
+                                  "fromValue",
+                                  "toValue"
+                                ]
+                              }
+                            ]
+                          }
+                        },
+                        "required": ["field_name", "filter"]
+                      }
+                    }
+                  },
+                  "required": ["filter_type", "expressions"]
+                },
+                {
+                  "title": "orGroup",
+                  "type": "object",
+                  "description": "The FilterExpressions in orGroup have an OR relationship.",
+                  "properties": {
+                    "filter_type": {
+                      "type": "string",
+                      "const": "orGroup",
+                      "order": 0
+                    },
+                    "expressions": {
+                      "title": "Expressions",
+                      "type": "array",
+                      "order": 1,
+                      "items": {
+                        "title": "Expression",
+                        "type": "object",
+                        "properties": {
+                          "field_name": {
+                            "title": "fieldName",
+                            "type": "string",
+                            "order": 1
+                          },
+                          "filter": {
+                            "title": "filter",
+                            "type": "object",
+                            "order": 2,
+                            "oneOf": [
+                              {
+                                "title": "stringFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "stringFilter"
+                                  },
+                                  "matchType": {
+                                    "title": "matchType",
+                                    "type": "array",
+                                    "order": 1,
+                                    "items": {
+                                      "title": "ValidEnums",
+                                      "enum": [
+                                        "MATCH_TYPE_UNSPECIFIED",
+                                        "EXACT",
+                                        "BEGINS_WITH",
+                                        "ENDS_WITH",
+                                        "CONTAINS",
+                                        "FULL_REGEXP",
+                                        "PARTIAL_REGEXP"
+                                      ]
+                                    }
+                                  },
+                                  "value": {
+                                    "tittle": "value",
+                                    "type": "string",
+                                    "order": 0
+                                  },
+                                  "caseSensitive": {
+                                    "tittle": "caseSensitive",
+                                    "type": "boolean",
+                                    "order": 2
+                                  }
+                                },
+                                "required": ["filter_name", "value"]
+                              },
+                              {
+                                "title": "inListFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "inListFilter"
+                                  },
+                                  "values": {
+                                    "tittle": "values",
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "order": 0,
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "caseSensitive": {
+                                    "tittle": "caseSensitive",
+                                    "type": "boolean",
+                                    "order": 1
+                                  }
+                                },
+                                "required": ["filter_name", "values"]
+                              },
+                              {
+                                "title": "numericFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "numericFilter"
+                                  },
+                                  "operation": {
+                                    "title": "operation",
+                                    "type": "array",
+                                    "order": 1,
+                                    "items": {
+                                      "title": "ValidEnums",
+                                      "enum": [
+                                        "OPERATION_UNSPECIFIED",
+                                        "EQUAL",
+                                        "LESS_THAN",
+                                        "LESS_THAN_OR_EQUAL",
+                                        "GREATER_THAN",
+                                        "GREATER_THAN_OR_EQUAL"
+                                      ]
+                                    }
+                                  },
+                                  "value": {
+                                    "tittle": "value",
+                                    "type": "object",
+                                    "order": 0,
+                                    "oneOf": [
+                                      {
+                                        "title": "int64Value",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "int64Value"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      },
+                                      {
+                                        "title": "doubleValue",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "doubleValue"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "filter_name",
+                                  "operation",
+                                  "value"
+                                ]
+                              },
+                              {
+                                "title": "betweenFilter",
+                                "type": "object",
+                                "properties": {
+                                  "filter_name": {
+                                    "type": "string",
+                                    "const": "betweenFilter"
+                                  },
+                                  "fromValue": {
+                                    "tittle": "fromValue",
+                                    "type": "object",
+                                    "order": 0,
+                                    "oneOf": [
+                                      {
+                                        "title": "int64Value",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "int64Value"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      },
+                                      {
+                                        "title": "doubleValue",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "doubleValue"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      }
+                                    ]
+                                  },
+                                  "toValue": {
+                                    "tittle": "toValue",
+                                    "type": "object",
+                                    "order": 1,
+                                    "oneOf": [
+                                      {
+                                        "title": "int64Value",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "int64Value"
+                                          },
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      },
+                                      {
+                                        "title": "doubleValue",
+                                        "type": "object",
+                                        "properties": {
+                                          "value_type": {
+                                            "type": "string",
+                                            "const": "doubleValue"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": ["value_type", "value"]
+                                      }
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "filter_name",
+                                  "fromValue",
+                                  "toValue"
+                                ]
+                              }
+                            ]
+                          }
+                        },
+                        "required": ["field_name", "filter"]
+                      }
+                    }
+                  },
+                  "required": ["filter_type", "expressions"]
+                },
+                {
+                  "title": "notExpression",
+                  "type": "object",
+                  "description": "The FilterExpression is NOT of notExpression.",
+                  "properties": {
+                    "filter_type": {
+                      "type": "string",
+                      "const": "notExpression",
+                      "order": 0
+                    },
+                    "expression": {
+                      "title": "Expression",
+                      "type": "object",
+                      "properties": {
+                        "field_name": {
+                          "title": "fieldName",
+                          "type": "string",
+                          "order": 1
+                        },
+                        "filter": {
+                          "title": "filter",
+                          "type": "object",
+                          "order": 2,
+                          "oneOf": [
+                            {
+                              "title": "stringFilter",
+                              "type": "object",
+                              "properties": {
+                                "filter_name": {
+                                  "type": "string",
+                                  "const": "stringFilter"
+                                },
+                                "matchType": {
+                                  "title": "matchType",
+                                  "type": "array",
+                                  "order": 1,
+                                  "items": {
+                                    "title": "ValidEnums",
+                                    "enum": [
+                                      "MATCH_TYPE_UNSPECIFIED",
+                                      "EXACT",
+                                      "BEGINS_WITH",
+                                      "ENDS_WITH",
+                                      "CONTAINS",
+                                      "FULL_REGEXP",
+                                      "PARTIAL_REGEXP"
+                                    ]
+                                  }
+                                },
+                                "value": {
+                                  "tittle": "value",
+                                  "type": "string",
+                                  "order": 0
+                                },
+                                "caseSensitive": {
+                                  "tittle": "caseSensitive",
+                                  "type": "boolean",
+                                  "order": 2
+                                }
+                              },
+                              "required": ["filter_name", "value"]
+                            },
+                            {
+                              "title": "inListFilter",
+                              "type": "object",
+                              "properties": {
+                                "filter_name": {
+                                  "type": "string",
+                                  "const": "inListFilter"
+                                },
+                                "values": {
+                                  "tittle": "values",
+                                  "type": "array",
+                                  "minItems": 1,
+                                  "order": 0,
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "caseSensitive": {
+                                  "tittle": "caseSensitive",
+                                  "type": "boolean",
+                                  "order": 1
+                                }
+                              },
+                              "required": ["filter_name", "values"]
+                            },
+                            {
+                              "title": "numericFilter",
+                              "type": "object",
+                              "properties": {
+                                "filter_name": {
+                                  "type": "string",
+                                  "const": "numericFilter"
+                                },
+                                "operation": {
+                                  "title": "operation",
+                                  "type": "array",
+                                  "order": 1,
+                                  "items": {
+                                    "title": "ValidEnums",
+                                    "enum": [
+                                      "OPERATION_UNSPECIFIED",
+                                      "EQUAL",
+                                      "LESS_THAN",
+                                      "LESS_THAN_OR_EQUAL",
+                                      "GREATER_THAN",
+                                      "GREATER_THAN_OR_EQUAL"
+                                    ]
+                                  }
+                                },
+                                "value": {
+                                  "tittle": "value",
+                                  "type": "object",
+                                  "order": 0,
+                                  "oneOf": [
+                                    {
+                                      "title": "int64Value",
+                                      "type": "object",
+                                      "properties": {
+                                        "value_type": {
+                                          "type": "string",
+                                          "const": "int64Value"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": ["value_type", "value"]
+                                    },
+                                    {
+                                      "title": "doubleValue",
+                                      "type": "object",
+                                      "properties": {
+                                        "value_type": {
+                                          "type": "string",
+                                          "const": "doubleValue"
+                                        },
+                                        "value": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": ["value_type", "value"]
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": ["filter_name", "operation", "value"]
+                            },
+                            {
+                              "title": "betweenFilter",
+                              "type": "object",
+                              "properties": {
+                                "filter_name": {
+                                  "type": "string",
+                                  "const": "betweenFilter"
+                                },
+                                "fromValue": {
+                                  "tittle": "fromValue",
+                                  "type": "object",
+                                  "order": 0,
+                                  "oneOf": [
+                                    {
+                                      "title": "int64Value",
+                                      "type": "object",
+                                      "properties": {
+                                        "value_type": {
+                                          "type": "string",
+                                          "const": "int64Value"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": ["value_type", "value"]
+                                    },
+                                    {
+                                      "title": "doubleValue",
+                                      "type": "object",
+                                      "properties": {
+                                        "value_type": {
+                                          "type": "string",
+                                          "const": "doubleValue"
+                                        },
+                                        "value": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": ["value_type", "value"]
+                                    }
+                                  ]
+                                },
+                                "toValue": {
+                                  "tittle": "toValue",
+                                  "type": "object",
+                                  "order": 1,
+                                  "oneOf": [
+                                    {
+                                      "title": "int64Value",
+                                      "type": "object",
+                                      "properties": {
+                                        "value_type": {
+                                          "type": "string",
+                                          "const": "int64Value"
+                                        },
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": ["value_type", "value"]
+                                    },
+                                    {
+                                      "title": "doubleValue",
+                                      "type": "object",
+                                      "properties": {
+                                        "value_type": {
+                                          "type": "string",
+                                          "const": "doubleValue"
+                                        },
+                                        "value": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": ["value_type", "value"]
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "filter_name",
+                                "fromValue",
+                                "toValue"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "required": ["field_name", "filter"]
+                    }
+                  }
+                },
+                {
+                  "title": "filter",
+                  "type": "object",
+                  "description": "A primitive filter. In the same FilterExpression, all of the filter's field names need to be either all metrics.",
+                  "properties": {
+                    "filter_type": {
+                      "type": "string",
+                      "const": "filter",
+                      "order": 0
+                    },
+                    "field_name": {
+                      "title": "fieldName",
+                      "type": "string",
+                      "order": 1
+                    },
+                    "filter": {
+                      "title": "filter",
+                      "type": "object",
+                      "order": 2,
+                      "oneOf": [
+                        {
+                          "title": "stringFilter",
+                          "type": "object",
+                          "properties": {
+                            "filter_name": {
+                              "type": "string",
+                              "const": "stringFilter"
+                            },
+                            "matchType": {
+                              "title": "matchType",
+                              "type": "array",
+                              "order": 1,
+                              "items": {
+                                "title": "ValidEnums",
+                                "enum": [
+                                  "MATCH_TYPE_UNSPECIFIED",
+                                  "EXACT",
+                                  "BEGINS_WITH",
+                                  "ENDS_WITH",
+                                  "CONTAINS",
+                                  "FULL_REGEXP",
+                                  "PARTIAL_REGEXP"
+                                ]
+                              }
+                            },
+                            "value": {
+                              "tittle": "value",
+                              "type": "string",
+                              "order": 0
+                            },
+                            "caseSensitive": {
+                              "tittle": "caseSensitive",
+                              "type": "boolean",
+                              "order": 2
+                            }
+                          },
+                          "required": ["filter_name", "value"]
+                        },
+                        {
+                          "title": "inListFilter",
+                          "type": "object",
+                          "properties": {
+                            "filter_name": {
+                              "type": "string",
+                              "const": "inListFilter"
+                            },
+                            "values": {
+                              "tittle": "values",
+                              "type": "array",
+                              "minItems": 1,
+                              "order": 0,
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "caseSensitive": {
+                              "tittle": "caseSensitive",
+                              "type": "boolean",
+                              "order": 1
+                            }
+                          },
+                          "required": ["filter_name", "values"]
+                        },
+                        {
+                          "title": "numericFilter",
+                          "type": "object",
+                          "properties": {
+                            "filter_name": {
+                              "type": "string",
+                              "const": "numericFilter"
+                            },
+                            "operation": {
+                              "title": "operation",
+                              "type": "array",
+                              "order": 1,
+                              "items": {
+                                "title": "ValidEnums",
+                                "enum": [
+                                  "OPERATION_UNSPECIFIED",
+                                  "EQUAL",
+                                  "LESS_THAN",
+                                  "LESS_THAN_OR_EQUAL",
+                                  "GREATER_THAN",
+                                  "GREATER_THAN_OR_EQUAL"
+                                ]
+                              }
+                            },
+                            "value": {
+                              "tittle": "value",
+                              "type": "object",
+                              "order": 0,
+                              "oneOf": [
+                                {
+                                  "title": "int64Value",
+                                  "type": "object",
+                                  "properties": {
+                                    "value_type": {
+                                      "type": "string",
+                                      "const": "int64Value"
+                                    },
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": ["value_type", "value"]
+                                },
+                                {
+                                  "title": "doubleValue",
+                                  "type": "object",
+                                  "properties": {
+                                    "value_type": {
+                                      "type": "string",
+                                      "const": "doubleValue"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": ["value_type", "value"]
+                                }
+                              ]
+                            }
+                          },
+                          "required": ["filter_name", "operation", "value"]
+                        },
+                        {
+                          "title": "betweenFilter",
+                          "type": "object",
+                          "properties": {
+                            "filter_name": {
+                              "type": "string",
+                              "const": "betweenFilter"
+                            },
+                            "fromValue": {
+                              "tittle": "fromValue",
+                              "type": "object",
+                              "order": 0,
+                              "oneOf": [
+                                {
+                                  "title": "int64Value",
+                                  "type": "object",
+                                  "properties": {
+                                    "value_type": {
+                                      "type": "string",
+                                      "const": "int64Value"
+                                    },
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": ["value_type", "value"]
+                                },
+                                {
+                                  "title": "doubleValue",
+                                  "type": "object",
+                                  "properties": {
+                                    "value_type": {
+                                      "type": "string",
+                                      "const": "doubleValue"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": ["value_type", "value"]
+                                }
+                              ]
+                            },
+                            "toValue": {
+                              "tittle": "toValue",
+                              "type": "object",
+                              "order": 1,
+                              "oneOf": [
+                                {
+                                  "title": "int64Value",
+                                  "type": "object",
+                                  "properties": {
+                                    "value_type": {
+                                      "type": "string",
+                                      "const": "int64Value"
+                                    },
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": ["value_type", "value"]
+                                },
+                                {
+                                  "title": "doubleValue",
+                                  "type": "object",
+                                  "properties": {
+                                    "value_type": {
+                                      "type": "string",
+                                      "const": "doubleValue"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": ["value_type", "value"]
+                                }
+                              ]
+                            }
+                          },
+                          "required": ["filter_name", "fromValue", "toValue"]
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["field_name", "filter"]
+                }
+              ]
+            }
+          },
+          "required": ["name", "dimensions", "metrics"]
+        }
       },
       "window_in_days": {
         "type": "integer",
-        "title": "Data request time increment in days",
-        "description": "The time increment used by the connector when requesting data from the Google Analytics API. More information is available in the <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\">the docs</a>. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. Not applied to custom Cohort reports.",
+        "title": "Data Request Interval (Days)",
+        "description": "The interval in days for each data request made to the Google Analytics API. A larger value speeds up data sync, but increases the chance of data sampling, which may result in inaccuracies. We recommend a value of 1 to minimize sampling, unless speed is an absolute priority over accuracy. Acceptable values range from 1 to 364. Does not apply to custom Cohort reports. More information is available in <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-data-api\">the documentation</a>.",
         "examples": [30, 60, 90, 120, 200, 364],
         "minimum": 1,
         "maximum": 364,
         "default": 1,
-        "order": 4
+        "order": 5
       }
     }
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": [
-      "credentials",
-      "auth_type"
-    ],
+    "predicate_key": ["credentials", "auth_type"],
     "predicate_value": "Client",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
@@ -125,17 +2122,11 @@
         "properties": {
           "access_token": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "access_token"
-            ]
+            "path_in_connector_config": ["credentials", "access_token"]
           },
           "refresh_token": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "refresh_token"
-            ]
+            "path_in_connector_config": ["credentials", "refresh_token"]
           }
         }
       },
@@ -155,17 +2146,11 @@
         "properties": {
           "client_id": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "client_id"
-            ]
+            "path_in_connector_config": ["credentials", "client_id"]
           },
           "client_secret": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "client_secret"
-            ]
+            "path_in_connector_config": ["credentials", "client_secret"]
           }
         }
       }

@@ -41,7 +41,7 @@ public class UploaderConfig {
   }
 
   public UploaderType getUploaderType() {
-    return (isGcsUploadingMode() ? UploaderType.AVRO : UploaderType.STANDARD);
+    return (isGcsUploadingMode() ? UploaderType.CSV : UploaderType.STANDARD);
   }
 
   public BigQueryRecordFormatter getFormatter() {

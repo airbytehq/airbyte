@@ -16,6 +16,7 @@ import backoff
 import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
@@ -25,6 +26,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError, codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
@@ -70,6 +72,35 @@ def retry_token_expired_handler(**kwargs):
         HubspotInvalidAuth,
         **kwargs,
     )
+
+
+class RecordUnnester:
+    def __init__(self, fields: Optional[List[str]] = None):
+        self.fields = fields or []
+
+    def unnest(self, records: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
+        """
+        In order to not make the users query their destinations for complicated json fields, duplicate some nested data as top level fields.
+        For instance:
+        {"id": 1, "updatedAt": "2020-01-01", "properties": {"hs_note_body": "World's best boss", "hs_created_by": "Michael Scott"}}
+        becomes
+        {
+            "id": 1,
+            "updatedAt": "2020-01-01",
+            "properties": {"hs_note_body": "World's best boss", "hs_created_by": "Michael Scott"},
+            "properties_hs_note_body": "World's best boss",
+            "properties_hs_created_by": "Michael Scott"
+        }
+        """
+
+        for record in records:
+            fields_to_unnest = self.fields + ["properties"]
+            data_to_unnest = {field: record.get(field, {}) for field in fields_to_unnest}
+            unnested_data = {
+                f"{top_level_name}_{name}": value for (top_level_name, data) in data_to_unnest.items() for (name, value) in data.items()
+            }
+            final = {**record, **unnested_data}
+            yield final
 
 
 def retry_connection_handler(**kwargs):
@@ -183,20 +214,26 @@ class API:
         if response.headers.get("content-type") == "application/json;charset=utf-8" and response.status_code != HTTPStatus.OK:
             message = response.json().get("message")
 
-        if response.status_code == HTTPStatus.FORBIDDEN:
-            """Once hit the forbidden endpoint, we return the error message from response."""
-            pass
+        if response.status_code == HTTPStatus.BAD_REQUEST:
+            message = f"Request to {response.url} didn't succeed. Please verify your credentials and try again.\nError message from Hubspot API: {message}"
+            logger.warning(message)
+        elif response.status_code == HTTPStatus.FORBIDDEN:
+            message = f"The authenticated user does not have permissions to access the URL {response.url}. Verify your permissions to access this endpoint."
+            logger.warning(message)
         elif response.status_code in (HTTPStatus.UNAUTHORIZED, CLOUDFLARE_ORIGIN_DNS_ERROR):
-            raise HubspotInvalidAuth(message, response=response)
+            message = (
+                "The user cannot be authorized with provided credentials. Please verify that your credentails are valid and try again."
+            )
+            raise HubspotInvalidAuth(internal_message=message, failure_type=FailureType.config_error, response=response)
         elif response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
             retry_after = response.headers.get("Retry-After")
+            message = f"You have reached your Hubspot API limit. We will resume replication once after {retry_after} seconds.\nSee https://developers.hubspot.com/docs/api/usage-details"
             raise HubspotRateLimited(
-                f"429 Rate Limit Exceeded: API rate-limit has been reached until {retry_after} seconds."
-                " See https://developers.hubspot.com/docs/api/usage-details",
+                message,
                 response=response,
             )
         elif response.status_code in (HTTPStatus.BAD_GATEWAY, HTTPStatus.SERVICE_UNAVAILABLE):
-            raise HubspotTimeout(message, response=response)
+            raise HubspotTimeout(message, response)
         else:
             response.raise_for_status()
 
@@ -221,16 +258,16 @@ class API:
         if not response.ok or "results" not in data:
             self.logger.warn(self._parse_and_handle_errors(response))
             return ()
+        for metadata in data["results"]:
+            properties = self.get_properties(raw_schema=metadata)
+            schema = self.generate_schema(properties)
+            yield metadata["name"], metadata["fullyQualifiedName"], schema, properties
 
-        return (
-            (metadata["name"], metadata["fullyQualifiedName"], self.generate_schema(raw_schema=metadata)) for metadata in data["results"]
-        )
+    def get_properties(self, raw_schema: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {field["name"]: self._field_to_property_schema(field) for field in raw_schema["properties"]}
 
-    def generate_schema(self, raw_schema: Mapping[str, Any]) -> Mapping[str, Any]:
-        properties = {}
-        for field in raw_schema["properties"]:
-            properties[field["name"]] = self._field_to_property_schema(field)
-
+    def generate_schema(self, properties: Mapping[str, Any]) -> Mapping[str, Any]:
+        unnested_properties = {f"properties_{property_name}": property_value for (property_name, property_value) in properties.items()}
         schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": ["null", "object"],
@@ -241,6 +278,7 @@ class API:
                 "updatedAt": {"type": ["null", "string"], "format": "date-time"},
                 "archived": {"type": ["null", "boolean"]},
                 "properties": {"type": ["null", "object"], "properties": properties},
+                **unnested_properties,
             },
         }
 
@@ -284,6 +322,11 @@ class Stream(HttpStream, ABC):
     denormalize_records: bool = False  # one record from API response can result in multiple records emitted
     granted_scopes: Set = None
     properties_scopes: Set = None
+    unnest_fields: Optional[List[str]] = None
+
+    @cached_property
+    def record_unnester(self):
+        return RecordUnnester(self.unnest_fields)
 
     @property
     @abstractmethod
@@ -358,7 +401,12 @@ class Stream(HttpStream, ABC):
     def get_json_schema(self) -> Mapping[str, Any]:
         json_schema = super().get_json_schema()
         if self.properties:
-            json_schema["properties"]["properties"] = {"type": "object", "properties": self.properties}
+            properties = {"properties": {"type": "object", "properties": self.properties}}
+            unnested_properties = {
+                f"properties_{property_name}": property_value for (property_name, property_value) in self.properties.items()
+            }
+            default_props = json_schema["properties"]
+            json_schema["properties"] = {**default_props, **properties, **unnested_properties}
         return json_schema
 
     @retry_token_expired_handler(max_tries=5)
@@ -453,7 +501,7 @@ class Stream(HttpStream, ABC):
 
                 if self.filter_old_records:
                     records = self._filter_old_records(records)
-                yield from records
+                yield from self.record_unnester.unnest(records)
 
                 next_page_token = self.next_page_token(response)
                 if not next_page_token:
@@ -462,7 +510,11 @@ class Stream(HttpStream, ABC):
             # Always return an empty generator just in case no records were ever yielded
             yield from []
         except requests.exceptions.HTTPError as e:
-            raise e
+            response = e.response
+            if response.status_code == HTTPStatus.UNAUTHORIZED:
+                raise AirbyteTracedException("The authentication to HubSpot has expired. Re-authenticate to restore access to HubSpot.")
+            else:
+                raise e
 
     def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
         try:
@@ -1100,6 +1152,7 @@ class CRMSearchStream(IncrementalStream, ABC):
                 )
                 records = self._flat_associations(records)
             records = self._filter_old_records(records)
+            records = self.record_unnester.unnest(records)
 
             for record in records:
                 cursor = self._field_to_datetime(record[self.updated_at_field])
@@ -1244,6 +1297,7 @@ class Campaigns(ClientSideIncrementalStream):
     cursor_field_datetime_format = "x"
     primary_key = "id"
     scopes = {"crm.lists.read"}
+    unnest_fields = ["counters"]
 
     def read_records(
         self,
@@ -1255,7 +1309,7 @@ class Campaigns(ClientSideIncrementalStream):
         for row in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
             record, response = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
             if self.filter_by_state(stream_state=stream_state, record=row):
-                yield {**row, **record}
+                yield from self.record_unnester.unnest([{**row, **record}])
 
 
 class ContactLists(IncrementalStream):
@@ -1271,8 +1325,10 @@ class ContactLists(IncrementalStream):
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     limit_field = "count"
+    primary_key = "listId"
     need_chunk = False
     scopes = {"crm.lists.read"}
+    unnest_fields = ["metaData"]
 
 
 class ContactsListMemberships(Stream):
@@ -1439,6 +1495,8 @@ class EngagementsAll(EngagementsABC):
     Note: Returns all engagements records ordered by 'createdAt' (not 'lastUpdated') field
     """
 
+    unnest_fields = ["associations", "metadata"]
+
     @property
     def url(self):
         return "/engagements/v1/engagements/paged"
@@ -1460,6 +1518,7 @@ class EngagementsRecent(EngagementsABC):
 
     total_records_limit = 10000
     last_days_limit = 29
+    unnest_fields = ["associations", "metadata"]
 
     @property
     def url(self):
@@ -1515,6 +1574,8 @@ class Engagements(EngagementsABC, IncrementalStream):
     - EngagementsAll which extracts all records, but supports filter on connector side
     """
 
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
     @property
     def url(self):
         return "/engagements/v1/engagements/paged"
@@ -1539,7 +1600,6 @@ class Engagements(EngagementsABC, IncrementalStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-
         self.latest_cursor = None
 
         # The date we need records since
@@ -1680,6 +1740,27 @@ class Owners(ClientSideIncrementalStream):
     scopes = {"crm.objects.owners.read"}
 
 
+class OwnersArchived(ClientSideIncrementalStream):
+    """Archived Owners, API v3"""
+
+    url = "/crm/v3/owners"
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"crm.objects.owners.read"}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["archived"] = "true"
+        return params
+
+
 class PropertyHistory(Stream):
     """Contacts Endpoint, API v1
     Is used to get all Contacts and the history of their respective
@@ -1695,6 +1776,7 @@ class PropertyHistory(Stream):
     data_field = "contacts"
     page_field = "vid-offset"
     page_filter = "vidOffset"
+    primary_key = "vid"
     denormalize_records = True
     limit_field = "count"
     limit = 100
@@ -1757,6 +1839,7 @@ class Workflows(ClientSideIncrementalStream):
     cursor_field_datetime_format = "x"
     primary_key = "id"
     scopes = {"automation"}
+    unnest_fields = ["contactListIds"]
 
 
 class Companies(CRMSearchStream):
@@ -1776,27 +1859,18 @@ class Contacts(CRMSearchStream):
 
 
 class ContactsMergedAudit(Stream):
-
     url = "/contacts/v1/contact/vids/batch/"
     updated_at_field = "timestamp"
     scopes = {"crm.objects.contacts.read"}
+    unnest_fields = ["merged_from_email", "merged_to_email"]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.config = kwargs
 
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """Override get_json_schema defined in Stream class
-        Final object does not have properties field
-        We return JSON schema as defined in :
-        source_hubspot/schemas/contacts_merged_audit.json
-        """
-        return super(Stream, self).get_json_schema()
-
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-
         slices = []
 
         # we can query a max of 100 contacts at a time
@@ -1809,7 +1883,7 @@ class ContactsMergedAudit(Stream):
         contacts.filter_old_records = False
 
         for contact in contacts.read_records(sync_mode=SyncMode.full_refresh):
-            if contact["properties"].get("hs_merged_object_ids"):
+            if contact.get("properties_hs_merged_object_ids"):
                 contact_batch.append(contact["id"])
 
                 if len(contact_batch) == max_contacts:
@@ -1924,11 +1998,12 @@ class CustomObject(CRMSearchStream, ABC):
     primary_key = "id"
     scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
 
-    def __init__(self, entity: str, schema: Mapping[str, Any], fully_qualified_name: str, **kwargs):
+    def __init__(self, entity: str, schema: Mapping[str, Any], fully_qualified_name: str, custom_properties: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self.entity = entity
         self.schema = schema
         self.fully_qualified_name = fully_qualified_name
+        self.custom_properties = custom_properties
 
     @property
     def name(self) -> str:
@@ -1939,8 +2014,8 @@ class CustomObject(CRMSearchStream, ABC):
 
     @property
     def properties(self) -> Mapping[str, Any]:
-        # do not make extra api queries
-        return self.get_json_schema()["properties"]["properties"]["properties"]
+        # do not make extra api calls
+        return self.custom_properties
 
 
 class EmailSubscriptions(Stream):

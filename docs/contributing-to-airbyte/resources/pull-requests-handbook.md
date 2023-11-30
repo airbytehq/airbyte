@@ -43,6 +43,7 @@ When creating or updating connectors, we spend a lot of time manually transcribi
 Changes to connector behavior should always be accompanied by a version bump and a changelog entry. We use [semantic versioning](https://semver.org/) to version changes to connectors. Since connectors are a bit different from APIs, we have our own take on semantic versioning, focusing on maintaining the best user experience of using a connector.
 
 - Major: a version in which a change is made which requires manual intervention (update to config or configured catalog) for an existing connection to continue to succeed, or one in which data that was previously being synced will no longer be synced
+    - Note that a category of "user intervention" is a schema change in the destination, as users will be required to update downstream reports and tools. A change that leads to a differnt final table in the destination is a breaking change
 - Minor: a version that introduces user-facing functionality in a backwards compatible manner
 - Patch: a version that introduces backwards compatible bug fixes or performance improvements
 

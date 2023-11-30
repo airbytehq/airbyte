@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "User Fields",
+  "type": "object",
+  "properties": {
+    "active": {
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "number"]
+    },
+    "key": {
+      "type": ["null", "string"]
+    },
+    "position": {
+      "type": ["null", "number"]
+    },
+    "raw_description": {
+      "type": ["null", "string"]
+    },
+    "raw_title": {
+      "type": ["null", "string"]
+    },
+    "regexp_for_validation": {
+      "type": ["null", "string"]
+    },
+    "system": {
+      "type": ["null", "boolean"]
+    },
+    "tag": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "type": ["null", "string"]
+    }
+  }
+}

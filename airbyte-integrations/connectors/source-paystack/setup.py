@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6.1", "connector-acceptance-test", "requests-mock"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6.1", "requests-mock"]
 
 setup(
     name="source_paystack",

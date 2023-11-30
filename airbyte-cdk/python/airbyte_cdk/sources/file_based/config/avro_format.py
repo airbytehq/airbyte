@@ -2,16 +2,22 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic import BaseModel, Field
-from typing_extensions import Literal
 
 
 class AvroFormat(BaseModel):
-    filetype: Literal["avro"] = "avro"
+    class Config(OneOfOptionConfig):
+        title = "Avro Format"
+        discriminator = "filetype"
 
-    # This option is not recommended, but necessary for backwards compatibility
-    decimal_as_float: bool = Field(
-        title="Convert Decimal Fields to Floats",
-        description="Whether to convert decimal fields to floats. There is a loss of precision when converting decimals to floats, so this is not recommended.",
+    filetype: str = Field(
+        "avro",
+        const=True,
+    )
+
+    double_as_string: bool = Field(
+        title="Convert Double Fields to Strings",
+        description="Whether to convert double fields to strings. This is recommended if you have decimal numbers with a high degree of precision because there can be a loss precision when handling floating point numbers.",
         default=False,
     )

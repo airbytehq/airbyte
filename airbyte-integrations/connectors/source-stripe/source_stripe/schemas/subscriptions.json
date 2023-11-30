@@ -233,6 +233,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "ended_at": {
       "type": ["null", "number"]
     },
@@ -320,10 +323,7 @@
       }
     },
     "default_tax_rates": {
-      "type": ["null", "array"],
-      "items": {
-        "$ref": "tax_rates.json"
-      }
+      "$ref": "tax_rates.json"
     },
     "pause_collection": {
       "type": ["null", "object"],
@@ -442,6 +442,9 @@
           "type": ["null", "boolean"]
         }
       }
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }

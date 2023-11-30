@@ -1,13 +1,57 @@
 [
-   {
-     "type": "STREAM",
-     "stream": {
-       "stream_state": {
-         "LastUpdateDate": "2121-07-01T00:00:00Z"
-       },
-       "stream_descriptor": {
-         "name": "Orders"
-       }
-     }
-   }
- ]
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "LastUpdateDate": "2121-07-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "OrderItems"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "LastUpdateDate": "2121-07-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "Orders"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_AFN_INVENTORY_DATA"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_AFN_INVENTORY_DATA_BY_COUNTRY"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "dataEndTime": "2121-07-01"
+      },
+      "stream_descriptor": {
+        "name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
+      }
+    }
+  }
+]

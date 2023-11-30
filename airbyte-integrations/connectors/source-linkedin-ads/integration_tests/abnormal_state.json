@@ -30,13 +30,6 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "lastModified": "2050-01-01" },
-      "stream_descriptor": { "name": "ad_direct_sponsored_contents" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
       "stream_state": { "end_date": "2050-01-01" },
       "stream_descriptor": { "name": "ad_campaign_analytics" }
     }
@@ -46,6 +39,69 @@
     "stream": {
       "stream_state": { "end_date": "2050-01-01" },
       "stream_descriptor": { "name": "ad_creative_analytics" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "end_date": "2050-01-01" },
+      "stream_descriptor": { "name": "ad_impression_device_analytics" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "end_date": "2050-01-01" },
+      "stream_descriptor": { "name": "ad_member_company_size_analytics" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "end_date": "2050-01-01" },
+      "stream_descriptor": { "name": "ad_member_country_analytics" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "end_date": "2050-01-01" },
+      "stream_descriptor": { "name": "ad_member_job_function_analytics" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "end_date": "2050-01-01" },
+      "stream_descriptor": { "name": "ad_member_job_title_analytics" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "end_date": "2050-01-01" },
+      "stream_descriptor": { "name": "ad_member_industry_analytics" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "end_date": "2050-01-01" },
+      "stream_descriptor": { "name": "ad_member_seniority_analytics" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "end_date": "2050-01-01" },
+      "stream_descriptor": { "name": "ad_member_region_analytics" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "end_date": "2050-01-01" },
+      "stream_descriptor": { "name": "ad_member_company_analytics" }
     }
   }
 ]

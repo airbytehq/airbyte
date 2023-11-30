@@ -22,6 +22,7 @@ def setup_responses(
     targeting_response=None,
     product_ads_response=None,
     generic_response=None,
+    creatives_response=None,
 ):
     responses.add(
         responses.POST,
@@ -64,6 +65,12 @@ def setup_responses(
             "https://advertising-api.amazon.com/sd/productAds",
             body=product_ads_response,
         )
+    if creatives_response:
+        responses.add(
+            responses.GET,
+            "https://advertising-api.amazon.com/sd/creatives",
+            body=creatives_response,
+        )
     if generic_response:
         responses.add(
             responses.GET,
@@ -72,8 +79,8 @@ def setup_responses(
         )
 
 
-def get_all_stream_records(stream):
-    records = stream.read_records(SyncMode.full_refresh)
+def get_all_stream_records(stream, stream_slice=None):
+    records = stream.read_records(SyncMode.full_refresh, stream_slice=stream_slice)
     return [r for r in records]
 
 
@@ -217,23 +224,19 @@ def test_streams_campaigns_pagination_403_error_expected(mocker, config, profile
         ("sponsored_display_ad_groups", "sd/adGroups"),
         ("sponsored_display_product_ads", "sd/productAds"),
         ("sponsored_display_targetings", "sd/targets"),
+        ("sponsored_display_creatives", "sd/creatives"),
     ],
 )
 @responses.activate
 def test_streams_displays(
-    config,
-    stream_name,
-    endpoint,
-    profiles_response,
-    adgroups_response,
-    targeting_response,
-    product_ads_response,
+    config, stream_name, endpoint, profiles_response, adgroups_response, targeting_response, product_ads_response, creatives_response
 ):
     setup_responses(
         profiles_response=profiles_response,
         adgroups_response=adgroups_response,
         targeting_response=targeting_response,
         product_ads_response=product_ads_response,
+        creatives_response=creatives_response,
     )
 
     source = SourceAmazonAds()
@@ -273,3 +276,23 @@ def test_streams_brands_and_products(config, stream_name, endpoint, profiles_res
     records = get_all_stream_records(test_stream)
     assert records == []
     assert any([endpoint in call.request.url for call in responses.calls])
+
+
+@responses.activate
+def test_sponsored_product_ad_group_bid_recommendations_404_error(caplog, config, profiles_response):
+    setup_responses(profiles_response=profiles_response)
+    responses.add(
+        responses.GET,
+        "https://advertising-api.amazon.com/v2/sp/adGroups/xxx/bidRecommendations",
+        json={
+            "code": "404",
+            "details": "404 Either the specified ad group identifier was not found or the specified ad group was found but no associated bid was found.",
+        },
+        status=404,
+    )
+    source = SourceAmazonAds()
+    streams = source.streams(config)
+    test_stream = get_stream_by_name(streams, "sponsored_product_ad_group_bid_recommendations")
+    records = get_all_stream_records(test_stream, stream_slice={"profileId": "1231", "adGroupId": "xxx"})
+    assert records == []
+    assert "Skip current AdGroup because the specified ad group has no associated bid" in caplog.text

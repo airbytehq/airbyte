@@ -1,18 +1,28 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.2.0'
+    features = ['db-destinations']
+    useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.iceberg.IcebergDestination'
 }
 
 dependencies {
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation('org.apache.spark:spark-sql_2.13:3.3.2') {
         exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
@@ -39,11 +49,8 @@ dependencies {
     implementation "org.postgresql:postgresql:42.5.0"
     implementation "commons-collections:commons-collections:3.2.2"
 
-    testImplementation libs.connectors.testcontainers.postgresql
-    integrationTestJavaImplementation libs.connectors.testcontainers.postgresql
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-iceberg')
+    testImplementation libs.testcontainers.postgresql
+    integrationTestJavaImplementation libs.testcontainers.postgresql
 
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
@@ -56,8 +63,4 @@ dependencies {
 
 test {
     jvmArgs = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens=java.base/java.nio=ALL-UNNAMED']
-}
-
-task prepareKotlinBuildScriptModel {
-
 }

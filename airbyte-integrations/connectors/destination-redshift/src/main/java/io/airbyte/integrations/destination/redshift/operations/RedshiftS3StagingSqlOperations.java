@@ -6,19 +6,19 @@ package io.airbyte.integrations.destination.redshift.operations;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption;
+import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryptionBlobDecorator;
+import io.airbyte.cdk.integrations.destination.s3.EncryptionConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations;
+import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
+import io.airbyte.cdk.integrations.destination.staging.StagingOperations;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.redshift.manifest.Entry;
 import io.airbyte.integrations.destination.redshift.manifest.Manifest;
-import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
-import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryptionBlobDecorator;
-import io.airbyte.integrations.destination.s3.EncryptionConfig;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.S3StorageOperations;
-import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
-import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.util.Base64;
 import java.util.Base64.Encoder;
 import java.util.List;
@@ -65,6 +65,11 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
     final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     return nameTransformer.applyDefaultCase(String.format("%s%s/%s_%02d_%02d_%02d_%s/",
         prefix,
+        // TODO switch this to use the raw table name. This is so that after DV2, the stage names are still
+        // unique per stream.
+        // For example, if there are two streams public1.users and public2.users, we would want their stages
+        // to be
+        // airbyte_internal.public1_raw__stream_users and airbyte_internal.public2_raw__stream_users
         getStageName(namespace, streamName),
         writeDatetime.year().get(),
         writeDatetime.monthOfYear().get(),

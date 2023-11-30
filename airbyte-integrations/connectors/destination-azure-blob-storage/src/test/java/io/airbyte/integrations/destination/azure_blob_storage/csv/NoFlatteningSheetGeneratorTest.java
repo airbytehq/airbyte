@@ -9,8 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertLinesMatch;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.jackson.MoreMappers;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
