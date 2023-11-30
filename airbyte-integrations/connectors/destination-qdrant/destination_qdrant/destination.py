@@ -6,10 +6,10 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
+from airbyte_cdk.destinations.vector_db_based.document_processor import DocumentProcessor
 from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
-from airbyte_cdk.destinations.vector_db_based.document_processor import DocumentProcessor
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_qdrant.config import ConfigModel
