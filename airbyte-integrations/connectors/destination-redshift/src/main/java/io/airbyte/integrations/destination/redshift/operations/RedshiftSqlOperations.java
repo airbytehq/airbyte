@@ -46,12 +46,15 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   @Override
   protected String createTableQueryV1(final String schemaName, final String tableName) {
-    final DSLContext dsl = getDslContext();
-    return dsl.createTableIfNotExists(name(schemaName, tableName))
-        .column(COLUMN_NAME_AB_ID, SQLDataType.VARCHAR.nullable(false))
-        .column(COLUMN_NAME_DATA, new DefaultDataType<>(null, String.class, "super").nullable(false))
-        .column(COLUMN_NAME_EMITTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE.defaultValue(DSL.function("GETDATE", SQLDataType.TIMESTAMPWITHTIMEZONE)))
-        .getSQL();
+    return String.format("""
+                         CREATE TABLE IF NOT EXISTS %s.%s (
+                          %s VARCHAR PRIMARY KEY,
+                          %s SUPER,
+                          %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
+                          """, schemaName, tableName,
+                         JavaBaseConstants.COLUMN_NAME_AB_ID,
+                         JavaBaseConstants.COLUMN_NAME_DATA,
+                         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   @Override
