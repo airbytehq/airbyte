@@ -125,12 +125,6 @@ As the first tab, this would be shown by default if no `TabItem` were marked as 
 
 When configuring this hypothetical connector using OAuth authentication, you should do a dance. Good for you! Since it's not the first `TabItem` in its set, we had to explicitly mark this tab as `default` for it to get top billing.
 
-- You don't need to mark any tab as `default`
-- If you don't, the first tab (here, Basic HTTP) will be the initial selection instead
-- You can use ordinary markdown syntax inside a `TabItem`
-- **however**, due to bugs in our in-app markdown rendering library, you should be dilligent about using empty lines to separate different formatting-related things (surrounding tags and their contents, paragraphs vs lists, etc)
-- You should also avoid indenting `TabItem` tags and their content according to html conventions, since text indented by four spaces (common for html nested inside two levels of tags) can be interpreted as a code block; different markdown rendering tools can handle this inconsistently.
-
 </TabItem>
 </Tabs>
 ```
