@@ -93,6 +93,7 @@ def bind_docker_container_to_tailscale(dagger_client: Client, docker_container: 
     return (
         docker_container.with_service_binding("tailscale", tailscale).with_env_variable("ALL_PROXY", "socks5://tailscale:1055/")
         # TODO remove if working, this is a dummy example that will succeed if the tailscale setup works
+        # This exec will fail if the tailscale setup doesn't work as this url is only reachable through VPN
         .with_exec(["curl", "prefect.airbyte.com"], skip_entrypoint=True)
     )
 
@@ -131,6 +132,8 @@ def with_global_dockerd_service(
     dockerd_container = get_base_dockerd_container(dagger_client)
     if tailscale_auth_key := os.environ.get("TAILSCALE_AUTHKEY"):
         dockerd_container = bind_docker_container_to_tailscale(dagger_client, dockerd_container, tailscale_auth_key)
+        # TODO remove if working, ping will succeed if the registry mirror is reachable through VPN
+        dockerd_container = dockerd_container.with_exec(["ping", "172.20.83.84:5000"], skip_entrypoint=True)
         daemon_config_json = get_daemon_config_json(REGISTRY_MIRROR_URL)
     else:
         daemon_config_json = get_daemon_config_json()
