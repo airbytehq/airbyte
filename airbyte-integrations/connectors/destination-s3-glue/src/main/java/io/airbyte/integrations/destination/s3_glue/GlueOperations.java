@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import io.airbyte.cdk.integrations.destination.s3.util.Stringify;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
