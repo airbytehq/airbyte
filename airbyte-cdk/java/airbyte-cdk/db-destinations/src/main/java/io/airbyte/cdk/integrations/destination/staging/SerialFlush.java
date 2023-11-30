@@ -46,12 +46,12 @@ public class SerialFlush {
    */
   @VisibleForTesting
   public static FlushBufferFunction function(
-                                             final JdbcDatabase database,
-                                             final StagingOperations stagingOperations,
-                                             final List<WriteConfig> writeConfigs,
-                                             final ConfiguredAirbyteCatalog catalog,
-                                             TypeAndDedupeOperationValve typerDeduperValve,
-                                             TyperDeduper typerDeduper) {
+      final JdbcDatabase database,
+      final StagingOperations stagingOperations,
+      final List<WriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog,
+      final TypeAndDedupeOperationValve typerDeduperValve,
+      final TyperDeduper typerDeduper) {
     // TODO: (ryankfu) move this block of code that executes before the lambda to #onStartFunction
     final Set<WriteConfig> conflictingStreams = new HashSet<>();
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = new HashMap<>();
@@ -85,7 +85,7 @@ public class SerialFlush {
       final String stagingPath =
           stagingOperations.getStagingPath(
               SerialStagingConsumerFactory.RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(),
-              writeConfig.getWriteDatetime());
+              writeConfig.getOutputTableName(), writeConfig.getWriteDatetime());
       try (writer) {
         writer.flush();
         final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);

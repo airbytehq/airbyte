@@ -105,7 +105,11 @@ class AsyncFlush implements DestinationFlushFunction {
     final String schemaName = writeConfig.getOutputSchemaName();
     final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getOutputTableName());
     final String stagingPath =
-        stagingOperations.getStagingPath(StagingConsumerFactory.RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(),
+        stagingOperations.getStagingPath(
+            StagingConsumerFactory.RANDOM_CONNECTION_ID,
+            schemaName,
+            writeConfig.getStreamName(),
+            writeConfig.getOutputTableName(),
             writeConfig.getWriteDatetime());
     try {
       final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
