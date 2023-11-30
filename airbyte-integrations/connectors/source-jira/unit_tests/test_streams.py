@@ -106,13 +106,8 @@ def test_application_roles_stream_http_error(config, application_roles_response)
 
 
 @responses.activate
-def test_boards_stream(config, boards_response):
+def test_boards_stream(config, mock_board_response):
     Boards.use_cache = False
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board?maxResults=50",
-        json=boards_response,
-    )
 
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
@@ -160,13 +155,8 @@ def test_dashboards_stream(config, dashboards_response):
 
 
 @responses.activate
-def test_filters_stream(config, filters_response):
+def test_filters_stream(config, mock_filter_response):
     Filters.use_cache = False
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/filter/search?maxResults=50&expand=description%2Cowner%2Cjql%2CviewUrl%2CsearchUrl%2Cfavourite%2CfavouritedCount%2CsharePermissions%2CisWritable%2Csubscriptions",
-        json=filters_response,
-    )
 
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
@@ -196,13 +186,8 @@ def test_groups_stream(config, groups_response):
 
 
 @responses.activate
-def test_issues_fields_stream(config, issue_fields_response):
+def test_issues_fields_stream(config, mock_fields_response):
     IssueFields.use_cache = False
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/field?maxResults=50",
-        json=issue_fields_response,
-    )
 
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
@@ -368,7 +353,8 @@ def test_jira_settings_stream(config, jira_settings_response):
 
 
 @responses.activate
-def test_board_issues_stream(config, board_issues_response):
+def test_board_issues_stream(config, mock_board_response, board_issues_response):
+    Boards.use_cache=False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/agile/1.0/board/1/issue?maxResults=50&fields=key&fields=created&fields=updated",
@@ -390,7 +376,8 @@ def test_board_issues_stream(config, board_issues_response):
     stream = BoardIssues(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
     assert len(records) == 1
-    assert len(responses.calls) == 3
+    assert len(responses.calls) == 4
+    Boards.use_cache=True
 
 
 def test_stream_updated_state(config):
@@ -405,7 +392,8 @@ def test_stream_updated_state(config):
 
 
 @responses.activate
-def test_filter_sharing_stream(config, filter_sharing_response):
+def test_filter_sharing_stream(config, mock_filter_response, filter_sharing_response):
+    Filters.use_cache=False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/filter/1/permission?maxResults=50",
@@ -417,7 +405,8 @@ def test_filter_sharing_stream(config, filter_sharing_response):
     stream = FilterSharing(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
     assert len(records) == 1
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
+    Filters.use_cache=True
 
 
 @responses.activate
@@ -473,13 +462,8 @@ def test_projects_categories_stream(config, projects_categories_response):
 
 
 @responses.activate
-def test_screens_stream(config, screens_response):
+def test_screens_stream(config, mock_screen_response):
     Screens.use_cache = False
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/screens?maxResults=50",
-        json=screens_response,
-    )
 
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
@@ -491,7 +475,8 @@ def test_screens_stream(config, screens_response):
 
 
 @responses.activate
-def test_screen_tabs_stream(config, screen_tabs_response):
+def test_screen_tabs_stream(config, mock_screen_response, screen_tabs_response):
+    Screens.use_cache = False
     ScreenTabs.use_cache = False
     responses.add(
         responses.GET,
@@ -509,36 +494,24 @@ def test_screen_tabs_stream(config, screen_tabs_response):
     stream = ScreenTabs(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 3
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
     ScreenTabs.use_cache = True
+    Screens.use_cache = True
 
 
 @responses.activate
-def test_sprints_stream(config, sprints_response):
+def test_sprints_stream(config, mock_board_response, mock_sprints_response):
     Sprints.use_cache = False
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board/1/sprint?maxResults=50",
-        json=sprints_response,
-    )
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board/2/sprint?maxResults=50",
-        json=sprints_response,
-    )
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/agile/1.0/board/3/sprint?maxResults=50",
-        json=sprints_response,
-    )
+    Boards.use_cache=False
 
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Sprints(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 3
-    assert len(responses.calls) == 3
+    assert len(responses.calls) == 4
     Sprints.use_cache = True
+    Boards.use_cache = True
 
 
 @responses.activate
@@ -560,7 +533,7 @@ def test_board_does_not_support_sprints(config, caplog):
 
 
 @responses.activate
-def test_sprint_issues_stream(config, sprints_issues_response):
+def test_sprint_issues_stream(config, mock_board_response, mock_fields_response, mock_sprints_response, sprints_issues_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/agile/1.0/sprint/2/issue?maxResults=50&fields=key&fields=status&fields=created&fields=updated",
@@ -592,13 +565,8 @@ def test_time_tracking_stream(config, time_tracking_response):
 
 
 @responses.activate
-def test_users_stream(config, users_response):
+def test_users_stream(config, mock_users_response):
     Users.use_cache = False
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/users/search?maxResults=50",
-        json=users_response,
-    )
 
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
@@ -610,7 +578,8 @@ def test_users_stream(config, users_response):
 
 
 @responses.activate
-def test_users_groups_detailed_stream(config, users_groups_detailed_response):
+def test_users_groups_detailed_stream(config, mock_users_response, users_groups_detailed_response):
+    Users.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/user?maxResults=50&accountId=1&expand=groups%2CapplicationRoles",
@@ -627,7 +596,8 @@ def test_users_groups_detailed_stream(config, users_groups_detailed_response):
     stream = UsersGroupsDetailed(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
     assert len(records) == 4
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
+    Users.use_cache = True
 
 
 @responses.activate
@@ -764,6 +734,7 @@ def test_issues_stream(config, projects_response, mock_issues_responses, issues_
 
 @responses.activate
 def test_issue_comments_stream(config, mock_projects_responses, mock_issues_responses, issue_comments_response):
+    Issues.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/comment?maxResults=50",
@@ -775,11 +746,12 @@ def test_issue_comments_stream(config, mock_projects_responses, mock_issues_resp
     stream = IssueComments(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 2
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
+    Issues.use_cache = True
 
 
 @responses.activate
-def test_issue_custom_field_contexts_stream(config, issue_custom_field_contexts_response):
+def test_issue_custom_field_contexts_stream(config, mock_fields_response, issue_custom_field_contexts_response):
     IssueCustomFieldContexts.use_cache = False
     responses.add(
         responses.GET,
@@ -944,6 +916,7 @@ def test_labels_stream(config, labels_response):
 
 @responses.activate
 def test_issue_worklogs_stream(config, mock_projects_responses, mock_issues_responses, issue_worklogs_response):
+    Issues.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/worklog?maxResults=50",
@@ -955,11 +928,13 @@ def test_issue_worklogs_stream(config, mock_projects_responses, mock_issues_resp
     stream = IssueWorklogs(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
+    Issues.use_cache = True
 
 
 @responses.activate
 def test_issue_watchers_stream(config, mock_projects_responses, mock_issues_responses, issue_watchers_response):
+    Issues.use_cache = False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/watchers?maxResults=50",
@@ -971,11 +946,13 @@ def test_issue_watchers_stream(config, mock_projects_responses, mock_issues_resp
     stream = IssueWatchers(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
+    Issues.use_cache = True
 
 
 @responses.activate
 def test_issue_votes_stream(config, mock_projects_responses, mock_issues_responses, issue_votes_response):
+    Issues.use_cache=False
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/votes?maxResults=50",
@@ -988,7 +965,8 @@ def test_issue_votes_stream(config, mock_projects_responses, mock_issues_respons
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
     assert len(records) == 1
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
+    Issues.use_cache = True
 
 
 @responses.activate

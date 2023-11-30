@@ -295,3 +295,61 @@ def mock_issues_responses(config, issues_response):
         ],
         json={},
     )
+
+@fixture
+def mock_fields_response(config, issue_fields_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/field?maxResults=50",
+        json=issue_fields_response,
+    )
+
+@fixture
+def mock_users_response(config, users_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/users/search?maxResults=50",
+        json=users_response,
+    )
+
+@fixture
+def mock_board_response(config, boards_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/agile/1.0/board?maxResults=50",
+        json=boards_response,
+    )
+
+@fixture
+def mock_screen_response(config, screens_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/screens?maxResults=50",
+        json=screens_response,
+    )
+
+@fixture
+def mock_filter_response(config, filters_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/filter/search?maxResults=50&expand=description%2Cowner%2Cjql%2CviewUrl%2CsearchUrl%2Cfavourite%2CfavouritedCount%2CsharePermissions%2CisWritable%2Csubscriptions",
+        json=filters_response,
+    )
+
+@fixture
+def mock_sprints_response(config, sprints_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/agile/1.0/board/1/sprint?maxResults=50",
+        json=sprints_response,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/agile/1.0/board/2/sprint?maxResults=50",
+        json=sprints_response,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/agile/1.0/board/3/sprint?maxResults=50",
+        json=sprints_response,
+    )
