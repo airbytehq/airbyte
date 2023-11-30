@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.55.2
+concurrent-cdk: factory method initializes concurrent source with default number of max tasks
+
+## 0.55.1
+Vector DB CDK: Add omit_raw_text flag
+
+## 0.55.0
+concurrent cdk: read multiple streams concurrently
+
 ## 0.54.0
 low-code: fix injection of page token if first request
 
