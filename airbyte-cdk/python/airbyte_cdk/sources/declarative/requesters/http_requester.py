@@ -144,6 +144,14 @@ class HttpRequester(Requester):
     def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
         if self.error_handler is None:
             raise ValueError("Cannot interpret response status without an error handler")
+
+        # Change CachedRequest to PreparedRequest for response
+        request = response.request
+        if isinstance(request, requests_cache.CachedRequest):
+            response.request = request.prepare()
+        elif not isinstance(request, requests.PreparedRequest):
+            raise TypeError(f"Got unexpected request type: `{type(request).__name__}`")
+
         return self.error_handler.interpret_response(response)
 
     def get_request_params(
