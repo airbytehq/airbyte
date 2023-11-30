@@ -133,4 +133,4 @@ runs:
         S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ inputs.s3_build_cache_access_key_id }}
         S3_BUILD_CACHE_SECRET_KEY: ${{ inputs.s3_build_cache_secret_key }}
         CI: "True"
-        TAILSCALE_AUTH_KEY: ${{ inputs.tailscale_auth_key }}
+        TAILSCALE_AUTHKEY: ${{ inputs.tailscale_auth_key }}
