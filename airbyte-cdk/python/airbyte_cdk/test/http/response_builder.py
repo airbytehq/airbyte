@@ -1,0 +1,129 @@
+import functools
+import json
+import os
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+from airbyte_cdk.test.http import HttpResponse
+
+
+def _extract(records_field: List[str], response_template: Dict[str, Any]) -> Any:
+    return functools.reduce(lambda a, b: a[b], records_field, response_template)
+
+
+def _replace_value(dictionary: Dict[str, Any], path: List[str], value: Any) -> None:
+    current = dictionary
+    for key in path[:-1]:
+        current = current[key]
+    current[path[-1]] = value
+
+
+class RecordBuilder:
+    def __init__(self, template: Dict[str, Any], id_path: Optional[List[str]], cursor_path: Optional[List[str]]):
+        self._record = template
+        self._id_path = id_path
+        self._cursor_path = cursor_path
+
+        self._validate_template()
+
+    def _validate_template(self) -> None:
+        paths_to_validate = [
+            ("_id_path", self._id_path),
+            ("_cursor_path", self._cursor_path),
+        ]
+        for field_name, field_path in paths_to_validate:
+            try:
+                self._validate_field(field_name, field_path)
+            except KeyError:
+                raise ValueError(f"{field_name} `{field_path}` was provided but it is not part of the template")
+
+    def _validate_field(self, field_name: str, field_path: Optional[List[str]]) -> None:
+        if field_path and not _extract(field_path, self._record):
+            raise ValueError(f"{field_name} `{field_path}` was provided but it is not part of the template")
+
+    def with_id(self, identifier: Any) -> "RecordBuilder":
+        self._set_field("id", self._id_path, identifier)
+        return self
+
+    def with_cursor(self, cursor_value: Any) -> "RecordBuilder":
+        self._set_field("cursor", self._cursor_path, cursor_value)
+        return self
+
+    def _set_field(self, field_name: str, path: Optional[List[str]], value: Any) -> None:
+        if not path:
+            raise ValueError(
+                f"{field_name}_path was not provided and hence, the record {field_name} can't be modified. Please provide `id_field` while "
+                f"instantiating RecordBuilder to leverage this capability"
+            )
+        _replace_value(self._record, path, value)
+
+    def build(self) -> Dict[str, Any]:
+        return self._record
+
+
+class HttpResponseBuilder:
+    def __init__(self, template: Dict[str, Any], records_path: List[str], pagination_strategy: Optional[Callable[[Dict[str, Any]], None]]):
+        self._response = template
+        self._records: List[RecordBuilder] = []
+        self._records_path = records_path
+        self._pagination_strategy = pagination_strategy
+        self._status_code = 200
+
+    def with_record(self, record: RecordBuilder) -> "HttpResponseBuilder":
+        self._records.append(record)
+        return self
+
+    def with_pagination(self) -> "HttpResponseBuilder":
+        if not self._pagination_strategy:
+            raise ValueError(
+                "`pagination_strategy` was not provided and hence, fields related to the pagination can't be modified. Please provide "
+                "`pagination_strategy` while instantiating ResponseBuilder to leverage this capability"
+            )
+        self._pagination_strategy(self._response)
+        return self
+
+    def with_status_code(self, status_code: int) -> "HttpResponseBuilder":
+        self._status_code = status_code
+        return self
+
+    def build(self) -> HttpResponse:
+        _replace_value(self._response, self._records_path, [record.build() for record in self._records])
+        return HttpResponse(json.dumps(self._response), self._status_code)
+
+
+def _get_unit_test_folder() -> Path:
+    path = Path(os.getcwd())
+    while path.name != "unit_tests":
+        if path.name == path.root or path.name == path.drive:
+            raise ValueError(f"Could not fing `unit_tests` folder as a parent of {os.getcwd()}")
+        path = path.parent
+    return path
+
+
+def from_resource_file(resource: str) -> Dict[str, Any]:
+    response_template_filepath = str(_get_unit_test_folder() / "resource" / "http" / "response" / f"{resource}.json")
+    with open(response_template_filepath, "r") as template_file:
+        return json.load(template_file)  # type: ignore  # we assume the dev correctly set up the resource file
+
+
+def create_builders_from_resource(
+    response_template: Dict[str, Any],
+    records_path: List[str],
+    record_id_path: Optional[List[str]] = None,
+    record_cursor_path: Optional[List[str]] = None,
+    pagination_strategy: Optional[Callable[[Dict[str, Any]], None]] = None
+) -> Tuple[RecordBuilder, HttpResponseBuilder]:
+    """
+    This will use the first record define at `records_path` as a template for the records. If more records are defined, they will be ignored
+    """
+    try:
+        record_template = _extract(records_path, response_template)[0]
+        if not record_template:
+            raise ValueError(f"Could not extract any record from template at path `{records_path}`. "
+                             f"Please fix the template to provide a record sample or fix `records_path`.")
+        return (
+            RecordBuilder(record_template, record_id_path, record_cursor_path),
+            HttpResponseBuilder(response_template, records_path, pagination_strategy)
+        )
+    except (IndexError, KeyError) as exception:
+        raise ValueError(f"Could not extract field {records_path} from response template") from exception
