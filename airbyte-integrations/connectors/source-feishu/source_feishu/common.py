@@ -37,6 +37,20 @@ def get_header(config: Mapping[str, Any]) -> Mapping[str, Any]:
     return header
 
 
+def get_table_list(config: Mapping[str, Any], app_token: str):
+    url = f"{BASE_URL}/open-apis/bitable/v1/apps/{app_token}/tables"
+    resp = requests.get(url, headers=get_header(config))
+    resp_json = resp.json()
+    return resp_json.get("data").get("items")
+
+
+def get_table_view_list(config: Mapping[str, Any], app_token: str, table_id: str):
+    url = f"{BASE_URL}/open-apis/bitable/v1/apps/{app_token}/tables/{table_id}/views"
+    resp = requests.get(url, headers=get_header(config))
+    resp_json = resp.json()
+    return resp_json.get("data").get("items")
+
+
 def get_instances_detail(config: Mapping[str, Any], instance_id):
     url = BASE_URL + f"/open-apis/approval/v4/instances/{instance_id}?user_id_type=user_id"
 
@@ -92,20 +106,6 @@ def get_bittabel_info(str):
     return bit_table_info
 
 
-def get_header(config: Mapping[str, Any]) -> Mapping[str, Any]:
-    url = BASE_URL + "/open-apis/auth/v3/tenant_access_token/internal"
-    header = {"Content-Type": "application/json; charset=utf-8", "Accept": "application/json; charset=utf-8"}
-
-    header = {}
-    body = {"app_id": config.get("app_id"), "app_secret": config.get("app_secret")}
-    resp = requests.post(url, headers=header, json=body)
-    resp_json = resp.json()
-    if resp_json.get("code") == 0:
-        header["Authorization"] = "Bearer " + resp_json.get("tenant_access_token")
-
-    return header
-
-
 def get_wiki_spaces_node(config: Mapping[str, Any], node_token: str):
     url = BASE_URL + f"/open-apis/wiki/v2/spaces/get_node?token={node_token}"
 
@@ -119,15 +119,27 @@ def get_wiki_spaces_node(config: Mapping[str, Any], node_token: str):
     return None
 
 
+def get_bitable_data(config: Mapping[str, Any], node_token: str):
+    url = BASE_URL + f"/open-apis/bitable/v1/apps/{node_token}"
+
+    header = get_header(config)
+
+    resp = requests.get(url, headers=header)
+    resp_json = resp.json()
+
+    if resp_json.get("code") == 0:
+        return resp_json.get("data").get("app")
+    return None
+
 def get_table_field(name, type):
     table_field = {
-        "record_list": {"table": True, "view": True},
-        "field_list": {"table": True, "view": False},
-        "view_list": {"table": True, "view": True},
-        "table_list": {"table": True, "view": False},
-        "member_list": {"table": False, "view": False},
-        "role_list": {"table": False, "view": False},
-        "dashboard_list": {"table": False, "view": False},
+        "record": {"table": True, "view": True},
+        "field": {"table": True, "view": False},
+        "view": {"table": True, "view": True},
+        "table": {"table": True, "view": False},
+        "member": {"table": False, "view": False},
+        "role": {"table": False, "view": False},
+        "dashboard": {"table": False, "view": False},
     }
 
     flag = table_field.get(name, False)
@@ -138,13 +150,13 @@ def get_table_field(name, type):
 
 def get_result_node(name):
     result_node = {
-        "record_list": "items",
-        "field_list": "items",
-        "view_list": "items",
-        "table_list": "items",
-        "member_list": "items",
-        "role_list": "items",
-        "dashboard_list": "dashboards",
+        "record": "items",
+        "field": "items",
+        "view": "items",
+        "table": "items",
+        "member": "items",
+        "role": "items",
+        "dashboard": "dashboards",
     }
 
-    return result_node.get(name, False)
+    return result_node.get(name, "")
