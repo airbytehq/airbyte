@@ -93,16 +93,16 @@ def bind_to_tailscale(dagger_client: Client, container_to_bind: Container, tails
     Returns:
         Container: The container bound to the tailscale container.
     """
-    tailscale_auth_key_secret = dagger_client.set_secret("TAILSCALE_AUTHKEY", tailscale_auth_key)
+    tailscale_auth_key_secret = dagger_client.set_secret("TAILSCALE_AUTH_KEY", tailscale_auth_key)
     tailscale = (
         dagger_client.container()
         .from_(TAILSCALE_IMAGE_NAME)
-        .with_secret_variable(name="TAILSCALE_AUTHKEY", secret=tailscale_auth_key_secret)
+        .with_secret_variable(name="TAILSCALE_AUTH_KEY", secret=tailscale_auth_key_secret)
         .with_exec(
             sh_dash_c(
                 [
                     f"tailscaled --tun=userspace-networking --socks5-server=0.0.0.0:{TAILSCALE_PORT} --outbound-http-proxy-listen=0.0.0.0:{TAILSCALE_PORT}",
-                    "tailscale up --authkey $TAILSCALE_AUTHKEY",
+                    "tailscale up --authkey $TAILSCALE_AUTH_KEY",
                 ],
             ),
             skip_entrypoint=True,
@@ -157,7 +157,7 @@ def with_global_dockerd_service(
 ) -> Container:
     """Create a container with a docker daemon running.
     We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
-    It is optionally bound to a tailscale VPN container if the TAILSCALE_AUTHKEY env var is set.
+    It is optionally bound to a tailscale VPN container if the TAILSCALE_AUTH_KEY env var is set.
     Args:
         dagger_client (Client): The dagger client used to create the container.
         docker_hub_username_secret (Optional[Secret]): The DockerHub username secret.
@@ -176,6 +176,7 @@ def with_global_dockerd_service(
         daemon_config_json = get_daemon_config_json()
 
     dockerd_container = dockerd_container.with_new_file("/etc/docker/daemon.json", daemon_config_json)
+    # Docker login happens late because there's a cache buster in the docker login command.
     dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
     return dockerd_container.with_exec(
         ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
