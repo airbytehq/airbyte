@@ -8,7 +8,7 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.test.http.response import HttpResponse
-from airbyte_cdk.test.http.response_builder import HttpResponseBuilder, RecordBuilder, create_builders_from_resource, from_resource_file
+from airbyte_cdk.test.http.response_builder import HttpResponseBuilder, RecordBuilder, create_builders_from_resource, find_template
 
 _RECORDS_FIELD = "records_field"
 _ID_FIELD = "record_id"
