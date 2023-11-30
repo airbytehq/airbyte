@@ -1,8 +1,8 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/milvus",
   "connectionSpecification": {
-    "title": "Milvus Destination Config",
-    "description": "Configuration for the Milvus destination connector, derived from the Vector DB CDK base config.",
+    "title": "Destination Config",
+    "description": "The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,\nas well as to provide type safety for the configuration passed to the destination.\n\nThe configuration model is composed of four parts:\n* Processing configuration\n* Embedding configuration\n* Indexing configuration\n* Advanced configuration\n\nProcessing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.",
     "type": "object",
     "properties": {
       "processing": {

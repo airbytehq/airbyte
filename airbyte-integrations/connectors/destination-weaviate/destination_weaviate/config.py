@@ -115,7 +115,3 @@ class ConfigModel(VectorDBConfigModel):
         FakeEmbeddingConfigModel,
         OpenAICompatibleEmbeddingConfigModel,
     ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
-
-    class Config:
-        title = "Weaviate Destination Config"
-        schema_extra = {"description": "Configuration for the Weaviate destination connector, derived from the Vector DB CDK base config."}
