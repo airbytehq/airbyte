@@ -28,6 +28,7 @@ class RecordSelector(HttpSelector):
 
     Attributes:
         extractor (RecordExtractor): The record extractor responsible for extracting records from a response
+        schema_normalization (TypeTransformer): The record normalizer responsible for casting record values to stream schema types
         record_filter (RecordFilter): The record filter responsible for filtering extracted records
         transformations (List[RecordTransformation]): The transformations to be done on the records
     """
@@ -46,17 +47,17 @@ class RecordSelector(HttpSelector):
         self,
         response: requests.Response,
         stream_state: StreamState,
+        records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-        records_schema: Optional[Mapping[str, Any]] = None,
     ) -> List[Record]:
         """
         Selects records from the response
         :param response: The response to select the records from
         :param stream_state: The stream state
+        :param records_schema: json schema of records to return
         :param stream_slice: The stream slice
         :param next_page_token: The paginator token
-        :param records_schema: json schema of records to return
         :return: List of Records selected from the response
         """
         all_data = self.extractor.extract_records(response)

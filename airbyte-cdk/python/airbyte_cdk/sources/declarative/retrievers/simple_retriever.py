@@ -216,9 +216,9 @@ class SimpleRetriever(Retriever):
         self,
         response: Optional[requests.Response],
         stream_state: StreamState,
+        records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-        records_schema: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Record]:
         if not response:
             self._last_response = None
@@ -229,9 +229,9 @@ class SimpleRetriever(Retriever):
         records = self.record_selector.select_records(
             response=response,
             stream_state=stream_state,
+            records_schema=records_schema,
             stream_slice=stream_slice,
             next_page_token=next_page_token,
-            records_schema=records_schema,
         )
         self._records_from_last_response = records
         return records
@@ -299,14 +299,14 @@ class SimpleRetriever(Retriever):
 
     def read_records(
         self,
+        records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
-        records_schema: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         """
         Fetch a stream's records from an HTTP API source
 
-        :param stream_slice: The stream slice to read data for
         :param records_schema: json schema to describe record
+        :param stream_slice: The stream slice to read data for
         :return: The records read from the API source
         """
         stream_slice = stream_slice or {}  # None-check
@@ -380,8 +380,8 @@ class SimpleRetriever(Retriever):
         self,
         response: Optional[requests.Response],
         stream_state: Mapping[str, Any],
+        records_schema: Mapping[str, Any],
         stream_slice: Optional[Mapping[str, Any]],
-        records_schema: Optional[Mapping[str, Any]] = None
     ) -> Iterable[StreamData]:
         yield from self._parse_response(
             response,
