@@ -23,6 +23,37 @@ from pipelines.consts import (
 from pipelines.helpers.utils import sh_dash_c
 
 
+def get_base_dockerd_container(dagger_client: Client):
+    apk_packages_to_install = [
+        STORAGE_DRIVER,
+        # Curl is only used for debugging purposes.
+        "curl",
+    ]
+    return (
+        dagger_client.container()
+        .from_(consts.DOCKER_DIND_IMAGE)
+        # We set this env var because we need to use a non-default zombie reaper setting.
+        # The reason for this is that by default it will want to set its parent process ID to 1 when reaping.
+        # This won't be possible because of container-ception: dind is running inside the dagger engine.
+        # See https://github.com/krallin/tini#subreaping for details.
+        .with_env_variable("TINI_SUBREAPER", "")
+        .with_exec(
+            sh_dash_c(
+                [
+                    "apk update",
+                    f"apk add {' '.join(apk_packages_to_install)}",
+                    "mkdir /etc/docker",
+                ]
+            )
+        )
+        # Expose the docker host port.
+        .with_exposed_port(DOCKER_HOST_PORT)
+        # Mount the docker cache volumes.
+        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
+        .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
+    )
+
+
 def get_daemon_config_json(registry_mirror_url: Optional[str] = None) -> str:
     """Get the json representation of the docker daemon config.
 
@@ -41,6 +72,47 @@ def get_daemon_config_json(registry_mirror_url: Optional[str] = None) -> str:
     return json.dumps(daemon_config)
 
 
+def bind_docker_container_to_tailscale(dagger_client: Client, docker_container: Container, tailscale_auth_key: str) -> Container:
+    tailscale_auth_key_secret = dagger_client.set_secret("TAILSCALE_AUTHKEY", tailscale_auth_key)
+    tailscale = (
+        dagger_client.container()
+        .from_(TAILSCALE_IMAGE_NAME)
+        .with_secret_variable(name="TAILSCALE_AUTHKEY", secret=tailscale_auth_key_secret)
+        .with_exec(
+            sh_dash_c(
+                [
+                    f"tailscaled --tun=userspace-networking --socks5-server=0.0.0.0:{TAILSCALE_PORT} --outbound-http-proxy-listen=0.0.0.0:{TAILSCALE_PORT}",
+                    "tailscale up --authkey $TAILSCALE_AUTHKEY",
+                ],
+            ),
+            skip_entrypoint=True,
+        )
+        .with_exposed_port(TAILSCALE_PORT)
+    )
+
+    return (
+        docker_container.with_service_binding("tailscale", tailscale).with_env_variable("ALL_PROXY", "socks5://tailscale:1055/")
+        # TODO remove if working, this is a dummy example that will succeed if the tailscale setup works
+        .with_exec(["curl", "prefect.airbyte.com"], skip_entrypoint=True)
+    )
+
+
+def docker_login(
+    docker_container: Container, docker_hub_username_secret: Optional[Secret], docker_hub_password_secret: Optional[Secret]
+) -> Container:
+    if docker_hub_username_secret and docker_hub_password_secret:
+        return (
+            docker_container
+            # We use a cache buster here to guarantee the docker login is always executed.
+            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
+            .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
+            .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
+            .with_exec(sh_dash_c(["docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]), skip_entrypoint=True)
+        )
+    else:
+        return docker_container
+
+
 def with_global_dockerd_service(
     dagger_client: Client,
     docker_hub_username_secret: Optional[Secret] = None,
@@ -56,72 +128,15 @@ def with_global_dockerd_service(
         Container: The container running dockerd as a service
     """
 
-    dockerd_container = dagger_client.container().from_(consts.DOCKER_DIND_IMAGE)
-
+    dockerd_container = get_base_dockerd_container(dagger_client)
     if tailscale_auth_key := os.environ.get("TAILSCALE_AUTHKEY"):
-        tailscale_auth_key_secret = dagger_client.set_secret("TAILSCALE_AUTHKEY", tailscale_auth_key)
-        tailscale = (
-            dagger_client.container()
-            .from_(TAILSCALE_IMAGE_NAME)
-            .with_secret_variable(name="TAILSCALE_AUTHKEY", secret=tailscale_auth_key_secret)
-            .with_exec(
-                sh_dash_c(
-                    [
-                        f"tailscaled --tun=userspace-networking --socks5-server=0.0.0.0:{TAILSCALE_PORT} --outbound-http-proxy-listen=0.0.0.0:{TAILSCALE_PORT}",
-                        "tailscale up --authkey $TAILSCALE_AUTHKEY",
-                        "",  # TODO check if this is needed
-                    ],
-                    skip_entrypoint=True,
-                )
-            )
-            .with_exposed_port(TAILSCALE_PORT)
-        )
-
-        dockerd_container = (
-            dockerd_container.with_service_binding("tailscale", tailscale).with_env_variable("ALL_PROXY", "socks5://tailscale:1055/")
-            # TODO remove if working, this is a dummy example that will succeed if the tailscale setup works
-            .with_exec(["curl prefect.airbyte.com"])
-        )
-
+        dockerd_container = bind_docker_container_to_tailscale(dagger_client, dockerd_container, tailscale_auth_key)
         daemon_config_json = get_daemon_config_json(REGISTRY_MIRROR_URL)
     else:
         daemon_config_json = get_daemon_config_json()
 
-    dockerd_container = (
-        dockerd_container
-        # We set this env var because we need to use a non-default zombie reaper setting.
-        # The reason for this is that by default it will want to set its parent process ID to 1 when reaping.
-        # This won't be possible because of container-ception: dind is running inside the dagger engine.
-        # See https://github.com/krallin/tini#subreaping for details.
-        .with_env_variable("TINI_SUBREAPER", "")
-        .with_exec(
-            sh_dash_c(
-                [
-                    # Update package metadata.
-                    "apk update",
-                    # Install the storage driver package.
-                    f"apk add {STORAGE_DRIVER}",
-                    "mkdir /etc/docker",
-                ]
-            )
-        )
-        .with_new_file("/etc/docker/daemon.json", daemon_config_json)
-        # Expose the docker host port.
-        .with_exposed_port(DOCKER_HOST_PORT)
-        # Mount the docker cache volumes.
-        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
-        .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
-    )
-
-    if docker_hub_username_secret and docker_hub_password_secret:
-        dockerd_container = (
-            dockerd_container
-            # We use a cache buster here to guarantee the docker login is always executed.
-            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-            .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
-            .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
-            .with_exec(sh_dash_c(["docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]), skip_entrypoint=True)
-        )
+    dockerd_container = dockerd_container.with_new_file("/etc/docker/daemon.json", daemon_config_json)
+    dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
     return dockerd_container.with_exec(
         ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
     )
