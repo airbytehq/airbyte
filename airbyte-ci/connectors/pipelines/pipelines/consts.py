@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 import platform
 from enum import Enum
 
@@ -31,7 +32,8 @@ DOCKER_HOST_NAME = "global-docker-host"
 DOCKER_HOST_PORT = 2375
 DOCKER_TMP_VOLUME_NAME = "shared-tmp"
 DOCKER_VAR_LIB_VOLUME_NAME = "docker-cache"
-REGISTRY_MIRROR_URL = "http://172.20.83.84:5000"
+DEFAULT_DOCKER_REGISTRY_MIRROR_URL = "http://172.20.83.84:5000"
+DOCKER_REGISTRY_MIRROR_URL = os.getenv("DOCKER_REGISTRY_MIRROR_URL", DEFAULT_DOCKER_REGISTRY_MIRROR_URL)
 STORAGE_DRIVER = "fuse-overlayfs"  # Because of container-ception, we have to use the fuse-overlayfs storage engine.
 TAILSCALE_IMAGE_NAME = "tailscale/tailscale:stable"
 TAILSCALE_PORT = 1055

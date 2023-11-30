@@ -13,9 +13,9 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineCo
 from pipelines.consts import (
     DOCKER_HOST_NAME,
     DOCKER_HOST_PORT,
+    DOCKER_REGISTRY_MIRROR_URL,
     DOCKER_TMP_VOLUME_NAME,
     DOCKER_VAR_LIB_VOLUME_NAME,
-    REGISTRY_MIRROR_URL,
     STORAGE_DRIVER,
     TAILSCALE_IMAGE_NAME,
     TAILSCALE_PORT,
@@ -23,7 +23,16 @@ from pipelines.consts import (
 from pipelines.helpers.utils import sh_dash_c
 
 
-def get_base_dockerd_container(dagger_client: Client):
+def get_base_dockerd_container(dagger_client: Client) -> Container:
+    """Provision a container to run a docker daemon.
+    It will be used as a docker host for docker-in-docker use cases.
+
+    Args:
+        dagger_client (Client): The dagger client used to create the container.
+
+    Returns:
+        Container: The container to run dockerd as a service
+    """
     apk_packages_to_install = [
         STORAGE_DRIVER,
         # Curl is only used for debugging purposes.
@@ -48,8 +57,9 @@ def get_base_dockerd_container(dagger_client: Client):
         )
         # Expose the docker host port.
         .with_exposed_port(DOCKER_HOST_PORT)
-        # Mount the docker cache volumes.
+        # We cache /var/lib/docker to avoid downloading images and layers multiple times.
         .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
+        # We cache /tmp for file sharing between client and daemon.
         .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
     )
 
@@ -72,7 +82,17 @@ def get_daemon_config_json(registry_mirror_url: Optional[str] = None) -> str:
     return json.dumps(daemon_config)
 
 
-def bind_docker_container_to_tailscale(dagger_client: Client, docker_container: Container, tailscale_auth_key: str) -> Container:
+def bind_to_tailscale(dagger_client: Client, container_to_bind: Container, tailscale_auth_key: str) -> Container:
+    """Bind a container to a tailscale VPN sidecar container.
+
+    Args:
+        dagger_client (Client): The dagger client used to create the tailscale container.
+        container_to_bind (Container): The container to bind to the tailscale container.
+        tailscale_auth_key (str): The tailscale auth key to use.
+
+    Returns:
+        Container: The container bound to the tailscale container.
+    """
     tailscale_auth_key_secret = dagger_client.set_secret("TAILSCALE_AUTHKEY", tailscale_auth_key)
     tailscale = (
         dagger_client.container()
@@ -91,7 +111,7 @@ def bind_docker_container_to_tailscale(dagger_client: Client, docker_container: 
     )
 
     return (
-        docker_container.with_service_binding("tailscale", tailscale).with_env_variable("ALL_PROXY", "socks5://tailscale:1055/")
+        container_to_bind.with_service_binding("tailscale", tailscale).with_env_variable("ALL_PROXY", "socks5://tailscale:1055/")
         # TODO remove if working, this is a dummy example that will succeed if the tailscale setup works
         # This exec will fail if the tailscale setup doesn't work as this url is only reachable through VPN
         .with_exec(["curl", "prefect.airbyte.com"], skip_entrypoint=True)
@@ -99,19 +119,35 @@ def bind_docker_container_to_tailscale(dagger_client: Client, docker_container: 
 
 
 def docker_login(
-    docker_container: Container, docker_hub_username_secret: Optional[Secret], docker_hub_password_secret: Optional[Secret]
+    dockerd_container: Container,
+    docker_registry_username_secret: Optional[Secret],
+    docker_registry_password_secret: Optional[Secret],
+    docker_registry_address: Optional[str] = "docker.io",
 ) -> Container:
-    if docker_hub_username_secret and docker_hub_password_secret:
+    """Login to a docker registry if the username and password secrets are provided.
+
+    Args:
+        dockerd_container (Container): The dockerd_container container to login to the registry.
+        docker_registry_username_secret (Optional[Secret]): The docker registry username secret.
+        docker_registry_password_secret (Optional[Secret]): The docker registry password secret.
+        docker_registry_address (Optional[str]): The docker registry address to login to. Defaults to "docker.io" (DockerHub).
+    Returns:
+        Container: The container with the docker login command executed if the username and password secrets are provided. Noop otherwise.
+    """
+    if docker_registry_username_secret and docker_registry_username_secret:
         return (
-            docker_container
+            dockerd_container
             # We use a cache buster here to guarantee the docker login is always executed.
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-            .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
-            .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
-            .with_exec(sh_dash_c(["docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]), skip_entrypoint=True)
+            .with_secret_variable("DOCKER_REGISTRY_USERNAME", docker_registry_username_secret)
+            .with_secret_variable("DOCKER_REGISTRY_PASSWORD", docker_registry_password_secret)
+            .with_exec(
+                sh_dash_c([f"docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD {docker_registry_address}"]),
+                skip_entrypoint=True,
+            )
         )
     else:
-        return docker_container
+        return dockerd_container
 
 
 def with_global_dockerd_service(
@@ -121,6 +157,7 @@ def with_global_dockerd_service(
 ) -> Container:
     """Create a container with a docker daemon running.
     We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
+    It is optionally bound to a tailscale VPN container if the TAILSCALE_AUTHKEY env var is set.
     Args:
         dagger_client (Client): The dagger client used to create the container.
         docker_hub_username_secret (Optional[Secret]): The DockerHub username secret.
@@ -131,10 +168,10 @@ def with_global_dockerd_service(
 
     dockerd_container = get_base_dockerd_container(dagger_client)
     if tailscale_auth_key := os.environ.get("TAILSCALE_AUTHKEY"):
-        dockerd_container = bind_docker_container_to_tailscale(dagger_client, dockerd_container, tailscale_auth_key)
+        dockerd_container = bind_to_tailscale(dagger_client, dockerd_container, tailscale_auth_key)
         # TODO remove if working, ping will succeed if the registry mirror is reachable through VPN
         dockerd_container = dockerd_container.with_exec(["ping", "172.20.83.84:5000"], skip_entrypoint=True)
-        daemon_config_json = get_daemon_config_json(REGISTRY_MIRROR_URL)
+        daemon_config_json = get_daemon_config_json(DOCKER_REGISTRY_MIRROR_URL)
     else:
         daemon_config_json = get_daemon_config_json()
 
