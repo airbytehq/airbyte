@@ -10,9 +10,18 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .common import BASE_URL, get_bittabel_info, get_date_time, get_dict_key_value, get_header, get_wiki_spaces_node
-from .constraints import REFERAL_SCHEMA, SCHEMA_HEADERS
-from .streams import DashboardList, FeishuInstancesStream, FieldList, MemberList, RecordList, RoleList, TableList, ViewList
+from .common import (
+    BASE_URL,
+    get_bittabel_info,
+    get_date_time,
+    get_dict_key_value,
+    get_header,
+    get_wiki_spaces_node,
+    get_bitable_data,
+    get_table_list,
+    get_table_view_list,
+)
+from .streams import FeishuInstancesStream, FeishuBitableStream
 
 
 # Source
@@ -96,18 +105,47 @@ class SourceFeishu(AbstractSource):
             app_token = bittable_info["app_token"]
             table_id = bittable_info["table_id"]
             view_id = bittable_info["view_id"]
+
             if bit_table_link.find("/wiki/") > -1:
                 node_obj = get_wiki_spaces_node(config, app_token)
                 app_token = node_obj.get("obj_token")
+            else:
+                bit_obj =  get_bitable_data(config, app_token)
 
-            stream_kwargs = {"config": config, "app_token": app_token, "table_id": table_id, "view_id": view_id}
+            stream_kwargs = {
+                "config": config, 
+                "app_token": app_token,
+                "table_id":None,
+                "view_id":None,
+                "object_name": "table", 
+                "object_type": "table"
+            }
 
-            streams.append(RecordList(**stream_kwargs))
-            streams.append(FieldList(**stream_kwargs))
-            streams.append(ViewList(**stream_kwargs))
-            streams.append(TableList(**stream_kwargs))
-            streams.append(MemberList(**stream_kwargs))
-            streams.append(RoleList(**stream_kwargs))
-            streams.append(DashboardList(**stream_kwargs))
+            streams.append(FeishuBitableStream(**stream_kwargs))
+            stream_kwargs.update({"object_name":"member","object_type":"member"});
+            streams.append(FeishuBitableStream(**stream_kwargs))
+            stream_kwargs.update({"object_name":"role","object_type":"role"});
+            streams.append(FeishuBitableStream(**stream_kwargs))
+            stream_kwargs.update({"object_name":"dashboard","object_type":"dashboard"});
+            streams.append(FeishuBitableStream(**stream_kwargs))
+
+
+            table_list = get_table_list(config, app_token)
+            for table_obj in table_list:
+                table_id = table_obj.get("table_id")
+                tabel_name = table_obj.get("name")
+
+                stream_kwargs.update({"table_id": table_id, "object_name":"view_"+table_id,"object_type":"view"});
+                streams.append(FeishuBitableStream(**stream_kwargs))
+
+                view_list = get_table_view_list(config, app_token, table_obj.get("table_id"))
+                for view_obj in view_list:
+                    view_id = view_obj.get("view_id")
+                    view_name = view_obj.get("view_name")
+
+                    stream_kwargs.update({"table_id": table_id, "view_id":view_id, "object_name":f"record_{view_id}","object_type":"record"});
+                    streams.append(FeishuBitableStream(**stream_kwargs))
+                    stream_kwargs.update({"table_id": table_id, "view_id":view_id, "object_name":f"field_{view_id}","object_type":"field"});
+                    streams.append(FeishuBitableStream(**stream_kwargs))
 
         return streams
