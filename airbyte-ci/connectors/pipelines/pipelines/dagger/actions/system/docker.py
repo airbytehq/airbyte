@@ -15,10 +15,30 @@ from pipelines.consts import (
     DOCKER_HOST_PORT,
     DOCKER_TMP_VOLUME_NAME,
     DOCKER_VAR_LIB_VOLUME_NAME,
+    REGISTRY_MIRROR_URL,
+    STORAGE_DRIVER,
     TAILSCALE_IMAGE_NAME,
     TAILSCALE_PORT,
 )
 from pipelines.helpers.utils import sh_dash_c
+
+
+def get_daemon_config_json(registry_mirror_url: Optional[str] = None) -> str:
+    """Get the json representation of the docker daemon config.
+
+    Args:
+        registry_mirror_url (Optional[str]): The registry mirror url to use.
+
+    Returns:
+        str: The json representation of the docker daemon config.
+    """
+    daemon_config = {
+        "storage-driver": STORAGE_DRIVER,
+    }
+    if registry_mirror_url:
+        daemon_config["registry-mirrors"] = [registry_mirror_url]
+        daemon_config["insecure-registries"] = [registry_mirror_url]
+    return json.dumps(daemon_config)
 
 
 def with_global_dockerd_service(
@@ -49,7 +69,7 @@ def with_global_dockerd_service(
                     [
                         f"tailscaled --tun=userspace-networking --socks5-server=0.0.0.0:{TAILSCALE_PORT} --outbound-http-proxy-listen=0.0.0.0:{TAILSCALE_PORT}",
                         "tailscale up --authkey $TAILSCALE_AUTHKEY",
-                        "",
+                        "",  # TODO check if this is needed
                     ],
                     skip_entrypoint=True,
                 )
@@ -58,10 +78,14 @@ def with_global_dockerd_service(
         )
 
         dockerd_container = (
-            dockerd_container.with_service_binding("tailscale", tailscale)
-            .with_env_variable("ALL_PROXY", "socks5://tailscale:1055/")
-            .with_exec(["curl prefect.airbyte.com"])  # this is a dummy example that will succeed if the tailscale setup works
+            dockerd_container.with_service_binding("tailscale", tailscale).with_env_variable("ALL_PROXY", "socks5://tailscale:1055/")
+            # TODO remove if working, this is a dummy example that will succeed if the tailscale setup works
+            .with_exec(["curl prefect.airbyte.com"])
         )
+
+        daemon_config_json = get_daemon_config_json(REGISTRY_MIRROR_URL)
+    else:
+        daemon_config_json = get_daemon_config_json()
 
     dockerd_container = (
         dockerd_container
@@ -70,26 +94,23 @@ def with_global_dockerd_service(
         # This won't be possible because of container-ception: dind is running inside the dagger engine.
         # See https://github.com/krallin/tini#subreaping for details.
         .with_env_variable("TINI_SUBREAPER", "")
-        # Similarly, because of container-ception, we have to use the fuse-overlayfs storage engine.
         .with_exec(
             sh_dash_c(
                 [
                     # Update package metadata.
                     "apk update",
                     # Install the storage driver package.
-                    "apk add fuse-overlayfs",
-                    # Update daemon config with storage driver.
+                    f"apk add {STORAGE_DRIVER}",
                     "mkdir /etc/docker",
-                    'echo \'{"storage-driver": "fuse-overlayfs", "registry-mirrors": ["http://172.20.83.84:5000"], "insecure-registries": ["http://172.20.83.84:5000"]}\' > /etc/docker/daemon.json',
                 ]
             )
         )
+        .with_new_file("/etc/docker/daemon.json", daemon_config_json)
         # Expose the docker host port.
         .with_exposed_port(DOCKER_HOST_PORT)
         # Mount the docker cache volumes.
-        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME)).with_mounted_cache(
-            "/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME)
-        )
+        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
+        .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
     )
 
     if docker_hub_username_secret and docker_hub_password_secret:
