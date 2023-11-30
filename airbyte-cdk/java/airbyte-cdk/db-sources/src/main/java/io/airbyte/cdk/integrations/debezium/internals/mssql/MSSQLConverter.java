@@ -15,6 +15,7 @@ import io.debezium.spi.converter.RelationalColumn;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -29,8 +30,9 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
 
   private final Logger LOGGER = LoggerFactory.getLogger(MSSQLConverter.class);
 
-  private final Set<String> DATE_TYPES = Set.of("DATE", "DATETIME", "DATETIME2", "SMALLDATETIME");
   private final Set<String> BINARY = Set.of("VARBINARY", "BINARY");
+  private final Set<String> DATETIME_TYPES = Set.of("DATETIME", "DATETIME2", "SMALLDATETIME");
+  private final String DATE = "DATE";
   private static final String DATETIMEOFFSET = "DATETIMEOFFSET";
   private static final String TIME_TYPE = "TIME";
   private static final String SMALLMONEY_TYPE = "SMALLMONEY";
@@ -38,14 +40,18 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
   private static final String GEOGRAPHY = "GEOGRAPHY";
   private static final String DEBEZIUM_DATETIMEOFFSET_FORMAT = "yyyy-MM-dd HH:mm:ss XXX";
 
+  private static final String DATETIME_FORMAT_MICROSECONDS = "yyyy-MM-dd'T'HH:mm:ss[.][SSSSSS]";
+
   @Override
   public void configure(Properties props) {}
 
   @Override
   public void converterFor(final RelationalColumn field,
                            final ConverterRegistration<SchemaBuilder> registration) {
-    if (DATE_TYPES.contains(field.typeName().toUpperCase())) {
+    if (DATE.equalsIgnoreCase(field.typeName())) {
       registerDate(field, registration);
+    } else if (DATETIME_TYPES.contains(field.typeName().toUpperCase())) {
+      registerDatetime(field, registration);
     } else if (SMALLMONEY_TYPE.equalsIgnoreCase(field.typeName())) {
       registerMoney(field, registration);
     } else if (BINARY.contains(field.typeName().toUpperCase())) {
@@ -114,6 +120,20 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
       }
       return DateTimeConverter.convertToTimestamp(input);
     });
+  }
+
+  private void registerDatetime(final RelationalColumn field,
+                                final ConverterRegistration<SchemaBuilder> registration) {
+    registration.register(SchemaBuilder.string(),
+        input -> {
+          if (Objects.isNull(input)) {
+            return DebeziumConverterUtils.convertDefaultValue(field);
+          }
+
+          final LocalDateTime localDateTime = ((Timestamp) input).toLocalDateTime();
+          return localDateTime.format(DateTimeFormatter.ofPattern(DATETIME_FORMAT_MICROSECONDS));
+        });
+
   }
 
   private void registerDateTimeOffSet(final RelationalColumn field,
