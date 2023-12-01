@@ -58,7 +58,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     @property
     def primary_key(self) -> PrimaryKeyType:
-        return self.config.primary_key
+        return self.config.primary_key or self.get_parser().get_parser_defined_primary_key(self.config)
 
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         # Sort files by last_modified, uri and return them grouped by last_modified

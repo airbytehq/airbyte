@@ -33,6 +33,12 @@ class FileTypeParser(ABC):
         The availability policy decides how many files are loaded for checking whether parsing works correctly. This method can provide a parser-specific override. If it's defined, the smaller of the two values will be used.
         """
         return None
+    
+    def get_parser_defined_primary_key(self, config: FileBasedStreamConfig) -> Optional[str]:
+        """
+        The parser can define a primary key. If no user-defined primary key is provided, this will be used.
+        """
+        return None
 
     @abstractmethod
     async def infer_schema(
