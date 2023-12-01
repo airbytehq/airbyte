@@ -15,8 +15,8 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 SCHEMA_TRANSFORMER_TYPE_MAPPING = {
-    SchemaNormalizationType.NO_TRANSFORMATION: TransformConfig.NoTransform,
-    SchemaNormalizationType.DEFAULT_TRANSFORMATION: TransformConfig.DefaultSchemaNormalization,
+    SchemaNormalizationType.NONE: TransformConfig.NoTransform,
+    SchemaNormalizationType.DEFAULT: TransformConfig.DefaultSchemaNormalization,
 }
 
 

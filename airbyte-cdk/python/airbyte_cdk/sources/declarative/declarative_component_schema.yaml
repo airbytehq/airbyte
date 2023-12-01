@@ -1783,12 +1783,12 @@ definitions:
     description: Responsible for normalization according to the schema.
     type: string
     enum:
-      - no
-      - default
-    default: no
+      - None
+      - Default
+    default: None
     examples:
-      - no
-      - default
+      - None
+      - Default
   RemoveFields:
     title: Remove Fields
     description: A transformation which removes fields from a record. The fields removed are designated using FieldPointers. During transformation, if a field or any of its parents does not exist in the record, no error is thrown.

@@ -1006,8 +1006,8 @@ class ListPartitionRouter(BaseModel):
 
 
 class SchemaNormalizationType(str, Enum):
-    NO_TRANSFORMATION = "no"
-    DEFAULT_TRANSFORMATION = "default"
+    NONE = "None"
+    DEFAULT = "Default"
 
 
 class RecordSelector(BaseModel):
@@ -1020,7 +1020,7 @@ class RecordSelector(BaseModel):
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
     schema_normalization: SchemaNormalizationType = Field(
-        SchemaNormalizationType.NO_TRANSFORMATION,
+        SchemaNormalizationType.NONE,
         description="Normalization that needs to applied to the values based on schema",
         title="Schema Normalization",
     )
