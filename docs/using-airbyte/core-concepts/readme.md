@@ -22,11 +22,11 @@ A connection is an automated data pipeline that replicates data from a source to
 
 | Concept              | Description                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------|
-| Replication Frequency | When should a data sync be triggered? | 
-| Destination Namespace and Stream Prefix | Where should the replicated data be written? | 
-| Sync Mode | How should the streams be replicated (read and written)? | 
-| Schema Propagation | How should Airbyte handle schema drift in sources? | 
-| Catalog Selection | What data should be replicated from the source to the destination? | 
+| [Replication Frequency](/using-airbyte/core-concepts/sync-schedules) | When should a data sync be triggered? | 
+| [Destination Namespace and Stream Prefix](/using-airbyte/core-concepts/namespaces) | Where should the replicated data be written? | 
+| [Sync Mode](/using-airbyte/core-concepts/sync-modes/) | How should the streams be replicated (read and written)? | 
+| [Schema Propagation](/cloud/managing-airbyte-cloud/manage-schema-changes) | How should Airbyte handle schema drift in sources? | 
+| [Catalog Selection](/cloud/managing-airbyte-cloud/configuring-connections#modify-streams-in-your-connection) | What data should be replicated from the source to the destination? | 
 
 ## Stream
 
