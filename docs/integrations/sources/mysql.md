@@ -221,7 +221,8 @@ Any database or table encoding combination of charset and collation is supported
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
-| :------ | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------| :--------- | :--------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.1   | 2023-11-28 | [32610](https://github.com/airbytehq/airbyte/pull/32610)   | Support initial syncs using binary as primary key.                                                                                              |
 | 3.2.0   | 2023-11-29 | [31062](https://github.com/airbytehq/airbyte/pull/31062)   | enforce SSL on Airbyte Cloud                                                                                                                    |
 | 3.1.9   | 2023-11-27 | [32662](https://github.com/airbytehq/airbyte/pull/32662)   | Apply initial setup time to debezium engine warmup time.                                                                                        |
 | 3.1.8   | 2023-11-22 | [32656](https://github.com/airbytehq/airbyte/pull/32656)   | Adopt java CDK version 0.5.0.                                                                                                                   |
