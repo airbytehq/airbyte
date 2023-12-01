@@ -38,11 +38,6 @@ public class CloudDeploymentSslEnabledMssqlSourceAcceptanceTest extends MssqlSou
   }
 
   @Override
-  protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_cloud_spec.json"), ConnectorSpecification.class));
-  }
-
-  @Override
   protected JsonNode getConfig() {
     return testdb.integrationTestConfigBuilder()
         .withSsl(Map.of("ssl_method", "encrypted_trust_server_certificate"))

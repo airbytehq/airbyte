@@ -105,17 +105,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public ConnectorSpecification spec() throws Exception {
-    if (cloudDeploymentMode()) {
-      final ConnectorSpecification cloudDeploymentSpec = Jsons.clone(super.spec());
-      // Remove "unencrypted" value for "ssl_method".
-      ((ArrayNode) cloudDeploymentSpec.getConnectionSpecification().get("properties").get(SSL_METHOD).get("oneOf")).remove(0);
-      return cloudDeploymentSpec;
-    }
-    return super.spec();
-  }
-
-  @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
     // and not over SSH tunnel
