@@ -106,8 +106,10 @@ public interface SqlGenerator<DialectTableDefinition> {
 
   String clearLoadedAt(final StreamId streamId);
 
-  /** Implementation specific if there is no option to retry again with safe casted SQL or
-   * the specific cause of the exception can be retried or not.
+  /**
+   * Implementation specific if there is no option to retry again with safe casted SQL or the specific
+   * cause of the exception can be retried or not.
+   *
    * @return true if the exception should be retried with a safer query
    */
   default boolean shouldRetry(final Exception e) {
