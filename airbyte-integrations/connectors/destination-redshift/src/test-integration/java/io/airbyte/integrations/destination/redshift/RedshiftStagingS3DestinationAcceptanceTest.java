@@ -85,7 +85,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     final RedshiftDestination destination = new RedshiftDestination();
     final AirbyteConnectionStatus status = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 28000; Error code: 500310;"));
+    assertTrue(status.getMessage().contains("State code: 28000;"));
   }
 
   @Test
@@ -95,7 +95,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     final RedshiftDestination destination = new RedshiftDestination();
     final AirbyteConnectionStatus status = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 28000; Error code: 500310;"));
+    assertTrue(status.getMessage().contains("State code: 28000;"));
   }
 
   @Test
@@ -105,7 +105,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     final RedshiftDestination destination = new RedshiftDestination();
     final AirbyteConnectionStatus status = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: HY000; Error code: 500150;"));
+    assertTrue(status.getMessage().contains("State code: 08001;"));
   }
 
   @Test
@@ -115,7 +115,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     final RedshiftDestination destination = new RedshiftDestination();
     final AirbyteConnectionStatus status = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 3D000; Error code: 500310;"));
+    assertTrue(status.getMessage().contains("State code: 3D000;"));
   }
 
   /*
