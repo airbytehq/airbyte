@@ -102,6 +102,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
           sqlType = JDBCType.valueOf(datatype);
         } catch (final IllegalArgumentException e) {
           // Unknown jdbcType convert to customSqlType
+          LOGGER.warn("Unrecognized JDBCType {}; falling back to UNKNOWN", datatype, e);
           sqlType = new CustomSqlType("Unknown", "Unknown", datatype);
         }
         columnDefinitions.put(columnName, new ColumnDefinition(columnName, typeName, sqlType, columnSize));
