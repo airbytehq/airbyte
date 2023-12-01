@@ -250,6 +250,27 @@ definitions:
           partition_field: "id"
     retriever:
       $ref: "#/definitions/substream_semi_incremental/retriever"
+  contact_segments:
+    $ref: "#/definitions/substream_semi_incremental"
+    $parameters:
+      name: "contact_segments"
+      primary_key: "id"
+      path: "/contacts/{{ stream_slice.id }}/segments"
+    incremental_sync:
+      $ref: "#/definitions/substream_semi_incremental/incremental_sync"
+      # parent_complete_fetch: true
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          stream: "#/definitions/contacts"
+          parent_key: "id"
+          partition_field: "id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["contact_id"]
+            value: "'{{ stream_slice.id }}'"
+    retriever:
+      $ref: "#/definitions/substream_semi_incremental/retriever"
 
   # incremental search
   stream_incremental_search:
@@ -298,6 +319,7 @@ streams:
   - "#/definitions/company_attributes"
   - "#/definitions/contact_attributes"
   - "#/definitions/contacts"
+  - "#/definitions/contact_segments"
   - "#/definitions/conversations"
   - "#/definitions/conversation_parts"
   - "#/definitions/company_segments"
