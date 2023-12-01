@@ -2,7 +2,7 @@
 import json
 from copy import deepcopy
 from pathlib import Path as FilePath
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 from unittest import TestCase
 from unittest.mock import Mock
 
@@ -11,8 +11,10 @@ from airbyte_cdk.test.http.response import HttpResponse
 from airbyte_cdk.test.http.response_builder import (
     CompositePath,
     FieldPath,
+    FieldUpdatePaginationStrategy,
     HttpResponseBuilder,
     NestedPath,
+    PaginationStrategy,
     Path,
     RecordBuilder,
     create_builders_from_resource,
@@ -42,7 +44,7 @@ def _record_builder(
 def _response_builder(
     response_template: Dict[str, Any],
     records_path: Union[FieldPath, NestedPath],
-    pagination_strategy: Optional[Callable[[Dict[str, Any]], None]] = None
+    pagination_strategy: Optional[PaginationStrategy] = None
 ) -> HttpResponseBuilder:
     return create_builders_from_resource(deepcopy(response_template), records_path, pagination_strategy=pagination_strategy)[1]
 
@@ -141,9 +143,11 @@ class HttpResponseBuilderTest(TestCase):
         assert response.status_code == 239
 
     def test_given_pagination_with_strategy_when_build_then_apply_strategy(self) -> None:
-        def pagination_strategy(template: Dict[str, Any]) -> None:
-            template["has_more_pages"] = "yes more page"
-        builder = _response_builder({"has_more_pages": False} | _SOME_RECORDS, FieldPath(_RECORDS_FIELD), pagination_strategy=pagination_strategy)
+        builder = _response_builder(
+            {"has_more_pages": False} | _SOME_RECORDS,
+            FieldPath(_RECORDS_FIELD),
+            pagination_strategy=FieldUpdatePaginationStrategy(FieldPath("has_more_pages"), "yes more page")
+        )
 
         response = builder.with_pagination().build()
 

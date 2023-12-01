@@ -4,7 +4,7 @@ import functools
 import json
 from abc import ABC, abstractmethod
 from pathlib import Path as FilePath
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from airbyte_cdk.test.http import HttpResponse
 
@@ -76,6 +76,21 @@ class CompositePath(Path):
         return f"CompositePath({', '.join([str(path) for path in self._paths])})"
 
 
+class PaginationStrategy(ABC):
+    @abstractmethod
+    def update(self, response: Dict[str, Any]) -> None:
+        pass
+
+
+class FieldUpdatePaginationStrategy(PaginationStrategy):
+    def __init__(self, path: Path, value: Any):
+        self._path = path
+        self._value = value
+
+    def update(self, response: Dict[str, Any]) -> None:
+        self._path.update(response, self._value)
+
+
 class RecordBuilder:
     def __init__(self, template: Dict[str, Any], id_path: Optional[Path], cursor_path: Optional[Union[FieldPath, NestedPath]]):
         self._record = template
@@ -124,7 +139,7 @@ class HttpResponseBuilder:
         self,
         template: Dict[str, Any],
         records_path: Union[FieldPath, NestedPath],
-        pagination_strategy: Optional[Callable[[Dict[str, Any]], None]]
+        pagination_strategy: Optional[PaginationStrategy]
     ):
         self._response = template
         self._records: List[RecordBuilder] = []
@@ -142,7 +157,7 @@ class HttpResponseBuilder:
                 "`pagination_strategy` was not provided and hence, fields related to the pagination can't be modified. Please provide "
                 "`pagination_strategy` while instantiating ResponseBuilder to leverage this capability"
             )
-        self._pagination_strategy(self._response)
+        self._pagination_strategy.update(self._response)
         return self
 
     def with_status_code(self, status_code: int) -> "HttpResponseBuilder":
@@ -174,7 +189,7 @@ def create_builders_from_resource(
     records_path: Union[FieldPath, NestedPath],
     record_id_path: Optional[Path] = None,
     record_cursor_path: Optional[Union[FieldPath, NestedPath]] = None,
-    pagination_strategy: Optional[Callable[[Dict[str, Any]], None]] = None
+    pagination_strategy: Optional[PaginationStrategy] = None
 ) -> Tuple[RecordBuilder, HttpResponseBuilder]:
     """
     This will use the first record define at `records_path` as a template for the records. If more records are defined, they will be ignored
