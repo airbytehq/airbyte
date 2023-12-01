@@ -21,7 +21,7 @@ from pipelines.consts import (
     TAILSCALE_PORT,
 )
 from pipelines.helpers.utils import sh_dash_c
-from pipelines.models import PipelineContext
+from pipelines.models.contexts.pipeline_context import PipelineContext
 
 
 def get_base_dockerd_container(dagger_client: Client, docker_var_lib_caching: bool = False) -> Container:
