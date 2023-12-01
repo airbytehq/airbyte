@@ -5,7 +5,7 @@
 from typing import Any, Dict, List, Optional
 
 import dagger
-from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
+from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST, REPO_MOUNT_PATH
 from pipelines.consts import GO_IMAGE, MAVEN_IMAGE, NODE_IMAGE, PYTHON_3_10_IMAGE
 from pipelines.helpers.utils import sh_dash_c
 
@@ -37,14 +37,14 @@ def build_container(
         container = container.with_env_variable(key, value)
 
     # Set the working directory to the code to format
-    container = container.with_workdir("/src")
+    container = container.with_workdir(REPO_MOUNT_PATH)
 
     # Mount a subset of the relevant parts of the repository, if requested.
     # These should only be files which do not change very often.
     # These can then be referenced by the install_commands.
     if warmup_include:
         container = container.with_mounted_directory(
-            "/src",
+            REPO_MOUNT_PATH,
             dagger_client.host().directory(
                 ".",
                 include=warmup_include,
@@ -59,7 +59,7 @@ def build_container(
     # Mount the relevant parts of the repository: the code to format and the formatting config
     # Exclude the default ignore list to keep things as small as possible
     container = container.with_mounted_directory(
-        "/src",
+        REPO_MOUNT_PATH,
         dagger_client.host().directory(
             ".",
             include=include + (warmup_include if warmup_include else []),

@@ -5,6 +5,7 @@
 from typing import List
 
 import dagger
+from pipelines.airbyte_ci.format.consts import REPO_MOUNT_PATH
 from pipelines.helpers.utils import sh_dash_c
 
 
@@ -30,4 +31,4 @@ async def run_format(
         format_commands (List[str]): The list of commands to run to format the repository
     """
     format_container = container.with_exec(sh_dash_c(format_commands), skip_entrypoint=True)
-    return await format_container.directory("/airbyte/repo").export(".")
+    return await format_container.directory(REPO_MOUNT_PATH).export(".")
