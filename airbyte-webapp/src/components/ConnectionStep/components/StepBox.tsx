@@ -56,7 +56,7 @@ export const CircleNumber = styled.div<{
     width: 22px;
     height: 22px;
     font-size: 11px;
-    border-radius: 1px solid ${({ theme, isActive }) => (isActive ? theme.primaryColor : " #d1d5db")};
+    border: 1px solid ${({ theme, isActive }) => (isActive ? theme.primaryColor : " #d1d5db")};
   }
 `;
 
@@ -94,6 +94,10 @@ const Image = styled.img`
   height: 34px;
   display: inline-block;
   margin-right: 12px;
+  @media (max-width: 768px) {
+    width: 22px;
+    height: 22px;
+  }
 `;
 
 const StepBox: React.FC<StepProps> = ({ name, id, isActive, onClick, stepNumber, lightMode, currentStepNumber }) => {

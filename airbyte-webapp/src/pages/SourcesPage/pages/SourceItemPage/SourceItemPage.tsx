@@ -36,7 +36,7 @@ import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 import TestConnection from "views/Connector/TestConnection";
 
 import HeaderSction from "./components/HeaderSection";
-import SourceConnectionTable from "./components/SourceConnectionTable";
+import NewSourceConnectionTable from "./components/NewSourceConnectionTable";
 import SourceSettings from "./components/SourceSettings";
 // import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
 import { RoutePaths } from "../../../routePaths";
@@ -138,7 +138,7 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConfigs }
     },
     [onSelectFilter]
   );
-  const { SourceRead, ConnectionReadList, total, pageSize } = useGetSourceItem(filters);
+  const { SourceRead, WebBackendConnectionReadList, total, pageSize } = useGetSourceItem(filters);
 
   // console.log(source, "Response");
   // console.log(source?.SourceRead?.sourceDefinitionId, "id");
@@ -200,7 +200,7 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConfigs }
   //   await deleteSource({ connectionsWithSource, source });
   // };
   const onDelete = async () => {
-    await deleteSource({ source: SourceRead, connectionsWithSource: ConnectionReadList?.connections });
+    await deleteSource({ source: SourceRead, connectionsWithSource: WebBackendConnectionReadList?.connections });
   };
   const menuItems: CategoryItem[] = pageConfigs?.menuConfig || [
     {
@@ -210,7 +210,7 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConfigs }
           name: <FormattedMessage id="tables.overview" />,
           component: (
             <TableContainer>
-              {ConnectionReadList?.connections?.length === 0 ? (
+              {WebBackendConnectionReadList?.connections?.length === 0 ? (
                 <Typography
                   textAlign="left"
                   fontSize={{ lg: 24, md: 24, sm: 20, xs: 18 }}
@@ -252,9 +252,9 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConfigs }
                 entityIcon={sourceDefinition ? getIcon(sourceDefinition.icon) : null}
                 releaseStage={sourceDefinition.releaseStage}
               /> */}
-              {ConnectionReadList?.connections?.length > 0 && (
+              {WebBackendConnectionReadList?.connections?.length > 0 && (
                 <Box pt={2}>
-                  <SourceConnectionTable connections={ConnectionReadList?.connections} />
+                  <NewSourceConnectionTable connections={WebBackendConnectionReadList?.connections} />
                   <Separator height="24px" />
                   <Footer>
                     <PageSize currentPageSize={pageCurrent} totalPage={total / pageSize} onChange={onChangePageSize} />

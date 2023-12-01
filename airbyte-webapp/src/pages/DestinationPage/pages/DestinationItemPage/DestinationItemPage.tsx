@@ -34,9 +34,9 @@ import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocument
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 import TestConnection from "views/Connector/TestConnection";
 
-import DestinationConnectionTable from "./components/DestinationConnectionTable";
 import DestinationSettings from "./components/DestinationSettings";
 import HeaderSction from "./components/HeaderSection";
+import NewDestinationConnectionTable from "./components/NewDestinationConnectionTable";
 // import { useGetDestination } from "../../../../hooks/services/useDestinationHook";
 
 interface PageConfig {
@@ -252,7 +252,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConf
 
               {WebBackendConnectionReadList?.connections?.length > 0 && (
                 <Box pt={2}>
-                  <DestinationConnectionTable connections={WebBackendConnectionReadList?.connections} />
+                  <NewDestinationConnectionTable connections={WebBackendConnectionReadList?.connections} />
                   <Separator height="24px" />
                   <Footer>
                     <PageSize currentPageSize={pageCurrent} totalPage={total / pageSize} onChange={onChangePageSize} />

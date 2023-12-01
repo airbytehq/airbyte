@@ -10,7 +10,7 @@ import { getPaymentStatus, PAYMENT_STATUS } from "core/Constants/statuses";
 import { useHealth } from "hooks/services/Health";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
-import { SettingsRoute } from "pages/SettingsPage/SettingsPage";
+// import { SettingsRoute } from "pages/SettingsPage/SettingsPage";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 import {
@@ -128,8 +128,11 @@ const MainView: React.FC = (props) => {
     setIsSidebar(isSidebarBol);
   }, [pathname, hasSidebarRoutes, location.state]);
 
+  // const onBillingPage = () => {
+  //   push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
+  // };
   const onBillingPage = () => {
-    push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
+    push(`/${RoutePaths.Payment}`);
   };
 
   const onFailedPaymentPage = () => {
