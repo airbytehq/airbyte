@@ -179,16 +179,17 @@ public class SourceHandler {
     return new SourceReadList().sources(reads);
   }
 
-  public SourcePageReadList pageSourcesForWorkspace(final PageRequestBody pageRequestBody)
+  public SourcePageReadList pageSourcesForWorkspace(final SourcesPageRequestBody sourcesPageRequestBodys)
       throws IOException {
-    if (pageRequestBody.getPageSize() == null || pageRequestBody.getPageSize() == 0) {
-      pageRequestBody.setPageSize(10);
+    if (sourcesPageRequestBodys.getPageSize() == null || sourcesPageRequestBodys.getPageSize() == 0) {
+      sourcesPageRequestBodys.setPageSize(10);
     }
-    if (pageRequestBody.getPageCurrent() == null || pageRequestBody.getPageCurrent() == 0) {
-      pageRequestBody.setPageCurrent(1);
+    if (sourcesPageRequestBodys.getPageCurrent() == null || sourcesPageRequestBodys.getPageCurrent() == 0) {
+      sourcesPageRequestBodys.setPageCurrent(1);
     }
-    List<SourceConnection> sourceConnections = configRepository.pageWorkspaceSourceConnection(pageRequestBody.getWorkspaceId(),
-        pageRequestBody.getPageSize(), pageRequestBody.getPageCurrent());
+    List<SourceConnection> sourceConnections =
+        configRepository.pageWorkspaceSourceConnection(sourcesPageRequestBodys.getWorkspaceId(), sourcesPageRequestBodys.getSourceDefinitionId(),
+            sourcesPageRequestBodys.getPageSize(), sourcesPageRequestBodys.getPageCurrent());
     final List<SourceRead> sourceReads = Lists.newArrayList();
     for (final SourceConnection sourceConnection : sourceConnections) {
       try {
@@ -201,8 +202,9 @@ public class SourceHandler {
         throw new RuntimeException(e);
       }
     }
-    return new SourcePageReadList().sources(sourceReads).total(configRepository.pageWorkspaceSourceCount(pageRequestBody.getWorkspaceId()))
-        .pageCurrent(pageRequestBody.getPageCurrent()).pageSize(pageRequestBody.getPageSize());
+    return new SourcePageReadList().sources(sourceReads).total(configRepository.pageWorkspaceSourceCount(sourcesPageRequestBodys.getWorkspaceId(),
+        sourcesPageRequestBodys.getSourceDefinitionId())).pageCurrent(sourcesPageRequestBodys.getPageCurrent())
+        .pageSize(sourcesPageRequestBodys.getPageSize());
   }
 
   public SourceReadList listSourcesForSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)

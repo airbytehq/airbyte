@@ -11,6 +11,7 @@ import { useHealth } from "hooks/services/Health";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { SettingsRoute } from "pages/SettingsPage/SettingsPage";
+import { remainingDaysForFreeTrial } from "utils/common";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 import {
@@ -132,14 +133,6 @@ const MainView: React.FC = (props) => {
     setIsSidebar(isSidebarBol);
   }, [pathname, hasSidebarRoutes, location.state]);
 
-  const remainingDaysForFreeTrial = (): number => {
-    const currentDate: Date = new Date();
-    const expiryDate: Date = new Date(expiresTime * 1000);
-    const diff = expiryDate.getTime() - currentDate.getTime();
-    const diffDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
   const onBillingPage = () => {
     push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
   };
@@ -152,7 +145,10 @@ const MainView: React.FC = (props) => {
     let showUpgradePlanBanner = false;
     if (
       getPaymentStatus(user.status) !== PAYMENT_STATUS.Subscription &&
-      !(getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription && remainingDaysForFreeTrial() > 0)
+      !(
+        getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription &&
+        remainingDaysForFreeTrial(expiresTime) > 0
+      )
     ) {
       if (!pathname.split("/").includes(RoutePaths.Payment)) {
         showUpgradePlanBanner = true;
