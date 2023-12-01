@@ -46,12 +46,12 @@ acceptance_tests:
         ignored_fields:
           accounts:
             - name: "TaxType"
-              bypass_reason: "may change"
+              bypass_reason: "empty may change from empty string to none"
           items:
             - name: "SalesDetails"
-              bypass_reason: "may change"
+              bypass_reason: "empty may change from empty string to none"
             - name: "PurchaseDetails"
-              bypass_reason: "may change"
+              bypass_reason: "empty may change from empty string to none"
   incremental:
     tests:
       - config_path: "secrets/config.json"
