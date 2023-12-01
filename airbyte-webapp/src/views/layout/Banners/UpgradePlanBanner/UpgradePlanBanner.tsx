@@ -9,8 +9,9 @@ import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import { useAuthDetail } from "services/auth/AuthSpecificationService";
 import { useUserPlanDetail } from "services/payments/PaymentsService";
 
-import styles from "../banners.module.scss";
 import { UnauthorizedModal } from "./components/UnauthorizedModal";
+import { getPaymentStatus, PAYMENT_STATUS } from "../../../../core/Constants/statuses";
+import styles from "../banners.module.scss";
 
 interface IProps {
   onBillingPage: () => void;
@@ -73,9 +74,9 @@ export const UpgradePlanBanner: React.FC<IProps> = ({ onBillingPage }) => {
         <Text>
           <FormattedMessage
             id={
-              remainingDaysForFreeTrial() > 0
+              getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial && remainingDaysForFreeTrial() > 0
                 ? "upgrade.plan.trialPeriod.countdown"
-                : remainingDaysForFreeTrial() === 0
+                : getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial && remainingDaysForFreeTrial() === 0
                 ? "upgrade.plan.trialPeriod.countdown.today"
                 : "upgrade.plan.trialPeriod.end"
             }

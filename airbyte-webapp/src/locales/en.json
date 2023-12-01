@@ -501,6 +501,7 @@
   "payment.tabTitle": "Payment",
   "plan.type.heading": "Plan type",
   "plan.endsOn.heading": "Ends on",
+  "plan.endedOn.heading": "Ended on",
   "plan.renewsOn.heading": "Renews on",
   "plan.details.heading": "Plan details",
   "plan.cancel.btn": "Cancel subscription",

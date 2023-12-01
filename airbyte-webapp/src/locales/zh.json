@@ -502,6 +502,7 @@
   "payment.tabTitle": "付款",
   "plan.type.heading": "方案类型",
   "plan.endsOn.heading": "结束于",
+  "plan.endedOn.heading": "结束于",
   "plan.renewsOn.heading": "更新于",
   "plan.details.heading": "方案详情",
   "plan.cancel.btn": "取消订阅",

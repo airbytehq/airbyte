@@ -18,11 +18,11 @@ import { RoutePaths } from "pages/routePaths";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 import { useUserPlanDetail, useAsyncAction } from "services/payments/PaymentsService";
 
+import { PlanClause } from "./components/PlanClause";
+import styles from "./style.module.scss";
 import { IAuthUser } from "../../../../core/AuthContext/authenticatedUser";
 import { useHealth } from "../../../../hooks/services/Health";
 import { SettingsRoute } from "../../SettingsPage";
-import { PlanClause } from "./components/PlanClause";
-import styles from "./style.module.scss";
 
 const CancelSubscriptionBtn = styled(Button)`
   background-color: ${({ theme }) => theme.white};
@@ -60,6 +60,7 @@ const PlansBillingPage: React.FC = () => {
   const { isUpdatePaymentMethod } = healthData;
   const userPlanDetail = useUserPlanDetail();
   const prevUserPlanDetail = usePrevious(userPlanDetail);
+  const { expiresTime } = userPlanDetail;
 
   useEffect(() => {
     if (prevUserPlanDetail?.selectedProduct !== undefined) {
@@ -74,6 +75,14 @@ const PlansBillingPage: React.FC = () => {
       reAuthenticateUser(user.token as string);
     }
   }, [user.workspaceId]);
+
+  const remainingDaysForFreeTrial = (): number => {
+    const currentDate: Date = new Date();
+    const expiryDate: Date = new Date(expiresTime * 1000);
+    const diff = expiryDate.getTime() - currentDate.getTime();
+    const diffDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
 
   const reAuthenticateUser = useCallback(async (token: string) => {
     authService
@@ -181,8 +190,11 @@ const PlansBillingPage: React.FC = () => {
             <div className={styles.planTitle}>
               <FormattedMessage
                 id={
-                  getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial ||
-                  getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription
+                  getPaymentStatus(user.status) === PAYMENT_STATUS.Cancel_Subscription ||
+                  (getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial && remainingDaysForFreeTrial() < 0)
+                    ? "plan.endedOn.heading"
+                    : getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial ||
+                      getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription
                     ? "plan.endsOn.heading"
                     : "plan.renewsOn.heading"
                 }
