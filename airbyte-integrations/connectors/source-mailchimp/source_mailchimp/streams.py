@@ -308,6 +308,14 @@ class ListMembers(MailChimpListSubStream):
     cursor_field = "last_changed"
     data_field = "members"
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response = super().parse_response(response, **kwargs)
+
+        for record in response:
+            if record.get("timestamp_signup") == "":
+                record["timestamp_signup"] = None
+            yield record
+
 
 class Reports(IncrementalMailChimpStream):
     cursor_field = "send_time"

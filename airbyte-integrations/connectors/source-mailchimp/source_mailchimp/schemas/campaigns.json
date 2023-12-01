@@ -29,7 +29,8 @@
       "title": "Create Time",
       "description": "The date and time the campaign was created in ISO 8601 format.",
       "readOnly": true,
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "archive_url": {
       "type": "string",
@@ -57,7 +58,8 @@
       "title": "Send Time",
       "description": "The date and time a campaign was sent.",
       "readOnly": true,
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "content_type": {
       "type": "string",
@@ -261,7 +263,8 @@
           "description": "The possible send times to test. The times provided should be in the format YYYY-MM-DD HH:MM:SS. If send_times are provided to test, the test_size will be set to 100% and winner_criteria will be ignored.",
           "items": {
             "type": ["null", "string"],
-            "format": "date-time"
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
           }
         },
         "from_names": {
@@ -507,7 +510,8 @@
           "title": "Last Sent",
           "description": "The date the campaign was last sent.",
           "readOnly": true,
-          "format": "date-time"
+          "format": "date-time",
+          "airbyte_type": "timestamp_with_timezone"
         },
         "constrain_rss_img": {
           "type": "boolean",
@@ -585,12 +589,14 @@
         "send_time_a": {
           "type": ["null", "string"],
           "format": "date-time",
+          "airbyte_type": "timestamp_with_timezone",
           "title": "Send Time Group A",
           "description": "The send time for Group A."
         },
         "send_time_b": {
           "type": ["null", "string"],
           "format": "date-time",
+          "airbyte_type": "timestamp_with_timezone",
           "title": "Send Time Group B",
           "description": "The send time for Group B."
         },

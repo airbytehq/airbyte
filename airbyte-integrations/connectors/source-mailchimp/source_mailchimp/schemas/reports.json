@@ -67,6 +67,7 @@
     "send_time": {
       "type": "string",
       "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone",
       "title": "Send Time",
       "description": "The date and time a campaign was sent in ISO 8601 format.",
       "readOnly": true
@@ -74,6 +75,7 @@
     "rss_last_send": {
       "type": "string",
       "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone",
       "title": "RSS Last Send",
       "description": "For RSS campaigns, the date and time of the last send in ISO 8601 format.",
       "readOnly": true
@@ -140,6 +142,7 @@
         "last_open": {
           "type": ["null", "string"],
           "format": "date-time",
+          "airbyte_type": "timestamp_with_timezone",
           "title": "Last Open",
           "description": "The date and time of the last recorded open in ISO 8601 format."
         }
@@ -173,6 +176,7 @@
         "last_click": {
           "type": ["null", "string"],
           "format": "date-time",
+          "airbyte_type": "timestamp_with_timezone",
           "title": "Last Click",
           "description": "The date and time of the last recorded click for the campaign in ISO 8601 format."
         }
@@ -322,7 +326,8 @@
               "type": "string",
               "title": "Last Open",
               "description": "The last open for Campaign A.",
-              "format": "date-time"
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
             },
             "unique_opens": {
               "type": "integer",
@@ -375,7 +380,8 @@
               "type": "string",
               "title": "Last Open",
               "description": "The last open for Campaign B.",
-              "format": "date-time"
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
             },
             "unique_opens": {
               "type": "integer",
@@ -406,6 +412,7 @@
           "last_open": {
             "type": "string",
             "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone",
             "title": "Last Open",
             "description": "The date and time of the last open in ISO 8601 format."
           },
@@ -422,6 +429,7 @@
           "last_click": {
             "type": "string",
             "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone",
             "title": "Last Click",
             "description": "The date and time of the last click in ISO 8601 format."
           },
@@ -448,6 +456,7 @@
           "timestamp": {
             "type": "string",
             "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone",
             "title": "Timestamp",
             "description": "The date and time for the series in ISO 8601 format."
           },
