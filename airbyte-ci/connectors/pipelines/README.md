@@ -260,6 +260,10 @@ Build a single connector with a custom image tag:
 Build a single connector for multiple architectures:
 `airbyte-ci connectors --name=source-pokeapi build --architecture=linux/amd64 --architecture=linux/arm64`
 
+You will get:
+* `airbyte/source-pokeapi:dev-linux-amd64`
+* `airbyte/source-pokeapi:dev-linux-arm64`
+
 Build multiple connectors:
 `airbyte-ci connectors --name=source-pokeapi --name=source-bigquery build`
 
@@ -305,7 +309,7 @@ flowchart TD
 
 | Option                | Multiple | Default value  | Description                                                       |
 | --------------------- | -------- | -------------- | ----------------------------------------------------------------- |
-| `--architecture`/`-a` | True     | Local platform | Defines for which architecture the connector image will be built. |
+| `--architecture`/`-a` | True     | Local platform | Defines for which architecture(s) the connector image will be built. |
 | `--tag`               | False    | `dev`          | Image tag for the built image.                                    |
 
 
@@ -447,6 +451,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2.10.2  | [#33008](https://github.com/airbytehq/airbyte/pull/33008)  | Fix local `connector build`.                                                                     |
 | 2.10.1  | [#32928](https://github.com/airbytehq/airbyte/pull/32928)  | Fix BuildConnectorImages constructor.                                                                     |
 | 2.10.0  | [#32819](https://github.com/airbytehq/airbyte/pull/32819)  | Add `--tag` option to connector build.                                                                    |
 | 2.9.0   | [#32816](https://github.com/airbytehq/airbyte/pull/32816)  | Add `--architecture` option to connector build.                                                           |
