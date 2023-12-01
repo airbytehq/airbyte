@@ -7,6 +7,7 @@ import uuid
 from typing import Callable, Optional
 
 from dagger import Client, Container, File, Secret
+
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import (
@@ -80,7 +81,7 @@ def get_daemon_config_json(registry_mirror_url: Optional[str] = None) -> str:
         "storage-driver": STORAGE_DRIVER,
     }
     if registry_mirror_url:
-        daemon_config["registry-mirrors"] = [registry_mirror_url]
+        daemon_config["registry-mirrors"] = ["http://" + registry_mirror_url]
         daemon_config["insecure-registries"] = [registry_mirror_url]
     return json.dumps(daemon_config)
 
@@ -168,10 +169,9 @@ def with_global_dockerd_service(
     if TAILSCALE_AUTH_KEY is not None:
         dockerd_container = bind_to_tailscale(dagger_client, dockerd_container, TAILSCALE_AUTH_KEY)
         # Ping the registry mirror host to make sure it's reachable through VPN
-        # parsed_registry_mirror_url = urlparse(DOCKER_REGISTRY_MIRROR_URL)
         # We set a cache buster here to guarantee the curl command is always executed.
         dockerd_container = dockerd_container.with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(
-            ["curl", "-vvv", f"{DOCKER_REGISTRY_MIRROR_URL}/v2/"], skip_entrypoint=True
+            ["curl", "-vvv", f"http://{DOCKER_REGISTRY_MIRROR_URL}/v2/"], skip_entrypoint=True
         )
         daemon_config_json = get_daemon_config_json(DOCKER_REGISTRY_MIRROR_URL)
     else:

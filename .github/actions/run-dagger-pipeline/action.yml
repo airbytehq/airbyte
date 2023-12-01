@@ -23,7 +23,7 @@ inputs:
   docker_registry_mirror_url:
     description: "Docker registry mirror URL"
     required: false
-    default: "http://ci-dockerhub-registry.airbyte.com"
+    default: "ci-dockerhub-registry.airbyte.com"
   options:
     description: "Options for the subcommand"
     required: false
