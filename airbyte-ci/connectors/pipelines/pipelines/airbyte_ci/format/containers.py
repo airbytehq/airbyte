@@ -56,7 +56,10 @@ def build_container(
         container = container.with_exec(sh_dash_c(install_commands), skip_entrypoint=True)
 
     # Mount the relevant parts of the repository: the code to format and the formatting config
-    # Exclude the default ignore list to keep things as small as possible
+    # Exclude the default ignore list to keep things as small as possible.
+    # The mount path is the same as for the earlier volume mount, this will cause those directory
+    # contents to be overwritten. This is intentional and not a concern as the current file set is
+    # a superset of the earlier one.
     container = container.with_mounted_directory(
         REPO_MOUNT_PATH,
         dagger_client.host().directory(
