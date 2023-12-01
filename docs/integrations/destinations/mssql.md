@@ -33,7 +33,7 @@ Airbyte Cloud only supports connecting to your MSSQL instance with TLS encryptio
 | Incremental - Append + Deduped | Yes                  |       |
 | Namespaces                     | Yes                  |       |
 
-## Getting Started \(Airbyte Open-Source\)
+## Getting Started \(Airbyte Open Source\)
 
 ### Requirements
 

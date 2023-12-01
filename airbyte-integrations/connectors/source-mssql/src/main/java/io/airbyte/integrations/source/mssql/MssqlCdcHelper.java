@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.time.Duration;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import org.codehaus.plexus.util.StringUtils;
@@ -29,6 +30,11 @@ public class MssqlCdcHelper {
   private static final String METHOD_FIELD = "method";
   private static final String CDC_SNAPSHOT_ISOLATION_FIELD = "snapshot_isolation";
   private static final String CDC_DATA_TO_SYNC_FIELD = "data_to_sync";
+
+  private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10L);
+
+  // Test execution latency is lower when heartbeats are more frequent.
+  private static final Duration HEARTBEAT_INTERVAL_IN_TESTS = Duration.ofSeconds(1L);
 
   public enum ReplicationMethod {
     STANDARD,
@@ -159,6 +165,14 @@ public class MssqlCdcHelper {
 
     props.setProperty("schema.include.list", getSchema(catalog));
     props.setProperty("database.names", config.get(JdbcUtils.DATABASE_KEY).asText());
+
+    final Duration heartbeatInterval =
+        (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())
+            ? HEARTBEAT_INTERVAL_IN_TESTS
+            : HEARTBEAT_INTERVAL;
+    props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
+    // TODO: enable heartbeats in MS SQL Server.
+    props.setProperty("heartbeat.interval.ms", "0");
 
     if (config.has("ssl_method")) {
       final JsonNode sslConfig = config.get("ssl_method");
