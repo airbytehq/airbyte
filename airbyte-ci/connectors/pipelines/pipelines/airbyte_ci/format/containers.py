@@ -39,9 +39,8 @@ def build_container(
     # Set the working directory to the code to format
     container = container.with_workdir(REPO_MOUNT_PATH)
 
-    # Mount a subset of the relevant parts of the repository, if requested.
-    # These should only be files which do not change very often.
-    # These can then be referenced by the install_commands.
+    # Mount files to be referenced by the install_commands, if requested.
+    # These should only be files which do not change very often, to avoid invalidating the layer cache.
     if warmup_include:
         container = container.with_mounted_directory(
             REPO_MOUNT_PATH,
