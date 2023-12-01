@@ -76,7 +76,7 @@ async def python(pipeline_context: ClickPipelineContext) -> CommandResult:
 @check.command(cls=DaggerPipelineCommand)
 @pass_pipeline_context
 async def java(pipeline_context: ClickPipelineContext) -> CommandResult:
-    """Format java code via spotless in maven."""
+    """Format java and groovy code via spotless in maven."""
     dagger_client = await pipeline_context.get_dagger_client(pipeline_name="Check java formatting")
     container = format_java_container(dagger_client)
     check_commands = ["mvn -f spotless-maven-pom.xml spotless:check"]

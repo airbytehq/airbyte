@@ -33,7 +33,17 @@
                             </eclipse>
                             <removeUnusedImports />
                             <trimTrailingWhitespace />
+                            <endWithNewline />
                         </java>
+                        <groovy>
+                            <includes>
+                                <include>**/*.gradle</include>
+                            </includes>
+                            <importOrder />
+                            <removeSemicolons />
+                            <trimTrailingWhitespace />
+                            <endWithNewline />
+                        </groovy>
                     </configuration>
                 </plugin>
             </plugins>
