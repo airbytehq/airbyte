@@ -198,13 +198,13 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
         ),
       },
       {
+        Header: <FormattedMessage id="tables.source" />,
+        accessor: "connectorName",
+      },
+      {
         Header: <FormattedMessage id="tables.destination" />,
         headerHighlighted: true,
         accessor: "entityName",
-      },
-      {
-        Header: <FormattedMessage id="tables.source" />,
-        accessor: "connectorName",
       },
       {
         Header: "",
