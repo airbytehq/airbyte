@@ -16,7 +16,7 @@ from airbyte_cdk.test.http.response_builder import (
     Path,
     RecordBuilder,
     create_builders_from_resource,
-    find_template
+    find_template,
 )
 
 _RECORDS_FIELD = "records_field"
