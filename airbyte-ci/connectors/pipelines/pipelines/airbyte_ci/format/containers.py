@@ -95,10 +95,7 @@ def format_java_container(dagger_client: dagger.Client) -> dagger.Container:
             " spotless:check"
             " clean"
         ],
-        include=[
-            "**/*.java",
-            "**/*.gradle"
-        ],
+        include=["**/*.java", "**/*.gradle"],
     )
 
 
