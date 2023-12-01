@@ -1,8 +1,6 @@
 [
   {
-    "_id": null,
-    "fields": [
-      {
+    "_id": {
         "_id": "string",
         "name": "string",
         "last_updated": "date",
@@ -11,12 +9,9 @@
         "items": "array",
         "owners": "object"
       }
-    ]
   },
   {
-    "_id": null,
-    "fields": [
-      {
+    "_id": {
         "_id": "string",
         "name": "string",
         "last_updated": "date",
@@ -26,6 +21,5 @@
         "owners": "object",
         "other": "string"
       }
-    ]
   }
 ]
