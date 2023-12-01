@@ -33,7 +33,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -232,22 +231,21 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
                     // Thanks, redshift.
                     return Optional.of(
                         ZonedDateTime.parse(
-                                rts.getPostgresqlString(),
-                                new DateTimeFormatterBuilder()
-                                    .appendPattern("yyyy-MM-dd HH:mm:ss")
-                                    .optionalStart()
-                                    .appendFraction(ChronoField.MILLI_OF_SECOND, 0, 9, true)
-                                    .optionalEnd()
-                                    .appendPattern("X")
-                                    .toFormatter()
-                            ).withZoneSameInstant(ZoneOffset.UTC)
-                            .toString()
-                    );
+                            rts.getPostgresqlString(),
+                            new DateTimeFormatterBuilder()
+                                .appendPattern("yyyy-MM-dd HH:mm:ss")
+                                .optionalStart()
+                                .appendFraction(ChronoField.MILLI_OF_SECOND, 0, 9, true)
+                                .optionalEnd()
+                                .appendPattern("X")
+                                .toFormatter())
+                            .withZoneSameInstant(ZoneOffset.UTC)
+                            .toString());
                   } else {
                     return Optional.empty();
                   }
-                })
-            ).collect(Collectors.toList()));
+                }))
+            .collect(Collectors.toList()));
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.

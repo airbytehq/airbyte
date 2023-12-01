@@ -42,8 +42,7 @@ public class RedshiftTestDataComparator extends AdvancedTestDataComparator {
     try {
       final ZonedDateTime airbyteDate = ZonedDateTime.parse(
           airbyteMessageValue,
-          getAirbyteDateTimeWithTzFormatter()
-      ).withZoneSameInstant(ZoneOffset.UTC);
+          getAirbyteDateTimeWithTzFormatter()).withZoneSameInstant(ZoneOffset.UTC);
 
       final ZonedDateTime destinationDate = ZonedDateTime.parse(destinationValue)
           .withZoneSameInstant(ZoneOffset.UTC);
