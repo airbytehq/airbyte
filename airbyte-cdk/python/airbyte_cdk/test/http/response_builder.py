@@ -57,25 +57,6 @@ class NestedPath(Path):
         return f"NestedPath(path={self._path})"
 
 
-class CompositePath(Path):
-    def __init__(self, paths: List[Path]):
-        self._paths = paths
-
-    def update(self, template: Dict[str, Any], value: Any) -> None:
-        if len(value) != len(self._paths):
-            raise ValueError(f"Composite path has {len(self._paths)} paths but there were {len(value)} values provided. "
-                             f"Values are `{value}` with type {type(value)}.")
-
-        for i, path in enumerate(self._paths):
-            path.update(template, value[i])
-
-    def extract(self, template: Dict[str, Any]) -> Any:
-        return [path.extract(template) for path in self._paths]
-
-    def __str__(self) -> str:
-        return f"CompositePath({', '.join([str(path) for path in self._paths])})"
-
-
 class PaginationStrategy(ABC):
     @abstractmethod
     def update(self, response: Dict[str, Any]) -> None:

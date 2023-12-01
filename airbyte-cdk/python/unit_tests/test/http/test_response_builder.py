@@ -9,7 +9,6 @@ from unittest.mock import Mock
 import pytest
 from airbyte_cdk.test.http.response import HttpResponse
 from airbyte_cdk.test.http.response_builder import (
-    CompositePath,
     FieldPath,
     FieldUpdatePaginationStrategy,
     HttpResponseBuilder,
@@ -63,16 +62,6 @@ class RecordBuilderTest(TestCase):
         builder = _record_builder({_RECORDS_FIELD: [{"nested": {_ID_FIELD: "id"}}]}, FieldPath(_RECORDS_FIELD), NestedPath(["nested", _ID_FIELD]))
         record = builder.with_id("another id").build()
         assert record["nested"][_ID_FIELD] == "another id"
-
-    def test_given_composite_id_when_build_then_set_id(self) -> None:
-        builder = _record_builder(
-            {_RECORDS_FIELD: [{"root_id": "a root id", "nested": {_ID_FIELD: "nested id"}}]},
-            FieldPath(_RECORDS_FIELD),
-            CompositePath([FieldPath("root_id"), NestedPath(["nested", _ID_FIELD])])
-        )
-        record = builder.with_id(["another root id", "another nested id"]).build()
-        assert record["root_id"] == "another root id"
-        assert record["nested"][_ID_FIELD] == "another nested id"
 
     def test_given_id_path_not_provided_but_with_id_when_build_then_raise_error(self) -> None:
         builder = _record_builder(_A_RESPONSE_TEMPLATE, FieldPath(_RECORDS_FIELD), None)
