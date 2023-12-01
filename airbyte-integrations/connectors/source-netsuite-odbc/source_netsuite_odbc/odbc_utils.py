@@ -7,6 +7,8 @@ import random
 import string
 from datetime import datetime
 from typing import Mapping, Any
+from .errors import NETSUITE_DRIVER_NOT_FOUND_ERROR, AIRBYTE_ODBC_DRIVER_DOES_NOT_EXIST_ERROR, NETSUITE_INCORRECT_PASSWORD, AIRBYTE_ODBC_DRIVER_INCORRECT_PASSWORD_ERROR
+
 
 class NetsuiteODBCCursorConstructor:
   def generate_nonce(self) -> str:
@@ -15,12 +17,14 @@ class NetsuiteODBCCursorConstructor:
     # Generate a random 10-character string
     random_string = ''.join(random.choice(characters) for i in range(10))
     return random_string
+  
+  def generate_timestamp(self) -> str:
+    time_tuple = datetime.now().timetuple() 
+    return str(time.mktime(time_tuple))[0:10]
     
   def construct_password(self, config: Mapping[str, Any]) -> str:
 
-    time_tuple = datetime.now().timetuple() 
-    timestamp = str(time.mktime(time_tuple))[0:10]
-
+    timestamp = self.generate_timestamp()
     nonce = self.generate_nonce()
 
     base_string = config['realm'] + '&' + config['consumer_key'] + '&' + config['token_key'] + '&' + nonce + '&' + timestamp
@@ -35,9 +39,23 @@ class NetsuiteODBCCursorConstructor:
     hmac_base64_str = hmac_base64.decode()
 
     return base_string + '&' + hmac_base64_str + '&HMAC-SHA256'
-    
-  def create_database_cursor(self, config: Mapping[str, Any]) -> pyodbc.Cursor:
+  
+  def construct_db_string(self, config: Mapping[str, Any]) -> str:
     password = self.construct_password(config)
     connection_string = f'DRIVER=NetSuite ODBC Drivers 8.1;Host={config["service_host"]};Port={config["service_port"]};Encrypted=1;AllowSinglePacketLogout=1;Truststore=/opt/netsuite/odbcclient/cert/ca3.cer;ServerDataSource=NetSuite2.com;UID=TBA;PWD={password};CustomProperties=AccountID={config["realm"]};RoleID=57;StaticSchema=1'
-    cxn = pyodbc.connect(connection_string)
-    return cxn.cursor()
+    return connection_string
+
+    
+  def create_database_cursor(self, config: Mapping[str, Any]) -> pyodbc.Cursor:
+    connection_string = self.construct_db_string(config)
+    try:
+      cxn = pyodbc.connect(connection_string)
+      return cxn.cursor()
+    except Exception as e:
+      message = str(e)
+      if NETSUITE_DRIVER_NOT_FOUND_ERROR in message:
+        raise Exception(AIRBYTE_ODBC_DRIVER_DOES_NOT_EXIST_ERROR)
+      elif NETSUITE_INCORRECT_PASSWORD in message:
+        raise Exception(AIRBYTE_ODBC_DRIVER_INCORRECT_PASSWORD_ERROR)
+      else:
+        raise e

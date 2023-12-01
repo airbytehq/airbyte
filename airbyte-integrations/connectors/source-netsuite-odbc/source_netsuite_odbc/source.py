@@ -9,7 +9,6 @@ from typing import Mapping, Tuple, Any, List, Optional
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources import AbstractSource
 from source_netsuite_odbc.discover_utils import NetsuiteODBCTableDiscoverer
-from source_netsuite_odbc.reader_utils import NetsuiteODBCTableReader, NETSUITE_PAGINATION_INTERVAL
 from .streams import NetsuiteODBCStream
 from .odbc_utils import NetsuiteODBCCursorConstructor
 
