@@ -156,6 +156,7 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.2   | 2023-12-01 | [\#](https://github.com/airbytehq/airbyte/pull/) | Add the abstract DB source debugger.                                                                                                                           |
 | 0.6.1   | 2023-11-30 | [\#32610](https://github.com/airbytehq/airbyte/pull/32610) | Support DB inital sync using binary as primary key.                                                                                                            |
 | 0.6.0   | 2023-11-30 | [\#32888](https://github.com/airbytehq/airbyte/pull/32888) | JDBC destinations now use the async framework                                                                                                                  |
 | 0.5.3   | 2023-11-28 | [\#32686](https://github.com/airbytehq/airbyte/pull/32686) | Better attribution of debezium engine shutdown due to heartbeat.                                                                                               |

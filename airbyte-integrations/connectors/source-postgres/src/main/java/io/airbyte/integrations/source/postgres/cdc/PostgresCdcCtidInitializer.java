@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres.cdc;
 
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.isDebugMode;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -105,7 +106,7 @@ public class PostgresCdcCtidInitializer {
 
       if (!savedOffsetAfterReplicationSlotLSN) {
         LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
-      } else if (PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
+      } else if (!isDebugMode(sourceConfig) && PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
         postgresDebeziumStateUtil.commitLSNToPostgresDatabase(database.getDatabaseConfig(),
             savedOffset,
             sourceConfig.get("replication_method").get("replication_slot").asText(),
@@ -162,6 +163,7 @@ public class PostgresCdcCtidInitializer {
         LOGGER.info("No streams will be synced via ctid");
       }
 
+      // Gets the target position.
       final var targetPosition = PostgresCdcTargetPosition.targetPosition(database);
       final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
           targetPosition, false, firstRecordWaitTime, subsequentRecordWaitTime, queueSize);

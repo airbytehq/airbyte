@@ -95,4 +95,17 @@ class PostgresUtilsTest {
     assertFalse(PostgresUtils.shouldFlushAfterSync(config));
   }
 
+  @Test
+  void testDebugMode() {
+    final ObjectNode config = (ObjectNode) Jsons.jsonNode(ImmutableMap.builder().build());
+    assertFalse(PostgresUtils.isCdc(config));
+
+    config.set("replication_method", Jsons.jsonNode(ImmutableMap.of(
+        "replication_slot", "slot",
+        "publication", "ab_pub")));
+    assertFalse(PostgresUtils.isDebugMode(config));
+
+    config.set("debug_mode", Jsons.jsonNode(true));
+    assertTrue(PostgresUtils.isDebugMode(config));
+  }
 }
