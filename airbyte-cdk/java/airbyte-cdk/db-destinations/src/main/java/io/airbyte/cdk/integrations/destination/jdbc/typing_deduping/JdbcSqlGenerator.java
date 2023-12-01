@@ -38,6 +38,7 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
         name);
   }
 
+  @Override
   public ColumnId buildColumnId(final String name, final String suffix) {
     final String nameWithSuffix = name + suffix;
     return new ColumnId(
