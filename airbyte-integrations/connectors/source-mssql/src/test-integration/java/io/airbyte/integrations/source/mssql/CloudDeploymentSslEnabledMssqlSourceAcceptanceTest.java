@@ -5,13 +5,9 @@
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.Map;
 
 public class CloudDeploymentSslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
