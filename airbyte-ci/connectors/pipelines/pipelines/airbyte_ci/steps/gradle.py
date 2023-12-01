@@ -33,10 +33,8 @@ class GradleTask(Step, ABC):
     async def _run(self) -> StepResult:
         async with GradleTaskExecutor(
             self.context.dagger_client,
-            self.context.get_repo_dir("."),
+            self.context.get_repo_dir(),
             self.context.is_local,
-            build_cdk=True,
-            workdir="/airbyte",
             s3_build_cache_access_key_id=self.context.s3_build_cache_access_key_id_secret,
             s3_build_cache_secret_key=self.context.s3_build_cache_secret_key_secret,
         ) as task_executor:
