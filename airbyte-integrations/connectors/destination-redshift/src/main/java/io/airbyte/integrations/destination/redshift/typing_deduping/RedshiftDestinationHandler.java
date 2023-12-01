@@ -94,9 +94,4 @@ public class RedshiftDestinationHandler extends JdbcDestinationHandler {
     return TIMESTAMPTZ_FORMAT.parse(ts, Instant::from);
   }
 
-  @Override
-  public boolean retryDeterminer(Exception e) {
-    return false;
-  }
-
 }

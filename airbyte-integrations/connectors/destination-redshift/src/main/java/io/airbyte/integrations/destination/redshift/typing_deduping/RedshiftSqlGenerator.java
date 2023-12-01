@@ -536,6 +536,11 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
         .getSQL();
   }
 
+  @Override
+  public boolean shouldRetry(Exception e) {
+    return false;
+  }
+
   private static String jdbcTypeNameFromRedshiftTypeName(final String redshiftType) {
     return REDSHIFT_TYPE_NAME_TO_JDBC_TYPE.getOrDefault(redshiftType, redshiftType);
   }
