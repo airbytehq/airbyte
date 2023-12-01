@@ -182,13 +182,17 @@ class UnstructuredParser(FileTypeParser):
         return True, None
 
     @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=5, giveup=user_error)
-    def _read_file_remotely_with_retries(self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str) -> Optional[str]:
+    def _read_file_remotely_with_retries(
+        self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str
+    ) -> Optional[str]:
         """
         Read a file remotely, retrying up to 5 times if the error is not caused by user error. This is useful for transient network errors or the API server being overloaded temporarily.
         """
         return self._read_file_remotely(file_handle, format, filetype, strategy)
 
-    def _read_file_remotely(self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str) -> Optional[str]:
+    def _read_file_remotely(
+        self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str
+    ) -> Optional[str]:
         headers = {"accept": "application/json", "unstructured-api-key": format.api_key}
 
         data = self._params_to_dict(format.parameters, strategy)
