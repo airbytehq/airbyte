@@ -309,6 +309,15 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                     "description": "If true, skip files that cannot be parsed because of their file type and log a warning. If false, fail the sync. Corrupted files with valid file types will still result in a failed sync.",
                                                     "always_show": True,
                                                 },
+                                                "strategy": {
+                                                    "type": "string",
+                                                    "always_show": True,
+                                                    "order": 0,
+                                                    "default": "auto",
+                                                    "title": "Parsing Strategy",
+                                                    "enum": ["auto", "fast", "ocr_only", "hi_res"],
+                                                    "description": "The strategy used to parse documents. `fast` extracts text directly from the document which doesn't work for all files. `ocr_only` is more reliable, but slower. `hi_res` is the most reliable, but requires an API key and a hosted instance of unstructured and can't be used with local mode. See the [unstructured.io documentation](https://unstructured-io.github.io/unstructured/core/partition.html#partition-pdf) for more details.",
+                                                },
                                                 "processing": {
                                                     "title": "Processing",
                                                     "description": "Processing configuration",
@@ -368,7 +377,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                                     "type": "string"
                                                                 },
                                                                 "parameters": {
-                                                                    "title": "Parameters",
+                                                                    "title": "Additional URL Parameters",
                                                                     "description": "List of parameters send to the API",
                                                                     "default": [],
                                                                     "always_show": True,
@@ -381,8 +390,8 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                                                 "title": "Parameter name",
                                                                                 "description": "The name of the unstructured API parameter to use",
                                                                                 "examples": [
-                                                                                    "include_page_breaks",
-                                                                                    "strategy"
+                                                                                    "combine_under_n_chars",
+                                                                                    "languages"
                                                                                 ],
                                                                                 "type": "string"
                                                                             },

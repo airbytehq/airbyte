@@ -21,7 +21,7 @@ class APIParameterConfigModel(BaseModel):
     name: str = Field(
         title="Parameter name",
         description="The name of the unstructured API parameter to use",
-        examples=["include_page_breaks", "strategy"],
+        examples=["combine_under_n_chars", "languages"],
     )
     value: str = Field(title="Value", description="The value of the parameter", examples=["true", "hi_res"])
 
@@ -48,7 +48,7 @@ class APIProcessingConfigModel(BaseModel):
     parameters: Optional[List[APIParameterConfigModel]] = Field(
         default=[],
         always_show=True,
-        title="Parameters",
+        title="Additional URL Parameters",
         description="List of parameters send to the API",
     )
 
@@ -74,6 +74,15 @@ class UnstructuredFormat(BaseModel):
         title="Skip Unprocessable File Types",
         description="If true, skip files that cannot be parsed because of their file type and log a warning. If false, fail the sync. Corrupted files with valid file types will still result in a failed sync.",
         always_show=True,
+    )
+
+    strategy: str = Field(
+        always_show=True,
+        order=0,
+        default="auto",
+        title="Parsing Strategy",
+        enum=["auto", "fast", "ocr_only", "hi_res"],
+        description="The strategy used to parse documents. `fast` extracts text directly from the document which doesn't work for all files. `ocr_only` is more reliable, but slower. `hi_res` is the most reliable, but requires an API key and a hosted instance of unstructured and can't be used with local mode. See the [unstructured.io documentation](https://unstructured-io.github.io/unstructured/core/partition.html#partition-pdf) for more details.",
     )
 
     processing: Union[LocalProcessingConfigModel, APIProcessingConfigModel,] = Field(
