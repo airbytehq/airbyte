@@ -1,0 +1,54 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "id" : {
+      "type" : [
+        "number"
+      ]
+    },
+    "name" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "budget" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "countries" : {
+      "type" : [
+        "null",
+        "array"
+      ],
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "country" : {
+            "type" : [
+              "null",
+              "string"
+            ]
+          },
+          "bid" : {
+            "type" : [
+              "null",
+              "string",
+              "number"
+            ]
+          },
+          "setupGoal" : {
+            "type" : [
+              "null",
+              "string",
+              "number"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
