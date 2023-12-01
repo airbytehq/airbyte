@@ -5,7 +5,6 @@
 import json
 import uuid
 from typing import Callable, Optional
-from urllib.parse import urlparse
 
 from dagger import Client, Container, File, Secret
 from pipelines import consts
@@ -111,13 +110,7 @@ def bind_to_tailscale(dagger_client: Client, container_to_bind: Container, tails
         .with_exposed_port(TAILSCALE_PORT)
     )
 
-    return (
-        container_to_bind.with_service_binding("tailscale", tailscale).with_env_variable("ALL_PROXY", "socks5://tailscale:1055/")
-        # TODO (Conor)
-        # remove this exec if working, this is a dummy example that will succeed if the tailscale setup works
-        # This exec will fail if the tailscale setup doesn't work as this url is only reachable through VPN
-        .with_exec(["curl", "prefect.airbyte.com"], skip_entrypoint=True)
-    )
+    return container_to_bind.with_service_binding("tailscale", tailscale).with_env_variable("ALL_PROXY", "socks5://tailscale:1055/")
 
 
 def docker_login(
