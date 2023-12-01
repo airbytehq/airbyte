@@ -11,6 +11,8 @@ import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
@@ -27,9 +29,13 @@ import java.io.UncheckedIOException;
 import java.util.HashMap;
 
 public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
-
   private static final String STREAM_NAME = "dbo.id_and_name";
   private static final String STREAM_NAME2 = "dbo.starships";
+
+  @Override
+  protected FeatureFlags featureFlags() {
+    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
+  }
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 

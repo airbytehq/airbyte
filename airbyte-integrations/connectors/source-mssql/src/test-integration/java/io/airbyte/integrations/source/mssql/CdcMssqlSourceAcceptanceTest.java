@@ -11,6 +11,8 @@ import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
+import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -33,6 +35,11 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected String getImageName() {
     return "airbyte/source-mssql:dev";
+  }
+
+  @Override
+  protected FeatureFlags featureFlags() {
+    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
   }
 
   @Override
