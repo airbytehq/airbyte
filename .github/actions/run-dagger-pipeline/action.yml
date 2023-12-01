@@ -4,7 +4,7 @@ inputs:
   airbyte_ci_binary_url:
     description: "URL to airbyte-ci binary"
     required: false
-    default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
+    default: https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte-ci/releases/ubuntu/46a8b80/airbyte-ci
   subcommand:
     description: "Subcommand for airbyte-ci"
     required: true
