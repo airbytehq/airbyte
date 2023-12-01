@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk[file-based]>=0.53.5",
+    "airbyte-cdk[file-based]>=0.53.8",
     "smart-open[s3]==5.1.0",
     "wcmatch==8.4",
     "dill==0.3.4",

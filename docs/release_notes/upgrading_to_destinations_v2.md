@@ -15,15 +15,15 @@ Airbyte Destinations V2 provides you with:
 
 To see more details and examples on the contents of the Destinations V2 release, see this [guide](../using-airbyte/core-concepts/typing-deduping.md). The remainder of this page will walk you through upgrading connectors from legacy normalization to Destinations V2.
 
-Destinations V2 were in preview for Snowflake and BigQuery during August 2023, and launched on August 29th, 2023. Other destinations will be transitioned to Destinations V2 on or before November 1st, 2023.
+Destinations V2 were in preview for Snowflake and BigQuery during August 2023, and launched on August 29th, 2023. Other destinations will be transitioned to Destinations V2 in early 2024.
 
 ## Deprecating Legacy Normalization
 
-The upgrade to Destinations V2 is handled by moving your connections to use [updated versions of Airbyte destinations](#destinations-v2-compatible-versions). Existing normalization options, both `Raw data (JSON)` and `Normalized tabular data` will be unsupported starting **Nov 1, 2023**.
+The upgrade to Destinations V2 is handled by moving your connections to use [updated versions of Airbyte destinations](#destinations-v2-compatible-versions). Existing normalization options, both `Raw data (JSON)` and `Normalized tabular data`, will be unsupported starting the upgrade deadline.
 
 ![Legacy Normalization](./assets/airbyte_legacy_normalization.png)
 
-As a Cloud user, existing connections using legacy normalization will be paused on **November 1, 2023**. As an Open Source user, you may choose to upgrade at your convenience. However, destination connector versions prior to Destinations V2 will no longer be supported as of **Nov 1, 2023**.
+As a Cloud user, existing connections using legacy normalization will be paused on the upgrade deadline. As an Open Source user, you may choose to upgrade at your convenience. However, destination connector versions prior to Destinations V2 will no longer be supported starting the upgrade deadline.
 
 Note that Destinations V2 also removes the option to _only_ replicate raw data. The vast majority of Airbyte users prefer typed final tables, and our future feature development will rely on this implementation. Learn more [below](#upgrading-as-a-user-of-raw-tables).
 
@@ -32,7 +32,7 @@ Note that Destinations V2 also removes the option to _only_ replicate raw data. 
 The following table details the delivered data modified by Destinations V2:
 
 | Current Normalization Setting | Source Type                           | Impacted Data (Breaking Changes)                         |
-| ----------------------------- | ------------------------------------- | -------------------------------------------------------- |
+|-------------------------------|---------------------------------------|----------------------------------------------------------|
 | Raw JSON                      | All                                   | `_airbyte` metadata columns, raw table location          |
 | Normalized tabular data       | API Source                            | Unnested tables, `_airbyte` metadata columns, SCD tables |
 | Normalized tabular data       | Tabular Source (database, file, etc.) | `_airbyte` metadata columns, SCD tables                  |
@@ -143,33 +143,30 @@ As a user previously not running Normalization, Upgrading to Destinations V2 wil
 For each [CDC-supported](https://docs.airbyte.com/understanding-airbyte/cdc) source connector, we recommend the following:
 
 | CDC Source | Recommendation                                               | Notes                                                                                                                                                                                                                                                |
-| ---------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|------------|--------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Postgres   | [Upgrade connection in place](#quick-start-to-upgrading)     | You can optionally dual write, but this requires resyncing historical data from the source. You must create a new Postgres source with a different replication slot than your existing source to preserve the integrity of your existing connection. |
 | MySQL      | [All above upgrade paths supported](#advanced-upgrade-paths) | You can upgrade the connection in place, or dual write. When dual writing, Airbyte can leverage the state of an existing, active connection to ensure historical data is not re-replicated from MySQL.                                               |
-| SQL Server | [Upgrade connection in place](#quick-start-to-upgrading)     | You can optionally dual write, but this requires resyncing historical data from the SQL Server source.                                                                                                                                               |
 
 ## Destinations V2 Compatible Versions
 
 For each destination connector, Destinations V2 is effective as of the following versions:
 
-| Destination Connector | Safe Rollback Version | Destinations V2 Compatible |
-| --------------------- | --------------------- | -------------------------- |
-| BigQuery              | 1.4.4                 | 2.0.6+                     |
-| Snowflake             | 2.0.0                 | 3.1.0+                     |
-| Redshift              | 0.4.8                 | 2.0.0+                     |
-| MSSQL                 | 0.1.24                | 2.0.0+                     |
-| MySQL                 | 0.1.20                | 2.0.0+                     |
-| Oracle                | 0.1.19                | 2.0.0+                     |
-| TiDB                  | 0.1.3                 | 2.0.0+                     |
-| DuckDB                | 0.1.0                 | 2.0.0+                     |
-| Clickhouse            | 0.2.3                 | 2.0.0+                     |
+| Destination Connector | Safe Rollback Version | Destinations V2 Compatible | Upgrade Deadline         |
+|-----------------------|-----------------------|----------------------------|--------------------------|
+| BigQuery              | 1.4.4                 | 2.0.6+                     | November 7, 2023         |
+| Snowflake             | 2.0.0                 | 3.1.0+                     | November 7, 2023         |
+| Redshift              | 0.4.8                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
+| Postgres              | 0.4.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
+| MySQL                 | 0.1.20                | [coming soon] 2.0.0+       | [coming soon] early 2024 |
+
+Note that legacy normalization will be deprecated for ClickHouse, DuckDB, MSSQL, TiDB, and Oracle DB in early 2024. If you wish to add Destinations V2 capability to these destinations, please reference our implementation guide (coming soon).
 
 ### [Open Source Only] Rolling Back to Legacy Normalization
 
 If you upgrade to Destinations V2 and start encountering issues, as an Open Source user you can optionally roll back. If you are running an outdated Airbyte Platform version (prior to `v0.50.24`), this may occur more frequently by accidentally upgrading to Destinations V2. However:
 
 - Rolling back will require resetting each of your upgraded connections.
-- If you are hoping to receive support from the Airbyte team, you will need to re-upgrade to Destinations V2 by **November 1, 2023**.
+- If you are hoping to receive support from the Airbyte team, you will need to re-upgrade to Destinations V2 by the upgrade deadline.
 
 To roll back, follow these steps:
 
