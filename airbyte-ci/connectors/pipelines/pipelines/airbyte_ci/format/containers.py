@@ -73,7 +73,10 @@ def build_container(
 
 
 def format_java_container(dagger_client: dagger.Client) -> dagger.Container:
-    """Format java code via spotless in maven."""
+    """
+    Format java code via spotless in maven.
+    We use maven instead of gradle because we want this formatting step to be fast.
+    """
     return build_container(
         dagger_client,
         base_image=MAVEN_IMAGE,
