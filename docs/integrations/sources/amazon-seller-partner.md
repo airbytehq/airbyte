@@ -74,12 +74,10 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 
 - [Active Listings Report (GET_MERCHANT_LISTINGS_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [All Listings Report (GET_MERCHANT_LISTINGS_ALL_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
-
-- [Amazon Search Terms Report (GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS\)
-- [Brand Analytics Alternate Purchase Report (GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS\)
-- [Brand Analytics Item Comparison Report (GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS\)
-- [Repeat Purchase (GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS\)
-
+- [Amazon Search Terms Report (GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
+- [Brand Analytics Alternate Purchase Report (GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
+- [Brand Analytics Item Comparison Report (GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
+- [Repeat Purchase (GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
 - [Browse Tree Report (GET_XML_BROWSE_TREE_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-browse-tree) \(incremental\)
 - [Canceled Listings Report (GET_MERCHANT_CANCELLED_LISTINGS_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [FBA Amazon Fulfilled Inventory Report (GET_AFN_INVENTORY_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
@@ -96,10 +94,8 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [FBA Returns Report (GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-concessions-reports) \(incremental\)
 - [FBA Storage Fees Report (GET_FBA_STORAGE_FEE_CHARGES_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [FBA Stranded Inventory Report (GET_STRANDED_INVENTORY_UI_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
-
-- [Financial Events](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialevents)
-- [Financial Event Groups](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialeventgroups)
-
+- [Financial Events](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialevents) \(incremental\)
+- [Financial Event Groups](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference#get-financesv0financialeventgroups) \(incremental\)
 - [Flat File Archived Orders Report (GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 - [Flat File Feedback Report (GET_SELLER_FEEDBACK_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-performance) \(incremental\)
 - [Flat File Orders By Last Update Report (GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
@@ -110,16 +106,12 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Inventory Ledger Report - Detailed View (GET_LEDGER_DETAIL_VIEW_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [Inventory Ledger Report - Summary View (GET_LEDGER_SUMMARY_VIEW_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [Inventory Report (GET_FLAT_FILE_OPEN_LISTINGS_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
-
-- [Market Basket Analysis Report (GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS\)
-- [Net Pure Product Margin Report (GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports)
-
+- [Market Basket Analysis Report (GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
+- [Net Pure Product Margin Report (GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Open Listings Report (GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [Orders](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference) \(incremental\)
 - [Order Items](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems) \(incremental\)
-
-- [Rapid Retail Analytics Inventory Report (GET_VENDOR_REAL_TIME_INVENTORY_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports)
-
+- [Rapid Retail Analytics Inventory Report (GET_VENDOR_REAL_TIME_INVENTORY_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Restock Inventory Report (GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [Sales and Traffic Business Report (GET_SALES_AND_TRAFFIC_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
 - [Scheduled XML Order Report (Shipping) (GET_ORDER_REPORT_DATA_SHIPPING)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
@@ -127,12 +119,10 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Subscribe and Save Performance Report (GET_FBA_SNS_PERFORMANCE_DATA)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-subscribe-and-save-reports) \(incremental\)
 - [Suppressed Listings Report (GET_MERCHANTS_LISTINGS_FYP_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [Unshipped Orders Report (GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
-
-- [Vendor Direct Fulfillment Shipping](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference)
-- [Vendor Inventory Report (GET_VENDOR_INVENTORY_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports)
+- [Vendor Direct Fulfillment Shipping](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference) \(incremental\)
+- [Vendor Inventory Report (GET_VENDOR_INVENTORY_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [Vendor Sales Report (GET_VENDOR_SALES_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
-- [Vendor Traffic Report (GET_VENDOR_TRAFFIC_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports)
-
+- [Vendor Traffic Report (GET_VENDOR_TRAFFIC_REPORT)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [XML Orders By Order Date Report (GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
 
 ## Report options
@@ -161,6 +151,7 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 
 | Version  | Date       | Pull Request                                                | Subject                                                                                                                                                                             |
 |:---------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `2.6.0`  | 2023-12-01 | [\#32977](https://github.com/airbytehq/airbyte/pull/32977)  | Make all streams incremental                                                                                                                                                        |
 | `2.5.0`  | 2023-11-27 | [\#32505](https://github.com/airbytehq/airbyte/pull/32505)  | Make report options configurable via UI                                                                                                                                             |
 | `2.4.0`  | 2023-11-23 | [\#32738](https://github.com/airbytehq/airbyte/pull/32738)  | Add `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, `GET_VENDOR_REAL_TIME_INVENTORY_REPORT`, and `GET_VENDOR_TRAFFIC_REPORT` streams                                                   |
 | `2.3.0`  | 2023-11-22 | [\#32541](https://github.com/airbytehq/airbyte/pull/32541)  | Make `GET_AFN_INVENTORY_DATA`, `GET_AFN_INVENTORY_DATA_BY_COUNTRY`, and `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` streams incremental                                               |

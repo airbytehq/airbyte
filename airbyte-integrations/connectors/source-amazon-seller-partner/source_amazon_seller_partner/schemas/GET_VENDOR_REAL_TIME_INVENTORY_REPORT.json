@@ -47,6 +47,10 @@
           "type": ["null", "integer"]
         }
       }
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

@@ -114,7 +114,7 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
             return {self.next_page_token_field: next_page_token}
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
@@ -377,12 +377,14 @@ class MerchantListingsReports(IncrementalReportsAmazonSPStream):
     cursor_field = "dataEndTime"
 
 
-class NetPureProductMarginReport(ReportsAmazonSPStream):
+class NetPureProductMarginReport(IncrementalReportsAmazonSPStream):
     name = "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT"
+    cursor_field = "dataEndTime"
 
 
-class RapidRetailAnalyticsInventoryReport(ReportsAmazonSPStream):
+class RapidRetailAnalyticsInventoryReport(IncrementalReportsAmazonSPStream):
     name = "GET_VENDOR_REAL_TIME_INVENTORY_REPORT"
+    cursor_field = "dataEndTime"
 
 
 class FlatFileOrdersReports(IncrementalReportsAmazonSPStream):
@@ -650,36 +652,129 @@ class AnalyticsStream(ReportsAmazonSPStream):
         }
 
 
-class BrandAnalyticsMarketBasketReports(AnalyticsStream):
+class IncrementalAnalyticsStream(AnalyticsStream):
+
+    fixed_period_in_days = 0
+
+    @property
+    @abstractmethod
+    def cursor_field(self) -> Union[str, List[str]]:
+        pass
+
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
+        if stream_slice:
+            data_times = {}
+            if stream_slice.get("dataStartTime"):
+                data_times["dataStartTime"] = stream_slice["dataStartTime"]
+            if stream_slice.get("dataEndTime"):
+                data_times["dataEndTime"] = stream_slice["dataEndTime"]
+            data.update(data_times)
+
+        return data
+
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+
+        payload = response.json()
+
+        document = self.download_and_decompress_report_document(payload)
+        document_records = self.parse_document(document)
+
+        # Not all (partial) responses include the request date, so adding it manually here
+        for record in document_records:
+            if stream_slice.get("dataEndTime"):
+                record["queryEndDate"] = pendulum.parse(stream_slice["dataEndTime"]).strftime("%Y-%m-%d")
+            yield record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        latest_benchmark = latest_record[self.cursor_field]
+        if current_stream_state.get(self.cursor_field):
+            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
+        return {self.cursor_field: latest_benchmark}
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+
+        start_date = pendulum.parse(self._replication_start_date)
+        end_date = pendulum.now("utc").subtract(days=self.availability_sla_days)
+
+        if self._replication_end_date:
+            end_date = pendulum.parse(self._replication_end_date)
+
+        if stream_state:
+            state = stream_state.get(self.cursor_field)
+            start_date = pendulum.parse(state)
+
+        start_date = min(start_date, end_date)
+        slices = []
+
+        while start_date < end_date:
+            # If request only returns data on day level
+            if self.fixed_period_in_days != 0:
+                slice_range = self.fixed_period_in_days
+            else:
+                slice_range = self.period_in_days
+
+            end_date_slice = start_date.add(days=slice_range)
+            slices.append(
+                {
+                    "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
+                    "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
+                }
+            )
+            start_date = end_date_slice
+
+        return slices
+
+
+class BrandAnalyticsMarketBasketReports(IncrementalAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT"
     result_key = "dataByAsin"
+    cursor_field = "endDate"
 
 
-class BrandAnalyticsSearchTermsReports(AnalyticsStream):
+class BrandAnalyticsSearchTermsReports(IncrementalAnalyticsStream):
     """
     Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
     """
 
     name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
     result_key = "dataByDepartmentAndSearchTerm"
+    cursor_field = "queryEndDate"
 
 
-class BrandAnalyticsRepeatPurchaseReports(AnalyticsStream):
+class BrandAnalyticsRepeatPurchaseReports(IncrementalAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT"
     result_key = "dataByAsin"
+    cursor_field = "endDate"
 
 
-class BrandAnalyticsAlternatePurchaseReports(AnalyticsStream):
+class BrandAnalyticsAlternatePurchaseReports(IncrementalAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT"
     result_key = "dataByAsin"
+    cursor_field = "endDate"
 
 
-class BrandAnalyticsItemComparisonReports(AnalyticsStream):
+class BrandAnalyticsItemComparisonReports(IncrementalAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
     result_key = "dataByAsin"
+    cursor_field = "endDate"
 
 
-class VendorInventoryReports(AnalyticsStream):
+class VendorInventoryReports(IncrementalAnalyticsStream):
     """
     Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#vendor-retail-analytics-reports
     """
@@ -687,11 +782,31 @@ class VendorInventoryReports(AnalyticsStream):
     name = "GET_VENDOR_INVENTORY_REPORT"
     result_key = "inventoryByAsin"
     availability_sla_days = 3
+    cursor_field = "endDate"
 
 
-class VendorTrafficReport(AnalyticsStream):
+class VendorTrafficReport(IncrementalAnalyticsStream):
     name = "GET_VENDOR_TRAFFIC_REPORT"
     result_key = "trafficByAsin"
+    cursor_field = "endDate"
+
+
+class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
+    """
+    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#seller-retail-analytics-reports
+    """
+
+    name = "GET_SALES_AND_TRAFFIC_REPORT"
+    result_key = "salesAndTrafficByAsin"
+    cursor_field = "queryEndDate"
+    fixed_period_in_days = 1
+
+
+class VendorSalesReports(IncrementalAnalyticsStream):
+    name = "GET_VENDOR_SALES_REPORT"
+    result_key = "salesByAsin"
+    cursor_field = "endDate"
+    availability_sla_days = 4  # Data is only available after 4 days
 
 
 class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
@@ -933,113 +1048,7 @@ class LedgerSummaryViewReport(LedgerDetailedViewReports):
     name = "GET_LEDGER_SUMMARY_VIEW_DATA"
 
 
-class IncrementalAnalyticsStream(AnalyticsStream):
-
-    fixed_period_in_days = 0
-
-    @property
-    @abstractmethod
-    def cursor_field(self) -> Union[str, List[str]]:
-        pass
-
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        if stream_slice:
-            data_times = {}
-            if stream_slice.get("dataStartTime"):
-                data_times["dataStartTime"] = stream_slice["dataStartTime"]
-            if stream_slice.get("dataEndTime"):
-                data_times["dataEndTime"] = stream_slice["dataEndTime"]
-            data.update(data_times)
-
-        return data
-
-    def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping]:
-
-        payload = response.json()
-
-        document = self.download_and_decompress_report_document(payload)
-        document_records = self.parse_document(document)
-
-        # Not all (partial) responses include the request date, so adding it manually here
-        for record in document_records:
-            if stream_slice.get("dataEndTime"):
-                record["queryEndDate"] = pendulum.parse(stream_slice["dataEndTime"]).strftime("%Y-%m-%d")
-            yield record
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
-        and returning an updated state object.
-        """
-        latest_benchmark = latest_record[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-
-        start_date = pendulum.parse(self._replication_start_date)
-        end_date = pendulum.now("utc").subtract(days=self.availability_sla_days)
-
-        if self._replication_end_date:
-            end_date = pendulum.parse(self._replication_end_date)
-
-        if stream_state:
-            state = stream_state.get(self.cursor_field)
-            start_date = pendulum.parse(state)
-
-        start_date = min(start_date, end_date)
-        slices = []
-
-        while start_date < end_date:
-            # If request only returns data on day level
-            if self.fixed_period_in_days != 0:
-                slice_range = self.fixed_period_in_days
-            else:
-                slice_range = self.period_in_days
-
-            end_date_slice = start_date.add(days=slice_range)
-            slices.append(
-                {
-                    "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
-                    "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
-                }
-            )
-            start_date = end_date_slice
-
-        return slices
-
-
-class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
-    """
-    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#seller-retail-analytics-reports
-    """
-
-    name = "GET_SALES_AND_TRAFFIC_REPORT"
-    result_key = "salesAndTrafficByAsin"
-    cursor_field = "queryEndDate"
-    fixed_period_in_days = 1
-
-
-class VendorSalesReports(IncrementalAnalyticsStream):
-    name = "GET_VENDOR_SALES_REPORT"
-    result_key = "salesByAsin"
-    cursor_field = "endDate"
-    availability_sla_days = 4  # Data is only available after 4 days
-
-
-class VendorDirectFulfillmentShipping(AmazonSPStream):
+class VendorDirectFulfillmentShipping(IncrementalAmazonSPStream):
     """
     API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/vendor-direct-fulfillment-shipping-api/vendorDirectFulfillmentShippingV1.md
     API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/vendor-direct-fulfillment-shipping-api-model/vendorDirectFulfillmentShippingV1.json
@@ -1056,6 +1065,7 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     next_page_token_field = "nextToken"
     page_size_field = "limit"
     time_format = "%Y-%m-%dT%H:%M:%SZ"
+    cursor_field = "createdBefore"
 
     def path(self, **kwargs) -> str:
         return f"vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
@@ -1063,24 +1073,29 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        if not next_page_token:
-            end_date = pendulum.now("utc").strftime(self.time_format)
-            if self._replication_end_date:
-                end_date = self._replication_end_date
+        if next_page_token:
+            return dict(next_page_token)
 
-            start_date = max(pendulum.parse(self._replication_start_date), pendulum.parse(end_date).subtract(days=7, hours=1)).strftime(
-                self.time_format
-            )
+        end_date = pendulum.now("utc").strftime(self.time_format)
+        if self._replication_end_date:
+            end_date = self._replication_end_date
+        start_date = max(pendulum.parse(self._replication_start_date), pendulum.parse(end_date).subtract(days=7, hours=1)).strftime(
+            self.time_format
+        )
+        if stream_state_value := stream_state.get(self.cursor_field):
+            start_date = max(stream_state_value, start_date)
+        return {self.replication_start_date_field: start_date, self.replication_end_date_field: end_date}
 
-            params.update({self.replication_start_date_field: start_date, self.replication_end_date_field: end_date})
-        return params
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+        params = self.request_params(stream_state)
+        for record in response.json().get(self.data_field, {}).get("shippingLabels", []):
+            record[self.replication_end_date_field] = params.get(self.replication_end_date_field)
+            yield record
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield from response.json().get(self.data_field, {}).get("shippingLabels", [])
 
-
-class FinanceStream(AmazonSPStream, ABC):
+class FinanceStream(IncrementalAmazonSPStream, ABC):
     next_page_token_field = "NextToken"
     page_size_field = "MaxResultsPerPage"
     page_size = 100
@@ -1112,6 +1127,10 @@ class FinanceStream(AmazonSPStream, ABC):
         start_date = max(pendulum.parse(self._replication_start_date), pendulum.parse(end_date).subtract(days=180)).strftime(
             DATE_TIME_FORMAT
         )
+
+        stream_state = stream_state or {}
+        if stream_state_value := stream_state.get(self.cursor_field):
+            start_date = max(stream_state_value, start_date)
 
         # logging to make sure user knows taken start date
         logger.info("start date used: %s", start_date)
@@ -1147,11 +1166,14 @@ class ListFinancialEventGroups(FinanceStream):
     primary_key = "FinancialEventGroupId"
     replication_start_date_field = "FinancialEventGroupStartedAfter"
     replication_end_date_field = "FinancialEventGroupStartedBefore"
+    cursor_field = "FinancialEventGroupStart"
 
     def path(self, **kwargs) -> str:
         return f"finances/{FINANCES_API_VERSION}/financialEventGroups"
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
         yield from response.json().get(self.data_field, {}).get("FinancialEventGroupList", [])
 
 
@@ -1164,12 +1186,18 @@ class ListFinancialEvents(FinanceStream):
     name = "ListFinancialEvents"
     replication_start_date_field = "PostedAfter"
     replication_end_date_field = "PostedBefore"
+    cursor_field = "PostedBefore"
 
     def path(self, **kwargs) -> str:
         return f"finances/{FINANCES_API_VERSION}/financialEvents"
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        yield from [response.json().get(self.data_field, {}).get("FinancialEvents", {})]
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+        params = self.request_params(stream_state)
+        events = response.json().get(self.data_field, {}).get("FinancialEvents", {})
+        events[self.replication_end_date_field] = params.get(self.replication_end_date_field)
+        yield from [events]
 
 
 class FbaCustomerReturnsReports(IncrementalReportsAmazonSPStream):
