@@ -556,6 +556,11 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     data_field = "graphql"
     http_method = "POST"
 
+    def __init__(self, config: Dict):
+        super().__init__(config)
+        # define default BULK instance
+        self.bulk_job = ShopifyBulkJob(self._session, self.logger)
+
     @property
     def slice_interval_in_days(self) -> int:
         """
@@ -566,13 +571,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     @property
     def graphql_path(self) -> str:
         return f"{self.url_base}/{self.path()}"
-
-    @property
-    def bulk_job(self) -> ShopifyBulkJob:
-        """
-        Define the BULK Job instance.
-        """
-        return ShopifyBulkJob(self._session, self.logger)
 
     def add_shop_url_field(self, records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
         # ! Mandatory, add shop_url to the record to make querying easy
@@ -610,7 +608,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     # CDK OVERIDES
     @property
     def availability_strategy(self) -> None:
-        """NOT USED FOR BULK OPERATIONS TO SAVE THE RATE LIMITS."""
+        """NOT USED FOR BULK OPERATIONS TO SAVE THE RATE LIMITS AND TIME FOR THE SYNC."""
         return None
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
@@ -634,15 +632,13 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         """
         return {"query": ShopifyBulkTemplates.prepare(stream_slice.get("query"))}
 
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> str:
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """
         Override for _send_request CDK method to send HTTP request to Shopify BULK Operatoions.
         https://shopify.dev/docs/api/usage/bulk-operations/queries#bulk-query-overview
         """
-        # Create the BULK Job,
-        # Check the status of the CREATED BULK Job, until it's COMPLETED,
-        # Return the `job_result_url`
-        return self.bulk_job.job_check(self.graphql_path, self.bulk_job.job_create(request))
+        # Create the BULK Job
+        return self.bulk_job.job_create(request)
 
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -650,20 +646,29 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             start = pdm.parse(stream_state.get(self.cursor_field) if stream_state else self.config.get("start_date"))
             end = pdm.now()
             while start < end:
-                slice_end = start.add(days=self.slice_interval_in_days)
-                # check end period is less than now() or now() is applied otherwise.
-                slice_end = slice_end if slice_end < end else end
-                # making pre-defined sliced query to pass it directly
-                prepared_query = self.bulk_query(self.query_path, self.filter_field, start, slice_end, self.sort_key)
-                self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {start} -- {slice_end}.")
-                yield {"query": prepared_query}
-                start = slice_end
+                # check if we reached the max attempts retry with concurent BULK job.
+                # this is not needed for the BULK streams don't support filtering.
+                if self.bulk_job.concurrent_max_attempt_reached:
+                    # exit gracefully from the sync
+                    return []
+                else:
+                    slice_end = start.add(days=self.slice_interval_in_days)
+                    # check end period is less than now() or now() is applied otherwise.
+                    slice_end = slice_end if slice_end < end else end
+                    # making pre-defined sliced query to pass it directly
+                    prepared_query = self.bulk_query(self.query_path, self.filter_field, start, slice_end, self.sort_key)
+                    self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {start} -- {slice_end}.")
+                    yield {"query": prepared_query}
+                    start = slice_end
         else:
+            # for the streams that don't support filtering
             yield {"query": self.bulk_query(self.query_path, self.sort_key)}
 
-    def parse_response(self, job_result_url: str, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # get the cached substream state, to avoid state collisions for Incremental Syncs
         stream_state = stream_state_cache.cached_state.get(self.name, {self.cursor_field: self.config["start_date"]})
+        # get job_result from COMPLETED BULK Job
+        job_result_url = self.bulk_job.job_check(self.graphql_path, response)
         # the `job_result_url` could be `None`,
         # meaning there are no data available for the slice period.
         if job_result_url:

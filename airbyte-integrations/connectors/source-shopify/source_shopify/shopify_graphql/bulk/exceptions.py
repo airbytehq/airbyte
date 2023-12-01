@@ -17,6 +17,9 @@ class ShopifyBulkExceptions:
     class BulkJobBadResponse(BaseBulkException):
         """Raised when the requests.Response object could not be parsed"""
 
+    class BulkJobResultUrlError(BaseBulkException):
+        """Raised when BULK Job has ACCESS_DENIED status"""
+
     class BulkRecordProduceError(BaseBulkException):
         """Raised when there are error producing records from BULK Job result"""
 
@@ -28,3 +31,6 @@ class ShopifyBulkExceptions:
 
     class BulkJobAccessDenied(BaseBulkException):
         """Raised when BULK Job has ACCESS_DENIED status"""
+
+    class BulkJobConcurrentError(BaseBulkException):
+        """Raised when BULK Job could not be created, since the 1 Bulk job / shop quota is exceeded."""

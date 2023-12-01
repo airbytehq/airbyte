@@ -9,7 +9,8 @@ from urllib.parse import parse_qsl, urlparse
 
 import pendulum as pdm
 
-from .query import PARERNT_KEY
+from .exceptions import ShopifyBulkExceptions
+from .query import PARENT_KEY
 
 
 class BulkTools:
@@ -28,7 +29,13 @@ class BulkTools:
         # Regular expression pattern to extract the filename
         filename_pattern = r'filename\*?=(?:UTF-8\'\')?"([^"]+)"'
         parsed_url = dict(parse_qsl(urlparse(job_result_url).query))
-        return re.search(filename_pattern, parsed_url.get("response-content-disposition")).group(1)
+        match = re.search(filename_pattern, parsed_url.get("response-content-disposition")).group(1)
+        if match:
+            return match
+        else:
+            raise ShopifyBulkExceptions.BulkJobResultUrlError(
+                f"Could not extract the `filename` from `result_url` provided, details: {job_result_url}",
+            )
 
     @staticmethod
     def from_iso8601_to_rfc3339(record: Mapping[str, Any], field: str) -> Mapping[str, Any]:
@@ -44,4 +51,4 @@ class BulkTools:
     def fields_names_to_snake_case(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         # transforming record field names from camel to snake case,
         # leaving the `__parent_id` relation in place.
-        return {self.camel_to_snake(k) if k != PARERNT_KEY else k: v for k, v in record.items()}
+        return {self.camel_to_snake(k) if k != PARENT_KEY else k: v for k, v in record.items()}
