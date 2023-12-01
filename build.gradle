@@ -125,6 +125,7 @@ allprojects {
         def javaTarget = createFormatTarget('**/*.java')
         if (!javaTarget.isEmpty()) {
             java {
+                // See also spotless-maven-pom.xml which is used by airbyte-ci, its config should stay in sync with this one.
                 target javaTarget
                 importOrder()
                 eclipse('4.21').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
