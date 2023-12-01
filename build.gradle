@@ -1,13 +1,5 @@
 import com.github.spotbugs.snom.SpotBugsTask
 
-// The buildscript block defines dependencies in order for .gradle file evaluation.
-// This is separate from application dependencies.
-// See https://stackoverflow.com/questions/17773817/purpose-of-buildscript-block-in-gradle.
-buildscript {
-    dependencies {
-        classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.20.0'
-    }
-}
 
 plugins {
     id 'base'
@@ -105,47 +97,6 @@ def cleanPythonVenv = rootProject.tasks.register('cleanPythonVenv', Exec) {
 }
 rootProject.tasks.named('clean').configure {
     dependsOn cleanPythonVenv
-}
-
-// format tasks per project
-allprojects {
-
-    def createFormatTarget = { pattern ->
-        ArrayList<String> excludes = [
-            '**/build', // Ignore new build files as well as the ones ignored when running this through airbyte-ci
-            '.gradle' // Ignore the gradle version that is downloaded in the container
-        ]
-        // Build the FileTree.
-        return fileTree(dir: projectDir, include: pattern, exclude: excludes)
-    }
-
-    // Apply spotless formatting.
-    apply plugin: 'com.diffplug.spotless'
-    spotless {
-        def javaTarget = createFormatTarget('**/*.java')
-        if (!javaTarget.isEmpty()) {
-            java {
-                target javaTarget
-                importOrder()
-                eclipse('4.21').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
-                removeUnusedImports()
-                trimTrailingWhitespace()
-            }
-        }
-        def groovyGradleTarget = createFormatTarget('**/*.gradle')
-        if (!groovyGradleTarget.isEmpty()) {
-            groovyGradle {
-                target groovyGradleTarget
-            }
-        }
-    }
-
-    if (rootProject.ext.skipSlowTests) {
-        // Format checks should be run via airbyte-ci.
-        tasks.matching { it.name =~ /spotless.*Check/ }.configureEach {
-            enabled = false
-        }
-    }
 }
 
 
