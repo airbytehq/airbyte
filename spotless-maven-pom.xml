@@ -39,12 +39,10 @@
                             <includes>
                                 <include>**/*.gradle</include>
                             </includes>
-                            <!-- TODO enable a better gradle formatting config
                             <importOrder />
                             <removeSemicolons />
                             <trimTrailingWhitespace />
                             <endWithNewline />
-                            -->
                         </groovy>
                     </configuration>
                 </plugin>
