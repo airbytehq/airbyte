@@ -28,11 +28,11 @@ jobs:
 
       - name: Checkout Airbyte
         id: checkout
-        if:  failure() || steps.scd.outputs.error-message
+        if: failure() || steps.scd.outputs.error-message
         uses: actions/checkout@v2
 
       - name: Run get_repo_admins.sh
-        if:  failure() || steps.scd.outputs.error-message
+        if: failure() || steps.scd.outputs.error-message
         id: repo_admins
         run: |
           echo "REPO_ADMINS=$(./tools/bin/get_repo_admins.sh ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }} airbytehq/airbyte)" >> $GITHUB_ENV
