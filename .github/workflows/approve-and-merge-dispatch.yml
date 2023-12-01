@@ -13,7 +13,7 @@ jobs:
           token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
           permission: admin
           issue-type: pull-request
-          repository: airbytehq/airbyte-cloud
+          repository: airbytehq/airbyte-platform-internal
           dispatch-type: repository
           commands: |
             approve-and-merge
