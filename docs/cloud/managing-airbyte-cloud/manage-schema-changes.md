@@ -37,7 +37,7 @@ To re-enable the streams, ensure the correct **Primary Key** and **Cursor** are 
 
 ## Review non-breaking schema changes
 
-If the connection is set to **Detect any chnages and manually approve** schema changes, Airbyte continues syncing according to your last saved schema. You need to manually approve any detected schema changes for the schema in the destination to change.
+If the connection is set to **Detect any changes and manually approve** schema changes, Airbyte continues syncing according to your last saved schema. You need to manually approve any detected schema changes for the schema in the destination to change.
 
 1. In the Airbyte UI, click **Connections**. Select a connection and navigate to the **Replication** tab. If schema changes are detected, you'll see a blue "i" icon next to the Replication ab. 
 
