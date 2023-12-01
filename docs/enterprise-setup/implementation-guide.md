@@ -99,5 +99,5 @@ In order to customize your deployment, you need to create `values.yaml` file in 
 After specifying your own configuration, run the following command:
 
 ```text
-./tools/bin/install_airbyte_pro_on_helm.sh --values path/to/values.yaml $RELEASE_NAME airbyte/airbyte
+./tools/bin/install_airbyte_pro_on_helm.sh --values path/to/values.yaml
 ```
