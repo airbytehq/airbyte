@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.integrations.debug;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,17 +19,17 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Base class defined to create a debugger for a source. This class can be used for internal testing, by :
- *  1. Extending this class for the desired connector.
- *  2. Implementing the given abstract methods.
- *  3. Copying over any relevant configurations, catalogs & state in the resources/debug_resources directory.
+ * Base class defined to create a debugger for a source. This class can be used for internal
+ * testing, by : 1. Extending this class for the desired connector. 2. Implementing the given
+ * abstract methods. 3. Copying over any relevant configurations, catalogs & state in the
+ * resources/debug_resources directory.
  */
 public abstract class AbstractSourceDebugger {
 
   private final AbstractDbSource source;
   private final JsonNode deserializeConfig;
 
-  protected AbstractSourceDebugger() throws Exception{
+  protected AbstractSourceDebugger() throws Exception {
     this.source = getSource();
     this.deserializeConfig = getUserConfig();
   }
@@ -35,8 +39,10 @@ public abstract class AbstractSourceDebugger {
   // Flag to determine whether per-stream mode is enabled.
   protected abstract boolean perStreamEnabled();
 
-  /* Modify the configuration by setting any debug level parameters to make sure that state is not mutated in the source DB. This includes checking
-   * whether the configuration will inadvertently modify any state (e.g. ack LSN for Postgres) on the source DB side, and to appropriately set any
+  /*
+   * Modify the configuration by setting any debug level parameters to make sure that state is not
+   * mutated in the source DB. This includes checking whether the configuration will inadvertently
+   * modify any state (e.g. ack LSN for Postgres) on the source DB side, and to appropriately set any
    * debug parameters or throw exceptions.
    */
   protected abstract JsonNode convertToDebugConfig(JsonNode originalConfig) throws Exception;
@@ -73,4 +79,5 @@ public abstract class AbstractSourceDebugger {
     final JsonNode jsonNode = mapper.readTree(config);
     return jsonNode;
   }
+
 }

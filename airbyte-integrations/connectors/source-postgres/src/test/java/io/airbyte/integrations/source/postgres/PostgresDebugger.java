@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,4 +41,5 @@ public class PostgresDebugger extends AbstractSourceDebugger {
     final JsonNode debugConfig = ((ObjectNode) originalConfig.deepCopy()).put("debug_mode", true);
     return debugConfig;
   }
+
 }

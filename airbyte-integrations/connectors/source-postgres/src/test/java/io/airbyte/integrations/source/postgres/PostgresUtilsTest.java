@@ -108,4 +108,5 @@ class PostgresUtilsTest {
     config.set("debug_mode", Jsons.jsonNode(true));
     assertTrue(PostgresUtils.isDebugMode(config));
   }
+
 }
