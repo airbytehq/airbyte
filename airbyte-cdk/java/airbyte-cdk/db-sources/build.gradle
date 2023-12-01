@@ -1,5 +1,5 @@
 import org.jsonschema2pojo.SourceType
-import org.jsoup.Jsoup;
+import org.jsoup.Jsoup
 
 buildscript {
     dependencies {
@@ -113,7 +113,7 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
     testFixturesImplementation 'org.projectlombok:lombok:1.18.20'
-    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20' 
+    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
 
     testImplementation libs.junit.jupiter.system.stubs
 
