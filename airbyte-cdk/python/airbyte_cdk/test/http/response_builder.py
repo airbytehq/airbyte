@@ -63,7 +63,7 @@ class CompositePath(Path):
 
     def update(self, template: Dict[str, Any], value: Any) -> None:
         if len(value) != len(self._paths):
-            raise ValueError(f"Composite path has {len(self._paths)} but there were {len(value)} values provided. "
+            raise ValueError(f"Composite path has {len(self._paths)} paths but there were {len(value)} values provided. "
                              f"Values are `{value}` with type {type(value)}.")
 
         for i, path in enumerate(self._paths):
