@@ -23,8 +23,10 @@ public interface DestinationHandler<DialectTableDefinition> {
 
   void execute(final String sql) throws Exception;
 
-  /** Implementation specific if there is no option to retry again with safe casted SQL or
-   * the exception can be retried or not.
+  /**
+   * Implementation specific if there is no option to retry again with safe casted SQL or the
+   * exception can be retried or not.
+   *
    * @return true if the exception should be retried with a safer query
    */
   default boolean retryDeterminer(final Exception e) {

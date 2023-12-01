@@ -27,10 +27,10 @@ public class TypeAndDedupeTransaction {
    * @throws Exception if the safe query fails
    */
   public static <TableDefinition> void executeTypeAndDedupe(final SqlGenerator<TableDefinition> sqlGenerator,
-                                          final DestinationHandler<TableDefinition> destinationHandler,
-                                          final StreamConfig streamConfig,
-                                          final Optional<Instant> minExtractedAt,
-                                          final String suffix)
+                                                            final DestinationHandler<TableDefinition> destinationHandler,
+                                                            final StreamConfig streamConfig,
+                                                            final Optional<Instant> minExtractedAt,
+                                                            final String suffix)
       throws Exception {
     try {
       LOGGER.info("Attempting typing and deduping for {}.{} with suffix", streamConfig.id().originalNamespace(), streamConfig.id().originalName(),
@@ -41,12 +41,12 @@ public class TypeAndDedupeTransaction {
       if (destinationHandler.retryDeterminer(e)) {
         // TODO Destination specific non-retryable exceptions should be added.
         LOGGER.error("Encountered Exception on unsafe SQL for stream {} {} with suffix {}, attempting with error handling",
-                     streamConfig.id().originalNamespace(), streamConfig.id().originalName(), suffix, e);
+            streamConfig.id().originalNamespace(), streamConfig.id().originalName(), suffix, e);
         final String saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, true);
         destinationHandler.execute(saferSql);
       } else {
         LOGGER.error("Encountered Exception on unsafe SQL for stream {} {} with suffix {}, Retry is skipped",
-                     streamConfig.id().originalNamespace(), streamConfig.id().originalName(), suffix, e);
+            streamConfig.id().originalNamespace(), streamConfig.id().originalName(), suffix, e);
       }
     }
   }

@@ -98,4 +98,5 @@ public class RedshiftDestinationHandler extends JdbcDestinationHandler {
   public boolean retryDeterminer(Exception e) {
     return false;
   }
+
 }

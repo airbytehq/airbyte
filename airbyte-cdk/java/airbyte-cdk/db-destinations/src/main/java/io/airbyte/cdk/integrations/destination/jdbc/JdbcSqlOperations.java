@@ -109,7 +109,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   // TODO: This method seems to be used by Postgres and others while staging to local temp files.
-  //  Should there be a Local staging operations equivalent
+  // Should there be a Local staging operations equivalent
   protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
     try (final PrintWriter writer = new PrintWriter(tmpFile, StandardCharsets.UTF_8);
         final CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {

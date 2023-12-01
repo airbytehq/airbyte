@@ -8,6 +8,7 @@ import java.sql.SQLType;
 
 /**
  * Custom SqlType definition when there is no mapping in {@link java.sql.JDBCType}
+ *
  * @param name
  * @param vendor
  * @param vendorTypeNumber
