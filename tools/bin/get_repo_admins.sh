@@ -16,4 +16,4 @@ API_URL="https://api.github.com/repos/$REPO/collaborators"
 # Curl command to get the list of collaborators with admin rights
 curl -H "Authorization: token $TOKEN" \
      -H "Accept: application/vnd.github.v3+json" \
-     "$API_URL" | jq '.[] | select(.permissions.admin == true) | "[\(.login)](\(.html_url))"' | tr -d '"' | paste -sd "\\n" -
+     "$API_URL" | jq '.[] | select(.permissions.admin == true) | "[\(.login)](\(.html_url))"' | tr -d '"' | paste -sd "," -
