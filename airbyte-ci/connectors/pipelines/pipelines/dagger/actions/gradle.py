@@ -163,7 +163,8 @@ class GradleTaskExecutor:
         Returns:
             dagger.Container: The gradle container with the task executed.
         """
-        return self.gradle_container.with_exec(sh_dash_c([self._gradle_command(task_name, *args)]))
+        self.gradle_container = self.gradle_container.with_exec(sh_dash_c([self._gradle_command(task_name, *args)]))
+        return self.gradle_container
 
     async def __aexit__(self, exc_type, exc_value, traceback):
         """Exit the context manager.
