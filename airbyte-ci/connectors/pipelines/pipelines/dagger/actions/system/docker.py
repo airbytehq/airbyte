@@ -24,13 +24,13 @@ from pipelines.helpers.utils import sh_dash_c
 from pipelines.models import PipelineContext
 
 
-def get_base_dockerd_container(dagger_client: Client) -> Container:
+def get_base_dockerd_container(dagger_client: Client, docker_var_lib_caching: bool = False) -> Container:
     """Provision a container to run a docker daemon.
     It will be used as a docker host for docker-in-docker use cases.
 
     Args:
         dagger_client (Client): The dagger client used to create the container.
-
+        docker_var_lib_caching (bool): Whether to cache /var/lib/docker or not. Defaults to False.
     Returns:
         Container: The container to run dockerd as a service
     """
@@ -39,7 +39,7 @@ def get_base_dockerd_container(dagger_client: Client) -> Container:
         # Curl is only used for debugging purposes.
         "curl",
     ]
-    return (
+    base_container = (
         dagger_client.container()
         .from_(consts.DOCKER_DIND_IMAGE)
         # We set this env var because we need to use a non-default zombie reaper setting.
@@ -58,11 +58,13 @@ def get_base_dockerd_container(dagger_client: Client) -> Container:
         )
         # Expose the docker host port.
         .with_exposed_port(DOCKER_HOST_PORT)
-        # We cache /var/lib/docker to avoid downloading images and layers multiple times.
-        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
         # We cache /tmp for file sharing between client and daemon.
         .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
     )
+    if docker_var_lib_caching:
+        # We cache /var/lib/docker to avoid downloading images and layers multiple times.
+        base_container = base_container.with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
+    return base_container
 
 
 def get_daemon_config_json(registry_mirror_url: Optional[str] = None) -> str:
