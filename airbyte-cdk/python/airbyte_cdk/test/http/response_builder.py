@@ -62,8 +62,9 @@ class CompositePath(Path):
         self._paths = paths
 
     def update(self, template: Dict[str, Any], value: Any) -> None:
-        if len(value) < len(self._paths):
-            raise ValueError(f"Composite paths has {len(self._paths)} but there were {len(value)} values provided. Values are `{value}`.")
+        if len(value) != len(self._paths):
+            raise ValueError(f"Composite path has {len(self._paths)} but there were {len(value)} values provided. "
+                             f"Values are `{value}` with type {type(value)}.")
 
         for i, path in enumerate(self._paths):
             path.update(template, value[i])
@@ -89,14 +90,14 @@ class RecordBuilder:
             ("_cursor_path", self._cursor_path),
         ]
         for field_name, field_path in paths_to_validate:
-            try:
-                self._validate_field(field_name, field_path)
-            except KeyError:
-                raise ValueError(f"{field_name} `{field_path}` was provided but it is not part of the template")
+            self._validate_field(field_name, field_path)
 
     def _validate_field(self, field_name: str, path: Optional[Path]) -> None:
-        if path and not path.extract(self._record):
-            raise ValueError(f"{field_name} `{path}` was provided but it is not part of the template")
+        try:
+            if path and not path.extract(self._record):
+                raise ValueError(f"{field_name} `{path}` was provided but it is not part of the template `{self._record}`")
+        except (IndexError, KeyError) as exception:
+            raise ValueError(f"{field_name} `{path}` was provided but it is not part of the template `{self._record}`") from exception
 
     def with_id(self, identifier: Any) -> "RecordBuilder":
         self._set_field("id", self._id_path, identifier)
@@ -190,5 +191,5 @@ def create_builders_from_resource(
             RecordBuilder(record_template, record_id_path, record_cursor_path),
             HttpResponseBuilder(response_template, records_path, pagination_strategy)
         )
-    except (IndexError, KeyError) as exception:
-        raise ValueError(f"Could not extract field {records_path} from response template") from exception
+    except (IndexError, KeyError):
+        raise ValueError(f"Error while extracting records at path `{records_path}` from response template `{response_template}`")
