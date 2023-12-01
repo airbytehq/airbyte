@@ -93,7 +93,7 @@ async def java(ctx: ClickPipelineContext) -> CommandResult:
     """Format java and groovy code via spotless in maven."""
     dagger_client = await ctx.get_dagger_client(pipeline_name="Format java")
     container = format_java_container(dagger_client)
-    format_commands = ["mvn -f spotless-maven-pom.xml spotless:apply"]
+    format_commands = ["mvn -f spotless-maven-pom.xml spotless:apply clean"]
     return await get_format_command_result(fix.commands["java"], container, format_commands)
 
 

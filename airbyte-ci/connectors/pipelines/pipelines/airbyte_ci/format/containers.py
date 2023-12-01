@@ -92,7 +92,8 @@ def format_java_container(dagger_client: dagger.Client) -> dagger.Container:
             "mvn -f spotless-maven-pom.xml"
             " org.apache.maven.plugins:maven-dependency-plugin:3.6.1:go-offline"
             " spotless:apply"
-            " spotless:check",
+            " spotless:check"
+            " clean"
         ],
         include=[
             "**/*.java",
