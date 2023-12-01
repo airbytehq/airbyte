@@ -48,16 +48,6 @@ public abstract class JdbcSqlGenerator implements SqlGenerator<TableDefinition> 
         namingTransformer.getIdentifier(nameWithSuffix));
   }
 
-  protected String vendorId() {
-    return "JDBC";
-  }
-
-  protected SQLType widestType() {
-    // Redshift and Mysql maps their SUPER and JSON to LONGVARCHAR code in Jdbc database metadata calls.
-    // Is the default useful in any shape and form with longvarchar ?
-    return JDBCType.LONGNVARCHAR;
-  }
-
   protected DataType<?> toDialectType(final AirbyteType type) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
       return toDialectType(airbyteProtocolType);

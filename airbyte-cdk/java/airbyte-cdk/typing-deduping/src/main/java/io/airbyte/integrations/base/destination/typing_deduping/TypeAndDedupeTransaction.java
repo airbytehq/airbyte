@@ -26,8 +26,8 @@ public class TypeAndDedupeTransaction {
    * @param suffix table suffix for temporary tables
    * @throws Exception if the safe query fails
    */
-  public static void executeTypeAndDedupe(final SqlGenerator sqlGenerator,
-                                          final DestinationHandler destinationHandler,
+  public static <TableDefinition> void executeTypeAndDedupe(final SqlGenerator<TableDefinition> sqlGenerator,
+                                          final DestinationHandler<TableDefinition> destinationHandler,
                                           final StreamConfig streamConfig,
                                           final Optional<Instant> minExtractedAt,
                                           final String suffix)
@@ -37,12 +37,17 @@ public class TypeAndDedupeTransaction {
           suffix);
       final String unsafeSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, false);
       destinationHandler.execute(unsafeSql);
-      // TODO determine which Exceptions should not be retried even with safer sql
     } catch (final Exception e) {
-      LOGGER.error("Encountered Exception on unsafe SQL for stream {} {} with suffix {}, attempting with error handling",
-          streamConfig.id().originalNamespace(), streamConfig.id().originalName(), suffix, e);
-      final String saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, true);
-      destinationHandler.execute(saferSql);
+      if (destinationHandler.retryDeterminer(e)) {
+        // TODO Destination specific non-retryable exceptions should be added.
+        LOGGER.error("Encountered Exception on unsafe SQL for stream {} {} with suffix {}, attempting with error handling",
+                     streamConfig.id().originalNamespace(), streamConfig.id().originalName(), suffix, e);
+        final String saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, true);
+        destinationHandler.execute(saferSql);
+      } else {
+        LOGGER.error("Encountered Exception on unsafe SQL for stream {} {} with suffix {}, Retry is skipped",
+                     streamConfig.id().originalNamespace(), streamConfig.id().originalName(), suffix, e);
+      }
     }
   }
 

@@ -6,7 +6,12 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 
 import java.sql.SQLType;
 
-// TODO: Change it to something
+/**
+ * Custom SqlType definition when there is no mapping in {@link java.sql.JDBCType}
+ * @param name
+ * @param vendor
+ * @param vendorTypeNumber
+ */
 public record CustomSqlType(String name, String vendor, Integer vendorTypeNumber) implements SQLType {
 
   @Override
