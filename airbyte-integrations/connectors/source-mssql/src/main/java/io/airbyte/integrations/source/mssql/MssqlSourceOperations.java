@@ -21,6 +21,8 @@ import java.nio.charset.Charset;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,6 +140,12 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
                               final int index)
       throws SQLException {
     node.put(columnName, Geography.deserialize(resultSet.getBytes(index)).toString());
+  }
+
+  @Override
+  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    final DateTimeFormatter microsecondsFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss[.][SSSSSS]");
+    node.put(columnName, getObject(resultSet, index, LocalDateTime.class).format(microsecondsFormatter));
   }
 
   @Override
