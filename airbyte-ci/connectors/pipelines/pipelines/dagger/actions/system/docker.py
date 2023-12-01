@@ -8,7 +8,7 @@ from typing import Callable, Optional
 
 from dagger import Client, Container, File, Secret
 from pipelines import consts
-from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import (
     DOCKER_HOST_NAME,
     DOCKER_HOST_PORT,
@@ -21,6 +21,7 @@ from pipelines.consts import (
     TAILSCALE_PORT,
 )
 from pipelines.helpers.utils import sh_dash_c
+from pipelines.models import PipelineContext
 
 
 def get_base_dockerd_container(dagger_client: Client) -> Container:
@@ -166,7 +167,10 @@ def with_global_dockerd_service(
         dockerd_container = bind_to_tailscale(dagger_client, dockerd_container, TAILSCALE_AUTH_KEY)
         # Ping the registry mirror host to make sure it's reachable through VPN
         # parsed_registry_mirror_url = urlparse(DOCKER_REGISTRY_MIRROR_URL)
-        dockerd_container = dockerd_container.with_exec(["curl", "-vvv", f"{DOCKER_REGISTRY_MIRROR_URL}/v2/"], skip_entrypoint=True)
+        # We set a cache buster here to guarantee the curl command is always executed.
+        dockerd_container = dockerd_container.with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(
+            ["curl", "-vvv", f"{DOCKER_REGISTRY_MIRROR_URL}/v2/"], skip_entrypoint=True
+        )
         daemon_config_json = get_daemon_config_json(DOCKER_REGISTRY_MIRROR_URL)
     else:
         daemon_config_json = get_daemon_config_json()
