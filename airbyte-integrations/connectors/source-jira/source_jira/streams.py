@@ -53,6 +53,11 @@ class JiraStream(HttpStream, ABC):
             return f"https://{self._domain}/rest/agile/1.0/"
         return f"https://{self._domain}/rest/api/{API_VERSION}/"
 
+    @property
+    def max_retries(self) -> Union[int, None]:
+        """Number of retries increased from default 5 to 10, based on issues with Jira. Max waiting time is still default 10 minutes."""
+        return 10
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
         if isinstance(response_json, dict):
