@@ -60,13 +60,14 @@ class GraphQlQueryBuilder:
     edge_key = "edges"
     node_key = "node"
 
-    def get_edge(self, name: str, fields: Union[List[str], List[Field], str]) -> Field:
+    def get_edge_node(self, name: str, fields: Union[List[str], List[Field], str]) -> Field:
         """
-        Defines the edge of the graph and it's fields to select.
+        Defines the edge of the graph and it's fields to select for Shopify BULK Operaion.
+        https://shopify.dev/docs/api/usage/bulk-operations/queries#the-jsonl-data-format
         """
         return Field(name=name, fields=[Field(name=self.edge_key, fields=[Field(name=self.node_key, fields=fields)])])
 
-    def get_query(self, name: str, edges: Union[List[Field], Field] = None, filter_query: str = None, sort_key: str = None) -> Query:
+    def build_query(self, name: str, edges: Union[List[Field], Field] = None, filter_query: str = None, sort_key: str = None) -> Query:
         """
         Defines the root of the graph with edges.
         """
@@ -84,7 +85,10 @@ class GraphQlQueryBuilder:
         return Query(name=name, arguments=args, fields=fields)
 
 
-class ShopifyBulkQuery(GraphQlQueryBuilder):
+class ShopifyBulkQuery:
+
+    builder: GraphQlQueryBuilder = GraphQlQueryBuilder()
+
     @property
     @abstractmethod
     def record_identifier(self) -> str:
@@ -99,16 +103,18 @@ class ShopifyBulkQuery(GraphQlQueryBuilder):
 
     @property
     @abstractmethod
-    def graph_edge(self) -> str:
+    def edge_name(self) -> str:
         """
-        Defines the final graph node name to fetch from.
+        Defines the root graph node name to fetch from.
+        https://shopify.dev/docs/api/admin-graphql
         """
 
     @property
     @abstractmethod
-    def graph_fields(self) -> Union[List[str], List[Any]]:
+    def edge_nodes(self) -> Union[List[str], List[Any]]:
         """
         Defines the fields for final graph selection.
+        https://shopify.dev/docs/api/admin-graphql
         """
 
     @abstractmethod
@@ -133,7 +139,7 @@ class ShopifyBulkQuery(GraphQlQueryBuilder):
         if not query_path:
             raise NotImplementedError("The `query_path` is not defined.")
         else:
-            # define query string
+            # define filter query string
             filter_query = f"{filter_field}:>='{start}' AND {filter_field}:<='{end}'" if filter_field else None
             return self.resolve_query(self, query_path, filter_query, sort_key)
 
@@ -141,11 +147,11 @@ class ShopifyBulkQuery(GraphQlQueryBuilder):
 class Metafields(ShopifyBulkQuery):
 
     record_identifier = "Metafield"
-    graph_edge = "metafields"
+    edge_name = "metafields"
 
     # list of available fieds:
     # https://shopify.dev/docs/api/admin-graphql/unstable/objects/Metafield
-    graph_fields = [
+    edge_nodes = [
         "id",
         "namespace",
         "value",
@@ -163,22 +169,27 @@ class Metafields(ShopifyBulkQuery):
         sort_key: str = None,
     ) -> Operation:
         """
-        Defines how query object should be constructed and resolved based on the base query selection.
+        Defines how query object should be constructed and resolved based on the root query selection.
+        Only 2 lvl nesting is available: https://shopify.dev/docs/api/usage/bulk-operations/queries#operation-restrictions
         """
+
         if isinstance(query_path, list):
             if len(query_path) == 2:
-                edges = self.get_edge(self, query_path[1], ["id", self.get_edge(self, self.graph_edge, self.graph_fields)])
-                query = self.get_query(self, query_path[0], edges, filter_query, sort_key)
+                edges = self.builder.get_edge_node(query_path[1], ["id", self.builder.get_edge_node(self.edge_name, self.edge_nodes)])
+                query = self.builder.build_query(query_path[0], edges, filter_query, sort_key)
             if len(query_path) == 3:
-                edges = self.get_edge(
-                    self,
+                edges = self.builder.get_edge_node(
                     query_path[1],
-                    ["id", self.get_edge(self, query_path[2], ["id", self.get_edge(self, self.graph_edge, self.graph_fields)])],
+                    ["id", self.builder.get_edge_node(query_path[2], ["id", self.builder.get_edge_node(self.edge_name, self.edge_nodes)])],
                 )
-                query = self.get_query(self, query_path[0], edges, filter_query, sort_key)
+                query = self.builder.build_query(query_path[0], edges, filter_query, sort_key)
             if len(query_path) == 1:
-                query = self.get_query(self, query_path[0], self.get_edge(self, self.graph_edge, self.graph_fields), filter_query, sort_key)
+                query = self.builder.build_query(
+                    query_path[0], self.builder.get_edge_node(self.edge_name, self.edge_nodes), filter_query, sort_key
+                )
         elif isinstance(query_path, str):
-            query = self.get_query(self, query_path, self.get_edge(self, self.graph_edge, self.graph_fields), filter_query, sort_key)
+            query = self.builder.build_query(
+                query_path, self.builder.get_edge_node(self.edge_name, self.edge_nodes), filter_query, sort_key
+            )
 
         return Operation(type="", queries=[query]).render()

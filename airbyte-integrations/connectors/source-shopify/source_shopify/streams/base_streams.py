@@ -381,6 +381,114 @@ class IncrementalShopifySubstream(IncrementalShopifyStream):
         yield from self.filter_records_newer_than_state(stream_state=cached_substream_state, records_slice=records)
 
 
+class IncrementalShopifyNestedSubstream(IncrementalShopifyStream):
+    """
+    IncrementalShopifyNestedSubstream - provides slicing functionality for streams using parts of data from parent stream.
+
+    For example:
+       - `refunds` is the entity of `order.refunds`,
+       - `fulfillments` is the entity of  the  `order.fulfillments` which is nested sub-entity
+
+    ::  @ parent_stream - defines the parent stream object to read from
+    ::  @ mutation_map - defines how the nested record should be populated with additional values,
+          available from parent record.
+          Example:
+            >> mutation_map = {"parent_id": "id"},
+            where `parent_id` is the new field that created for each subrecord available.
+            and `id` is the parent_key named `id`, we take the value from.
+
+    ::  @ nested_substream - the name of the nested entity inside of parent stream, helps to reduce the number of
+          API Calls, if present, see `OrderRefunds` or `Fulfillments` streams for more info.
+    """
+
+    data_field = None
+    parent_stream_class: object = None
+    mutation_map: Mapping[str, Any] = None
+    nested_substream = None
+
+    @cached_property
+    def parent_stream(self) -> object:
+        """
+        Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
+        """
+        return self.parent_stream_class(self.config) if self.parent_stream_class else None
+
+    def path(self, **kwargs) -> str:
+        """
+        NOT USED FOR THIS TYPE OF STREAMS.
+        """
+        return ""
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        NOT USED FOR THIS TYPE OF STREAMS.
+        """
+        return None
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        """
+        NOT USED FOR THIS TYPE OF STREAMS.
+        """
+        return {}
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """UPDATING THE STATE OBJECT:
+        Stream: Transactions
+        Parent Stream: Orders
+        Returns:
+            {
+                {...},
+                "transactions": {
+                    "created_at": "2022-03-03T03:47:45-08:00",
+                    "orders": {
+                        "updated_at": "2022-03-03T03:47:46-08:00"
+                    }
+                },
+                {...},
+            }
+        """
+        updated_state = super().get_updated_state(current_stream_state, latest_record)
+        # add parent_stream_state to `updated_state`
+        updated_state[self.parent_stream.name] = stream_state_cache.cached_state.get(self.parent_stream.name)
+        return updated_state
+
+    def add_parent_id(self, record: Mapping[str, Any] = None) -> Mapping[str, Any]:
+        """
+        Adds new field to the record with name `key` based on the `value` key from record.
+        """
+        if self.mutation_map and record:
+            for subrecord in record.get(self.nested_substream, []):
+                for k, v in self.mutation_map.items():
+                    subrecord[k] = record.get(v)
+        else:
+            return record
+
+    # the stream_state caching is required to avoid the STATE collisions for Substreams
+    @stream_state_cache.cache_stream_state
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_state = stream_state.get(self.parent_stream.name) if stream_state else {}
+        for record in self.parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
+            # updating the `stream_state` with the state of it's parent stream
+            # to have the child stream sync independently from the parent stream
+            stream_state_cache.cached_state[self.parent_stream.name] = self.parent_stream.get_updated_state({}, record)
+            # to limit the number of API Calls and reduce the time of data fetch,
+            # we can pull the ready data for child_substream, if nested data is present,
+            # and corresponds to the data of child_substream we need.
+            if self.nested_substream in record.keys():
+                # add parent_id key, value from mutation_map, if passed.
+                self.add_parent_id(record)
+                # yield nested sub-rcords
+                yield {self.nested_substream: sub_record for sub_record in record.get(self.nested_substream)}
+            else:
+                yield {}
+
+    def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        # get the cached substream state, to avoid state collisions for Incremental Syncs
+        cached_state = stream_state_cache.cached_state.get(self.name, {})
+        # emitting nested parent entity
+        yield from self.filter_records_newer_than_state(cached_state, self.produce_records(stream_slice.get(self.nested_substream, [])))
+
+
 class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream):
     @property
     @abstractmethod

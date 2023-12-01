@@ -73,8 +73,10 @@ def config(basic_config):
         (MetafieldSmartCollections, {"id": 123}, "smart_collections/123/metafields.json"),
         (MetafieldPages, {"id": 123}, "pages/123/metafields.json"),
         (MetafieldShops, None, "metafields.json"),
-        (ProductImages, {"product_id": 123}, "products/123/images.json"),
-        (ProductVariants, {"product_id": 123}, "products/123/variants.json"),
+        # Nested Substreams
+        (ProductImages, None, ""),
+        (ProductVariants, None, ""),
+        # 
         (Customers, None, "customers.json"),
         (Orders, None, "orders.json"),
         (DraftOrders, None, "draft_orders.json"),
@@ -101,18 +103,24 @@ def test_path(stream, stream_slice, expected_path, config):
 @pytest.mark.parametrize(
     "stream,stream_slice,expected_path",
     [
-        (OrderRefunds, {"order_id": 12345}, "orders/12345/refunds.json"),
+        # Nested Substreams
+        (OrderRefunds, None, ""),
+        (Fulfillments, None, ""),
+        # 
         (OrderRisks, {"order_id": 12345}, "orders/12345/risks.json"),
         (Transactions, {"order_id": 12345}, "orders/12345/transactions.json"),
         (DiscountCodes, {"price_rule_id": 12345}, "price_rules/12345/discount_codes.json"),
         (InventoryLevels, {"location_id": 12345}, "locations/12345/inventory_levels.json"),
         (FulfillmentOrders, {"order_id": 12345}, "orders/12345/fulfillment_orders.json"),
-        (Fulfillments, {"order_id": 12345}, "orders/12345/fulfillments.json"),
     ],
 )
-def test_customers_path_with_stream_slice_param(stream, stream_slice, expected_path, config):
+def test_path_with_stream_slice_param(stream, stream_slice, expected_path, config):
     stream = stream(config)
-    assert stream.path(stream_slice) == expected_path
+    if stream_slice:
+        result = stream.path(stream_slice)
+    else:
+        result = stream.path()
+    assert result == expected_path
 
 
 def test_check_connection(config, mocker):
@@ -126,14 +134,16 @@ def test_read_records(config, mocker):
     records = [{"created_at": "2022-10-10T06:21:53-07:00", "orders": {"updated_at": "2022-10-10T06:21:53-07:00"}}]
     stream_slice = records[0]
     stream = OrderRefunds(config)
-    mocker.patch("source_shopify.streams.base_streams.IncrementalShopifyStream.read_records", return_value=records)
-    assert next(stream.read_records(stream_slice=stream_slice)) == records[0]
+    mocker.patch("source_shopify.streams.base_streams.IncrementalShopifyNestedSubstream.read_records", return_value=records)
+    assert stream.read_records(stream_slice=stream_slice)[0] == records[0]
 
 
 @pytest.mark.parametrize(
     "stream, expected",
     [
-        (OrderRefunds, {"limit": 250}),
+        # Nested Substream
+        (OrderRefunds, {}),
+        #
         (Orders, {"limit": 250, "status": "any", "order": "updated_at asc", "updated_at_min": "2020-11-01"}),
         (
             AbandonedCheckouts,

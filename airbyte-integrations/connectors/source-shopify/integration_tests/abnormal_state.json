@@ -449,7 +449,8 @@
           "deleted": {
             "deleted_at": "2027-07-11T13:07:45-07:00"
           }
-        }
+        },
+        "updated_at": "2027-07-11T13:07:45-07:00"
       },
       "stream_descriptor": {
         "name": "product_variants"

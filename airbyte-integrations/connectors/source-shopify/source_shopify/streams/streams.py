@@ -15,6 +15,7 @@ from source_shopify.utils import ShopifyRateLimiter as limiter
 
 from .base_streams import (
     IncrementalShopifyGraphQlBulkStream,
+    IncrementalShopifyNestedSubstream,
     IncrementalShopifyStream,
     IncrementalShopifyStreamWithDeletedEvents,
     IncrementalShopifySubstream,
@@ -200,17 +201,11 @@ class MetafieldProducts(MetafieldShopifyGraphQlBulkStream):
     query_path = "products"
 
 
-class ProductImages(IncrementalShopifySubstream):
+class ProductImages(IncrementalShopifyNestedSubstream):
     parent_stream_class: object = Products
-    cursor_field = "id"
-    slice_key = "product_id"
-    data_field = "images"
     nested_substream = "images"
-    filter_field = "since_id"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        product_id = stream_slice[self.slice_key]
-        return f"products/{product_id}/{self.data_field}.json"
+    # add `product_id` to each nested subrecord
+    mutation_map = {"product_id": "id"}
 
 
 class MetafieldProductImages(MetafieldShopifyGraphQlBulkStream):
@@ -218,17 +213,11 @@ class MetafieldProductImages(MetafieldShopifyGraphQlBulkStream):
     sort_key = None
 
 
-class ProductVariants(IncrementalShopifySubstream):
+class ProductVariants(IncrementalShopifyNestedSubstream):
     parent_stream_class: object = Products
-    cursor_field = "id"
-    slice_key = "product_id"
-    data_field = "variants"
     nested_substream = "variants"
-    filter_field = "since_id"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        product_id = stream_slice[self.slice_key]
-        return f"products/{product_id}/{self.data_field}.json"
+    # add `product_id` to each nested subrecord
+    mutation_map = {"product_id": "id"}
 
 
 class MetafieldProductVariants(MetafieldShopifyGraphQlBulkStream):
@@ -309,17 +298,11 @@ class BalanceTransactions(IncrementalShopifyStream):
         return f"shopify_payments/balance/{self.data_field}.json"
 
 
-class OrderRefunds(IncrementalShopifySubstream):
+class OrderRefunds(IncrementalShopifyNestedSubstream):
     parent_stream_class: object = Orders
-    slice_key = "order_id"
-    data_field = "refunds"
+    # override default cursor field
     cursor_field = "created_at"
-    # we pull out the records that we already know has the refunds data from Orders object
     nested_substream = "refunds"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        order_id = stream_slice["order_id"]
-        return f"orders/{order_id}/{self.data_field}.json"
 
 
 class OrderRisks(IncrementalShopifySubstream):
@@ -434,14 +417,9 @@ class FulfillmentOrders(IncrementalShopifySubstream):
         return f"orders/{order_id}/{self.data_field}.json"
 
 
-class Fulfillments(IncrementalShopifySubstream):
+class Fulfillments(IncrementalShopifyNestedSubstream):
     parent_stream_class: object = Orders
-    slice_key = "order_id"
-    data_field = "fulfillments"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        order_id = stream_slice[self.slice_key]
-        return f"orders/{order_id}/{self.data_field}.json"
+    nested_substream = "fulfillments"
 
 
 class Shop(ShopifyStream):
@@ -460,15 +438,14 @@ class CustomerSavedSearch(IncrementalShopifyStream):
     filter_field = "since_id"
 
 
-class CustomerAddress(IncrementalShopifySubstream):
-    parent_stream_class: object = Customers
-    slice_key = "id"
-    data_field = "addresses"
-    cursor_field = "id"
+class CustomerAddress(IncrementalShopifyNestedSubstream):
+    """
+    https://shopify.dev/docs/api/admin-rest/2023-10/resources/customer#resource-object
+    """
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        customer_id = stream_slice[self.slice_key]
-        return f"customers/{customer_id}/{self.data_field}.json"
+    parent_stream_class: object = Customers
+    cursor_field = "id"
+    nested_substream = "addresses"
 
 
 class Countries(ShopifyStream):
