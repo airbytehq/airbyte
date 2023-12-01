@@ -1,5 +1,29 @@
 # Shopify Migration Guide
 
+## Upgrading to 1.2.0
+This version implements `Shopify GraphQL BULK Operations` to speed up the following streams:
+ - `Metafield Collections`
+ - `Metafield Customers `
+ - `Metafield Draft_orders`
+ - `Metafield Locations`
+ - `Metafield Orders`
+ - `Metafield Product Images`
+ - `Metafield Product Variants`
+
+Increased the performance for the following streams:
+ - `Product Images`
+ - `Product Variants`
+ - `Order Refunds`
+ - `Fulfillments`
+ - `Customer Address`
+
+* Other bug fixes and improvements, more info: `https://github.com/airbytehq/airbyte/pull/32345`
+
+### Action items required for 1.2.0
+The `Fulfillments` stream now has the cursor field `updated_at`, instead of the `id`.
+ - `Refresh Schema` + `Reset` is required for this stream after the upgrade from previous version.
+
+
 ## Upgrading to 1.0.0
 This version uses Shopify API version `2023-07` which brings changes to the following streams:
  - removed `gateway, payment_details, processing_method` properties from `Order` stream, they are no longer supplied.

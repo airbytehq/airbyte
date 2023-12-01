@@ -562,6 +562,20 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.bulk_job = ShopifyBulkJob(self._session, self.logger)
 
     @property
+    def substream(self) -> bool:
+        """
+        Defines, if the full JSONL content would be emitted or just a subset of the records,
+        depending on `record_identifier` property.
+        """
+        return False
+
+    def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+        """
+        Defines any custom record transformations. Yield record `as is` by default.
+        """
+        yield record
+
+    @property
     def slice_interval_in_days(self) -> int:
         """
         Defines date range per single BULK Job.
@@ -572,12 +586,17 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     def graphql_path(self) -> str:
         return f"{self.url_base}/{self.path()}"
 
-    def add_shop_url_field(self, records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
-        # ! Mandatory, add shop_url to the record to make querying easy
-        # more info: https://github.com/airbytehq/airbyte/issues/25110
-        for record in records:
-            record["shop_url"] = self.config["shop"]
-            yield record
+    @property
+    def record_identifier(self) -> str:
+        """
+        Defines the record identifier to fetch only records related to the choosen stream.
+        Example:
+            { "admin_graphql_api_id": "gid://shopify/Metafield/22533588451517" }
+            In this example the record could be identified by it's reference = ".../Metafield/..."
+        The property should be defined like:
+            record_identifier = "Metafield"
+        """
+        return self.bulk_query.record_identifier
 
     @property
     @abstractmethod
@@ -604,6 +623,13 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             query_path: List[str] = ["products", "images", "metafields"]
                                     ^ root,    ^ 1-lvl,    ^ 2nd-lvl
         """
+
+    def add_shop_url_field(self, records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
+        # ! Mandatory, add shop_url to the record to make querying easy
+        # more info: https://github.com/airbytehq/airbyte/issues/25110
+        for record in records:
+            record["shop_url"] = self.config["shop"]
+            yield record
 
     # CDK OVERIDES
     @property
@@ -672,5 +698,12 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         # the `job_result_url` could be `None`,
         # meaning there are no data available for the slice period.
         if job_result_url:
-            records = self.add_shop_url_field(self.bulk_job.job_record_producer(job_result_url, **kwargs))
+            records = self.add_shop_url_field(
+                self.bulk_job.job_record_producer(
+                    job_result_url=job_result_url,
+                    substream=self.substream,
+                    custom_transform=self.custom_transform,
+                    record_identifier=self.record_identifier,
+                )
+            )
             yield from self.filter_records_newer_than_state(stream_state, records)

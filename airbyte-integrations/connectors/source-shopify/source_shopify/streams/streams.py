@@ -39,6 +39,13 @@ class MetafieldShopifyGraphQlBulkStream(IncrementalShopifyGraphQlBulkStream):
     def bulk_query(self) -> Metafields:
         return Metafields
 
+    @property
+    def substream(self) -> bool:
+        """
+        Emit only Metafields-related records.
+        """
+        return True
+
     def custom_transform(self, record: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
         The dependent resources have `__parentId` key in record, which signifies about the parnt-to-child relation.
@@ -63,15 +70,6 @@ class MetafieldShopifyGraphQlBulkStream(IncrementalShopifyGraphQlBulkStream):
         record["created_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "created_at")
         record["updated_at"] = self.bulk_job.tools.from_iso8601_to_rfc3339(record, "updated_at")
         yield record
-
-    def parse_response(self, job_result_url: str, **kwargs) -> Iterable[Mapping[str, Any]]:
-        """Overide the main method to provide the custom arguments"""
-        yield from super().parse_response(
-            job_result_url,
-            substream=True,
-            custom_transform=self.custom_transform,
-            record_identifier=self.bulk_query.record_identifier,
-        )
 
 
 class Articles(IncrementalShopifyStreamWithDeletedEvents):
