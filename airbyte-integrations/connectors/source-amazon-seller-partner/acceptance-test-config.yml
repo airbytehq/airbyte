@@ -52,6 +52,9 @@ acceptance_tests:
           GET_XML_BROWSE_TREE_DATA:
             - name: "dataEndTime"
               bypass_reason: changes frequently
+          ListFinancialEvents:
+            - name: "PostedBefore"
+              bypass_reason: changes frequently
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no
