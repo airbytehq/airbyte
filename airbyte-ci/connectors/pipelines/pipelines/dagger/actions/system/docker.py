@@ -7,7 +7,6 @@ import uuid
 from typing import Callable, Optional
 
 from dagger import Client, Container, File, Secret
-
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import (
