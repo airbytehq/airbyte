@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 import platform
 from enum import Enum
 
@@ -32,6 +33,7 @@ AMAZONCORRETTO_IMAGE = "amazoncorretto:17.0.8-al2023"
 NODE_IMAGE = "node:18.18.0-slim"
 GO_IMAGE = "golang:1.17"
 PYTHON_3_10_IMAGE = "python:3.10.13-slim"
+MAVEN_IMAGE = "maven:3.9.5-amazoncorretto-17-al2023"
 DOCKER_VERSION = "24.0.2"
 DOCKER_DIND_IMAGE = f"docker:{DOCKER_VERSION}-dind"
 DOCKER_CLI_IMAGE = f"docker:{DOCKER_VERSION}-cli"
@@ -58,7 +60,6 @@ class CIContext(str, Enum):
 
     MANUAL = "manual"
     PULL_REQUEST = "pull_request"
-    NIGHTLY_BUILDS = "nightly_builds"
     MASTER = "master"
 
     def __str__(self) -> str:

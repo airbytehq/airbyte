@@ -62,7 +62,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
       return true;
     } else {
       final PgLsn eventLsn = extractLsn(changeEventWithMetadata.eventValueAsJson());
-      boolean isEventLSNAfter = targetLsn.compareTo(eventLsn) <= 0;
+      final boolean isEventLSNAfter = targetLsn.compareTo(eventLsn) <= 0;
       if (isEventLSNAfter) {
         LOGGER.info("Signalling close because record's LSN : " + eventLsn + " is after target LSN : " + targetLsn);
       }
@@ -72,7 +72,11 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
 
   @Override
   public boolean reachedTargetPosition(final Long positionFromHeartbeat) {
-    return positionFromHeartbeat != null && positionFromHeartbeat.compareTo(targetLsn.asLong()) >= 0;
+    final boolean reachedTargetPosition = positionFromHeartbeat != null && positionFromHeartbeat.compareTo(targetLsn.asLong()) >= 0;
+    if (reachedTargetPosition) {
+      LOGGER.info("Signalling close because heartbeat LSN : " + positionFromHeartbeat + " is after target LSN : " + targetLsn);
+    }
+    return reachedTargetPosition;
   }
 
   private PgLsn extractLsn(final JsonNode valueAsJson) {

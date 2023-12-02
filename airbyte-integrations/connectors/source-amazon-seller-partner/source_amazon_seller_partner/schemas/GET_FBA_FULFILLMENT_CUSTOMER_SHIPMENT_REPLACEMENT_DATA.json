@@ -49,6 +49,10 @@
       "title": "Original Customer Order ID",
       "description": "Order ID of original shipment",
       "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

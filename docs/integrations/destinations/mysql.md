@@ -27,7 +27,7 @@ Each stream will be output into its own table in MySQL. Each table will contain 
 
 Airbyte Cloud only supports connecting to your MySQL instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
 
-## Getting Started \(Airbyte Open-Source\)
+## Getting Started \(Airbyte Open Source\)
 
 ### Requirements
 
