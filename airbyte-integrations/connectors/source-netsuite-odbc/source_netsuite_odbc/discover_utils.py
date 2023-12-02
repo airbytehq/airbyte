@@ -49,7 +49,6 @@ class NetsuiteODBCTableDiscoverer():
       else:
         primary_key_column = [primary_key_column]
 
-
       properties = {}
       table_incremental_column = None
       columns = self.get_columns(table)
@@ -98,7 +97,6 @@ class NetsuiteODBCTableDiscoverer():
       table_name = self.get_table_name(table)
       self.cursor.execute(f"SELECT * FROM OA_FKEYS WHERE PKTABLE_NAME = '{table_name}'")
       row = self.cursor.fetchone()
-      print(row)
       if row is None:
         return None
       return row[3] # return the column name for primary key

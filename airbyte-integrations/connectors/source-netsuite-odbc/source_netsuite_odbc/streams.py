@@ -83,7 +83,6 @@ class NetsuiteODBCStream(Stream):
       stream_slice: Optional[Mapping[str, Any]] = None,
       stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-      print(stream_state)
       self.process_stream_state(stream_state)
       self.cursor.execute(self.generate_ordered_query(stream_slice))
       number_records = 0
@@ -208,8 +207,5 @@ class NetsuiteODBCStream(Stream):
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.
-
-        The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
-        Override as needed.
         """
         return self.json_schema

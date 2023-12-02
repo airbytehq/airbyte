@@ -22,7 +22,6 @@ class SourceNetsuiteOdbc(AbstractSource):
         discoverer = NetsuiteODBCTableDiscoverer(cursor_constructor.create_database_cursor(config))
         streams = discoverer.get_streams()
         for stream in streams:
-            print(stream)
             stream_name = stream.name
             netsuite_stream = NetsuiteODBCStream(cursor=cursor_constructor.create_database_cursor(config), table_name=stream_name, stream=stream)
             yield netsuite_stream
