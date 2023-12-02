@@ -16,5 +16,5 @@ ENV ODBCINI /opt/netsuite/odbcclient/odbc64.ini
 RUN odbcinst -i -d -f /opt/netsuite/odbcclient/odbcinst.ini
 
 # The entrypoint and default env vars are already set in the base image
-ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+# ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+# ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]

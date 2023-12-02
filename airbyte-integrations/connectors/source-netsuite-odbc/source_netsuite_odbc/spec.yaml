@@ -4,51 +4,57 @@ connectionSpecification:
   title: Netsuite ODBC Spec
   type: object
   required:
-    - realm
+    - account_id
     - consumer_key
     - consumer_secret
     - token_key
     - token_secret
   properties:
-    realm:
+    account_id:
       type: string
-      title: Realm (Account Id)
-      description: Netsuite realm e.g. 2344535, as for `production` or 2344535_SB1, as for the `sandbox`
+      title: Account ID (Realm)
+      description: Netsuite Account ID or Realm e.g. 2344535, as for `production` or 2344535_SB1, as for the `sandbox`
       order: 0
       airbyte_secret: true
     consumer_key:
       type: string
       title: Consumer Key
-      description: Consumer key associated with your integration
+      description: Consumer key associated with your integration. This will typically be a 64 character string of alphanumerical characters.
       order: 1
       airbyte_secret: true
     consumer_secret:
       type: string
       title: Consumer Secret
-      description: Consumer secret associated with your integration
+      description: Consumer secret associated with your integration. This will typically be a 64 character string of alphanumerical characters.
       order: 2
       airbyte_secret: true
     token_key:
       type: string
       title: Token Key (Token Id)
-      description: Access token key
+      description: Access token key. This will typically be a 64 character string of alphanumerical characters.
       order: 3
       airbyte_secret: true
     token_secret:
       type: string
       title: Token Secret
-      description: Access token secret
+      description: Access token secret. This will typically be a 64 character string of alphanumerical characters.
       order: 4
       airbyte_secret: true
     service_host:
       type: string
       title: Service Host
-      description: The host url for the SuiteAnalytics Connect service
+      description: The host url for the SuiteAnalytics Connect service, eg. xxxxxxx-sb1.connect.api.netsuite.com where "x" is replaced by numbers and production urls will not have the sb appended
       order: 5
       airbyte_secret: true
     service_port:
       type: string
       title: Service Port
-      description: The host post for the SuiteAnalytics Connect service
+      description: The host post for the SuiteAnalytics Connect service, eg. 1404.
       order: 6
       airbyte_secret: true
+    role_id:
+      type: string
+      title: Role Id
+      description: The ID of the role used to access the ODBC connection, e.g. 57
+      order: 7
+      airbyte_secret: false

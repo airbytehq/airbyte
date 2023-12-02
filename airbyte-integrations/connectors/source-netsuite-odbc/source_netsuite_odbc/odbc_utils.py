@@ -27,7 +27,7 @@ class NetsuiteODBCCursorConstructor:
     timestamp = self.generate_timestamp()
     nonce = self.generate_nonce()
 
-    base_string = config['realm'] + '&' + config['consumer_key'] + '&' + config['token_key'] + '&' + nonce + '&' + timestamp
+    base_string = config['account_id'] + '&' + config['consumer_key'] + '&' + config['token_key'] + '&' + nonce + '&' + timestamp
 
     key = config['consumer_secret'] + '&' + config['token_secret']
 
@@ -42,7 +42,7 @@ class NetsuiteODBCCursorConstructor:
   
   def construct_db_string(self, config: Mapping[str, Any]) -> str:
     password = self.construct_password(config)
-    connection_string = f'DRIVER=NetSuite ODBC Drivers 8.1;Host={config["service_host"]};Port={config["service_port"]};Encrypted=1;AllowSinglePacketLogout=1;Truststore=/opt/netsuite/odbcclient/cert/ca3.cer;ServerDataSource=NetSuite2.com;UID=TBA;PWD={password};CustomProperties=AccountID={config["realm"]};RoleID=57;StaticSchema=1'
+    connection_string = f'DRIVER=NetSuite ODBC Drivers 8.1;Host={config["service_host"]};Port={config["service_port"]};Encrypted=1;AllowSinglePacketLogout=1;Truststore=/opt/netsuite/odbcclient/cert/ca3.cer;ServerDataSource=NetSuite2.com;UID=TBA;PWD={password};CustomProperties=AccountID={config["account_id"]};RoleID=57;StaticSchema=1'
     return connection_string
 
     
