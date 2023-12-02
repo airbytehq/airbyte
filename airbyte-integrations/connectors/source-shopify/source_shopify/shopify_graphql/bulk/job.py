@@ -36,13 +36,13 @@ class ShopifyBulkJob:
     retrieve_chunk_size = 1024 * 1024 * 5
 
     # max attempts for job creation
-    concurrent_max_retry = 3
+    concurrent_max_retry = 10
     # attempt counter
     concurrent_attempt = 0
     # attempt limit indicator
     concurrent_max_attempt_reached = False
     # sleep time per creation attempt
-    concurrent_interval_sec = 0
+    concurrent_interval_sec = 45
 
     def get_errors_from_response(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         try:
