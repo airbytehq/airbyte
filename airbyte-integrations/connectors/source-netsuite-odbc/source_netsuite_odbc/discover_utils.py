@@ -3,13 +3,13 @@ from airbyte_cdk.models import (
     AirbyteStream,
 )
 import json
+from typing import Iterable, Mapping, Any
 
 # See https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4407755805.html#SuiteAnalytics-Connect-System-Tables
 # for descriptions of the system tables used
 class NetsuiteODBCTableDiscoverer():
     def __init__(self, cursor):
         self.cursor = cursor
-        self.tables = []
         self.data_type_switcher = {
           "SMALLINT":{"type": ["integer", "null"]},
           'BIGINT': {"type": ["integer", "null"]},
@@ -23,23 +23,21 @@ class NetsuiteODBCTableDiscoverer():
           "DOUBLE": {"type": ["number", "null"]},
         }
 
-    def get_streams(self) -> list[AirbyteStream]:
-      self.get_tables()
-      streams = []
-      for table in self.tables:
-        streams.append(self.get_table_stream(table))
-      return streams
+    def get_streams(self) -> Iterable[AirbyteStream]:
+      tables = self.get_tables()
+      for table in tables:
+        yield self.get_table_stream(table)
 
     def get_table_name(self, table: json) -> str:
        return table[2]
 
-    def get_tables(self) -> None:
-      self.cursor.execute("SELECT * FROM OA_TABLES")
+    def get_tables(self) -> Iterable[Mapping[str, Any]]:
+      self.cursor.execute("SELECT * FROM OA_TABLES WHERE table_name = 'Customer'")
       while True:
           row = self.cursor.fetchone()
           if not row:
               break
-          self.tables.append(row)
+          yield row
    
     def get_table_stream(self, table: json) -> AirbyteStream:
       table_name = self.get_table_name(table)
@@ -70,16 +68,14 @@ class NetsuiteODBCTableDiscoverer():
       else:
         return AirbyteStream(name=table_name, json_schema=json_schema, supported_sync_modes=["full_refresh"], primary_key=primary_key_column)
     
-    def get_columns(self, table: json):
+    def get_columns(self, table: json) -> Iterable[Mapping[str, Any]]:
       table_name = self.get_table_name(table)
       self.cursor.execute(f"SELECT * FROM OA_COLUMNS WHERE TABLE_NAME = '{table_name}'")
-      columns = []
       while True:
         row = self.cursor.fetchone()
         if not row:
           break
-        columns.append(row)
-      return columns
+        yield row
     
     def get_column_name(self, column: json) -> str:
       return column[3]
@@ -100,6 +96,7 @@ class NetsuiteODBCTableDiscoverer():
       table_name = self.get_table_name(table)
       self.cursor.execute(f"SELECT * FROM OA_FKEYS WHERE PKTABLE_NAME = '{table_name}'")
       row = self.cursor.fetchone()
+      print(row)
       if row is None:
         return None
       return row[3] # return the column name for primary key
