@@ -45,6 +45,22 @@ acceptance_tests:
             bypass_reason: Unable to populate
           - name: owners_archived
             bypass_reason: unable to populate
+          - name: engagements_calls_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_emails_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_meetings_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_notes_web_analytics
+            bypass_reason: Unable to populate
+          - name: engagements_tasks_web_analytics
+            bypass_reason: Unable to populate
+          - name: goals_web_analytics
+            bypass_reason: Unable to populate
+          - name: line_items_web_analytics
+            bypass_reason: Unable to populate
+          - name: products_web_analytics
+            bypass_reason: Unable to populate
         ignored_fields:
           contact_lists:
             - name: ilsFilterBranch

@@ -11,40 +11,54 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from requests import HTTPError
 from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     Campaigns,
     Companies,
+    CompaniesWebAnalytics,
     ContactLists,
     Contacts,
     ContactsListMemberships,
     ContactsMergedAudit,
+    ContactsWebAnalytics,
     CustomObject,
     DealPipelines,
     Deals,
     DealsArchived,
+    DealsWebAnalytics,
     EmailEvents,
     EmailSubscriptions,
     Engagements,
     EngagementsCalls,
+    EngagementsCallsWebAnalytics,
     EngagementsEmails,
+    EngagementsEmailsWebAnalytics,
     EngagementsMeetings,
+    EngagementsMeetingsWebAnalytics,
     EngagementsNotes,
+    EngagementsNotesWebAnalytics,
     EngagementsTasks,
+    EngagementsTasksWebAnalytics,
     Forms,
     FormSubmissions,
     Goals,
+    GoalsWebAnalytics,
     LineItems,
+    LineItemsWebAnalytics,
     MarketingEmails,
     Owners,
     OwnersArchived,
     Products,
+    ProductsWebAnalytics,
     PropertyHistory,
     SubscriptionChanges,
     TicketPipelines,
     Tickets,
+    TicketsWebAnalytics,
+    WebAnalyticsStream,
     Workflows,
 )
 
@@ -128,6 +142,18 @@ class SourceHubspot(AbstractSource):
             Tickets(**common_params),
             TicketPipelines(**common_params),
             Workflows(**common_params),
+            ContactsWebAnalytics(**common_params),
+            CompaniesWebAnalytics(**common_params),
+            DealsWebAnalytics(**common_params),
+            TicketsWebAnalytics(**common_params),
+            EngagementsCallsWebAnalytics(**common_params),
+            EngagementsEmailsWebAnalytics(**common_params),
+            EngagementsMeetingsWebAnalytics(**common_params),
+            EngagementsNotesWebAnalytics(**common_params),
+            EngagementsTasksWebAnalytics(**common_params),
+            GoalsWebAnalytics(**common_params),
+            LineItemsWebAnalytics(**common_params),
+            ProductsWebAnalytics(**common_params),
         ]
 
         api = API(credentials=credentials)
@@ -149,7 +175,11 @@ class SourceHubspot(AbstractSource):
             self.logger.info("No scopes to grant when authenticating with API key.")
             available_streams = streams
 
+        custom_objects_streams = list(self.get_custom_object_streams(api=api, common_params=common_params))
         available_streams.extend(self.get_custom_object_streams(api=api, common_params=common_params))
+
+        custom_objects_web_analytics_streams = self.get_web_analytics_custom_objects_stream(custom_objects_streams, common_params=common_params)
+        available_streams.extend(custom_objects_web_analytics_streams)
 
         return available_streams
 
@@ -162,3 +192,35 @@ class SourceHubspot(AbstractSource):
                 custom_properties=custom_properties,
                 **common_params,
             )
+
+    def get_web_analytics_custom_objects_stream(self, custom_object_stream_instances: List[CustomObject], common_params: Any) -> WebAnalyticsStream:
+        for custom_object_stream_instance in custom_object_stream_instances:
+
+            def __init__(self, **kwargs: Any):
+                parent = custom_object_stream_instance.__class__(
+                    entity=custom_object_stream_instance.entity,
+                    schema=custom_object_stream_instance.schema,
+                    fully_qualified_name=custom_object_stream_instance.fully_qualified_name,
+                    custom_properties=custom_object_stream_instance.custom_properties,
+                    **common_params
+                )
+                super(self.__class__, self).__init__(parent=parent, **kwargs)
+
+            def get_json_schema(self):
+                raw_schema = {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": ["null", "object"],
+                    "$ref": "default_event_properties.json"
+                }
+                return ResourceSchemaLoader("source_hubspot")._resolve_schema_references(raw_schema=raw_schema)
+
+            custom_web_analytics_stream_class = type(
+                f"{custom_object_stream_instance.name.capitalize()}WebAnalytics",
+                (WebAnalyticsStream,),
+                {
+                    "__init__": __init__,
+                    "get_json_schema": get_json_schema
+                }
+            )
+
+            yield custom_web_analytics_stream_class(**common_params)
