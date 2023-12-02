@@ -31,17 +31,18 @@ class NetsuiteODBCTableDiscoverer():
     def get_table_name(self, table: json) -> str:
        return table[2]
 
-    def get_tables(self) -> Iterable[Mapping[str, Any]]:
-      self.cursor.execute("SELECT * FROM OA_TABLES WHERE table_name = 'Customer'")
+    def get_tables(self) -> list[Mapping[str, Any]]:
+      self.cursor.execute("SELECT * FROM OA_TABLES")
+      tables = []
       while True:
           row = self.cursor.fetchone()
           if not row:
               break
-          yield row
+          tables.append(row)
+      return tables
    
     def get_table_stream(self, table: json) -> AirbyteStream:
       table_name = self.get_table_name(table)
-      columns = self.get_columns(table)
       primary_key_column = self.find_primary_key_for_table(table)
       if primary_key_column is None:
         primary_key_column = []
@@ -51,6 +52,7 @@ class NetsuiteODBCTableDiscoverer():
 
       properties = {}
       table_incremental_column = None
+      columns = self.get_columns(table)
       for column in columns:
         is_incremental = self.is_column_incremental(column)
         if (is_incremental):

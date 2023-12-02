@@ -39,7 +39,7 @@ class NetsuiteODBCStream(Stream):
     def get_incremental_column_from_stream(self, stream):
       cursor_field = stream.default_cursor_field
       if not cursor_field:
-        return None
+        return []
       elif len(cursor_field) > 1:
         raise Exception('Assumption Broken: Incremental Column should always be a top level field.  Instead, we\'re receiving a sub-field as an incremental column.')
       else:

@@ -4,7 +4,7 @@
 
 import logging
 from datetime import datetime
-from typing import Mapping, Tuple, Any, List, Optional
+from typing import Mapping, Tuple, Any, List, Optional, Iterable
 
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources import AbstractSource
@@ -17,16 +17,15 @@ from .odbc_utils import NetsuiteODBCCursorConstructor
 class SourceNetsuiteOdbc(AbstractSource):
     logger: logging.Logger = logging.getLogger("airbyte")
     
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> Iterable[Stream]:
         cursor_constructor = NetsuiteODBCCursorConstructor()
         discoverer = NetsuiteODBCTableDiscoverer(cursor_constructor.create_database_cursor(config))
         streams = discoverer.get_streams()
-        stream_objects = []
         for stream in streams:
+            print(stream)
             stream_name = stream.name
             netsuite_stream = NetsuiteODBCStream(cursor=cursor_constructor.create_database_cursor(config), table_name=stream_name, stream=stream)
-            stream_objects.append(netsuite_stream)
-        return stream_objects
+            yield netsuite_stream
     
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
