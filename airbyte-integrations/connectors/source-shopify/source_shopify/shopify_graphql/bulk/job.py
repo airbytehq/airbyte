@@ -86,8 +86,7 @@ class ShopifyBulkJob:
                 f"The BULK Job result contains errors or could not be parsed. Details: {response.text}. Trace: {e}"
             )
 
-    def job_get_id(self, response: requests.Response) -> Optional[str]:
-        # the response could be None
+    def job_get_id(self, response: Optional[requests.Response] = None) -> Optional[str]:
         response_data = response.json() if response else {}
         bulk_response = response_data.get("data", {}).get("bulkOperationRunQuery", {}).get("bulkOperation", {})
         if bulk_response.get("status") == ShopifyBulkStatus.CREATED.value:
@@ -95,8 +94,8 @@ class ShopifyBulkJob:
             if job_id:
                 self.logger.info(f"The BULK Job: `{job_id}` is {ShopifyBulkStatus.CREATED.value}")
                 return job_id
-            else:
-                return None
+        else:
+            return None
 
     def job_create(self, request: requests.Request) -> Optional[requests.Response]:
         # create the server-side job
@@ -122,7 +121,7 @@ class ShopifyBulkJob:
                 # retry current `request`
                 return self.job_create(request)
 
-    def job_emit_status(self, bulk_job_id: str, status: str) -> None:
+    def log_job_status(self, bulk_job_id: str, status: str) -> None:
         self.logger.info(f"The BULK Job: `{bulk_job_id}` is {status}.")
 
     def job_check_status(self, url: str, bulk_job_id: str, check_interval_sec: int = 5) -> Optional[str]:
@@ -137,10 +136,10 @@ class ShopifyBulkJob:
         if not self.job_check_for_errors(response):
             status = response.json().get("data", {}).get("node", {}).get("status")
             if status == ShopifyBulkStatus.COMPLETED.value:
-                self.job_emit_status(bulk_job_id, status)
+                self.log_job_status(bulk_job_id, status)
                 return response.json().get("data", {}).get("node", {}).get("url")
             elif status == ShopifyBulkStatus.FAILED.value:
-                self.job_emit_status(bulk_job_id, status)
+                self.log_job_status(bulk_job_id, status)
                 raise ShopifyBulkExceptions.BulkJobFailed(
                     f"The BULK Job: `{bulk_job_id}` failed to execute, details: {self.job_check_for_errors(response)}",
                 )
@@ -153,7 +152,7 @@ class ShopifyBulkJob:
                     f"The BULK Job: `{bulk_job_id}` exited with {status}, please check your PERMISSION to fetch the data for the `{self.name}` stream.",
                 )
             else:
-                self.job_emit_status(bulk_job_id, status)
+                self.log_job_status(bulk_job_id, status)
                 # wait for the `check_interval_sec` value in sec before check again.
                 sleep(check_interval_sec)
                 return self.job_check_status(url, bulk_job_id)
@@ -220,4 +219,11 @@ class ShopifyBulkJob:
         finally:
             # removing the tmp file, if requested
             if remove_file:
-                remove(filename)
+                try:
+                    remove(filename)
+                except Exception as e:
+                    self.logger.info(f"Failed to remove the `tmp job result` file, the file doen't exist. Details: {repr(e)}.")
+                    # we should pass here, if the file wasn't removed , it's either:
+                    # - doesn't exist
+                    # - will be dropped with the container shut down.
+                    pass

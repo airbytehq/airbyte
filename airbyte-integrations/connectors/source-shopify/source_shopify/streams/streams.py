@@ -192,7 +192,6 @@ class ProductsGraphQl(IncrementalShopifyStream):
                 yield from self.produce_records(json_response)
             except RequestException as e:
                 self.logger.warning(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
-                yield {}
 
 
 class MetafieldProducts(MetafieldShopifyGraphQlBulkStream):
