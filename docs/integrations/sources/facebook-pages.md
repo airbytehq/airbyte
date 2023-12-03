@@ -1,8 +1,8 @@
+# Facebook Pages
+
 :::danger
 The Facebook Pages API utilized by this connector has been deprecated.  You will not be able to make a successful connection.  If you would like to make a community contribution or track API upgrade status, visit: https://github.com/airbytehq/airbyte/issues/25515.
 :::
-
-# Facebook Pages
 
 This page contains the setup guide and reference information for the Facebook Pages source connector.
 

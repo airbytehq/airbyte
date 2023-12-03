@@ -54,7 +54,6 @@ jobs:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-check-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-check-runner.outputs.label }} # run the job on the newly created runner
-    # Note if you are changing this name you must also change it in the approve-and-merge-dispatch.yml workflow
     name: Gradle Check
     timeout-minutes: 30
     steps:
@@ -79,6 +78,7 @@ jobs:
             gradlecheck:
               - '**/*'
               - '!**/*.md'
+              - '!.github/*'
 
       - uses: actions/setup-java@v3
         with:
