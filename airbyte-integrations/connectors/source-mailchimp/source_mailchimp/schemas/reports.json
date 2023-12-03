@@ -9,13 +9,13 @@
       "description": "A string that uniquely identifies this campaign."
     },
     "campaign_title": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Campaign Title",
       "description": "The title of the campaign.",
       "readOnly": true
     },
     "type": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Campaign Type",
       "description": "The type of campaign (regular, plain-text, ab_split, rss, automation, variate, or auto)."
     },
@@ -32,19 +32,19 @@
       "readOnly": true
     },
     "list_name": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "List Name",
       "description": "The name of the list.",
       "readOnly": true
     },
     "subject_line": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Campaign Subject Line",
       "description": "The subject line for the campaign.",
       "readOnly": true
     },
     "preview_text": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Campaign Preview Text",
       "description": "The preview text for the campaign."
     },
@@ -65,7 +65,7 @@
       "readOnly": true
     },
     "send_time": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone",
       "title": "Send Time",
@@ -73,7 +73,7 @@
       "readOnly": true
     },
     "rss_last_send": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone",
       "title": "RSS Last Send",
@@ -210,7 +210,7 @@
       "description": "The average campaign statistics for your industry.",
       "properties": {
         "type": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Industry Type",
           "description": "The type of business industry associated with your account. For example: retail, education, etc."
         },
@@ -323,7 +323,7 @@
               "description": "Opens for Campaign A."
             },
             "last_open": {
-              "type": "string",
+              "type": ["null", "string"],
               "title": "Last Open",
               "description": "The last open for Campaign A.",
               "format": "date-time",
@@ -377,7 +377,7 @@
               "description": "Opens for Campaign B."
             },
             "last_open": {
-              "type": "string",
+              "type": ["null", "string"],
               "title": "Last Open",
               "description": "The last open for Campaign B.",
               "format": "date-time",
@@ -410,7 +410,7 @@
             "description": "The number of opens."
           },
           "last_open": {
-            "type": "string",
+            "type": ["null", "string"],
             "format": "date-time",
             "airbyte_type": "timestamp_with_timezone",
             "title": "Last Open",
@@ -427,7 +427,7 @@
             "description": "The number of clicks."
           },
           "last_click": {
-            "type": "string",
+            "type": ["null", "string"],
             "format": "date-time",
             "airbyte_type": "timestamp_with_timezone",
             "title": "Last Click",
@@ -454,7 +454,7 @@
         "type": "object",
         "properties": {
           "timestamp": {
-            "type": "string",
+            "type": ["null", "string"],
             "format": "date-time",
             "airbyte_type": "timestamp_with_timezone",
             "title": "Timestamp",
@@ -484,13 +484,13 @@
       "description": "The url and password for the [VIP report](https://mailchimp.com/help/share-a-campaign-report/).",
       "properties": {
         "share_url": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Report URL",
           "description": "The URL for the VIP report.",
           "readOnly": true
         },
         "share_password": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Report Password",
           "description": "If password protected, the password for the VIP report.",
           "readOnly": true
@@ -521,7 +521,7 @@
           "readOnly": true
         },
         "currency_code": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Three letter currency code for this user",
           "readOnly": true,
           "example": "USD"
@@ -546,7 +546,7 @@
           "readOnly": true
         },
         "status": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Campaign Delivery Status",
           "description": "The current state of a campaign delivery.",
           "enum": ["delivering", "delivered", "canceling", "canceled"],
