@@ -53,7 +53,7 @@ class MicrosoftOneDriveClient:
     def _get_access_token(self):
         """Retrieves an access token for OneDrive access."""
         scope = ["https://graph.microsoft.com/.default"]
-        refresh_token = self.config.credentials.refresh_token
+        refresh_token = self.config.credentials.refresh_token if "refresh_token" in self.config.credentials else None
 
         if refresh_token:
             result = self.msal_app.acquire_token_by_refresh_token(refresh_token, scopes=scope)
@@ -120,8 +120,13 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
         """
         Retrieve all files matching the specified glob patterns in OneDrive.
         """
-        my_drive = self.one_drive_client.me.drive.get().execute_query()
         drives = self.one_drive_client.drives.get().execute_query()
+
+        if self.config.credentials.auth_type == "Client":
+            my_drive = self.one_drive_client.me.drive.get().execute_query()
+        else:
+            my_drive = self.one_drive_client.users.get_by_principal_name(self.config.credentials.user_principal_name).drive.get().execute_query()
+
         drives.add_child(my_drive)
 
         files = self.get_files_by_drive_name(drives, self.config.drive_name, self.config.folder_path)

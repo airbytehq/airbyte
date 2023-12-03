@@ -411,6 +411,12 @@
                 "airbyte_secret" : true,
                 "type" : "string"
               },
+              "user_principal_name" : {
+                "title" : "User Principal Name",
+                "description" : "Special characters such as a period, comma, space, and the at sign (@) are converted to underscores (_). More details: https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls",
+                "airbyte_secret" : true,
+                "type" : "string"
+              },
               "client_id" : {
                 "title" : "Client ID",
                 "description" : "Client ID of your Microsoft developer application",
@@ -426,6 +432,7 @@
             },
             "required" : [
               "tenant_id",
+              "user_principal_name",
               "client_id",
               "client_secret"
             ]
@@ -435,13 +442,13 @@
       "drive_name" : {
         "title" : "Drive Name",
         "description" : "Name of the Microsoft OneDrive drive where the file(s) exist.",
-        "order" : 1,
+        "order" : 2,
         "type" : "string"
       },
       "folder_path" : {
         "title" : "Folder Path",
         "description" : "Path to folder of the Microsoft OneDrive drive where the file(s) exist.",
-        "order" : 2,
+        "order" : 3,
         "type" : "string"
       }
     },

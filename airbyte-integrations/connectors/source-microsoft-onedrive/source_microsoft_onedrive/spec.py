@@ -51,6 +51,7 @@ class ServiceCredentials(BaseModel):
     # Fields for the Service authentication, similar to OAuthCredentials
     auth_type: Literal["Service"] = Field("Service", const=True)
     tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft OneDrive user", airbyte_secret=True)
+    user_principal_name: str = Field(title="User Principal Name", description="Special characters such as a period, comma, space, and the at sign (@) are converted to underscores (_). More details: https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls", airbyte_secret=True)
     client_id: str = Field(
         title="Client ID",
         description="Client ID of your Microsoft developer application",
