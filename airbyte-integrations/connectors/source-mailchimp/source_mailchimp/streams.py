@@ -97,11 +97,11 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     @property
     def sort_field(self):
         return self.cursor_field
-    
+
     def filter_empty_fields(self, element: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Many Mailchimp endpoints return empty strings instead of null values.
-        This causes validation errors on datetime columns, so for safety, we need to check for empty strings and set their value to None/null. 
+        This causes validation errors on datetime columns, so for safety, we need to check for empty strings and set their value to None/null.
         This method recursivly traverses each element in a record and replaces any "" values with None, based on three conditions:
 
         1. If the element is a dictionary, apply the method recursively to each value in the dictionary.
@@ -141,7 +141,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         default_params = {"sort_field": self.sort_field, "sort_dir": "ASC", **stream_slice}
         params.update(default_params)
         return params
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response = super().parse_response(response, **kwargs)
         for record in response:
