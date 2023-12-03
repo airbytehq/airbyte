@@ -506,7 +506,7 @@
           }
         },
         "last_sent": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Last Sent",
           "description": "The date the campaign was last sent.",
           "readOnly": true,
