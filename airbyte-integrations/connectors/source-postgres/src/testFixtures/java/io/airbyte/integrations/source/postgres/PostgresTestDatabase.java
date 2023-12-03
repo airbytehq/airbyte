@@ -19,6 +19,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class PostgresTestDatabase extends
     TestDatabase<PostgreSQLContainer<?>, PostgresTestDatabase, PostgresTestDatabase.PostgresConfigBuilder> {
 
+  //test
   static public PostgresTestDatabase in(String imageName, String... methods) {
     final var container = new PostgresContainerFactory().shared(imageName, methods);
     return new PostgresTestDatabase(container).initialized();
@@ -44,6 +45,7 @@ public class PostgresTestDatabase extends
    */
   @Override
   protected Stream<String> inContainerUndoBootstrapCmd() {
+    System.out.println("SGX");
     return Stream.empty();
   }
 
