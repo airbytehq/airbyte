@@ -125,7 +125,9 @@ class SourceMicrosoftOneDriveStreamReader(AbstractFileBasedStreamReader):
         if self.config.credentials.auth_type == "Client":
             my_drive = self.one_drive_client.me.drive.get().execute_query()
         else:
-            my_drive = self.one_drive_client.users.get_by_principal_name(self.config.credentials.user_principal_name).drive.get().execute_query()
+            my_drive = (
+                self.one_drive_client.users.get_by_principal_name(self.config.credentials.user_principal_name).drive.get().execute_query()
+            )
 
         drives.add_child(my_drive)
 
