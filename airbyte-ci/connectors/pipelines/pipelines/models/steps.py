@@ -97,12 +97,17 @@ class CommandResult:
     stderr: Optional[str] = None
     stdout: Optional[str] = None
     exc_info: Optional[Exception] = None
+    output_artifact: Any = None
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.command.name}: {self.status.value}"
 
     def __str__(self) -> str:  # noqa D105
         return f"{self.command.name}: {self.status.value}\n\nSTDOUT:\n{self.stdout}\n\nSTDERR:\n{self.stderr}"
+
+    @property
+    def success(self) -> bool:
+        return self.status is StepStatus.SUCCESS
 
 
 class StepStatus(Enum):

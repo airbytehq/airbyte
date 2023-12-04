@@ -1,6 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from enum import Enum
+
+REPO_MOUNT_PATH = "/src"
+CACHE_MOUNT_PATH = "/cache"
 
 DEFAULT_FORMAT_IGNORE_LIST = [
     "**/__pycache__",
@@ -43,4 +47,20 @@ DEFAULT_FORMAT_IGNORE_LIST = [
     "**/.git",
 ]
 
-REPO_MOUNT_PATH = "/src"
+
+class Formatter(Enum):
+    """An enum for the formatter values which can be ["java", "js", "python", "license"]."""
+
+    JAVA = "java"
+    JS = "js"
+    PYTHON = "python"
+    LICENSE = "license"
+
+
+WARM_UP_INCLUSIONS = {
+    Formatter.JAVA: [
+        "spotless-maven-pom.xml",
+        "tools/gradle/codestyle/java-google-style.xml",
+    ],
+    Formatter.PYTHON: ["pyproject.toml", "poetry.lock"],
+}
