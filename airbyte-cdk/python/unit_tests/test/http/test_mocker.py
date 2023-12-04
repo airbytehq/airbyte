@@ -77,6 +77,19 @@ class HttpMockerTest(TestCase):
             decorated_function()
         assert "Invalid number of matches" in str(exc_info.value)
 
+    def test_given_assertion_error_when_decorate_then_raise_assertion_error(self):
+        @HttpMocker()
+        def decorated_function(http_mocker):
+            http_mocker.get(
+                HttpRequest(_A_URL),
+                _A_RESPONSE,
+            )
+            requests.get(_A_URL)
+            assert False
+
+        with pytest.raises(AssertionError):
+            decorated_function()
+
     def test_given_assertion_error_but_missing_request_when_decorate_then_raise_missing_http_request(self):
         @HttpMocker()
         def decorated_function(http_mocker):
