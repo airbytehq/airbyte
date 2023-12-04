@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pipelines"
-version = "2.8.1"
+version = "2.10.2"
 description = "Packaged maintained by the connector operations team to perform CI for connectors' pipelines"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -37,6 +37,8 @@ freezegun = "^1.2.2"
 pytest-cov = "^4.1.0"
 pyinstaller = "^6.1.0"
 poethepoet = "^0.24.2"
+pytest = "^6.2.5"
+pytest-mock = "^3.10.0"
 
 [tool.poetry.scripts]
 airbyte-ci = "pipelines.cli.airbyte_ci:airbyte_ci"
