@@ -142,19 +142,25 @@ class SourceHubspot(AbstractSource):
             Tickets(**common_params),
             TicketPipelines(**common_params),
             Workflows(**common_params),
-            ContactsWebAnalytics(**common_params),
-            CompaniesWebAnalytics(**common_params),
-            DealsWebAnalytics(**common_params),
-            TicketsWebAnalytics(**common_params),
-            EngagementsCallsWebAnalytics(**common_params),
-            EngagementsEmailsWebAnalytics(**common_params),
-            EngagementsMeetingsWebAnalytics(**common_params),
-            EngagementsNotesWebAnalytics(**common_params),
-            EngagementsTasksWebAnalytics(**common_params),
-            GoalsWebAnalytics(**common_params),
-            LineItemsWebAnalytics(**common_params),
-            ProductsWebAnalytics(**common_params),
         ]
+
+        enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]
+
+        if enable_experimental_streams:
+            streams.extend([
+                ContactsWebAnalytics(**common_params),
+                CompaniesWebAnalytics(**common_params),
+                DealsWebAnalytics(**common_params),
+                TicketsWebAnalytics(**common_params),
+                EngagementsCallsWebAnalytics(**common_params),
+                EngagementsEmailsWebAnalytics(**common_params),
+                EngagementsMeetingsWebAnalytics(**common_params),
+                EngagementsNotesWebAnalytics(**common_params),
+                EngagementsTasksWebAnalytics(**common_params),
+                GoalsWebAnalytics(**common_params),
+                LineItemsWebAnalytics(**common_params),
+                ProductsWebAnalytics(**common_params),
+            ])
 
         api = API(credentials=credentials)
         if api.is_oauth2():
@@ -175,11 +181,14 @@ class SourceHubspot(AbstractSource):
             self.logger.info("No scopes to grant when authenticating with API key.")
             available_streams = streams
 
-        custom_objects_streams = list(self.get_custom_object_streams(api=api, common_params=common_params))
         available_streams.extend(self.get_custom_object_streams(api=api, common_params=common_params))
 
-        custom_objects_web_analytics_streams = self.get_web_analytics_custom_objects_stream(custom_objects_streams, common_params=common_params)
-        available_streams.extend(custom_objects_web_analytics_streams)
+        if enable_experimental_streams:
+            custom_objects_web_analytics_streams = self.get_web_analytics_custom_objects_stream(
+                custom_object_stream_instances=self.get_custom_object_streams(api=api, common_params=common_params),
+                common_params=common_params
+            )
+            available_streams.extend(custom_objects_web_analytics_streams)
 
         return available_streams
 

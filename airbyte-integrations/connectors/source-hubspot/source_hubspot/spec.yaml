@@ -86,6 +86,11 @@ connectionSpecification:
                 if you need help finding this token.
               type: string
               airbyte_secret: true
+    enable_experimental_streams:
+      title: Enable experimental streams
+      description: If enabled then experimental streams become available for sync.
+      type: boolean
+      default: false
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:
