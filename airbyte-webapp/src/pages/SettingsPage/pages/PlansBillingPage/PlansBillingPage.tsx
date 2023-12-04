@@ -17,12 +17,13 @@ import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 import { useUserPlanDetail, useAsyncAction } from "services/payments/PaymentsService";
+import { remainingDaysForFreeTrial } from "utils/common";
 
+import { PlanClause } from "./components/PlanClause";
+import styles from "./style.module.scss";
 import { IAuthUser } from "../../../../core/AuthContext/authenticatedUser";
 import { useHealth } from "../../../../hooks/services/Health";
 import { SettingsRoute } from "../../SettingsPage";
-import { PlanClause } from "./components/PlanClause";
-import styles from "./style.module.scss";
 
 const CancelSubscriptionBtn = styled(Button)`
   background-color: ${({ theme }) => theme.white};
@@ -60,6 +61,7 @@ const PlansBillingPage: React.FC = () => {
   const { isUpdatePaymentMethod } = healthData;
   const userPlanDetail = useUserPlanDetail();
   const prevUserPlanDetail = usePrevious(userPlanDetail);
+  const { expiresTime } = userPlanDetail;
 
   useEffect(() => {
     if (prevUserPlanDetail?.selectedProduct !== undefined) {
@@ -181,8 +183,12 @@ const PlansBillingPage: React.FC = () => {
             <div className={styles.planTitle}>
               <FormattedMessage
                 id={
-                  getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial ||
-                  getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription
+                  getPaymentStatus(user.status) === PAYMENT_STATUS.Cancel_Subscription ||
+                  (getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial &&
+                    remainingDaysForFreeTrial(expiresTime) < 0)
+                    ? "plan.endedOn.heading"
+                    : getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial ||
+                      getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription
                     ? "plan.endsOn.heading"
                     : "plan.renewsOn.heading"
                 }

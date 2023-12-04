@@ -626,7 +626,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PageRequestBody"
+              $ref: "#/components/schemas/SourcesPageRequestBody"
         required: true
       responses:
         "200":
@@ -1192,7 +1192,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PageRequestBody"
+              $ref: "#/components/schemas/DestinationPageRequestBody"
         required: true
       responses:
         "200":
@@ -2946,6 +2946,19 @@ components:
           type: integer
         pageCurrent:
           type: integer
+    SourcesPageRequestBody:
+      type: object
+      required:
+        - workspaceId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        SourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
+        pageSize:
+          type: integer
+        pageCurrent:
+          type: integer
     SourceCloneRequestBody:
       description: The values required to configure the source. The schema for this should have an id of the existing source along with the configuration you want to change in case.
       type: object
@@ -3043,8 +3056,8 @@ components:
       properties:
         SourceRead:
           $ref: "#/components/schemas/SourceRead"
-        ConnectionReadList:
-          $ref: "#/components/schemas/WebBackendConnectionReadList"
+        WebBackendConnectionReadList:
+          $ref: "#/components/schemas/WebBackendConnectionList"
         total:
           type: integer
           format: int64
@@ -3278,6 +3291,19 @@ components:
           type: integer
         pageCurrent:
           type: integer
+    DestinationPageRequestBody:
+      type: object
+      required:
+        - workspaceId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        DestinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
+        pageSize:
+          type: integer
+        pageCurrent:
+          type: integer
     DestinationConfiguration:
       description: The values required to configure the destination. The schema for this must match the schema return by destination_definition_specifications/get for the destinationDefinition.
       example: { user: "charles" }
@@ -3368,7 +3394,7 @@ components:
         DestinationRead:
           $ref: "#/components/schemas/DestinationRead"
         WebBackendConnectionReadList:
-          $ref: "#/components/schemas/WebBackendConnectionReadList"
+          $ref: "#/components/schemas/WebBackendConnectionList"
         total:
           type: integer
           format: int64
@@ -5059,6 +5085,15 @@ components:
           type: integer
         pageCurrent:
           type: integer
+    WebBackendConnectionList:
+      type: object
+      required:
+        - connections
+      properties:
+        connections:
+          type: array
+          items:
+            $ref: "#/components/schemas/WebBackendConnectionPageRead"
     WebBackendConnectionStatusReadList:
       type: object
       required:

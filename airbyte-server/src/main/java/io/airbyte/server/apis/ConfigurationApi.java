@@ -372,8 +372,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public SourcePageReadList pageSourcesForWorkspace(PageRequestBody pageRequestBody) {
-    return execute(() -> sourceHandler.pageSourcesForWorkspace(pageRequestBody));
+  public SourcePageReadList pageSourcesForWorkspace(SourcesPageRequestBody sourcesPageRequestBody) {
+    return execute(() -> sourceHandler.pageSourcesForWorkspace(sourcesPageRequestBody));
   }
 
   @Override
@@ -390,10 +390,10 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   public SourceReadWithConnectionPage getSourceWithConnection(final SourceIdPageRequestBody sourceIdPageRequestBody) {
     return execute(() -> {
       SourceRead sourceRead = sourceHandler.getSourceRead(new SourceIdRequestBody().sourceId(sourceIdPageRequestBody.getSourceId()));
-      WebBackendConnectionReadList webBackendConnectionReadList = webBackendConnectionsHandler.listConnectionsPageWithoutOperation(
-          sourceRead.getWorkspaceId(), sourceIdPageRequestBody.getSourceId(), null, false, sourceIdPageRequestBody.getPageSize(),
+      WebBackendConnectionList webBackendConnectionList = webBackendConnectionsHandler.listConnectionsPageWithoutOperation(
+          sourceRead.getWorkspaceId(), sourceIdPageRequestBody.getSourceId(), null, sourceIdPageRequestBody.getPageSize(),
           sourceIdPageRequestBody.getPageCurrent());
-      return new SourceReadWithConnectionPage().sourceRead(sourceRead).connectionReadList(webBackendConnectionReadList)
+      return new SourceReadWithConnectionPage().sourceRead(sourceRead).webBackendConnectionReadList(webBackendConnectionList)
           .total(sourceHandler.getSourceConnectionCount(sourceRead.getWorkspaceId(), sourceIdPageRequestBody.getSourceId()))
           .pageCurrent(sourceIdPageRequestBody.getPageCurrent()).pageSize(sourceIdPageRequestBody.getPageSize());
     });
@@ -568,8 +568,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public DestinationPageReadList pageDestinationsForWorkspace(final PageRequestBody pageRequestBody) {
-    return execute(() -> destinationHandler.pageDestinationsForWorkspace(pageRequestBody));
+  public DestinationPageReadList pageDestinationsForWorkspace(final DestinationPageRequestBody destinationPageRequestBody) {
+    return execute(() -> destinationHandler.pageDestinationsForWorkspace(destinationPageRequestBody));
   }
 
   @Override
@@ -586,10 +586,10 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   public DestinationReadWithConnectionPage getDestinationWithConnection(final DestinationIdPageRequestBody destinationIdPageRequestBody) {
     return execute(() -> {
       DestinationRead destinationRead = destinationHandler.getDestinationRead(destinationIdPageRequestBody);
-      WebBackendConnectionReadList webBackendConnectionReadList = webBackendConnectionsHandler.listConnectionsPageWithoutOperation(
-          destinationRead.getWorkspaceId(), null, destinationIdPageRequestBody.getDestinationId(), false,
+      WebBackendConnectionList webBackendConnectionList = webBackendConnectionsHandler.listConnectionsPageWithoutOperation(
+          destinationRead.getWorkspaceId(), null, destinationIdPageRequestBody.getDestinationId(),
           destinationIdPageRequestBody.getPageSize(), destinationIdPageRequestBody.getPageCurrent());
-      return new DestinationReadWithConnectionPage().destinationRead(destinationRead).webBackendConnectionReadList(webBackendConnectionReadList)
+      return new DestinationReadWithConnectionPage().destinationRead(destinationRead).webBackendConnectionReadList(webBackendConnectionList)
           .total(destinationHandler.getDestinationConnectionCount(destinationRead.getWorkspaceId(), destinationIdPageRequestBody.getDestinationId()))
           .pageCurrent(destinationIdPageRequestBody.getPageCurrent()).pageSize(destinationIdPageRequestBody.getPageSize());
     });

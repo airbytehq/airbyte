@@ -11,6 +11,7 @@ import { useHealth } from "hooks/services/Health";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { SettingsRoute } from "pages/SettingsPage/SettingsPage";
+import { remainingDaysForFreeTrial } from "utils/common";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 import {
@@ -20,6 +21,8 @@ import {
   FailedPaymentBanner,
 } from "views/layout/Banners";
 import SideBar from "views/layout/SideBar";
+
+import { useUserPlanDetail } from "../../../services/payments/PaymentsService";
 
 const MainContainer = styled.div`
   width: 100%;
@@ -57,6 +60,8 @@ const MainView: React.FC = (props) => {
   const [usagePercentage, setUsagePercentage] = useState<number>(0);
   const [isSidebar, setIsSidebar] = useState<boolean>(true);
   const [backgroundColor, setBackgroundColor] = useState<string>(theme.backgroundColor);
+  const userPlanDetail = useUserPlanDetail();
+  const { expiresTime } = userPlanDetail;
 
   useEffect(() => {
     if (usage) {
@@ -129,7 +134,7 @@ const MainView: React.FC = (props) => {
   }, [pathname, hasSidebarRoutes, location.state]);
 
   const onBillingPage = () => {
-    push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
+    push(`/${RoutePaths.Payment}`);
   };
 
   const onFailedPaymentPage = () => {
@@ -138,7 +143,13 @@ const MainView: React.FC = (props) => {
 
   const isUpgradePlanBanner = (): boolean => {
     let showUpgradePlanBanner = false;
-    if (getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial) {
+    if (
+      getPaymentStatus(user.status) !== PAYMENT_STATUS.Subscription &&
+      !(
+        getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription &&
+        remainingDaysForFreeTrial(expiresTime) > 0
+      )
+    ) {
       if (!pathname.split("/").includes(RoutePaths.Payment)) {
         showUpgradePlanBanner = true;
       }
