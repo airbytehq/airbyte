@@ -37,8 +37,8 @@ This page contains the setup guide and reference information for the [Pushnews](
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Punk-API connector and select **Punk-API** from the Source type dropdown.
-4. Enter your dummy `api_key`.
+3. On the Set up the source page, enter the name for the Pushnews connector and select **Pushnews** from the Source type dropdown.
+4. Enter your `api_key`.
 5. Enter the params configuration if needed. Supported params are: start_date, status, force_update_stats
 6. Click **Set up source**.
 
@@ -52,7 +52,7 @@ This page contains the setup guide and reference information for the [Pushnews](
 
 ## Supported sync modes
 
-The Punk-API source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Pushnews source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -72,7 +72,7 @@ The Punk-API source connector supports the following [sync modes](https://docs.a
 
 ## API method example
 
-GET <https://api.punkapi.com/v2/beers>
+GET <https://api.pushnews.eu/v2/sites>
 
 ## Performance considerations
 
