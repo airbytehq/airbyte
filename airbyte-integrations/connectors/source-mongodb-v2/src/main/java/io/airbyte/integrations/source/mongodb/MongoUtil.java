@@ -130,7 +130,7 @@ public class MongoUtil {
     final OptionalInt sizeFromConfig = config.getQueueSize();
 
     if (sizeFromConfig.isPresent()) {
-      int size = sizeFromConfig.getAsInt();
+      final int size = sizeFromConfig.getAsInt();
       if (size < MIN_QUEUE_SIZE) {
         LOGGER.warn("Queue size is overridden to {} , which is the min allowed for safety.",
             MIN_QUEUE_SIZE);
@@ -231,8 +231,7 @@ public class MongoUtil {
     final Document arrayToObjectAggregation = new Document("$arrayToObject", mapFunction);
 
     final Map<String, Object> groupMap = new HashMap<>();
-    groupMap.put("_id", null);
-    groupMap.put("fields", Map.of("$addToSet", "$fields"));
+    groupMap.put("_id", "$fields");
 
     final List<Bson> aggregateList = new ArrayList<>();
     /*
@@ -248,15 +247,14 @@ public class MongoUtil {
      * Runs the following aggregation query: db.<collection name>.aggregate( [ { "$sample": { "size" :
      * 10000 } }, { "$project" : { "fields" : { "$arrayToObject": { "$map" : { "input" : {
      * "$objectToArray" : "$$ROOT" }, "as" : "each", "in" : { "k" : "$$each.k", "v" : { "$type" :
-     * "$$each.v" } } } } } } }, { "$unwind" : "$fields" }, { "$group" : { "_id" : null, "fields" : {
-     * "$addToSet" : "$fields" } } } ] )
+     * "$$each.v" } } } } } } }, { "$unwind" : "$fields" }, { "$group" : { "_id" : $fields } } ] )
      */
     final AggregateIterable<Document> output = collection.aggregate(aggregateList);
 
     try (final MongoCursor<Document> cursor = output.allowDiskUse(true).cursor()) {
       while (cursor.hasNext()) {
         @SuppressWarnings("unchecked")
-        final Map<String, String> fields = ((List<Map<String, String>>) cursor.next().get("fields")).get(0);
+        final Map<String, String> fields = (Map<String, String>) cursor.next().get("_id");
         discoveredFields.addAll(fields.entrySet().stream()
             .map(e -> new MongoField(e.getKey(), convertToSchemaType(e.getValue())))
             .collect(Collectors.toSet()));

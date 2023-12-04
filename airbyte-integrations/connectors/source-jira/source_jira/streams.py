@@ -354,6 +354,7 @@ class Issues(IncrementalJiraStream):
     _expand_fields_list = ["renderedFields", "transitions", "changelog"]
 
     skip_http_status_codes = [requests.codes.FORBIDDEN]
+    state_checkpoint_interval = 50  # default page size is 50
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -372,10 +373,13 @@ class Issues(IncrementalJiraStream):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = "*all"
+
         jql_parts = [self.jql_compare_date(stream_state)]
         if self._project_ids:
             jql_parts.append(f"project in ({stream_slice.get('project_id')})")
         params["jql"] = " and ".join([p for p in jql_parts if p])
+        params["jql"] += f" ORDER BY {self.cursor_field} asc"
+
         params["expand"] = ",".join(self._expand_fields_list)
         return params
 
@@ -384,6 +388,12 @@ class Issues(IncrementalJiraStream):
         record["projectKey"] = record["fields"]["project"]["key"]
         record["created"] = record["fields"]["created"]
         record["updated"] = record["fields"]["updated"]
+
+        # remove fields that are None
+        if "renderedFields" in record:
+            record["renderedFields"] = {k: v for k, v in record["renderedFields"].items() if v is not None}
+        if "fields" in record:
+            record["fields"] = {k: v for k, v in record["fields"].items() if v is not None}
         return record
 
     def get_project_ids(self):
