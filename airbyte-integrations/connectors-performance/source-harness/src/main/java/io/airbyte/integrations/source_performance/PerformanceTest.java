@@ -19,17 +19,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AllowedHosts;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
 import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.process.KubeProcessFactory;
+import io.airbyte.featureflag.TestClient;
+import io.airbyte.config.SyncResourceRequirements;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.net.InetAddress;
@@ -38,8 +38,11 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -49,8 +52,10 @@ public class PerformanceTest {
   public static final int PORT2 = 9878;
   public static final int PORT3 = 9879;
   public static final int PORT4 = 9880;
+  public static final int PORT5 = 9881;
+  public static final int PORT6 = 9882;
 
-  public static final Set<Integer> PORTS = Set.of(PORT1, PORT2, PORT3, PORT4);
+  public static final Set<Integer> PORTS = Set.of(PORT1, PORT2, PORT3, PORT4, PORT5, PORT6);
 
   public static final double MEGABYTE = Math.pow(1024, 2);
   private final String imageName;
@@ -78,7 +83,7 @@ public class PerformanceTest {
 
   void runTest() throws Exception {
 
-    // Initialize datadog.
+    // Initialize datadog.\
     ApiClient defaultClient = ApiClient.getDefaultApiClient();
     MetricsApi apiInstance = new MetricsApi(defaultClient);
 
@@ -87,8 +92,9 @@ public class PerformanceTest {
     final KubernetesClient fabricClient = new DefaultKubernetesClient();
     final String localIp = InetAddress.getLocalHost().getHostAddress();
     final String kubeHeartbeatUrl = localIp + ":" + 9000;
-    final var workerConfigs = new WorkerConfigs(new EnvConfigs());
-    final var processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
+
+//    final var workerConfigs = new WorkerConfigs(new EnvConfigs());
+    final var processFactory = new KubeProcessFactory(new TestClient(Map.of("platform.kube-socket-io-enabled", true)), "default", "", fabricClient, kubeHeartbeatUrl);
     final ResourceRequirements resourceReqs = new ResourceRequirements()
         .withCpuLimit("2.5")
         .withCpuRequest("2.5")
@@ -97,7 +103,10 @@ public class PerformanceTest {
     final var heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(1));
     final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
     final var integrationLauncher =
-        new AirbyteIntegrationLauncher("1", 0, this.imageName, processFactory, resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags());
+        new AirbyteIntegrationLauncher("1",
+            0, UUID.randomUUID(), UUID.randomUUID(), this.imageName, processFactory, resourceReqs, new SyncResourceRequirements().withOrchestrator(resourceReqs).withSource(resourceReqs)
+            , allowedHosts, false, new EnvVariableFeatureFlags(),
+        Map.of(), Map.of());
     final var source = new DefaultAirbyteSource(integrationLauncher, new EnvVariableFeatureFlags(), heartbeatMonitor);
     final var jobRoot = "/";
     final WorkerSourceConfig sourceConfig = new WorkerSourceConfig()

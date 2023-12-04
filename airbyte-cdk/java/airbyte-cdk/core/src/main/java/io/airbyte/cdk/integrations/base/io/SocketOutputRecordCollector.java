@@ -19,6 +19,8 @@ public class SocketOutputRecordCollector<T> implements Consumer<T>, AutoCloseabl
     private Socket socket;
     private PrintWriter writer;
 
+    private static int count = 0;
+
     public SocketOutputRecordCollector(final String host, final Integer port, final Integer retryBackoffMs) {
         this.host = host;
         this.port = port;
@@ -31,7 +33,7 @@ public class SocketOutputRecordCollector<T> implements Consumer<T>, AutoCloseabl
             try {
                 LOGGER.info("Attempting to connect to platform at {}:{}...", host, port);
                 socket = new Socket(host, port);
-                writer = new PrintWriter(socket.getOutputStream(), true);
+                writer = new PrintWriter(socket.getOutputStream(), false);
                 connected = true;
                 LOGGER.info("Successfully connected to platform at {}:{}.", host, port);
             } catch (IOException e) {
@@ -49,8 +51,13 @@ public class SocketOutputRecordCollector<T> implements Consumer<T>, AutoCloseabl
     public void accept(final T airbyteMessage) {
         final String messageAsJson = Jsons.serialize(airbyteMessage);
         if (writer != null) {
+//            System.out.println(messageAsJson);
             writer.println(messageAsJson);
-            writer.flush();
+            count++;
+//            writer.flush();
+            if (count % 200 == 0) {
+                writer.flush();
+            }
         } else {
             LOGGER.warn("Unable to write message '{}' as the writer has not been initialized.", messageAsJson);
         }

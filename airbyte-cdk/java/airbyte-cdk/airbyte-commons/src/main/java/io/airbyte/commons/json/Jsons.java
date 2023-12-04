@@ -22,6 +22,8 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.stream.MoreStreams;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -38,6 +40,7 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"PMD.AvoidReassigningParameters", "PMD.AvoidCatchingThrowable"})
+@Slf4j
 public class Jsons {
 
   // Object Mapper is thread-safe
@@ -125,6 +128,7 @@ public class Jsons {
     try {
       return Optional.of(OBJECT_MAPPER_EXACT.readValue(jsonString, klass));
     } catch (final Throwable e) {
+      log.error("====== error", e);
       return Optional.empty();
     }
   }

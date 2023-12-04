@@ -32,7 +32,8 @@ public class Main {
 
     // TODO: (ryankfu) Integrated something akin to {@link Clis} for parsing arguments.
     switch (args.length) {
-      case 1 -> image = args[0];
+      case 0 -> image = "airbyte/source-e2e-test:dev";
+      case 1 -> image = "airbyte/source-e2e-test:dev";
       case 2 -> {
         image = args[0];
         dataset = args[1];
@@ -65,11 +66,20 @@ public class Main {
     log.info("Connector name: {}", connector);
     final Path credsPath = Path.of(CREDENTIALS_PATH.formatted(connector, dataset));
 
-    if (!Files.exists(credsPath)) {
-      throw new IllegalStateException("{module-root}/" + credsPath + " not found. Must provide path to a source-harness credentials file.");
-    }
+//    if (!Files.exists(credsPath)) {
+//      throw new IllegalStateException("{module-root}/" + credsPath + " not found. Must provide path to a source-harness credentials file.");
+//    }
 
-    final JsonNode config = Jsons.deserialize(IOs.readFile(credsPath));
+    final JsonNode config = Jsons.deserialize("""
+                                              {
+                                                "type": "BENCHMARK",
+                                                "schema": "FIVE_STRING_COLUMNS",
+                                                "terminationCondition": {
+                                                  "type": "MAX_RECORDS",
+                                                  "max": 24000000
+                                                }
+                                              }
+                                              """);
 
     final JsonNode catalog;
     try {
@@ -101,10 +111,14 @@ public class Main {
   }
 
   static JsonNode getCatalog(final String dataset, final String connector, final String syncMode) throws IOException {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String catalogFilename = "catalogs/%s/%s_catalog.json".formatted(connector, dataset);
-    final String template = MoreResources.readResource(catalogFilename);
-    return objectMapper.readTree(String.format(template, syncMode));
+//    final ObjectMapper objectMapper = new ObjectMapper();
+//    final String catalogFilename = "catalogs/%s/%s_catalog.json".formatted(connector, dataset);
+//    final String template = MoreResources.readResource(catalogFilename);
+//    return objectMapper.readTree(String.format(template, syncMode));
+    return Jsons.deserialize(
+        """
+        {"streams": [{"stream": {"name": "stream1", "json_schema": {"type": "object", "properties": {"field1": {"type": "string"}, "field2": {"type": "string"}, "field3": {"type": "string"}, "field4": {"type": "string"}, "field5": {"type": "string"}}}, "default_cursor_field": [], "supported_sync_modes": ["full_refresh"], "source_defined_primary_key": []}, "sync_mode": "full_refresh", "primary_key": [], "cursor_field": [], "destination_sync_mode": "overwrite"}]}
+        """);
   }
 
 }
