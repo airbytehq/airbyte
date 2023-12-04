@@ -88,15 +88,18 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   @Override
   @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+    LOGGER.info("xiaohan - check started");
     try {
       final Database database = createDatabase(config);
       for (final CheckedConsumer<Database, Exception> checkOperation : getCheckOperations(config)) {
         checkOperation.accept(database);
       }
+      LOGGER.info("xiaohan - check succeeded!!");
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       ApmTraceUtils.addExceptionToTrace(ex);
+      LOGGER.info("xiaohan - error check: failed! ", ex);
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(),
           ex.getExceptionMessage(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
