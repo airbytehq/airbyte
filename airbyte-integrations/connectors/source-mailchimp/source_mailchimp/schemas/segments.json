@@ -46,7 +46,7 @@
                 "type": ["null", "string"]
               },
               "value": {
-                "type": ["null", "string"]
+                "type": ["null", "integer", "number", "string"]
               }
             }
           }

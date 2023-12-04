@@ -88,14 +88,14 @@ All other streams contain an `id` primary key.
 
 ## Data type mapping
 
-| Integration Type           | Airbyte Type | Notes                                                                               |
-|:---------------------------|:-------------|:------------------------------------------------------------------------------------|
-| `array`                    | `array`      | the type of elements in the array is determined based on the mappings in this table |
-| `date`, `time`, `datetime` | `string`     |                                                                                     |
-| `float`, `number`          | `number`     |                                                                                     |
-| `integer`                  | `integer`    |                                                                                     |
-| `object`                   | `object`     | properties within objects are mapped based on the mappings in this table            |
-| `string`                   | `string`     |                                                                                     |
+| Integration Type           | Airbyte Type              | Notes                                                                               |
+|:---------------------------|:--------------------------|:------------------------------------------------------------------------------------|
+| `array`                    | `array`                   | the type of elements in the array is determined based on the mappings in this table |
+| `string`                   | `string`                  |                                                                                     |
+| `float`, `number`          | `number`                  |                                                                                     |
+| `integer`                  | `integer`                 |                                                                                     |
+| `object`                   | `object`                  | properties within objects are mapped based on the mappings in this table            |
+| `string` (timestamp)       | `timestamp_with_timezone` | Mailchimp timestamps are formatted as `YYYY-MM-DDTHH:MM:SS+00:00`                   |
 
 ## Limitations & Troubleshooting
 

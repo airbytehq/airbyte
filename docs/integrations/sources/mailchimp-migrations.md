@@ -2,12 +2,17 @@
 
 ## Upgrading to 1.0.0
 
-Version 1.0.0 of the Source Mailchimp connector introduces a number of breaking changes to the schemas of all incremental streams.
+Version 1.0.0 of the Source Mailchimp connector introduces a number of breaking changes to the schemas of all incremental streams. A full schema refresh and data reset are required when upgrading to this version.
+
+### Changes
 
 - The `._links` field, which contained non-user relevant Mailchimp metadata, has been removed from all streams.
-- Multiple instances of timestamp fields have had their type changed from `string` to airbyte-type `timestamp-with-timezone`. This change should improve the accuracy of types in destinations.
+- All instances of datetime fields have had their type changed from `string` to airbyte-type `timestamp-with-timezone`. This change should ensure greater precision and consistency in how datetime information is represented and processed by destinations.
+- The Mailchimp API returns many fields without data as empty strings. To accomodate the above changes, empty strings are now converted to null values:
 
-A full schema refresh and data reset are required when upgrading to this version.
+```md
+{"id": "record_id", "last_opened": ""} -> {"id": "record_id", "last_opened": null}
+```
 
 ### Updated datetime fields
 
@@ -21,7 +26,7 @@ A full schema refresh and data reset are required when upgrading to this version
   - `rss_opts.last_sent`
   - `ab_split_opts.send_time_a`
   - `ab_split_opts.send_time_b`
-  - `variate_settings.send_times` (Array of datetimes)
+  - `variate_settings.send_times` (Array of datetime fields)
 
 - Email Activity:
   - `timestamp`

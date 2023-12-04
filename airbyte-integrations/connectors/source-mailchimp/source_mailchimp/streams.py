@@ -102,7 +102,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         """
         Many Mailchimp endpoints return empty strings instead of null values.
         This causes validation errors on datetime columns, so for safety, we need to check for empty strings and set their value to None/null. 
-        This method recursivly traverses each element in a record and replaces any "" values with None, based on three conditions:
+        This method recursively traverses each element in a record and replaces any "" values with None, based on three conditions:
 
         1. If the element is a dictionary, apply the method recursively to each value in the dictionary.
         2. If the element is a list, apply the method recursively to each item in the list.
