@@ -8,6 +8,7 @@ import math
 import os
 import time
 import urllib.parse
+import uuid
 from abc import ABC
 from contextlib import closing
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
@@ -468,7 +469,7 @@ class BulkSalesforceStream(SalesforceStream):
         Return the tuple containing string with file path of downloaded binary data (Saved temporarily) and file encoding.
         """
         # set filepath for binary data from response
-        tmp_file = os.path.realpath(os.path.basename(url))
+        tmp_file = str(uuid.uuid4())
         with closing(self._send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
             tmp_file, "wb"
         ) as data_file:
