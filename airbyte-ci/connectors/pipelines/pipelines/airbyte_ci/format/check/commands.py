@@ -67,7 +67,6 @@ async def python(pipeline_context: ClickPipelineContext) -> CommandResult:
     dagger_client = await pipeline_context.get_dagger_client(pipeline_name="Check python formatting")
     container = format_python_container(dagger_client)
     check_commands = [
-        "poetry install --no-root",
         "poetry run isort --settings-file pyproject.toml --check-only .",
         "poetry run black --config pyproject.toml --check .",
     ]
@@ -77,10 +76,10 @@ async def python(pipeline_context: ClickPipelineContext) -> CommandResult:
 @check.command(cls=DaggerPipelineCommand)
 @pass_pipeline_context
 async def java(pipeline_context: ClickPipelineContext) -> CommandResult:
-    """Format java, groovy, and sql code via spotless."""
+    """Format java and groovy code via spotless in maven."""
     dagger_client = await pipeline_context.get_dagger_client(pipeline_name="Check java formatting")
     container = format_java_container(dagger_client)
-    check_commands = ["./gradlew spotlessCheck --scan"]
+    check_commands = ["mvn -f spotless-maven-pom.xml spotless:check clean"]
     return await get_check_command_result(check.commands["java"], check_commands, container)
 
 

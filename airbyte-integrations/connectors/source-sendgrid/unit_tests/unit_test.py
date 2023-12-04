@@ -68,16 +68,16 @@ def test_streams():
     assert len(streams) == 15
 
 
-@patch.multiple(SendgridStreamOffsetPagination, __abstractmethods__=set())
+@patch.multiple(SendgridStreamOffsetPagination, __abstractmethods__=set(), data_field="result")
 def test_pagination(mocker):
     stream = SendgridStreamOffsetPagination()
     state = {}
     response = requests.Response()
-    mocker.patch.object(response, "json", return_value={None: 1})
+    mocker.patch.object(response, "json", return_value={"result": range(100)})
     mocker.patch.object(response, "request", return_value=MagicMock())
     next_page_token = stream.next_page_token(response)
     request_params = stream.request_params(stream_state=state, next_page_token=next_page_token)
-    assert request_params == {"limit": 50}
+    assert request_params == {"limit": 50, "offset": 50}
 
 
 @patch.multiple(SendgridStreamIncrementalMixin, __abstractmethods__=set())

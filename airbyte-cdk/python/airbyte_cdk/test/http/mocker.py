@@ -67,20 +67,24 @@ class HttpMocker(contextlib.ContextDecorator):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):  # type: ignore  # this is a very generic wrapper that does not need to be typed
             with self:
+                assertion_error = None
+
                 kwargs["http_mocker"] = self
                 try:
                     result = f(*args, **kwargs)
-                    self._validate_all_matchers_called()
-                    return result
                 except requests_mock.NoMockAddress as no_mock_exception:
                     matchers_as_string = "\n\t".join(map(lambda matcher: str(matcher.request), self._matchers))
                     raise ValueError(
                         f"No matcher matches {no_mock_exception.args[0]}. Matchers currently configured are:\n\t{matchers_as_string}"
                     ) from no_mock_exception
-                except AssertionError:
-                    try:
-                        self._validate_all_matchers_called()
-                    except ValueError as http_mocker_exception:
-                        raise ValueError(http_mocker_exception) from None
+                except AssertionError as test_assertion:
+                    assertion_error = test_assertion
+
+                # We validate the matchers before raising the assertion error because we want to show the tester if a HTTP request wasn't
+                # mocked correctly
+                self._validate_all_matchers_called()
+                if assertion_error:
+                    raise assertion_error
+                return result
 
         return wrapper
