@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple
 import anyio
 import asyncer
 import click
-from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, QueryError, Secret
+from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, Platform, QueryError, Secret
 from more_itertools import chunked
 
 if TYPE_CHECKING:
@@ -267,28 +267,30 @@ async def execute_concurrently(steps: List[Callable], concurrency=5):
     return [task.value for task in tasks]
 
 
-async def export_containers_to_tarball(
-    context: ConnectorContext, container_variants: List[Container], tar_file_name: Optional[str] = None
+async def export_container_to_tarball(
+    context: ConnectorContext, container: Container, platform: Platform, tar_file_name: Optional[str] = None
 ) -> Tuple[Optional[File], Optional[Path]]:
     """Save the container image to the host filesystem as a tar archive.
 
-    Exports a list of container variants to a tarball file.
-    The list of container variants should be platform/os specific variants of the same container image.
+    Exports a container to a tarball file.
     The tarball file is saved to the host filesystem in the directory specified by the host_image_export_dir_path attribute of the context.
 
     Args:
         context (ConnectorContext): The current connector context.
-        container_variants (List[Container]): The list of container variants to export.
+        container (Container) : The list of container variants to export.
+        platform (Platform): The platform of the container to export.
         tar_file_name (Optional[str], optional): The name of the tar archive file. Defaults to None.
 
     Returns:
         Tuple[Optional[File], Optional[Path]]: A tuple with the file object holding the tar archive on the host and its path.
     """
-    tar_file_name = f"{slugify(context.connector.technical_name)}_{context.git_revision}.tar" if tar_file_name is None else tar_file_name
-    local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
-    export_success = await context.dagger_client.container().export(
-        str(local_path), platform_variants=container_variants, forced_compression=ImageLayerCompression.Gzip
+    tar_file_name = (
+        f"{slugify(context.connector.technical_name)}_{context.git_revision}_{platform.replace('/', '_')}.tar"
+        if tar_file_name is None
+        else tar_file_name
     )
+    local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
+    export_success = await container.export(str(local_path), forced_compression=ImageLayerCompression.Gzip)
     if export_success:
         return context.dagger_client.host().file(str(local_path)), local_path
     return None, None
