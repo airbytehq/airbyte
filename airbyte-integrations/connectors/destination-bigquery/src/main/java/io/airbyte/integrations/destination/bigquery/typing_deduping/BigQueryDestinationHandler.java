@@ -96,7 +96,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
       return;
     }
     final UUID queryId = UUID.randomUUID();
-    LOGGER.info("Executing sql {}: {}", queryId, sql);
+    LOGGER.debug("Executing sql {}: {}", queryId, sql);
 
     /*
      * If you run a query like CREATE SCHEMA ... OPTIONS(location=foo); CREATE TABLE ...;, bigquery
