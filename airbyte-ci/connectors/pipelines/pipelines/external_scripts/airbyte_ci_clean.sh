@@ -34,12 +34,12 @@ done
 # Check if airbyte-ci is stashed away in pyenv
 # If so, remove it
 # This prevents `pyenv init -` from adding it back to the path
-if which pyenv whence --path airbyte-ci >/dev/null 2>&1; then
+while pyenv whence --path airbyte-ci >/dev/null 2>&1; do
     rm "$(pyenv whence --path airbyte-ci)"
     echo "Uninstalled pipelines via pyenv"
-else
+done
     echo "All airbyte-ci references removed from pyenv versions."
-fi
+
 
 echo "Cleanup completed."
 echo ""
