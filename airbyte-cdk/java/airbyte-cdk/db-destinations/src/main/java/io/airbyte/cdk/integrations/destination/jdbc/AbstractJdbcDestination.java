@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
@@ -135,7 +136,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       // verify if user has permission to make SQL INSERT queries
       try {
         if (attemptInsert) {
-          sqlOps.insertRecords(database, List.of(getDummyRecord()), outputSchema, outputTableName);
+          sqlOps.insertRecords(database, Stream.of(getDummyRecord()), outputSchema, outputTableName);
         }
       } finally {
         sqlOps.dropTableIfExists(database, outputSchema, outputTableName);

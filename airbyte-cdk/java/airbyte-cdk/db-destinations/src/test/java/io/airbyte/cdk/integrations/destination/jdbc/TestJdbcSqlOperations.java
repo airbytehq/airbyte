@@ -7,7 +7,7 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -16,7 +16,7 @@ public class TestJdbcSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<PartialAirbyteMessage> records,
+                                    final Stream<PartialAirbyteMessage> records,
                                     final String schemaName,
                                     final String tableName)
       throws Exception {

@@ -10,7 +10,7 @@ import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,12 +37,10 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<PartialAirbyteMessage> records,
+                                    final Stream<PartialAirbyteMessage> records,
                                     final String schemaName,
                                     final String tmpTableName)
       throws SQLException {
-    LOGGER.info("actual size of batch: {}", records.size());
-
     // query syntax:
     // INSERT INTO public.users (ab_id, data, emitted_at) VALUES
     // (?, ?::jsonb, ?),

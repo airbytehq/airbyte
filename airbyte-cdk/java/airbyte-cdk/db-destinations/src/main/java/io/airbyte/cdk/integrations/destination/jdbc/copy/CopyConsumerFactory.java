@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,9 +94,9 @@ public class CopyConsumerFactory {
   private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
                                                                          final SqlOperations sqlOperations,
                                                                          final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
-    return (AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) -> {
+    return (final AirbyteStreamNameNamespacePair pair, final Stream<AirbyteRecordMessage> records) -> {
       final var fileName = pairToCopier.get(pair).prepareStagingFile();
-      for (final AirbyteRecordMessage recordMessage : records) {
+      for (final AirbyteRecordMessage recordMessage : (Iterable<AirbyteRecordMessage>) records::iterator) {
         final var id = UUID.randomUUID();
         if (sqlOperations.isValidData(recordMessage.getData())) {
           // TODO Truncate json data instead of throwing whole record away?
@@ -109,7 +110,7 @@ public class CopyConsumerFactory {
   }
 
   private static CheckAndRemoveRecordWriter removeStagingFilePrinter(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
-    return (AirbyteStreamNameNamespacePair pair, String stagingFileName) -> {
+    return (final AirbyteStreamNameNamespacePair pair, final String stagingFileName) -> {
       final String currentFileName = pairToCopier.get(pair).getCurrentFile();
       if (stagingFileName != null && currentFileName != null && !stagingFileName.equals(currentFileName)) {
         pairToCopier.get(pair).closeNonCurrentStagingFileWriters();

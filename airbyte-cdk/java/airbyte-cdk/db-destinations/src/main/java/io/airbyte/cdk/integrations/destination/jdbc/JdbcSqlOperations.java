@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
@@ -149,7 +150,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   @Override
   public final void insertRecords(final JdbcDatabase database,
-                                  final List<PartialAirbyteMessage> records,
+                                  final Stream<PartialAirbyteMessage> records,
                                   final String schemaName,
                                   final String tableName)
       throws Exception {
@@ -162,7 +163,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   protected abstract void insertRecordsInternal(JdbcDatabase database,
-                                                List<PartialAirbyteMessage> records,
+                                                Stream<PartialAirbyteMessage> records,
                                                 String schemaName,
                                                 String tableName)
       throws Exception;
