@@ -9,13 +9,14 @@ This connector implements the [SuiteAnalytics Connect Service](https://www.netsu
 - Oracle NetSuite Admin [account](https://system.netsuite.com/pages/customerlogin.jsp?country=US)
 - Netsuite SuiteAnalytics Connect (This is an additional service on top of the standard Netsuite license)
 
-## Airbyte OSS and Airbyte Cloud
+### Required Input Fields for Airbyte OSS and Airbyte Cloud
 
-- Realm (Account ID)
+- Account ID
 - Consumer Key
 - Consumer Secret
 - Token ID
 - Token Secret
+- Role ID
 
 ## Setup guide
 
