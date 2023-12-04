@@ -116,15 +116,14 @@ test_stream_facade_single_stream = (
     .set_expected_logs(
         {
             "read": [
-                {"level": "INFO", "message": "Starting syncing StreamFacadeSource"},
+                {"level": "INFO", "message": "Starting syncing"},
                 {"level": "INFO", "message": "Marking stream stream1 as STARTED"},
                 {"level": "INFO", "message": "Syncing stream: stream1"},
                 {"level": "INFO", "message": "Marking stream stream1 as RUNNING"},
                 {"level": "INFO", "message": "Read 2 records from stream1 stream"},
                 {"level": "INFO", "message": "Marking stream stream1 as STOPPED"},
                 {"level": "INFO", "message": "Finished syncing stream1"},
-                {"level": "INFO", "message": "StreamFacadeSource runtimes"},
-                {"level": "INFO", "message": "Finished syncing StreamFacadeSource"},
+                {"level": "INFO", "message": "Finished syncing"},
             ]
         }
     )
