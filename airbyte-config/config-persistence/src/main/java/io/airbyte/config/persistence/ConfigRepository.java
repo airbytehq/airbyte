@@ -1242,4 +1242,18 @@ public class ConfigRepository {
     return DbConverter.buildStandardDestinationDefinition(result.get(0));
   }
 
+  public List<SourceConnection> getSourceConnectionByWorkspaceId(final UUID workspaceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId).and(ACTOR.ACTOR_TYPE.eq(ActorType.source)).and(ACTOR.TOMBSTONE.eq(Boolean.FALSE))).fetch());
+    return result.stream().map(data -> DbConverter.buildSourceConnection(data)).collect(Collectors.toList());
+  }
+
+  public List<DestinationConnection> getDestinationConnectionByWorkspaceId(final UUID workspaceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(asterisk())
+        .from(ACTOR)
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId).and(ACTOR.ACTOR_TYPE.eq(ActorType.destination)).and(ACTOR.TOMBSTONE.eq(Boolean.FALSE))).fetch());
+    return result.stream().map(data -> DbConverter.buildDestinationConnection(data)).collect(Collectors.toList());
+  }
+
 }
