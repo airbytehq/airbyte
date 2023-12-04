@@ -5,6 +5,7 @@
 from pathlib import Path
 from unittest import mock
 
+import dagger
 import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines import consts
@@ -190,3 +191,47 @@ def test_sh_dash_c():
     assert utils.sh_dash_c(["foo", "bar"]) == ["sh", "-c", "set -o xtrace && foo && bar"]
     assert utils.sh_dash_c(["foo"]) == ["sh", "-c", "set -o xtrace && foo"]
     assert utils.sh_dash_c([]) == ["sh", "-c", "set -o xtrace"]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("tar_file_name", [None, "custom_tar_name.tar"])
+async def test_export_container_to_tarball(mocker, dagger_client, tmp_path, tar_file_name):
+    context = mocker.Mock(
+        dagger_client=dagger_client,
+        connector=mocker.Mock(technical_name="my_connector"),
+        host_image_export_dir_path=tmp_path,
+        git_revision="my_git_revision",
+    )
+    container = dagger_client.container().from_("bash:latest")
+    platform = consts.LOCAL_BUILD_PLATFORM
+
+    expected_tar_file_path = (
+        tmp_path / f"my_connector_my_git_revision_{platform.replace('/', '_')}.tar" if tar_file_name is None else tmp_path / tar_file_name
+    )
+    exported_tar_file, exported_tar_file_path = await utils.export_container_to_tarball(
+        context, container, platform, tar_file_name=tar_file_name
+    )
+    assert exported_tar_file_path == expected_tar_file_path
+    assert await exported_tar_file.size() == expected_tar_file_path.stat().st_size
+
+
+@pytest.mark.anyio
+async def test_export_container_to_tarball_failure(mocker, tmp_path):
+
+    context = mocker.Mock(
+        connector=mocker.Mock(technical_name="my_connector"),
+        host_image_export_dir_path=tmp_path,
+        git_revision="my_git_revision",
+    )
+
+    mock_export = mocker.AsyncMock(return_value=False)
+    container = mocker.AsyncMock(export=mock_export)
+    platform = consts.LOCAL_BUILD_PLATFORM
+    exported_tar_file, exported_tar_file_path = await utils.export_container_to_tarball(context, container, platform)
+    assert exported_tar_file is None
+    assert exported_tar_file_path is None
+
+    mock_export.assert_called_once_with(
+        str(tmp_path / f"my_connector_my_git_revision_{platform.replace('/', '_')}.tar"),
+        forced_compression=dagger.ImageLayerCompression.Gzip,
+    )
