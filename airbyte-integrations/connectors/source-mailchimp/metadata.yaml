@@ -25,8 +25,8 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: 
-          Version 1.0.0 introduces schema changes to all incremental streams. 
+        message:
+          Version 1.0.0 introduces schema changes to all incremental streams.
           A full schema refresh and data reset are required to upgrade to this version.
           For more details, see our <a href='https://docs.airbyte.io/integrations/sources/mailchimp-migrations'>migration guide</a>.
         upgradeDeadline: "2023-12-21"

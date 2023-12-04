@@ -97,7 +97,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     @property
     def sort_field(self):
         return self.cursor_field
-    
+
     def filter_empty_fields(self, element: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Many Mailchimp endpoints return empty strings instead of null values.
@@ -141,7 +141,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         default_params = {"sort_field": self.sort_field, "sort_dir": "ASC", **stream_slice}
         params.update(default_params)
         return params
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response = super().parse_response(response, **kwargs)
         for record in response:
