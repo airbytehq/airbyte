@@ -504,6 +504,21 @@ class Lists(SemiIncrementalMarketoStream):
     API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
     """
 
+class Opportunities(MarketoStream):
+    """
+    Return list of all oppurtunities.
+    API Docs: https://developers.marketo.com/rest-api/lead-database/opportunities/
+    """
+
+    def path(self, **kwargs) -> str:
+        return f"/rest/v1/opportunities/describe.json"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> List[str]:
+        data = response.json().get("result", [])
+
+        for record in data:
+            yield record
+
 
 class Segmentations(MarketoStream):
     """
