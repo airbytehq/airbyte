@@ -5,8 +5,11 @@ const yaml = require("js-yaml");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const lightCodeTheme = require("prism-react-renderer/themes/github");
-const darkCodeTheme = require("prism-react-renderer/themes/dracula");
+const { themes } = require('prism-react-renderer');
+const lightCodeTheme = themes.github;
+const darkCodeTheme = themes.dracula;
+
+
 
 const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
 

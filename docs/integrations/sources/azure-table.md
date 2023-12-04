@@ -12,8 +12,8 @@ Azure Table storage is a service that stores non-relational structured data (als
 - data - This property contain all values
 - additionalProperties - This property denotes that all the values are in `data` property.
 
-`
-    {
+```
+{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
@@ -25,7 +25,7 @@ Azure Table storage is a service that stores non-relational structured data (als
         }
     }
 }
-`
+```
 
 ### Data type mapping
 

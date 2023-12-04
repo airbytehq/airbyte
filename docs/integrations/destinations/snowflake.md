@@ -19,11 +19,15 @@ To determine whether a network policy is set on your account or for a specific u
 
 **Account**
 
-        SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
+```
+SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
+```
 
 **User**
 
-        SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
+```
+SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
+```
 
 To read more please check official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
 
@@ -170,7 +174,7 @@ Navigate to the Airbyte UI to set up Snowflake as a destination. You can authent
 
       `alter user <user_name> set rsa_public_key=<public_key_value>;`
 
-    and replace <user_name> with your user name and <public_key_value> with your public key.
+    and replace `<user_name>` with your user name and `<public_key_value>` with your public key.
 
 ## Output schema
 

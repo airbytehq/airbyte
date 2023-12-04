@@ -20,7 +20,7 @@ This page contains the setup guide and reference information for the Yandex Metr
    - What data do you need?: **Yandex.Metrica**. Read permission will suffice.
 5. Choose your app from [the list](https://oauth.yandex.com/).
    - To create your API key you will need to grab your **ClientID**,
-   - Now to get the API key craft a GET request to an endpoint *https://oauth.yandex.com/authorizE?response_type=token&client_id=\<Your Client ID\>*
+   - Now to get the API key craft a GET request to an endpoint *https://oauth.yandex.com/authorizE?response_type=token&client_id=YOUR_CLIENT_ID*
    - You will receive a response with your **API key**. Save it.
 
 ### Step 2: Set up the Yandex Metrica connector in Airbyte
