@@ -25,7 +25,6 @@ export const HeaderDecoration = ({
   originalTitle,
   originalId
 }) => {
-  // note - you can't have any leading whitespace here
   return <><div>
     <dl className={styles.connectorMetadata}>
       <div>
@@ -36,9 +35,10 @@ export const HeaderDecoration = ({
           }>{
               isCloud ? CHECK_ICON : CROSS_ICON
             } Airbyte Cloud</span>
-          <span class={isOss ? styles.available : styles.unavailable}>{
+          <span className={isOss ? styles.available : styles.unavailable}>{
             isOss ? CHECK_ICON : CROSS_ICON
           } Airbyte OSS</span>
+          <a href="#usage-with-airbyte-lib" className={styles.available}>{CHECK_ICON} airbyte_lib</a>
         </dd>
       </div>
       <div>

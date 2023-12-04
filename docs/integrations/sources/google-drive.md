@@ -243,6 +243,19 @@ One record will be emitted for each document. Keep in mind that large files can 
 
 Before parsing each document, the connector exports Google Document files to Docx format internally. Google Sheets, Google Slides, and drawings are internally exported and parsed by the connector as PDFs.
 
+<HideInUI>
+
+## Usage with airbyte-lib
+
+For document file type streams, make sure the `tesseract` and `pdftotext` libraries are installed. On MacOS, you can install them with `brew install poppler tesseract`.
+
+<AirbyteLibSourceExample connector="source-google-drive" />
+
+<SpecSchema connector="source-google-drive" />
+
+</HideInUI>
+
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |

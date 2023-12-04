@@ -102,6 +102,16 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 <!-- /env:oss -->
 
+<HideInUI>
+
+## Usage with airbyte-lib
+
+<AirbyteLibDestinationExample connector="destination-duckdb" />
+
+<SpecSchema connector="destination-duckdb" />
+
+</HideInUI>
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                |

@@ -1,17 +1,5 @@
-const fetch = require("node-fetch");
 const visit = require("unist-util-visit").visit;
-
-const REGISTRY_URL =
-  "https://connectors.airbyte.com/files/generated_reports/connector_registry_report.json";
-
-const fetchCatalog = async () => {
-  console.log("Fetching connector registry...");
-  const json = await fetch(REGISTRY_URL).then((resp) => resp.json());
-  console.log(`fetched ${json.length} connectors form registry`);
-  return json;
-};
-
-const catalog = fetchCatalog();
+const catalog = require("../connector_registry");
 
 const toAttributes = (props) => Object.entries(props).map(([key, value]) => ({
       type: "mdxJsxAttribute",
@@ -47,7 +35,7 @@ const plugin = () => {
         node.children = [];
         node.type = "mdxJsxFlowElement";
         node.name = "HeaderDecoration";
-        node.attributes =  toAttributes({
+        node.attributes = toAttributes({
           isOss: registryEntry.is_oss,
           isCloud: registryEntry.is_cloud,
           supportLevel: registryEntry.supportLevel_oss,

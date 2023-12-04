@@ -12,6 +12,7 @@ const darkCodeTheme = themes.dracula;
 
 
 const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
+const specDecoration = require("./src/remark/specDecoration");
 
 const redirects = yaml.load(
   fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
@@ -83,7 +84,7 @@ const config = {
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
           exclude: ["**/*.inapp.md"],
-          remarkPlugins: [docsHeaderDecoration],
+          remarkPlugins: [docsHeaderDecoration, specDecoration],
         },
         blog: false,
         theme: {
@@ -93,6 +94,7 @@ const config = {
     ],
   ],
 
+  themes: ["docusaurus-json-schema-plugin"],
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
