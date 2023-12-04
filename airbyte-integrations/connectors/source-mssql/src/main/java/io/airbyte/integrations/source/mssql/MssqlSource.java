@@ -101,6 +101,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   public MssqlSource() {
     // noise
+    // noise
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
   }
 
