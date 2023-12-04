@@ -44,7 +44,7 @@ class QdrantIndexingConfigModel(BaseModel):
         title="Prefer gRPC", description="Whether to prefer gRPC over HTTP. Set to true for Qdrant cloud clusters", default=True
     )
     collection: str = Field(..., title="Collection Name", description="The collection to load data into", order=2)
-    distance_metric: Union[Literal["dot"], Literal["cos"], Literal["euc"]] = Field(
+    distance_metric: str = Field(
         default="cos",
         title="Distance Metric",
         enum=["dot", "cos", "euc"],

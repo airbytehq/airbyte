@@ -5,7 +5,7 @@
 package io.airbyte.cdk.integrations.destination.jdbc;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.sql.SQLException;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
@@ -16,7 +16,7 @@ public class TestJdbcSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
+                                    final List<PartialAirbyteMessage> records,
                                     final String schemaName,
                                     final String tableName)
       throws Exception {
@@ -29,11 +29,11 @@ public class TestJdbcSqlOperations extends JdbcSqlOperations {
     final var schemaName = "foo";
     try {
       Mockito.doThrow(new SQLException("TEST")).when(db).execute(Mockito.anyString());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       // This would not be expected, but the `execute` method above will flag as an unhandled exception
       assert false;
     }
-    SQLException exception = Assertions.assertThrows(SQLException.class, () -> createSchemaIfNotExists(db, schemaName));
+    final SQLException exception = Assertions.assertThrows(SQLException.class, () -> createSchemaIfNotExists(db, schemaName));
     Assertions.assertEquals(exception.getMessage(), "TEST");
   }
 
