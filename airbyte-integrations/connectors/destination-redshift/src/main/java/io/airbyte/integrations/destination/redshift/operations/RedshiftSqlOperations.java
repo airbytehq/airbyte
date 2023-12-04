@@ -21,7 +21,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import org.jooq.BatchBindStep;
 import org.jooq.DSLContext;
@@ -107,14 +106,14 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
           LOGGER.info("Prepared batch size: {}, {}, {}", batch.size(), schemaName, tableName);
           final DSLContext create = using(connection, SQLDialect.POSTGRES);
           final BatchBindStep batchInsertStep = create.batch(create
-                                                                 .insertInto(table(name(schemaName, tableName)),
-                                                                             field(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36)),
-                                                                             field(COLUMN_NAME_DATA,
-                                                                                   new DefaultDataType<>(null, String.class, "super")),
-                                                                             field(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE),
-                                                                             field(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE))
-                                                                 .values(null, function("JSON_PARSE", String.class, val((String) null)), null,
-                                                                         null)); // Jooq needs dummy values for batch binds
+              .insertInto(table(name(schemaName, tableName)),
+                  field(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36)),
+                  field(COLUMN_NAME_DATA,
+                      new DefaultDataType<>(null, String.class, "super")),
+                  field(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE),
+                  field(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE))
+              .values(null, function("JSON_PARSE", String.class, val((String) null)), null,
+                  null)); // Jooq needs dummy values for batch binds
           for (PartialAirbyteMessage record : batch) {
             batchInsertStep.bind(val(UUID.randomUUID().toString()), val(record.getSerialized()), val(Timestamp.from(
                 Instant.ofEpochMilli(record.getRecord().getEmittedAt()))), null);
@@ -129,10 +128,11 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
     }
 
     // TODO: Late binding execute to avoid eager consuming stream through iterator by partition
-    /* final AtomicInteger batchSize = new AtomicInteger(0);
-    records.forEach(batch -> {
-
-    }); */
+    /*
+     * final AtomicInteger batchSize = new AtomicInteger(0); records.forEach(batch -> {
+     *
+     * });
+     */
   }
 
 }

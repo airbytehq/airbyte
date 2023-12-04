@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.destination.buffered_stream_consumer;
 
 import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import java.util.List;
 import java.util.stream.Stream;
 
 public interface RecordWriter<T> extends CheckedBiConsumer<AirbyteStreamNameNamespacePair, Stream<T>, Exception> {
