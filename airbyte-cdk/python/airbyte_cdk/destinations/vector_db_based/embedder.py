@@ -4,7 +4,7 @@
 
 import os
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union
+from typing import List, Optional, Union, cast
 
 from airbyte_cdk.destinations.vector_db_based.config import (
     AzureOpenAIEmbeddingConfigModel,
@@ -72,7 +72,7 @@ class BaseOpenAIEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
         """
         Embed the text of each chunk and return the resulting embedding vectors.
 
@@ -83,7 +83,7 @@ class BaseOpenAIEmbedder(Embedder):
         # Each chunk can hold at most self.chunk_size tokens, so tokens-per-minute by maximum tokens per chunk is the number of chunks that can be embedded at once without exhausting the limit in a single request
         embedding_batch_size = OPEN_AI_TOKEN_LIMIT // self.chunk_size
         batches = create_chunks(chunks, batch_size=embedding_batch_size)
-        embeddings = []
+        embeddings: List[Optional[List[float]]] = []
         for batch in batches:
             embeddings.extend(self.embeddings.embed_documents([chunk.page_content for chunk in batch]))
         return embeddings
@@ -121,8 +121,8 @@ class CohereEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
-        return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
+    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
+        return cast(List[Optional[List[float]]], self.embeddings.embed_documents([chunk.page_content or "" for chunk in chunks]))
 
     @property
     def embedding_dimensions(self) -> int:
@@ -142,8 +142,8 @@ class FakeEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
-        return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
+    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
+        return cast(List[Optional[List[float]]], self.embeddings.embed_documents([chunk.page_content or "" for chunk in chunks]))
 
     @property
     def embedding_dimensions(self) -> int:
@@ -173,8 +173,8 @@ class OpenAICompatibleEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
-        return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
+    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
+        return cast(List[Optional[List[float]]], self.embeddings.embed_documents([chunk.page_content or "" for chunk in chunks]))
 
     @property
     def embedding_dimensions(self) -> int:
@@ -190,12 +190,12 @@ class FromFieldEmbedder(Embedder):
     def check(self) -> Optional[str]:
         return None
 
-    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
         """
         From each chunk, pull the embedding from the field specified in the config.
         Check that the field exists, is a list of numbers and is the correct size. If not, raise an AirbyteTracedException explaining the problem.
         """
-        embeddings = []
+        embeddings: List[Optional[List[float]]] = []
         for chunk in chunks:
             data = chunk.record.data
             if self.config.field_name not in data:
@@ -246,8 +246,9 @@ def create_from_config(
         OpenAICompatibleEmbeddingConfigModel,
     ],
     processing_config: ProcessingConfigModel,
-):
+) -> Embedder:
+
     if embedding_config.mode == "azure_openai" or embedding_config.mode == "openai":
-        return embedder_map[embedding_config.mode](embedding_config, processing_config.chunk_size)
+        return cast(Embedder, embedder_map[embedding_config.mode](embedding_config, processing_config.chunk_size))
     else:
-        return embedder_map[embedding_config.mode](embedding_config)
+        return cast(Embedder, embedder_map[embedding_config.mode](embedding_config))
