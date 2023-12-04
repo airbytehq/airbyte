@@ -6,12 +6,13 @@ import logging
 import os
 import tracemalloc
 from functools import partial
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import ANY, Mock, patch, MagicMock
 
 import pendulum
 import pytest
+import requests
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from source_marketo.source import Activities, Campaigns, Leads, MarketoStream, Programs, SourceMarketo
+from source_marketo.source import Activities, Campaigns, Leads, MarketoStream, Programs, SourceMarketo, Segmentations
 
 
 def test_create_export_job(mocker, send_email_stream, caplog):
@@ -284,10 +285,40 @@ def test_check_connection(config, requests_mock, status_code, response, is_conne
         ("2020-08-01", "%Y-%m-%dT%H:%M:%SZ%z", "2020-08-01"),
     ),
 )
-def test_normalize_datetime(config, input, format, expected_result):
+def test_programs_normalize_datetime(config, input, format, expected_result):
     stream = Programs(config)
     assert stream.normalize_datetime(input, format) == expected_result
 
+def test_programs_next_page_token(config):
+    mock_json = MagicMock()
+    mock_json.return_value = {"result": [{"test": 'testValue'}]}
+    mocked_response = MagicMock()
+    mocked_response.json = mock_json
+    stream = Programs(config)
+    result = stream.next_page_token(mocked_response)
+    assert result == {"offset": 201}
+
+@pytest.mark.parametrize("input, stream_state, expected_result",[(
+      {"result": [{"id": "1", "createdAt": "2020-07-01T00:00:00Z+0000", "updatedAt": "2020-07-01T00:00:00Z+0000"}]},
+      {"updatedAt": "2020-06-01T00:00:00Z"},
+      [{"id": "1", "createdAt": "2020-07-01T00:00:00Z", "updatedAt": "2020-07-01T00:00:00Z"}],
+    )],
+)
+def test_programs_parse_response(mocker, config, input, stream_state, expected_result):
+    response = requests.Response()
+    mocker.patch.object(response, "json", return_value=input)
+    stream = Programs(config)
+    result = stream.parse_response(response, stream_state)
+    assert list(result) == expected_result
+
+def test_segmentations_next_page_token(config):
+    mock_json = MagicMock()
+    mock_json.return_value = {"result": [{"test": 'testValue'}]}
+    mocked_response = MagicMock()
+    mocked_response.json = mock_json
+    stream = Segmentations(config)
+    result = stream.next_page_token(mocked_response)
+    assert result == {"offset": 201}
 
 today = pendulum.now()
 yesterday = pendulum.now().subtract(days=1).strftime("%Y-%m-%dT%H:%M:%SZ")
