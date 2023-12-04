@@ -40,7 +40,8 @@ class ConcurrentSource:
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     ) -> "ConcurrentSource":
         threadpool = ThreadPoolManager(
-            concurrent.futures.ThreadPoolExecutor(max_workers=num_workers, thread_name_prefix="workerpool"), logger, num_workers
+            concurrent.futures.ThreadPoolExecutor(max_workers=num_workers, thread_name_prefix="workerpool"),
+            logger,
         )
         return ConcurrentSource(
             threadpool, logger, slice_logger, message_repository, initial_number_of_partitions_to_generate, timeout_seconds

@@ -61,8 +61,8 @@ class GreenHouseSlicer(Cursor):
         """
         Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
         """
-        first_cursor_value = first.get(self.cursor_field)
-        second_cursor_value = second.get(self.cursor_field)
+        first_cursor_value = first.get(self.cursor_field, "")
+        second_cursor_value = second.get(self.cursor_field, "")
         if first_cursor_value and second_cursor_value:
             return first_cursor_value >= second_cursor_value
         elif first_cursor_value:
