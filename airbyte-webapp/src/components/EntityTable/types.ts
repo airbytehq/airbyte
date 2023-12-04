@@ -24,15 +24,15 @@ interface SourceTableDataItem {
 }
 interface ITableDataItem {
   connectionId: string;
-  name: string;
-  entityName: string;
-  connectorName: string;
-  enabled: boolean;
+  name?: string;
+  entityName?: string;
+  connectorName?: string;
+  enabled?: boolean;
   isSyncing?: boolean;
   status?: string;
   lastSync?: number | null;
   schedule?: ConnectionScheduleDataBasicSchedule;
-  lastSyncStatus: string | null;
+  lastSyncStatus?: string | null;
   connectorIcon?: string;
   entityIcon?: string;
   latestSyncJobStatus?: string;

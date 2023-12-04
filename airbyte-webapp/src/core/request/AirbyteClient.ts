@@ -1406,7 +1406,7 @@ export interface SourceRead {
 }
 export interface SourceReadItem {
   SourceRead: SourceRead;
-  ConnectionReadList: any;
+  WebBackendConnectionReadList: any;
   total: number;
   pageSize: number;
 }
