@@ -2,13 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional, Tuple, Union
-
-from dagger import Container, Directory, ExecError, File, Host, Platform, QueryError
+from dagger import Container, Directory, File, Platform, QueryError
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.gradle import GradleTask
-from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.containers import java
 from pipelines.models.steps import StepResult, StepStatus
 
@@ -56,7 +53,7 @@ async def run_connector_build(context: ConnectorContext) -> StepResult:
         # Special case: use a local dist tar to speed up local development.
         dist_dir = await context.dagger_client.host().directory(dist_tar_directory_path(context), include=["*.tar"])
         # Speed things up by only building for the local platform.
-        return await BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run(dist_dir)
+        return await BuildConnectorImages(context).run(dist_dir)
 
     # Default case: distribution tar is built by the dagger pipeline.
     build_connector_tar_result = await BuildConnectorDistributionTar(context).run()
