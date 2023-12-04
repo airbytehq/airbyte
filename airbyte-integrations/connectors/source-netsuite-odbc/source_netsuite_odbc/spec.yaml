@@ -19,25 +19,25 @@ connectionSpecification:
     consumer_key:
       type: string
       title: Consumer Key
-      description: Consumer key associated with your integration. This will typically be a 64 character string of alphanumerical characters.
+      description: Consumer key associated with your netsuite integration record. This will typically be a 64 character string of alphanumerical characters.
       order: 1
       airbyte_secret: true
     consumer_secret:
       type: string
       title: Consumer Secret
-      description: Consumer secret associated with your integration. This will typically be a 64 character string of alphanumerical characters.
+      description: Consumer secret associated with your netsuite integration record. This will typically be a 64 character string of alphanumerical characters.
       order: 2
       airbyte_secret: true
     token_key:
       type: string
       title: Token Key (Token Id)
-      description: Access token key. This will typically be a 64 character string of alphanumerical characters.
+      description: Access token key created as part of token based auth. This will typically be a 64 character string of alphanumerical characters.
       order: 3
       airbyte_secret: true
     token_secret:
       type: string
       title: Token Secret
-      description: Access token secret. This will typically be a 64 character string of alphanumerical characters.
+      description: Access token secret created as part of token based auth. This will typically be a 64 character string of alphanumerical characters.
       order: 4
       airbyte_secret: true
     service_host:
