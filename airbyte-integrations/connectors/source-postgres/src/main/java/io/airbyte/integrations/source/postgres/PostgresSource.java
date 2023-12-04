@@ -145,7 +145,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   private Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
   private int stateEmissionFrequency;
-  private XminStatus xminStatus;
+  private XminStatus xminStatus; 
 
   public static Source sshWrappedSource(PostgresSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
