@@ -43,6 +43,7 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --concurrency=1 --execute-timeout=3600 --metadata-changes-only publish --main-release"
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Publish connectors [manual]
         id: publish-connectors
@@ -62,6 +63,7 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
