@@ -17,10 +17,12 @@
       "additionalProperties": true
     },
     "PurchaseDate": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "LastUpdateDate": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "OrderStatus": {
       "type": ["null", "string"]
@@ -91,10 +93,12 @@
       "type": ["null", "string"]
     },
     "EarliestShipDate": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "LatestShipDate": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "IsBusinessOrder": {
       "type": ["null", "boolean"]
