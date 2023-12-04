@@ -134,7 +134,7 @@ const MainView: React.FC = (props) => {
   }, [pathname, hasSidebarRoutes, location.state]);
 
   const onBillingPage = () => {
-    push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
+    push(`/${RoutePaths.Payment}`);
   };
 
   const onFailedPaymentPage = () => {
