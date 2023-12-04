@@ -74,6 +74,7 @@ class DocumentProcessor:
                 chunk_overlap=chunk_overlap,
                 separators=[json.loads(s) for s in splitter_config.separators],
                 keep_separator=splitter_config.keep_separator,
+                disallowed_special=(),
             )
         if splitter_config.mode == "markdown":
             return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
@@ -82,12 +83,14 @@ class DocumentProcessor:
                 separators=headers_to_split_on[: splitter_config.split_level],
                 is_separator_regex=True,
                 keep_separator=True,
+                disallowed_special=(),
             )
         if splitter_config.mode == "code":
             return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
                 separators=RecursiveCharacterTextSplitter.get_separators_for_language(Language(splitter_config.language)),
+                disallowed_special=(),
             )
 
     def __init__(self, config: ProcessingConfigModel, catalog: ConfiguredAirbyteCatalog):

@@ -276,6 +276,18 @@ def test_process_multiple_chunks_with_relevant_fields():
             ],
         ),
         (
+            "Special tokens",
+            "Special tokens like <|endoftext|> are treated like regular text",
+            15,
+            0,
+            None,
+            [
+                "text: Special tokens like",
+                "<|endoftext|> are treated like regular",
+                "text",
+            ]
+        ),
+        (
             "Custom separator",
             "Custom \nseparatorxxxDoes not split on \n\nnewlines",
             10,

@@ -96,13 +96,13 @@ class BaseOpenAIEmbedder(Embedder):
 
 class OpenAIEmbedder(BaseOpenAIEmbedder):
     def __init__(self, config: OpenAIEmbeddingConfigModel, chunk_size: int):
-        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, max_retries=15), chunk_size)  # type: ignore
+        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, max_retries=15, disallowed_special=()), chunk_size)  # type: ignore
 
 
 class AzureOpenAIEmbedder(BaseOpenAIEmbedder):
     def __init__(self, config: AzureOpenAIEmbeddingConfigModel, chunk_size: int):
         # Azure OpenAI API has — as of 20230927 — a limit of 16 documents per request
-        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=16, max_retries=15, openai_api_type="azure", openai_api_version="2023-05-15", openai_api_base=config.api_base, deployment=config.deployment), chunk_size)  # type: ignore
+        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=16, max_retries=15, openai_api_type="azure", openai_api_version="2023-05-15", openai_api_base=config.api_base, deployment=config.deployment, disallowed_special=()), chunk_size)  # type: ignore
 
 
 COHERE_VECTOR_SIZE = 1024
@@ -160,7 +160,7 @@ class OpenAICompatibleEmbedder(Embedder):
         self.config = config
         # Client is set internally
         # Always set an API key even if there is none defined in the config because the validator will fail otherwise. Embedding APIs that don't require an API key don't fail if one is provided, so this is not breaking usage.
-        self.embeddings = LocalAIEmbeddings(model=config.model_name, openai_api_key=config.api_key or "dummy-api-key", openai_api_base=config.base_url, max_retries=15)  # type: ignore
+        self.embeddings = LocalAIEmbeddings(model=config.model_name, openai_api_key=config.api_key or "dummy-api-key", openai_api_base=config.base_url, max_retries=15, disallowed_special=())  # type: ignore
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
