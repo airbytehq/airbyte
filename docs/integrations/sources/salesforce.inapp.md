@@ -78,11 +78,11 @@ Airbyte fetches and handles all the possible and available streams dynamically b
 
 ### Incremental Deletes
 
-The Salesforce connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with the `isDeleted=true` value in the respective field.
+The Salesforce connector supports retrieving deleted records from the Salesforce recycle bin. For the streams which support it, a deleted record will be marked with `isDeleted=true`.  To find out more about how Salesforce manages records in the recycle bin, please visit their [docs](https://help.salesforce.com/s/articleView?id=sf.home_delete.htm&type=5).
 
 ### Syncing Formula Fields
 
 The Salesforce connector syncs formula field outputs from Salesforce. If the formula of a field changes in Salesforce and no other field on the record is updated, you will need to reset the stream to pull in all the updated values of the field. 
 
 For detailed information on supported sync modes, supported streams and performance considerations, refer to the 
-[full documentation for Salesforce](https://docs.airbyte.com/integrations/sources/google-analytics-v4).
+[full documentation for Salesforce](https://docs.airbyte.com/integrations/sources/salesforce).

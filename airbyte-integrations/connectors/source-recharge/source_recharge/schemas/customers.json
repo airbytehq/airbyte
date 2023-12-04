@@ -91,6 +91,9 @@
     "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "apply_credit_to_next_recurring_charge": {
+      "type": ["null", "boolean"]
     }
   }
 }

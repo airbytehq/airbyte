@@ -5,10 +5,10 @@
 package io.airbyte.integrations.source.dynamodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.source.relationaldb.models.DbState;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.configoss.StateWrapper;
 import io.airbyte.configoss.helpers.StateMessageHelper;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;

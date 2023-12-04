@@ -9,8 +9,16 @@
     "type": {
       "type": ["string", "null"],
       "enum": [
-        "checkout_new", "checkout_existing", "update_payment_method", "manage_payment_sources", "collect_now",
-        "extend_subscription", "checkout_gift", "claim_gift", "checkout_one_time", "pre_cancel"
+        "checkout_new",
+        "checkout_existing",
+        "update_payment_method",
+        "manage_payment_sources",
+        "collect_now",
+        "extend_subscription",
+        "checkout_gift",
+        "claim_gift",
+        "checkout_one_time",
+        "pre_cancel"
       ]
     },
     "url": {

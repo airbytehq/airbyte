@@ -4,9 +4,9 @@
 
 import datetime
 import decimal
-import uuid
 
 from unit_tests.sources.file_based.in_memory_files_source import TemporaryAvroFilesStreamReader
+from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 _single_avro_file = {
@@ -95,7 +95,7 @@ _avro_all_types_file = {
                 {"name": "col_fixed", "type": {"type": "fixed", "name": "MyFixed", "size": 4}},
                 # Logical Types
                 {"name": "col_decimal", "type": {"type": "bytes", "logicalType": "decimal", "precision": 10, "scale": 5}},
-                {"name": "col_uuid", "type": {"type": "bytes", "logicalType": "uuid"}},
+                {"name": "col_uuid", "type": {"type": "string", "logicalType": "uuid"}},
                 {"name": "col_date", "type": {"type": "int", "logicalType": "date"}},
                 {"name": "col_time_millis", "type": {"type": "int", "logicalType": "time-millis"}},
                 {"name": "col_time_micros", "type": {"type": "long", "logicalType": "time-micros"}},
@@ -124,7 +124,7 @@ _avro_all_types_file = {
                 {"lead_singer": "Matty Healy", "lead_guitar": "Adam Hann", "bass_guitar": "Ross MacDonald", "drummer": "George Daniel"},
                 b"\x12\x34\x56\x78",
                 decimal.Decimal("1234.56789"),
-                uuid.UUID('123e4567-e89b-12d3-a456-426655440000').bytes,
+                "123e4567-e89b-12d3-a456-426655440000",
                 datetime.date(2022, 5, 29),
                 datetime.time(6, 0, 0, 456000),
                 datetime.time(12, 0, 0, 456789),
@@ -203,15 +203,18 @@ single_avro_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "avro",
+                    "format": {"filetype": "avro"},
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_single_avro_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_single_avro_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_check_status("SUCCEEDED")
     .set_expected_records(
         [
@@ -266,20 +269,23 @@ multiple_avro_combine_schema_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "avro",
+                    "format": {"filetype": "avro"},
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_records(
         [
             {
                 "data": {
-                    "col_double": "20.02",
+                    "col_double": 20.02,
                     "col_string": "Robbers",
                     "col_album": {"album": "The 1975"},
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
@@ -289,7 +295,7 @@ multiple_avro_combine_schema_scenario = (
             },
             {
                 "data": {
-                    "col_double": "20.23",
+                    "col_double": 20.23,
                     "col_string": "Somebody Else",
                     "col_album": {"album": "I Like It When You Sleep, for You Are So Beautiful yet So Unaware of It"},
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
@@ -299,7 +305,7 @@ multiple_avro_combine_schema_scenario = (
             },
             {
                 "data": {
-                    "col_double": "1975.1975",
+                    "col_double": 1975.1975,
                     "col_string": "It's Not Living (If It's Not with You)",
                     "col_song": {"title": "Love It If We Made It"},
                     "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z",
@@ -309,7 +315,7 @@ multiple_avro_combine_schema_scenario = (
             },
             {
                 "data": {
-                    "col_double": "5791.5791",
+                    "col_double": 5791.5791,
                     "col_string": "The 1975",
                     "col_song": {"title": "About You"},
                     "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z",
@@ -327,7 +333,7 @@ multiple_avro_combine_schema_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col_double": {"type": ["null", "string"]},
+                            "col_double": {"type": ["null", "number"]},
                             "col_string": {"type": ["null", "string"]},
                             "col_album": {
                                 "properties": {
@@ -362,15 +368,18 @@ avro_all_types_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "avro",
+                    "format": {"filetype": "avro"},
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_avro_all_types_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_avro_all_types_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_records(
         [
             {
@@ -379,7 +388,7 @@ avro_all_types_scenario = (
                     "col_int": 27,
                     "col_long": 1992,
                     "col_float": 999.09723456,
-                    "col_double": "9123456.12394",
+                    "col_double": 9123456.12394,
                     "col_bytes": "\x00\x01\x02\x03",
                     "col_string": "Love It If We Made It",
                     "col_record": {"artist": "The 1975", "song": "About You", "year": 2022},
@@ -398,15 +407,13 @@ avro_all_types_scenario = (
                         "drummer": "George Daniel",
                     },
                     "col_fixed": "\x12\x34\x56\x78",
-                    "col_decimal": 1234.56789,
+                    "col_decimal": "1234.56789",
                     "col_uuid": "123e4567-e89b-12d3-a456-426655440000",
                     "col_date": "2022-05-29",
                     "col_time_millis": "06:00:00.456000",
                     "col_time_micros": "12:00:00.456789",
                     "col_timestamp_millis": "2022-05-29T00:00:00.456000+00:00",
                     "col_timestamp_micros": "2022-05-30T00:00:00.456789+00:00",
-                    "col_local_timestamp_millis": "2022-05-29T00:00:00.456000",
-                    "col_local_timestamp_micros": "2022-05-30T00:00:00.456789",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.avro",
                 },
@@ -425,7 +432,7 @@ avro_all_types_scenario = (
                             "col_array": {"items": {"type": ["null", "string"]}, "type": ["null", "array"]},
                             "col_bool": {"type": ["null", "boolean"]},
                             "col_bytes": {"type": ["null", "string"]},
-                            "col_double": {"type": ["null", "string"]},
+                            "col_double": {"type": ["null", "number"]},
                             "col_enum": {"enum": ["POP_ROCK", "INDIE_ROCK", "ALTERNATIVE_ROCK"], "type": ["null", "string"]},
                             "col_fixed": {"pattern": "^[0-9A-Fa-f]{8}$", "type": ["null", "string"]},
                             "col_float": {"type": ["null", "number"]},
@@ -433,7 +440,11 @@ avro_all_types_scenario = (
                             "col_long": {"type": ["null", "integer"]},
                             "col_map": {"additionalProperties": {"type": ["null", "string"]}, "type": ["null", "object"]},
                             "col_record": {
-                                "properties": {"artist": {"type": ["null", "string"]}, "song": {"type": ["null", "string"]}, "year": {"type": ["null", "integer"]}},
+                                "properties": {
+                                    "artist": {"type": ["null", "string"]},
+                                    "song": {"type": ["null", "string"]},
+                                    "year": {"type": ["null", "integer"]},
+                                },
                                 "type": ["null", "object"],
                             },
                             "col_string": {"type": ["null", "string"]},
@@ -465,21 +476,24 @@ multiple_streams_avro_scenario = (
             "streams": [
                 {
                     "name": "songs_stream",
-                    "file_type": "avro",
+                    "format": {"filetype": "avro"},
                     "globs": ["*_songs.avro"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
                 {
                     "name": "festivals_stream",
-                    "file_type": "avro",
+                    "format": {"filetype": "avro"},
                     "globs": ["*_festivals.avro"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_stream_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_stream_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_records(
         [
             {
@@ -588,7 +602,10 @@ multiple_streams_avro_scenario = (
                         "type": "object",
                         "properties": {
                             "col_title": {"type": ["null", "string"]},
-                            "col_album": {"type": ["null", "string"], "enum": ["SUMMERS_GONE", "IN_RETURN", "A_MOMENT_APART", "THE_LAST_GOODBYE"]},
+                            "col_album": {
+                                "type": ["null", "string"],
+                                "enum": ["SUMMERS_GONE", "IN_RETURN", "A_MOMENT_APART", "THE_LAST_GOODBYE"],
+                            },
                             "col_year": {"type": ["null", "integer"]},
                             "col_vocals": {"type": ["null", "boolean"]},
                             "_ab_source_file_last_modified": {"type": "string"},
@@ -606,7 +623,11 @@ multiple_streams_avro_scenario = (
                         "properties": {
                             "col_name": {"type": ["null", "string"]},
                             "col_location": {
-                                "properties": {"country": {"type": ["null", "string"]}, "state": {"type": ["null", "string"]}, "city": {"type": ["null", "string"]}},
+                                "properties": {
+                                    "country": {"type": ["null", "string"]},
+                                    "state": {"type": ["null", "string"]},
+                                    "city": {"type": ["null", "string"]},
+                                },
                                 "type": ["null", "object"],
                             },
                             "col_attendance": {"type": ["null", "integer"]},
@@ -623,29 +644,26 @@ multiple_streams_avro_scenario = (
     )
 ).build()
 
-avro_file_with_decimal_as_float_scenario = (
+avro_file_with_double_as_number_scenario = (
     TestScenarioBuilder()
-    .set_name("avro_file_with_decimal_as_float_stream")
+    .set_name("avro_file_with_double_as_number_stream")
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "avro",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
-                    "format": {
-                        "avro": {
-                            "filetype": "avro",
-                            "decimal_as_float": True
-                        }
-                    }
+                    "validation_policy": "Emit Record",
+                    "format": {"filetype": "avro", "double_as_string": False},
                 }
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_records(
         [
             {

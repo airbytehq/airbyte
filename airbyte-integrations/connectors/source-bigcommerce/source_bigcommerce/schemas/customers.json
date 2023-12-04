@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "email": {
       "type": ["null", "string"]
@@ -58,6 +59,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "first_name": {
             "type": ["null", "string"]
@@ -108,7 +110,7 @@
                 "type": ["null", "object"],
                 "properties": {
                   "name": {
-                    "type": ["name", "string"]
+                    "type": ["null", "string"]
                   },
                   "value": {
                     "oneOf": [
@@ -126,7 +128,7 @@
                 "type": ["null", "object"],
                 "properties": {
                   "name": {
-                    "type": ["name", "string"]
+                    "type": ["null", "string"]
                   },
                   "value": {
                     "oneOf": [
@@ -158,6 +160,9 @@
           },
           "channel_ids": {
             "type": ["null", "array"]
+          },
+          "origin_channel_id": {
+            "type": ["null", "integer"]
           }
         }
       }

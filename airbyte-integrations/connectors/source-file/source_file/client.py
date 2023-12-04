@@ -24,7 +24,7 @@ import smart_open
 import smart_open.ssh
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
-from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
 from azure.storage.blob import BlobServiceClient
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
@@ -36,20 +36,12 @@ from paramiko import SSHException
 from urllib3.exceptions import ProtocolError
 from yaml import safe_load
 
-from .utils import backoff_handler
+from .utils import LOCAL_STORAGE_NAME, backoff_handler
 
 SSH_TIMEOUT = 60
 
 # Force the log level of the smart-open logger to ERROR - https://github.com/airbytehq/airbyte/pull/27157
 logging.getLogger("smart_open").setLevel(logging.ERROR)
-
-
-class ConfigurationError(Exception):
-    """Client mis-configured"""
-
-
-class PermissionsError(Exception):
-    """User don't have enough permissions"""
 
 
 class URLFile:
@@ -211,7 +203,7 @@ class URLFile:
             except json.decoder.JSONDecodeError as err:
                 error_msg = f"Failed to parse gcs service account json: {repr(err)}"
                 logger.error(f"{error_msg}\n{traceback.format_exc()}")
-                raise ConfigurationError(error_msg) from err
+                raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
 
         if credentials:
             credentials = service_account.Credentials.from_service_account_info(credentials)
@@ -260,7 +252,6 @@ class Client:
     """Class that manages reading and parsing data from streams"""
 
     CSV_CHUNK_SIZE = 10_000
-    reader_class = URLFile
     binary_formats = {"excel", "excel_binary", "feather", "parquet", "orc", "pickle"}
 
     def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: dict = None):
@@ -271,6 +262,13 @@ class Client:
         self._reader_options = reader_options or {}
         self.binary_source = self._reader_format in self.binary_formats
         self.encoding = self._reader_options.get("encoding")
+
+    @property
+    def reader_class(self):
+        if is_cloud_environment():
+            return URLFileSecure
+
+        return URLFile
 
     @property
     def stream_name(self) -> str:
@@ -341,7 +339,7 @@ class Client:
         except KeyError as err:
             error_msg = f"Reader {self._reader_format} is not supported."
             logger.error(f"{error_msg}\n{traceback.format_exc()}")
-            raise ConfigurationError(error_msg) from err
+            raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
 
         reader_options = {**self._reader_options}
         try:
@@ -367,13 +365,17 @@ class Client:
                     yield reader(fp, **reader_options)
             else:
                 yield reader(fp, **reader_options)
+        except ParserError as err:
+            error_msg = f"File {fp} can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html"
+            logger.error(f"{error_msg}\n{traceback.format_exc()}")
+            raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
         except UnicodeDecodeError as err:
             error_msg = (
                 f"File {fp} can't be parsed with reader of chosen type ({self._reader_format}). "
                 f"Please check provided Format and Reader Options. {repr(err)}."
             )
             logger.error(f"{error_msg}\n{traceback.format_exc()}")
-            raise ConfigurationError(error_msg) from err
+            raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
 
     @staticmethod
     def dtype_to_json_type(current_type: str, dtype) -> str:
@@ -430,11 +432,7 @@ class Client:
                     f"File {fp} can not be opened due to connection issues on provider side. Please check provided links and options"
                 )
                 logger.error(f"{error_msg}\n{traceback.format_exc()}")
-                raise ConfigurationError(error_msg) from err
-            except ParserError as err:
-                error_msg = f"File {fp} can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html"
-                logger.error(f"{error_msg}\n{traceback.format_exc()}")
-                raise ConfigurationError(error_msg) from err
+                raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
 
     def _cache_stream(self, fp):
         """cache stream to file"""
@@ -505,3 +503,15 @@ class Client:
                 df = pd.DataFrame(data=(next(data) for _ in range(start, min(start + step, end))), columns=cols)
                 yield df
                 start += step
+
+
+class URLFileSecure(URLFile):
+    """Updating of default logic:
+    This connector shouldn't work with local files.
+    """
+
+    def __init__(self, url: str, provider: dict, binary=None, encoding=None):
+        storage_name = provider["storage"].lower()
+        if url.startswith("file://") or storage_name == LOCAL_STORAGE_NAME:
+            raise RuntimeError("the local file storage is not supported by this connector.")
+        super().__init__(url, provider, binary, encoding)

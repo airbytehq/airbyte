@@ -12,5 +12,5 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: Revelant information
+      label: Relevant information
       description: Please give any aditional information.

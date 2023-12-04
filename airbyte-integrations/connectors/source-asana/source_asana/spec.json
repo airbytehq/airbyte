@@ -62,15 +62,23 @@
             }
           }
         ]
+      },
+      "test_mode": {
+        "type": "boolean",
+        "title": "Test Mode",
+        "description": "This flag is used for testing purposes for certain streams that return a lot of data. This flag is not meant to be enabled for prod.",
+        "airbyte_hidden": true
+      },
+      "organization_export_ids": {
+        "title": "Organization Export IDs",
+        "description": "Globally unique identifiers for the organization exports",
+        "type": "array"
       }
     }
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": [
-      "credentials",
-      "option_title"
-    ],
+    "predicate_key": ["credentials", "option_title"],
     "predicate_value": "OAuth Credentials",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
@@ -78,9 +86,7 @@
         "properties": {
           "refresh_token": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials", "refresh_token"
-            ]
+            "path_in_connector_config": ["credentials", "refresh_token"]
           }
         }
       },
@@ -100,15 +106,11 @@
         "properties": {
           "client_id": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials", "client_id"
-            ]
+            "path_in_connector_config": ["credentials", "client_id"]
           },
           "client_secret": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials","client_secret"
-            ]
+            "path_in_connector_config": ["credentials", "client_secret"]
           }
         }
       }

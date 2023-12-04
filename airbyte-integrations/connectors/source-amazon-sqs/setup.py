@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["airbyte-cdk", "boto3"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "connector-acceptance-test", "moto[sqs, iam]"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "moto[sqs, iam]"]
 
 setup(
     name="source_amazon_sqs",

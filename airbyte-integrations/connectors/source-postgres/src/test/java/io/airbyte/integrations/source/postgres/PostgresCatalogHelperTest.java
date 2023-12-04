@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -66,6 +66,7 @@ class PostgresCatalogHelperTest {
         .setIncrementalToSourceDefined(noIncremental)
         .getSourceDefinedCursor());
   }
+
   @Test
   public void testSetDefaultCursorFieldForCdc() {
     final AirbyteStream cdcIncrementalStream = new AirbyteStream()

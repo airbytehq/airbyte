@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   allowedHosts:
     hosts:
       - ${host}
@@ -6,8 +9,9 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
-  dockerImageTag: 1.1.1
+  dockerImageTag: 3.1.0
   dockerRepository: airbyte/source-mssql
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   githubIssueLabel: source-mssql
   icon: mssql.svg
   license: ELv2
@@ -19,12 +23,16 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
+  supportLevel: community
   tags:
     - language:java
     - language:python
-  _ab_internal:
-    _sl: 300
-    _ql: 300
-  supportLevel: certified
+  releases:
+    breakingChanges:
+      3.0.0:
+        message: "Remapped columns of types: date, datetime, datetime2, datetimeoffset, smalldatetime, and time from `String` to their appropriate Airbyte types. Customers whose streams have columns with the affected data types must take action with their connections."
+        upgradeDeadline: "2023-12-07"
+      2.0.0:
+        message: "Add default cursor for cdc"
+        upgradeDeadline: "2023-08-23"
 metadataSpecVersion: "1.0"

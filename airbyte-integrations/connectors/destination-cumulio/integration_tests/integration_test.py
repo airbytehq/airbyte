@@ -71,9 +71,7 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
 
 @pytest.fixture(autouse=True)
-def delete_datasets(
-    config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, logger: Logger
-):
+def delete_datasets(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, logger: Logger):
     cumulio_client = CumulioClient(config, logger)
     for stream in configured_catalog.streams:
         dataset = cumulio_client.get_dataset_and_columns_from_stream_name(stream.stream.name)
@@ -116,9 +114,7 @@ def _state(data: Dict[str, Any]) -> AirbyteMessage:
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))
 
 
-def _record(
-    stream_name: str, str_value: str, int_value: int, obj_value: dict, arr_value: list
-) -> AirbyteMessage:
+def _record(stream_name: str, str_value: str, int_value: int, obj_value: dict, arr_value: list) -> AirbyteMessage:
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
@@ -135,9 +131,7 @@ def _record(
 
 
 def _retrieve_all_records(cumulio_client, stream_name):
-    dataset_and_columns = cumulio_client.get_dataset_and_columns_from_stream_name(
-        stream_name
-    )
+    dataset_and_columns = cumulio_client.get_dataset_and_columns_from_stream_name(stream_name)
     # Wait 5 seconds before trying to retrieve the data to ensure it can be properly retrieved
     time.sleep(5)
     if dataset_and_columns is not None:
@@ -177,9 +171,7 @@ def _retrieve_all_records(cumulio_client, stream_name):
             airbyte_data_to_return.append(
                 AirbyteMessage(
                     type=Type.RECORD,
-                    record=AirbyteRecordMessage(
-                        stream=stream_name, data=airbyte_data_row, emitted_at=0
-                    ),
+                    record=AirbyteRecordMessage(stream=stream_name, data=airbyte_data_row, emitted_at=0),
                 )
             )
         return airbyte_data_to_return
@@ -201,24 +193,14 @@ def test_write_append(
     destination = DestinationCumulio()
 
     state_message = _state({"state": "3"})
-    record_chunk_1 = [
-        _record(stream_name, "test-" + str(i), i, {"test": i}, ["test", i])
-        for i in range(1, 3)
-    ]
+    record_chunk_1 = [_record(stream_name, "test-" + str(i), i, {"test": i}, ["test", i]) for i in range(1, 3)]
 
-    output_states_1 = list(
-        destination.write(config, configured_catalog, [*record_chunk_1, state_message])
-    )
+    output_states_1 = list(destination.write(config, configured_catalog, [*record_chunk_1, state_message]))
     assert [state_message] == output_states_1
 
-    record_chunk_2 = [
-        _record(stream_name, "test-" + str(i), i, {"test": i}, ["test", i])
-        for i in range(3, 5)
-    ]
+    record_chunk_2 = [_record(stream_name, "test-" + str(i), i, {"test": i}, ["test", i]) for i in range(3, 5)]
 
-    output_states_2 = list(
-        destination.write(config, configured_catalog, [*record_chunk_2, state_message])
-    )
+    output_states_2 = list(destination.write(config, configured_catalog, [*record_chunk_2, state_message]))
     assert [state_message] == output_states_2
 
     cumulio_client = CumulioClient(config, logger)
@@ -260,24 +242,14 @@ def test_write_overwrite(
     destination = DestinationCumulio()
 
     state_message = _state({"state": "3"})
-    record_chunk_1 = [
-        _record(stream_name, "oldtest-" + str(i), i, {"oldtest": i}, ["oldtest", i])
-        for i in range(1, 3)
-    ]
+    record_chunk_1 = [_record(stream_name, "oldtest-" + str(i), i, {"oldtest": i}, ["oldtest", i]) for i in range(1, 3)]
 
-    output_states_1 = list(
-        destination.write(config, configured_catalog, [*record_chunk_1, state_message])
-    )
+    output_states_1 = list(destination.write(config, configured_catalog, [*record_chunk_1, state_message]))
     assert [state_message] == output_states_1
 
-    record_chunk_2 = [
-        _record(stream_name, "newtest-" + str(i), i, {"newtest": i}, ["newtest", i])
-        for i in range(1, 3)
-    ]
+    record_chunk_2 = [_record(stream_name, "newtest-" + str(i), i, {"newtest": i}, ["newtest", i]) for i in range(1, 3)]
 
-    output_states_2 = list(
-        destination.write(config, configured_catalog, [*record_chunk_2, state_message])
-    )
+    output_states_2 = list(destination.write(config, configured_catalog, [*record_chunk_2, state_message]))
     assert [state_message] == output_states_2
 
     cumulio_client = CumulioClient(config, logger)

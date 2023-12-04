@@ -12,7 +12,6 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from pendulum import DateTime, Period
@@ -27,10 +26,6 @@ class SlackStream(HttpStream, ABC):
     def max_retries(self) -> int:
         # Slack's rate limiting can be unpredictable so we increase the max number of retries by a lot before failing
         return 20
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Slack uses a cursor-based pagination strategy.
@@ -214,8 +209,9 @@ class IncrementalMessageStream(ChanneledStream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         if not stream_slice:
+            # return an empty iterator
             # this is done to emit at least one state message when no slices are generated
-            return []
+            return iter([])
         return super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
 
 
@@ -380,7 +376,7 @@ class SourceSlack(AbstractSource):
         end_date = config.get("end_date")
         end_date = end_date and pendulum.parse(end_date)
         threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
-        channel_filter = config["channel_filter"]
+        channel_filter = config.get("channel_filter", [])
 
         channels = Channels(authenticator=authenticator, channel_filter=channel_filter)
         streams = [

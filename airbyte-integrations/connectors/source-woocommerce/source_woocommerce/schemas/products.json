@@ -228,7 +228,7 @@
             }
           },
           "title": {
-           "type": ["null", "string"]
+            "type": ["null", "string"]
           },
           "author": {
             "type": ["null", "string"]

@@ -1,17 +1,19 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "name": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "channel": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "metric": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     }
   }
 }

@@ -4,8 +4,8 @@
 
 from unittest.mock import MagicMock
 
-from source_genesys.source import SourceGenesys
 import pytest
+from source_genesys.source import SourceGenesys
 
 
 def test_check_connection(mocker):

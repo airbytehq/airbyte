@@ -69,6 +69,10 @@ definitions:
           - "{{ record['updates'] }}"
           - "{{ record['MetaData']['LastUpdatedTime'] }}"
           - "{{ stream_partition['segment_id'] }}"
+      value_type:
+        title: Value Type
+        description: Type of the value. If not specified, the type will be inferred from the value.
+        "$ref": "#/definitions/ValueType"
       $parameters:
         type: object
         additionalProperties: true
@@ -578,10 +582,11 @@ definitions:
           - "created_at"
           - "{{ config['record_cursor'] }}"
       datetime_format:
-        title: Cursor Field Datetime Format
+        title: Outgoing Datetime Format
         description: |
-          The datetime format of the Cursor Field. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
+          The datetime format used to format the datetime values that are sent in outgoing requests to the API. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
             * **%s**: Epoch unix timestamp - `1686218963`
+            * **%ms**: Epoch unix timestamp (milliseconds) - `1686218963123`
             * **%a**: Weekday (abbreviated) - `Sun`
             * **%A**: Weekday (full) - `Sunday`
             * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)
@@ -613,6 +618,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d"
           - "%s"
+          - "%ms"
       start_datetime:
         title: Start Datetime
         description: The datetime that determines the earliest record that should be synced.
@@ -626,7 +632,7 @@ definitions:
           - "{{ config['start_time'] }}"
       cursor_datetime_formats:
         title: Cursor Datetime Formats
-        description: The possible formats for the cursor field
+        description: The possible formats for the cursor field, in order of preference. The first format that matches the cursor field value will be used to parse it. If not provided, the `datetime_format` will be used.
         type: array
         items:
           type: string
@@ -1413,6 +1419,7 @@ definitions:
         description: |
           Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
             * **%s**: Epoch unix timestamp - `1686218963`
+            * **%ms**: Epoch unix timestamp - `1686218963123`
             * **%a**: Weekday (abbreviated) - `Sun`
             * **%A**: Weekday (full) - `Sunday`
             * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)
@@ -1623,6 +1630,11 @@ definitions:
         examples:
           - 100
           - "{{ config['page_size'] }}"
+      inject_on_first_request:
+        title: Inject Offset
+        description: Using the `offset` with value `0` during the first request
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true
@@ -1651,6 +1663,11 @@ definitions:
         examples:
           - 0
           - 1
+      inject_on_first_request:
+        title: Inject Page Number
+        description: Using the `page number` with value defined by `start_from_page` during the first request
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true
@@ -1974,6 +1991,15 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  ValueType:
+    title: Value Type
+    description: A schema type.
+    type: string
+    enum:
+      - string
+      - number
+      - integer
+      - boolean
   WaitTimeFromHeader:
     title: Wait Time Extracted From Response Header
     description: Extract wait time from a HTTP header in the response.
@@ -2187,3 +2213,26 @@ interpolation:
       examples:
         - "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
         - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+  filters:
+    - title: Hash
+      description: Convert the specified value to a hashed string.
+      arguments:
+        hash_type: Valid hash type for converts ('md5' as default value).
+        salt: An additional value to further protect sensitive data.
+      return_type: str
+      examples:
+        - "{{ 'Test client_secret' | hash() }} -> '3032d57a12f76b61a820e47b9a5a0cbb'"
+        - "{{ 'Test client_secret' | hash('md5') }} -> '3032d57a12f76b61a820e47b9a5a0cbb'"
+        - "{{ 'Test client_secret' | hash('md5', salt='salt') }} -> '5011a0168579c2d94cbbe1c6ad14327c'"
+    - title: Base64 encoder
+      description: Convert the specified value to a string in the base64 format.
+      arguments: {}
+      return_type: str
+      examples:
+        - "{{ 'Test client_secret' | base64encode }} -> 'VGVzdCBjbGllbnRfc2VjcmV0'"
+    - title: Base64 decoder
+      description: Decodes the specified base64 format value into a common string.
+      arguments: {}
+      return_type: str
+      examples:
+        - "{{ 'ZmFrZSByZWZyZXNoX3Rva2VuIHZhbHVl' | base64decode }} -> 'fake refresh_token value'"

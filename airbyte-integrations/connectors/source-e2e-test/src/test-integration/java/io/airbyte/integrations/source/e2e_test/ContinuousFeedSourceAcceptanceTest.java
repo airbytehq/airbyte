@@ -9,12 +9,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.e2e_test.ContinuousFeedConfig.MockCatalogType;
 import io.airbyte.integrations.source.e2e_test.TestingSources.TestingSourceType;
-import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;

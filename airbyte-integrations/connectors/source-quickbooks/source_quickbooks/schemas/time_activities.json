@@ -1,170 +1,92 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": [
-    "null",
-    "object"
-  ],
+  "type": ["null", "object"],
   "properties": {
     "HourlyRate": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "CustomerRef": {
       "properties": {
         "name": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "value": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "Taxable": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "Description": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Minutes": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "MetaData": {
       "properties": {
         "CreateTime": {
           "format": "date-time",
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "LastUpdatedTime": {
           "format": "date-time",
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "ItemRef": {
       "properties": {
         "name": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "value": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "Id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "domain": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "TxnDate": {
       "format": "date",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "SyncToken": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "EmployeeRef": {
       "properties": {
         "name": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "value": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "BillableStatus": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "NameOf": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Hours": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "sparse": {
-      "type":  [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "airbyte_cursor": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     }
   }
 }
