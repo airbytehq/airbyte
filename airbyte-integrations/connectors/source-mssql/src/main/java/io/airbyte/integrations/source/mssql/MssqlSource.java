@@ -98,7 +98,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
-
   public MssqlSource() {
     // noise
     // noise
