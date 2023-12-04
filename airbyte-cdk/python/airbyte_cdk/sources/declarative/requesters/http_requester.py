@@ -294,7 +294,7 @@ class HttpRequester(Requester):
 
         for k, v in options.items():
             if isinstance(v, (list, dict)):
-                raise ValueError(f"Invalid value for `{k}` parameter. The values of request params cannot be an array or object")
+                raise ValueError(f"Invalid value for `{k}` parameter. The values of request params cannot be an array or object.")
 
         return options
 

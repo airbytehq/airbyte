@@ -434,7 +434,7 @@ def test_request_param_interpolation_with_incorrect_values(request_parameters, c
 
     assert (
         error.value.args[0]
-        == f"Invalid value for `{invalid_value_for_key}` parameter. The values of request params cannot be an array or object"
+        == f"Invalid value for `{invalid_value_for_key}` parameter. The values of request params cannot be an array or object."
     )
 
 
