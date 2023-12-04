@@ -80,7 +80,7 @@ public class JdbcBufferedConsumerFactory {
         catalog,
         new BufferManager((long) (Runtime.getRuntime().maxMemory() * 0.2)),
         defaultNamespace,
-        Executors.newFixedThreadPool(2));
+        Executors.newFixedThreadPool(1));
   }
 
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
