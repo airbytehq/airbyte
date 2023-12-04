@@ -139,7 +139,7 @@ class SourceSalesforce(AbstractSource):
         for stream in streams:
             sync_mode = self._get_sync_mode_from_catalog(stream)
             if sync_mode == SyncMode.full_refresh:
-                configured_streams.append(StreamFacade.create_from_stream(stream, self, logger, None, NoopCursor()))
+                configured_streams.append(StreamFacade.create_from_stream(stream, self, logger, self.MAX_WORKERS, None, NoopCursor()))
             else:
                 configured_streams.append(stream)
         return configured_streams
