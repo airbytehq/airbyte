@@ -5,6 +5,15 @@
     "created": {
       "type": ["string", "null"]
     },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "org_id": {
+      "type": ["integer", "null"]
+    },
+    "overall_state_modified": {
+      "type": ["string", "null"]
+    },
     "creator": {
       "additionalProperties": true,
       "properties": {
@@ -85,7 +94,7 @@
         },
         "device_ids": {
           "items": {
-            "type" : ["string", "null"]
+            "type": ["string", "null"]
           },
           "type": ["array", "null"]
         },
@@ -179,7 +188,7 @@
         "silenced": {
           "patternProperties": {
             ".+": {
-              "type" : ["integer", "null"]
+              "type": ["integer", "null"]
             }
           }
         },
@@ -211,7 +220,7 @@
               "type": ["number", "null"]
             },
             "unknown": {
-              "type" : ["number", "null"]
+              "type": ["number", "null"]
             },
             "warning": {
               "type": ["number", "null"]
@@ -319,7 +328,7 @@
       "type": ["array", "null"]
     },
     "state": {
-      "properties" : {
+      "properties": {
         "groups": {
           "patternProperties": {
             ".+": {

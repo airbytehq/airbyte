@@ -83,6 +83,14 @@ definitions:
     end_datetime:
       datetime: "{{ config['end_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: filter[from]
+      inject_into: request_parameter
+    end_time_option:
+      type: RequestOption
+      field_name: filter[to]
+      inject_into: request_parameter
     step: "P1M"
 
   dashboards_stream:
