@@ -5,7 +5,7 @@
     "title": "My Hours Spec",
     "type": "object",
     "required": ["email", "password", "start_date"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "email": {
         "title": "Email",
