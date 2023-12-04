@@ -20,10 +20,19 @@
     "clientName": {
       "type": ["null", "string"]
     },
+    "clientId": {
+      "type": ["null", "integer"]
+    },
+    "customId": {
+      "type": ["null", "string"]
+    },
     "budgetAlertPercent": {
       "type": ["null", "number"]
     },
     "budgetType": {
+      "type": ["null", "number"]
+    },
+    "laborCost": {
       "type": ["null", "number"]
     },
     "totalTimeLogged": {
