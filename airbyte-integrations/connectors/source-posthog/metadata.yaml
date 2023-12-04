@@ -23,6 +23,13 @@ data:
       enabled: true
   releaseStage: beta
   supportLevel: community
+  releases:
+    breakingChanges:
+      1.0.0:
+        message:
+          The `event` field in the `events` stream has been corrected to the proper data type.
+          It was previously set as `[object, string]`, but the correct type is only `string`.
+        upgradeDeadline: "2023-10-01"
   tags:
     - language:low-code
     - language:python
