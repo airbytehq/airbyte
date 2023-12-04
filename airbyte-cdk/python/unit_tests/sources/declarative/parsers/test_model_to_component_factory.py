@@ -37,6 +37,8 @@ from airbyte_cdk.sources.declarative.models import RecordSelector as RecordSelec
 from airbyte_cdk.sources.declarative.models import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models import SubstreamPartitionRouter as SubstreamPartitionRouterModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import OffsetIncrement as OffsetIncrementModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import PageIncrement as PageIncrementModel
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
@@ -1706,3 +1708,34 @@ def test_ignore_retry():
     )
 
     assert requester.max_retries == 0
+
+
+def test_create_page_increment():
+    model = PageIncrementModel(
+        type="PageIncrement",
+        page_size=10,
+        start_from_page=1,
+        inject_on_first_request=True,
+    )
+    expected_strategy = PageIncrement(page_size=10, start_from_page=1, inject_on_first_request=True, parameters={})
+
+    strategy = factory.create_page_increment(model, input_config)
+
+    assert strategy.page_size == expected_strategy.page_size
+    assert strategy.start_from_page == expected_strategy.start_from_page
+    assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
+
+
+def test_create_offset_increment():
+    model = OffsetIncrementModel(
+        type="OffsetIncrement",
+        page_size=10,
+        inject_on_first_request=True,
+    )
+    expected_strategy = OffsetIncrement(page_size=10, inject_on_first_request=True, parameters={}, config=input_config)
+
+    strategy = factory.create_offset_increment(model, input_config)
+
+    assert strategy.page_size == expected_strategy.page_size
+    assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
+    assert strategy.config == input_config

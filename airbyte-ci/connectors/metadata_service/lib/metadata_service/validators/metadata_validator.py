@@ -164,7 +164,8 @@ def validate_metadata_base_images_in_dockerhub(
     tag = tag_with_sha_prefix.split("@")[0]
 
     print(f"Checking that the base images is on dockerhub: {image_address}")
-    if not is_image_on_docker_hub(image_name, tag, digest):
+
+    if not is_image_on_docker_hub(image_name, tag, digest, retries=3):
         return False, f"Image {image_address} does not exist in DockerHub"
 
     return True, None

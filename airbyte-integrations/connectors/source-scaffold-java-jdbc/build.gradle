@@ -4,12 +4,10 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
+    cdkVersionRequired = '0.5.0'
     features = ['db-sources']
-    useLocalCdk = true
+    useLocalCdk = false
 }
-
-airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.scaffold-java-jdbc.ScaffoldJavaJdbcSource'
@@ -20,6 +18,9 @@ dependencies {
     //TODO Add jdbc driver import here. Ex: implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation libs.testcontainers.jdbc
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-scaffold-java-jdbc')
+
+    testFixturesImplementation libs.testcontainers.jdbc
 }
