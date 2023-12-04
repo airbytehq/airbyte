@@ -5,9 +5,6 @@ This page contains the setup guide and reference information for the Gitlab Sour
 ## Prerequisites
 
 - Gitlab instance or an account at [Gitlab](https://gitlab.com)
-- Start date
-- GitLab Groups (Optional)
-- GitLab Projects (Optional)
 
 <!-- env:cloud -->
 
@@ -49,10 +46,10 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 3. On the source setup page, select **GitLab** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your GitLab account` by selecting Oauth or Personal Access Token for Authentication.
 5. Log in and Authorize to the GitLab account.
-6. **Start date** - The date from which you'd like to replicate data for streams.
-7. **API URL** - The URL to access you self-hosted GitLab instance or `gitlab.com` (default).
-8. **Groups (Optional)** - Space-delimited list of GitLab group IDs, e.g. `airbytehq` for single group, `airbytehq another-repo` for multiple groups.
-9. **Projects (Optional)** - Space-delimited list of GitLab projects to pull data for, e.g. `airbytehq/airbyte`.
+6. **API URL (Optional)** - The URL to access your self-hosted GitLab instance or `gitlab.com` (default).
+7. **Start date (Optional)** - The date from which you'd like to replicate data for streams.
+8. **Groups (Optional)** - List of GitLab group IDs, e.g. `airbytehq` for single group, `airbytehq another-repo` for multiple groups.
+9. **Projects (Optional)** - List of GitLab projects to pull data for, e.g. `airbytehq/airbyte`.
 10. Click **Set up source**.
 
 **Note:** You can specify either Group IDs or Project IDs in the source configuration. If both fields are blank, the connector will retrieve a list of all the groups that are accessible to the configured token and ingest as normal.
@@ -94,9 +91,10 @@ This connector outputs the following streams:
 - [Group and Project members](https://docs.gitlab.com/ee/api/members.html)
 - [Tags](https://docs.gitlab.com/ee/api/tags.html)
 - [Releases](https://docs.gitlab.com/ee/api/releases/index.html)
+- [Deployments](https://docs.gitlab.com/ee/api/deployments/index.html)
 - [Group Labels](https://docs.gitlab.com/ee/api/group_labels.html)
 - [Project Labels](https://docs.gitlab.com/ee/api/labels.html)
-- [Epics](https://docs.gitlab.com/ee/api/epics.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts\)
+- [Epics](https://docs.gitlab.com/ee/api/epics.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts. Stream Epics uses iid field as primary key for more convenient search and matching with UI. Iid is the internal ID of the epic, number of Epic on UI.\)
 - [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts\)
 
 ## Additional information
@@ -110,7 +108,15 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
+| 2.0.0   | 2023-10-23 | [31700](https://github.com/airbytehq/airbyte/pull/31700) | Add correct date-time format for Deployments, Projects and Groups Members streams          |
+| 1.8.4   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image            |
+| 1.8.3   | 2023-10-18 | [31547](https://github.com/airbytehq/airbyte/pull/31547) | Add validation for invalid `groups_list` and/or `projects_list`                            |
+| 1.8.2   | 2023-10-17 | [31492](https://github.com/airbytehq/airbyte/pull/31492) | Expand list of possible error status codes when handling expired `access_token`            |
+| 1.8.1   | 2023-10-12 | [31375](https://github.com/airbytehq/airbyte/pull/31375) | Mark `start_date` as optional, migrate `groups` and `projects` to array                    |
+| 1.8.0   | 2023-10-12 | [31339](https://github.com/airbytehq/airbyte/pull/31339) | Add undeclared fields to streams schemas, validate date/date-time format in stream schemas |
+| 1.7.1   | 2023-10-10 | [31210](https://github.com/airbytehq/airbyte/pull/31210) | Added expired `access_token` handling, while checking the connection                       |
+| 1.7.0   | 2023-08-08 | [27869](https://github.com/airbytehq/airbyte/pull/29203) | Add Deployments stream                                                                     |
 | 1.6.0   | 2023-06-30 | [27869](https://github.com/airbytehq/airbyte/pull/27869) | Add `shared_runners_setting` field to groups                                               |
 | 1.5.1   | 2023-06-24 | [27679](https://github.com/airbytehq/airbyte/pull/27679) | Fix formatting                                                                             |
 | 1.5.0   | 2023-06-15 | [27392](https://github.com/airbytehq/airbyte/pull/27392) | Make API URL an optional parameter in spec.                                                |

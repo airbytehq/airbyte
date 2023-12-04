@@ -1,8 +1,14 @@
 # Slack
 
-This page contains the setup guide and reference information for the Slack source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Slack](https://www.slack.com) source connector.
+
+</HideInUI>
 
 ## Prerequisites
+
+OAuth or API Token (via Slack App or Legacy API Key) is required for access to Slack.
 
 You can no longer create "Legacy" API Keys, but if you already have one, you can use it with this source. Fill it into the API key section.
 
@@ -11,6 +17,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 Note that refresh token are entirely optional for Slack and are not required to use Airbyte. You can learn more about refresh tokens [here](https://api.slack.com/authentication/rotation).
 
 ## Setup guide
+
 ### Step 1: Set up Slack
 
 :::info
@@ -92,10 +99,12 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 3. **Required** Enter your `start_date`.
 4. **Required** Enter your `lookback_window`, which corresponds to amount of days in the past from which you want to sync data.
 5. Toggle `join_channels`, if you want to join all channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
-6. Enter your `channel_filter`, this should be list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate all data. 
+6. Enter your `channel_filter`, this should be list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate all data.
 7. Enter your `api_token`.
 8. Click **Set up source**.
 <!-- /env:oss -->
+
+<HideInUI>
 
 ## Supported sync modes
 
@@ -133,10 +142,30 @@ It is recommended to sync required channels only, this can be done by specifying
 | `array`          | `array`      |
 | `object`         | `object`     |
 
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Slack connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
+
+### Troubleshooting
+
+* Check out common troubleshooting issues for the Slack source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
+| 0.3.5 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.3.4   | 2023-10-06 | [31134](https://github.com/airbytehq/airbyte/pull/31134) | Update CDK and remove non iterable return from records                              |
 | 0.3.3   | 2023-09-28 | [30580](https://github.com/airbytehq/airbyte/pull/30580) | Add `bot_id` field to threads schema                               |
 | 0.3.2   | 2023-09-20 | [30613](https://github.com/airbytehq/airbyte/pull/30613) | Set default value for channel_filters during discover                               |
 | 0.3.1   | 2023-09-19 | [30570](https://github.com/airbytehq/airbyte/pull/30570) | Use default availability strategy                                                   |
@@ -163,3 +192,4 @@ It is recommended to sync required channels only, this can be done by specifying
 | 0.1.8   | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683)   | Add float\_ts primary key                                                           |
 | 0.1.7   | 2021-06-25 | [3978](https://github.com/airbytehq/airbyte/pull/3978)   | Release Slack CDK Connector                                                         |
 
+</HideInUI>

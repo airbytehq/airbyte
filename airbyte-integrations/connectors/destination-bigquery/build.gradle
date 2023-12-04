@@ -4,8 +4,8 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
-    features = ['db-destinations']
+    cdkVersionRequired = '0.4.11'
+    features = ['db-destinations', 's3-destinations']
     useLocalCdk = false
 }
 
@@ -39,16 +39,20 @@ dependencies {
     implementation group: 'com.google.cloud', name: 'google-cloud-storage', version: '2.4.5'
     implementation group: 'com.codepoetics', name: 'protonpack', version: '1.13'
 
-    implementation project(':airbyte-config-oss:config-models-oss')
     implementation (libs.airbyte.protocol) {
         exclude group: 'io.airbyte', module: 'airbyte-commons'
     }
-    implementation project(':airbyte-integrations:bases:base-typing-deduping')
     // implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
-
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
+
+    // TODO: declare typing-deduping as a CDK feature instead of importing from source.
+    implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
+    integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
+
+    // TODO: remove these dependencies (what's S3 doing here???)
+    implementation libs.aws.java.sdk.s3
+    implementation libs.s3
 }
 
 configurations.all {

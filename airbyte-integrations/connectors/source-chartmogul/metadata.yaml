@@ -8,7 +8,12 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b6604cbd-1b12-4c08-8767-e140d0fb0877
-  dockerImageTag: 0.2.1
+  dockerImageTag: 1.0.0
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "This version separates the `customer_count` stream into multiple streams (daily, weekly, monthly, quarterly). Users previously using the `customer_count` stream will need to run a reset to enable the new streams and continue syncing."
+        upgradeDeadline: "2023-11-29"
   dockerRepository: airbyte/source-chartmogul
   documentationUrl: https://docs.airbyte.com/integrations/sources/chartmogul
   githubIssueLabel: source-chartmogul
@@ -24,5 +29,4 @@ data:
   supportLevel: community
   tags:
     - language:low-code
-    - language:python
 metadataSpecVersion: "1.0"

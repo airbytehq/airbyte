@@ -16,7 +16,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.11.1" # schemas for custom queries are fixed in 1.0.0
+          disable_for_version: "1.0.0" # schemas of default streams were updated
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -27,16 +27,16 @@ acceptance_tests:
           extra_records: yes # the file with all the records is 15 MB, so comparing only 3 records
         timeout_seconds: 3600
         empty_streams:
-          - name: "account_labels"
+          - name: "customer_label"
             bypass_reason: "Data is present in UI, but not in API: supposedly insufficient permissions"
-          - name: "shopping_performance_report"
+          - name: "shopping_performance_view"
             bypass_reason: "No shopping campaign, need item for sale"
-          - name: "display_topics_performance_report"
+          - name: "topic_view"
             bypass_reason: "No data for this date range, tested in next config"
           - name: "click_view"
             bypass_reason: "Stream has data only for last 90 days, next config is used for testing it"
         ignored_fields:
-          accounts:
+          customer:
             - name: customer.optimization_score_weight
               bypass_reason: "Value can be updated by Google Ads"
             - name: customer.optimization_score
@@ -46,16 +46,16 @@ acceptance_tests:
           path: "integration_tests/expected_records_click.jsonl"
         timeout_seconds: 3600
         empty_streams:
-          - name: "account_labels"
+          - name: "customer_label"
             bypass_reason: "Data is present in UI, but not in API: supposedly insufficient permissions"
-          - name: "shopping_performance_report"
+          - name: "shopping_performance_view"
             bypass_reason: "No shopping campaign, need item for sale"
-          - name: "display_keyword_performance_report"
+          - name: "display_keyword_view"
             bypass_reason: "No data for this date range, tested in previous config"
-          - name: "keyword_report"
+          - name: "keyword_view"
             bypass_reason: "No data for this date range, tested in previous config"
         ignored_fields:
-          accounts:
+          customer:
             - name: customer.optimization_score_weight
               bypass_reason: "Value can be updated by Google Ads"
             - name: customer.optimization_score
@@ -63,7 +63,7 @@ acceptance_tests:
           campaign_budget:
             - name: campaign_budget.recommended_budget_estimated_change_weekly_interactions
               bypass_reason: "Value can be updated by Google Ads"
-          campaigns:
+          campaign:
             - name: campaign.optimization_score
               bypass_reason: "Value can be updated by Google Ads"
   full_refresh:

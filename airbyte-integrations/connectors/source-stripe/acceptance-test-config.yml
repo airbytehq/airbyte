@@ -13,6 +13,8 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 4.4.2
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -55,6 +57,8 @@ acceptance_tests:
               bypass_reason: "URL changes upon each request for privacy/security"
             - name: hosted_invoice_url
               bypass_reason: "URL changes upon each request for privacy/security"
+            - name: lines/data/*/margins
+              bypass_reason: "API randomly returns this field"
           charges:
             - name: receipt_url
               bypass_reason: "URL changes upon each request for privacy/security"
@@ -80,6 +84,9 @@ acceptance_tests:
           usage_records:
             - name: id
               bypass_reason: "id field is randomly generated"
+          invoice_line_items:
+            - name: margins
+              bypass_reason: "API randomly returns this field"
   incremental:
     tests:
       - config_path: "secrets/config.json"

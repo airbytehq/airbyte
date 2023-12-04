@@ -15,6 +15,7 @@ import io.airbyte.cdk.db.PostgresUtils;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -39,10 +40,6 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Properties;
 import java.util.Set;
-import org.apache.kafka.connect.json.JsonConverter;
-import org.apache.kafka.connect.json.JsonConverterConfig;
-import org.apache.kafka.connect.runtime.WorkerConfig;
-import org.apache.kafka.connect.runtime.standalone.StandaloneConfig;
 import org.apache.kafka.connect.storage.FileOffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
 import org.postgresql.core.BaseConnection;
@@ -56,7 +53,7 @@ import org.slf4j.LoggerFactory;
  * This class is inspired by Debezium's Postgres connector internal implementation on how it parses
  * the state
  */
-public class PostgresDebeziumStateUtil {
+public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDebeziumStateUtil.class);
 
@@ -152,6 +149,7 @@ public class PostgresDebeziumStateUtil {
   }
 
   /**
+   * Loads the offset data from the saved Debezium offset file.
    *
    * @param properties Properties should contain the relevant properties like path to the debezium
    *        state file, etc. It's assumed that the state file is already initialised with the saved
@@ -159,34 +157,22 @@ public class PostgresDebeziumStateUtil {
    * @return Returns the LSN that Airbyte has acknowledged in the source database server
    */
   private OptionalLong parseSavedOffset(final Properties properties) {
-
     FileOffsetBackingStore fileOffsetBackingStore = null;
     OffsetStorageReaderImpl offsetStorageReader = null;
-    try {
-      fileOffsetBackingStore = new FileOffsetBackingStore();
-      final Map<String, String> propertiesMap = Configuration.from(properties).asMap();
-      propertiesMap.put(WorkerConfig.KEY_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
-      propertiesMap.put(WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
-      fileOffsetBackingStore.configure(new StandaloneConfig(propertiesMap));
-      fileOffsetBackingStore.start();
 
-      final Map<String, String> internalConverterConfig = Collections.singletonMap(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, "false");
-      final JsonConverter keyConverter = new JsonConverter();
-      keyConverter.configure(internalConverterConfig, true);
-      final JsonConverter valueConverter = new JsonConverter();
-      valueConverter.configure(internalConverterConfig, false);
+    try {
+      fileOffsetBackingStore = getFileOffsetBackingStore(properties);
+      offsetStorageReader = getOffsetStorageReader(fileOffsetBackingStore, properties);
 
       final PostgresConnectorConfig postgresConnectorConfig = new PostgresConnectorConfig(Configuration.from(properties));
       final PostgresCustomLoader loader = new PostgresCustomLoader(postgresConnectorConfig);
       final Set<Partition> partitions =
           Collections.singleton(new PostgresPartition(postgresConnectorConfig.getLogicalName(), properties.getProperty(DATABASE_NAME.name())));
-      offsetStorageReader = new OffsetStorageReaderImpl(fileOffsetBackingStore, properties.getProperty("name"), keyConverter,
-          valueConverter);
+
       final OffsetReader<Partition, PostgresOffsetContext, Loader> offsetReader = new OffsetReader<>(offsetStorageReader, loader);
       final Map<Partition, PostgresOffsetContext> offsets = offsetReader.offsets(partitions);
 
       return extractLsn(partitions, offsets, loader);
-
     } finally {
       LOGGER.info("Closing offsetStorageReader and fileOffsetBackingStore");
       if (offsetStorageReader != null) {

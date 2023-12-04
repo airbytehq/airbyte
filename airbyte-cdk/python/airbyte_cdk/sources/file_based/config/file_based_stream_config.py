@@ -9,6 +9,7 @@ from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
+from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
 from pydantic import BaseModel, Field, validator
@@ -25,8 +26,10 @@ class ValidationPolicy(Enum):
 class FileBasedStreamConfig(BaseModel):
     name: str = Field(title="Name", description="The name of the stream.")
     globs: Optional[List[str]] = Field(
+        default=["**"],
         title="Globs",
         description='The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href="https://en.wikipedia.org/wiki/Glob_(programming)">here</a>.',
+        order=1,
     )
     legacy_prefix: Optional[str] = Field(
         title="Legacy Prefix",
@@ -50,7 +53,7 @@ class FileBasedStreamConfig(BaseModel):
         description="When the state history of the file store is full, syncs will only read files that were last modified in the provided day range.",
         default=3,
     )
-    format: Union[AvroFormat, CsvFormat, JsonlFormat, ParquetFormat] = Field(
+    format: Union[AvroFormat, CsvFormat, JsonlFormat, ParquetFormat, UnstructuredFormat] = Field(
         title="Format",
         description="The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
     )

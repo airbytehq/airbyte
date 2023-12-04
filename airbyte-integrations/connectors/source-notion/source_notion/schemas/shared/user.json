@@ -10,7 +10,7 @@
       "type": "string"
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "avatar_url": {
       "type": ["null", "string"]
@@ -23,7 +23,7 @@
       "additionalProperties": true,
       "properties": {
         "email": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },

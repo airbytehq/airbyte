@@ -18,7 +18,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: 0.3.2 # `start_date` format changed to format: date-time
+          disable_for_version: 0.3.5 # `date` format changed to format: date-time in the AverageSessionLength stream
   basic_read:
     tests:
       - config_path: "secrets/config.json"

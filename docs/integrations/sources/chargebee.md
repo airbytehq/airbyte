@@ -71,6 +71,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.2.5 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.4   | 2023-08-01 | [28905](https://github.com/airbytehq/airbyte/pull/28905) | Updated the connector to use latest CDK version                                                               |
 | 0.2.3   | 2023-03-22 | [24370](https://github.com/airbytehq/airbyte/pull/24370) | Ignore 404 errors for `Contact` stream                                                              |
 | 0.2.2   | 2023-02-17 | [21688](https://github.com/airbytehq/airbyte/pull/21688) | Migrate to CDK beta 0.29; fix schemas                                                               |

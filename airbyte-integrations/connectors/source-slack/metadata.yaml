@@ -1,12 +1,18 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - slack.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
   connectorType: source
   definitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
-  dockerImageTag: 0.3.3
+  dockerImageTag: 0.3.5
   dockerRepository: airbyte/source-slack
+  documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   githubIssueLabel: source-slack
   icon: slack.svg
   license: MIT
@@ -24,11 +30,7 @@ data:
       - channel_messages
       - channel_members
       - threads
-  documentationUrl: https://docs.airbyte.com/integrations/sources/slack
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

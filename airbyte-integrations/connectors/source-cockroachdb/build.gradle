@@ -4,9 +4,19 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.2.0'
     features = ['db-sources']
     useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileTestJava {
+        options.compilerArgs.remove("-Werror")
+    }
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -17,13 +27,10 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation libs.postgresql
 
     testImplementation libs.testcontainers.cockroachdb
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-
-    testImplementation project(":airbyte-json-validation")
 }

@@ -93,7 +93,7 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+        configured_catalog_path: "integration_tests/configured_catalog_full_refresh_test.json"
         ignored_fields:
           organizations:
             - name: followers

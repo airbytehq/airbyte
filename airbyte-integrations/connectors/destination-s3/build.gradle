@@ -4,8 +4,8 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
-    features = ['db-destinations']
+    cdkVersionRequired = '0.4.1'
+    features = ['db-destinations', 's3-destinations']
     useLocalCdk = false
 }
 
@@ -17,8 +17,6 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation libs.airbyte.protocol
 
     // csv
     implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'

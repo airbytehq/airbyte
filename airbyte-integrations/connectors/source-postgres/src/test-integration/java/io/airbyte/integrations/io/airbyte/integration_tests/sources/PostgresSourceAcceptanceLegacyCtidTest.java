@@ -8,7 +8,7 @@ public class PostgresSourceAcceptanceLegacyCtidTest extends PostgresSourceAccept
 
   @Override
   protected String getServerImageName() {
-    return "postgres:13-alpine";
+    return "postgres:12-bullseye";
   }
 
 }

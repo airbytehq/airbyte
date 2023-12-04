@@ -90,7 +90,11 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     ) -> Iterable[RemoteFile]:
         yield from self.filter_files_by_globs_and_start_date(
             [
-                RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"))
+                RemoteFile(
+                    uri=f,
+                    mime_type=data.get("mime_type", None),
+                    last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                )
                 for f, data in self.files.items()
             ],
             globs,
@@ -101,6 +105,8 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             return self._make_csv_file_contents(file.uri)
         elif self.file_type == "jsonl":
             return self._make_jsonl_file_contents(file.uri)
+        elif self.file_type == "unstructured":
+            return self._make_binary_file_contents(file.uri)
         else:
             raise NotImplementedError(f"No implementation for file type: {self.file_type}")
 
@@ -133,6 +139,13 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             except TypeError:
                 # Intentionally trigger json validation error
                 fh.write((str(line) + "\n").encode("utf-8"))
+        fh.seek(0)
+        return fh
+
+    def _make_binary_file_contents(self, file_name: str) -> IOBase:
+        fh = io.BytesIO()
+
+        fh.write(self.files[file_name]["contents"])
         fh.seek(0)
         return fh
 

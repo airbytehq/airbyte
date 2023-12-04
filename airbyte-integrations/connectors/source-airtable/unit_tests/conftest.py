@@ -89,11 +89,12 @@ def streams_json_response():
 
 
 @pytest.fixture
-def streams_processed_response():
+def streams_processed_response(table):
     return [
         {
             "_airtable_id": "some_id",
             "_airtable_created_time": "2022-12-02T19:50:00.000Z",
+            "_airtable_table_name": table,
             "field1": True,
             "field2": "test",
             "field3": 123,
@@ -109,6 +110,7 @@ def expected_json_schema():
         "properties": {
             "_airtable_created_time": {"type": ["null", "string"]},
             "_airtable_id": {"type": ["null", "string"]},
+            "_airtable_table_name": {"type": ["null", "string"]},
             "test": {"type": ["null", "string"]},
         },
         "type": "object",
@@ -116,7 +118,7 @@ def expected_json_schema():
 
 
 @pytest.fixture(scope="function", autouse=True)
-def prepared_stream():
+def prepared_stream(table):
     return {
         "stream_path": "some_base_id/some_table_id",
         "stream": AirbyteStream(
@@ -128,12 +130,14 @@ def prepared_stream():
                 "properties": {
                     "_airtable_id": {"type": ["null", "string"]},
                     "_airtable_created_time": {"type": ["null", "string"]},
+                    "_airtable_table_name": {"type": ["null", "string"]},
                     "name": {"type": ["null", "string"]},
                 },
             },
             supported_sync_modes=[SyncMode.full_refresh],
             supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup],
         ),
+        "table_name": table,
     }
 
 
@@ -144,6 +148,7 @@ def make_airtable_stream(prepared_stream):
             stream_path=prepared_stream["stream_path"],
             stream_name=name,
             stream_schema=prepared_stream["stream"].json_schema,
+            table_name=prepared_stream["table_name"],
             authenticator=fake_auth,
         )
 
