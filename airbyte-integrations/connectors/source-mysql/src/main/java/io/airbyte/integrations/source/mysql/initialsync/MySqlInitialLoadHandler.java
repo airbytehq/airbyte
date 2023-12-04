@@ -54,7 +54,7 @@ public class MySqlInitialLoadHandler {
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
   private static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
-  private static final long DEFAULT_CHUNK_SIZE = 1_000_000;
+  private static final long DEFAULT_CHUNK_SIZE = 10;
   final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
 
   public MySqlInitialLoadHandler(final JsonNode config,
@@ -128,15 +128,7 @@ public class MySqlInitialLoadHandler {
   // Calculates the number of rows to fetch per query.
   @VisibleForTesting
   public static long calculateChunkSize(final TableSizeInfo tableSizeInfo, final AirbyteStreamNameNamespacePair pair) {
-    // If table size info could not be calculated, a default chunk size will be provided.
-    if (tableSizeInfo == null || tableSizeInfo.tableSize() == 0 || tableSizeInfo.avgRowLength() == 0) {
-      LOGGER.info("Chunk size could not be determined for pair: {}, defaulting to {} rows", pair, DEFAULT_CHUNK_SIZE);
-      return DEFAULT_CHUNK_SIZE;
-    }
-    final long avgRowLength = tableSizeInfo.avgRowLength();
-    final long chunkSize = QUERY_TARGET_SIZE_GB / avgRowLength;
-    LOGGER.info("Chunk size determined for pair: {}, is {}", pair, chunkSize);
-    return chunkSize;
+    return DEFAULT_CHUNK_SIZE;
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
@@ -178,11 +170,8 @@ public class MySqlInitialLoadHandler {
         (currentPkLoadStatus == null || currentPkLoadStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
             : currentPkLoadStatus.getIncrementalState();
 
-    final Duration syncCheckpointDuration =
-        config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())
-            : MySqlInitialSyncStateIterator.SYNC_CHECKPOINT_DURATION;
-    final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
-        : MySqlInitialSyncStateIterator.SYNC_CHECKPOINT_RECORDS;
+    final Duration syncCheckpointDuration = Duration.ofSeconds(1);
+    final Long syncCheckpointRecords = 10L;
 
     return AutoCloseableIterators.transformIterator(
         r -> new MySqlInitialSyncStateIterator(r, pair, initialLoadStateManager, incrementalState,
