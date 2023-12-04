@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.util.List;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,6 +97,19 @@ public interface SqlOperations {
    * @throws Exception exception
    */
   void insertRecords(JdbcDatabase database, List<PartialAirbyteMessage> records, String schemaName, String tableName) throws Exception;
+
+  /**
+   * Insert records into table. Assumes the table exists.
+   *
+   * @param database Database that the connector is syncing
+   * @param records Records to insert.
+   * @param schemaName Name of schema
+   * @param tableName Name of table
+   * @throws Exception exception
+   */
+  default void insertRecords(JdbcDatabase database, Stream<PartialAirbyteMessage> records, String schemaName, String tableName) throws Exception {
+    insertRecords(database, records.toList(), schemaName, tableName);
+  }
 
   /**
    * Query to insert all records from source table to destination table. Both tables must be in the

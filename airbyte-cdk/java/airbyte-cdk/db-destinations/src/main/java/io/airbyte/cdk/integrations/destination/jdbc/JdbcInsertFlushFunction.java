@@ -24,7 +24,7 @@ public class JdbcInsertFlushFunction implements DestinationFlushFunction {
   public void flush(final StreamDescriptor desc, final Stream<PartialAirbyteMessage> stream) throws Exception {
     recordWriter.accept(
         new AirbyteStreamNameNamespacePair(desc.getName(), desc.getNamespace()),
-        stream.toList());
+        stream);
   }
 
   @Override
