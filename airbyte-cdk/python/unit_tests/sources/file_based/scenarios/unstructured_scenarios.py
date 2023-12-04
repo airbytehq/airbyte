@@ -74,7 +74,6 @@ simple_markdown_scenario = (
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [['document_key']],
                     "supported_sync_modes": ["full_refresh", "incremental"],
                 }
             ]
@@ -165,7 +164,6 @@ unstructured_invalid_file_type_discover_scenario_no_skip = (
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [['document_key']],
                     "supported_sync_modes": ["full_refresh", "incremental"],
                 }
             ]
@@ -227,7 +225,6 @@ unstructured_invalid_file_type_discover_scenario_skip = (
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [['document_key']],
                     "supported_sync_modes": ["full_refresh", "incremental"],
                 }
             ]
@@ -294,7 +291,6 @@ unstructured_invalid_file_type_read_scenario = (
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [['document_key']],
                     "supported_sync_modes": ["full_refresh", "incremental"],
                 }
             ]
@@ -389,7 +385,6 @@ simple_unstructured_scenario = (
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [['document_key']],
                     "supported_sync_modes": ["full_refresh", "incremental"],
                 }
             ]
@@ -490,7 +485,6 @@ no_file_extension_unstructured_scenario = (
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
-                    'source_defined_primary_key': [['document_key']],
                     "supported_sync_modes": ["full_refresh", "incremental"],
                 }
             ]
