@@ -85,7 +85,7 @@ public class IcebergIntegrationTestUtil {
     Catalog catalog = catalogConfig.genCatalog();
     String dbName = namingResolver.getNamespace(
         isNotBlank(namespace) ? namespace : catalogConfig.defaultOutputDatabase()).toLowerCase();
-    String tableName = namingResolver.getIdentifier("airbyte_raw_" + streamName).toLowerCase();
+    String tableName = namingResolver.getIdentifier("_airbyte_raw_" + streamName).toLowerCase();
     LOGGER.info("Select data from:{}", tableName);
     Table table = catalog.loadTable(TableIdentifier.of(dbName, tableName));
     try (CloseableIterable<Record> recordItr = IcebergGenerics.read(table).build()) {

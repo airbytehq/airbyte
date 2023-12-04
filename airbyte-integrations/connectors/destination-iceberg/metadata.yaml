@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: df65a8f3-9908-451b-aa9b-445462803560
-  dockerImageTag: 0.1.4
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/destination-iceberg
   githubIssueLabel: destination-iceberg
   license: MIT
@@ -16,6 +16,11 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/iceberg
   tags:
     - language:java
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "Use _airbyte_raw_ as table prefix instead of airbyte_raw_ to align with other connectors"
+        upgradeDeadline: "2023-12-31"
   ab_internal:
     sl: 100
     ql: 100

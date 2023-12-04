@@ -22,7 +22,7 @@ import org.apache.spark.sql.Row;
 public class WriteConfig implements Serializable {
 
   private static final NamingConventionTransformer namingResolver = new StandardNameTransformer();
-  private static final String AIRBYTE_RAW_TABLE_PREFIX = "airbyte_raw_";
+  private static final String AIRBYTE_RAW_TABLE_PREFIX = "_airbyte_raw_";
   private static final String AIRBYTE_TMP_TABLE_PREFIX = "_airbyte_tmp_";
 
   private final String namespace;
