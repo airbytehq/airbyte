@@ -31,7 +31,7 @@ def parse_input_sandbox_config():
 
 def get_stream(input_config: Mapping[str, Any], stream_name: str) -> Stream:
     stream_cls = type("a", (object,), {"name": stream_name})
-    configured_stream_cls = type("b", (object,), {"stream": stream_cls()})
+    configured_stream_cls = type("b", (object,), {"stream": stream_cls(), "sync_mode": "full_refresh"})
     catalog_cls = type("c", (object,), {"streams": [configured_stream_cls()]})
     source = SourceSalesforce()
     source.catalog = catalog_cls()

@@ -7,7 +7,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.5.0'
+    cdkVersionRequired = '0.5.4'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -53,4 +53,3 @@ jsonSchema2Pojo {
     includeConstructors = false
     includeSetters = true
 }
-

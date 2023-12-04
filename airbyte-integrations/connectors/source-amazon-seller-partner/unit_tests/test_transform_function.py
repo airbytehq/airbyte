@@ -15,7 +15,6 @@ def reports_stream(marketplace_id):
         authenticator=None,
         period_in_days=0,
         report_options=None,
-        advanced_stream_options=None,
     )
     return stream
 
