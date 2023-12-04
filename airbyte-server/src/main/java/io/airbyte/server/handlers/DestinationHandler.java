@@ -159,12 +159,12 @@ public class DestinationHandler {
   }
 
   public DestinationRead getDestinationRead(final DestinationIdPageRequestBody destinationIdPageRequestBody)
-          throws JsonValidationException, IOException, ConfigNotFoundException {
+      throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildDestinationRead(destinationIdPageRequestBody.getDestinationId());
   }
 
   public Long getDestinationConnectionCount(final UUID workspaceId, final UUID sourceId)
-          throws IOException {
+      throws IOException {
     return configRepository.pageDestinationStandardSyncsCount(workspaceId, sourceId);
   }
 
@@ -216,16 +216,17 @@ public class DestinationHandler {
     return new DestinationReadList().destinations(reads);
   }
 
-  public DestinationPageReadList pageDestinationsForWorkspace(final PageRequestBody pageRequestBody)
+  public DestinationPageReadList pageDestinationsForWorkspace(final DestinationPageRequestBody destinationPageRequestBody)
       throws IOException {
-    if (pageRequestBody.getPageSize() == null || pageRequestBody.getPageSize() == 0) {
-      pageRequestBody.setPageSize(10);
+    if (destinationPageRequestBody.getPageSize() == null || destinationPageRequestBody.getPageSize() == 0) {
+      destinationPageRequestBody.setPageSize(10);
     }
-    if (pageRequestBody.getPageCurrent() == null || pageRequestBody.getPageCurrent() == 0) {
-      pageRequestBody.setPageCurrent(1);
+    if (destinationPageRequestBody.getPageCurrent() == null || destinationPageRequestBody.getPageCurrent() == 0) {
+      destinationPageRequestBody.setPageCurrent(1);
     }
-    List<DestinationConnection> destinationConnections = configRepository.pageWorkspaceDestinationConnection(pageRequestBody.getWorkspaceId(),
-        pageRequestBody.getPageSize(), pageRequestBody.getPageCurrent());
+    List<DestinationConnection> destinationConnections = configRepository.pageWorkspaceDestinationConnection(
+        destinationPageRequestBody.getWorkspaceId(), destinationPageRequestBody.getDestinationDefinitionId(),
+        destinationPageRequestBody.getPageSize(), destinationPageRequestBody.getPageCurrent());
     final List<DestinationRead> destinationReads = Lists.newArrayList();
     for (final DestinationConnection destinationConnection : destinationConnections) {
       try {
@@ -240,8 +241,9 @@ public class DestinationHandler {
       }
     }
     return new DestinationPageReadList().destinations(destinationReads)
-        .total(configRepository.pageWorkspaceDestinationCount(pageRequestBody.getWorkspaceId()))
-        .pageCurrent(pageRequestBody.getPageCurrent()).pageSize(pageRequestBody.getPageSize());
+        .total(configRepository.pageWorkspaceDestinationCount(destinationPageRequestBody.getWorkspaceId(),
+            destinationPageRequestBody.getDestinationDefinitionId()))
+        .pageCurrent(destinationPageRequestBody.getPageCurrent()).pageSize(destinationPageRequestBody.getPageSize());
   }
 
   public DestinationReadList listDestinationsForDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)

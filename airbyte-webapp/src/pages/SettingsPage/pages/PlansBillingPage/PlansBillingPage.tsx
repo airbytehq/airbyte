@@ -17,6 +17,7 @@ import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 import { useUserPlanDetail, useAsyncAction } from "services/payments/PaymentsService";
+import { remainingDaysForFreeTrial } from "utils/common";
 
 import { PlanClause } from "./components/PlanClause";
 import styles from "./style.module.scss";
@@ -75,14 +76,6 @@ const PlansBillingPage: React.FC = () => {
       reAuthenticateUser(user.token as string);
     }
   }, [user.workspaceId]);
-
-  const remainingDaysForFreeTrial = (): number => {
-    const currentDate: Date = new Date();
-    const expiryDate: Date = new Date(expiresTime * 1000);
-    const diff = expiryDate.getTime() - currentDate.getTime();
-    const diffDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
 
   const reAuthenticateUser = useCallback(async (token: string) => {
     authService
@@ -191,7 +184,8 @@ const PlansBillingPage: React.FC = () => {
               <FormattedMessage
                 id={
                   getPaymentStatus(user.status) === PAYMENT_STATUS.Cancel_Subscription ||
-                  (getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial && remainingDaysForFreeTrial() < 0)
+                  (getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial &&
+                    remainingDaysForFreeTrial(expiresTime) < 0)
                     ? "plan.endedOn.heading"
                     : getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial ||
                       getPaymentStatus(user.status) === PAYMENT_STATUS.Pause_Subscription

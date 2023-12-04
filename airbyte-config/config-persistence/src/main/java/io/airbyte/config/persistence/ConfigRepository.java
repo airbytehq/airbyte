@@ -52,7 +52,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -697,13 +696,19 @@ public class ConfigRepository {
     return getStandardSyncsWithoutOperationFromResult(result);
   }
 
-  public List<SourceConnection> pageWorkspaceSourceConnection(final UUID workspaceId, final Integer pageSize, final Integer pageCurrent)
+  public List<SourceConnection> pageWorkspaceSourceConnection(final UUID workspaceId,
+                                                              final UUID sourceDefinitionId,
+                                                              final Integer pageSize,
+                                                              final Integer pageCurrent)
       throws IOException {
     final Result<Record> result = database.query(ctx -> {
       SelectConditionStep<Record> where = ctx.select(asterisk()).from(ACTOR).where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
           .and(ACTOR.ACTOR_TYPE.eq(ActorType.source));
       if (workspaceId != null) {
         where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
+      }
+      if (sourceDefinitionId != null) {
+        where.and(ACTOR.ACTOR_DEFINITION_ID.eq(sourceDefinitionId));
       }
       return where.limit(pageSize)
           .offset(pageSize * (pageCurrent - 1));
@@ -716,13 +721,19 @@ public class ConfigRepository {
     return sourceConnections;
   }
 
-  public List<DestinationConnection> pageWorkspaceDestinationConnection(final UUID workspaceId, final Integer pageSize, final Integer pageCurrent)
+  public List<DestinationConnection> pageWorkspaceDestinationConnection(final UUID workspaceId,
+                                                                        final UUID destinationDefinitionId,
+                                                                        final Integer pageSize,
+                                                                        final Integer pageCurrent)
       throws IOException {
     final Result<Record> result = database.query(ctx -> {
       SelectConditionStep<Record> where = ctx.select(asterisk()).from(ACTOR).where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
           .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination));
       if (workspaceId != null) {
         where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
+      }
+      if (destinationDefinitionId != null) {
+        where.and(ACTOR.ACTOR_DEFINITION_ID.eq(destinationDefinitionId));
       }
       return where.limit(pageSize)
           .offset(pageSize * (pageCurrent - 1));
@@ -763,23 +774,29 @@ public class ConfigRepository {
     }).fetchOne().into(Long.class);
   }
 
-  public Long pageWorkspaceSourceCount(final UUID workspaceId) throws IOException {
+  public Long pageWorkspaceSourceCount(final UUID workspaceId, final UUID sourceDefinitionId) throws IOException {
     return database.query(ctx -> {
       SelectConditionStep<Record1<Integer>> where = ctx.selectCount().from(ACTOR).where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
           .and(ACTOR.ACTOR_TYPE.eq(ActorType.source));
       if (workspaceId != null) {
         where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
       }
+      if (sourceDefinitionId != null) {
+        where.and(ACTOR.ACTOR_DEFINITION_ID.eq(sourceDefinitionId));
+      }
       return where;
     }).fetchOne().into(Long.class);
   }
 
-  public Long pageWorkspaceDestinationCount(final UUID workspaceId) throws IOException {
+  public Long pageWorkspaceDestinationCount(final UUID workspaceId, final UUID destinationDefinitionId) throws IOException {
     return database.query(ctx -> {
       SelectConditionStep<Record1<Integer>> where = ctx.selectCount().from(ACTOR).where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
           .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination));
       if (workspaceId != null) {
         where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
+      }
+      if (destinationDefinitionId != null) {
+        where.and(ACTOR.ACTOR_DEFINITION_ID.eq(destinationDefinitionId));
       }
       return where;
     }).fetchOne().into(Long.class);
