@@ -69,7 +69,11 @@ class AdCreatives(FBMarketingStream):
             yield record
 
     def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
-        yield from stream_slice.get("account").get_ad_creatives(params=params, fields=self.fields)
+        if stream_slice.get("account").get("dolead_type") != "GEOLOC":
+            yield from stream_slice.get("account").get_ad_creatives(fields=self.fields, params=params)
+        else:
+            logger.info("Account number {} is a geoloc account. Not parsing its Creatives".
+                        format(stream_slice.get("account").get("account_id")))
 
 
 class CustomConversions(FBMarketingStream):
