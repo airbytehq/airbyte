@@ -17,8 +17,7 @@ connectionSpecification:
     account:
       type: integer
       title: account
-      description:
-        getting data by account
+      description: getting data by account
       order: 2
     workspace:
       type: integer

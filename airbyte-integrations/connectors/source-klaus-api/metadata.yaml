@@ -16,7 +16,7 @@ data:
   githubIssueLabel: source-klaus-api
   icon: klaus-api.svg
   license: MIT
-  name: Klaus Api 
+  name: Klaus Api
   releaseStage: alpha
   supportLevel: community
   ab_internal:

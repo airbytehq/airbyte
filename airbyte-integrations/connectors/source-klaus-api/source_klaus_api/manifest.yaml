@@ -44,7 +44,7 @@ definitions:
       type: RecordSelector
       extractor:
         type: DpathExtractor
-        field_path: ["conversations" ]
+        field_path: ["conversations"]
       paginator:
         type: NoPagination
 
