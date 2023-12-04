@@ -981,6 +981,7 @@ spec:
     type: object
     required:
       - api_key
+      - start_date
     properties:
       api_key:
         type: string
