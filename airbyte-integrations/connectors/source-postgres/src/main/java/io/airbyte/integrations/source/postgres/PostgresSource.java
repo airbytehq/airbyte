@@ -167,6 +167,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     // noise
     // noise
     // noise
+    // noise
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
