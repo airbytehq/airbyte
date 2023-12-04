@@ -124,18 +124,17 @@ At this point you can run `airbyte-ci` commands.
 
 #### Options
 
-| Option                                     | Default value                                                                                  | Mapped environment variable   | Description                                                                                 |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
-| `--enable-dagger-run/--disable-dagger-run` | `--enable-dagger-run``      |                               | Disables the Dagger terminal UI. |                               |                                                                                             |
-| `--enable-auto-update/--disable-auto-update` | `--enable-auto-update``      |                               | Disables the auto update prompt |                               |                                                                                             |
-| `--is-local/--is-ci`                       | `--is-local`                                                                                   |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
-| `--git-branch`                             | The checked out git branch name                                                                | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
-| `--git-revision`                           | The current branch head                                                                        | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
-| `--diffed-branch`                          | `origin/master`                                                                                |                               | Branch to which the git diff will happen to detect new or modified files.                   |
-| `--gha-workflow-run-id`                    |                                                                                                |                               | GHA CI only - The run id of the GitHub action workflow                                      |
-| `--ci-context`                             | `manual`                                                                                       |                               | The current CI context: `manual` for manual run, `pull_request`, `nightly_builds`, `master` |
-| `--pipeline-start-timestamp`               | Current epoch time                                                                             | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.       |
-| `--show-dagger-logs/--hide-dagger-logs`    | `--hide-dagger-logs`                                                                           |                               | Flag to show or hide the dagger logs.                                                       |
+| Option                                     | Default value                                                                                                                                                      | Mapped environment variable   | Description                                                                                 |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `--enable-dagger-run/--disable-dagger-run` | `--enable-dagger-run``      |                               | Disables the Dagger terminal UI. |                               | |                               | |                               |                                                                                             |
+| `--is-local/--is-ci`                       | `--is-local`                                                                                                                                                       |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
+| `--git-branch`                             | The checked out git branch name                                                                                                                                    | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
+| `--git-revision`                           | The current branch head                                                                                                                                            | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
+| `--diffed-branch`                          | `origin/master`                                                                                                                                                    |                               | Branch to which the git diff will happen to detect new or modified files.                   |
+| `--gha-workflow-run-id`                    |                                                                                                                                                                    |                               | GHA CI only - The run id of the GitHub action workflow                                      |
+| `--ci-context`                             | `manual`                                                                                                                                                           |                               | The current CI context: `manual` for manual run, `pull_request`, `nightly_builds`, `master` |
+| `--pipeline-start-timestamp`               | Current epoch time                                                                                                                                                 | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.       |
+| `--show-dagger-logs/--hide-dagger-logs`    | `--hide-dagger-logs`                                                                                                                                               |                               | Flag to show or hide the dagger logs.                                                       |
 
 ### <a id="connectors-command-subgroup"></a>`connectors` command subgroup
 
@@ -255,6 +254,16 @@ It's mainly purposed for local use.
 Build a single connector:
 `airbyte-ci connectors --name=source-pokeapi build`
 
+Build a single connector with a custom image tag:
+`airbyte-ci connectors --name=source-pokeapi build --tag=my-custom-tag`
+
+Build a single connector for multiple architectures:
+`airbyte-ci connectors --name=source-pokeapi build --architecture=linux/amd64 --architecture=linux/arm64`
+
+You will get:
+* `airbyte/source-pokeapi:dev-linux-amd64`
+* `airbyte/source-pokeapi:dev-linux-arm64`
+
 Build multiple connectors:
 `airbyte-ci connectors --name=source-pokeapi --name=source-bigquery build`
 
@@ -291,10 +300,18 @@ flowchart TD
     distTar-->connector
     normalization--"if supports normalization"-->connector
 
-    load[Load to docker host with :dev tag, current platform]
+    load[Load to docker host with :dev tag]
     spec[Get spec]
     connector-->spec--"if success"-->load
 ```
+
+### Options
+
+| Option                | Multiple | Default value  | Description                                                       |
+| --------------------- | -------- | -------------- | ----------------------------------------------------------------- |
+| `--architecture`/`-a` | True     | Local platform | Defines for which architecture(s) the connector image will be built. |
+| `--tag`               | False    | `dev`          | Image tag for the built image.                                    |
+
 
 ### <a id="connectors-publish-command"></a>`connectors publish` command
 Run a publish pipeline for one or multiple connectors.
@@ -434,13 +451,17 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2.10.2  | [#33008](https://github.com/airbytehq/airbyte/pull/33008)  | Fix local `connector build`.                                                                     |
+| 2.10.1  | [#32928](https://github.com/airbytehq/airbyte/pull/32928)  | Fix BuildConnectorImages constructor.                                                                     |
+| 2.10.0  | [#32819](https://github.com/airbytehq/airbyte/pull/32819)  | Add `--tag` option to connector build.                                                                    |
+| 2.9.0   | [#32816](https://github.com/airbytehq/airbyte/pull/32816)  | Add `--architecture` option to connector build.                                                           |
 | 2.8.1   | [#32999](https://github.com/airbytehq/airbyte/pull/32999)  | Improve Java code formatting speed                       |
 | 2.8.0   | [#31930](https://github.com/airbytehq/airbyte/pull/31930)  | Move pipx install to `airbyte-ci-dev`, and add auto-update feature targeting binary                       |
-| 2.7.3   | [#32847](https://github.com/airbytehq/airbyte/pull/32847)  | Improve --modified behaviour for pull requests.                                                            |
+| 2.7.3   | [#32847](https://github.com/airbytehq/airbyte/pull/32847)  | Improve --modified behaviour for pull requests.                                                           |
 | 2.7.2   | [#32839](https://github.com/airbytehq/airbyte/pull/32839)  | Revert changes in v2.7.1.                                                                                 |
-| 2.7.1   | [#32806](https://github.com/airbytehq/airbyte/pull/32806)  | Improve --modified behaviour for pull requests.                                                            |
+| 2.7.1   | [#32806](https://github.com/airbytehq/airbyte/pull/32806)  | Improve --modified behaviour for pull requests.                                                           |
 | 2.7.0   | [#31930](https://github.com/airbytehq/airbyte/pull/31930)  | Merge airbyte-ci-internal into airbyte-ci                                                                 |
-| 2.6.0   | [#31831](https://github.com/airbytehq/airbyte/pull/31831)  | Add `airbyte-ci format` commands, remove connector-specific formatting check                               |
+| 2.6.0   | [#31831](https://github.com/airbytehq/airbyte/pull/31831)  | Add `airbyte-ci format` commands, remove connector-specific formatting check                              |
 | 2.5.9   | [#32427](https://github.com/airbytehq/airbyte/pull/32427)  | Re-enable caching for source-postgres                                                                     |
 | 2.5.8   | [#32402](https://github.com/airbytehq/airbyte/pull/32402)  | Set Dagger Cloud token for airbyters only                                                                 |
 | 2.5.7   | [#31628](https://github.com/airbytehq/airbyte/pull/31628)  | Add ClickPipelineContext class                                                                            |
