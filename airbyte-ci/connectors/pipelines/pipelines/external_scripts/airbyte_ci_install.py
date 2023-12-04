@@ -7,6 +7,7 @@
 import os
 import shutil
 import sys
+import ssl
 import tempfile
 import urllib.request
 
@@ -14,6 +15,20 @@ import urllib.request
 # because we don't want to introduce any dependencies on other files in the repository.
 RELEASE_URL = os.getenv("RELEASE_URL", "https://connectors.airbyte.com/files/airbyte-ci/releases")
 
+def _get_custom_certificate_path():
+    # if certifi is not installed, do nothing
+    try:
+        import certifi
+        return certifi.where()
+    except ImportError:
+        return
+
+def get_ssl_context():
+    certifi_path = _get_custom_certificate_path()
+    if certifi_path is None:
+        return ssl.create_default_context()
+
+    return ssl.create_default_context(cafile=certifi_path)
 
 def get_airbyte_os_name():
     """
@@ -49,7 +64,8 @@ def main(version="latest"):
 
         # Download the file using urllib.request
         print(f"Downloading from {url}")
-        with urllib.request.urlopen(url) as response, open(tmp_file, "wb") as out_file:
+        context = get_ssl_context()
+        with urllib.request.urlopen(url, context=context) as response, open(tmp_file, "wb") as out_file:
             shutil.copyfileobj(response, out_file)
 
         # Check if the destination path is a symlink and delete it if it is
