@@ -9,9 +9,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.InitialLoadStreams;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
-import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -50,7 +50,7 @@ public class MySqlInitialLoadStreamStateManager implements MySqlInitialLoadState
   @Override
   public AirbyteStateMessage createFinalStateMessage(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair,
                                                      final JsonNode streamStateForIncrementalRun,
-      final double messageCount) {
+                                                     final double messageCount) {
 
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
