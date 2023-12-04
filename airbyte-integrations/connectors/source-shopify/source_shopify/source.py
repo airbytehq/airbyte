@@ -843,7 +843,7 @@ class InventoryLevels(ShopifySubstream):
         if next_page_token:
             params.update(**next_page_token)
         else:
-            params[self.filter_field] = kwargs["stream_slice"]["location_id"]
+            params[self.filter_field] = kwargs["stream_slice"][self.slice_key]
             params["updated_at_min"] = kwargs.get("stream_slice", {}).get(self.cursor_field)
         return params
 
