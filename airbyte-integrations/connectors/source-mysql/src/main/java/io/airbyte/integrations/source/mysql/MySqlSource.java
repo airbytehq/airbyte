@@ -169,6 +169,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   public MySqlSource() {
+    // noise
     super(DRIVER_CLASS, MySqlStreamingQueryConfig::new, new MySqlSourceOperations());
   }
 
