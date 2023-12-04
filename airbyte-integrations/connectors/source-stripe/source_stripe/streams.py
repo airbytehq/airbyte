@@ -157,10 +157,7 @@ class StripeStream(HttpStream, ABC):
         super().__init__(*args, **kwargs)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        decoded_response = response.json()
-        if "has_more" in decoded_response and decoded_response["has_more"] and decoded_response.get("data", []):
-            last_object_id = decoded_response["data"][-1]["id"]
-            return {"starting_after": last_object_id}
+        return None
 
     def request_params(
         self,
