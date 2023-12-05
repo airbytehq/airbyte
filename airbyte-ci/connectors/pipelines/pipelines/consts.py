@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import os
 import platform
 from enum import Enum
 
@@ -20,7 +19,7 @@ CONNECTOR_TESTING_REQUIREMENTS = [
     "pytest-custom_exit_code",
 ]
 
-BUILD_PLATFORMS = [Platform("linux/amd64"), Platform("linux/arm64")]
+BUILD_PLATFORMS = (Platform("linux/amd64"), Platform("linux/arm64"))
 
 PLATFORM_MACHINE_TO_DAGGER_PLATFORM = {
     "x86_64": Platform("linux/amd64"),
@@ -28,11 +27,13 @@ PLATFORM_MACHINE_TO_DAGGER_PLATFORM = {
     "aarch64": Platform("linux/amd64"),
     "amd64": Platform("linux/amd64"),
 }
-LOCAL_BUILD_PLATFORM = PLATFORM_MACHINE_TO_DAGGER_PLATFORM[platform.machine()]
+LOCAL_MACHINE_TYPE = platform.machine()
+LOCAL_BUILD_PLATFORM = PLATFORM_MACHINE_TO_DAGGER_PLATFORM[LOCAL_MACHINE_TYPE]
 AMAZONCORRETTO_IMAGE = "amazoncorretto:17.0.8-al2023"
 NODE_IMAGE = "node:18.18.0-slim"
 GO_IMAGE = "golang:1.17"
 PYTHON_3_10_IMAGE = "python:3.10.13-slim"
+MAVEN_IMAGE = "maven:3.9.5-amazoncorretto-17-al2023"
 DOCKER_VERSION = "24.0.2"
 DOCKER_DIND_IMAGE = f"docker:{DOCKER_VERSION}-dind"
 DOCKER_CLI_IMAGE = f"docker:{DOCKER_VERSION}-cli"
