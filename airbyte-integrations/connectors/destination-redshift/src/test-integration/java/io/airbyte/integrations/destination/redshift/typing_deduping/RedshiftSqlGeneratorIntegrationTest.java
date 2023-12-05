@@ -150,6 +150,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   @Override
   protected SqlGenerator<TableDefinition> getSqlGenerator() {
     return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
+
       // Override only for tests to print formatted SQL. The actual implementation should use unformatted
       // to save bytes.
       @Override
