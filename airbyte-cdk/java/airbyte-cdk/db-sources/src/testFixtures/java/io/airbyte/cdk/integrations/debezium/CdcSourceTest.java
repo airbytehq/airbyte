@@ -177,7 +177,11 @@ public abstract class CdcSourceTest<S extends Source, T extends TestDatabase<?, 
 
   @AfterEach
   protected void tearDown() {
-    testdb.close();
+    try {
+      testdb.close();
+    } catch (Throwable e) {
+      LOGGER.error("exception during teardown", e);
+    }
   }
 
   protected String columnClause(final Map<String, String> columnsWithDataType, final Optional<String> primaryKey) {
