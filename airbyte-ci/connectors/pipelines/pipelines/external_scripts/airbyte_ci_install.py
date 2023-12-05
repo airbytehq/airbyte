@@ -21,13 +21,13 @@ def _get_custom_certificate_path():
     Returns the path to the custom certificate file if certifi is installed, otherwise None.
 
     HACK: This is a workaround for the fact that the pyinstaller binary does not know how or where to
-    find the ssl certificates file. This is a problem because the binary is built on a different system
+    find the ssl certificates file. This happens because the binary is built on a different system
     than the one it is being run on. This function will return the path to the certifi certificate file
     if it is installed, otherwise it will return None. This function is used in get_ssl_context() below.
 
     WHY: this works when certifi is not found:
     If you run this file directly, it will use the system python interpreter and will be able to find
-    the ssl certificates file.
+    the ssl certificates file. e.g. when running in dev mode or via the makefile.
 
     WHY: this works when certifi is found:
     When this file is run by the pyinstaller binary, it is through the pipelines project, which has
@@ -47,6 +47,7 @@ def _get_custom_certificate_path():
 def get_ssl_context():
     """
     Returns an ssl.SSLContext object with the custom certificate file if certifi is installed, otherwise
+    returns the default ssl.SSLContext object.
     """
     certifi_path = _get_custom_certificate_path()
     if certifi_path is None:
