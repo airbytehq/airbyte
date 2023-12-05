@@ -78,7 +78,7 @@ public class JdbcBufferedConsumerFactory {
         onCloseFunction(use1s1t, typerDeduper),
         new JdbcInsertFlushFunction(recordWriterFunction(database, sqlOperations, writeConfigs, catalog)),
         catalog,
-        new BufferManager((long) (Runtime.getRuntime().maxMemory() * 0.2)),
+        new BufferManager((long) (Runtime.getRuntime().maxMemory() * 0.1)),
         defaultNamespace,
         Executors.newFixedThreadPool(1));
   }
