@@ -27,6 +27,7 @@ export interface FilterSourceRequestBody {
   workspaceId: string;
   pageSize: number;
   pageCurrent: number;
+  SourceDefinitionId: string;
 }
 
 export interface FilterDestinationRequestBody {

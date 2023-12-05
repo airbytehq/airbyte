@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, MainPageWithScroll } from "components";
+import { Button, DropDown, DropDownRow, MainPageWithScroll } from "components";
 import HeadTitle from "components/HeadTitle";
 import { PageSize } from "components/PageSize";
 import PageTitle from "components/PageTitle";
@@ -15,6 +15,7 @@ import { FilterSourceRequestBody } from "core/request/DaspireClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 // import { useConnectionFilterOptions, useFilteredConnectionList } from "hooks/services/useConnectionHook";
 
+import { useConnectionFilterOptions } from "hooks/services/useConnectionHook";
 import { usePageConfig } from "hooks/services/usePageConfig";
 import { usePaginatedSources } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
@@ -53,7 +54,7 @@ const AllSourcesPage: React.FC = () => {
   const { push, query } = useRouter();
   // const { push } = useRouter();
   const [pageConfig, updatePageSize] = usePageConfig();
-
+  const { sourceOptions } = useConnectionFilterOptions();
   // const [currentPageSize, setCurrentPageSize] = useState<number>(pageConfig.connection.pageSize);
   const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig.source.pageSize);
   // const { sources } = useSourceList();
@@ -64,6 +65,7 @@ const AllSourcesPage: React.FC = () => {
     workspaceId: workspace.workspaceId,
     pageSize: pageCurrent,
     pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
+    SourceDefinitionId: sourceOptions[0].value,
   };
 
   const [filters, setFilters] = useState<FilterSourceRequestBody>(initialFiltersState);
@@ -138,6 +140,14 @@ const AllSourcesPage: React.FC = () => {
         />
       }
     >
+      {" "}
+      <DropDown
+        $withBorder
+        $background="white"
+        value={filters.SourceDefinitionId}
+        options={sourceOptions}
+        onChange={(option: DropDownRow.IDataItem) => onSelectFilter("sourceDefinitionId", option.value)}
+      />
       <Separator height="10px" />
       <SourcesTable sources={sources} />
       <Separator height="24px" />
