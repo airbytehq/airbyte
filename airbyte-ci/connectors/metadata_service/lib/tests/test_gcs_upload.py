@@ -334,12 +334,13 @@ def test_upload_invalid_metadata_to_gcs(invalid_metadata_yaml_files):
         # If your test fails with 'Please set the DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables.'
         # then your test data passed validation when it shouldn't have!
         with pytest.raises(ValueError, match="Validation error") as exc_info:
-            print(f"Upload raised {exc_info.value}")
             gcs_upload.upload_metadata_to_gcs(
                 "my_bucket",
                 metadata_file_path,
                 validator_opts=ValidatorOptions(docs_path=DOCS_PATH),
             )
+        print(f"Upload raised {exc_info.value}")
+
 
 
 def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_upload_files):
@@ -350,12 +351,12 @@ def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_u
         print(f"\nTesting upload of valid metadata file with invalid docker image: " + invalid_metadata_file)
         metadata_file_path = Path(invalid_metadata_file)
         with pytest.raises(ValueError, match="does not exist in DockerHub") as exc_info:
-            print(f"Upload raised {exc_info.value}")
             gcs_upload.upload_metadata_to_gcs(
                 "my_bucket",
                 metadata_file_path,
                 validator_opts=ValidatorOptions(doc_paths=DOCS_PATH),
             )
+        print(f"Upload raised {exc_info.value}")
 
 
 def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_files):
