@@ -365,8 +365,9 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bq, "asia-east1");
     // We're creating the dataset in the wrong location in the @BeforeEach block. Explicitly delete it.
     bq.getDataset(namespace).delete();
-
-    destinationHandler.execute(new BigQuerySqlGenerator(projectId, "asia-east1").createTable(incrementalDedupStream, "", false));
+    var sqlGenerator = new BigQuerySqlGenerator(projectId, "asia-east1");
+    destinationHandler.execute(sqlGenerator.createSchema(namespace));
+    destinationHandler.execute(sqlGenerator.createTable(incrementalDedupStream, "", false));
 
     // Empirically, it sometimes takes Bigquery nearly 30 seconds to propagate the dataset's existence.
     // Give ourselves 2 minutes just in case.

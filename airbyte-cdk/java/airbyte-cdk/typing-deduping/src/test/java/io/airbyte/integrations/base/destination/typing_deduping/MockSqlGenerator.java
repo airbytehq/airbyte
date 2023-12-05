@@ -23,6 +23,11 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
+  public String createSchema(final String schema) {
+    return "CREATE SCHEMA " + schema;
+  }
+
+  @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
     return "CREATE TABLE " + stream.id().finalTableId("", suffix);
   }

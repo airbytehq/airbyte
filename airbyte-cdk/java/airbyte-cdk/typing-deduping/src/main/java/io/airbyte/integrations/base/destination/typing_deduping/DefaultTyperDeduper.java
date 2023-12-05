@@ -14,6 +14,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -100,12 +101,14 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
                              final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
                              final int defaultThreadCount) {
     this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2TableMigrator(), defaultThreadCount);
-  }
+  }aa
 
   private void prepareSchemas(ParsedCatalog parsedCatalog) throws Exception {
     var rawSchema = parsedCatalog.streams().stream().map(stream -> stream.id().rawNamespace());
     var finalSchema = parsedCatalog.streams().stream().map(stream -> stream.id().finalNamespace());
-    var allSchemas = Streams.concat(rawSchema, finalSchema).collect(Collectors.toSet());
+    var allSchemas = Streams.concat(rawSchema, finalSchema)
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toSet());
     if (allSchemas.size() > 2) {
       LOGGER.warn("More than two Schemas discovered in Catalog", allSchemas);
     }
