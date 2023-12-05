@@ -4,6 +4,7 @@
 
 import json
 from pathlib import Path
+from typing import Optional
 
 import pytest
 import yaml
@@ -21,7 +22,7 @@ MOCK_DOC_URL_PATH = "integrations/sources/existingsource.md"
 VALID_DOC_FILE_PATH = Path(DOCS_PATH) / MOCK_DOC_URL_PATH
 
 
-def stub_is_image_on_docker_hub(image_name: str, version: str) -> bool:
+def stub_is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] = None, retries: int = 0, wait_sec: int = 30) -> bool:
     return "exists" in image_name and version not in MOCK_VERSIONS_THAT_DO_NOT_EXIST
 
 
