@@ -29,7 +29,7 @@ public class JdbcInsertFlushFunction implements DestinationFlushFunction {
   public long getOptimalBatchSizeBytes() {
     // TODO tune this value - currently SqlOperationUtils partitions 10K records per insert statement,
     // but we'd like to stop doing that and instead control sql insert statement size via batch size.
-    return GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
+    return 10 * 1024 * 1024;
   }
 
 }
