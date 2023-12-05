@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
@@ -186,6 +187,24 @@ public abstract class JdbcSqlOperations implements SqlOperations {
       airbyteRecordMessage.setSerialized(Jsons.serialize(data));
     }));
     if (TypingAndDedupingFlag.isDestinationV2()) {
+      insertRecordsInternalV2(database, records.stream(), schemaName, tableName);
+    } else {
+      insertRecordsInternal(database, records.stream(), schemaName, tableName);
+    }
+  }
+
+  @Override
+  public final void insertRecords(final JdbcDatabase database,
+                                  final Stream<PartialAirbyteMessage> records,
+                                  final String schemaName,
+                                  final String tableName)
+      throws Exception {
+    dataAdapter.ifPresent(adapter -> records.forEach(airbyteRecordMessage -> {
+      final JsonNode data = Jsons.deserializeExact(airbyteRecordMessage.getSerialized());
+      adapter.adapt(data);
+      airbyteRecordMessage.setSerialized(Jsons.serialize(data));
+    }));
+    if (TypingAndDedupingFlag.isDestinationV2()) {
       insertRecordsInternalV2(database, records, schemaName, tableName);
     } else {
       insertRecordsInternal(database, records, schemaName, tableName);
@@ -193,13 +212,13 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   protected abstract void insertRecordsInternal(JdbcDatabase database,
-                                                List<PartialAirbyteMessage> records,
+                                                Stream<PartialAirbyteMessage> records,
                                                 String schemaName,
                                                 String tableName)
       throws Exception;
 
   protected abstract void insertRecordsInternalV2(JdbcDatabase database,
-                                                  List<PartialAirbyteMessage> records,
+                                                  Stream<PartialAirbyteMessage> records,
                                                   String schemaName,
                                                   String tableName)
       throws Exception;

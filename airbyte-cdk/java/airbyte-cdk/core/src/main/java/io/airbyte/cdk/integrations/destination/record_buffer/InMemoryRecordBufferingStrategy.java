@@ -75,7 +75,7 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   @Override
   public void flushSingleBuffer(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer buffer) throws Exception {
     LOGGER.info("Flushing single stream {}: {} records", stream.getName(), streamBuffer.get(stream).size());
-    recordWriter.accept(stream, streamBuffer.get(stream));
+    recordWriter.accept(stream, streamBuffer.get(stream).stream());
     LOGGER.info("Flushing completed for {}", stream.getName());
   }
 
@@ -84,7 +84,7 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
     for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
       LOGGER.info("Flushing {}: {} records ({})", entry.getKey().getName(), entry.getValue().size(),
           FileUtils.byteCountToDisplaySize(bufferSizeInBytes));
-      recordWriter.accept(entry.getKey(), entry.getValue());
+      recordWriter.accept(entry.getKey(), entry.getValue().stream());
       if (checkAndRemoveRecordWriter != null) {
         fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
       }

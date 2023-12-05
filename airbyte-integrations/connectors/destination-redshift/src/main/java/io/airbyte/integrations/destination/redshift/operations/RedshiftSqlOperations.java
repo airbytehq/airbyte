@@ -21,6 +21,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.jooq.BatchBindStep;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -69,11 +70,12 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<PartialAirbyteMessage> records,
+                                    final Stream<PartialAirbyteMessage> records,
                                     final String schemaName,
                                     final String tmpTableName)
       throws SQLException {
-    LOGGER.info("actual size of batch: {}", records.size());
+    List<PartialAirbyteMessage> recordList = records.toList();
+    LOGGER.info("actual size of batch: {}", recordList.size());
 
     // query syntax:
     // INSERT INTO public.users (ab_id, data, emitted_at) VALUES
@@ -87,16 +89,16 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     final String recordQueryComponent = "(?, JSON_PARSE(?), ?),\n";
-    SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
+    SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, recordList);
   }
 
   @Override
   protected void insertRecordsInternalV2(final JdbcDatabase database,
-                                         final List<PartialAirbyteMessage> records,
+                                         final Stream<PartialAirbyteMessage> records,
                                          final String schemaName,
                                          final String tableName) {
-    LOGGER.info("Total records received to insert: {}", records.size());
-    for (List<PartialAirbyteMessage> batch : Iterables.partition(records, 5_000)) {
+    // LOGGER.info("Total records received to insert: {}", records.size());
+    for (List<PartialAirbyteMessage> batch : Iterables.partition(records::iterator, 5_000)) {
       try {
         // Execute only a subset of prepared statements on each connection. This code hangs (or rather runs
         // very slow) in redshift with batch size more than 10K records.
@@ -124,6 +126,13 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
         throw new RuntimeException(e);
       }
     }
+
+    // TODO: Late binding execute to avoid eager consuming stream through iterator by partition
+    /*
+     * final AtomicInteger batchSize = new AtomicInteger(0); records.forEach(batch -> {
+     *
+     * });
+     */
   }
 
 }
