@@ -2126,7 +2126,9 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
                 if object_id not in stream_state or record[self.cursor_field] > stream_state[object_id][self.cursor_field]:
                     yield record
 
-    def stream_slices(self, sync_mode: SyncMode, cursor_field: List[str] | None = None, stream_state: Mapping[str, Any] | None = None) -> Iterable[Mapping[str, Any] | None]:
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         now = pendulum.now(tz="UTC")
         for parent_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
 

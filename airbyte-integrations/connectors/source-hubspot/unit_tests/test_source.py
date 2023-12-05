@@ -88,6 +88,29 @@ def test_streams(requests_mock, config):
     assert len(streams) == 30
 
 
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_streams(requests_mock, config_experimental):
+
+    streams = SourceHubspot().streams(config_experimental)
+
+    assert len(streams) == 42
+
+
+def test_custom_streams(config_experimental):
+    custom_object_stream_instances = [
+        MagicMock()
+    ]
+    streams = SourceHubspot().get_web_analytics_custom_objects_stream(
+        custom_object_stream_instances=custom_object_stream_instances,
+        common_params={
+            "api": MagicMock(),
+            "start_date": "2021-01-01T00:00:00Z",
+            "credentials": config_experimental["credentials"]
+        }
+    )
+    assert len(list(streams)) == 1
+
+
 def test_check_credential_title_exception(config):
     config["credentials"].pop("credentials_title")
 
