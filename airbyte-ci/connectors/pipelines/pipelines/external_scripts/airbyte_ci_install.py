@@ -45,6 +45,9 @@ def _get_custom_certificate_path():
 
 
 def get_ssl_context():
+    """
+    Returns an ssl.SSLContext object with the custom certificate file if certifi is installed, otherwise
+    """
     certifi_path = _get_custom_certificate_path()
     if certifi_path is None:
         return ssl.create_default_context()
