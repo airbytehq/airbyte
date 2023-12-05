@@ -222,7 +222,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void setBinary(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    preparedStatement.setBytes(parameterIndex, DatatypeConverter.parseHexBinary(value));
+    preparedStatement.setBytes(parameterIndex, DatatypeConverter.parseBase64Binary(value));
   }
 
   protected <ObjectType> ObjectType getObject(final ResultSet resultSet, final int index, final Class<ObjectType> clazz) throws SQLException {
