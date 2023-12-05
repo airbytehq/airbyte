@@ -330,7 +330,10 @@ def test_upload_metadata_to_gcs_non_existent_metadata_file():
         )
 
 
-def test_upload_invalid_metadata_to_gcs(invalid_metadata_yaml_files):
+def test_upload_invalid_metadata_to_gcs(mocker, invalid_metadata_yaml_files):
+    # Mock dockerhub
+    mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
+
     # Test that all invalid metadata files throw a ValueError
     for invalid_metadata_file in invalid_metadata_yaml_files:
         print(f"\nTesting upload of invalid metadata file: " + invalid_metadata_file)
