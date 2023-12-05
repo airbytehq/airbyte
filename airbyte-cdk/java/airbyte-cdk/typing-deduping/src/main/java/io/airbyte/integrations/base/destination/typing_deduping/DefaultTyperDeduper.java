@@ -101,7 +101,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
                              final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
                              final int defaultThreadCount) {
     this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2TableMigrator(), defaultThreadCount);
-  }aa
+  }
 
   private void prepareSchemas(ParsedCatalog parsedCatalog) throws Exception {
     var rawSchema = parsedCatalog.streams().stream().map(stream -> stream.id().rawNamespace());
