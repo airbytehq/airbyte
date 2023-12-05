@@ -265,7 +265,8 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
           if (Duration.between(engineStartTime, Instant.now()).compareTo(initialWaitingDuration) > 0) {
             LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", initialWaitingDuration.getSeconds());
             publisher.close();
-            throw new RuntimeException("Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
+            throw new RuntimeException(
+                "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
           }
           continue;
         }
