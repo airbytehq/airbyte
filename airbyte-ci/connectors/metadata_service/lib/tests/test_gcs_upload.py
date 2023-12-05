@@ -214,7 +214,9 @@ def test_upload_metadata_to_gcs_valid_metadata(
     mocker.spy(gcs_upload, "_latest_upload")
     mocker.spy(gcs_upload, "_doc_upload")
 
+    assert len(valid_metadata_upload_files) > 0, "Valid metadata upload files fixture should not be empty"
     for valid_metadata_upload_file in valid_metadata_upload_files:
+        print(f"\nTesting upload of valid metadata file: " + valid_metadata_upload_file)
         metadata_file_path = Path(valid_metadata_upload_file)
         metadata = ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(metadata_file_path.read_text()))
 
@@ -324,11 +326,17 @@ def test_upload_metadata_to_gcs_non_existent_metadata_file():
 
 
 def test_upload_invalid_metadata_to_gcs(invalid_metadata_yaml_files):
+
+    # Test that all invalid metadata files throw a ValueError
+    assert len(invalid_metadata_yaml_files) > 0, "Invalid metadata files fixture should not be empty"
     for invalid_metadata_file in invalid_metadata_yaml_files:
+        print(f"\nTesting upload of invalid metadata file: " + invalid_metadata_file)
+
         metadata_file_path = Path(invalid_metadata_file)
         # If your test fails with 'Please set the DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables.'
         # then your test data passed validation when it shouldn't have!
-        with pytest.raises(ValueError, match="Validation error"):
+        with pytest.raises(ValueError, match="Validation error") as exc_info:
+            print(f"Upload raised {exc_info.value}")
             gcs_upload.upload_metadata_to_gcs(
                 "my_bucket",
                 metadata_file_path,
@@ -339,10 +347,13 @@ def test_upload_invalid_metadata_to_gcs(invalid_metadata_yaml_files):
 def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_upload_files):
     setup_upload_mocks(mocker, None, None, "new_md5_hash", None, None, None, None, None)
 
-    # Test that all invalid metadata files throw a ValueError
+    # Test that valid metadata files that reference invalid docker images throw a ValueError
+    assert len(invalid_metadata_upload_files) > 0, "Invalid metadata upload files fixture should not be empty"
     for invalid_metadata_file in invalid_metadata_upload_files:
+        print(f"\nTesting upload of valid metadata file with invalid docker image: " + invalid_metadata_file)
         metadata_file_path = Path(invalid_metadata_file)
-        with pytest.raises(ValueError, match="does not exist in DockerHub"):
+        with pytest.raises(ValueError, match="does not exist in DockerHub") as exc_info:
+            print(f"Upload raised {exc_info.value}")
             gcs_upload.upload_metadata_to_gcs(
                 "my_bucket",
                 metadata_file_path,
@@ -358,7 +369,9 @@ def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_fi
     mocker.spy(gcs_upload, "_version_upload")
     doc_upload_spy = mocker.spy(gcs_upload, "_doc_upload")
 
+    assert len(valid_metadata_upload_files) > 0, "Valid metadata upload files fixture should not be empty"
     for valid_metadata_upload_file in valid_metadata_upload_files:
+        print(f"\nTesting prerelease upload of valid metadata file: " + valid_metadata_upload_file)
         # Assuming there is a valid metadata file in the list, if not, you might need to create one
         metadata_file_path = Path(valid_metadata_upload_file)
         prerelease_image_tag = "1.5.6-dev.f80318f754"
