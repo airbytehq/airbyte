@@ -10,7 +10,7 @@ import pytest
 import responses
 from airbyte_cdk.models import SyncMode
 from source_iterable.slice_generators import StreamSlice
-from source_iterable.streams import Users, EmailSend
+from source_iterable.streams import Users
 
 
 @pytest.fixture
