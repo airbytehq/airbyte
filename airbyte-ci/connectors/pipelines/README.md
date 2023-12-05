@@ -451,7 +451,8 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 2.10.2  | [#33008](https://github.com/airbytehq/airbyte/pull/33008)  | Fix local `connector build`.                                                                     |
+| 2.10.3  | [#33080](https://github.com/airbytehq/airbyte/pull/33080)  | Fix update failing due to SSL error on install.                                                           |
+| 2.10.2  | [#33008](https://github.com/airbytehq/airbyte/pull/33008)  | Fix local `connector build`.                                                                              |
 | 2.10.1  | [#32928](https://github.com/airbytehq/airbyte/pull/32928)  | Fix BuildConnectorImages constructor.                                                                     |
 | 2.10.0  | [#32819](https://github.com/airbytehq/airbyte/pull/32819)  | Add `--tag` option to connector build.                                                                    |
 | 2.9.0   | [#32816](https://github.com/airbytehq/airbyte/pull/32816)  | Add `--architecture` option to connector build.                                                           |
