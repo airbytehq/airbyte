@@ -70,7 +70,11 @@
               "description": "Account Name is a string value for comparing with the specified predicate.",
               "type": "string"
             }
-          }
+          },
+          "required": [
+            "operator",
+            "name"
+          ]
         },
         "minItems": 1,
         "order": 5
