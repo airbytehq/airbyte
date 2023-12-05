@@ -178,17 +178,13 @@ class Accounts(BingAdsStream):
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         user_id_predicate = {
-                    "Field": "UserId",
-                    "Operator": "Equals",
-                    "Value": self._user_id,
-                }
+            "Field": "UserId",
+            "Operator": "Equals",
+            "Value": self._user_id,
+        }
         if self._account_names:
             for account_config in self._account_names:
-                account_name_predicate = {
-                        "Field": "AccountName",
-                        "Operator": account_config["operator"],
-                        "Value": account_config["name"]
-                    }
+                account_name_predicate = {"Field": "AccountName", "Operator": account_config["operator"], "Value": account_config["name"]}
 
                 yield {"predicates": {"Predicate": [user_id_predicate, account_name_predicate]}}
         else:
