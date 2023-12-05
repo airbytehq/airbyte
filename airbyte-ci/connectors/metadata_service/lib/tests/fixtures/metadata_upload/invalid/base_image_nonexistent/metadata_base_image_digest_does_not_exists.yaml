@@ -11,12 +11,12 @@ data:
   connectorType: source
   definitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
   dockerImageTag: 0.2.1
-  dockerRepository: airbyte/source-zendesk-chat
-  documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-chat
-  githubIssueLabel: source-zendesk-chat
-  icon: zendesk-chat.svg
+  dockerRepository: airbyte/source-exists-1
+  documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
+  githubIssueLabel: source-alloy-db
+  icon: alloy-db.svg
   license: MIT
-  name: Zendesk Chat
+  name: AlloyDB for PostgreSQL
   registries:
     cloud:
       enabled: true
