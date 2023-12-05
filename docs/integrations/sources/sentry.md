@@ -29,7 +29,7 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 
 ## Supported Streams
 
-- [Events](https://docs.sentry.io/api/events/list-a-projects-events/)
+- [Events](https://docs.sentry.io/api/events/list-a-projects-error-events/)
 - [Issues](https://docs.sentry.io/api/events/list-a-projects-issues/)
 - [Projects](https://docs.sentry.io/api/projects/list-your-projects/)
 - [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/)
