@@ -23,11 +23,7 @@ VALID_DOC_FILE_PATH = Path(DOCS_PATH) / MOCK_DOC_URL_PATH
 
 
 def stub_is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] = None, retries: int = 0, wait_sec: int = 30) -> bool:
-    image_exists = all([
-        "exists" in image_name,
-        version not in MOCK_VERSIONS_THAT_DO_NOT_EXIST,
-        digest is None or "exists" in digest
-    ])
+    image_exists = all(["exists" in image_name, version not in MOCK_VERSIONS_THAT_DO_NOT_EXIST, digest is None or "exists" in digest])
     return image_exists
 
 
@@ -340,7 +336,7 @@ def test_upload_invalid_metadata_to_gcs(mocker, invalid_metadata_yaml_files):
 
         metadata_file_path = Path(invalid_metadata_file)
         # If your test fails with 'Please set the DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables.'
-        # then your test data passed validation when it shouldn't have. 
+        # then your test data passed validation when it shouldn't have.
         try:
             with pytest.raises(ValueError, match="Validation error") as exc_info:
                 gcs_upload.upload_metadata_to_gcs(
@@ -358,7 +354,6 @@ def test_upload_invalid_metadata_to_gcs(mocker, invalid_metadata_yaml_files):
                 raise e
 
 
-
 def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_upload_files):
     setup_upload_mocks(mocker, None, None, "new_md5_hash", None, None, None, None, None)
 
@@ -366,8 +361,8 @@ def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_u
     for invalid_metadata_file in invalid_metadata_upload_files:
         print(f"\nTesting upload of valid metadata file with invalid docker image: " + invalid_metadata_file)
         metadata_file_path = Path(invalid_metadata_file)
-        # If your test fails with 'Unexpected path: <path>', then your test data passed validation 
-        # when it shouldn't have. 
+        # If your test fails with 'Unexpected path: <path>', then your test data passed validation
+        # when it shouldn't have.
         try:
             with pytest.raises(ValueError, match="does not exist in DockerHub") as exc_info:
                 gcs_upload.upload_metadata_to_gcs(
@@ -378,12 +373,11 @@ def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_u
             print(f"Upload raised {exc_info.value}")
         except AssertionError as e:
             if "Unexpected path" in str(e):
-                # It's going on to upload any new/changed files, but files that 
+                # It's going on to upload any new/changed files, but files that
                 # reference invalid docker images shouldn't get that far.
                 raise AssertionError(f"File passed validation when it was expected to fail: {metadata_file_path}") from e
             else:
                 raise e
-
 
 
 def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_files):
