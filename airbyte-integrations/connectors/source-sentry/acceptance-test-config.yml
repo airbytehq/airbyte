@@ -24,6 +24,11 @@ acceptance_tests:
               bypass_reason: "Order features return randomly"
             - name: organization/features
               bypass_reason: "Order features return randomly"
+          empty_streams:
+            - name: issues
+              bypass_reason: "Project sssues are not being returned by the Sentry API."
+            - name: events
+              bypass_reason: "No event records exist for the test project."
   connection:
     tests:
       - config_path: secrets/config.json
