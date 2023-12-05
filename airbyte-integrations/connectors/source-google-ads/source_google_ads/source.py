@@ -69,14 +69,17 @@ class SourceGoogleAds(AbstractSource):
             try:
                 query["query"] = GAQL.parse(query["query"])
             except ValueError:
-                message = f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. https://developers.google.com/google-ads/api/fields/v13/query_validator"
+                message = (
+                    f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. "
+                    "https://developers.google.com/google-ads/api/fields/v15/query_validator"
+                )
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
         return config
 
     @staticmethod
     def get_credentials(config: Mapping[str, Any]) -> MutableMapping[str, Any]:
         credentials = config["credentials"]
-        # use_proto_plus is set to True, because setting to False returned wrong value types, which breakes the backward compatibility.
+        # use_proto_plus is set to True, because setting to False returned wrong value types, which breaks the backward compatibility.
         # For more info read the related PR's description: https://github.com/airbytehq/airbyte/pull/9996
         credentials.update(use_proto_plus=True)
 
@@ -104,7 +107,8 @@ class SourceGoogleAds(AbstractSource):
         )
         return incremental_stream_config
 
-    def get_account_info(self, google_api: GoogleAds, config: Mapping[str, Any]) -> Iterable[Iterable[Mapping[str, Any]]]:
+    @staticmethod
+    def get_account_info(google_api: GoogleAds, config: Mapping[str, Any]) -> Iterable[Iterable[Mapping[str, Any]]]:
         dummy_customers = [CustomerModel(id=_id) for _id in config["customer_id"].split(",")]
         accounts_stream = ServiceAccounts(google_api, customers=dummy_customers)
         for slice_ in accounts_stream.stream_slices():
@@ -125,7 +129,7 @@ class SourceGoogleAds(AbstractSource):
 
         accounts = self.get_account_info(google_api, config)
         customers = CustomerModel.from_accounts(accounts)
-        # Check custom query request validity by sending metric request with non-existant time window
+        # Check custom query request validity by sending metric request with non-existent time window
         for customer in customers:
             for query in config.get("custom_queries", []):
                 query = query["query"]

@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 from unittest.mock import MagicMock
 
 from source_google_ads.custom_query_stream import CustomQueryMixin, IncrementalCustomQuery

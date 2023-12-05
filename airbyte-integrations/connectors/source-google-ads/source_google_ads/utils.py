@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import re
 import time
 from dataclasses import dataclass
@@ -12,10 +13,10 @@ import pendulum
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v13.errors.types.authentication_error import AuthenticationErrorEnum
-from google.ads.googleads.v13.errors.types.authorization_error import AuthorizationErrorEnum
-from google.ads.googleads.v13.errors.types.quota_error import QuotaErrorEnum
-from google.ads.googleads.v13.errors.types.request_error import RequestErrorEnum
+from google.ads.googleads.v15.errors.types.authentication_error import AuthenticationErrorEnum
+from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
+from google.ads.googleads.v15.errors.types.quota_error import QuotaErrorEnum
+from google.ads.googleads.v15.errors.types.request_error import RequestErrorEnum
 from source_google_ads.google_ads import logger
 
 
