@@ -6,9 +6,9 @@
 import json
 
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
 from google.ads.googleads.v15 import GoogleAdsFailure
 from google.ads.googleads.v15.errors.types.authentication_error import AuthenticationErrorEnum
+from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
 from google.ads.googleads.v15.errors.types.query_error import QueryErrorEnum
 from google.ads.googleads.v15.errors.types.quota_error import QuotaErrorEnum
 

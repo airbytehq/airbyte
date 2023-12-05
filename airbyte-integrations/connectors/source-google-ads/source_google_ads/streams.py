@@ -661,7 +661,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
 
         # Split the updated_ids into chunks and yield them
         for i in range(0, len(updated_ids), chunk_size):
-            chunk_ids = set(updated_ids[i: i + chunk_size])
+            chunk_ids = set(updated_ids[i : i + chunk_size])
             chunk_time_map = {k: record_changed_time_map[k] for k in chunk_ids}
 
             yield {"updated_ids": chunk_ids, "record_changed_time_map": chunk_time_map, "customer_id": customer_id, "deleted_ids": set()}
