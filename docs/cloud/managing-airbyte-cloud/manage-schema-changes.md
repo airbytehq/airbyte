@@ -9,10 +9,10 @@ Based on your configured settings for **Detect and propagate schema changes**, A
 
 | Setting              | Description                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------|
-| Propagate all changes | All new tables and column changes from the source will automatically be propagated and reflected in the destination. This includes stream changes (additions or deletions), column changes (additions or deletions) and data type changes
-| Propagate column changes only (default) | Only column changes will be propagated
-| Ignore | Schema changes will be detected, but not propagated. Syncs will continue running with the schema you've set up. To propagate the detected schema changes, you will need to approve the changes manually | 
-| Pause Connection | Connections will be automatically disabled as soon as any schema changes are detected |
+| Propagate all field and stream changes | All new tables and column changes from the source will automatically be propagated and reflected in the destination. This includes stream changes (additions or deletions), column changes (additions or deletions) and data type changes
+| Propagate field changes only | Only column changes will be propagated
+| Detect changes and manually approve | Schema changes will be detected, but not propagated. Syncs will continue running with the schema you've set up. To propagate the detected schema changes, you will need to approve the changes manually | 
+| Detect changes and pause connection | Connections will be automatically disabled as soon as any schema changes are detected |
 
 ## Types of Schema Changes
 When propagation is enabled, your data in the destination will automatically shift to bring in the new changes. 
@@ -37,7 +37,7 @@ To re-enable the streams, ensure the correct **Primary Key** and **Cursor** are 
 
 ## Review non-breaking schema changes
 
-If the connection is set to **Ignore** any schema changes, Airbyte continues syncing according to your last saved schema. You need to manually approve any detected schema changes for the schema in the destination to change.
+If the connection is set to **Detect any changes and manually approve** schema changes, Airbyte continues syncing according to your last saved schema. You need to manually approve any detected schema changes for the schema in the destination to change.
 
 1. In the Airbyte UI, click **Connections**. Select a connection and navigate to the **Replication** tab. If schema changes are detected, you'll see a blue "i" icon next to the Replication ab. 
 
@@ -76,7 +76,7 @@ To review and fix breaking schema changes:
 
 ### Manually refresh the source schema
 
-In addition to Airbyte Cloud’s automatic schema change detection, you can manually refresh the source schema to stay up to date with changes in your schema. 
+In addition to Airbyte's automatic schema change detection, you can manually refresh the source schema to stay up to date with changes in your schema. 
 
  To manually refresh the source schema:
 
