@@ -59,21 +59,28 @@ import org.junit.jupiter.api.Test;
 
 public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<TableDefinition> {
 
+  /**
+   * Redshift's JDBC driver doesn't map certain data types onto {@link java.sql.JDBCType} usefully.
+   * This class adds special handling for those types.
+   */
   public static class RedshiftSourceOperations extends JdbcSourceOperations {
 
     @Override
-    public void copyToJsonField(ResultSet resultSet, int colIndex, ObjectNode json) throws SQLException {
+    public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
       final String columnName = resultSet.getMetaData().getColumnName(colIndex);
       final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
 
       switch (columnTypeName) {
+        // SUPER has no equivalent in JDBCType
         case "super" -> json.set(columnName, Jsons.deserializeExact(resultSet.getString(colIndex)));
+        // For some reason, the driver maps these to their timezoneless equivalents (TIME and TIMESTAMP)
         case "timetz" -> putTimeWithTimezone(json, columnName, resultSet, colIndex);
         case "timestamptz" -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
         default -> super.copyToJsonField(resultSet, colIndex, json);
       }
     }
 
+    @Override
     protected void putTimeWithTimezone(final ObjectNode node,
                                        final String columnName,
                                        final ResultSet resultSet,
@@ -95,6 +102,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     @Override
     protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
         throws SQLException {
+      // The superclass implementation tries to fetch a OffsetDateTime, which fails.
       try {
         super.putTimestampWithTimezone(node, columnName, resultSet, index);
       } catch (final Exception e) {
@@ -109,7 +117,7 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
       try {
         node.put(columnName, DateTimeConverter.convertToTimestamp(getObject(resultSet, index, LocalDateTime.class)));
-      } catch (Exception e) {
+      } catch (final Exception e) {
         final LocalDateTime localDateTime = resultSet.getTimestamp(index).toLocalDateTime();
         node.put(columnName, DateTimeConverter.convertToTimestamp(localDateTime));
       }
@@ -142,7 +150,6 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   @Override
   protected SqlGenerator<TableDefinition> getSqlGenerator() {
     return new RedshiftSqlGenerator(new RedshiftSQLNameTransformer()) {
-
       // Override only for tests to print formatted SQL. The actual implementation should use unformatted
       // to save bytes.
       @Override
