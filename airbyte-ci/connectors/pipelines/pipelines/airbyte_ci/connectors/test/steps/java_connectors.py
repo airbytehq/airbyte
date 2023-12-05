@@ -91,7 +91,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
 
     async def run_docker_build_dependent_steps(dist_tar_dir: Directory) -> List[StepResult]:
         step_results = []
-        build_connector_image_results = await BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run(dist_tar_dir)
+        build_connector_image_results = await BuildConnectorImages(context).run(dist_tar_dir)
         step_results.append(build_connector_image_results)
         if build_connector_image_results.status is StepStatus.FAILURE:
             return step_results
@@ -102,14 +102,17 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
             build_normalization_results = await BuildOrPullNormalization(context, normalization_image, LOCAL_BUILD_PLATFORM).run()
             normalization_container = build_normalization_results.output_artifact
             normalization_tar_file, _ = await export_container_to_tarball(
-                context, normalization_container, tar_file_name=f"{context.connector.normalization_repository}_{context.git_revision}.tar"
+                context,
+                normalization_container,
+                LOCAL_BUILD_PLATFORM,
+                tar_file_name=f"{context.connector.normalization_repository}_{context.git_revision}.tar",
             )
             step_results.append(build_normalization_results)
         else:
             normalization_tar_file = None
 
         connector_container = build_connector_image_results.output_artifact[LOCAL_BUILD_PLATFORM]
-        connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
+        connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container, LOCAL_BUILD_PLATFORM)
 
         async with asyncer.create_task_group() as docker_build_dependent_group:
             soon_integration_tests_results = docker_build_dependent_group.soonify(IntegrationTests(context).run)(
