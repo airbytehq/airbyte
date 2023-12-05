@@ -14,27 +14,51 @@ streams:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: http://json-schema.org/schema#
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: false
         properties:
           app_id:
-            type: string
+            type:
+              - 'null'
+              - string
           id:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           name:
-            type: string
+            type:
+              - 'null'
+              - string
           native_optin:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           total_email:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           total_push:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           total_pushonsite:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           total_sms:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           url:
-            type: string
-        type: object
+            type:
+              - 'null'
+              - string
     retriever:
       type: SimpleRetriever
       requester:
@@ -69,164 +93,315 @@ streams:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: http://json-schema.org/schema#
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: false
         properties:
           app_id:
-            type: string
+            type:
+              - 'null'
+              - string
           configuration:
             properties:
               button_text:
                 properties:
                   value:
-                    type: string
-                type: object
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
               confirmation_popup:
                 properties:
                   body:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   caption:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   message:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   title:
-                    type: string
-                type: object
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
               extra:
                 properties:
                   constants:
                     properties:
                       INFLUENCED_WINDOW_HOURS:
-                        type: number
+                        airbyte_type: integer
+                        type:
+                          - 'null'
+                          - integer
                       WHITELABEL:
-                        type: boolean
-                    type: object
+                        type:
+                          - 'null'
+                          - boolean
+                    type:
+                      - 'null'
+                      - object
                   events:
                     properties:
                       dismissedOptinWidget:
-                        type: string
+                        type:
+                          - 'null'
+                          - string
                       load:
-                        type: string
+                        type:
+                          - 'null'
+                          - string
                       newSubscription:
-                        type: string
-                    type: object
+                        type:
+                          - 'null'
+                          - string
+                    type:
+                      - 'null'
+                      - object
                   googleAnalytics:
                     properties:
                       events:
-                        type: array
+                        type:
+                          - 'null'
+                          - array
                       status:
-                        type: boolean
-                    type: object
+                        type:
+                          - 'null'
+                          - boolean
+                    type:
+                      - 'null'
+                      - object
                   interests:
                     properties:
                       INTERESTS:
-                        type: array
+                        type:
+                          - 'null'
+                          - array
                       status:
-                        type: boolean
-                    type: object
-                type: object
+                        type:
+                          - 'null'
+                          - boolean
+                    type:
+                      - 'null'
+                      - object
+                type:
+                  - 'null'
+                  - object
               onsitepush:
                 properties:
                   activation_eventName:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   activation_type:
-                    type: string
-                type: object
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
               optin:
                 properties:
                   disableBranding:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   mailinglistOsp:
                     properties:
                       activation:
                         properties:
                           type:
-                            type: string
-                        type: object
+                            type:
+                              - 'null'
+                              - string
+                        type:
+                          - 'null'
+                          - object
                       buttonSignUp:
-                        type: string
+                        type:
+                          - 'null'
+                          - string
                       status:
-                        type: boolean
+                        type:
+                          - 'null'
+                          - boolean
                       subtitle:
-                        type: string
+                        type:
+                          - 'null'
+                          - string
                       thankYou:
-                        type: string
+                        type:
+                          - 'null'
+                          - string
                       title:
-                        type: string
-                    type: object
+                        type:
+                          - 'null'
+                          - string
+                    type:
+                      - 'null'
+                      - object
                   native:
-                    type: boolean
+                    type:
+                      - 'null'
+                      - boolean
                   status:
-                    type: boolean
-                type: object
+                    type:
+                      - 'null'
+                      - boolean
+                type:
+                  - 'null'
+                  - object
               osp:
                 properties:
                   status:
-                    type: boolean
-                type: object
+                    type:
+                      - 'null'
+                      - boolean
+                type:
+                  - 'null'
+                  - object
               popup:
                 properties:
                   emailActionMessage:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   emailButtonSubmit:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   emailCapture:
-                    type: boolean
+                    type:
+                      - 'null'
+                      - boolean
                   emailNoThanks:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   emailSubtitleMessage:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   emailSuccessMessage:
-                    type: string
-                type: object
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
               subscription_request:
                 properties:
                   activation_type:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   body:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   btn_no:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   btn_yes:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   nativePrePrompt:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   theme:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   themeHorizontalAlignment:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   themeVerticalAlignment:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   title:
-                    type: string
-                type: object
-            type: object
+                    type:
+                      - 'null'
+                      - string
+                type:
+                  - 'null'
+                  - object
+            type:
+              - 'null'
+              - object
           created_at:
-            type: string
+            airbyte_type: timestamp_with_timezone
+            format: date-time
+            type:
+              - 'null'
+              - string
           default_icon:
-            type: string
+            type:
+              - 'null'
+              - string
           fb_page_url:
-            type: string
+            type:
+              - 'null'
+              - string
           id:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           is_active:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           name:
-            type: string
+            type:
+              - 'null'
+              - string
           native_optin:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           optin_url:
-            type: string
+            type:
+              - 'null'
+              - string
           total_emails:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           total_pushonsite:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           total_sms:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           total_subscribers:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           url:
-            type: string
-        type: object
+            type:
+              - 'null'
+              - string
     retriever:
       type: SimpleRetriever
       requester:
@@ -323,118 +498,223 @@ streams:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: http://json-schema.org/schema#
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: false
         properties:
           app_id:
-            type: string
+            type:
+              - 'null'
+              - string
           big_image:
-            type: string
+            type:
+              - 'null'
+              - string
           body:
-            type: string
+            type:
+              - 'null'
+              - string
           canceled:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           clicks:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           converted:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           created_at:
             properties:
               date:
-                type: string
+                airbyte_type: timestamp_without_timezone
+                format: date-time
+                type:
+                  - 'null'
+                  - string
               timezone:
-                type: string
+                type:
+                  - 'null'
+                  - string
               timezone_type:
-                type: number
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
             type: object
           delivered:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           failed:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           filters:
             type: array
           finished_at:
             properties:
               date:
-                type: string
+                airbyte_type: timestamp_without_timezone
+                format: date-time
+                type:
+                  - 'null'
+                  - string
               timezone:
-                type: string
+                type:
+                  - 'null'
+                  - string
               timezone_type:
-                type: number
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
             type:
               - object
-              - "null"
+              - 'null'
           future:
             type: boolean
           icon:
-            type: string
+            type:
+              - 'null'
+              - string
           id:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           influenced:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           kind:
-            type: string
+            type:
+              - 'null'
+              - string
           notification_id:
-            type: string
+            type:
+              - 'null'
+              - string
           opened:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           osp:
-            type: string
+            type:
+              - 'null'
+              - string
           parameters:
             properties:
               converted:
-                type: number
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
               influenced:
-                type: number
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
               pushnotification.buttonText:
-                type: string
+                type:
+                  - 'null'
+                  - string
               pushnotification.tag:
-                type: string
+                type:
+                  - 'null'
+                  - string
             type: object
           queued_at:
             properties:
               date:
-                type: string
+                airbyte_type: timestamp_without_timezone
+                format: date-time
+                type:
+                  - 'null'
+                  - string
               timezone:
-                type: string
+                type:
+                  - 'null'
+                  - string
               timezone_type:
-                type: number
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
             type: object
           remaining:
-            type: number
+            type:
+              - 'null'
+              - integer
           scheduled:
             type: boolean
           sent_at:
             properties:
               date:
-                type: string
+                airbyte_type: timestamp_without_timezone
+                format: date-time
+                type:
+                  - 'null'
+                  - string
               timezone:
-                type: string
+                type:
+                  - 'null'
+                  - string
               timezone_type:
-                type: number
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
             type: object
           site_id:
-            type: number
+            type:
+              - 'null'
+              - integer
           title:
             type: string
           updated_at:
             properties:
               date:
-                type: string
+                airbyte_type: timestamp_without_timezone
+                format: date-time
+                type:
+                  - 'null'
+                  - string
               timezone:
                 type: string
               timezone_type:
-                type: number
+                airbyte_type: integer
+                type:
+                  - 'null'
+                  - integer
             type: object
           url:
-            type: string
+            type:
+              - 'null'
+              - string
           user_credentials:
             type: string
           user_credentials_id:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
           user_credentials_name:
-            type: string
+            type:
+              - 'null'
+              - string
           user_id:
-            type: number
+            airbyte_type: integer
+            type:
+              - 'null'
+              - integer
         type: object
     retriever:
       type: SimpleRetriever
@@ -546,165 +826,302 @@ streams:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: http://json-schema.org/schema#
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: false
         properties:
           app_id:
-            type: string
+            type:
+              - 'null'
+              - string
           big_image:
             type:
-              - "null"
+              - 'null'
               - string
           body:
-            type: string
+            type:
+              - 'null'
+              - string
           canceled:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           clicks:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           converted:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           created_at:
             properties:
               date:
                 type: string
+                format: date-time
+                airbyte_type: timestamp_without_timezone
               timezone:
-                type: string
+                type:
+                  - 'null'
+                  - string
               timezone_type:
-                type: number
+                type:
+                  - 'null'
+                  - integer
+                airbyte_type: integer
             type: object
           delivered:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           failed:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           filters:
             type: array
           future:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           icon:
-            type: string
+            type:
+              - 'null'
+              - string
           id:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           influenced:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           kind:
             type: string
           notification_id:
-            type: string
+            type:
+              - 'null'
+              - string
           opened:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           osp:
-            type: string
+            type:
+              - 'null'
+              - string
           parameters:
             properties:
               converted:
-                type: number
+                type:
+                  - 'null'
+                  - integer
+                airbyte_type: integer
               pushonsite.activation:
                 properties:
                   type:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                 type: object
               pushonsite.activationPages:
-                type: string
+                type:
+                  - 'null'
+                  - string
               pushonsite.configuration:
                 properties:
                   campaignId:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   closeBtn:
-                    type: boolean
+                    type:
+                      - 'null'
+                      - boolean
                   description:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   effectFadeIn:
-                    type: boolean
+                    type:
+                      - 'null'
+                      - boolean
                   fixedWidth:
-                    type: boolean
+                    type:
+                      - 'null'
+                      - boolean
                   horizontalAlignment:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   iconUrl:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   isClickable:
-                    type: boolean
+                    type:
+                      - 'null'
+                      - boolean
                   lightbox:
-                    type: boolean
+                    type:
+                      - 'null'
+                      - boolean
                   margin:
-                    type: boolean
+                    type:
+                      - 'null'
+                      - boolean
                   openLinkInSamePage:
-                    type: boolean
+                    type:
+                      - 'null'
+                      - boolean
                   showIcon:
-                    type: boolean
+                    type:
+                      - 'null'
+                      - boolean
                   style:
                     properties:
                       mainTheme:
-                        type: string
+                        type:
+                          - 'null'
+                          - string
                     type: object
                   text:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   url:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                   verticalAlignment:
-                    type: string
+                    type:
+                      - 'null'
+                      - string
                 type: object
               pushonsite.openLinkInSamePage:
-                type: boolean
+                type:
+                  - 'null'
+                  - boolean
               pushonsite.positionHorizontal:
-                type: string
+                type:
+                  - 'null'
+                  - string
               pushonsite.positionVertical:
-                type: string
+                type:
+                  - 'null'
+                  - string
               pushonsite.segmentation.countryCode:
                 items:
-                  type: string
+                  type:
+                    - 'null'
+                    - string
                 type: array
               pushonsite.segmentation.stateCode:
                 items:
-                  type: string
+                  type:
+                    - 'null'
+                    - string
                 type: array
               pushonsite.type:
-                type: string
+                type:
+                  - 'null'
+                  - string
             type: object
           queued_at:
             properties:
               date:
                 type: string
+                format: date-time
+                airbyte_type: timestamp_without_timezone
               timezone:
-                type: string
+                type:
+                  - 'null'
+                  - string
               timezone_type:
-                type: number
+                type:
+                  - 'null'
+                  - integer
+                airbyte_type: integer
             type: object
           remaining:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           scheduled:
-            type: boolean
+            type:
+              - 'null'
+              - boolean
           sent_at:
             properties:
               date:
                 type: string
+                format: date-time
+                airbyte_type: timestamp_without_timezone
               timezone:
-                type: string
+                type:
+                  - 'null'
+                  - string
               timezone_type:
-                type: number
+                type:
+                  - 'null'
+                  - integer
+                airbyte_type: integer
             type: object
           site_id:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           title:
-            type: string
+            type:
+              - 'null'
+              - string
           updated_at:
             properties:
               date:
                 type: string
+                format: date-time
+                airbyte_type: timestamp_without_timezone
               timezone:
-                type: string
+                type:
+                  - 'null'
+                  - string
               timezone_type:
-                type: number
+                type:
+                  - 'null'
+                  - integer
+                airbyte_type: integer
             type: object
           url:
-            type: string
+            type:
+              - 'null'
+              - string
           user_credentials:
-            type: string
+            type:
+              - 'null'
+              - string
           user_credentials_id:
-            type: number
+            type:
+              - 'null'
+              - number
           user_credentials_name:
-            type: string
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           user_id:
-            type: number
-        type: object
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
     retriever:
       type: SimpleRetriever
       requester:
@@ -822,19 +1239,34 @@ streams:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $schema: http://json-schema.org/schema#
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: false
         properties:
           date:
-            type: string
+            type:
+              - 'null'
+              - string
+            format: date
           period_total_clicks:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           period_total_views:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           pushonsite_count:
-            type: number
+            type:
+              - 'null'
+              - integer
+            airbyte_type: integer
           site_id:
-            type: string
-        type: object
+            type:
+              - 'null'
+              - string
     retriever:
       type: SimpleRetriever
       requester:
