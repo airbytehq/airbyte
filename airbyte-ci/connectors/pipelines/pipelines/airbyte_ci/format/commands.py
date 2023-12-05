@@ -71,6 +71,8 @@ async def all_checks(ctx: click.Context):
     """
     Run all format checks and fail if any checks fail.
     """
+
+    # We disable logging and exit on failure because its this the current command that takes care of reporting.
     all_commands = [command.disable_logging().dont_exit_on_failure() for command in FORMATTERS_CHECK_COMMANDS.values()]
     command_results = await invoke_commands_concurrently(ctx, all_commands)
     failure = any([r.status is StepStatus.FAILURE for r in command_results])
@@ -93,6 +95,7 @@ async def all_fix(ctx: click.Context):
     logger = logging.getLogger(parent_command.name)
 
     # We can run language commands concurrently because they modify different set of files.
+    # We disable logging and exit on failure because its this the current command that takes care of reporting.
     concurrent_commands = [
         FORMATTERS_FIX_COMMANDS[Formatter.JAVA].disable_logging().dont_exit_on_failure(),
         FORMATTERS_FIX_COMMANDS[Formatter.PYTHON].disable_logging().dont_exit_on_failure(),
