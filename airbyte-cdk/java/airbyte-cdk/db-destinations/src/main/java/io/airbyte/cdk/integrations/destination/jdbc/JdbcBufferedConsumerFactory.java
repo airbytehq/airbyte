@@ -165,7 +165,6 @@ public class JdbcBufferedConsumerFactory {
       LOGGER.info("Preparing raw tables in destination started for {} streams", writeConfigs.size());
       final List<String> queryList = new ArrayList<>();
       for (final WriteConfig writeConfig : writeConfigs) {
-        // These values should be updated for destinations v2
         final String schemaName = writeConfig.getOutputSchemaName();
         final String dstTableName = writeConfig.getOutputTableName();
         LOGGER.info("Preparing raw table in destination started for stream {}. schema: {}, table name: {}",
