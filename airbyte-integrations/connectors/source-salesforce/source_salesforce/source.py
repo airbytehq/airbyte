@@ -8,10 +8,14 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
+from airbyte_cdk.logger import AirbyteLogFormatter
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Level, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -31,6 +35,9 @@ class AirbyteStopSync(AirbyteTracedException):
 class SourceSalesforce(AbstractSource):
     DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     START_DATE_OFFSET_IN_YEARS = 2
+    MAX_WORKERS = 5
+
+    message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[logger.level]))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -127,7 +134,22 @@ class SourceSalesforce(AbstractSource):
         stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
         streams = self.generate_streams(config, stream_objects, sf)
         streams.append(Describe(sf_api=sf, catalog=self.catalog))
-        return streams
+        # TODO: incorporate state & ConcurrentCursor when we support incremental
+        configured_streams = []
+        for stream in streams:
+            sync_mode = self._get_sync_mode_from_catalog(stream)
+            if sync_mode == SyncMode.full_refresh:
+                configured_streams.append(StreamFacade.create_from_stream(stream, self, logger, self.MAX_WORKERS, None, NoopCursor()))
+            else:
+                configured_streams.append(stream)
+        return configured_streams
+
+    def _get_sync_mode_from_catalog(self, stream: Stream) -> Optional[SyncMode]:
+        if self.catalog:
+            for catalog_stream in self.catalog.streams:
+                if stream.name == catalog_stream.stream.name:
+                    return catalog_stream.sync_mode
+        return None
 
     def read(
         self,
