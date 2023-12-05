@@ -27,12 +27,14 @@ export interface FilterSourceRequestBody {
   workspaceId: string;
   pageSize: number;
   pageCurrent: number;
+  SourceDefinitionId: string;
 }
 
 export interface FilterDestinationRequestBody {
   workspaceId: string;
   pageSize: number;
   pageCurrent: number;
+  DestinationDefinitionId: string;
 }
 export interface FilterSourceItemRequestBody {
   sourceId: string;
