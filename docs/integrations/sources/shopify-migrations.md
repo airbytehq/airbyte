@@ -17,11 +17,13 @@ Increased the performance for the following streams:
  - `Fulfillments`
  - `Customer Address`
 
-* Other bug fixes and improvements, more info: `https://github.com/airbytehq/airbyte/pull/32345`
+Other bug fixes and improvements, more info: `https://github.com/airbytehq/airbyte/pull/32345`
 
 ### Action items required for 1.2.0
-The `Fulfillments` stream now has the cursor field `updated_at`, instead of the `id`.
- - `Refresh Schema` + `Reset` is required for this stream after the upgrade from previous version.
+* The `Fulfillments` stream now has the cursor field `updated_at`, instead of the `id`.
+* The `Order Refunds` stream, now has the schema `refund_line_items.line_item.properties` to array of `strings`, instead of `object` with properties.
+
+   - `Refresh Schema` + `Reset` is required for these streams after the upgrade from previous version.
 
 
 ## Upgrading to 1.0.0

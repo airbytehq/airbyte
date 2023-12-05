@@ -688,7 +688,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                     start = slice_end
         else:
             # for the streams that don't support filtering
-            yield {"query": self.bulk_query(self.query_path, self.sort_key)}
+            yield {"query": self.bulk_query(self.query_path, self.sort_key).query}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # get the cached substream state, to avoid state collisions for Incremental Syncs
