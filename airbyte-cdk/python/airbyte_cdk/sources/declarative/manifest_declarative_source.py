@@ -123,11 +123,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
                 if isinstance(partition_router, dict) and partition_router.get("parent_stream_configs"):
                     update_with_cache_parent_configs(partition_router["parent_stream_configs"])
                 elif isinstance(partition_router, list):
-                    [
-                        update_with_cache_parent_configs(router["parent_stream_configs"])
-                        for router in partition_router
-                        if router.get("parent_stream_configs")
-                    ]
+                    for router in partition_router:
+                        if router.get("parent_stream_configs"):
+                            update_with_cache_parent_configs(router["parent_stream_configs"])
 
         for stream_config in stream_configs:
             if stream_config["name"] in parent_streams:
