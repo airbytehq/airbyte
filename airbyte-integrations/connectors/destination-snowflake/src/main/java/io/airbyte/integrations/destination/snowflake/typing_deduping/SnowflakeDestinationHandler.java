@@ -150,7 +150,7 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
       throw new RuntimeException(trimmedMessage, e);
     }
 
-    LOGGER.info("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
+    LOGGER.debug("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
   }
 
   /**
