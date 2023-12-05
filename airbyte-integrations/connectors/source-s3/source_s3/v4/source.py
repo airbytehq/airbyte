@@ -4,7 +4,7 @@
 
 from typing import Any, Dict, Mapping, Optional
 
-from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
+from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.utils import is_cloud_environment
@@ -31,7 +31,7 @@ class SourceS3(FileBasedSource):
         if not self._is_v4_config(config):
             parsed_legacy_config = SourceS3Spec(**config)
             converted_config = LegacyConfigTransformer.convert(parsed_legacy_config)
-            emit_configuration_as_airbyte_control_message(converted_config)
+            self.message_repository.emit_message(create_connector_config_control_message(converted_config))
             return converted_config
         return config
 
