@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "external_id": {
+      "type": ["null", "string"]
+    }
+  }
+}
