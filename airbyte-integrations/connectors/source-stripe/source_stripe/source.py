@@ -87,18 +87,8 @@ class SourceStripe(ConcurrentSourceAdapter):
                 failure_type=FailureType.config_error,
             )
         if start_date:
-            try:
-                start_date = pendulum.parse(start_date).int_timestamp
-            except pendulum.parsing.exceptions.ParserError as e:
-                message = f"Invalid start date {start_date}. Please use YYYY-MM-DDTHH:MM:SSZ format."
-                raise AirbyteTracedException(
-                    message=message,
-                    internal_message=message,
-                    failure_type=FailureType.config_error,
-                ) from e
-        else:
-            start_date = pendulum.datetime(2017, 1, 25).int_timestamp
-        config["start_date"] = start_date
+            # verifies the start_date is parseable
+            SourceStripe._start_date_to_timestamp(start_date)
         if slice_range is None:
             config["slice_range"] = 365
         elif not isinstance(slice_range, int) or slice_range < 1:
@@ -180,10 +170,15 @@ class SourceStripe(ConcurrentSourceAdapter):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self.validate_and_fill_with_defaults(config)
         authenticator = TokenAuthenticator(config["client_secret"])
+
+        if "start_date" in config:
+            start_timestamp = self._start_date_to_timestamp(config["start_date"])
+        else:
+            start_timestamp = pendulum.datetime(2017, 1, 25).int_timestamp
         args = {
             "authenticator": authenticator,
             "account_id": config["account_id"],
-            "start_date": config["start_date"],
+            "start_date": start_timestamp,
             "slice_range": config["slice_range"],
             "api_budget": self.get_api_call_budget(config),
         }
@@ -527,3 +522,15 @@ class SourceStripe(ConcurrentSourceAdapter):
     def _create_empty_state(self) -> MutableMapping[str, Any]:
         # The state is known to be empty because concurrent CDK is currently only used for full refresh
         return {}
+
+    @staticmethod
+    def _start_date_to_timestamp(start_date: str) -> int:
+        try:
+            return pendulum.parse(start_date).int_timestamp
+        except pendulum.parsing.exceptions.ParserError as e:
+            message = f"Invalid start date {start_date}. Please use YYYY-MM-DDTHH:MM:SSZ format."
+            raise AirbyteTracedException(
+                message=message,
+                internal_message=message,
+                failure_type=FailureType.config_error,
+            ) from e
