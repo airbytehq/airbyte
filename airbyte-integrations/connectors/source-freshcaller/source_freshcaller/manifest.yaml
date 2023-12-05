@@ -47,7 +47,7 @@ definitions:
       page_size_option:
         type: "RequestOption"
         inject_into: "request_parameter"
-        field_name: "page_size"
+        field_name: "per_page"
       pagination_strategy:
         type: "PageIncrement"
         page_size: 1000
