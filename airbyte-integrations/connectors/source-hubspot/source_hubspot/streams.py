@@ -2048,6 +2048,8 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
     https://community.hubspot.com/t5/APIs-Integrations/Web-Analytics-API-occuredAfter-and-occuredBefore-parameters-don/td-p/887303
     """
 
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
     cursor_field: str = "occurredAt"
     slicing_period: int = 30
     state_checkpoint_interval: int = 100
@@ -2212,6 +2214,8 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
             record_generator = self.client_side_filter_by_state(record_generator, stream_slice, stream_state)
 
         for record in record_generator:
+            if "properties" in record:
+                record.pop("properties")
             yield record
 
             # Update state with latest datetime each time we have a record

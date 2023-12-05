@@ -1,100 +1,117 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
-    "hs_asset_description": {
+    "properties_hs_asset_description": {
       "type": ["null", "string"]
     },
-    "hs_asset_type": {
+    "properties_hs_asset_type": {
       "type": ["null", "string"]
     },
-    "hs_browser": {
+    "properties_hs_browser": {
       "type": ["null", "string"]
     },
-    "hs_campaign_id": {
+    "properties_hs_campaign_id": {
       "type": ["null", "string"]
     },
-    "hs_city": {
+    "properties_hs_city": {
       "type": ["null", "string"]
     },
-    "hs_country": {
+    "properties_hs_country": {
       "type": ["null", "string"]
     },
-    "hs_device_name": {
+    "properties_hs_device_name": {
       "type": ["null", "string"]
     },
-    "hs_device_type": {
+    "properties_hs_device_type": {
       "type": ["null", "string"]
     },
-    "hs_element_class": {
+    "properties_hs_element_class": {
       "type": ["null", "string"]
     },
-    "hs_element_id": {
+    "properties_hs_element_id": {
       "type": ["null", "string"]
     },
-    "hs_element_text": {
+    "properties_hs_element_text": {
       "type": ["null", "string"]
     },
-    "hs_language": {
+    "properties_hs_language": {
       "type": ["null", "string"]
     },
-    "hs_link_href": {
+    "properties_hs_link_href": {
       "type": ["null", "string"]
     },
-    "hs_operating_system": {
+    "properties_hs_operating_system": {
       "type": ["null", "string"]
     },
-    "hs_operating_version": {
+    "properties_hs_operating_version": {
       "type": ["null", "string"]
     },
-    "hs_page_content_type": {
+    "properties_hs_page_content_type": {
       "type": ["null", "string"]
     },
-    "hs_page_id": {
+    "properties_hs_page_id": {
       "type": ["null", "string"]
     },
-    "hs_page_title": {
+    "properties_hs_page_title": {
       "type": ["null", "string"]
     },
-    "hs_page_url": {
+    "properties_hs_page_url": {
       "type": ["null", "string"]
     },
-    "hs_parent_module_id": {
+    "properties_hs_parent_module_id": {
       "type": ["null", "string"]
     },
-    "hs_referrer": {
+    "properties_hs_referrer": {
       "type": ["null", "string"]
     },
-    "hs_region": {
+    "properties_hs_region": {
       "type": ["null", "string"]
     },
-    "hs_screen_height": {
-      "type": ["null", "number"]
-    },
-    "hs_screen_width": {
-      "type": ["null", "number"]
-    },
-    "hs_touchpoint_source": {
+    "properties_hs_screen_height": {
       "type": ["null", "string"]
     },
-    "hs_tracking_name": {
+    "properties_hs_screen_width": {
       "type": ["null", "string"]
     },
-    "hs_user_agent": {
+    "properties_hs_touchpoint_source": {
       "type": ["null", "string"]
     },
-    "hs_utm_campaign": {
+    "properties_hs_tracking_name": {
       "type": ["null", "string"]
     },
-    "hs_utm_content": {
+    "properties_hs_user_agent": {
       "type": ["null", "string"]
     },
-    "hs_utm_medium": {
+    "properties_hs_utm_campaign": {
       "type": ["null", "string"]
     },
-    "hs_utm_source": {
+    "properties_hs_utm_content": {
       "type": ["null", "string"]
     },
-    "hs_utm_term": {
+    "properties_hs_utm_medium": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_utm_source": {
+      "type": ["null", "string"]
+    },
+    "properties_hs_utm_term": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "objectId": {
+      "type": ["null", "string"]
+    },
+    "objectType": {
+      "type": ["null", "string"]
+    },
+    "eventType": {
+      "type": ["null", "string"]
+    },
+    "occurredAt": {
       "type": ["null", "string"]
     }
   }
