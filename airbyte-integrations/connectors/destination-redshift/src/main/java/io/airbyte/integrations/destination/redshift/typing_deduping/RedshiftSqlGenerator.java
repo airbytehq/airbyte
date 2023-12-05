@@ -179,7 +179,18 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   private Field<?> castedField(final Field<?> field, final AirbyteType type, final String alias) {
     if (type instanceof final AirbyteProtocolType airbyteProtocolType) {
-      return castedField(field, airbyteProtocolType).as(quotedName(alias));
+      switch (airbyteProtocolType) {
+        case STRING -> {
+          return field(CASE_STATEMENT_SQL_TEMPLATE,
+                       jsonTypeOf(field).ne("string").and(field.isNotNull()),
+                       jsonSerialize(field),
+                       castedField(field, airbyteProtocolType)).as(quotedName(alias));
+        }
+        default -> {
+          return castedField(field, airbyteProtocolType).as(quotedName(alias));
+        }
+      }
+
     }
     // Redshift SUPER can silently cast an array type to struct and vice versa.
     return switch (type.getTypeName()) {
@@ -201,6 +212,10 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
 
   private Field<String> jsonTypeOf(final Field<?> field) {
     return function("JSON_TYPEOF", SQLDataType.VARCHAR, field);
+  }
+
+  private Field<String> jsonSerialize(final Field<?> field) {
+    return function("JSON_SERIALIZE", SQLDataType.VARCHAR, field);
   }
 
   /**

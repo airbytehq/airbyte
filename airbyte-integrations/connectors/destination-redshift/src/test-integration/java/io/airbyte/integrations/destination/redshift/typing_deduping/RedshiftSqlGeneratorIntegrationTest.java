@@ -311,11 +311,4 @@ public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     }
   }
 
-  @Disabled
-  @Test
-  @Override
-  public void jsonStringifyTypes() throws Exception {
-    // TODO: Implement this by supporting JSON_SERIALIZE for String fields in RedshiftSqlGenerator.
-  }
-
 }
