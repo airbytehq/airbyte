@@ -354,7 +354,7 @@ def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_u
             gcs_upload.upload_metadata_to_gcs(
                 "my_bucket",
                 metadata_file_path,
-                validator_opts=ValidatorOptions(doc_paths=DOCS_PATH),
+                validator_opts=ValidatorOptions(docs_path=DOCS_PATH),
             )
         print(f"Upload raised {exc_info.value}")
 
