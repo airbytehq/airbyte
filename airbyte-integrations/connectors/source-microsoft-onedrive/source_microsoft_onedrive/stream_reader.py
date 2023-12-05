@@ -53,7 +53,7 @@ class SourceMicrosoftOneDriveClient:
     def _get_access_token(self):
         """Retrieves an access token for OneDrive access."""
         scope = ["https://graph.microsoft.com/.default"]
-        refresh_token = self.config.credentials.refresh_token if "refresh_token" in self.config.credentials else None
+        refresh_token = self.config.credentials.refresh_token if hasattr(self.config.credentials, "refresh_token") else None
 
         if refresh_token:
             result = self.msal_app.acquire_token_by_refresh_token(refresh_token, scopes=scope)
