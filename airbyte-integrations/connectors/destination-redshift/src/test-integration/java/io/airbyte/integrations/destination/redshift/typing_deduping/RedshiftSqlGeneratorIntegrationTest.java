@@ -55,7 +55,6 @@ import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class RedshiftSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegrationTest<TableDefinition> {

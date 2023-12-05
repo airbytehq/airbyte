@@ -182,9 +182,9 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
       switch (airbyteProtocolType) {
         case STRING -> {
           return field(CASE_STATEMENT_SQL_TEMPLATE,
-                       jsonTypeOf(field).ne("string").and(field.isNotNull()),
-                       jsonSerialize(field),
-                       castedField(field, airbyteProtocolType)).as(quotedName(alias));
+              jsonTypeOf(field).ne("string").and(field.isNotNull()),
+              jsonSerialize(field),
+              castedField(field, airbyteProtocolType)).as(quotedName(alias));
         }
         default -> {
           return castedField(field, airbyteProtocolType).as(quotedName(alias));
