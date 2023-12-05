@@ -148,7 +148,7 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
           }
           return Optional.empty();
         })) {
-      List<Optional<GtidSet>> gtidSet = stream.toList();
+      final List<Optional<GtidSet>> gtidSet = stream.toList();
       if (gtidSet.isEmpty()) {
         return Optional.empty();
       } else if (gtidSet.size() == 1) {
@@ -255,8 +255,8 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
         if (event == null) {
-          Duration initialWaitingDuration = Duration.ofMinutes(5L);
-          // If initial waiting seconds is configured and it's greater than 5 minutes, use that value instead
+          Duration initialWaitingDuration = Duration.ofMinutes(10L);
+          // If initial waiting seconds is configured and it's greater than 10 minutes, use that value instead
           // of the default value
           final Duration configuredDuration = RecordWaitTimeUtil.getFirstRecordWaitTime(database.getSourceConfig());
           if (configuredDuration.compareTo(initialWaitingDuration) > 0) {
@@ -265,7 +265,7 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
           if (Duration.between(engineStartTime, Instant.now()).compareTo(initialWaitingDuration) > 0) {
             LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", initialWaitingDuration.getSeconds());
             publisher.close();
-
+            throw new RuntimeException("Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
           }
           continue;
         }
@@ -287,6 +287,7 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     final JsonNode asJson = serialize(offset, schemaHistory);
     LOGGER.info("Initial Debezium state constructed: {}", asJson);
 
+    assert !asJson.get(MysqlCdcStateConstants.MYSQL_DB_HISTORY).asText().isBlank();
     return asJson;
   }
 
