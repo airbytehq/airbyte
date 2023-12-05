@@ -107,8 +107,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     var rawSchema = parsedCatalog.streams().stream().map(stream -> stream.id().rawNamespace());
     var finalSchema = parsedCatalog.streams().stream().map(stream -> stream.id().finalNamespace());
     var allSchemas = Streams.concat(rawSchema, finalSchema)
-                            .filter(Objects::nonNull)
-                            .collect(Collectors.toSet());
+        .filter(Objects::nonNull)
+        .collect(Collectors.toSet());
     if (allSchemas.size() > 2) {
       LOGGER.warn("More than two Schemas discovered in Catalog", allSchemas);
     }

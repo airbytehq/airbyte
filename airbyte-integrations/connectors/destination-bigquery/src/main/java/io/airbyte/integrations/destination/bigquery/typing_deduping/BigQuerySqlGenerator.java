@@ -706,9 +706,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public String createSchema(final String schema) {
     return new StringSubstitutor(Map.of("schema", StringUtils.wrap(schema, QUOTE),
-                                        "project_id", StringUtils.wrap(projectId, QUOTE),
-                                        "dataset_location", datasetLocation))
-        .replace("CREATE SCHEMA IF NOT EXISTS ${project_id}.${schema} OPTIONS(location=\"${dataset_location}\");");
+        "project_id", StringUtils.wrap(projectId, QUOTE),
+        "dataset_location", datasetLocation))
+            .replace("CREATE SCHEMA IF NOT EXISTS ${project_id}.${schema} OPTIONS(location=\"${dataset_location}\");");
   }
 
   @Override

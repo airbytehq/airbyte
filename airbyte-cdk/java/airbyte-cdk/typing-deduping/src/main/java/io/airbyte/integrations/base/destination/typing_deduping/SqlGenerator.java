@@ -35,6 +35,7 @@ public interface SqlGenerator<DialectTableDefinition> {
 
   /**
    * Used to create either the airbyte_internal or final schemas if they don't exist
+   *
    * @param schema the schema to create
    * @return SQL to create the schema if it does not exist
    */
