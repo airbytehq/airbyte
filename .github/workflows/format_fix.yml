@@ -55,18 +55,20 @@ jobs:
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.
       - name: Remove any files that have been gitignored
+        if: always()
         run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
 
       - name: Commit Formatting Changes (PR)
         uses: stefanzweifel/git-auto-commit-action@v5
         # do not commit if master branch
-        if: github.ref != 'refs/heads/master'
+        if: github.ref != 'refs/heads/master' && always()
         with:
           commit_message: Automated Commit - Formatting Changes
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
 
       - name: Run airbyte-ci format check all
+        if: always()
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "pull_request"
