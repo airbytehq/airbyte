@@ -124,17 +124,17 @@ At this point you can run `airbyte-ci` commands.
 
 #### Options
 
-| Option                                     | Default value                                                                                                                                                      | Mapped environment variable   | Description                                                                                 |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------- |
-| `--enable-dagger-run/--disable-dagger-run` | `--enable-dagger-run``      |                               | Disables the Dagger terminal UI. |                               | |                               | |                               |                                                                                             |
-| `--is-local/--is-ci`                       | `--is-local`                                                                                                                                                       |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
-| `--git-branch`                             | The checked out git branch name                                                                                                                                    | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
-| `--git-revision`                           | The current branch head                                                                                                                                            | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
-| `--diffed-branch`                          | `origin/master`                                                                                                                                                    |                               | Branch to which the git diff will happen to detect new or modified files.                   |
-| `--gha-workflow-run-id`                    |                                                                                                                                                                    |                               | GHA CI only - The run id of the GitHub action workflow                                      |
-| `--ci-context`                             | `manual`                                                                                                                                                           |                               | The current CI context: `manual` for manual run, `pull_request`, `nightly_builds`, `master` |
-| `--pipeline-start-timestamp`               | Current epoch time                                                                                                                                                 | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.       |
-| `--show-dagger-logs/--hide-dagger-logs`    | `--hide-dagger-logs`                                                                                                                                               |                               | Flag to show or hide the dagger logs.                                                       |
+| Option                                     | Default value                                                                                                                                                                                                                          | Mapped environment variable   | Description                                                                                 |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `--enable-dagger-run/--disable-dagger-run` | `--enable-dagger-run``      |                               | Disables the Dagger terminal UI. |                               | |                               | |                               | |                               | |                               |                                                                                             |
+| `--is-local/--is-ci`                       | `--is-local`                                                                                                                                                                                                                           |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
+| `--git-branch`                             | The checked out git branch name                                                                                                                                                                                                        | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
+| `--git-revision`                           | The current branch head                                                                                                                                                                                                                | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
+| `--diffed-branch`                          | `origin/master`                                                                                                                                                                                                                        |                               | Branch to which the git diff will happen to detect new or modified files.                   |
+| `--gha-workflow-run-id`                    |                                                                                                                                                                                                                                        |                               | GHA CI only - The run id of the GitHub action workflow                                      |
+| `--ci-context`                             | `manual`                                                                                                                                                                                                                               |                               | The current CI context: `manual` for manual run, `pull_request`, `nightly_builds`, `master` |
+| `--pipeline-start-timestamp`               | Current epoch time                                                                                                                                                                                                                     | `CI_PIPELINE_START_TIMESTAMP` | Start time of the pipeline as epoch time. Used for pipeline run duration computation.       |
+| `--show-dagger-logs/--hide-dagger-logs`    | `--hide-dagger-logs`                                                                                                                                                                                                                   |                               | Flag to show or hide the dagger logs.                                                       |
 
 ### <a id="connectors-command-subgroup"></a>`connectors` command subgroup
 
@@ -307,10 +307,10 @@ flowchart TD
 
 ### Options
 
-| Option                | Multiple | Default value  | Description                                                       |
-| --------------------- | -------- | -------------- | ----------------------------------------------------------------- |
+| Option                | Multiple | Default value  | Description                                                          |
+| --------------------- | -------- | -------------- | -------------------------------------------------------------------- |
 | `--architecture`/`-a` | True     | Local platform | Defines for which architecture(s) the connector image will be built. |
-| `--tag`               | False    | `dev`          | Image tag for the built image.                                    |
+| `--tag`               | False    | `dev`          | Image tag for the built image.                                       |
 
 
 ### <a id="connectors-publish-command"></a>`connectors publish` command
@@ -395,6 +395,13 @@ Available commands:
 * `airbyte-ci format check all`
 * `airbyte-ci format fix all`
 
+### Options
+| Option       | Required | Default | Mapped environment variable | Description                                    |
+| ------------ | -------- | ------- | --------------------------- | ---------------------------------------------- |
+| `--quiet/-q` | False    | False   |                             | Hide formatter execution details in reporting. |
+
+
+
 ### Examples
 - Check for formatting errors in the repository: `airbyte-ci format check all`
 - Fix formatting for only python files: `airbyte-ci format fix python`
@@ -451,12 +458,13 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2.10.4  | [#33097](https://github.com/airbytehq/airbyte/pull/33097)  | Improve `format` performances, exit with 1 status code when `fix` changes files.                          |
 | 2.10.3  | [#33080](https://github.com/airbytehq/airbyte/pull/33080)  | Fix update failing due to SSL error on install.                                                           |
 | 2.10.2  | [#33008](https://github.com/airbytehq/airbyte/pull/33008)  | Fix local `connector build`.                                                                              |
 | 2.10.1  | [#32928](https://github.com/airbytehq/airbyte/pull/32928)  | Fix BuildConnectorImages constructor.                                                                     |
 | 2.10.0  | [#32819](https://github.com/airbytehq/airbyte/pull/32819)  | Add `--tag` option to connector build.                                                                    |
 | 2.9.0   | [#32816](https://github.com/airbytehq/airbyte/pull/32816)  | Add `--architecture` option to connector build.                                                           |
-| 2.8.1   | [#32999](https://github.com/airbytehq/airbyte/pull/32999)  | Improve Java code formatting speed                       |
+| 2.8.1   | [#32999](https://github.com/airbytehq/airbyte/pull/32999)  | Improve Java code formatting speed                                                                        |
 | 2.8.0   | [#31930](https://github.com/airbytehq/airbyte/pull/31930)  | Move pipx install to `airbyte-ci-dev`, and add auto-update feature targeting binary                       |
 | 2.7.3   | [#32847](https://github.com/airbytehq/airbyte/pull/32847)  | Improve --modified behaviour for pull requests.                                                           |
 | 2.7.2   | [#32839](https://github.com/airbytehq/airbyte/pull/32839)  | Revert changes in v2.7.1.                                                                                 |
