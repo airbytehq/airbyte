@@ -47,7 +47,7 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
-| 0.4.0   | 2023-11-29 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)     | Added undeclared fields to schema                                       |
+| 0.4.0   | 2023-11-29 | [32957](https://github.com/airbytehq/airbyte/pull/32957)     | Added undeclared fields to schema, Base image migration: remove Dockerfile and use the python-connector-base image                                       |
 | 0.3.0   | 2023-09-05 | [30192](https://github.com/airbytehq/airbyte/pull/30192) | Added undeclared fields to schema                                       |
 | 0.2.4   | 2023-08-14 | [29401](https://github.com/airbytehq/airbyte/pull/29401) | Fix `null` value in stream state                                        |
 | 0.2.3   | 2023-08-03 | [29023](https://github.com/airbytehq/airbyte/pull/29023) | Add incremental for `issues` stream                                     |
