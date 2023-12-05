@@ -12,7 +12,7 @@ data:
   definitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
   dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-exists-1
-  documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/existingsource
   githubIssueLabel: source-alloy-db
   icon: alloy-db.svg
   license: MIT

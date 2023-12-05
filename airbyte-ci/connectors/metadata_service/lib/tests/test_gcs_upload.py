@@ -17,7 +17,7 @@ from pydash.objects import get
 # Version exists by default, but "666" is bad! (6.0.0 too since breaking changes regex tho)
 MOCK_VERSIONS_THAT_DO_NOT_EXIST = ["6.6.6", "6.0.0"]
 DOCS_PATH = "/docs"
-MOCK_DOC_URL_PATH = "integrations/sources/alloydb.md"
+MOCK_DOC_URL_PATH = "integrations/sources/existingsource.md"
 VALID_DOC_FILE_PATH = Path(DOCS_PATH) / MOCK_DOC_URL_PATH
 
 
