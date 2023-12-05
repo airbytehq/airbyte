@@ -5,7 +5,8 @@ acceptance_tests:
     tests:
       - spec_path: source_pinterest/spec.json
         backward_compatibility_tests_config:
-          disable_for_version: "0.7.0" # removed non-working token based auth method
+          disable_for_version: "0.7.3" # added custom report
+          # disable_for_version: "0.7.0" # removed non-working token based auth method
           # disable_for_version: "0.5.0" # Add Pattern for "start_date"
   connection:
     tests:

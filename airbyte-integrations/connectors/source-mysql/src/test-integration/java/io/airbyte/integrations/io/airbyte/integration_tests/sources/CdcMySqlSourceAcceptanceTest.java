@@ -4,26 +4,21 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static io.airbyte.integrations.io.airbyte.integration_tests.sources.utils.TestConstants.INITIAL_CDC_WAITING_SECONDS;
 import static io.airbyte.protocol.models.v0.SyncMode.INCREMENTAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -37,25 +32,20 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.containers.MySQLContainer;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@ExtendWith(SystemStubsExtension.class)
 public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
-
-  @SystemStub
-  protected EnvironmentVariables environmentVariables;
 
   protected static final String STREAM_NAME = "id_and_name";
   protected static final String STREAM_NAME2 = "starships";
-  protected MySQLContainer<?> container;
-  protected JsonNode config;
+
+  protected MySQLTestDatabase testdb;
+
+  @Override
+  protected FeatureFlags featureFlags() {
+    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
+  }
 
   @Override
   protected String getImageName() {
@@ -69,7 +59,10 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-    return config;
+    return testdb.integrationTestConfigBuilder()
+        .withCdcReplication()
+        .withoutSsl()
+        .build();
   }
 
   @Override
@@ -80,7 +73,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME),
-                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                testdb.getDatabaseName(),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
@@ -92,7 +85,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME2),
-                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                testdb.getDatabaseName(),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
@@ -107,70 +100,22 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new MySQLContainer<>("mysql:8.0");
-    container.start();
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "CDC")
-        .put("initial_waiting_seconds", INITIAL_CDC_WAITING_SECONDS)
-        .build());
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("replication_method", replicationMethod)
-        .put("is_test", true)
-        .build());
-
-    revokeAllPermissions();
-    grantCorrectPermissions();
-    createAndPopulateTables();
+  protected void setupEnvironment(final TestDestinationEnv environment) {
+    testdb = MySQLTestDatabase.in("mysql:8.0", extraContainerFactoryMethods().toArray(String[]::new))
+        .withCdcPermissions()
+        .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
+        .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
+        .with("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")
+        .with("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
   }
 
-  protected void createAndPopulateTables() {
-    executeQuery("CREATE TABLE id_and_name(id INTEGER PRIMARY KEY, name VARCHAR(200));");
-    executeQuery(
-        "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-    executeQuery("CREATE TABLE starships(id INTEGER PRIMARY KEY, name VARCHAR(200));");
-    executeQuery(
-        "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-  }
-
-  protected void revokeAllPermissions() {
-    executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + container.getUsername() + "@'%';");
-  }
-
-  protected void grantCorrectPermissions() {
-    executeQuery(
-        "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO "
-            + container.getUsername() + "@'%';");
-  }
-
-  protected void executeQuery(final String query) {
-    try (final DSLContext dslContext = DSLContextFactory.create(
-        "root",
-        "test",
-        DatabaseDriver.MYSQL.getDriverClassName(),
-        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-            container.getHost(),
-            container.getFirstMappedPort(),
-            container.getDatabaseName()),
-        SQLDialect.MYSQL)) {
-      final Database database = new Database(dslContext);
-      database.query(
-          ctx -> ctx
-              .execute(query));
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
-    }
+  protected Stream<String> extraContainerFactoryMethods() {
+    return Stream.empty();
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    container.close();
+    testdb.close();
   }
 
   @Test
@@ -195,7 +140,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     final JsonNode latestState = Jsons.jsonNode(supportsPerStream() ? stateMessages : List.of(Iterables.getLast(stateMessages)));
     // RESET MASTER removes all binary log files that are listed in the index file,
     // leaving only a single, empty binary log file with a numeric suffix of .000001
-    executeQuery("RESET MASTER;");
+    testdb.with("RESET MASTER;");
 
     assertEquals(6, filterRecords(runRead(configuredCatalog, latestState)).size());
   }
@@ -219,7 +164,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME),
-                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                testdb.getDatabaseName(),
                 Field.of("id", JsonSchemaType.NUMBER)
             /* no name field */)
                 .withSourceDefinedCursor(true)
@@ -231,7 +176,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME2),
-                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                testdb.getDatabaseName(),
                 /* no name field */
                 Field.of("id", JsonSchemaType.NUMBER))
                 .withSourceDefinedCursor(true)
@@ -241,13 +186,8 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void verifyFieldNotExist(final List<AirbyteRecordMessage> records, final String stream, final String field) {
-    assertTrue(records.stream()
-        .filter(r -> {
-          return r.getStream().equals(stream)
-              && r.getData().get(field) != null;
-        })
-        .collect(Collectors.toList())
-        .isEmpty(), "Records contain unselected columns [%s:%s]".formatted(stream, field));
+    assertTrue(records.stream().noneMatch(r -> r.getStream().equals(stream) && r.getData().get(field) != null),
+        "Records contain unselected columns [%s:%s]".formatted(stream, field));
   }
 
 }

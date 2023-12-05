@@ -17,6 +17,7 @@ import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorag
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -254,8 +255,15 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
         if (event == null) {
-          if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(5L)) > 0) {
-            LOGGER.error("No record is returned even after 5 minutes of waiting, closing the engine");
+          Duration initialWaitingDuration = Duration.ofMinutes(5L);
+          // If initial waiting seconds is configured and it's greater than 5 minutes, use that value instead
+          // of the default value
+          final Duration configuredDuration = RecordWaitTimeUtil.getFirstRecordWaitTime(database.getSourceConfig());
+          if (configuredDuration.compareTo(initialWaitingDuration) > 0) {
+            initialWaitingDuration = configuredDuration;
+          }
+          if (Duration.between(engineStartTime, Instant.now()).compareTo(initialWaitingDuration) > 0) {
+            LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", initialWaitingDuration.getSeconds());
             publisher.close();
 
           }

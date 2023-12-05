@@ -1,11 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import concurrent
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
+from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
@@ -14,6 +17,7 @@ from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Curs
 from airbyte_cdk.sources.streams.concurrent.state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
+from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import NeverLogSliceLogger
 
 _NO_STATE = None
 
@@ -22,18 +26,21 @@ class StreamFacadeConcurrentConnectorStateConverter(EpochValueConcurrentStreamSt
     pass
 
 
-class StreamFacadeSource(AbstractSource):
+class StreamFacadeSource(ConcurrentSourceAdapter):
     def __init__(
         self,
         streams: List[Stream],
-        max_workers: int,
+        threadpool: concurrent.futures.ThreadPoolExecutor,
         cursor_field: Optional[CursorField] = None,
         cursor_boundaries: Optional[Tuple[str, str]] = None,
         input_state: Optional[List[Mapping[str, Any]]] = _NO_STATE,
     ):
-        self._streams = streams
-        self._max_workers = max_workers
         self._message_repository = InMemoryMessageRepository()
+        threadpool_manager = ThreadPoolManager(threadpool, streams[0].logger)
+        concurrent_source = ConcurrentSource(threadpool_manager, streams[0].logger, NeverLogSliceLogger(), self._message_repository)
+        super().__init__(concurrent_source)
+        self._streams = streams
+        self._threadpool = threadpool_manager
         self._cursor_field = cursor_field
         self._cursor_boundaries = cursor_boundaries
         self._state = [AirbyteStateMessage.parse_obj(s) for s in input_state] if input_state else None
@@ -49,7 +56,6 @@ class StreamFacadeSource(AbstractSource):
                 stream,
                 self,
                 stream.logger,
-                self._max_workers,
                 state_converter.get_concurrent_stream_state(state_manager.get_stream_state(stream.name, stream.namespace)),
                 ConcurrentCursor(
                     stream.name,
@@ -115,4 +121,5 @@ class StreamFacadeSourceBuilder(SourceBuilder[StreamFacadeSource]):
         return self
 
     def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> StreamFacadeSource:
-        return StreamFacadeSource(self._streams, self._max_workers, self._cursor_field, self._cursor_boundaries, self._input_state)
+        threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
+        return StreamFacadeSource(self._streams, threadpool, self._cursor_field, self._cursor_boundaries, self._input_state)
