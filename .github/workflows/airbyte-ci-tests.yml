@@ -55,11 +55,11 @@ jobs:
               - 'airbyte-ci/connectors/pipelines/**'
               - '!**/*.md'
             metadata_lib:
-              - 'airbyte-ci/connectors/metadata/lib/**'
+              - 'airbyte-ci/connectors/metadata_service/lib/**'
               - '!**/*.md'
             metadata_orchestrator:
-              - 'airbyte-ci/connectors/metadata/lib/**'
-              - 'airbyte-ci/connectors/metadata/orchestrator/**'
+              - 'airbyte-ci/connectors/metadata_service/lib/**'
+              - 'airbyte-ci/connectors/metadata_service/orchestrator/**'
               - '!**/*.md'
 
       - name: Run airbyte-ci/connectors/connector_ops tests
