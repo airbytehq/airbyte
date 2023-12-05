@@ -3,7 +3,7 @@ data:
     hosts:
       - "*.googleapis.com"
   connectorBuildOptions:
-    baseImage: airbyte/python-connector-base:1.0.0
+    baseImage: docker.io/airbyte/base-repo-exists:1.1.0@sha256:shathatexists
   connectorSubtype: file
   connectorType: source
   definitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
