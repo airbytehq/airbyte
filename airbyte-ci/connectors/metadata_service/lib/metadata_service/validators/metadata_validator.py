@@ -151,7 +151,7 @@ def validate_metadata_base_images_in_dockerhub(
 ) -> ValidationResult:
     metadata_definition_dict = metadata_definition.dict()
 
-    image_address = get(metadata_definition_dict, "data.connectorOptions.baseImage")
+    image_address = get(metadata_definition_dict, "data.connectorBuildOptions.baseImage")
     if image_address is None:
         return True, None
 
