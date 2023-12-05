@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.55.3
+First iteration of integration tests tooling (http mocker and response builder)
+
 ## 0.55.2
 concurrent-cdk: factory method initializes concurrent source with default number of max tasks
 
