@@ -165,17 +165,16 @@ public class SourceHandler {
 
   public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-
-    final List<SourceConnection> sourceConnections = configRepository.listSourceConnection()
-        .stream()
-        .filter(sc -> sc.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId()) && !MoreBooleans.isTruthy(sc.getTombstone()))
-        .toList();
-
+    final List<SourceConnection> sourceConnections = configRepository.getSourceConnectionByWorkspaceId(workspaceIdRequestBody.getWorkspaceId());
     final List<SourceRead> reads = Lists.newArrayList();
     for (final SourceConnection sc : sourceConnections) {
-      reads.add(buildSourceRead(sc.getSourceId()));
+      final StandardSourceDefinition standardSourceDefinition = configRepository
+          .getStandardSourceDefinition(sc.getSourceDefinitionId());
+      final JsonNode sanitizedConfig = secretsProcessor.prepareSecretsForOutput(sc.getConfiguration(),
+          standardSourceDefinition.getSpec().getConnectionSpecification());
+      sc.setConfiguration(sanitizedConfig);
+      reads.add(toSourceRead(sc, standardSourceDefinition));
     }
-
     return new SourceReadList().sources(reads);
   }
 
