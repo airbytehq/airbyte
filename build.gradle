@@ -9,6 +9,19 @@ plugins {
     id 'ru.vyarus.use-python'
 }
 
+apply plugin: 'project-report'
+dependencyReport {
+    projects = project.allprojects
+}
+htmlDependencyReport {
+    projects = project.allprojects
+}
+propertyReport {
+    projects = project.allprojects
+}
+taskReport {
+    projects = project.allprojects
+}
 
 Properties env = new Properties()
 rootProject.file('gradle.properties').withInputStream { env.load(it) }
@@ -473,4 +486,51 @@ catalog {
     versionCatalog {
         from(files("deps.toml"))
     }
+}
+
+task printSolvedDepsTreeInJson {
+  doLast {
+    subprojects.each {
+        subProj ->
+            subProj.configurations.each {
+            conf -> 
+            if (conf.canBeResolved) {
+                def jsonOutput = conf.name + "["
+                conf.resolvedConfiguration.firstLevelModuleDependencies.each { dep ->
+                  def addToJson 
+                  addToJson = { resolvedDep -> 
+                    if (resolvedDep.getModuleArtifacts()[0] != null) {
+                        jsonOutput += "\n{"
+                        jsonOutput += "\"groupId\":\"${resolvedDep.module.id.group}\",\"artifactId\":\"${resolvedDep.module.id.name}\",\"version\":\"${resolvedDep.module.id.version}\",\"file\":\"${resolvedDep.getModuleArtifacts()[0].file}\""
+                        jsonOutput += ",\"dependencies\":["
+                    } else {
+                        jsonOutput += "\n{"
+                        jsonOutput += "\"groupId\":\"${resolvedDep.module.id.group}\",\"artifactId\":\"${resolvedDep.module.id.name}\",\"version\":\"${resolvedDep.module.id.version}\",\"nullArtifacts\""
+                        jsonOutput += ",\"dependencies\":["
+                    }
+                    if(resolvedDep.children.size()!=0){
+                      resolvedDep.children.each { childResolvedDep ->
+                        if(resolvedDep in childResolvedDep.getParents() && childResolvedDep.getConfiguration() == 'compile'){
+                          addToJson(childResolvedDep)
+                        }
+                      }
+                      if(jsonOutput[-1] == ','){
+                        jsonOutput = jsonOutput[0..-2]
+                      }
+                    }
+                    jsonOutput += "]},"
+                  }
+                  addToJson(dep)
+                }
+                if(jsonOutput[-1] == ','){
+                  jsonOutput = jsonOutput[0..-2]
+                }
+                jsonOutput += "]"
+                println jsonOutput
+            }
+        }
+    }
+    
+    
+  }
 }
