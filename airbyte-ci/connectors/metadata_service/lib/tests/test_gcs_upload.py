@@ -23,7 +23,12 @@ VALID_DOC_FILE_PATH = Path(DOCS_PATH) / MOCK_DOC_URL_PATH
 
 
 def stub_is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] = None, retries: int = 0, wait_sec: int = 30) -> bool:
-    return "exists" in image_name and version not in MOCK_VERSIONS_THAT_DO_NOT_EXIST
+    image_exists = all([
+        "exists" in image_name,
+        version not in MOCK_VERSIONS_THAT_DO_NOT_EXIST,
+        digest is None or "exists" in digest
+    ])
+    return image_exists
 
 
 @pytest.fixture(autouse=True)
