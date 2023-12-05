@@ -49,8 +49,10 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
         self,
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+        accounts = Accounts(self.client, self.config)
+        for _slice in accounts.stream_slices():
+            for account in accounts.read_records(SyncMode.full_refresh, _slice):
+                yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
     @property
     def state(self) -> Mapping[str, Any]:

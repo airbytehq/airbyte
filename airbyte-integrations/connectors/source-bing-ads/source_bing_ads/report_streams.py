@@ -230,9 +230,11 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         self,
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
-            for period in self.default_time_periods:
-                yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
+        accounts = Accounts(self.client, self.config)
+        for _slice in accounts.stream_slices():
+            for account in accounts.read_records(SyncMode.full_refresh, _slice):
+                for period in self.default_time_periods:
+                    yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"], "time_period": period}
 
 
 class BingAdsReportingServicePerformanceStream(BingAdsReportingServiceStream, ABC):
