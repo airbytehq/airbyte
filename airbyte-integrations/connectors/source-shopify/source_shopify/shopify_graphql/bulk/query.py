@@ -92,8 +92,27 @@ class GraphQlQueryBuilder:
 
 
 class ShopifyBulkQuery:
+    def __new__(
+        cls,
+        query_path: Optional[Union[List[str], str]],
+        filter_field: Optional[str] = None,
+        start: Optional[str] = None,
+        end: Optional[str] = None,
+        sort_key: Optional[str] = None,
+    ) -> str:
 
-    builder: GraphQlQueryBuilder = GraphQlQueryBuilder()
+        # builder instance
+        cls.builder: GraphQlQueryBuilder = GraphQlQueryBuilder()
+
+        if not query_path:
+            raise ValueError("The `query_path` is not defined.")
+        else:
+            # define filter query string, if passed
+            filter_query = f"{filter_field}:>='{start}' AND {filter_field}:<='{end}'" if filter_field else None
+            # resolving query
+            cls.query = cls.resolve_query(cls, query_path, filter_query, sort_key)
+            # returning objec class
+            return object.__new__(cls)
 
     @property
     @abstractmethod
@@ -133,21 +152,6 @@ class ShopifyBulkQuery:
         """
         Defines how query object should be resolved based on the base query selection.
         """
-
-    def __new__(
-        self,
-        query_path: Optional[Union[List[str], str]] = None,
-        filter_field: Optional[str] = None,
-        start: Optional[str] = None,
-        end: Optional[str] = None,
-        sort_key: Optional[str] = None,
-    ) -> str:
-        if not query_path:
-            raise ValueError("The `query_path` is not defined.")
-        else:
-            # define filter query string
-            filter_query = f"{filter_field}:>='{start}' AND {filter_field}:<='{end}'" if filter_field else None
-            return self.resolve_query(self, query_path, filter_query, sort_key)
 
 
 class Metafields(ShopifyBulkQuery):

@@ -682,7 +682,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                     # check end period is less than now() or now() is applied otherwise.
                     slice_end = slice_end if slice_end < end else end
                     # making pre-defined sliced query to pass it directly
-                    prepared_query = self.bulk_query(self.query_path, self.filter_field, start, slice_end, self.sort_key)
+                    prepared_query = self.bulk_query(self.query_path, self.filter_field, start, slice_end, self.sort_key).query
                     self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {start} -- {slice_end}.")
                     yield {"query": prepared_query}
                     start = slice_end

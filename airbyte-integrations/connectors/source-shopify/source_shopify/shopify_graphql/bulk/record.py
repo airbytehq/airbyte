@@ -40,7 +40,7 @@ class ShopifyBulkRecord:
         # return records based on `record_identifier` filter.
         if record_identifier:
             # resolving record by it's identifier, saved in `record_reesolve_id` method.
-            return record if record_identifier in record.get("admin_graphql_api_id") else None
+            return record if record_identifier in record.get("admin_graphql_api_id", "") else None
         else:
             # return records related to substream, by checking for the `__parentId` field
             # more info: https://shopify.dev/docs/api/usage/bulk-operations/queries#the-jsonl-data-format
