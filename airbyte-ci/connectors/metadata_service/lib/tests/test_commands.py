@@ -10,11 +10,15 @@ from metadata_service import commands
 from metadata_service.gcs_upload import MetadataUploadInfo, UploadedFile
 from metadata_service.validators.metadata_validator import ValidatorOptions
 from pydantic import BaseModel, ValidationError, error_wrappers
+from test_gcs_upload import stub_is_image_on_docker_hub
 
 
 # TEST VALIDATE COMMAND
-def test_valid_metadata_yaml_files(valid_metadata_yaml_files, tmp_path):
+def test_valid_metadata_yaml_files(mocker, valid_metadata_yaml_files, tmp_path):
     runner = CliRunner()
+
+    # Mock dockerhub for base image checks
+    mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
 
     assert len(valid_metadata_yaml_files) > 0, "No files found"
 
