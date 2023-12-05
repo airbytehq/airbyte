@@ -52,6 +52,7 @@
         "title": "Account Names Predicates",
         "description": "Predicates that will be used to sync data by specific accounts.",
         "type": "array",
+        "order": 5,
         "items": {
           "description": "Account Names Predicates Config.",
           "type": "object",
@@ -75,9 +76,7 @@
             "operator",
             "name"
           ]
-        },
-        "minItems": 1,
-        "order": 5
+        }
       },
       "reports_start_date": {
         "type": "string",
