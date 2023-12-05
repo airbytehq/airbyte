@@ -60,15 +60,18 @@ class EntrypointOutput:
         return self._get_message_by_types([Type.LOG])
 
     @property
-    def trace_messages(self) -> List[AirbyteMessage]:
-        return self._get_message_by_types([Type.TRACE])
+    def errors(self) -> List[AirbyteMessage]:
+        return self._get_trace_message_by_type(TraceType.ERROR)
 
     @property
-    def analytics_messages(self) -> List[AirbyteMessage]:
-        return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == TraceType.ANALYTICS]
+    def analytics(self) -> List[AirbyteMessage]:
+        return self._get_trace_message_by_type(TraceType.ANALYTICS)
 
     def _get_message_by_types(self, message_types: List[Type]) -> List[AirbyteMessage]:
         return [message for message in self._messages if message.type in message_types]
+
+    def _get_trace_message_by_type(self, trace_type: TraceType) -> List[AirbyteMessage]:
+        return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == trace_type]
 
 
 def read(source: Source, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: Optional[Any] = None) -> EntrypointOutput:
