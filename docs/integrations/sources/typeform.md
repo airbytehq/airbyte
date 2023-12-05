@@ -20,7 +20,7 @@ This page guides you through the process of setting up the Typeform source conne
 
 ## Setup guide
 
-### Step 1: Obtain an API token 
+### Step 1: Obtain an API token
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
@@ -36,7 +36,7 @@ To get the API token for your application follow this [steps](https://developer.
 
 <!-- env:cloud -->
 **For Airbyte Cloud:**
-This step is not needed in Airbyte Cloud. Skip to the next step. 
+This step is not needed in Airbyte Cloud. Skip to the next step.
 <!-- /env:cloud -->
 
 ### Step 2: Set up the source connector in Airbyte
@@ -90,6 +90,7 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                                 | Subject                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.2.0   | 2023-11-29 | [32745](https://github.com/airbytehq/airbyte/pull/32745)         | Add `response_type` field to `responses` schema                                                |
 | 1.1.2   | 2023-10-27 | [31914](https://github.com/airbytehq/airbyte/pull/31914)     | Fix pagination for stream Responses                                                             |
 | 1.1.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599)     | Base image migration: remove Dockerfile and use the python-connector-base image                 |
 | 1.1.0   | 2023-09-04 | [29916](https://github.com/airbytehq/airbyte/pull/29916)     | Migrate to Low-Code Framework                                                                   |
