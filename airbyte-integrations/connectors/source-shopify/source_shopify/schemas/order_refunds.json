@@ -196,15 +196,7 @@
               "properties": {
                 "type": ["null", "array"],
                 "items": {
-                  "properties": {
-                    "name": {
-                      "type": ["null", "string"]
-                    },
-                    "value": {
-                      "type": ["null", "string"]
-                    }
-                  },
-                  "type": ["null", "object"]
+                  "type": ["null", "string"]
                 }
               },
               "quantity": {
