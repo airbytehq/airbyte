@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, MainPageWithScroll } from "components";
+import { Button, DropDown, DropDownRow, MainPageWithScroll } from "components";
 import HeadTitle from "components/HeadTitle";
 import { PageSize } from "components/PageSize";
 import PageTitle from "components/PageTitle";
@@ -15,6 +15,7 @@ import { Separator } from "components/Separator";
 import { FilterDestinationRequestBody } from "core/request/DaspireClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 // import { useConnectionFilterOptions, useFilteredConnectionList } from "hooks/services/useConnectionHook";
+import { useConnectionFilterOptions } from "hooks/services/useConnectionHook";
 import { usePaginatedDestination } from "hooks/services/useDestinationHook";
 import { usePageConfig } from "hooks/services/usePageConfig";
 import useRouter from "hooks/useRouter";
@@ -48,12 +49,20 @@ const Footer = styled.div`
   align-items: center;
   justify-content: center;
 `;
+const DDContainer = styled.div<{
+  margin?: string;
+}>`
+  width: 195px;
+  margin: ${({ margin }) => margin};
+  margin-left: auto;
+  margin-right: 32px;
+`;
 
 const AllDestinationsPage: React.FC = () => {
   const { push, query } = useRouter();
   // const { push } = useRouter();
   // const { destinations } = useDestinationList();
-
+  const { destinationOptions } = useConnectionFilterOptions();
   const [pageConfig, updatePageSize] = usePageConfig();
   // const [pageConfig] = usePageConfig();
 
@@ -65,6 +74,7 @@ const AllDestinationsPage: React.FC = () => {
     workspaceId: workspace.workspaceId,
     pageSize: pageCurrent,
     pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
+    DestinationDefinitionId: destinationOptions[0].value,
   };
 
   const [filters, setFilters] = useState<FilterDestinationRequestBody>(initialFiltersState);
@@ -86,16 +96,8 @@ const AllDestinationsPage: React.FC = () => {
   // const { connections, total, pageSize } = useFilteredConnectionList(filters);
   // const { connections } = useFilteredConnectionList(filters);
   const onSelectFilter = useCallback(
-    (
-      filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId" | "pageSize",
-      filterValue: number | string
-    ) => {
-      if (
-        filterType === "status" ||
-        filterType === "sourceDefinitionId" ||
-        filterType === "destinationDefinitionId" ||
-        filterType === "pageSize"
-      ) {
+    (filterType: "pageCurrent" | "DestinationDefinitionId" | "pageSize", filterValue: number | string) => {
+      if (filterType === "DestinationDefinitionId" || filterType === "pageSize") {
         setFilters({ ...filters, [filterType]: filterValue, pageCurrent: 1 });
       } else if (filterType === "pageCurrent") {
         setFilters({ ...filters, [filterType]: filterValue as number });
@@ -113,10 +115,10 @@ const AllDestinationsPage: React.FC = () => {
   );
   const onCreateDestination = () => push(`${RoutePaths.SelectDestination}`);
 
-  if (destinations.length === 0) {
-    onCreateDestination();
-    return null;
-  }
+  // if (destinations.length === 0) {
+  //   onCreateDestination();
+  //   return null;
+  // }
 
   return (
     <MainPageWithScroll
@@ -138,6 +140,15 @@ const AllDestinationsPage: React.FC = () => {
         />
       }
     >
+      <DDContainer>
+        <DropDown
+          $withBorder
+          $background="white"
+          value={filters.DestinationDefinitionId}
+          options={destinationOptions}
+          onChange={(option: DropDownRow.IDataItem) => onSelectFilter("DestinationDefinitionId", option.value)}
+        />
+      </DDContainer>
       <Separator height="10px" />
       <DestinationsTable destinations={destinations} />
       <Separator height="24px" />

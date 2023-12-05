@@ -49,6 +49,14 @@ const Footer = styled.div`
   align-items: center;
   justify-content: center;
 `;
+const DDContainer = styled.div<{
+  margin?: string;
+}>`
+  width: 195px;
+  margin: ${({ margin }) => margin};
+  margin-left: auto;
+  margin-right: 32px;
+`;
 
 const AllSourcesPage: React.FC = () => {
   const { push, query } = useRouter();
@@ -56,7 +64,7 @@ const AllSourcesPage: React.FC = () => {
   const [pageConfig, updatePageSize] = usePageConfig();
   const { sourceOptions } = useConnectionFilterOptions();
   // const [currentPageSize, setCurrentPageSize] = useState<number>(pageConfig.connection.pageSize);
-  const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig.source.pageSize);
+  const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig?.source?.pageSize);
   // const { sources } = useSourceList();
 
   useTrackPage(PageTrackingCodes.SOURCE_LIST);
@@ -89,16 +97,8 @@ const AllSourcesPage: React.FC = () => {
   // const { connections } = useFilteredConnectionList(filters);
 
   const onSelectFilter = useCallback(
-    (
-      filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId" | "pageSize",
-      filterValue: number | string
-    ) => {
-      if (
-        filterType === "status" ||
-        filterType === "sourceDefinitionId" ||
-        filterType === "destinationDefinitionId" ||
-        filterType === "pageSize"
-      ) {
+    (filterType: "pageCurrent" | "SourceDefinitionId" | "pageSize", filterValue: number | string) => {
+      if (filterType === "SourceDefinitionId" || filterType === "pageSize") {
         setFilters({ ...filters, [filterType]: filterValue, pageCurrent: 1 });
       } else if (filterType === "pageCurrent") {
         setFilters({ ...filters, [filterType]: filterValue as number });
@@ -116,10 +116,10 @@ const AllSourcesPage: React.FC = () => {
   );
   const onCreateSource = () => push(`${RoutePaths.SelectSource}`);
 
-  if (sources.length === 0) {
-    onCreateSource();
-    return null;
-  }
+  // if (sources.length === 0) {
+  //   onCreateSource();
+  //   return null;
+  // }
   return (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "admin.sources" }]} />}
@@ -140,14 +140,15 @@ const AllSourcesPage: React.FC = () => {
         />
       }
     >
-      {" "}
-      <DropDown
-        $withBorder
-        $background="white"
-        value={filters.SourceDefinitionId}
-        options={sourceOptions}
-        onChange={(option: DropDownRow.IDataItem) => onSelectFilter("sourceDefinitionId", option.value)}
-      />
+      <DDContainer>
+        <DropDown
+          $withBorder
+          $background="white"
+          value={filters.SourceDefinitionId}
+          options={sourceOptions}
+          onChange={(option: DropDownRow.IDataItem) => onSelectFilter("SourceDefinitionId", option.value)}
+        />
+      </DDContainer>
       <Separator height="10px" />
       <SourcesTable sources={sources} />
       <Separator height="24px" />
