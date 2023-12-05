@@ -46,3 +46,6 @@ def get_public_metadata_service_url(file_path: str) -> str:
     metadata_bucket = os.getenv("METADATA_BUCKET")
     metadata_cdn_url = os.getenv("METADATA_CDN_BASE_URL")
     return get_public_url_for_gcs_file(metadata_bucket, file_path, metadata_cdn_url)
+
+
+REPO_URL = "https://github.com/airbytehq/airbyte/"
