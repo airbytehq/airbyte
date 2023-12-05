@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 """
 The AirbyteEntrypoint is important because it is a service layer that orchestrate how we execute commands from the
 [common interface](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#common-interface) through the source Python
@@ -16,15 +18,14 @@ import json
 import logging
 import tempfile
 from io import StringIO
-
 from pathlib import Path
-from pydantic.error_wrappers import ValidationError
 from typing import Any, List, Mapping, Optional, Union
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.sources import Source
-from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, Level, Type, TraceType
+from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, Level, TraceType, Type
+from pydantic.error_wrappers import ValidationError
 
 
 class EntrypointOutput:
@@ -70,9 +71,7 @@ class EntrypointOutput:
         return [message for message in self._messages if message.type in message_types]
 
 
-def read(
-    source: Source, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: Optional[Any] = None
-) -> EntrypointOutput:
+def read(source: Source, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: Optional[Any] = None) -> EntrypointOutput:
     """
     config and state must be json serializable
     """
@@ -86,17 +85,19 @@ def read(
     with tempfile.TemporaryDirectory() as tmp_directory:
         tmp_directory_path = Path(tmp_directory)
         args = [
-                "read",
-                "--config",
-                make_file(tmp_directory_path / "config.json", config),
-                "--catalog",
-                make_file(tmp_directory_path / "catalog.json", catalog.json()),
+            "read",
+            "--config",
+            make_file(tmp_directory_path / "config.json", config),
+            "--catalog",
+            make_file(tmp_directory_path / "catalog.json", catalog.json()),
         ]
         if state:
-            args.extend([
-                "--state",
-                make_file(tmp_directory_path / "state.json", state),
-            ])
+            args.extend(
+                [
+                    "--state",
+                    make_file(tmp_directory_path / "state.json", state),
+                ]
+            )
         source_entrypoint = AirbyteEntrypoint(source)
         parsed_args = source_entrypoint.parse_args(args)
         messages = list(source_entrypoint.run(parsed_args))

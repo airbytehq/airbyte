@@ -13,9 +13,10 @@ from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read as entrypoint_read
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
+from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, AirbyteLogMessage, AirbyteMessage
+from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 
 
