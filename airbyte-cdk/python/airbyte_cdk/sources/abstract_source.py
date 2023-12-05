@@ -31,7 +31,6 @@ from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-
 _default_message_repository = InMemoryMessageRepository()
 
 
