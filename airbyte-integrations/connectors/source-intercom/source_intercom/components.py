@@ -148,7 +148,6 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
                 self._state["prior_state"][self.parent_stream_name] = parent_stream_state
 
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
-
         cursor_field = self.cursor_field.eval(self.config)
 
         if self.parent_stream:
