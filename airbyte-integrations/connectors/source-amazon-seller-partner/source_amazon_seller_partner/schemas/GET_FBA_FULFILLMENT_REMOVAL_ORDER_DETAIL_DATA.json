@@ -5,7 +5,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "request-date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "order-id": {
       "type": ["null", "string"]
@@ -17,7 +18,8 @@
       "type": ["null", "string"]
     },
     "last-updated-date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "sku": {
       "type": ["null", "string"]
@@ -48,6 +50,10 @@
     },
     "currency": {
       "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }
