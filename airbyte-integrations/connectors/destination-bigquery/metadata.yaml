@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
-  dockerImageTag: 2.3.18
+  dockerImageTag: 2.3.19
   dockerRepository: airbyte/destination-bigquery
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   githubIssueLabel: destination-bigquery
@@ -21,8 +21,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message:
-          "**Do not upgrade until you have run a test upgrade as outlined [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#testing-destinations-v2-for-a-single-connection)**.
+        message: '**Do not upgrade until you have run a test upgrade as outlined [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#testing-destinations-v2-for-a-single-connection)**.
 
           This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2),
           which provides better error handling, incremental delivery of data for large
@@ -35,16 +34,16 @@ data:
           at their next sync. You can manually sync existing connections prior to
           the next scheduled sync to start the upgrade early.
 
-          "
-        upgradeDeadline: "2023-11-07"
+          '
+        upgradeDeadline: '2023-11-07'
   resourceRequirements:
     jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          memory_limit: 1Gi
-          memory_request: 1Gi
+    - jobType: sync
+      resourceRequirements:
+        memory_limit: 1Gi
+        memory_request: 1Gi
   supportLevel: certified
   supportsDbt: true
   tags:
-    - language:java
-metadataSpecVersion: "1.0"
+  - language:java
+metadataSpecVersion: '1.0'

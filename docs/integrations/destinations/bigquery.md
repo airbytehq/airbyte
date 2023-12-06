@@ -139,7 +139,8 @@ Now that you have set up the BigQuery destination connector, check out the follo
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.19  | 2023-12-05 | [32326](https://github.com/airbytehq/airbyte/pull/32326)   | Code nit fix                                                                                                                                                    |
 | 2.3.18  | 2023-12-04 | [33084](https://github.com/airbytehq/airbyte/pull/33084)   | T&D SQL statements moved to debug log level                                                                                                                     |
 | 2.3.17  | 2023-12-04 | [33078](https://github.com/airbytehq/airbyte/pull/33078)   | Further increase gcs COPY timeout                                                                                                                               |
 | 2.3.16  | 2023-11-14 | [\#32526](https://github.com/airbytehq/airbyte/pull/32526) | Clean up memory manager logs.                                                                                                                                   |
