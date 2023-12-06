@@ -27,9 +27,9 @@ We are prioritizing the following contributions:
 * Helm Charts features, bug fixes, and other platform bug fixes
 
 :::warning
-Airbyte is undergoing a major revamp of the shared core Java source and destinations codebase, with plans to release a new CDK in 2024.
-We are actively working on improving usability, speed (through asynchronous loading), and implementing Typing and Deduplication (Destinations V2).
-For this reason the project is not reviewing/accepting new Java connectors for now.
+Airbyte is undergoing a major revamp of the shared core Java destinations codebase, with plans to release a new CDK in 2024.
+We are actively working on improving usability, speed (through asynchronous loading), and implementing [Typing and Deduplication](/using-airbyte/core-concepts/typing-deduping) (Destinations V2).
+For this reason, Airbyte is not reviewing/accepting new Java connectors for now.
 :::
 
 
