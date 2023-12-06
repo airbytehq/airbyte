@@ -70,7 +70,7 @@ def test_slicer():
                 "prior_state": {"first_stream_cursor": 1662459010, "parent_stream_name": {"parent_cursor_field": 1662459010}},
                 "parent_stream_name": {"parent_cursor_field": 1662459010},
             },
-            [{"first_stream_cursor": 1662459010}],
+            [{"parent_cursor_field": 1662459010, "first_stream_cursor": 1662459010}],
         )
     ],
 )

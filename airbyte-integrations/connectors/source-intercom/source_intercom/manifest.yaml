@@ -234,6 +234,33 @@ definitions:
         $ref: "#/definitions/substream_semi_incremental/retriever/record_selector"
         extractor:
           field_path: ["conversation_parts", "conversation_parts"]
+  conversation_contacts:
+    $ref: "#/definitions/substream_semi_incremental"
+    incremental_sync:
+      $ref: "#/definitions/substream_semi_incremental/incremental_sync"
+      cursor_field: ""
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          stream: "#/definitions/conversations"
+          parent_key: "id"
+          partition_field: "id"
+    $parameters:
+      name: "conversation_contacts"
+      primary_key: "id"
+      path: "/conversations/{{ stream_slice.id }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["conversation_id"]
+            value: "'{{ stream_slice.id }}'"
+    retriever:
+      $ref: "#/definitions/stream_full_refresh/retriever"
+      paginator:
+        type: "NoPagination"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          field_path: ["contacts", "contacts"]
   company_segments:
     $ref: "#/definitions/substream_semi_incremental"
     $parameters:
@@ -322,6 +349,7 @@ streams:
   - "#/definitions/contact_segments"
   - "#/definitions/conversations"
   - "#/definitions/conversation_parts"
+  - "#/definitions/conversation_contacts"
   - "#/definitions/company_segments"
 
 check:

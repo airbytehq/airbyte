@@ -148,8 +148,14 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
                 self._state["prior_state"][self.parent_stream_name] = parent_stream_state
 
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
-        super().close_slice(stream_slice=stream_slice, most_recent_record=most_recent_record)
+        cursor_field = self.cursor_field.eval(self.config)
+
+        # (COMMENT TO REMOVE IN FINAL Airbyte PR) Changes made in MAGPROD-2967
+        # Since the substream is iterating through the records of the parent slice
+        # It sets the cursor field to the value of the last cursor_field of the parent
+        # Instead of looking for any cursor field in the sub stream
         if self.parent_stream:
+            self._state[cursor_field] = stream_slice[self.parent_stream_name][self.parent_cursor_field]
             self._state[self.parent_stream_name] = self.parent_stream.state
 
     def stream_slices(self) -> Iterable[Mapping[str, Any]]:
@@ -176,11 +182,13 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
                 substream_slice_value = parent_record.get(self.parent_field)
                 if substream_slice_value:
                     cursor_field = self.cursor_field.eval(self.config)
+                    next_parent_cursor = parent_record.get(self.parent_cursor_field)
+                    self.parent_stream.state[self.parent_cursor_field] = next_parent_cursor
                     yield {
                         self.substream_slice_field: substream_slice_value,
                         cursor_field: self._state.get(cursor_field),
                         self.parent_stream_name: {
-                            self.parent_cursor_field: self._state.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
+                            self.parent_cursor_field: next_parent_cursor
                         },
                     }
 
