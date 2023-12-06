@@ -38,9 +38,11 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
   private static final String SMALLMONEY_TYPE = "SMALLMONEY";
   private static final String GEOMETRY = "GEOMETRY";
   private static final String GEOGRAPHY = "GEOGRAPHY";
-  private static final String DEBEZIUM_DATETIMEOFFSET_FORMAT = "yyyy-MM-dd HH:mm:ss XXX";
+  private static final String DEBEZIUM_DATETIMEOFFSET_FORMAT = "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
+          "[[' ']['T']HH:mm[':'ss[.][SSSSSSS][SSSSSS][SSSSS][SSSS][SSS][SS][S][' '][z][zzz][Z][O][x][XXX][XX][X]]]";
 
-  private static final String DATETIME_FORMAT_MICROSECONDS = "yyyy-MM-dd'T'HH:mm:ss[.][SSSSSS]";
+  private static final String DATETIME_FORMAT_MICROSECONDS = "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
+          "[[' ']['T']HH:mm[':'ss[.][SSSSSSS][SSSSSS][SSSSS][SSSS][SSS][SS][S][' '][z][zzz][Z][O][x][XXX][XX][X]]]";
 
   @Override
   public void configure(Properties props) {}
