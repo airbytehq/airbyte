@@ -78,6 +78,66 @@ acceptance_tests:
           - name: account_impression_performance_report_monthly
             bypass_reason: "Campaign is still in progress"
         ignored_fields:
+          ad_performance_report_daily:
+            - name: TimePeriod
+              bypass_reason: "dynamic field"
+            - name: AbsoluteTopImpressionRatePercent
+              bypass_reason: "dynamic field"
+            - name: AdDistribution
+              bypass_reason: "dynamic field"
+            - name: DeviceType
+              bypass_reason: "dynamic field"
+            - name: Language
+              bypass_reason: "dynamic field"
+            - name: Network
+              bypass_reason: "dynamic field"
+            - name: DeviceOS
+              bypass_reason: "dynamic field"
+            - name: TopVsOther
+              bypass_reason: "dynamic field"
+            - name: Impressions
+              bypass_reason: "dynamic field"
+          ad_performance_report_weekly:
+            - name: TimePeriod
+              bypass_reason: "dynamic field"
+            - name: AbsoluteTopImpressionRatePercent
+              bypass_reason: "dynamic field"
+            - name: AdDistribution
+              bypass_reason: "dynamic field"
+            - name: DeviceType
+              bypass_reason: "dynamic field"
+            - name: Language
+              bypass_reason: "dynamic field"
+            - name: Network
+              bypass_reason: "dynamic field"
+            - name: DeviceOS
+              bypass_reason: "dynamic field"
+            - name: TopVsOther
+              bypass_reason: "dynamic field"
+            - name: Impressions
+              bypass_reason: "dynamic field"
+            - name: Clicks
+              bypass_reason: "dynamic field"
+            - name: Ctr
+              bypass_reason: "dynamic field"
+            - name: Spent
+              bypass_reason: "dynamic field"
+            - name: ReturnOnAdSpend
+              bypass_reason: "dynamic field"
+            - name: AllReturnOnAdSpend
+              bypass_reason: "dynamic field"
+            - name: ConversionRate
+              bypass_reason: "dynamic field"
+            - name: AverageCpc
+              bypass_reason: "dynamic field"
+            - name: AverageCpm
+              bypass_reason: "dynamic field"
+            - name: AllConversions
+              bypass_reason: "dynamic field"
+            - name: AllConversionRate
+              bypass_reason: "dynamic field"
+            - name: AllRevenue
+              bypass_reason: "dynamic field"
           ad_group_performance_report_daily:
             - name: Impressions
               bypass_reason: "dynamic field"
@@ -85,12 +145,189 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: AverageCpm
               bypass_reason: "dynamic field"
+          budget_summary_report:
+            - name: Date
+              bypass_reason: "dynamic field"
+            - name: MonthlyBudget
+              bypass_reason: "dynamic field"
+            - name: DailySpend
+              bypass_reason: "dynamic field"
+            - name: MonthToDateSpend
+              bypass_reason: "dynamic field"
+          campaign_impression_performance_report_daily:
+            - name: TimePeriod
+              bypass_reason: "dynamic field"
+            - name: AdDistribution
+              bypass_reason: "dynamic field"
+            - name: Impressions
+              bypass_reason: "dynamic field"
+            - name: LowQualityImpressions
+              bypass_reason: "dynamic field"
+            - name: LowQualityImpressionsPercent
+              bypass_reason: "dynamic field"
+            - name: DeviceType
+              bypass_reason: "dynamic field"
+            - name: ImpressionSharePercent
+              bypass_reason: "dynamic field"
+            - name: ImpressionLostToBudgetPercent
+              bypass_reason: "dynamic field"
+            - name: ImpressionLostToRankAggPercent
+              bypass_reason: "dynamic field"
+            - name: HistoricalQualityScore
+              bypass_reason: "dynamic field"
+            - name: HistoricalExpectedCtr
+              bypass_reason: "dynamic field"
+            - name: HistoricalAdRelevance
+              bypass_reason: "dynamic field"
+            - name: HistoricalLandingPageExperience
+              bypass_reason: "dynamic field"
+            - name: Network
+              bypass_reason: "dynamic field"
+            - name: ExactMatchImpressionSharePercent
+              bypass_reason: "dynamic field"
+            - name: AbsoluteTopImpressionSharePercent
+              bypass_reason: "dynamic field"
+            - name: TopImpressionShareLostToRankPercent
+              bypass_reason: "dynamic field"
+            - name: TopImpressionShareLostToBudgetPercent
+              bypass_reason: "dynamic field"
+            - name: AbsoluteTopImpressionShareLostToRankPercent
+              bypass_reason: "dynamic field"
+            - name: AbsoluteTopImpressionShareLostToBudgetPercent
+              bypass_reason: "dynamic field"
+            - name: TopImpressionSharePercent
+              bypass_reason: "dynamic field"
+            - name: AbsoluteTopImpressionRatePercent
+              bypass_reason: "dynamic field"
+            - name: TopImpressionRatePercent
+              bypass_reason: "dynamic field"
+          labels:
+            - name: Modified Time
+              bypass_reason: "dynamic field"
+          campaign_labels:
+            - name: Modified Time
+              bypass_reason: "dynamic field"
+          keyword_labels:
+            - name: Modified Time
+              bypass_reason: "dynamic field"
+          ad_group_labels:
+            - name: Modified Time
+              bypass_reason: "dynamic field"
         timeout_seconds: 7200
   full_refresh:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog_full_refresh.json
         timeout_seconds: 7200
+        ignored_fields:
+          account_performance_report_hourly:
+            - name: "AdDistribution"
+              bypass_reason: "dynamic field"
+            - name: "DeviceType"
+              bypass_reason: "dynamic field"
+            - name: "Network"
+              bypass_reason: "dynamic field"
+            - name: "DeliveredMatchType"
+              bypass_reason: "dynamic field"
+            - name: "DeviceOS"
+              bypass_reason: "dynamic field"
+            - name: "TopVsOther"
+              bypass_reason: "dynamic field"
+            - name: "Impressions"
+              bypass_reason: "dynamic field"
+            - name: "Clicks"
+              bypass_reason: "dynamic field"
+            - name: "Ctr"
+              bypass_reason: "dynamic field"
+            - name: "Spend"
+              bypass_reason: "dynamic field"
+            - name: "ReturnOnAdSpend"
+              bypass_reason: "dynamic field"
+            - name: "AverageCpc"
+              bypass_reason: "dynamic field"
+            - name: "AverageCpm"
+              bypass_reason: "dynamic field"
+            - name: "ConversionRate"
+              bypass_reason: "dynamic field"
+            - name: "LowQualityClicksPercent"
+              bypass_reason: "dynamic field"
+            - name: "LowQualityImpressions"
+              bypass_reason: "dynamic field"
+          account_performance_report_weekly:
+            - name: "AdDistribution"
+              bypass_reason: "dynamic field"
+            - name: "DeviceType"
+              bypass_reason: "dynamic field"
+            - name: "Network"
+              bypass_reason: "dynamic field"
+            - name: "DeliveredMatchType"
+              bypass_reason: "dynamic field"
+            - name: "DeviceOS"
+              bypass_reason: "dynamic field"
+            - name: "TopVsOther"
+              bypass_reason: "dynamic field"
+            - name: "Impressions"
+              bypass_reason: "dynamic field"
+            - name: "Clicks"
+              bypass_reason: "dynamic field"
+            - name: "Ctr"
+              bypass_reason: "dynamic field"
+            - name: "Spend"
+              bypass_reason: "dynamic field"
+            - name: "ReturnOnAdSpend"
+              bypass_reason: "dynamic field"
+            - name: "AverageCpc"
+              bypass_reason: "dynamic field"
+            - name: "AverageCpm"
+              bypass_reason: "dynamic field"
+            - name: "ConversionRate"
+              bypass_reason: "dynamic field"
+            - name: "LowQualityClicksPercent"
+              bypass_reason: "dynamic field"
+            - name: "LowQualityImpressions"
+              bypass_reason: "dynamic field"
+          account_performance_report_daily:
+            - name: "AdDistribution"
+              bypass_reason: "dynamic field"
+            - name: "DeviceType"
+              bypass_reason: "dynamic field"
+            - name: "Network"
+              bypass_reason: "dynamic field"
+            - name: "DeliveredMatchType"
+              bypass_reason: "dynamic field"
+            - name: "DeviceOS"
+              bypass_reason: "dynamic field"
+            - name: "TopVsOther"
+              bypass_reason: "dynamic field"
+            - name: "Impressions"
+              bypass_reason: "dynamic field"
+            - name: "Clicks"
+              bypass_reason: "dynamic field"
+            - name: "Ctr"
+              bypass_reason: "dynamic field"
+            - name: "Spend"
+              bypass_reason: "dynamic field"
+            - name: "ReturnOnAdSpend"
+              bypass_reason: "dynamic field"
+            - name: "AverageCpc"
+              bypass_reason: "dynamic field"
+            - name: "AverageCpm"
+              bypass_reason: "dynamic field"
+            - name: "ConversionRate"
+              bypass_reason: "dynamic field"
+            - name: "LowQualityClicksPercent"
+              bypass_reason: "dynamic field"
+            - name: "LowQualityImpressions"
+              bypass_reason: "dynamic field"
+          budget_summary_report:
+            - name: Date
+              bypass_reason: "dynamic field"
+            - name: MonthlyBudget
+              bypass_reason: "dynamic field"
+            - name: DailySpend
+              bypass_reason: "dynamic field"
+            - name: MonthToDateSpend
+
   incremental:
     tests:
     bypass_reason: "SAT doesn't support complex nested states used in incremental report streams"
