@@ -1,6 +1,6 @@
-name: 🐛 Report a problem while using the Octavia CLI
-description: Use this template when you discovered a CLI problem
-labels: [type/bug, area/octavia-cli, needs-triage]
+name: 🐛 [docker] Report a platform, infra or deployment bug
+description: Use this template when you have a problem operating Airbyte platform on Docker
+labels: [type/bug, area/platform, needs-triage, docker]
 body:
   - type: markdown
     attributes:
@@ -9,7 +9,7 @@ body:
           <a target="_blank" href="https://airbyte.com">
             <image>
               <source srcset="https://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg">
-              <img alt="octavia-welcome" src="htt ps://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg" width="auto" height="120">
+              <img alt="octavia-welcome" src="https://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg" width="auto" height="120">
             </image>
           </a>
         </p>
@@ -17,19 +17,29 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report...
-        Make sure you update this issue with a concise title and provide all information you have to 
+        Make sure to update this issue with a concise title and provide all information you have to 
         help us debug the problem together. Issues not following the template will be closed.
   - type: input
-    id: cli-version
+    id: platform-version
     attributes:
-      label: Octavia CLI Version
-      description: Give the Octavia CLI version you're using.
+      label: Platform Version
+      description: "Some examples are: (eg. 0.44.1, 0.30.0), you can find the version in the left bottom in Airbyte UI"
     validations:
       required: true
+  - type: dropdown
+    id: step
+    attributes:
+      label: What step the error happened?
+      multiple: false
+      options:
+        - On deploy
+        - During the Sync
+        - Upgrading the Platform or Helm Chart
+        - Other
   - type: textarea
     id: description
     attributes:
-      label: Relevant information
+      label: Revelant information
       description: Please give any additional information you have and steps to reproduce the problem.
   - type: textarea
     id: logs
