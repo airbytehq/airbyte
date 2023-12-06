@@ -12,8 +12,8 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import (
     DOCKER_HOST_NAME,
     DOCKER_HOST_PORT,
-    DOCKER_REGISTRY_MIRROR_URL,
     DOCKER_REGISTRY_ADDRESS,
+    DOCKER_REGISTRY_MIRROR_URL,
     DOCKER_TMP_VOLUME_NAME,
     DOCKER_VAR_LIB_VOLUME_NAME,
     STORAGE_DRIVER,
