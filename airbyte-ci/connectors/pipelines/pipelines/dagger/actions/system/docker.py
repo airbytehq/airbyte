@@ -22,7 +22,7 @@ from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts.pipeline_context import PipelineContext
 
 
-def get_base_dockerd_container(dagger_client: Client, docker_var_lib_caching: bool = False) -> Container:
+def get_base_dockerd_container(dagger_client: Client, docker_var_lib_caching: bool = True) -> Container:
     """Provision a container to run a docker daemon.
     It will be used as a docker host for docker-in-docker use cases.
 
