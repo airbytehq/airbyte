@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pendulum as pdm
 import pytest
 import requests
-from source_sentry.streams import Events, Issues, ProjectDetail, Projects, SentryStreamPagination, SentryIncremental
+from source_sentry.streams import Events, Issues, ProjectDetail, Projects, SentryIncremental, SentryStreamPagination
 
 INIT_ARGS = {"hostname": "sentry.io", "organization": "test-org", "project": "test-project"}
 
