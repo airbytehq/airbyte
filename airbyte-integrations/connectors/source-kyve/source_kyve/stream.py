@@ -19,17 +19,17 @@ logger = logging.getLogger("airbyte")
 # 3: KYVE Storage-Provider
 storage_provider_gateways = {
     "1": [
-        "arweave.net/",
-        "arweave.dev/",
-        "c7fqu7cwmsb7dsibz2pqicn2gjwn35amtazqg642ettzftl3dk2a.arweave.net/",
-        "hkz3zh4oo432n4pxnvylnqjm7nbyeitajmeiwtkttijgyuvfc3sq.arweave.net/",
+        "https://arweave.net/",
+        "https://arweave.dev/",
+        "https://c7fqu7cwmsb7dsibz2pqicn2gjwn35amtazqg642ettzftl3dk2a.arweave.net/",
+        "https://hkz3zh4oo432n4pxnvylnqjm7nbyeitajmeiwtkttijgyuvfc3sq.arweave.net/",
     ],
     "2": [
-        "arweave.net/",
+        "https://arweave.net/",
         "https://gateway.irys.xyz/",
-        "arweave.dev/",
-        "c7fqu7cwmsb7dsibz2pqicn2gjwn35amtazqg642ettzftl3dk2a.arweave.net/",
-        "hkz3zh4oo432n4pxnvylnqjm7nbyeitajmeiwtkttijgyuvfc3sq.arweave.net/",
+        "https://arweave.dev/",
+        "https://c7fqu7cwmsb7dsibz2pqicn2gjwn35amtazqg642ettzftl3dk2a.arweave.net/",
+        "https://hkz3zh4oo432n4pxnvylnqjm7nbyeitajmeiwtkttijgyuvfc3sq.arweave.net/",
     ],
     "3": ["https://storage.kyve.network/"],
 }

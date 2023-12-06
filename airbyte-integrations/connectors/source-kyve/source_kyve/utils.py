@@ -6,7 +6,9 @@ import requests
 
 def query_endpoint(endpoint):
     try:
-        response = requests.get("https://" + endpoint)
+        if not (endpoint.startswith("https://") or endpoint.startswith("http://")):
+            endpoint = "https://" + endpoint
+        response = requests.get(endpoint)
         return response
     except requests.exceptions.RequestException as e:
         print(f"Failed to query {endpoint}: {e}")
