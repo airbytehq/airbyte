@@ -345,10 +345,10 @@ def test_upload_invalid_metadata_to_gcs(mocker, invalid_metadata_yaml_files):
                 )
             print(f"Upload raised {exc_info.value}")
         except AssertionError as e:
-            if "Please set the DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables" in str(e):
-                # It's going on to check if the referenced
-                # docker images exist on DockerHub, but invalid files shouldn't get that far.
-                raise AssertionError(f"File passed validation when it was expected to fail: {metadata_file_path}") from e
+            if "Please set the GCS_CREDENTIALS env var." in str(e):
+                # It's going on to upload any new/changed files, but metadata
+                # files that fail validation shouldn't get that far.
+                raise AssertionError(f"Validation succeeded (when it should have failed) for {metadata_file_path}") from e
             else:
                 raise e
 
@@ -371,9 +371,9 @@ def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_u
             print(f"Upload raised {exc_info.value}")
         except AssertionError as e:
             if "Unexpected path" in str(e):
-                # It's going on to upload any new/changed files, but files that
-                # reference invalid docker images shouldn't get that far.
-                raise AssertionError(f"File passed validation when it was expected to fail: {metadata_file_path}") from e
+                # It's going on to upload any new/changed files, but metadata
+                # files that reference invalid docker images shouldn't get that far.
+                raise AssertionError(f"Validation succeeded (when it should have failed) for {metadata_file_path}") from e
             else:
                 raise e
 
