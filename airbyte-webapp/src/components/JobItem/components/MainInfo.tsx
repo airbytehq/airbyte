@@ -23,7 +23,7 @@ const getJobCreatedAt = (job: SynchronousJobRead | JobsWithJobs) =>
   (job as SynchronousJobRead).createdAt ?? (job as JobsWithJobs).job?.createdAt;
 
 const partialSuccessCheck = (attempts: AttemptRead[]) => {
-  if (attempts?.length > 0 && attempts[attempts?.length - 1].status === JobStatus.failed) {
+  if (attempts?.length > 0 && attempts[attempts?.length - 1]?.status === JobStatus.failed) {
     return attempts?.some((attempt) => attempt?.failureSummary && attempt?.failureSummary?.partialSuccess);
   }
   return false;
@@ -41,7 +41,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
   const { user } = useUser();
   const jobStatus = getJobStatus(job);
   const isPartialSuccess = partialSuccessCheck(attempts);
-
+  console.log(job, "job");
   const statusIcon = () => {
     switch (true) {
       case jobStatus === JobStatus.cancelled:

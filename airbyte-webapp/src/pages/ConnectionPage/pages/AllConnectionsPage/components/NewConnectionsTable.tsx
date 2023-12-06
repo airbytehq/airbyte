@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
 import { ConnectionTable } from "components/EntityTable";
 import { ITableDataItem } from "components/EntityTable/types";
 
+import { getUser } from "core/AuthContext";
 import useRouter from "hooks/useRouter";
 
 import {
@@ -16,15 +17,48 @@ const Content = styled.div`
 `;
 
 interface IProps {
-  connections: WebBackendNewConnectionList[];
+  connections?: WebBackendNewConnectionList[];
   connectionStatus?: WebBackendNewConnectionStatusList[];
   onSetMessageId: (id: string) => void;
 }
 
-const NewConnectionsTable: React.FC<IProps> = ({ connections, connectionStatus }) => {
+const NewConnectionsTable: React.FC<IProps> = ({ connections }) => {
+  const [statusList, setStatusList] = useState([]);
+  const user = getUser();
+  const connectionIds = connections?.map((con: any) => con?.connectionId);
+
+  const apiData = {
+    connectionIds,
+  };
+  useEffect(() => {
+    const fetchConnectionStatus = async () => {
+      try {
+        // Check if connections array is not empty before making the API call
+        if (connections && connections?.length > 0) {
+          const apiUrl = `${process.env.REACT_APP_API_URL}/etl/web_backend/connections/status`;
+
+          const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${user?.token}`,
+            },
+            body: JSON.stringify(apiData),
+          });
+
+          const responseData = await response.json();
+          setStatusList(responseData.connectionStatusList);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchConnectionStatus();
+  }, [connections]);
   const updatedConnections = connections?.map((conn) => {
-    const matchingStatus = connectionStatus?.find((status) => status?.connectionId === conn?.connectionId);
-    return { ...conn, ...matchingStatus };
+    const matchingStatus = statusList?.find((status: any) => status?.connectionId === conn?.connectionId);
+    return { ...conn, ...(matchingStatus || {}) };
   });
 
   const [rowId] = useState<string>("");
