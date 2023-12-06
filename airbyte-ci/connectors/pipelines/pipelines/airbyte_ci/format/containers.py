@@ -5,8 +5,8 @@
 from typing import Any, Dict, List, Optional
 
 import dagger
-from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
-from pipelines.consts import AMAZONCORRETTO_IMAGE, GO_IMAGE, NODE_IMAGE, PYTHON_3_10_IMAGE
+from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST, REPO_MOUNT_PATH
+from pipelines.consts import GO_IMAGE, MAVEN_IMAGE, NODE_IMAGE, PYTHON_3_10_IMAGE
 from pipelines.helpers.utils import sh_dash_c
 
 
@@ -14,6 +14,7 @@ def build_container(
     dagger_client: dagger.Client,
     base_image: str,
     include: List[str],
+    warmup_include: Optional[List[str]] = None,
     install_commands: Optional[List[str]] = None,
     env_vars: Optional[Dict[str, Any]] = {},
 ) -> dagger.Container:
@@ -22,6 +23,7 @@ def build_container(
         ctx (ClickPipelineContext): The context of the pipeline
         base_image (str): The base image to use for the container
         include (List[str]): The list of files to include in the container
+        warmup_include (Optional[List[str]]): The list of files to include in the container before installing dependencies
         install_commands (Optional[List[str]]): The list of commands to run to install dependencies for the formatter
         env_vars (Optional[Dict[str, Any]]): The list of environment variables to set on the container
     Returns:
@@ -34,49 +36,66 @@ def build_container(
     for key, value in env_vars.items():
         container = container.with_env_variable(key, value)
 
+    # Set the working directory to the code to format
+    container = container.with_workdir(REPO_MOUNT_PATH)
+
+    # Mount files to be referenced by the install_commands, if requested.
+    # These should only be files which do not change very often, to avoid invalidating the layer cache.
+    if warmup_include:
+        container = container.with_mounted_directory(
+            REPO_MOUNT_PATH,
+            dagger_client.host().directory(
+                ".",
+                include=warmup_include,
+                exclude=DEFAULT_FORMAT_IGNORE_LIST,
+            ),
+        )
+
     # Install any dependencies of the formatter
     if install_commands:
         container = container.with_exec(sh_dash_c(install_commands), skip_entrypoint=True)
 
     # Mount the relevant parts of the repository: the code to format and the formatting config
-    # Exclude the default ignore list to keep things as small as possible
+    # Exclude the default ignore list to keep things as small as possible.
+    # The mount path is the same as for the earlier volume mount, this will cause those directory
+    # contents to be overwritten. This is intentional and not a concern as the current file set is
+    # a superset of the earlier one.
     container = container.with_mounted_directory(
-        "/src",
+        REPO_MOUNT_PATH,
         dagger_client.host().directory(
             ".",
-            include=include,
+            include=include + (warmup_include if warmup_include else []),
             exclude=DEFAULT_FORMAT_IGNORE_LIST,
         ),
     )
-
-    # Set the working directory to the code to format
-    container = container.with_workdir("/src")
 
     return container
 
 
 def format_java_container(dagger_client: dagger.Client) -> dagger.Container:
-    """Format java, groovy, and sql code via spotless."""
+    """
+    Format java and groovy code via spotless in maven.
+    We use maven instead of gradle because we want this formatting step to be fast.
+    """
     return build_container(
         dagger_client,
-        base_image=AMAZONCORRETTO_IMAGE,
-        include=[
-            "**/*.java",
-            "**/*.gradle",
-            "gradlew",
-            "gradlew.bat",
-            "gradle",
-            "**/deps.toml",
-            "**/gradle.properties",
-            "**/version.properties",
+        base_image=MAVEN_IMAGE,
+        warmup_include=[
+            "spotless-maven-pom.xml",
             "tools/gradle/codestyle/java-google-style.xml",
         ],
         install_commands=[
-            "yum update -y",
-            "yum install -y findutils",  # gradle requires xargs, which is shipped in findutils.
-            "yum clean all",
+            # Run maven before mounting the sources to download all its dependencies.
+            # Dagger will cache the resulting layer to minimize the downloads.
+            # The go-offline goal purportedly downloads all dependencies.
+            # This isn't quite the case, we still need to add spotless goals.
+            "mvn -f spotless-maven-pom.xml"
+            " org.apache.maven.plugins:maven-dependency-plugin:3.6.1:go-offline"
+            " spotless:apply"
+            " spotless:check"
+            " clean"
         ],
-        env_vars={"RUN_IN_AIRBYTE_CI": "1"},
+        include=["**/*.java", "**/*.gradle"],
     )
 
 
@@ -101,11 +120,16 @@ def format_license_container(dagger_client: dagger.Client, license_file: str) ->
 
 def format_python_container(dagger_client: dagger.Client) -> dagger.Container:
     """Format python code via black and isort."""
-
     return build_container(
         dagger_client,
         base_image=PYTHON_3_10_IMAGE,
         env_vars={"PIPX_BIN_DIR": "/usr/local/bin"},
-        include=["**/*.py", "pyproject.toml", "poetry.lock"],
-        install_commands=["pip install pipx", "pipx ensurepath", "pipx install poetry"],
+        warmup_include=["pyproject.toml", "poetry.lock"],
+        install_commands=[
+            "pip install pipx",
+            "pipx ensurepath",
+            "pipx install poetry",
+            "poetry install --no-root",
+        ],
+        include=["**/*.py"],
     )

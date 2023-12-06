@@ -663,6 +663,11 @@ class TestDiscovery(BaseTest):
             name_counts[stream.name] = count + 1
         return [k for k, v in name_counts.items() if v > 1]
 
+    def test_streams_have_valid_json_schemas(self, discovered_catalog: Mapping[str, Any]):
+        """Check if all stream schemas are valid json schemas."""
+        for stream_name, stream in discovered_catalog.items():
+            jsonschema.Draft7Validator.check_schema(stream.json_schema)
+
     def test_defined_cursors_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check if all of the source defined cursor fields are exists on stream's json schema."""
         for stream_name, stream in discovered_catalog.items():

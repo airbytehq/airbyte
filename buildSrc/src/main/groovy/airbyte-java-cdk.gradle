@@ -2,10 +2,10 @@
 This class facilites detecting the Java CDK target version via readCdkTargetVersion().
 */
 
+import java.util.Properties
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
-import java.util.Properties
 
 class AirbyteJavaCdkPlugin implements Plugin<Project> {
 
@@ -24,8 +24,8 @@ class AirbyteJavaCdkPlugin implements Plugin<Project> {
         project.ext.getCdkTargetVersion = {
             return readCdkTargetVersion(project)
         }
-        project.getTasks().create("disableLocalCdkRefs", DisableLocalCdkRefsTask.class);
-        project.getTasks().create("assertNotUsingLocalCdk", AssertNotUsingLocalCdkTask.class);
+        project.getTasks().create("disableLocalCdkRefs", DisableLocalCdkRefsTask.class)
+        project.getTasks().create("assertNotUsingLocalCdk", AssertNotUsingLocalCdkTask.class)
     }
 
     public static class DisableLocalCdkRefsTask extends DefaultTask {
@@ -33,26 +33,26 @@ class AirbyteJavaCdkPlugin implements Plugin<Project> {
         public void disableLocalCdkRefs() {
             // Step through the project tree and set useLocalCdk to false on all connectors
             getProject().fileTree(dir: '.', include: '**/build.gradle').forEach(file -> {
-                String content = file.getText();
+                String content = file.getText()
                 if (content.contains("useLocalCdk = true")) {
-                    content = content.replace("useLocalCdk = true", "useLocalCdk = false");
-                    file.setText(content);
-                    System.out.println("Updated " + file.getPath());
+                    content = content.replace("useLocalCdk = true", "useLocalCdk = false")
+                    file.setText(content)
+                    System.out.println("Updated " + file.getPath())
                 }
-            });
+            })
         }
     }
 
     public static class AssertNotUsingLocalCdkTask extends DefaultTask {
         @TaskAction
         public void assertNotUsingLocalCdk() {
-            List<String> foundPaths = new ArrayList<>();
+            List<String> foundPaths = new ArrayList<>()
 
             for (File file : getProject().fileTree(dir: '.', include: '**/build.gradle')) {
-                String content = file.getText();
+                String content = file.getText()
                 if (content.contains("useLocalCdk = true")) {
-                    System.err.println("Found usage of 'useLocalCdk = true' in " + file.getPath());
-                    foundPaths.add(file.getPath());
+                    System.err.println("Found usage of 'useLocalCdk = true' in " + file.getPath())
+                    foundPaths.add(file.getPath())
                 }
             }
 
@@ -62,8 +62,8 @@ class AirbyteJavaCdkPlugin implements Plugin<Project> {
                     "This must be set to 'false' before merging to the main branch. \n" +
                     "NOTE: You can run './gradlew disableLocalCdkRefs' to automatically set it to 'false' on all projects.",
                     String.join("\n", foundPaths)
-                );
-                throw new RuntimeException(errorMessage);
+                )
+                throw new RuntimeException(errorMessage)
             }
         }
     }
