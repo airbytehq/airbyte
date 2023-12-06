@@ -5,7 +5,7 @@
 import re
 import urllib.parse as urlparse
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl
 
 import pendulum
@@ -52,6 +52,11 @@ class JiraStream(HttpStream, ABC):
         if self.api_v1:
             return f"https://{self._domain}/rest/agile/1.0/"
         return f"https://{self._domain}/rest/api/{API_VERSION}/"
+
+    @property
+    def max_retries(self) -> Union[int, None]:
+        """Number of retries increased from default 5 to 10, based on issues with Jira. Max waiting time is still default 10 minutes."""
+        return 10
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
@@ -271,9 +276,30 @@ class BoardIssues(IncrementalJiraStream):
             params["jql"] = jql
         return params
 
+    def _is_board_error(self, response):
+        """Check if board has error and should be skipped"""
+        if response.status_code == 500:
+            if "This board has no columns with a mapped status." in response.text:
+                return True
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if self._is_board_error(response):
+            return False
+
+        # for all other HTTP errors the default handling is applied
+        return super().should_retry(response)
+
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for board in read_full_refresh(self.boards_stream):
-            yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
+            try:
+                yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
+            except HTTPError as e:
+                if self._is_board_error(e.response):
+                    # Wrong board is skipped
+                    self.logger.warning(f"Board {board['id']} has no columns with a mapped status. Skipping.")
+                    continue
+                else:
+                    raise
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["boardId"] = stream_slice["board_id"]
@@ -549,7 +575,6 @@ class IssueCustomFieldOptions(JiraStream):
         return f"field/{stream_slice['field_id']}/context/{stream_slice['context_id']}/option"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-
         for record in read_full_refresh(self.issue_custom_field_contexts_stream):
             if record.get("fieldType") == "option":
                 yield from super().read_records(stream_slice={"field_id": record["fieldId"], "context_id": record["id"]}, **kwargs)
