@@ -7,9 +7,9 @@ import logging
 import os
 import sys
 
-import asyncclick as click
 import requests
 from pipelines import main_logger
+from pipelines.cli.confirm_prompt import confirm
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH
 from pipelines.external_scripts.airbyte_ci_install import RELEASE_URL, get_airbyte_os_name
 
@@ -102,7 +102,7 @@ def check_for_upgrade(
     logging.warning(upgrade_error_message)
 
     # Ask the user if they want to upgrade
-    if enable_auto_update and click.confirm("Do you want to automatically upgrade?", default=True):
+    if enable_auto_update and confirm("Do you want to automatically upgrade?", default=True):
         # if the current command contains `airbyte-ci-dev` is the dev version of the command
         logging.info(f"[{'DEV' if is_dev_version else 'BINARY'}] Upgrading pipelines...")
 
