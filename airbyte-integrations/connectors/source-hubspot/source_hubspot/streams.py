@@ -2039,13 +2039,6 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
     """
     A base class for Web Analytics API
     Docs: https://developers.hubspot.com/docs/api/events/web-analytics
-
-    This stream supports both client side and server side incremental sync by switching `is_client_side_incremental_enabled` flag.
-    If the flag is on, then client side incremental is used and only one slice will be created and records will be filtered out by state in place.
-    We need this workaround because the Web Analytics API is in beta
-    which most probably the reason why `occuredAfter` and `occuredBefore` query params have no effect to the query result, so we can't slicing normally.
-    See this post for more details:
-    https://community.hubspot.com/t5/APIs-Integrations/Web-Analytics-API-occuredAfter-and-occuredBefore-parameters-don/td-p/887303
     """
 
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -2054,17 +2047,8 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
     slicing_period: int = 30
     state_checkpoint_interval: int = 100
 
-    # Client side incremental to incremental switcher
-    # TODO: consider to remove this flag (See class description)
-    is_client_side_incremental_enabled: bool = True
-
-    # TODO: set this flag to `False` when client side incremental desibled
-    #       as we dont need filter out old records manually if `occuredAfter` and `occuredBefore` params work properly
-    filter_old_records: bool = is_client_side_incremental_enabled
-
-    # TODO: remove this field when `is_client_side_incremental_enabled` set to `False`
-    #       as it used to filter out old records only
-    updated_at_field: str = "occurredAt"
+    # Set this flag to `False` as we don't need client side incremental logic
+    filter_old_records: bool = False
 
     def __init__(self, parent: HttpStream, **kwargs: Any):
         super().__init__(parent, **kwargs)
@@ -2093,10 +2077,10 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
         """
         State is a composite object that keeps latest datetime of an event for each parent object:
         {
-            "100": {"occuredAt": "2023-11-24T23:23:23.000Z"},
-            "200": {"occuredAt": "2023-11-24T23:23:23.000Z"},
+            "100": {"occurredAt": "2023-11-24T23:23:23.000Z"},
+            "200": {"occurredAt": "2023-11-24T23:23:23.000Z"},
             ...,
-            "<parent object id>": {"occuredAt": "<datetime string in iso8601 format>"}
+            "<parent object id>": {"occurredAt": "<datetime string in iso8601 format>"}
         }
         """
         if latest_record["objectId"] in current_stream_state:
@@ -2113,20 +2097,12 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
             latest_record["objectId"]: {self.cursor_field: latest_datetime}
         }
 
-    def client_side_filter_by_state(self, records: Iterable[Mapping[str, Any]], stream_slice: Mapping[str, Any], stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        """
-        Filter out records that not saticfy state condition.
-        We should only care about state since records have already been filtered by self._start_date in parent class (See `Stream.read_records`)
-        Returns record if state is not defined or if `occurredAt` value in state less than in record
-        TODO: consider to remove this method when client side incremental sync no longer needed (See class description)
-        """
-        if not stream_state:
-            yield from records
-        else:
-            for record in records:
-                object_id = stream_slice["objectId"]
-                if object_id not in stream_state or record[self.cursor_field] > stream_state[object_id][self.cursor_field]:
-                    yield record
+    def records_transformer(self, records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
+        for record in records:
+            # We don't need `properties` as all the fields are unnested to the root 
+            if "properties" in record:
+                record.pop("properties")
+            yield record
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
@@ -2137,31 +2113,24 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
             object_id = parent_slice["parent"][self.object_id_field]
 
             # Take the initial datetime either form config or from state depending whichever value is higher
+            # In case when state is detected add a 1 millisecond to avoid duplicates from previous sync
             from_datetime = (
                 max(
                     self._start_date,
-                    self._field_to_datetime(self.state[object_id][self.cursor_field]),
+                    self._field_to_datetime(self.state[object_id][self.cursor_field]) + timedelta(milliseconds=1),
                 )
                 if object_id in self.state else self._start_date
             )
 
             # Making slices of given slice period
-            # TODO: remove `if not self.is_client_side_incremental_enabled else now` condition or turn `is_client_side_incremental_enabled` off
-            #       to enable normal slicing (See class description)
-            # TODO: as we are not able to check how exactly datetime filter works for the API it is considered to do time windows as the following:
-            #           2023-11-01T... -> 2023-11-02T...
-            #           2023-11-02T... -> 2023-11-03T...
-            #           ...
-            #       Once API become available for testing we should ensure those time windows are still suitable for us,
-            #       so we neither loose records nor duplicate them
             while (
-                (to_datetime := min(from_datetime.add(days=self.slicing_period), now) if not self.is_client_side_incremental_enabled else now) <= now
+                (to_datetime := min(from_datetime.add(days=self.slicing_period), now)) <= now
                 and from_datetime != now
                 and from_datetime <= to_datetime
             ):
                 yield {
-                    "occuredAfter": from_datetime.to_iso8601_string(),
-                    "occuredBefore": to_datetime.to_iso8601_string(),
+                    "occurredAfter": from_datetime.to_iso8601_string(),
+                    "occurredBefore": to_datetime.to_iso8601_string(),
                     "objectId": object_id,
                     "objectType": self.object_type,
                 }
@@ -2199,8 +2168,8 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
         Preparing the request params dictionary for the following query string:
         <url>?objectType=<parent-type>
              &objectId=<parent-id>
-             &occuredAfter=<event-datetime-iso8601>
-             &occuredBefore=<event-datetime-iso8601>
+             &occurredAfter=<event-datetime-iso8601>
+             &occurredBefore=<event-datetime-iso8601>
         """
         params = super().request_params(stream_state, stream_slice, next_page_token)
         return params | stream_slice
@@ -2208,16 +2177,9 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
     def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
         record_generator = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
-        # TODO: consider to remove this condition or turn `is_client_side_incremental_enabled` off
-        #       to disable client side incremental sync (See class description)
-        if self.is_client_side_incremental_enabled and sync_mode == SyncMode.incremental:
-            record_generator = self.client_side_filter_by_state(record_generator, stream_slice, stream_state)
-
+        record_generator = self.records_transformer(record_generator)
         for record in record_generator:
-            if "properties" in record:
-                record.pop("properties")
             yield record
-
             # Update state with latest datetime each time we have a record
             if sync_mode == SyncMode.incremental:
                 self.state = self.get_latest_state(self.state, record)

@@ -511,16 +511,29 @@ def test_web_analytics_stream_slices(common_params, mocker):
     parent_slicer_mock = mocker.patch("airbyte_cdk.sources.streams.http.HttpSubStream.stream_slices")
     parent_slicer_mock.return_value = (_ for _ in [{"parent": {"id": 1}}])
 
+    pendulum_now_mock = mocker.patch("pendulum.now")
+    pendulum_now_mock.return_value = pendulum.parse(common_params["start_date"]).add(days=50)
+
     stream = ContactsWebAnalytics(**common_params)
     slices = list(stream.stream_slices(SyncMode.incremental, cursor_field="occurredAt"))
 
-    assert len(slices) == 1
-    assert slices[0]["objectId"] == 1
+    assert len(slices) == 2
+    assert all(map(lambda slice: slice["objectId"] == 1, slices))
+
+    assert [
+        ("2021-01-10T00:00:00Z", "2021-02-09T00:00:00Z"),
+        ("2021-02-09T00:00:00Z", "2021-03-01T00:00:00Z")
+    ] == [
+        (s["occurredAfter"], s["occurredBefore"]) for s in slices
+    ]
 
 
 def test_web_analytics_latest_state(common_params, mocker):
     parent_slicer_mock = mocker.patch("airbyte_cdk.sources.streams.http.HttpSubStream.stream_slices")
     parent_slicer_mock.return_value = (_ for _ in [{"parent": {"id": "1"}}])
+
+    pendulum_now_mock = mocker.patch("pendulum.now")
+    pendulum_now_mock.return_value = pendulum.parse(common_params["start_date"]).add(days=10)
 
     parent_slicer_mock = mocker.patch("source_hubspot.streams.Stream.read_records")
     parent_slicer_mock.return_value = (_ for _ in [{"objectId": "1", "occurredAt": "2021-01-02T00:00:00Z"}])
