@@ -1,5 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+
 def my_function():
     print("Using single quotes, no newlines, and no spaces between the function name.")
 
