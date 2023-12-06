@@ -31,9 +31,6 @@ import org.jooq.DSLContext;
 import org.jooq.InsertValuesStep4;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
-import org.jooq.conf.Settings;
-import org.jooq.conf.StatementType;
-import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
@@ -115,13 +112,17 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
         database.execute(connection -> {
           LOGGER.info("Prepared batch size: {}, {}, {}", batch.size(), schemaName, tableName);
           final DSLContext create = using(connection, SQLDialect.POSTGRES);
-          // JOOQ adds some overhead here. Building the InsertValuesStep object takes about 139ms for 5K records.
+          // JOOQ adds some overhead here. Building the InsertValuesStep object takes about 139ms for 5K
+          // records.
           // That's a nontrivial execution speed loss when the actual statement execution takes 500ms.
           // Hopefully we're executing these statements infrequently enough in a sync that it doesn't matter.
-          // But this is a potential optimization if we need to eke out a little more performance on standard inserts.
+          // But this is a potential optimization if we need to eke out a little more performance on standard
+          // inserts.
           // ... which presumably we won't, because standard inserts is so inherently slow.
-          // See https://github.com/airbytehq/airbyte/blob/f73827eb43f62ee30093451c434ad5815053f32d/airbyte-integrations/connectors/destination-redshift/src/main/java/io/airbyte/integrations/destination/redshift/operations/RedshiftSqlOperations.java#L39
-          // and https://github.com/airbytehq/airbyte/blob/f73827eb43f62ee30093451c434ad5815053f32d/airbyte-cdk/java/airbyte-cdk/db-destinations/src/main/java/io/airbyte/cdk/integrations/destination/jdbc/SqlOperationsUtils.java#L62
+          // See
+          // https://github.com/airbytehq/airbyte/blob/f73827eb43f62ee30093451c434ad5815053f32d/airbyte-integrations/connectors/destination-redshift/src/main/java/io/airbyte/integrations/destination/redshift/operations/RedshiftSqlOperations.java#L39
+          // and
+          // https://github.com/airbytehq/airbyte/blob/f73827eb43f62ee30093451c434ad5815053f32d/airbyte-cdk/java/airbyte-cdk/db-destinations/src/main/java/io/airbyte/cdk/integrations/destination/jdbc/SqlOperationsUtils.java#L62
           // for how DV1 did this in pure JDBC.
           InsertValuesStep4<Record, String, String, OffsetDateTime, OffsetDateTime> insert = create
               .insertInto(table(name(schemaName, tableName)),
