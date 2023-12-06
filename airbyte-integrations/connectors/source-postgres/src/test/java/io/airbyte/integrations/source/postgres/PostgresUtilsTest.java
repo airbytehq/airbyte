@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import java.time.Duration;
 import java.util.Collections;
@@ -97,10 +98,10 @@ class PostgresUtilsTest {
 
   @Test
   void testDebugMode() {
-    final ObjectNode config = (ObjectNode) Jsons.jsonNode(ImmutableMap.builder().build());
+    final var config = MoreMappers.initMapper().createObjectNode();
     assertFalse(PostgresUtils.isCdc(config));
 
-    config.set("replication_method", Jsons.jsonNode(ImmutableMap.of(
+    config.set("replication_method", Jsons.jsonNode(Map.of(
         "replication_slot", "slot",
         "publication", "ab_pub")));
     assertFalse(PostgresUtils.isDebugMode(config));
