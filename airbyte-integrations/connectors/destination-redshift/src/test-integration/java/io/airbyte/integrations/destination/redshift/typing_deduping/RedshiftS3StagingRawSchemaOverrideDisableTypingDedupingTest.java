@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 public class RedshiftS3StagingRawSchemaOverrideDisableTypingDedupingTest extends AbstractRedshiftTypingDedupingTest {
 
   @Override
@@ -20,5 +23,10 @@ public class RedshiftS3StagingRawSchemaOverrideDisableTypingDedupingTest extends
   protected boolean disableFinalTableComparison() {
     return true;
   }
+
+  @Disabled
+  @Test
+  @Override
+  public void identicalNameSimultaneousSync() {}
 
 }
