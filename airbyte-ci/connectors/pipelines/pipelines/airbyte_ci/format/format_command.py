@@ -23,6 +23,9 @@ from pipelines.models.steps import CommandResult, StepStatus
 class FormatCommand(click.Command):
     """Generic command to run a formatter."""
 
+    # This constant is useful for mocking in tests
+    LOCAL_REPO_PATH = "."
+
     def __init__(
         self,
         formatter: Formatter,
@@ -79,7 +82,7 @@ class FormatCommand(click.Command):
         Returns:
             dagger.Directory: The directory to format
         """
-        return dagger_client.host().directory(".", include=self.file_filter, exclude=DEFAULT_FORMAT_IGNORE_LIST)
+        return dagger_client.host().directory(self.LOCAL_REPO_PATH, include=self.file_filter, exclude=DEFAULT_FORMAT_IGNORE_LIST)
 
     @pass_pipeline_context
     @sentry_utils.with_command_context
@@ -98,7 +101,7 @@ class FormatCommand(click.Command):
         container = self.get_format_container_fn(dagger_client, dir_to_format)
         command_result = await self.get_format_command_result(dagger_client, container, dir_to_format)
         if (formatted_code_dir := command_result.output_artifact) and self.export_formatted_code:
-            await formatted_code_dir.export(".")
+            await formatted_code_dir.export(self.LOCAL_REPO_PATH)
         if self.enable_logging:
             log_command_results(ctx, [command_result], main_logger, LogOptions(quiet=ctx.obj["quiet"]))
         if command_result.status is StepStatus.FAILURE and self.exit_on_failure:
@@ -139,6 +142,7 @@ class FormatCommand(click.Command):
         if warmup_inclusion := WARM_UP_INCLUSIONS.get(self.formatter):
             warmup_dir = dagger_client.host().directory(".", include=warmup_inclusion, exclude=DEFAULT_FORMAT_IGNORE_LIST)
             not_formatted_code = not_formatted_code.with_directory(".", warmup_dir)
+            formatted_directory = formatted_directory.with_directory(".", warmup_dir)
         return (
             await not_formatted_code.with_timestamps(0).diff(formatted_directory.with_timestamps(0)),
             await format_container.stdout(),
