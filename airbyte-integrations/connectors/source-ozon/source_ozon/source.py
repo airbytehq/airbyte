@@ -47,7 +47,7 @@ class SourceOzon(AbstractSource):
             return CredentialsCraftAuthenticator(
                 host=credentials["credentials_craft_host"],
                 bearer_token=credentials["credentials_craft_token"],
-                token_id=credentials["credentials_craft_odnoklassniki_token_id"],
+                token_id=credentials["credentials_craft_ozon_token_id"],
             )
 
         if auth_type == "token_auth":
