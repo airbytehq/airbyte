@@ -8,236 +8,236 @@
   },
   "properties": {
     "id": {
-      "type": ["null", "integer"],
-      "description": "The unique identifier for the repository."
+      "description": "The unique identifier for the repository.",
+      "type": ["null", "integer"]
     },
     "node_id": {
-      "type": ["null", "string"],
-      "description": "A node-specific identifier for the repository."
+      "description": "A node-specific identifier for the repository.",
+      "type": ["null", "string"]
     },
     "name": {
-      "type": ["null", "string"],
-      "description": "The name of the repository."
+      "description": "The name of the repository.",
+      "type": ["null", "string"]
     },
     "full_name": {
-      "type": ["null", "string"],
-      "description": "The full name of the repository including the owner's name."
+      "description": "The full name of the repository including the owner's name.",
+      "type": ["null", "string"]
     },
     "owner": {
-      "$ref": "user.json",
-      "description": "An object containing information about the repository owner."
+      "description": "An object containing information about the repository owner.",
+      "$ref": "user.json"
     },
     "private": {
-      "type": ["null", "boolean"],
-      "description": "Indicates whether the repository is private."
+      "description": "Indicates whether the repository is private.",
+      "type": ["null", "boolean"]
     },
     "html_url": {
-      "type": ["null", "string"],
-      "description": "The URL of the repository on GitHub's web interface."
+      "description": "The URL of the repository on GitHub's web interface.",
+      "type": ["null", "string"]
     },
     "description": {
-      "type": ["null", "string"],
-      "description": "A brief description of the repository's purpose and contents."
+      "description": "A brief description of the repository's purpose and contents.",
+      "type": ["null", "string"]
     },
     "fork": {
-      "type": ["null", "boolean"],
-      "description": "Indicates whether the repository is a fork of another repository."
+      "description": "Indicates whether the repository is a fork of another repository.",
+      "type": ["null", "boolean"]
     },
     "url": {
-      "type": ["null", "string"],
-      "description": "The API URL of the repository."
+      "description": "The API URL of the repository.",
+      "type": ["null", "string"]
     },
     "archive_url": {
-      "type": ["null", "string"],
-      "description": "The URL to download a tar archive of the repository."
+      "description": "The URL to download a tar archive of the repository.",
+      "type": ["null", "string"]
     },
     "assignees_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the assignees for issues in the repository."
+      "description": "The URL listing the assignees for issues in the repository.",
+      "type": ["null", "string"]
     },
     "blobs_url": {
-      "type": ["null", "string"],
-      "description": "The URL for blobs (binary large objects) in the repository."
+      "description": "The URL for blobs (binary large objects) in the repository.",
+      "type": ["null", "string"]
     },
     "branches_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the branches in the repository."
+      "description": "The URL listing the branches in the repository.",
+      "type": ["null", "string"]
     },
     "collaborators_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the collaborators of the repository."
+      "description": "The URL listing the collaborators of the repository.",
+      "type": ["null", "string"]
     },
     "comments_url": {
-      "type": ["null", "string"],
-      "description": "The URL for comments in the repository's issues and pull requests."
+      "description": "The URL for comments in the repository's issues and pull requests.",
+      "type": ["null", "string"]
     },
     "commits_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the commits in the repository."
+      "description": "The URL listing the commits in the repository.",
+      "type": ["null", "string"]
     },
     "compare_url": {
-      "type": ["null", "string"],
-      "description": "The URL to compare two commits in the repository."
+      "description": "The URL to compare two commits in the repository.",
+      "type": ["null", "string"]
     },
     "contents_url": {
-      "type": ["null", "string"],
-      "description": "The URL to retrieve the contents of the repository."
+      "description": "The URL to retrieve the contents of the repository.",
+      "type": ["null", "string"]
     },
     "contributors_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the contributors to the repository."
+      "description": "The URL listing the contributors to the repository.",
+      "type": ["null", "string"]
     },
     "deployments_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the deployments of the repository."
+      "description": "The URL listing the deployments of the repository.",
+      "type": ["null", "string"]
     },
     "downloads_url": {
-      "type": ["null", "string"],
-      "description": "The URL for downloading resources from the repository."
+      "description": "The URL for downloading resources from the repository.",
+      "type": ["null", "string"]
     },
     "events_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the events in the repository."
+      "description": "The URL listing the events in the repository.",
+      "type": ["null", "string"]
     },
     "forks_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the forks of the repository."
+      "description": "The URL listing the forks of the repository.",
+      "type": ["null", "string"]
     },
     "git_commits_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the Git commits in the repository."
+      "description": "The URL listing the Git commits in the repository.",
+      "type": ["null", "string"]
     },
     "git_refs_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the Git references (branches, tags, etc.) in the repository."
+      "description": "The URL listing the Git references (branches, tags, etc.) in the repository.",
+      "type": ["null", "string"]
     },
     "git_tags_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the Git tags in the repository."
+      "description": "The URL listing the Git tags in the repository.",
+      "type": ["null", "string"]
     },
     "git_url": {
-      "type": ["null", "string"],
-      "description": "The Git URL to clone the repository."
+      "description": "The Git URL to clone the repository.",
+      "type": ["null", "string"]
     },
     "issue_comment_url": {
-      "type": ["null", "string"],
-      "description": "The URL for the issue comments in the repository."
+      "description": "The URL for the issue comments in the repository.",
+      "type": ["null", "string"]
     },
     "issue_events_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the issue events in the repository."
+      "description": "The URL listing the issue events in the repository.",
+      "type": ["null", "string"]
     },
     "issues_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the issues in the repository."
+      "description": "The URL listing the issues in the repository.",
+      "type": ["null", "string"]
     },
     "keys_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the deploy keys of the repository."
+      "description": "The URL listing the deploy keys of the repository.",
+      "type": ["null", "string"]
     },
     "labels_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the labels for issues in the repository."
+      "description": "The URL listing the labels for issues in the repository.",
+      "type": ["null", "string"]
     },
     "languages_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the programming languages used in the repository."
+      "description": "The URL listing the programming languages used in the repository.",
+      "type": ["null", "string"]
     },
     "merges_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the merges in the repository."
+      "description": "The URL listing the merges in the repository.",
+      "type": ["null", "string"]
     },
     "milestones_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the milestones in the repository."
+      "description": "The URL listing the milestones in the repository.",
+      "type": ["null", "string"]
     },
     "notifications_url": {
-      "type": ["null", "string"],
-      "description": "The URL for notifications related to the repository."
+      "description": "The URL for notifications related to the repository.",
+      "type": ["null", "string"]
     },
     "pulls_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the pull requests in the repository."
+      "description": "The URL listing the pull requests in the repository.",
+      "type": ["null", "string"]
     },
     "releases_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the releases in the repository."
+      "description": "The URL listing the releases in the repository.",
+      "type": ["null", "string"]
     },
     "ssh_url": {
-      "type": ["null", "string"],
-      "description": "The SSH URL to clone the repository."
+      "description": "The SSH URL to clone the repository.",
+      "type": ["null", "string"]
     },
     "stargazers_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the stargazers of the repository."
+      "description": "The URL listing the stargazers of the repository.",
+      "type": ["null", "string"]
     },
     "statuses_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the commit statuses in the repository."
+      "description": "The URL listing the commit statuses in the repository.",
+      "type": ["null", "string"]
     },
     "subscribers_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the subscribers to the repository."
+      "description": "The URL listing the subscribers to the repository.",
+      "type": ["null", "string"]
     },
     "subscription_url": {
-      "type": ["null", "string"],
-      "description": "The URL for managing the subscription to the repository."
+      "description": "The URL for managing the subscription to the repository.",
+      "type": ["null", "string"]
     },
     "tags_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the tags in the repository."
+      "description": "The URL listing the tags in the repository.",
+      "type": ["null", "string"]
     },
     "teams_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the teams associated with the repository."
+      "description": "The URL listing the teams associated with the repository.",
+      "type": ["null", "string"]
     },
     "trees_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the Git trees in the repository."
+      "description": "The URL listing the Git trees in the repository.",
+      "type": ["null", "string"]
     },
     "clone_url": {
-      "type": ["null", "string"],
-      "description": "The URL to clone the repository via HTTPS."
+      "description": "The URL to clone the repository via HTTPS.",
+      "type": ["null", "string"]
     },
     "mirror_url": {
-      "type": ["null", "string"],
-      "description": "The URL of the repository's mirror."
+      "description": "The URL of the repository's mirror.",
+      "type": ["null", "string"]
     },
     "hooks_url": {
-      "type": ["null", "string"],
-      "description": "The URL listing the webhooks in the repository."
+      "description": "The URL listing the webhooks in the repository.",
+      "type": ["null", "string"]
     },
     "svn_url": {
-      "type": ["null", "string"],
-      "description": "The SVN URL to checkout the repository."
+      "description": "The SVN URL to checkout the repository.",
+      "type": ["null", "string"]
     },
     "homepage": {
-      "type": ["null", "string"],
-      "description": "The URL of the repository's homepage."
+      "description": "The URL of the repository's homepage.",
+      "type": ["null", "string"]
     },
     "language": {
-      "type": ["null", "string"],
-      "description": "The primary programming language used in the repository."
+      "description": "The primary programming language used in the repository.",
+      "type": ["null", "string"]
     },
     "forks_count": {
-      "type": ["null", "integer"],
-      "description": "The number of times this repository has been forked."
+      "description": "The number of times this repository has been forked.",
+      "type": ["null", "integer"]
     },
     "stargazers_count": {
-      "type": ["null", "integer"],
-      "description": "The number of stars this repository has received."
+      "description": "The number of stars this repository has received.",
+      "type": ["null", "integer"]
     },
     "watchers_count": {
-      "type": ["null", "integer"],
-      "description": "The number of users watching the repository."
+      "description": "The number of users watching the repository.",
+      "type": ["null", "integer"]
     },
     "size": {
-      "type": ["null", "integer"],
-      "description": "The size of the repository in kilobytes."
+      "description": "The size of the repository in kilobytes.",
+      "type": ["null", "integer"]
     },
     "default_branch": {
-      "type": ["null", "string"],
-      "description": "The default branch of the repository."
+      "description": "The default branch of the repository.",
+      "type": ["null", "string"]
     },
     "open_issues_count": {
       "description": "The count of open issues in the repository.",
