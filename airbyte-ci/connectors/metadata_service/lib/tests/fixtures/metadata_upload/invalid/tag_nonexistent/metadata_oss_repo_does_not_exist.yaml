@@ -22,6 +22,6 @@ data:
     oss:
       enabled: true
       dockerRepository: airbyte/exists-4
-      dockerImageTag: 6.6.6 # tag does not exist
+      dockerImageTag: 99.99.99 # tag does not exist
   tags:
     - language:java

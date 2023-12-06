@@ -71,7 +71,7 @@ def validate_metadata_images_in_dockerhub(
 
     print(f"Checking that the following images are on dockerhub: {images_to_check}")
     for image, version in images_to_check:
-        if not is_image_on_docker_hub(image, version):
+        if not is_image_on_docker_hub(image, version, retries=3):
             return False, f"Image {image}:{version} does not exist in DockerHub"
 
     return True, None
@@ -151,7 +151,7 @@ def validate_metadata_base_images_in_dockerhub(
 ) -> ValidationResult:
     metadata_definition_dict = metadata_definition.dict()
 
-    image_address = get(metadata_definition_dict, "data.connectorOptions.baseImage")
+    image_address = get(metadata_definition_dict, "data.connectorBuildOptions.baseImage")
     if image_address is None:
         return True, None
 
