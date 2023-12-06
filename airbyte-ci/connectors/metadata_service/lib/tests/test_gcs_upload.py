@@ -16,13 +16,17 @@ from metadata_service.validators.metadata_validator import ValidatorOptions
 from pydash.objects import get
 
 MOCK_VERSIONS_THAT_DO_NOT_EXIST = ["99.99.99", "0.0.0"]
+MISSING_SHA = "MISSINGSHA"
 DOCS_PATH = "/docs"
 MOCK_DOC_URL_PATH = "integrations/sources/existingsource.md"
 VALID_DOC_FILE_PATH = Path(DOCS_PATH) / MOCK_DOC_URL_PATH
 
 
 def stub_is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] = None, retries: int = 0, wait_sec: int = 30) -> bool:
-    image_exists = all(["exists" in image_name, version not in MOCK_VERSIONS_THAT_DO_NOT_EXIST, digest is None or "exists" in digest])
+    image_repo_exists = "exists" in image_name
+    version_exists = version not in MOCK_VERSIONS_THAT_DO_NOT_EXIST
+    sha_is_valid = (digest != MISSING_SHA) if digest is not None else True
+    image_exists = all([image_repo_exists, version_exists, sha_is_valid])
     return image_exists
 
 
