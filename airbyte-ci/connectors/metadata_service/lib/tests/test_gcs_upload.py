@@ -335,8 +335,7 @@ def test_upload_invalid_metadata_to_gcs(mocker, invalid_metadata_yaml_files):
         print(f"\nTesting upload of invalid metadata file: " + invalid_metadata_file)
 
         metadata_file_path = Path(invalid_metadata_file)
-        # If your test fails with 'Please set the DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables.'
-        # then your test data passed validation when it shouldn't have.
+
         try:
             with pytest.raises(ValueError, match="Validation error") as exc_info:
                 gcs_upload.upload_metadata_to_gcs(
@@ -361,8 +360,7 @@ def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_u
     for invalid_metadata_file in invalid_metadata_upload_files:
         print(f"\nTesting upload of valid metadata file with invalid docker image: " + invalid_metadata_file)
         metadata_file_path = Path(invalid_metadata_file)
-        # If your test fails with 'Unexpected path: <path>', then your test data passed validation
-        # when it shouldn't have.
+
         try:
             with pytest.raises(ValueError, match="does not exist in DockerHub") as exc_info:
                 gcs_upload.upload_metadata_to_gcs(
