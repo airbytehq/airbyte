@@ -21,7 +21,7 @@ from pipelines.models.steps import MountPath, Step, StepResult
 
 
 class MetadataValidation(SimpleDockerStep):
-    def __init__(self, context: ConnectorContext, docker_hub_username_secret: dagger.Secret, docker_hub_password_secret: dagger.Secret):
+    def __init__(self, context: ConnectorContext):
         super().__init__(
             title=f"Validate metadata for {context.connector.technical_name}",
             context=context,
@@ -34,8 +34,8 @@ class MetadataValidation(SimpleDockerStep):
                 MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
             ],
             secrets={
-                "DOCKER_HUB_USERNAME": docker_hub_username_secret,
-                "DOCKER_HUB_PASSWORD": docker_hub_password_secret,
+                "DOCKER_HUB_USERNAME": context.docker_hub_username_secret,
+                "DOCKER_HUB_PASSWORD": context.docker_hub_password_secret,
             },
             command=[
                 "metadata_service",
