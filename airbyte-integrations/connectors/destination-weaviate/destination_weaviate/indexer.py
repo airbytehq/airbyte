@@ -119,7 +119,9 @@ class WeaviateIndexer(Indexer):
         for batch in batches:
             for i in range(len(batch)):
                 chunk = batch[i]
-                weaviate_object = {**self._normalize(chunk.metadata), self.config.text_field: chunk.page_content}
+                weaviate_object = {**self._normalize(chunk.metadata)}
+                if chunk.page_content is not None:
+                    weaviate_object[self.config.text_field] = chunk.page_content
                 object_id = str(uuid.uuid4())
                 class_name = self.stream_to_class_name(chunk.record.stream)
                 self.client.batch.add_data_object(weaviate_object, class_name, object_id, vector=chunk.embedding)

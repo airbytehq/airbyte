@@ -96,7 +96,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
       return;
     }
     final UUID queryId = UUID.randomUUID();
-    LOGGER.info("Executing sql {}: {}", queryId, sql);
+    LOGGER.debug("Executing sql {}: {}", queryId, sql);
 
     /*
      * If you run a query like CREATE SCHEMA ... OPTIONS(location=foo); CREATE TABLE ...;, bigquery
@@ -116,7 +116,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
     }
 
     final JobStatistics.QueryStatistics statistics = job.getStatistics();
-    LOGGER.info("Root-level job {} completed in {} ms; processed {} bytes; billed for {} bytes",
+    LOGGER.debug("Root-level job {} completed in {} ms; processed {} bytes; billed for {} bytes",
         queryId,
         statistics.getEndTime() - statistics.getStartTime(),
         statistics.getTotalBytesProcessed(),
@@ -138,7 +138,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
               if (!truncatedQuery.equals(qc.getQuery())) {
                 truncatedQuery += "...";
               }
-              LOGGER.info("Child sql {} completed in {} ms; processed {} bytes; billed for {} bytes",
+              LOGGER.debug("Child sql {} completed in {} ms; processed {} bytes; billed for {} bytes",
                   truncatedQuery,
                   childQueryStats.getEndTime() - childQueryStats.getStartTime(),
                   childQueryStats.getTotalBytesProcessed(),
@@ -147,7 +147,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
               // other job types are extract/copy/load
               // we're probably not using them, but handle just in case?
               final JobStatistics childJobStats = childJob.getStatistics();
-              LOGGER.info("Non-query child job ({}) completed in {} ms",
+              LOGGER.debug("Non-query child job ({}) completed in {} ms",
                   configuration.getType(),
                   childJobStats.getEndTime() - childJobStats.getStartTime());
             }
