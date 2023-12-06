@@ -401,7 +401,7 @@ Available commands:
 
 ### <a id="format-check-command"></a>`format check all` command
 
-This command runs formatting checks, but does not format the code in place. It will exit 1 as soon as a failure is encountered. To fix errors, use `airbyte-ci format fix all`.
+This command runs formatting checks, but does not format the code in place. It will exit 1 as soon as a failure is encountered. To fix errors, use `airbyte-ci format fix all`
 
 Running `airbyte-ci format check` will run checks on all different types of code. Run `airbyte-ci format check --help` for subcommands to check formatting for only certain types of files.
 

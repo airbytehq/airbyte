@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu", "macos"]
+        os: ["ubuntu", "macos", "cdrx/pyinstaller-linux"]
 
     steps:
       - name: Checkout Airbyte
