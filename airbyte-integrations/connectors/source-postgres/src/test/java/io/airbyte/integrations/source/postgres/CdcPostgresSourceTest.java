@@ -104,7 +104,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
   @Test
   void testDebugMode() {
-    final JsonNode invalidDebugConfig =  testdb.testConfigBuilder()
+    final JsonNode invalidDebugConfig = testdb.testConfigBuilder()
         .withSchemas(modelsSchema(), modelsSchema() + "_random")
         .withoutSsl()
         .withCdcReplication("While reading Data")

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.integrations.debug;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,7 +17,8 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Collections;
 
 /**
- * Utility class defined to debug a source. Copy over any relevant configurations, catalogs & state in the resources/debug_resources directory.
+ * Utility class defined to debug a source. Copy over any relevant configurations, catalogs & state
+ * in the resources/debug_resources directory.
  */
 public class DebugUtil {
 
@@ -45,4 +50,5 @@ public class DebugUtil {
     final AirbyteStateMessage message = Jsons.deserialize(MoreResources.readResource("debug_resources/state.json"), AirbyteStateMessage.class);
     return Jsons.jsonNode(Collections.singletonList(message));
   }
+
 }

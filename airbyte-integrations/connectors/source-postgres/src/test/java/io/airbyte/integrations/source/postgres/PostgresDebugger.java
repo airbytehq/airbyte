@@ -16,4 +16,5 @@ public class PostgresDebugger {
     postgresSource.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
     DebugUtil.debug(postgresSource);
   }
+
 }
