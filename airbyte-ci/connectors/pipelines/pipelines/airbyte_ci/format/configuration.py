@@ -13,10 +13,10 @@ from pipelines.airbyte_ci.format.containers import (
 LICENSE_FILE_NAME = "LICENSE_SHORT"
 
 FORMATTERS_CONFIGURATIONS = {
-    # Run spotless on all java and groovy files.
+    # Run spotless on all java and gradle files.
     Formatter.JAVA: {
         "get_format_container_fn": format_java_container,
-        "file_filter": ["**/*.java", "**/*.groovy"],
+        "file_filter": ["**/*.java", "**/*.gradle"],
         "format_commands": ["mvn -f spotless-maven-pom.xml spotless:apply clean"],
     },
     # Run prettier on all json and yaml files.
