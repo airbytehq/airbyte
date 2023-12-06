@@ -19,7 +19,11 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -47,6 +51,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   private final Set<StreamDescriptor> streamNames;
   private final FlushFailure flushFailure;
   private final String defaultNamespace;
+  private final ConcurrentMap<StreamDescriptor, AtomicLong> recordCounts;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -102,6 +107,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     flushWorkers =
         new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager(), workerPool);
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
+    this.recordCounts = new ConcurrentHashMap<>();
   }
 
   @VisibleForTesting
@@ -113,18 +119,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
                              final BufferManager bufferManager,
                              final FlushFailure flushFailure,
                              final String defaultNamespace) {
-    this.defaultNamespace = defaultNamespace;
-    hasStarted = false;
-    hasClosed = false;
-
-    this.onStart = onStart;
-    this.onClose = onClose;
-    this.catalog = catalog;
-    this.bufferManager = bufferManager;
-    bufferEnqueue = bufferManager.getBufferEnqueue();
-    this.flushFailure = flushFailure;
-    flushWorkers = new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager());
-    streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
+    this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, flushFailure, defaultNamespace, Executors.newFixedThreadPool(5));
   }
 
   @Override
@@ -153,6 +148,11 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
         message.getRecord().setNamespace(defaultNamespace);
       }
       validateRecord(message);
+
+      recordCounts.computeIfAbsent(
+          message.getRecord().getStreamDescriptor(),
+          sd -> new AtomicLong()
+      ).incrementAndGet();
     }
     bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
   }
@@ -204,7 +204,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     flushWorkers.close();
 
     bufferManager.close();
-    onClose.accept(hasFailed);
+    onClose.accept(hasFailed, recordCounts);
 
     // as this throws an exception, we need to be after all other close functions.
     propagateFlushWorkerExceptionIfPresent();
