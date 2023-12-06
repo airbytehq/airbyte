@@ -130,6 +130,10 @@ class SourceGoogleAds(AbstractSource):
             error_messages = ", ".join([error.message for error in exception.failure.errors])
             logger.error(traceback.format_exc())
             return False, f"Unable to connect to Google Ads API with the provided configuration - {error_messages}"
+        except Exception as e:
+            # fallback for all the unhanded exceptions
+            logger.error(traceback.format_exc())
+            return False, f"Unable to connect to Google Ads API with the provided configuration - {repr(e)}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self._validate_and_transform(config)
