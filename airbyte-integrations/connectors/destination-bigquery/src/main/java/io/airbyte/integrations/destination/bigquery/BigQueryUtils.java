@@ -67,7 +67,7 @@ public class BigQueryUtils {
   private static final BigQuerySQLNameTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
   private static final DateTimeFormatter formatter =
       DateTimeFormatter.ofPattern("[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
-          "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
+          "[[' ']['T']HH:mm[':'ss[.][SSSSSSS][SSSSSS][SSSSS][SSSS][SSS][SS][S][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
   private static final String USER_AGENT_FORMAT = "%s (GPN: Airbyte)";
   private static final String CHECK_TEST_DATASET_SUFFIX = "_airbyte_check_stage_tmp_";
   private static final String CHECK_TEST_TMP_TABLE_NAME = "test_connection_table_name";
