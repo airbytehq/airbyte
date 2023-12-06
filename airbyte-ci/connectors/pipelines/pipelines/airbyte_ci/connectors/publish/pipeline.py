@@ -243,8 +243,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
             results = []
 
-            metadata_validation_results = await MetadataValidation(context=context).run()
-
+            metadata_validation_results = await MetadataValidation(context).run()
             results.append(metadata_validation_results)
 
             # Exit early if the metadata file is invalid.
