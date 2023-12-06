@@ -285,9 +285,9 @@ class BoardIssues(IncrementalJiraStream):
     def should_retry(self, response: requests.Response) -> bool:
         if self._is_board_error(response):
             return False
-        else:
-            # for all other HTTP errors the defaul handling is applied
-            return super().should_retry(response)
+
+        # for all other HTTP errors the default handling is applied
+        return super().should_retry(response)
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for board in read_full_refresh(self.boards_stream):
