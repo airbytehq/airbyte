@@ -226,7 +226,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   }
 
   @Test
-  void testCheckFailure() throws Exception {
+  protected void testCheckFailure() throws Exception {
     final var config = config();
     maybeSetShorterConnectionTimeout(config);
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
@@ -291,7 +291,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   }
 
   @Test
-  void testDiscoverWithMultipleSchemas() throws Exception {
+  protected void testDiscoverWithMultipleSchemas() throws Exception {
     // clickhouse and mysql do not have a concept of schemas, so this test does not make sense for them.
     switch (testdb.getDatabaseDriver()) {
       case MYSQL, CLICKHOUSE, TERADATA:
@@ -340,7 +340,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   }
 
   @Test
-  void testReadOneColumn() throws Exception {
+  protected void testReadOneColumn() throws Exception {
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers
         .createConfiguredAirbyteCatalog(streamName(), getDefaultNamespace(), Field.of(COL_ID, JsonSchemaType.NUMBER));
     final List<AirbyteMessage> actualMessages = MoreIterators
@@ -368,7 +368,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   }
 
   @Test
-  void testReadMultipleTables() throws Exception {
+  protected void testReadMultipleTables() throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalogWithOneStream(
         getDefaultNamespace());
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
@@ -415,7 +415,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   }
 
   @Test
-  void testTablesWithQuoting() throws Exception {
+  protected void testTablesWithQuoting() throws Exception {
     final ConfiguredAirbyteStream streamForTableWithSpaces = createTableWithSpaces();
 
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
@@ -546,7 +546,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   }
 
   @Test
-  void testReadOneTableIncrementallyTwice() throws Exception {
+  protected void testReadOneTableIncrementallyTwice() throws Exception {
     final var config = config();
     final String namespace = getDefaultNamespace();
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalogWithOneStream(namespace);
@@ -610,7 +610,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
   }
 
   @Test
-  void testReadMultipleTablesIncrementally() throws Exception {
+  protected void testReadMultipleTablesIncrementally() throws Exception {
     final String tableName2 = TABLE_NAME + 2;
     final String streamName2 = streamName() + 2;
     final String fqTableName2 = getFullyQualifiedTableName(tableName2);

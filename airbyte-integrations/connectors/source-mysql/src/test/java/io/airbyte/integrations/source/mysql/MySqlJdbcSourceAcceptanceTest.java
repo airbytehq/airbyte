@@ -89,7 +89,8 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
   }
 
   @Test
-  void testReadMultipleTablesIncrementally() throws Exception {
+  @Override
+  protected void testReadMultipleTablesIncrementally() throws Exception {
     final var config = config();
     ((ObjectNode) config).put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1);
     final String streamOneName = TABLE_NAME + "one";

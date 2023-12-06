@@ -32,9 +32,9 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.22'
 
     // Add testcontainers and use GenericContainer for TiDB
-    testImplementation libs.testcontainers.tidb
+    testImplementation libs.testcontainers.tidb.source
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
 
-    integrationTestJavaImplementation libs.testcontainers.tidb
+    integrationTestJavaImplementation libs.testcontainers.tidb.source
 }

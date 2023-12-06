@@ -89,7 +89,8 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Snowfla
   }
 
   @Test
-  void testCheckFailure() throws Exception {
+  @Override
+  protected void testCheckFailure() throws Exception {
     final JsonNode config = config();
     ((ObjectNode) config).with("credentials").put(JdbcUtils.PASSWORD_KEY, "fake");
     try (SnowflakeSource source = source()) {

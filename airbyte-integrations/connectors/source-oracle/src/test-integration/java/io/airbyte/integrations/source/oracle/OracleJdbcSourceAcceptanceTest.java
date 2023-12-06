@@ -230,7 +230,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Test
-  void testReadOneTableIncrementallyTwice() throws Exception {
+  @Override
+  protected void testReadOneTableIncrementallyTwice() throws Exception {
     final String namespace = getDefaultNamespace();
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalogWithOneStream(namespace);
     configuredCatalog.getStreams().forEach(airbyteStream -> {

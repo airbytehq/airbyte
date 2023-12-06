@@ -148,7 +148,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
   }
 
   @Test
-  void testCheckFailure() throws Exception {
+  @Override
+  protected void testCheckFailure() throws Exception {
     final JsonNode config = config();
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
@@ -157,7 +158,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
   }
 
   @Test
-  void testReadOneColumn() throws Exception {
+  @Override
+  protected void testReadOneColumn() throws Exception {
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers
         .createConfiguredAirbyteCatalog(streamName(), getDefaultNamespace(),
             Field.of(COL_ID, JsonSchemaType.NUMBER));
@@ -181,7 +183,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
   }
 
   @Test
-  void testTablesWithQuoting() throws Exception {
+  @Override
+  protected void testTablesWithQuoting() throws Exception {
     final ConfiguredAirbyteStream streamForTableWithSpaces = createTableWithSpaces();
 
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
@@ -214,7 +217,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
   }
 
   @Test
-  void testReadOneTableIncrementallyTwice() throws Exception {
+  @Override
+  protected void testReadOneTableIncrementallyTwice() throws Exception {
     final String namespace = getDefaultNamespace();
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalogWithOneStream(namespace);
     configuredCatalog.getStreams().forEach(airbyteStream -> {
@@ -286,7 +290,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
   }
 
   @Test
-  void testReadMultipleTables() throws Exception {
+  @Override
+  protected void testReadMultipleTables() throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalogWithOneStream(
         getDefaultNamespace());
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
@@ -334,7 +339,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
   }
 
   @Test
-  void testReadMultipleTablesIncrementally() throws Exception {
+  @Override
+  protected void testReadMultipleTablesIncrementally() throws Exception {
     final String tableName2 = TABLE_NAME + 2;
     final String streamName2 = streamName() + 2;
     testdb.with(createTableQuery(getFullyQualifiedTableName(tableName2), "id INTEGER, name VARCHAR(200)",
@@ -448,7 +454,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
   }
 
   @Test
-  void testDiscoverWithMultipleSchemas() throws Exception {
+  @Override
+  protected void testDiscoverWithMultipleSchemas() throws Exception {
     // add table and data to a separate schema.
     testdb.with(String.format("CREATE TABLE " + DB_NAME + ".%s(id VARCHAR(200), name VARCHAR(200))",
         JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)))
