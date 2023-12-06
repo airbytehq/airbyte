@@ -92,7 +92,16 @@ async def all_checks(ctx: click.Context):
 async def all_fix(ctx: click.Context):
     """Run code format checks and fix any failures."""
     parent_command = ctx.parent.command
+
     logger = logging.getLogger(parent_command.name)
+
+    # We have to run license command sequentially because it modifies the same set of files as other commands.
+    # If we ran it concurrently with language commands, we face race condition issues.
+    # We also want to run it before language specific formatter as they might reformat the license header.
+    sequential_commands = [
+        FORMATTERS_FIX_COMMANDS[Formatter.LICENSE].disable_logging().dont_exit_on_failure(),
+    ]
+    command_results = await invoke_commands_sequentially(ctx, sequential_commands)
 
     # We can run language commands concurrently because they modify different set of files.
     # We disable logging and exit on failure because its this the current command that takes care of reporting.
@@ -102,14 +111,7 @@ async def all_fix(ctx: click.Context):
         FORMATTERS_FIX_COMMANDS[Formatter.JS].disable_logging().dont_exit_on_failure(),
     ]
 
-    # We have to run license command sequentially because it modifies the same set of files as other commands.
-    # If we ran it concurrently with language commands, we face race condition issues.
-    sequential_commands = [
-        FORMATTERS_FIX_COMMANDS[Formatter.LICENSE].disable_logging().dont_exit_on_failure(),
-    ]
-
-    command_results = await invoke_commands_concurrently(ctx, concurrent_commands)
-    command_results += await invoke_commands_sequentially(ctx, sequential_commands)
+    command_results += await invoke_commands_concurrently(ctx, concurrent_commands)
     failure = any([r.status is StepStatus.FAILURE for r in command_results])
 
     log_options = LogOptions(
