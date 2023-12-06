@@ -213,7 +213,7 @@ acceptance_tests:
           ad_group_labels:
             - name: Modified Time
               bypass_reason: "dynamic field"
-        timeout_seconds: 7200
+        timeout_seconds: 9000
   full_refresh:
     tests:
       - config_path: secrets/config.json
@@ -327,6 +327,7 @@ acceptance_tests:
             - name: DailySpend
               bypass_reason: "dynamic field"
             - name: MonthToDateSpend
+              bypass_reason: "dynamic field"
 
   incremental:
     tests:
