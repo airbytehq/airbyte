@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 import platform
 from enum import Enum
-import os
 
 from dagger import Platform
 
@@ -58,6 +58,7 @@ POETRY_CACHE_VOLUME_NAME = "poetry_cache"
 POETRY_CACHE_PATH = "/root/.cache/pypoetry"
 STORAGE_DRIVER = "fuse-overlayfs"
 TAILSCALE_AUTH_KEY = os.getenv("TAILSCALE_AUTH_KEY")
+
 
 class CIContext(str, Enum):
     """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]."""

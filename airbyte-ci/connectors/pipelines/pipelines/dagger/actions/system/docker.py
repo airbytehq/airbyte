@@ -16,7 +16,7 @@ from pipelines.consts import (
     DOCKER_TMP_VOLUME_NAME,
     DOCKER_VAR_LIB_VOLUME_NAME,
     STORAGE_DRIVER,
-    TAILSCALE_AUTH_KEY
+    TAILSCALE_AUTH_KEY,
 )
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts.pipeline_context import PipelineContext
@@ -81,7 +81,6 @@ def get_daemon_config_json(registry_mirror_url: Optional[str] = None) -> str:
         daemon_config["registry-mirrors"] = ["http://" + registry_mirror_url]
         daemon_config["insecure-registries"] = [registry_mirror_url]
     return json.dumps(daemon_config)
-
 
 
 def docker_login(
