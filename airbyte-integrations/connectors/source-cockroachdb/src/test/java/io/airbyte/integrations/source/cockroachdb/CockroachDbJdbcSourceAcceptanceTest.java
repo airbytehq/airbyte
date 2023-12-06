@@ -23,7 +23,6 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
@@ -104,14 +103,14 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
     return List.of(
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName())
-                    .withNamespace(getDefaultNamespace())
+                .withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(Map
                     .of(COL_ID, ID_VALUE_1,
                         COL_NAME, "picard",
                         COL_UPDATED_AT, "2004-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName())
-                    .withNamespace(getDefaultNamespace())
+                .withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(Map
                     .of(COL_ID, ID_VALUE_2,
                         COL_NAME, "crusher",
@@ -119,7 +118,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
                         "2005-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName())
-                    .withNamespace(getDefaultNamespace())
+                .withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(Map
                     .of(COL_ID, ID_VALUE_3,
                         COL_NAME, "vash",
@@ -235,9 +234,9 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
     assertTrue(stateAfterFirstSyncOptional.isPresent());
 
     testdb.with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name, updated_at) VALUES (4,'riker', '2006-10-19')",
-            getFullyQualifiedTableName(TABLE_NAME)))
-                    .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
-                                    getFullyQualifiedTableName(TABLE_NAME)));
+        getFullyQualifiedTableName(TABLE_NAME)))
+        .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
+            getFullyQualifiedTableName(TABLE_NAME)));
 
     final List<AirbyteMessage> actualMessagesSecondSync = MoreIterators
         .toList(source().read(config(), configuredCatalog,
@@ -263,14 +262,13 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
         .withState(new AirbyteStateMessage()
             .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState()
-                    .withStreamDescriptor(new StreamDescriptor().withName(streamName()).withNamespace(namespace))
-                    .withStreamState(Jsons.jsonNode(new DbStreamState()
-                            .withStreamName(streamName())
-                            .withStreamNamespace(namespace)
-                            .withCursor("5")
-                            .withCursorRecordCount(1L)
-                            .withCursorField(Collections.singletonList(COL_ID))
-                    )))
+                .withStreamDescriptor(new StreamDescriptor().withName(streamName()).withNamespace(namespace))
+                .withStreamState(Jsons.jsonNode(new DbStreamState()
+                    .withStreamName(streamName())
+                    .withStreamNamespace(namespace)
+                    .withCursor("5")
+                    .withCursorRecordCount(1L)
+                    .withCursorField(Collections.singletonList(COL_ID)))))
             .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(new DbStreamState()
@@ -290,20 +288,20 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
   @Test
   void testReadMultipleTables() throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalogWithOneStream(
-            getDefaultNamespace());
+        getDefaultNamespace());
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
 
     for (int i = 2; i < 10; i++) {
       final int iFinal = i;
       final String streamName2 = streamName() + i;
       testdb.with(createTableQuery(getFullyQualifiedTableName(TABLE_NAME + iFinal),
-                      "id INTEGER, name VARCHAR(200)", ""))
-              .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES (1,'picard')",
-                      getFullyQualifiedTableName(TABLE_NAME + iFinal)))
-              .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES (2, 'crusher')",
-                      getFullyQualifiedTableName(TABLE_NAME + iFinal)))
-              .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES (3, 'vash')",
-                      getFullyQualifiedTableName(TABLE_NAME + iFinal)));
+          "id INTEGER, name VARCHAR(200)", ""))
+          .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES (1,'picard')",
+              getFullyQualifiedTableName(TABLE_NAME + iFinal)))
+          .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES (2, 'crusher')",
+              getFullyQualifiedTableName(TABLE_NAME + iFinal)))
+          .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES (3, 'vash')",
+              getFullyQualifiedTableName(TABLE_NAME + iFinal)));
 
       catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
           streamName2,
@@ -326,7 +324,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
     }
 
     final List<AirbyteMessage> actualMessages = MoreIterators
-            .toList(source().read(config(), catalog, null));
+        .toList(source().read(config(), catalog, null));
 
     setEmittedAtToNull(actualMessages);
 
@@ -340,13 +338,13 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
     final String tableName2 = TABLE_NAME + 2;
     final String streamName2 = streamName() + 2;
     testdb.with(createTableQuery(getFullyQualifiedTableName(tableName2), "id INTEGER, name VARCHAR(200)",
-                    ""))
-            .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES (1,'picard')",
-                    getFullyQualifiedTableName(tableName2)))
-            .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES (2, 'crusher')",
-                    getFullyQualifiedTableName(tableName2)))
-            .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES (3, 'vash')",
-                    getFullyQualifiedTableName(tableName2)));
+        ""))
+        .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES (1,'picard')",
+            getFullyQualifiedTableName(tableName2)))
+        .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES (2, 'crusher')",
+            getFullyQualifiedTableName(tableName2)))
+        .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES (3, 'vash')",
+            getFullyQualifiedTableName(tableName2)));
 
     final String namespace = getDefaultNamespace();
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalogWithOneStream(
@@ -392,14 +390,13 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
         .withState(new AirbyteStateMessage()
             .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState()
-                    .withStreamDescriptor(new StreamDescriptor().withNamespace(namespace).withName(streamName()))
-                    .withStreamState(Jsons.jsonNode(new DbStreamState()
-                            .withStreamName(streamName())
-                            .withStreamNamespace(namespace)
-                            .withCursor("3")
-                            .withCursorRecordCount(1L)
-                            .withCursorField(Collections.singletonList(COL_ID))
-                    )))
+                .withStreamDescriptor(new StreamDescriptor().withNamespace(namespace).withName(streamName()))
+                .withStreamState(Jsons.jsonNode(new DbStreamState()
+                    .withStreamName(streamName())
+                    .withStreamNamespace(namespace)
+                    .withCursor("3")
+                    .withCursorRecordCount(1L)
+                    .withCursorField(Collections.singletonList(COL_ID)))))
             .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(
@@ -420,14 +417,13 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
         .withState(new AirbyteStateMessage()
             .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState()
-                      .withStreamDescriptor(new StreamDescriptor().withNamespace(namespace).withName(streamName2))
-                      .withStreamState(Jsons.jsonNode(new DbStreamState()
-                              .withStreamName(streamName2)
-                              .withStreamNamespace(namespace)
-                              .withCursor("3")
-                              .withCursorRecordCount(1L)
-                              .withCursorField(Collections.singletonList(COL_ID))
-                      )))
+                .withStreamDescriptor(new StreamDescriptor().withNamespace(namespace).withName(streamName2))
+                .withStreamState(Jsons.jsonNode(new DbStreamState()
+                    .withStreamName(streamName2)
+                    .withStreamNamespace(namespace)
+                    .withCursor("3")
+                    .withCursorRecordCount(1L)
+                    .withCursorField(Collections.singletonList(COL_ID)))))
             .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(
@@ -455,13 +451,13 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Cockr
   void testDiscoverWithMultipleSchemas() throws Exception {
     // add table and data to a separate schema.
     testdb.with(String.format("CREATE TABLE " + DB_NAME + ".%s(id VARCHAR(200), name VARCHAR(200))",
-                    JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)))
-            .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES ('1','picard')",
-                    JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)))
-            .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES ('2', 'crusher')",
-                    JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)))
-            .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES ('3', 'vash')",
-                    JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+        JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)))
+        .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES ('1','picard')",
+            JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)))
+        .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES ('2', 'crusher')",
+            JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)))
+        .with(String.format("INSERT INTO " + DB_NAME + ".%s(id, name) VALUES ('3', 'vash')",
+            JdbcUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
 
     final AirbyteCatalog actual = source().discover(config());
 

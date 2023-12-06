@@ -39,7 +39,6 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   protected MySQLTestDatabase testdb;
 
-
   @Override
   protected String getImageName() {
     return "airbyte/source-mysql:dev";

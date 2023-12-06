@@ -93,7 +93,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   @Override
   protected MssqlSource source() {
-      return new MssqlSource();
+    return new MssqlSource();
   }
 
   @Override

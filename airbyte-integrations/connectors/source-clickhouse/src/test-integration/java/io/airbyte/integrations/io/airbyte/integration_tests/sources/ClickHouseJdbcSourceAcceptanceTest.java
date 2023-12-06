@@ -22,6 +22,7 @@ import org.testcontainers.clickhouse.ClickHouseContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<ClickHouseSource, ClickHouseTestDatabase> {
+
   @BeforeAll
   static void init() {
     CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
@@ -29,6 +30,7 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();";
     INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
   }
+
   @Override
   public boolean supportsSchemas() {
     return false;
@@ -38,13 +40,15 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   protected JsonNode config() {
     return Jsons.clone(testdb.configBuilder().build());
   }
+
   @Override
   protected ClickHouseTestDatabase createTestDatabase() {
     final ClickHouseContainer db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
-            .waitingFor(Wait.forHttp("/ping").forPort(8123)
-                    .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
+        .waitingFor(Wait.forHttp("/ping").forPort(8123)
+            .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
     return new ClickHouseTestDatabase(db).initialized();
   }
+
   @Override
   public String createTableQuery(final String tableName, final String columnClause, final String primaryKeyClause) {
     // ClickHouse requires Engine to be mentioned as part of create table query.

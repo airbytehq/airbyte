@@ -14,7 +14,6 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
 
   private static final String SCHEMA_NAME = "test";
 
-
   @Override
   protected Database setupDatabase() throws Exception {
     testdb = PostgresTestDatabase.in("postgres:16-bullseye", "withConf")

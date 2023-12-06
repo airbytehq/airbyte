@@ -36,6 +36,7 @@ public class XminPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcce
         .withXminReplication()
         .build();
   }
+
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     testdb = PostgresTestDatabase.in("postgres:12-bullseye")

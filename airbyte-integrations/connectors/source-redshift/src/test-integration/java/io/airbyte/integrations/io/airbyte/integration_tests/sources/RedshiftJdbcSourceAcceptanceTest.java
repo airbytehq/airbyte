@@ -40,9 +40,9 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Redshift
     return new RedshiftSource();
   }
 
-    @Override
-    protected JsonNode config() {
-      return Jsons.clone(config);
-    }
+  @Override
+  protected JsonNode config() {
+    return Jsons.clone(config);
+  }
 
 }

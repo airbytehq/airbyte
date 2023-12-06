@@ -1,46 +1,52 @@
-package io.airbyte.cdk.testutils;
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
 
-import org.testcontainers.containers.JdbcDatabaseContainer;
+package io.airbyte.cdk.testutils;
 
 import static io.airbyte.cdk.db.factory.DatabaseDriver.SNOWFLAKE;
 
+import org.testcontainers.containers.JdbcDatabaseContainer;
+
 public class NonContainer extends JdbcDatabaseContainer<NonContainer> {
-    private final String username;
-    private final String password;
-    private final String jdbcUrl;
 
-    public NonContainer(final String userName,
-                        final String password,
-                        final String jdbcUrl,
-                        final String dockerImageName) {
-        super(dockerImageName);
-        this.username = userName;
-        this.password = password;
-        this.jdbcUrl = jdbcUrl;
-    }
+  private final String username;
+  private final String password;
+  private final String jdbcUrl;
 
-    @Override
-    public String getDriverClassName() {
-        return SNOWFLAKE.getDriverClassName();
-    }
+  public NonContainer(final String userName,
+                      final String password,
+                      final String jdbcUrl,
+                      final String dockerImageName) {
+    super(dockerImageName);
+    this.username = userName;
+    this.password = password;
+    this.jdbcUrl = jdbcUrl;
+  }
 
-    @Override
-    public String getJdbcUrl() {
-        return jdbcUrl;
-    }
+  @Override
+  public String getDriverClassName() {
+    return SNOWFLAKE.getDriverClassName();
+  }
 
-    @Override
-    public String getUsername() {
-        return username;
-    }
+  @Override
+  public String getJdbcUrl() {
+    return jdbcUrl;
+  }
 
-    @Override
-    public String getPassword() {
-        return password;
-    }
+  @Override
+  public String getUsername() {
+    return username;
+  }
 
-    @Override
-    protected String getTestQueryString() {
-        return "SELECT 1";
-    }
+  @Override
+  public String getPassword() {
+    return password;
+  }
+
+  @Override
+  protected String getTestQueryString() {
+    return "SELECT 1";
+  }
+
 }

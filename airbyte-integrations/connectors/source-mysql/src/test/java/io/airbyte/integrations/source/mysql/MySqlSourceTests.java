@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 public class MySqlSourceTests {
 
   public MySqlSource source() {
-      return new MySqlSource();
+    return new MySqlSource();
   }
 
   @Test

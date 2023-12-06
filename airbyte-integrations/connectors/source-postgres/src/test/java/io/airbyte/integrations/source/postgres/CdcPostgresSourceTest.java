@@ -76,7 +76,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
   @Override
   protected PostgresSource source() {
-      return new PostgresSource();
+    return new PostgresSource();
   }
 
   @Override

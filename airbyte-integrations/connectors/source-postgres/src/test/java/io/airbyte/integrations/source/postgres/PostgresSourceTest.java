@@ -151,7 +151,7 @@ class PostgresSourceTest {
   }
 
   public PostgresSource source() {
-      return new PostgresSource();
+    return new PostgresSource();
   }
 
   private static DSLContext getDslContextWithSpecifiedUser(final JsonNode config, final String username, final String password) {

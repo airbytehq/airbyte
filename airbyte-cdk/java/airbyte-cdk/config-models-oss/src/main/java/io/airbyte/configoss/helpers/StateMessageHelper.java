@@ -105,8 +105,8 @@ public class StateMessageHelper {
 
   private static StateWrapper provideGlobalState(final AirbyteStateMessage stateMessages) {
     return new StateWrapper()
-            .withStateType(StateType.GLOBAL)
-            .withGlobal(stateMessages);
+        .withStateType(StateType.GLOBAL)
+        .withGlobal(stateMessages);
 
   }
 
@@ -118,8 +118,8 @@ public class StateMessageHelper {
    */
   private static StateWrapper provideStreamState(final List<AirbyteStateMessage> stateMessages) {
     return new StateWrapper()
-            .withStateType(StateType.STREAM)
-            .withStateMessages(stateMessages);
+        .withStateType(StateType.STREAM)
+        .withStateMessages(stateMessages);
 
   }
 

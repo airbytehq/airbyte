@@ -10,7 +10,6 @@ import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
 
 public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
 
-
   @Override
   protected JsonNode getConfig() {
     return testdb.integrationTestConfigBuilder()

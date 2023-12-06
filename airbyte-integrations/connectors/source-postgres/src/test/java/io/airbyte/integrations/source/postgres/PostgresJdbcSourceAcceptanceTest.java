@@ -80,7 +80,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
 
   @Override
   protected PostgresSource source() {
-      return new PostgresSource();
+    return new PostgresSource();
   }
 
   @Override

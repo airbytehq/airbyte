@@ -80,7 +80,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
 
   @Override
   protected MySqlSource source() {
-      return new MySqlSource();
+    return new MySqlSource();
   }
 
   @Override

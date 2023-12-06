@@ -32,7 +32,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -172,14 +171,14 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Snowfla
             getTestMessages().get(2)));
   }
 
-    /* Test that schema config key is making discover pull tables of this schema only */
+  /* Test that schema config key is making discover pull tables of this schema only */
   @Test
   void testDiscoverSchemaConfig() throws Exception {
     // add table to a separate schema.
     testdb.with(String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
-                    RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)))
-            .with(String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
-                    RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME, Strings.addRandomSuffix(TABLE_NAME, "_", 4))));
+        RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)))
+        .with(String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
+            RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME, Strings.addRandomSuffix(TABLE_NAME, "_", 4))));
 
     final JsonNode config = config();
     JsonNode confWithSchema = ((ObjectNode) config).put("schema", SCHEMA_NAME);

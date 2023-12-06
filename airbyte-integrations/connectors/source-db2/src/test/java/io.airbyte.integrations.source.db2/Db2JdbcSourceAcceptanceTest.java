@@ -4,20 +4,20 @@
 
 package io.airbyte.integrations.source.db2;
 
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
+import java.util.Collections;
+import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.Db2Container;
 
-import java.util.Collections;
-import java.util.Set;
-
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
-
 class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Db2Source, Db2TestDatabase> {
+
   private final static Db2Container DB_2_CONTAINER = new Db2Container("ibmcom/db2:11.5.5.0").acceptLicense();
   private static Set<String> TEST_TABLES = Collections.emptySet();
 
@@ -65,31 +65,32 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Db2Source, Db
     // another schema.
     for (final String tableName : TEST_TABLES) {
       final String dropTableQuery = String
-              .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME, tableName);
+          .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME, tableName);
       testdb.with(dropTableQuery);
     }
     for (int i = 2; i < 10; i++) {
       final String dropTableQuery = String
-              .format("DROP TABLE IF EXISTS %s.%s%s", SCHEMA_NAME, TABLE_NAME, i);
+          .format("DROP TABLE IF EXISTS %s.%s%s", SCHEMA_NAME, TABLE_NAME, i);
       testdb.with(dropTableQuery);
     }
     testdb.with(String
-            .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-                    enquoteIdentifier(TABLE_NAME_WITH_SPACES, "\"")));
+        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
+            enquoteIdentifier(TABLE_NAME_WITH_SPACES, "\"")));
     testdb.with(String
-            .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-                    enquoteIdentifier(TABLE_NAME_WITH_SPACES + 2, "\"")));
+        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
+            enquoteIdentifier(TABLE_NAME_WITH_SPACES + 2, "\"")));
     testdb.with(String
-            .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
-                    enquoteIdentifier(TABLE_NAME, "")));
+        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
+            enquoteIdentifier(TABLE_NAME, "")));
     testdb.with(String
-            .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-                    enquoteIdentifier(TABLE_NAME_WITHOUT_CURSOR_TYPE, "\"")));
+        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
+            enquoteIdentifier(TABLE_NAME_WITHOUT_CURSOR_TYPE, "\"")));
     testdb.with(String
-            .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-                    enquoteIdentifier(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE, "\"")));
+        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
+            enquoteIdentifier(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE, "\"")));
 
   }
+
   @Override
   protected Db2TestDatabase createTestDatabase() {
     return new Db2TestDatabase(DB_2_CONTAINER).initialized();

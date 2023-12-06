@@ -57,7 +57,7 @@ class DefaultJdbcSourceAcceptanceTest
 
   @Override
   protected PostgresTestSource source() {
-      return new PostgresTestSource();
+    return new PostgresTestSource();
   }
 
   @Override
@@ -81,6 +81,7 @@ class DefaultJdbcSourceAcceptanceTest
         .put(JdbcUtils.CONNECTION_PROPERTIES_KEY, additionalParameters)
         .build());
   }
+
   @AfterAll
   static void cleanUp() {
     PSQL_CONTAINER.close();

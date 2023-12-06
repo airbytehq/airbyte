@@ -207,8 +207,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     testdb.close();
   }
 
-  protected void customCleanUp() {
-  }
+  protected void customCleanUp() {}
 
   @Test
   void testSpec() throws Exception {
@@ -941,25 +940,25 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
 
   protected List<AirbyteMessage> createExpectedTestMessages(final List<DbStreamState> states) {
     return states.stream()
-            .map(s -> new AirbyteMessage().withType(Type.STATE)
-                .withState(
-                    new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
-                        .withStream(new AirbyteStreamState()
-                            .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
-                            .withStreamState(Jsons.jsonNode(s)))
-                        .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(states)))))
-            .collect(
-                Collectors.toList());
+        .map(s -> new AirbyteMessage().withType(Type.STATE)
+            .withState(
+                new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+                    .withStream(new AirbyteStreamState()
+                        .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
+                        .withStreamState(Jsons.jsonNode(s)))
+                    .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(states)))))
+        .collect(
+            Collectors.toList());
   }
 
   protected List<AirbyteStateMessage> createState(final List<DbStreamState> states) {
     return states.stream()
-            .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
-                .withStream(new AirbyteStreamState()
-                    .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
-                    .withStreamState(Jsons.jsonNode(s))))
-            .collect(
-                Collectors.toList());
+        .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState()
+                .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
+                .withStreamState(Jsons.jsonNode(s))))
+        .collect(
+            Collectors.toList());
   }
 
   protected ConfiguredAirbyteStream createTableWithSpaces() throws SQLException {
@@ -1045,6 +1044,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
       }
     }
   }
+
   /**
    * Creates empty state with the provided stream name and namespace.
    *
@@ -1054,35 +1054,35 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
    */
   protected JsonNode createEmptyState(final String streamName, final String streamNamespace) {
     final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage()
-            .withType(AirbyteStateType.STREAM)
-            .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(streamName).withNamespace(streamNamespace)));
+        .withType(AirbyteStateType.STREAM)
+        .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(streamName).withNamespace(streamNamespace)));
     return Jsons.jsonNode(List.of(airbyteStateMessage));
 
   }
 
   protected JsonNode createState(final String streamName, final String streamNamespace, final JsonNode stateData) {
     final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage()
-            .withType(AirbyteStateType.STREAM)
-            .withStream(
-                    new AirbyteStreamState()
-                            .withStreamDescriptor(new StreamDescriptor().withName(streamName).withNamespace(streamNamespace))
-                            .withStreamState(stateData));
+        .withType(AirbyteStateType.STREAM)
+        .withStream(
+            new AirbyteStreamState()
+                .withStreamDescriptor(new StreamDescriptor().withName(streamName).withNamespace(streamNamespace))
+                .withStreamState(stateData));
     return Jsons.jsonNode(List.of(airbyteStateMessage));
   }
 
-    protected JsonNode extractState(final AirbyteMessage airbyteMessage) {
-      return Jsons.jsonNode(List.of(airbyteMessage.getState()));
+  protected JsonNode extractState(final AirbyteMessage airbyteMessage) {
+    return Jsons.jsonNode(List.of(airbyteMessage.getState()));
   }
 
   protected AirbyteMessage createStateMessage(final DbStreamState dbStreamState, final List<DbStreamState> legacyStates) {
-      return new AirbyteMessage().withType(Type.STATE)
-          .withState(
-              new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
-                  .withStream(new AirbyteStreamState()
-                      .withStreamDescriptor(new StreamDescriptor().withNamespace(dbStreamState.getStreamNamespace())
-                          .withName(dbStreamState.getStreamName()))
-                      .withStreamState(Jsons.jsonNode(dbStreamState)))
-                  .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
+    return new AirbyteMessage().withType(Type.STATE)
+        .withState(
+            new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+                .withStream(new AirbyteStreamState()
+                    .withStreamDescriptor(new StreamDescriptor().withNamespace(dbStreamState.getStreamNamespace())
+                        .withName(dbStreamState.getStreamName()))
+                    .withStreamState(Jsons.jsonNode(dbStreamState)))
+                .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
   }
 
   protected List<String> extractSpecificFieldFromCombinedMessages(final List<AirbyteMessage> messages,

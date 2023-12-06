@@ -23,7 +23,6 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   public static final String STRICT_COMPARISON_NORMALIZATION_TAG = "STRICT_COMPARISON_NORMALIZATION_TAG";
   public static final String DEPLOYMENT_MODE = "DEPLOYMENT_MODE";
 
-
   @Override
   public boolean autoDetectSchema() {
     return getEnvOrDefault(AUTO_DETECT_SCHEMA, true, Boolean::parseBoolean);

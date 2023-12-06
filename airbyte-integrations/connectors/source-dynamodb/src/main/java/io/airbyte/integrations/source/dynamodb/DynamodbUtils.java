@@ -67,9 +67,9 @@ public class DynamodbUtils {
         throw new UnsupportedOperationException("Unsupported stream state");
     }).orElseGet(() -> {
       // create empty initial state
-        return new StreamState(AirbyteStateMessage.AirbyteStateType.STREAM, List.of(
-            new AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                .withStream(new AirbyteStreamState())));
+      return new StreamState(AirbyteStateMessage.AirbyteStateType.STREAM, List.of(
+          new AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+              .withStream(new AirbyteStreamState())));
 
     });
   }

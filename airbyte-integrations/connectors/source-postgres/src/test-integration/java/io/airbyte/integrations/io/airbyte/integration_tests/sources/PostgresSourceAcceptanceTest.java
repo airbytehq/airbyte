@@ -89,6 +89,7 @@ public class PostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptan
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
+
   @Test
   public void testFullRefreshWithRevokingSchemaPermissions() throws Exception {
     prepareEnvForUserWithoutPermissions(testdb.getDatabase());
