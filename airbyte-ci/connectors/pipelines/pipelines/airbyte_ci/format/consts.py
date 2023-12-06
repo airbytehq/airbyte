@@ -6,6 +6,8 @@ from enum import Enum
 REPO_MOUNT_PATH = "/src"
 CACHE_MOUNT_PATH = "/cache"
 
+LICENSE_FILE_NAME = "LICENSE_SHORT"
+
 DEFAULT_FORMAT_IGNORE_LIST = [
     "**/__pycache__",
     '"**/.pytest_cache',
@@ -45,6 +47,7 @@ DEFAULT_FORMAT_IGNORE_LIST = [
     "**/tools/git_hooks/tests/test_spec_linter.py",
     "**/tools/schema_generator/schema_generator/infer_schemas.py",
     "**/.git",
+    "airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code",  # This is a test directory with badly formatted code
 ]
 
 
@@ -63,4 +66,5 @@ WARM_UP_INCLUSIONS = {
         "tools/gradle/codestyle/java-google-style.xml",
     ],
     Formatter.PYTHON: ["pyproject.toml", "poetry.lock"],
+    Formatter.LICENSE: [LICENSE_FILE_NAME],
 }
