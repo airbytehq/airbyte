@@ -126,10 +126,10 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
           // for how DV1 did this in pure JDBC.
           InsertValuesStep4<Record, String, String, OffsetDateTime, OffsetDateTime> insert = create
               .insertInto(table(name(schemaName, tableName)),
-                          field(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36)),
-                          field(COLUMN_NAME_DATA, new DefaultDataType<>(null, String.class, "super")),
-                          field(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE),
-                          field(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE));
+                  field(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36)),
+                  field(COLUMN_NAME_DATA, new DefaultDataType<>(null, String.class, "super")),
+                  field(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE),
+                  field(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE));
           for (final PartialAirbyteMessage record : batch) {
             insert = insert.values(
                 val(UUID.randomUUID().toString()),
