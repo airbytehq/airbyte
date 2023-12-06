@@ -154,8 +154,7 @@ class AbstractSource(Source, ABC):
 
         if self.continue_sync_on_stream_failure and len(stream_name_to_exception) > 0:
             # Should this actually be a logger.warning instead?
-            raise AirbyteTracedException(
-                message=self._generate_failed_streams_error_message(stream_name_to_exception))
+            raise AirbyteTracedException(message=self._generate_failed_streams_error_message(stream_name_to_exception))
         logger.info(f"Finished syncing {self.name}")
 
     @property
@@ -296,5 +295,5 @@ class AbstractSource(Source, ABC):
 
     @staticmethod
     def _generate_failed_streams_error_message(stream_failures: Mapping[str, AirbyteTracedException]) -> str:
-        failures = ', '.join([f"{stream}: {exception.__repr__()}" for stream, exception in stream_failures.items()])
+        failures = ", ".join([f"{stream}: {exception.__repr__()}" for stream, exception in stream_failures.items()])
         return f"During the sync, the following streams did not sync successfully: {failures}"
