@@ -46,7 +46,7 @@ class FileBasedStreamConfig(BaseModel):
         description="The schema that will be used to validate records extracted from the file. This will override the stream schema that is auto-detected from incoming files.",
     )
     primary_key: Optional[str] = Field(
-        title="Primary Key", description="The column or columns (for a composite key) that serves as the unique identifier of a record."
+        title="Primary Key", description="The column or columns (for a composite key) that serves as the unique identifier of a record. If empty, the primary key will default to the parser's default primary key."
     )
     days_to_sync_if_history_is_full: int = Field(
         title="Days To Sync If History Is Full",
