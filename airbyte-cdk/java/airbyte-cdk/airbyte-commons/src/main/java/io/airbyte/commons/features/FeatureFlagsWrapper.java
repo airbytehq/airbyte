@@ -7,22 +7,6 @@ package io.airbyte.commons.features;
 public class FeatureFlagsWrapper implements FeatureFlags {
 
   /**
-   * Overrides the {@link FeatureFlags#useStreamCapableState} method in the feature flags.
-   */
-  static public FeatureFlags overridingUseStreamCapableState(
-                                                             final FeatureFlags wrapped,
-                                                             final boolean useStreamCapableState) {
-    return new FeatureFlagsWrapper(wrapped) {
-
-      @Override
-      public boolean useStreamCapableState() {
-        return useStreamCapableState;
-      }
-
-    };
-  }
-
-  /**
    * Overrides the {@link FeatureFlags#deploymentMode} method in the feature flags.
    */
   static public FeatureFlags overridingDeploymentMode(
@@ -42,11 +26,6 @@ public class FeatureFlagsWrapper implements FeatureFlags {
 
   public FeatureFlagsWrapper(FeatureFlags wrapped) {
     this.wrapped = wrapped;
-  }
-
-  @Override
-  public boolean useStreamCapableState() {
-    return wrapped.useStreamCapableState();
   }
 
   @Override

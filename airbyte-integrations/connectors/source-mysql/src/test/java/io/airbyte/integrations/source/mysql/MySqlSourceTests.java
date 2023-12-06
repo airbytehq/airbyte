@@ -17,8 +17,6 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource.PrimaryKeyAttributesFromDb;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.Field;
@@ -39,9 +37,7 @@ import org.junit.jupiter.api.Test;
 public class MySqlSourceTests {
 
   public MySqlSource source() {
-    final var source = new MySqlSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+      return new MySqlSource();
   }
 
   @Test

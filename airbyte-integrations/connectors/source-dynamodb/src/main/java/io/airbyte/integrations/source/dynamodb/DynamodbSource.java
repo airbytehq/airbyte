@@ -16,8 +16,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.StateDecoratingIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -41,8 +39,6 @@ import org.slf4j.LoggerFactory;
 public class DynamodbSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamodbSource.class);
-
-  private final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -98,7 +94,7 @@ public class DynamodbSource extends BaseConnector implements Source {
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state) {
 
-    final var streamState = DynamodbUtils.deserializeStreamState(state, featureFlags.useStreamCapableState());
+    final var streamState = DynamodbUtils.deserializeStreamState(state);
 
     final StateManager stateManager = StateManagerFactory
         .createStateManager(streamState.airbyteStateType(), streamState.airbyteStateMessages(), catalog);

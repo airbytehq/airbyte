@@ -261,7 +261,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     final AirbyteStateType supportedStateType = getSupportedStateType(config);
     final StateManager stateManager =
         StateManagerFactory.createStateManager(supportedStateType,
-            StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType), catalog);
+            StateGeneratorUtils.deserializeInitialState(state, supportedStateType), catalog);
     final Instant emittedAt = Instant.now();
 
     final JdbcDatabase database = createDatabase(config);
@@ -378,10 +378,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-    if (!featureFlags.useStreamCapableState()) {
-      return AirbyteStateType.LEGACY;
-    }
-
     return isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 

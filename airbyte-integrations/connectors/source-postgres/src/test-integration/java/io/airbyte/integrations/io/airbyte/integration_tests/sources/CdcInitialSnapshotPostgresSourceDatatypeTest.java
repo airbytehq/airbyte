@@ -7,8 +7,6 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
 import io.airbyte.protocol.models.JsonSchemaType;
 
@@ -16,10 +14,6 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
 
   private static final String SCHEMA_NAME = "test";
 
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
-  }
 
   @Override
   protected Database setupDatabase() throws Exception {

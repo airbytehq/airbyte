@@ -23,8 +23,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
@@ -71,9 +69,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
 
   @Override
   protected MySqlSource source() {
-    final var source = new MySqlSource();
-    source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
-    return source;
+      return new MySqlSource();
   }
 
   @Override
@@ -409,11 +405,6 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
   }
 
   @Override
-  protected boolean supportsPerStream() {
-    return true;
-  }
-
-  @Override
   protected List<AirbyteMessage> getTestMessages() {
     return getTestMessages(streamName());
   }
@@ -485,8 +476,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
   // Override from parent class as we're no longer including the legacy Data field.
   @Override
   protected List<AirbyteMessage> createExpectedTestMessages(final List<DbStreamState> states) {
-    return supportsPerStream()
-        ? states.stream()
+    return states.stream()
             .map(s -> new AirbyteMessage().withType(Type.STATE)
                 .withState(
                     new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
@@ -494,21 +484,18 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<MySqlSource
                             .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
                             .withStreamState(Jsons.jsonNode(s)))))
             .collect(
-                Collectors.toList())
-        : List.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)));
+                Collectors.toList());
   }
 
   @Override
   protected List<AirbyteStateMessage> createState(final List<DbStreamState> states) {
-    return supportsPerStream()
-        ? states.stream()
+    return states.stream()
             .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
                     .withStreamState(Jsons.jsonNode(s))))
             .collect(
-                Collectors.toList())
-        : List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY));
+                Collectors.toList());
   }
 
   @Override

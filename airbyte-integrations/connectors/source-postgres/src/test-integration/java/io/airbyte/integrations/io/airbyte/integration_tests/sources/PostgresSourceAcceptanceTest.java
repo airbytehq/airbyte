@@ -12,8 +12,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
 import io.airbyte.protocol.models.Field;
@@ -41,11 +39,6 @@ public class PostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptan
 
   private PostgresTestDatabase testdb;
   private JsonNode config;
-
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingUseStreamCapableState(super.featureFlags(), true);
-  }
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
@@ -96,12 +89,6 @@ public class PostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptan
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
-  }
-
   @Test
   public void testFullRefreshWithRevokingSchemaPermissions() throws Exception {
     prepareEnvForUserWithoutPermissions(testdb.getDatabase());

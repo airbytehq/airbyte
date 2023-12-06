@@ -216,7 +216,6 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
             .put("WORKER_CONNECTOR_IMAGE", imageName)
             .put("WORKER_JOB_ID", jobId)
             .put("WORKER_JOB_ATTEMPT", String.valueOf(attempt))
-            .put(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()))
             .put(EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()))
             .put(EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()))
             .put(EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces())

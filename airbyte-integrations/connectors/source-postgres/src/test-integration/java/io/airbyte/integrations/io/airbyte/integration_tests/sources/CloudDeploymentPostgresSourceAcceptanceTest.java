@@ -7,12 +7,9 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
@@ -37,15 +34,6 @@ public class CloudDeploymentPostgresSourceAcceptanceTest extends SourceAcceptanc
   private PostgresTestDatabase testdb;
 
   protected static final String PASSWORD = "Passw0rd";
-
-  @Override
-  protected FeatureFlags featureFlags() {
-    return FeatureFlagsWrapper.overridingDeploymentMode(
-        FeatureFlagsWrapper.overridingUseStreamCapableState(
-            super.featureFlags(),
-            true),
-        AdaptiveSourceRunner.CLOUD_MODE);
-  }
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
@@ -119,11 +107,6 @@ public class CloudDeploymentPostgresSourceAcceptanceTest extends SourceAcceptanc
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
 }
