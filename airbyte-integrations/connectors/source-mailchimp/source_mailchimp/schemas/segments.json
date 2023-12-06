@@ -35,6 +35,7 @@
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
               "condition_type": {
                 "type": ["null", "string"]
@@ -44,9 +45,6 @@
               },
               "op": {
                 "type": ["null", "string"]
-              },
-              "value": {
-                "type": ["null", "integer", "number", "string"]
               }
             }
           }
