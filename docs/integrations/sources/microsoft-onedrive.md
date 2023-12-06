@@ -72,8 +72,6 @@ This source requires **Application permissions**. Follow these [instructions](ht
        * Files.Read.All
 14. Click Add permissions
 
-Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-daemon-app-configuration?tabs=python#instantiate-the-msal-application) the confidential client application with a client secret and [calling](https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-daemon-acquire-token?tabs=python) AcquireTokenForClient from [Microsoft Authentication Library \(MSAL\) for Python](https://github.com/AzureAD/microsoft-authentication-library-for-python)
-
 ### Step 2: Set up the Microsoft OneDrive connector in Airbyte
 
 1. Navigate to the Airbyte Open Source dashboard.
