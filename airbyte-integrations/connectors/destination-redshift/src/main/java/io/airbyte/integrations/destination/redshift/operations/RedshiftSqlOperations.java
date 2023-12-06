@@ -101,15 +101,15 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
                                          final List<PartialAirbyteMessage> records,
                                          final String schemaName,
                                          final String tableName) {
-    LOGGER.info("Total records received to insert: {}", records.size());
-    // This comment was copied from DV1 code (SqlOperationsUtils.insertRawRecordsInSingleQuery):
-    // > We also partition the query to run on 10k records at a time, since some DBs set a max limit on
-    // > how many records can be inserted at once
-    // > TODO(sherif) this should use a smarter, destination-aware partitioning scheme instead of 10k by
-    // > default
-    for (final List<PartialAirbyteMessage> batch : Iterables.partition(records, 10_000)) {
-      try {
-        database.execute(connection -> {
+    try {
+      database.execute(connection -> {
+        LOGGER.info("Total records received to insert: {}", records.size());
+        // This comment was copied from DV1 code (SqlOperationsUtils.insertRawRecordsInSingleQuery):
+        // > We also partition the query to run on 10k records at a time, since some DBs set a max limit on
+        // > how many records can be inserted at once
+        // > TODO(sherif) this should use a smarter, destination-aware partitioning scheme instead of 10k by
+        // > default
+        for (final List<PartialAirbyteMessage> batch : Iterables.partition(records, 10_000)) {
           LOGGER.info("Prepared batch size: {}, {}, {}", batch.size(), schemaName, tableName);
           final DSLContext create = using(connection, SQLDialect.POSTGRES);
           // JOOQ adds some overhead here. Building the InsertValuesStep object takes about 139ms for 5K
@@ -126,10 +126,10 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
           // for how DV1 did this in pure JDBC.
           InsertValuesStep4<Record, String, String, OffsetDateTime, OffsetDateTime> insert = create
               .insertInto(table(name(schemaName, tableName)),
-                  field(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36)),
-                  field(COLUMN_NAME_DATA, new DefaultDataType<>(null, String.class, "super")),
-                  field(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE),
-                  field(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE));
+                          field(COLUMN_NAME_AB_RAW_ID, SQLDataType.VARCHAR(36)),
+                          field(COLUMN_NAME_DATA, new DefaultDataType<>(null, String.class, "super")),
+                          field(COLUMN_NAME_AB_EXTRACTED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE),
+                          field(COLUMN_NAME_AB_LOADED_AT, SQLDataType.TIMESTAMPWITHTIMEZONE));
           for (final PartialAirbyteMessage record : batch) {
             insert = insert.values(
                 val(UUID.randomUUID().toString()),
@@ -139,11 +139,11 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
           }
           insert.execute();
           LOGGER.info("Executed batch size: {}, {}, {}", batch.size(), schemaName, tableName);
-        });
-      } catch (final Exception e) {
-        LOGGER.error("Error while inserting records", e);
-        throw new RuntimeException(e);
-      }
+        }
+      });
+    } catch (final Exception e) {
+      LOGGER.error("Error while inserting records", e);
+      throw new RuntimeException(e);
     }
   }
 
