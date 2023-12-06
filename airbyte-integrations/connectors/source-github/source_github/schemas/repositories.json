@@ -240,116 +240,150 @@
       "description": "The default branch of the repository."
     },
     "open_issues_count": {
-      "type": ["null", "integer"]
+      "type": ["null", "integer"],
+      "description": "The count of open issues in the repository."
     },
     "is_template": {
-      "type": ["null", "boolean"]
+      "type": ["null", "boolean"],
+      "description": "Indicates whether the repository is a template repository."
     },
     "topics": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
-      }
+      },
+      "description": "A list of topics (keywords) associated with the repository."
     },
     "license": {
       "type": ["null", "object"],
       "properties": {
         "key": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "description": "The key identifier of the license."
         },
         "name": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "description": "The name of the license."
         },
         "url": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "description": "The URL to the license content."
         },
         "spdx_id": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "description": "The SPDX identifier of the license."
         },
         "node_id": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "description": "The node-specific identifier for the license."
         },
         "html_url": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "description": "The URL of the license on GitHub's web interface."
         }
-      }
+      },
+      "description": "An object containing details about the repository's license."
     },
     "has_issues": {
-      "type": ["null", "boolean"]
+      "type": ["null", "boolean"],
+      "description": "Indicates whether the repository has issues enabled."
     },
     "has_projects": {
-      "type": ["null", "boolean"]
+      "type": ["null", "boolean"],
+      "description": "Indicates whether the repository has projects enabled."
     },
     "has_wiki": {
-      "type": ["null", "boolean"]
+      "type": ["null", "boolean"],
+      "description": "Indicates whether the repository has a wiki enabled."
     },
     "has_pages": {
-      "type": ["null", "boolean"]
+      "type": ["null", "boolean"],
+      "description": "Indicates whether the repository has GitHub Pages enabled."
     },
     "has_downloads": {
-      "type": ["null", "boolean"]
+      "type": ["null", "boolean"],
+      "description": "Indicates whether the repository has downloads enabled."
     },
     "archived": {
-      "type": ["null", "boolean"]
+      "type": ["null", "boolean"],
+      "description": "Indicates whether the repository is archived."
     },
     "disabled": {
-      "type": ["null", "boolean"]
+      "type": ["null", "boolean"],
+      "description": "Indicates whether the repository is disabled."
     },
     "visibility": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "description": "The visibility of the repository (e.g., public, private)."
     },
     "pushed_at": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "The date and time when the last push was made to the repository."
     },
     "created_at": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "The date and time when the repository was created."
     },
     "updated_at": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "description": "The date and time of the last update to the repository."
     },
     "permissions": {
       "type": ["null", "object"],
       "properties": {
         "admin": {
-          "type": ["null", "boolean"]
+          "type": ["null", "boolean"],
+          "description": "Indicates whether the user has admin permissions."
         },
         "push": {
-          "type": ["null", "boolean"]
+          "type": ["null", "boolean"],
+          "description": "Indicates whether the user has push permissions."
         },
         "pull": {
-          "type": ["null", "boolean"]
+          "type": ["null", "boolean"],
+          "description": "Indicates whether the user has pull permissions."
         },
         "maintain": {
-          "type": ["null", "boolean"]
+          "type": ["null", "boolean"],
+          "description": "Indicates whether the user has maintain permissions."
         },
         "triage": {
-          "type": ["null", "boolean"]
+          "type": ["null", "boolean"],
+          "description": "Indicates whether the user has triage permissions."
         }
-      }
+      },
+      "description": "An object containing the repository's permission settings."
     },
     "allow_forking": {
-      "type": ["null", "boolean"]
+      "type": ["null", "boolean"],
+      "description": "Indicates whether forking is allowed for the repository."
     },
     "forks": {
-      "type": ["null", "integer"]
+      "type": ["null", "integer"],
+      "description": "The number of forks of the repository."
     },
     "has_discussions": {
-      "type": ["null", "boolean"]
+      "type": ["null", "boolean"],
+      "description": "Indicates whether the repository has discussions enabled."
     },
     "open_issues": {
-      "type": ["null", "integer"]
+      "type": ["null", "integer"],
+      "description": "The count of open issues in the repository."
     },
     "organization": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "description": "The name of the organization to which the repository belongs, if any."
     },
     "watchers": {
-      "type": ["null", "integer"]
+      "type": ["null", "integer"],
+      "description": "The number of watchers following the repository."
     },
     "web_commit_signoff_required": {
-      "type": ["null", "boolean"]
+      "type": ["null", "boolean"],
+      "description": "Indicates whether commit signoff is required for the repository."
     },
     "security_and_analysis": {
       "type": ["null", "object"],
@@ -358,19 +392,24 @@
           "type": ["null", "object"],
           "properties": {
             "status": {
-              "type": ["null", "string"]
+              "type": ["null", "string"],
+              "description": "The status of secret scanning feature in the repository."
             }
-          }
+          },
+          "description": "An object containing details about the secret scanning feature."
         },
         "secret_scanning_push_protection": {
           "type": ["null", "object"],
           "properties": {
             "status": {
-              "type": ["null", "string"]
+              "type": ["null", "string"],
+              "description": "The status of the secret scanning push protection feature."
             }
-          }
+          },
+          "description": "An object containing details about the secret scanning push protection feature."
         }
-      }
+      },
+      "description": "An object containing security and analysis features of the repository."
     }
   }
 }
