@@ -19,28 +19,32 @@ def list_all_paths_in_fixture_directory(folder_name: str) -> List[str]:
 @pytest.fixture(scope="session")
 def valid_metadata_yaml_files() -> List[str]:
     files = list_all_paths_in_fixture_directory("metadata_validate/valid")
-    assert len(files) > 0, "No files found in metadata_validate/valid"
+    if not files:
+        pytest.fail("No files found in metadata_validate/valid")
     return files
 
 
 @pytest.fixture(scope="session")
 def invalid_metadata_yaml_files() -> List[str]:
     files = list_all_paths_in_fixture_directory("metadata_validate/invalid")
-    assert len(files) > 0, "No files found in metadata_validate/invalid"
+    if not files:
+        pytest.fail("No files found in metadata_validate/invalid")
     return files
 
 
 @pytest.fixture(scope="session")
 def valid_metadata_upload_files() -> List[str]:
     files = list_all_paths_in_fixture_directory("metadata_upload/valid")
-    assert len(files) > 0, "No files found in metadata_upload/valid"
+    if not files:
+        pytest.fail("No files found in metadata_upload/valid")
     return files
 
 
 @pytest.fixture(scope="session")
 def invalid_metadata_upload_files() -> List[str]:
     files = list_all_paths_in_fixture_directory("metadata_upload/invalid")
-    assert len(files) > 0, "No files found in metadata_upload/invalid"
+    if not files:
+        pytest.fail("No files found in metadata_upload/invalid")
     return files
 
 
