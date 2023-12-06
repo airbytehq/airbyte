@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.55.4
+Source Integration tests: decoupling entrypoint wrapper from pytest
+
 ## 0.55.3
 First iteration of integration tests tooling (http mocker and response builder)
 
