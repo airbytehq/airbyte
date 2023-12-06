@@ -24,12 +24,12 @@ data:
   releaseStage: beta
   resourceRequirements:
     jobSpecific:
-    - jobType: sync
-      resourceRequirements:
-        memory_limit: 1Gi
-        memory_request: 1Gi
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 1Gi
   supportLevel: community
   supportsDbt: true
   tags:
-  - language:java
-metadataSpecVersion: '1.0'
+    - language:java
+metadataSpecVersion: "1.0"
