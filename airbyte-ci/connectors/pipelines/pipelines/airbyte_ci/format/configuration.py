@@ -2,15 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from pipelines.airbyte_ci.format.consts import CACHE_MOUNT_PATH, Formatter
+from pipelines.airbyte_ci.format.consts import CACHE_MOUNT_PATH, LICENSE_FILE_NAME, Formatter
 from pipelines.airbyte_ci.format.containers import (
     format_java_container,
     format_js_container,
     format_license_container,
     format_python_container,
 )
-
-LICENSE_FILE_NAME = "LICENSE_SHORT"
 
 FORMATTERS_CONFIGURATIONS = {
     # Run spotless on all java and gradle files.

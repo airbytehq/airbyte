@@ -110,11 +110,13 @@ def format_js_container(dagger_client: dagger.Client, js_code: dagger.Directory)
 
 def format_license_container(dagger_client: dagger.Client, license_code: dagger.Directory) -> dagger.Container:
     """Create a Go container with addlicense installed with mounted code to format."""
+    warmup_dir = dagger_client.host().directory(".", include=WARM_UP_INCLUSIONS[Formatter.LICENSE], exclude=DEFAULT_FORMAT_IGNORE_LIST)
     return build_container(
         dagger_client,
         base_image=GO_IMAGE,
         dir_to_format=license_code,
         install_commands=["go get -u github.com/google/addlicense"],
+        warmup_dir=warmup_dir,
     )
 
 
