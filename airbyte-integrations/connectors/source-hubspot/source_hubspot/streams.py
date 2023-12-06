@@ -2153,12 +2153,6 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
         """
         return getattr(self.parent, "primary_key")
 
-    def get_object_id(self, value: MutableMapping[str, Any]) -> str:
-        """
-        Get Object ID from parent slice by its primary key field defined in parent stream
-        """
-        return reduce(dict.get, ("parent", self.object_id_field), value)
-
     @property
     def url(self) -> str:
         return "/events/v3/events"
