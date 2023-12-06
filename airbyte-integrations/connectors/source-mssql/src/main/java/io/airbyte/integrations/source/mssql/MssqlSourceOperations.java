@@ -144,7 +144,9 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
 
   @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final DateTimeFormatter microsecondsFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss[.][SSSSSS]");
+    String pattern = "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
+          "[[' ']['T']HH:mm[':'ss[.][SSSSSSS][SSSSSS][SSSSS][SSSS][SSS][SS][S][' '][z][zzz][Z][O][x][XXX][XX][X]]]";
+    final DateTimeFormatter microsecondsFormatter = DateTimeFormatter.ofPattern(pattern);
     node.put(columnName, getObject(resultSet, index, LocalDateTime.class).format(microsecondsFormatter));
   }
 
