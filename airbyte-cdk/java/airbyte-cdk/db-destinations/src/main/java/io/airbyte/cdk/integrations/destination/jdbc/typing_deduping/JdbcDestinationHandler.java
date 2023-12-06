@@ -69,7 +69,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
       return;
     }
     final UUID queryId = UUID.randomUUID();
-    LOGGER.debug("Executing sql {}: {}", queryId, sql);
+    LOGGER.info("Executing sql {}: {}", queryId, sql);
     final long startTime = System.currentTimeMillis();
 
     try {
@@ -79,7 +79,7 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
       throw e;
     }
 
-    LOGGER.debug("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
+    LOGGER.info("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
   }
 
   public static Optional<TableDefinition> findExistingTable(final JdbcDatabase jdbcDatabase,
