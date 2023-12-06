@@ -1,14 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 from abc import ABC
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import docker
 from dagger import Container, ExecError, Platform, QueryError
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.consts import BUILD_PLATFORMS
 from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import Step, StepResult, StepStatus
 
@@ -22,8 +22,8 @@ class BuildConnectorImagesBase(Step, ABC):
     def title(self):
         return f"Build {self.context.connector.technical_name} docker image for platform(s) {', '.join(self.build_platforms)}"
 
-    def __init__(self, context: ConnectorContext, *build_platforms: List[Platform]) -> None:
-        self.build_platforms = build_platforms if build_platforms else BUILD_PLATFORMS
+    def __init__(self, context: ConnectorContext) -> None:
+        self.build_platforms: List[Platform] = context.targeted_platforms
         super().__init__(context)
 
     async def _run(self, *args) -> StepResult:
@@ -56,28 +56,49 @@ class BuildConnectorImagesBase(Step, ABC):
 
 
 class LoadContainerToLocalDockerHost(Step):
-    IMAGE_TAG = "dev"
-
-    def __init__(self, context: ConnectorContext, platform: Platform, containers: dict[Platform, Container]) -> None:
+    def __init__(self, context: ConnectorContext, containers: dict[Platform, Container], image_tag: Optional[str] = "dev") -> None:
         super().__init__(context)
-        self.platform = platform
-        self.container = containers[platform]
+        self.image_tag = image_tag
+        self.containers = containers
+
+    def _generate_dev_tag(self, platform: Platform, multi_platforms: bool):
+        """
+        When building for multiple platforms, we need to tag the image with the platform name.
+        There's no way to locally build a multi-arch image, so we need to tag the image with the platform name when the user passed multiple architecture options.
+        """
+        return f"{self.image_tag}-{platform.replace('/', '-')}" if multi_platforms else self.image_tag
 
     @property
     def title(self):
-        return f"Load {self.image_name}:{self.IMAGE_TAG} for platform {self.platform} to the local docker host."
+        return f"Load {self.image_name}:{self.image_tag} to the local docker host."
 
     @property
     def image_name(self) -> Tuple:
         return f"airbyte/{self.context.connector.technical_name}"
 
     async def _run(self) -> StepResult:
-        _, exported_tarball_path = await export_container_to_tarball(self.context, self.container)
-        client = docker.from_env()
-        try:
-            with open(exported_tarball_path, "rb") as tarball_content:
-                new_image = client.images.load(tarball_content.read())[0]
-            new_image.tag(self.image_name, tag=self.IMAGE_TAG)
-            return StepResult(self, StepStatus.SUCCESS)
-        except ConnectionError:
-            return StepResult(self, StepStatus.FAILURE, stderr="The connection to the local docker host failed.")
+        loaded_images = []
+        multi_platforms = len(self.containers) > 1
+        for platform, container in self.containers.items():
+            _, exported_tar_path = await export_container_to_tarball(self.context, container, platform)
+            if not exported_tar_path:
+                return StepResult(
+                    self,
+                    StepStatus.FAILURE,
+                    stderr=f"Failed to export the connector image {self.image_name}:{self.image_tag} to a tarball.",
+                )
+            try:
+                client = docker.from_env()
+                image_tag = self._generate_dev_tag(platform, multi_platforms)
+                full_image_name = f"{self.image_name}:{image_tag}"
+                with open(exported_tar_path, "rb") as tarball_content:
+                    new_image = client.images.load(tarball_content.read())[0]
+                    new_image.tag(self.image_name, tag=image_tag)
+                    image_sha = new_image.id
+                    loaded_images.append(full_image_name)
+            except docker.errors.DockerException as e:
+                return StepResult(
+                    self, StepStatus.FAILURE, stderr=f"Something went wrong while interacting with the local docker client: {e}"
+                )
+
+        return StepResult(self, StepStatus.SUCCESS, stdout=f"Loaded image {','.join(loaded_images)} to your Docker host ({image_sha}).")

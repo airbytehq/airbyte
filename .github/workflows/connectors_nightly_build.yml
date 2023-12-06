@@ -35,6 +35,7 @@ jobs:
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "master"
+          ci_job_key: "nightly_builds"
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
