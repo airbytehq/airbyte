@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 
 public interface TyperDeduper {
@@ -51,8 +54,13 @@ public interface TyperDeduper {
    * <p>
    * For OVERWRITE streams where we're writing to a temp table, this is where we swap the temp table
    * into the final table.
+   *
+   * @param recordCounts A map from stream to the number of records written to that stream. May be null
+   *                     if the caller does not track this information. Implementations MUST run
+   *                     typing+deduping on all streams if this is null. Implementations MAY choose to
+   *                     only run T+D on streams with nonzero record counts if this argument is nonnull.
    */
-  void typeAndDedupe() throws Exception;
+  void typeAndDedupe(Map<StreamDescriptor, AtomicLong> recordCounts) throws Exception;
 
   void commitFinalTables() throws Exception;
 

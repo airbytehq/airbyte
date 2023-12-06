@@ -10,6 +10,7 @@ import static io.airbyte.integrations.base.destination.typing_deduping.FutureUti
 import static java.util.Collections.singleton;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Map;
@@ -19,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -238,11 +240,14 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   }
 
   @Override
-  public void typeAndDedupe() throws Exception {
+  public void typeAndDedupe(final Map<StreamDescriptor, AtomicLong> recordCounts) throws Exception {
     LOGGER.info("Typing and deduping all tables");
     final Set<CompletableFuture<Optional<Exception>>> typeAndDedupeTasks = new HashSet<>();
     parsedCatalog.streams().forEach(streamConfig -> {
-      typeAndDedupeTasks.add(typeAndDedupeTask(streamConfig, true));
+      // TODO also check for start of sync whether there were unprocessed raw records
+      if (recordCounts != null && recordCounts.get(streamConfig.id().asStreamDescriptor()).get() > 0) {
+        typeAndDedupeTasks.add(typeAndDedupeTask(streamConfig, true));
+      }
     });
     CompletableFuture.allOf(typeAndDedupeTasks.toArray(CompletableFuture[]::new)).join();
     reduceExceptions(typeAndDedupeTasks, "The Following Exceptions were thrown while typing and deduping tables:\n");

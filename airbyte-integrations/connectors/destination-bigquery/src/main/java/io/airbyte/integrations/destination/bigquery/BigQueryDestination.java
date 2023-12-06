@@ -390,10 +390,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             }
           });
         },
-        (hasFailed) -> {
+        (hasFailed, recordCounts) -> {
           try {
             Thread.sleep(30 * 1000);
-            typerDeduper.typeAndDedupe();
+            typerDeduper.typeAndDedupe(recordCounts);
             typerDeduper.commitFinalTables();
             typerDeduper.cleanup();
           } catch (final Exception e) {
