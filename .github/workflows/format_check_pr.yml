@@ -1,0 +1,35 @@
+name: Check for formatting errors on PR
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Cancel any previous runs on the same branch if they are still in progress
+  cancel-in-progress: true
+
+on:
+  pull_request:
+jobs:
+  format-check:
+    runs-on: "ci-runner-connector-format-medium-dagger-0-6-4"
+    # This is the name of the required check to merge a PR to master
+    # If you change it please change the branch protection settings
+    name: "Apply All Formatting Rules"
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          # Important that this is set so that CI checks are triggered again
+          # Without this we would be forever waiting on required checks to pass
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+
+      - name: Run airbyte-ci format check all
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          context: "pull_request"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
+          subcommand: "format check all"
