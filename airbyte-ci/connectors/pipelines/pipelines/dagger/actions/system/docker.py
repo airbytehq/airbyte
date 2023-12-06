@@ -13,6 +13,7 @@ from pipelines.consts import (
     DOCKER_HOST_NAME,
     DOCKER_HOST_PORT,
     DOCKER_REGISTRY_MIRROR_URL,
+    DOCKER_REGISTRY_ADDRESS,
     DOCKER_TMP_VOLUME_NAME,
     DOCKER_VAR_LIB_VOLUME_NAME,
     STORAGE_DRIVER,
@@ -22,13 +23,12 @@ from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts.pipeline_context import PipelineContext
 
 
-def get_base_dockerd_container(dagger_client: Client, docker_var_lib_caching: bool = True) -> Container:
+def get_base_dockerd_container(dagger_client: Client) -> Container:
     """Provision a container to run a docker daemon.
     It will be used as a docker host for docker-in-docker use cases.
 
     Args:
         dagger_client (Client): The dagger client used to create the container.
-        docker_var_lib_caching (bool): Whether to cache /var/lib/docker or not. Defaults to False.
     Returns:
         Container: The container to run dockerd as a service
     """
@@ -59,9 +59,9 @@ def get_base_dockerd_container(dagger_client: Client, docker_var_lib_caching: bo
         # We cache /tmp for file sharing between client and daemon.
         .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
     )
-    if docker_var_lib_caching:
-        # We cache /var/lib/docker to avoid downloading images and layers multiple times.
-        base_container = base_container.with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
+
+    # We cache /var/lib/docker to avoid downloading images and layers multiple times.
+    base_container = base_container.with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
     return base_container
 
 
@@ -87,7 +87,6 @@ def docker_login(
     dockerd_container: Container,
     docker_registry_username_secret: Optional[Secret],
     docker_registry_password_secret: Optional[Secret],
-    docker_registry_address: Optional[str] = "docker.io",
 ) -> Container:
     """Login to a docker registry if the username and password secrets are provided.
 
@@ -107,7 +106,7 @@ def docker_login(
             .with_secret_variable("DOCKER_REGISTRY_USERNAME", docker_registry_username_secret)
             .with_secret_variable("DOCKER_REGISTRY_PASSWORD", docker_registry_password_secret)
             .with_exec(
-                sh_dash_c([f"docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD {docker_registry_address}"]),
+                sh_dash_c([f"docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD {DOCKER_REGISTRY_ADDRESS}"]),
                 skip_entrypoint=True,
             )
         )
@@ -146,7 +145,7 @@ def with_global_dockerd_service(
     # Docker login happens late because there's a cache buster in the docker login command.
     dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
     return dockerd_container.with_exec(
-        ["dockerd", "--log-level=debug", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
+        ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
     )
 
 
