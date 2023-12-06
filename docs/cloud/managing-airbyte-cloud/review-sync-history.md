@@ -8,7 +8,7 @@ To review the sync history, click a connection in the list to view its sync hist
 |---------------------|---------------------------------------------------------------------------------------------------------------------|
 | Succeeded           | 100% of the data has been extracted and loaded to the destination             |
 | Partially Succeeded | A subset of the data has been loaded to the destination
-| Failed              |Nnone of the data has been loaded to the destination                |
+| Failed              | None of the data has been loaded to the destination                |
 | Cancelled           | The sync was cancelled manually before finishing              |
 | Running             | The sync is currently running                |
  
