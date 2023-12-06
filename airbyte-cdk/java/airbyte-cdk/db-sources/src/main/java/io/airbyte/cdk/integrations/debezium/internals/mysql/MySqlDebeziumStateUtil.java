@@ -288,7 +288,9 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     final JsonNode asJson = serialize(offset, schemaHistory);
     LOGGER.info("Initial Debezium state constructed: {}", asJson);
 
-    assert !asJson.get(MysqlCdcStateConstants.MYSQL_DB_HISTORY).asText().isBlank();
+    if (asJson.get(MysqlCdcStateConstants.MYSQL_DB_HISTORY).asText().isBlank()) {
+      throw new RuntimeException("Schema history snapshot returned empty history.");
+    }
     return asJson;
   }
 
