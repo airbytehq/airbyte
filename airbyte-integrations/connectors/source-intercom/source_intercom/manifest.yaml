@@ -238,7 +238,7 @@ definitions:
         $ref: "#/definitions/substream_semi_incremental/retriever/requester"
         error_handler:
           response_filters:
-            - http_codes: [ 404 ]
+            - http_codes: [404]
               action: IGNORE
   company_segments:
     $ref: "#/definitions/substream_semi_incremental"
