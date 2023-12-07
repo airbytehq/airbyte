@@ -91,24 +91,45 @@ We assume in the following that you've already configured a Postgres instance:
 
 ```yaml
 postgresql:
-  enabled: false
+    enabled: false
 ```
 
 2. In the `charts/airbyte/values.yaml` file, enable and configure the external Postgres database:
 
 ```yaml
 externalDatabase:   
-  host: ## Database host
-  user: ## Non-root username for the Airbyte database
-  password: ## Password for above non-root user
-  existingSecret: ## Optional - the name of an existing secret containing the password
-  existingSecretPasswordKey: ## Optional - the secret key containing the password.
-  database: db-airbyte ## Database name
-  port: 5432 ## Database port number 
-  jdbcUrl: "jdbc:postgresql://localhost:5432/db-airbyte" ## Full database JDBC URL. If you need to add additional argument
+    host: ## Database host
+    user: ## Non-root username for the Airbyte database
+    database: db-airbyte ## Database name
+    port: 5432 ## Database port number 
 ```
 
-The `jdbcUrl` field should be entered in the following format: `jdbc:postgresql://localhost:5432/db-airbyte`. Additional extra arguments can be passed to the JDBC driver at this time (e.g. to handle SSL).
+For the non-root user's password which has database access, you may use `password`, `existingSecret` or `jdbcUrl`. We recommend using `existingSecret`, or injecting sensitive fields from your own external secret store. Each of these parameters is mutually exclusive: 
+
+```yaml
+externalDatabase:
+    ...
+    password: ## Password for non-root database user
+    existingSecret: ## The name of an existing Kubernetes secret containing the password.
+    existingSecretPasswordKey: ## The Kubernetes secret key containing the password.
+    jdbcUrl: "jdbc:postgresql://<user>:<password>@localhost:5432/db-airbyte" ## Full database JDBC URL. You can also add additional arguments.
+```
+
+The optional `jdbcUrl` field should be entered in the following format: `jdbc:postgresql://localhost:5432/db-airbyte`. We recommend against using this unless you need to add additional extra arguments can be passed to the JDBC driver at this time (e.g. to handle SSL).
+
+3. Finally, add this configuration into the `global` section of the `charts/airbyte/values.yaml` as well:
+
+```yaml
+global:
+  ...
+  database:
+    secretName: "airbyte-enterprise-airbyte-secrets" ## The name of the existing Kubernetes secret entered above.
+    secretValue: "DATABASE_PASSWORD" ## The Kubernetes secret key entered above.
+    host: "localhost" ## Database host entered above.
+    port: "5432" ## Database port entered above.
+```
+
+If you've used `password` or `jdbcUrl` above instead using a pre-existing Kubernetes secret, then your `secretName` will be `{release-name}-airbyte-secrets`, and `secretValue` will be `DATABASE_PASSWORD`.
 
 #### Configuring External Logging
 
@@ -121,43 +142,65 @@ minio:
   enabled: false
 ```
 
+How critical is the reliability of the state storage? Is it critical, does it need to be durable? Or is it just a fallback?
+
 2. In the `charts/airbyte/values.yaml` file, enable and configure external log storage:
 
+<Tabs>
+    <TabItem value="S3" label="S3">
+
 ```yaml
 global:
     ...
     logs:
-        ## What is this for?
-        accessKey:
-            password: ""
-            existingSecret: ""
-            existingSecretKey: ""
         storage:
-            type: "S3" ## or GCS
-        ## What is this for?
-        secretKey:
-            password:
-            existingSecret:
-            existingSecretKey:
+            type: "S3"
+        
         minio:
             enabled: false
+
+        s3:
+            enabled: true
+            bucket: "" ## S3 bucket name that you've created.
+            bucketRegion: "" ## e.g. us-east-1
+
+        accessKey: ## AWS Access Key.
+            password: ""
+            existingSecret: "" ## The name of an existing Kubernetes secret containing the AWS Access Key.
+            existingSecretKey: "" ## The Kubernetes secret key containing the AWS Access Key.
+
+        secretKey: ## AWS Secret Access Key
+            password:
+            existingSecret: "" ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
+            existingSecretKey: "" ## The name of an existing Kubernetes secret containing the AWS Secret Access Key.
 ```
 
-3. Configure **one of** S3 or Google Cloud Storage (GCS) to store logs:
+For each of `accessKey` and `secretKey`, the `password` and `existingSecret` fields are mutually exclusive.
+
+</TabItem>
+<TabItem value="GKE" label="GKE" default> 
+
 
 ```yaml
 global:
     ...
     logs:
-        s3:
-            enabled: true
-            bucket: airbyte-dev-logs ## S3 bucket name that you've created.
-            bucketRegion: "" ## e.g. us-east-1
+        storage:
+            type: "GCS"
+        
+        minio:
+            enabled: false
+            
         gcs:
             bucket: airbyte-dev-logs # GCS bucket name that you've created.
             credentials: "" ## ???
-            credentialsJson: "" ## ???
+            credentialsJson: "" ## Base64 encoded json GCP credentials file contents
 ```
+
+Note that the `credentials` and `credentialsJson` fields are mutually exclusive.
+
+</TabItem>
+</Tabs>
 
 #### Configuring Ingress
 
