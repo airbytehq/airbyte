@@ -199,12 +199,32 @@ class TestWeaviateIndexer(unittest.TestCase):
         mock_chunk = Chunk(
             page_content="some_content",
             embedding=[1, 2, 3],
-            metadata={"someField": "some_value", "complex": {"a": [1, 2, 3]}, "UPPERCASE_NAME": "abc", "id": 12, "empty_list": []},
+            metadata={
+                "someField": "some_value", "complex": {"a": [1, 2, 3]}, "UPPERCASE_NAME": "abc", "id": 12, "empty_list": [],
+                        "referral Agency Name": "test1",
+                    "123StartsWithNumber": "test2",
+                    "special&*chars": "test3",
+                    "with spaces": "test4",
+                    "": "test5",
+                    "_startsWithUnderscore": "test6",
+                    "multiple  spaces": "test7",
+                    "SpecialCharacters!@#": "test8"
+                      },
             record=AirbyteRecordMessage(stream="test", data={"someField": "some_value"}, emitted_at=0),
         )
         self.indexer.index([mock_chunk], None, "test")
         mock_client.batch.add_data_object.assert_called_with(
-            {"someField": "some_value", "complex": '{"a": [1, 2, 3]}', "uPPERCASE_NAME": "abc", "text": "some_content", "raw_id": 12},
+            {"someField": "some_value", "complex": '{"a": [1, 2, 3]}', "uPPERCASE_NAME": "abc", "text": "some_content", "raw_id": 12,
+                 "referral_Agency_Name": "test1",
+                "_123StartsWithNumber": "test2",
+                "specialchars": "test3",
+                "with_spaces": "test4",
+                "_": "test5",
+                "_startsWithUnderscore": "test6",
+                "multiple__spaces": "test7",
+                "specialCharacters": "test8"
+
+             },
             "Test",
             ANY,
             vector=[1, 2, 3],
