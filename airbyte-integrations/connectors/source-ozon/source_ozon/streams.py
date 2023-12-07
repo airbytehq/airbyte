@@ -244,7 +244,7 @@ class CampaignsReportStream(Stream):
                     campaign_type=campaign.advObjectType,
                 )
                 row.report_data = report_schema.from_list_of_values(values=current_row)
-                yield row
+                yield row.dict()
             except Exception as e:
                 log.exception(f"Failed to parse Ozon report for campaign '{campaign.id}': {str(e)}")
                 raise RuntimeError(f"Failed to parse Ozon report for campaign '{campaign.id}': {str(e)}") from e
