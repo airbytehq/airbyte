@@ -56,9 +56,11 @@ public interface TyperDeduper {
    * into the final table.
    *
    * @param recordCounts A map from stream to the number of records written to that stream. May be null
-   *                     if the caller does not track this information. Implementations MUST run
-   *                     typing+deduping on all streams if this is null. Implementations MAY choose to
-   *                     only run T+D on streams with nonzero record counts if this argument is nonnull.
+   *                     if the caller does not track this information (this is primarily for
+   *                     backwards-compatibility with the legacy destinations framework). Implementations
+   *                     MUST run typing+deduping on all streams if this is null. Implementations MAY
+   *                     choose to only run T+D on streams with nonzero record counts if this argument
+   *                     is nonnull.
    */
   void typeAndDedupe(Map<StreamDescriptor, AtomicLong> recordCounts) throws Exception;
 

@@ -36,7 +36,7 @@ public class DefaultTyperDeduperTest {
   void setup() throws Exception {
     sqlGenerator = spy(new MockSqlGenerator());
     destinationHandler = mock(DestinationHandler.class);
-    when(destinationHandler.getMinTimestampForSync(any())).thenReturn(Optional.empty());
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.empty()));
     migrator = new NoOpDestinationV1V2Migrator<>();
 
     final ParsedCatalog parsedCatalog = new ParsedCatalog(List.of(
@@ -146,7 +146,7 @@ public class DefaultTyperDeduperTest {
    */
   @Test
   void existingNonemptyTable() throws Exception {
-    when(destinationHandler.getMinTimestampForSync(any())).thenReturn(Optional.of(Instant.parse("2023-01-01T12:34:56Z")));
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.parse("2023-01-01T12:34:56Z"))));
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
 
@@ -185,7 +185,7 @@ public class DefaultTyperDeduperTest {
    */
   @Test
   void existingNonemptyTableMatchingSchema() throws Exception {
-    when(destinationHandler.getMinTimestampForSync(any())).thenReturn(Optional.of(Instant.now()));
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.now())));
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
     when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(true);

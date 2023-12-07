@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.FieldValue;
+import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobConfiguration;
 import com.google.cloud.bigquery.JobId;
@@ -25,6 +26,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -58,35 +60,43 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
   }
 
   @Override
-  public Optional<Instant> getMinTimestampForSync(final StreamId id) throws Exception {
+  public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
     final Table rawTable = bq.getTable(TableId.of(id.rawNamespace(), id.rawName()));
     if (rawTable == null) {
-      return Optional.empty();
+      // Table doesn't exist. There are no unprocessed records, and no timestamp.
+      return new InitialRawTableState(false, Optional.empty());
     }
-    final TableResult queryResult = bq.query(QueryJobConfiguration.newBuilder(new StringSubstitutor(Map.of(
-        "raw_table", id.rawTableId(BigQuerySqlGenerator.QUOTE))).replace(
+
+    final FieldValue unloadedRecordTimestamp = bq.query(QueryJobConfiguration.newBuilder(new StringSubstitutor(Map.of(
+            "raw_table", id.rawTableId(BigQuerySqlGenerator.QUOTE))).replace(
             // bigquery timestamps have microsecond precision
-            // and COALESCE short-circuits, so if the first subquery returns non-null, we don't
-            // evaluate the second query at all
             """
-            SELECT COALESCE(
-              (
                 SELECT TIMESTAMP_SUB(MIN(_airbyte_extracted_at), INTERVAL 1 MICROSECOND)
                 FROM ${raw_table}
                 WHERE _airbyte_loaded_at IS NULL
-              ),
-              (
+                """))
+        .build()).iterateAll().iterator().next().get(0);
+    // If this value is null, then there are no records with null loaded_at.
+    // If it's not null, then we can return immediately - we've found some unprocessed records and their timestamp.
+    if (!unloadedRecordTimestamp.isNull()) {
+      return new InitialRawTableState(true, Optional.of(unloadedRecordTimestamp.getTimestampInstant()));
+    }
+
+    final FieldValue loadedRecordTimestamp = bq.query(QueryJobConfiguration.newBuilder(new StringSubstitutor(Map.of(
+            "raw_table", id.rawTableId(BigQuerySqlGenerator.QUOTE))).replace(
+            """
                 SELECT MAX(_airbyte_extracted_at)
                 FROM ${raw_table}
-              )
-            )
-            """))
-        .build());
-    final FieldValue value = queryResult.iterateAll().iterator().next().get(0);
-    if (value.isNull()) {
-      return Optional.empty();
+                """))
+        .build()).iterateAll().iterator().next().get(0);
+    // We know (from the previous query) that all records have been processed by T+D already.
+    // So we just need to get the timestamp of the most recent record.
+    if (loadedRecordTimestamp.isNull()) {
+      // Null timestamp because the table is empty. T+D can process the entire raw table during this sync.
+      return new InitialRawTableState(false, Optional.empty());
     } else {
-      return Optional.ofNullable(value.getTimestampInstant());
+      // The raw table already has some records. T+D can skip all records with timestamp <= this value.
+      return new InitialRawTableState(false, Optional.of(loadedRecordTimestamp.getTimestampInstant()));
     }
   }
 
