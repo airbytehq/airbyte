@@ -135,11 +135,11 @@ class WeaviateIndexer(Indexer):
 
     def _normalize_property_name(self, field_name: str) -> str:
         # Remove invalid characters and replace spaces with underscores
-        normalized = re.sub(r'[^0-9A-Za-z_]', '', field_name.replace(' ', '_'))
+        normalized = re.sub(r"[^0-9A-Za-z_]", "", field_name.replace(" ", "_"))
 
         # Ensure the name starts with a letter or underscore
-        if not re.match(r'^[_A-Za-z]', normalized):
-            normalized = '_' + normalized
+        if not re.match(r"^[_A-Za-z]", normalized):
+            normalized = "_" + normalized
 
         return normalized[0].lower() + normalized[1:]
 
