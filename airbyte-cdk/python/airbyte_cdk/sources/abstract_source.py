@@ -153,7 +153,6 @@ class AbstractSource(Source, ABC):
                     logger.info(timer.report())
 
         if self.continue_sync_on_stream_failure and len(stream_name_to_exception) > 0:
-            # Should this actually be a logger.warning instead?
             raise AirbyteTracedException(message=self._generate_failed_streams_error_message(stream_name_to_exception))
         logger.info(f"Finished syncing {self.name}")
 
