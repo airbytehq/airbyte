@@ -164,6 +164,7 @@
             }
           }
         ]
+<<<<<<< HEAD
       },
       "tunnel_method": {
         "type": "object",
