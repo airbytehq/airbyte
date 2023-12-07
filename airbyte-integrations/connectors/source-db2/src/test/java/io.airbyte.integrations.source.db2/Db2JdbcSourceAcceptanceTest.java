@@ -19,6 +19,7 @@ import org.testcontainers.containers.Db2Container;
 class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Db2Source, Db2TestDatabase> {
 
   private final static Db2Container DB_2_CONTAINER = new Db2Container("ibmcom/db2:11.5.5.0").acceptLicense();
+  private static final String QUOTE_STRING = "\"";
   private static Set<String> TEST_TABLES = Collections.emptySet();
 
   @BeforeAll
@@ -75,19 +76,19 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Db2Source, Db
     }
     testdb.with(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            enquoteIdentifier(TABLE_NAME_WITH_SPACES, "\"")));
+            enquoteIdentifier(TABLE_NAME_WITH_SPACES, QUOTE_STRING)));
     testdb.with(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            enquoteIdentifier(TABLE_NAME_WITH_SPACES + 2, "\"")));
+            enquoteIdentifier(TABLE_NAME_WITH_SPACES + 2, QUOTE_STRING)));
     testdb.with(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
-            enquoteIdentifier(TABLE_NAME, "")));
+            enquoteIdentifier(TABLE_NAME, QUOTE_STRING)));
     testdb.with(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            enquoteIdentifier(TABLE_NAME_WITHOUT_CURSOR_TYPE, "\"")));
+            enquoteIdentifier(TABLE_NAME_WITHOUT_CURSOR_TYPE, QUOTE_STRING)));
     testdb.with(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            enquoteIdentifier(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE, "\"")));
+            enquoteIdentifier(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE, QUOTE_STRING)));
 
   }
 

@@ -31,7 +31,6 @@ dependencies {
     //TODO Add jdbc driver import here. Ex: implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
     implementation 'mysql:mysql-connector-java:8.0.22'
 
-    // Add testcontainers and use GenericContainer for TiDB
     testImplementation libs.testcontainers.tidb.source
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
