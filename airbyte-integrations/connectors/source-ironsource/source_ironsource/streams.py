@@ -38,11 +38,11 @@ class IronsourceStream(HttpStream, ABC):
         return ",".join(self.get_json_schema().get("properties", {})),
 
     def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 401:
-            self.authenticator.renew()
+        if response.status_code in [401, 500]:
+            self._session.auth.renew()
             return True
         # We don't retry on 500 due to a bug on API side
-        return response.status_code == 429 or 501 <= response.status_code < 600
+        return response.status_code == 429 or 500 <= response.status_code < 600
 
     def request_params(self, stream_state: Optional[Mapping[str, Any]],
                        stream_slice: Optional[Mapping[str, Any]] = None,
@@ -229,6 +229,10 @@ class CountryGroups(IronsourceSubStream):
             next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"countryGroup/{stream_slice['parent']['id']}"
+
+    def should_retry(self, response: requests.Response) -> bool:
+        # We don't retry on 500 due to a bug on API side
+        return super().should_retry(response) or response.status_code == 429 or 501 <= response.status_code < 600
 
     def parse_response(self, response: requests.Response,
                        stream_state: Optional[Mapping[str, Any]],
