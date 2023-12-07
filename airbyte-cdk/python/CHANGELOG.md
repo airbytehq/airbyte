@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.56.0
+Allow for connectors to continue syncing when a stream fails
+
 ## 0.55.5
 File-based CDK: hide source-defined primary key; users can define primary keys in the connection's configuration
 

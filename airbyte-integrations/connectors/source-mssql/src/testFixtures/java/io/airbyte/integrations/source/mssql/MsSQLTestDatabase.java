@@ -24,8 +24,23 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   static public final int MAX_RETRIES = 60;
 
-  static public MsSQLTestDatabase in(String imageName, String... methods) {
-    final var container = new MsSQLContainerFactory().shared(imageName, methods);
+  public static enum BaseImage {
+
+    MSSQL_2022_UBUNTU_20_04("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04"),
+    MSSQL_2022_LATEST("mcr.microsoft.com/mssql/server:2022-latest"),
+    MSSQL_2017_LATEST("mcr.microsoft.com/mssql/server:2017-latest"),
+    ;
+
+    private final String reference;
+
+    private BaseImage(String reference) {
+      this.reference = reference;
+    }
+
+  }
+
+  static public MsSQLTestDatabase in(BaseImage imageName, String... methods) {
+    final var container = new MsSQLContainerFactory().shared(imageName.reference, methods);
     final var testdb = new MsSQLTestDatabase(container);
     return testdb
         .withConnectionProperty("encrypt", "false")
