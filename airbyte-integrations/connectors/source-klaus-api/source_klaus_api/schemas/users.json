@@ -3,8 +3,8 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "id": {"type": ["string", "null"]},
-    "name": {"type": ["string", "null"]},
-    "email": {"type": ["string", "null"]}
+    "id": { "type": ["string", "null"] },
+    "name": { "type": ["string", "null"] },
+    "email": { "type": ["string", "null"] }
   }
 }
