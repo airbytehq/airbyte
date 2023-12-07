@@ -10,6 +10,7 @@ import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.protocol.models.JsonSchemaType;
 
 public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTest {
@@ -23,7 +24,7 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
 
   @Override
   protected Database setupDatabase() throws Exception {
-    testdb = PostgresTestDatabase.in("postgres:16-bullseye", "withConf")
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, "withConf")
         .with("CREATE EXTENSION hstore;")
         .with("CREATE SCHEMA TEST;")
         .with("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');")

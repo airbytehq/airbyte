@@ -9,6 +9,7 @@ import io.airbyte.cdk.db.Database;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import java.sql.SQLException;
 
 public class PostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTest {
@@ -20,7 +21,7 @@ public class PostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTe
 
   @Override
   protected Database setupDatabase() throws SQLException {
-    testdb = PostgresTestDatabase.in("postgres:16-bullseye", "withConf")
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, "withConf")
         .with("CREATE SCHEMA %S;", SCHEMA_NAME)
         .with("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');")
         .with("CREATE TYPE inventory_item AS (name text, supplier_id integer, price numeric);")
