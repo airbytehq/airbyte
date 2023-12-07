@@ -15,3 +15,9 @@ connectionSpecification:
       type: string
       description: Secret key for Ironsource api
       airbyte_secret: true
+    page_size:
+      type: integer
+      description: Pagination size
+      default: 500
+      minimum: 1
+      maximum: 3000

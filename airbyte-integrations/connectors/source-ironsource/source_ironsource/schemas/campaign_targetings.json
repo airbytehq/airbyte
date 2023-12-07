@@ -1,0 +1,41 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "osVersions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "list" : {
+            "type" : [
+              "string",
+              "array"
+            ]
+          },
+          "items" : {
+            "type" : "string"
+          }
+        }
+      },
+      "useLatest" : {
+        "type" : "boolean"
+      }
+    },
+    "deviceTypes" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "adUnits" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      },
+      "targetTitles" : {
+        "type" : "string"
+      }
+    }
+  }
+}

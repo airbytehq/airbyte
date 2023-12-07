@@ -1,0 +1,157 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "id" : {
+      "type" : [
+        "number"
+      ]
+    },
+    "titleId" : {
+      "type" : [
+        "null",
+        "number"
+      ]
+    },
+    "name" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "timeline" : {
+      "type" : "object",
+      "properties" : {
+        "startDate" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "endDate" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "attribution" : {
+      "type" : "object",
+      "properties" : {
+        "clickUrl" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "impressionUrl" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "type" : {
+          "type" : [
+            "null",
+            "string"
+          ]
+        },
+        "isSkanReporting" : {
+          "type" : [
+            "null",
+            "boolean"
+          ]
+        }
+      }
+    },
+    "creationDate" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "frequencyCapping": {
+      "type" : "object",
+      "properties": {
+        "minHoursBetweenCompletions": {
+          "type" : [
+            "null",
+            "number"
+          ]
+        },
+        "dailyCompletionsLimit": {
+          "type" : [
+            "null",
+            "number"
+          ]
+        },
+        "totalCompletionsLimit": {
+          "type" : [
+            "null",
+            "number"
+          ]
+        }
+      },
+      "budget": {
+        "type": "object",
+        "properties": {
+          "type" : {
+            "type" : [
+              "null",
+              "string"
+            ]
+          },
+          "total" : {
+            "type" : [
+              "null",
+              "string"
+            ]
+          },
+          "daily" : {
+            "type" : [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "bidType": {
+        "type" : [
+          "null",
+          "number"
+        ]
+      },
+      "campaignType": {
+        "type" : [
+          "null",
+          "number"
+        ]
+      },
+      "deliveryStatus": {
+        "type" : [
+          "null",
+          "number"
+        ]
+      },
+      "optimizationType": {
+        "type" : [
+          "null",
+          "number"
+        ]
+      },
+      "isActive": {
+        "type" : [
+          "null",
+          "boolean"
+        ]
+      },
+      "isArchived": {
+        "type" : [
+          "null",
+          "boolean"
+        ]
+      }
+    }
+  }
+}
