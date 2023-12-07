@@ -455,7 +455,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
                 }
                 """)));
     DestinationHandler.InitialRawTableState tableState = destinationHandler.getInitialRawTableState(streamId);
-    assertTrue(tableState.hasUnprocessedRecords(), "When all raw records have null loaded_at, we should recognize that there are unprocessed records");
+    assertTrue(tableState.hasUnprocessedRecords(),
+        "When all raw records have null loaded_at, we should recognize that there are unprocessed records");
     assertTrue(
         tableState.maxProcessedTimestamp().get().isBefore(Instant.parse("2023-01-01T00:00:00Z")),
         "When all raw records have null loaded_at, the min timestamp should be earlier than all of their extracted_at values (2023-01-01). Was actually "
@@ -494,7 +495,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     // We should have a timestamp which is older than the second record, but newer than or equal to
     // (i.e. not before) the first record. This allows us to query the raw table using
     // `_airbyte_extracted_at > ?`, which will include the second record and exclude the first record.
-    assertTrue(tableState.hasUnprocessedRecords(), "When some raw records have null loaded_at, we should recognize that there are unprocessed records");
+    assertTrue(tableState.hasUnprocessedRecords(),
+        "When some raw records have null loaded_at, we should recognize that there are unprocessed records");
     assertTrue(
         tableState.maxProcessedTimestamp().get().isBefore(Instant.parse("2023-01-01T12:00:00Z")),
         "When some raw records have null loaded_at, the min timestamp should be earlier than the oldest unloaded record (2023-01-01 12:00Z). Was actually "
@@ -520,7 +522,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     final DestinationHandler.InitialRawTableState tableState = destinationHandler.getInitialRawTableState(streamId);
     assertAll(
-        () -> assertTrue(tableState.hasUnprocessedRecords(), "After writing some raw records, we should recognize that there are unprocessed records"),
+        () -> assertTrue(tableState.hasUnprocessedRecords(),
+            "After writing some raw records, we should recognize that there are unprocessed records"),
         () -> assertTrue(tableState.maxProcessedTimestamp().isPresent(), "After writing some raw records, the min timestamp should be present."));
 
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalDedupStream, tableState.maxProcessedTimestamp(), "");

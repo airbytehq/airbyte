@@ -56,15 +56,13 @@ public interface TyperDeduper {
    * into the final table.
    *
    * @param recordCounts A map from stream to the number of records written to that stream. Entries
-   *                     may be omitted if no records were written to that stream.
-   *                     Additionally, the entire map may be null if the caller does not track this
-   *                     information (this is primarily for backwards-compatibility with the legacy
-   *                     destinations framework). Implementations MUST assume all streams had nonzero
-   *                     records if this argument is null.
-   *                     Implementations SHOULD skip T+D on streams with zero records if those streams
-   *                     have no un-T+D-ed records from a previous sync. This will avoid unnecessary
-   *                     warehouse computation, but is not required because it does not affect sync
-   *                     correctness.
+   *        may be omitted if no records were written to that stream. Additionally, the entire map may
+   *        be null if the caller does not track this information (this is primarily for
+   *        backwards-compatibility with the legacy destinations framework). Implementations MUST
+   *        assume all streams had nonzero records if this argument is null. Implementations SHOULD
+   *        skip T+D on streams with zero records if those streams have no un-T+D-ed records from a
+   *        previous sync. This will avoid unnecessary warehouse computation, but is not required
+   *        because it does not affect sync correctness.
    */
   void typeAndDedupe(Map<StreamDescriptor, AtomicLong> recordCounts) throws Exception;
 

@@ -152,8 +152,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
 
       recordCounts.computeIfAbsent(
           message.getRecord().getStreamDescriptor(),
-          sd -> new AtomicLong()
-      ).incrementAndGet();
+          sd -> new AtomicLong()).incrementAndGet();
     }
     bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
   }

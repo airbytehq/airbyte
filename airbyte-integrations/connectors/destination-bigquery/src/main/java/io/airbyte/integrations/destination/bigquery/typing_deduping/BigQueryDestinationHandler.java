@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.FieldValue;
-import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobConfiguration;
 import com.google.cloud.bigquery.JobId;
@@ -18,15 +17,12 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
-import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.Streams;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.math.BigInteger;
-import java.time.Instant;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -68,26 +64,27 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
     }
 
     final FieldValue unloadedRecordTimestamp = bq.query(QueryJobConfiguration.newBuilder(new StringSubstitutor(Map.of(
-            "raw_table", id.rawTableId(BigQuerySqlGenerator.QUOTE))).replace(
+        "raw_table", id.rawTableId(BigQuerySqlGenerator.QUOTE))).replace(
             // bigquery timestamps have microsecond precision
             """
-                SELECT TIMESTAMP_SUB(MIN(_airbyte_extracted_at), INTERVAL 1 MICROSECOND)
-                FROM ${raw_table}
-                WHERE _airbyte_loaded_at IS NULL
-                """))
+            SELECT TIMESTAMP_SUB(MIN(_airbyte_extracted_at), INTERVAL 1 MICROSECOND)
+            FROM ${raw_table}
+            WHERE _airbyte_loaded_at IS NULL
+            """))
         .build()).iterateAll().iterator().next().get(0);
     // If this value is null, then there are no records with null loaded_at.
-    // If it's not null, then we can return immediately - we've found some unprocessed records and their timestamp.
+    // If it's not null, then we can return immediately - we've found some unprocessed records and their
+    // timestamp.
     if (!unloadedRecordTimestamp.isNull()) {
       return new InitialRawTableState(true, Optional.of(unloadedRecordTimestamp.getTimestampInstant()));
     }
 
     final FieldValue loadedRecordTimestamp = bq.query(QueryJobConfiguration.newBuilder(new StringSubstitutor(Map.of(
-            "raw_table", id.rawTableId(BigQuerySqlGenerator.QUOTE))).replace(
+        "raw_table", id.rawTableId(BigQuerySqlGenerator.QUOTE))).replace(
             """
-                SELECT MAX(_airbyte_extracted_at)
-                FROM ${raw_table}
-                """))
+            SELECT MAX(_airbyte_extracted_at)
+            FROM ${raw_table}
+            """))
         .build()).iterateAll().iterator().next().get(0);
     // We know (from the previous query) that all records have been processed by T+D already.
     // So we just need to get the timestamp of the most recent record.

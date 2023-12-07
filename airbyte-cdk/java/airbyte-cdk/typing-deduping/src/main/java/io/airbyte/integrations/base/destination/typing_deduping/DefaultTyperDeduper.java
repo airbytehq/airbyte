@@ -249,7 +249,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     parsedCatalog.streams().stream()
         .filter(streamConfig -> {
           // If recordCounts is null, assume that we have nonzero records
-          final boolean nonzeroRecords =recordCounts == null
+          final boolean nonzeroRecords = recordCounts == null
               // If we don't have an entry in the map, then assume that the stream had 0 records
               || recordCounts.getOrDefault(streamConfig.id().asStreamDescriptor(), new AtomicLong()).get() > 0;
           final boolean unprocessedRecordsPreexist = initialRawTableStateByStream.get(streamConfig.id()).hasUnprocessedRecords();

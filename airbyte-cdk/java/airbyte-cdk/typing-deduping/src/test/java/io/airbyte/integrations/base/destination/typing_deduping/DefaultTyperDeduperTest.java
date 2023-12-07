@@ -6,7 +6,6 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.ignoreStubs;
@@ -27,8 +26,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatcher;
-import org.mockito.ArgumentMatchers;
 
 public class DefaultTyperDeduperTest {
 
@@ -152,7 +149,8 @@ public class DefaultTyperDeduperTest {
    */
   @Test
   void existingNonemptyTable() throws Exception {
-    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.parse("2023-01-01T12:34:56Z"))));
+    when(destinationHandler.getInitialRawTableState(any()))
+        .thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.parse("2023-01-01T12:34:56Z"))));
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
 
@@ -235,8 +233,7 @@ public class DefaultTyperDeduperTest {
 
     typerDeduper.typeAndDedupe(Map.of(
         new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new AtomicLong(0),
-        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(1)
-    ));
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(1)));
 
     // Only append_stream should be T+D-ed. overwrite_stream has explicitly 0 records, and dedup_stream
     // is missing from the map, so implicitly has 0 records.
@@ -250,14 +247,14 @@ public class DefaultTyperDeduperTest {
    */
   @Test
   void unprocessedRecords() throws Exception {
-    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.parse("2023-01-23T12:34:56Z"))));
+    when(destinationHandler.getInitialRawTableState(any()))
+        .thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.parse("2023-01-23T12:34:56Z"))));
     typerDeduper.prepareTables();
     clearInvocations(destinationHandler);
 
     typerDeduper.typeAndDedupe(Map.of(
         new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new AtomicLong(0),
-        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(1)
-    ));
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(1)));
 
     verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
     verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
