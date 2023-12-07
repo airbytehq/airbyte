@@ -15,6 +15,7 @@ import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -48,7 +49,7 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.in(getServerImage(), "withConf")
+    testdb = PostgresTestDatabase.in(getServerImage(), ContainerModifier.CONF)
         .with("CREATE TABLE id_and_name(id INTEGER  primary key, name VARCHAR(200));")
         .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
         .with("CREATE TABLE starships(id INTEGER primary key, name VARCHAR(200));")
