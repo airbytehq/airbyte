@@ -51,7 +51,7 @@ def already_formatted_directory(dagger_client, tmp_dir_with_formatted_code):
 
 @pytest.fixture
 def directory_with_expected_formatted_code(dagger_client):
-    expected_formatted_code_path = "airbyte-ci/connectors/pipelines/tests/test_format/formatted_code"
+    expected_formatted_code_path = PATH_TO_FORMATTED_CODE
     return dagger_client.host().directory(expected_formatted_code_path).with_timestamps(0)
 
 

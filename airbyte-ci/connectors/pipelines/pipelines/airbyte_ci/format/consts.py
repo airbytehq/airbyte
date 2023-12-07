@@ -60,6 +60,11 @@ class Formatter(Enum):
     LICENSE = "license"
 
 
+# This files are dependencies to be mounted in formatter containers.
+# They are used as configuration files for the formatter.
+# We mount them to formatter containers because they can be required to install dependencies.
+# We use them to  "warmup" containers because they are not likely to change often.
+# The mount will be cached and we won't re-install dependencies unless these files change.
 WARM_UP_INCLUSIONS = {
     Formatter.JAVA: [
         "spotless-maven-pom.xml",

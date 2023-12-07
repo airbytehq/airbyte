@@ -56,8 +56,8 @@ class FormatCommand(click.Command):
         self.format_commands = format_commands
         self.export_formatted_code = export_formatted_code
         self.help = self.get_help_message()
-        self.enable_logging = enable_logging
-        self.exit_on_failure = exit_on_failure
+        self._enable_logging = enable_logging
+        self._exit_on_failure = exit_on_failure
         self.logger = logging.getLogger(f"Format {self.formatter.value}")
 
     def get_help_message(self) -> str:
@@ -87,7 +87,7 @@ class FormatCommand(click.Command):
     @pass_pipeline_context
     @sentry_utils.with_command_context
     async def invoke(self, ctx: click.Context, click_pipeline_context: ClickPipelineContext) -> Any:
-        """Run the command. If exit_on_failure is True, exit the process with status code 1 if the command fails.
+        """Run the command. If _exit_on_failure is True, exit the process with status code 1 if the command fails.
 
         Args:
             ctx (click.Context): The click context
@@ -100,30 +100,37 @@ class FormatCommand(click.Command):
         dir_to_format = self.get_dir_to_format(dagger_client)
         container = self.get_format_container_fn(dagger_client, dir_to_format)
         command_result = await self.get_format_command_result(dagger_client, container, dir_to_format)
+
         if (formatted_code_dir := command_result.output_artifact) and self.export_formatted_code:
             await formatted_code_dir.export(self.LOCAL_REPO_PATH)
-        if self.enable_logging:
+
+        if self._enable_logging:
             log_command_results(ctx, [command_result], main_logger, LogOptions(quiet=ctx.obj["quiet"]))
-        if command_result.status is StepStatus.FAILURE and self.exit_on_failure:
+
+        if command_result.status is StepStatus.FAILURE and self._exit_on_failure:
             sys.exit(1)
+
         return command_result
 
-    def disable_logging(self) -> FormatCommand:
-        """Disable logging for the command.
-
+    def set_enable_logging(self, value: bool) -> FormatCommand:
+        """Set _enable_logging to the given value.
+        Args:
+            value (bool): The value to set
         Returns:
             FormatCommand: The command with logging disabled
         """
-        self.enable_logging = False
+        self._enable_logging = False
         return self
 
-    def dont_exit_on_failure(self) -> FormatCommand:
-        """Don't exit the process with status code 1 if the command fails.
+    def set_exit_on_failure(self, value: bool) -> FormatCommand:
+        """Set _exit_on_failure to the given value.
 
+        Args:
+            value (bool): The value to set
         Returns:
-            FormatCommand: The command with exit_on_failure disabled
+            FormatCommand: The command with _exit_on_failure disabled
         """
-        self.exit_on_failure = False
+        self._exit_on_failure = value
         return self
 
     async def run_format(
