@@ -3,8 +3,8 @@
 from unittest import TestCase
 from unittest.mock import Mock
 
-from airbyte_cdk.test.http.matcher import HttpRequestMatcher
-from airbyte_cdk.test.http.request import HttpRequest
+from airbyte_cdk.test.mock_http.matcher import HttpRequestMatcher
+from airbyte_cdk.test.mock_http.request import HttpRequest
 
 
 class HttpRequestMatcherTest(TestCase):

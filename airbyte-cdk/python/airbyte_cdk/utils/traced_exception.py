@@ -71,7 +71,7 @@ class AirbyteTracedException(Exception):
             )
             return output_message
 
-    def emit_message(self):
+    def emit_message(self) -> None:
         """
         Prints the exception as an AirbyteTraceMessage.
         Note that this will be called automatically on uncaught exceptions when using the airbyte_cdk entrypoint.
@@ -81,7 +81,7 @@ class AirbyteTracedException(Exception):
         print(filtered_message)
 
     @classmethod
-    def from_exception(cls, exc: Exception, *args, **kwargs) -> "AirbyteTracedException":
+    def from_exception(cls, exc: BaseException, *args, **kwargs) -> "AirbyteTracedException":
         """
         Helper to create an AirbyteTracedException from an existing exception
         :param exc: the exception that caused the error
