@@ -235,7 +235,7 @@ definitions:
         extractor:
           field_path: ["conversation_parts", "conversation_parts"]
       requester:
-        $ref: "#/definitions/substream_semi_incremental/retriever/requester"
+        $ref: "#/definitions/requester"
         error_handler:
           response_filters:
             - http_codes: [404]
