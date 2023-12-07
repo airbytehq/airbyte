@@ -4,9 +4,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlCdcStateConstants.IS_COMPRESSED;
-import static io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlCdcStateConstants.MSSQL_CDC_OFFSET;
-import static io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlCdcStateConstants.MSSQL_DB_HISTORY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -43,6 +40,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
+
+import static io.airbyte.integrations.source.mssql.MssqlSource.IS_COMPRESSED;
+import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
+import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CdcStateCompressionTest {
 
