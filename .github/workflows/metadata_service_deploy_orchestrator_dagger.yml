@@ -24,5 +24,6 @@ jobs:
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
         env:
           DAGSTER_CLOUD_METADATA_API_TOKEN: ${{ secrets.DAGSTER_CLOUD_METADATA_API_TOKEN }}

@@ -164,10 +164,7 @@
       "items": {
         "properties": {
           "comment": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "created": {
             "type": ["string", "null"]
