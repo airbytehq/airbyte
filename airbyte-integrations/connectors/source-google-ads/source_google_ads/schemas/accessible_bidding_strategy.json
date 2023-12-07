@@ -1,0 +1,60 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "customer.id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "accessible_bidding_strategy.id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "accessible_bidding_strategy.resource_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "accessible_bidding_strategy.name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "accessible_bidding_strategy.type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "accessible_bidding_strategy.owner_customer_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "accessible_bidding_strategy.owner_descriptive_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "accessible_bidding_strategy.target_cpa.target_cpa_micros": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "accessible_bidding_strategy.maximize_conversions.target_cpa_micros": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        }
+    }
+}

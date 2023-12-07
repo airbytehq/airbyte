@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "campaign.id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "customer.id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ad_group.id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "lead_form_submission_data.ad_group": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "lead_form_submission_data.ad_group_ad": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "lead_form_submission_data.asset": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "lead_form_submission_data.campaign": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "lead_form_submission_data.custom_lead_form_submission_fields": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "lead_form_submission_data.gclid": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "lead_form_submission_data.id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "lead_form_submission_data.lead_form_submission_fields": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "lead_form_submission_data.resource_name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "lead_form_submission_data.submission_date_time": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}
