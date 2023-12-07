@@ -30,11 +30,7 @@ const didJobSucceed = (job: SynchronousJobRead | JobsWithJobs): boolean =>
   "status" in job ? (job?.status === JobStatus?.succeeded ? true : false) : getJobStatus(job) !== "failed";
 
 export const getJobStatus: (job: SynchronousJobRead | JobsWithJobs) => JobStatus = (job) =>
-  "status" in job
-    ? job?.status === JobStatus?.succeeded
-      ? JobStatus?.succeeded
-      : JobStatus?.failed
-    : job.job?.status ?? JobStatus?.failed;
+  "status" in job && job?.status === JobStatus?.succeeded ? JobStatus?.succeeded : JobStatus?.failed;
 
 export const getJobAttemps: (job: SynchronousJobRead | JobsWithJobs) => AttemptRead[] | undefined = (job) =>
   "attempts" in job ? job?.attempts : undefined;
