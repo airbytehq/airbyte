@@ -107,6 +107,27 @@
   {
     "type": "STREAM",
     "stream": {
+      "stream_state": { "occurred_at": 2147483647 },
+      "stream_descriptor": { "name": "contact" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "occurred_at": 2147483647 },
+      "stream_descriptor": { "name": "quote_line_group" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "occurred_at": 2147483647 },
+      "stream_descriptor": { "name": "attached_item" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
       "stream_state": { "updated_at": 2147483647 },
       "stream_descriptor": { "name": "transaction" }
     }
