@@ -3,7 +3,7 @@
 from unittest import TestCase
 
 import pytest
-from airbyte_cdk.test.http.request import HttpRequest
+from airbyte_cdk.test.http.request import ANY_QUERY_PARAMS, HttpRequest
 
 
 class HttpRequestMatcherTest(TestCase):
@@ -43,3 +43,15 @@ class HttpRequestMatcherTest(TestCase):
         request_to_match = HttpRequest("mock://test.com/path", headers={"first_header": "h1"})
         request_received = HttpRequest("mock://test.com/path", headers={"first_header": "value does not match"})
         assert not request_received.matches(request_to_match)
+
+    def test_given_any_matcher_for_query_param_when_matches_then_return_true(self):
+        request_to_match = HttpRequest("mock://test.com/path", {"a_query_param": "q1"})
+        request_received = HttpRequest("mock://test.com/path", ANY_QUERY_PARAMS)
+
+        assert request_received.matches(request_to_match)
+        assert request_to_match.matches(request_received)
+
+    def test_given_any_matcher_for_both_when_matches_then_return_true(self):
+        request_to_match = HttpRequest("mock://test.com/path", ANY_QUERY_PARAMS)
+        request_received = HttpRequest("mock://test.com/path", ANY_QUERY_PARAMS)
+        assert request_received.matches(request_to_match)
