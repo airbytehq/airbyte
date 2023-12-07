@@ -314,7 +314,7 @@ public class DataSourceFactory {
       config.setMaxLifetime(15000); // 30 seconds
       config.setPassword(password);
       config.setUsername(username);
-//      config.setConnectionTestQuery("SELECT 1");  this did not help.
+      // config.setConnectionTestQuery("SELECT 1"); this did not help.
 
       /*
        * Disable to prevent failing on startup. Applications may start prior to the database container

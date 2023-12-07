@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.mysql.cj.exceptions.CJCommunicationsException;
 import datadog.trace.api.Trace;
 import io.airbyte.cdk.integrations.util.ApmTraceUtils;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
@@ -29,7 +28,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -40,8 +38,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import io.debezium.jdbc.JdbcConnectionException;
 import org.apache.commons.lang3.ThreadUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
@@ -283,7 +279,8 @@ public class IntegrationRunner {
       try {
         messageIterator.close();
       } catch (Exception e) {
-        LOGGER.warn("Exception closing connection: {}. This is generally fine as we've moved all data & are terminating everything. ", e.getMessage());
+        LOGGER.warn("Exception closing connection: {}. This is generally fine as we've moved all data & are terminating everything. ",
+            e.getMessage());
       }
     } finally {
       stopOrphanedThreads(EXIT_HOOK,
