@@ -116,6 +116,12 @@
         "object",
         "null"
       ]
+    },
+    "primary": {
+      "type": [
+        "boolean",
+        "null"
+      ]
     }
   }
 }
