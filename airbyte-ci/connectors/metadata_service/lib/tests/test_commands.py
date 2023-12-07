@@ -10,11 +10,15 @@ from metadata_service import commands
 from metadata_service.gcs_upload import MetadataUploadInfo, UploadedFile
 from metadata_service.validators.metadata_validator import ValidatorOptions
 from pydantic import BaseModel, ValidationError, error_wrappers
+from test_gcs_upload import stub_is_image_on_docker_hub
 
 
 # TEST VALIDATE COMMAND
-def test_valid_metadata_yaml_files(valid_metadata_yaml_files, tmp_path):
+def test_valid_metadata_yaml_files(mocker, valid_metadata_yaml_files, tmp_path):
     runner = CliRunner()
+
+    # Mock dockerhub for base image checks
+    mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
 
     assert len(valid_metadata_yaml_files) > 0, "No files found"
 
@@ -30,13 +34,13 @@ def test_invalid_metadata_yaml_files(invalid_metadata_yaml_files, tmp_path):
 
     for file_path in invalid_metadata_yaml_files:
         result = runner.invoke(commands.validate, [file_path, str(tmp_path)])
-        assert result.exit_code != 0, f"Validation succeeded (when it shouldve failed) for {file_path}"
+        assert result.exit_code != 0, f"Validation succeeded (when it should have failed) for {file_path}"
 
 
 def test_metadata_file_not_found_fails(tmp_path):
     runner = CliRunner()
     result = runner.invoke(commands.validate, ["non_existent_file.yaml", str(tmp_path)])
-    assert result.exit_code != 0, "Validation succeeded (when it shouldve failed) for non_existent_file.yaml"
+    assert result.exit_code != 0, "Validation succeeded (when it should have failed) for non_existent_file.yaml"
 
 
 def test_docs_path_not_found_fails(valid_metadata_yaml_files):
@@ -45,7 +49,7 @@ def test_docs_path_not_found_fails(valid_metadata_yaml_files):
     assert len(valid_metadata_yaml_files) > 0, "No files found"
 
     result = runner.invoke(commands.validate, [valid_metadata_yaml_files[0], "non_existent_docs_path"])
-    assert result.exit_code != 0, "Validation succeeded (when it shouldve failed) for non_existent_docs_path"
+    assert result.exit_code != 0, "Validation succeeded (when it should have failed) for non_existent_docs_path"
 
 
 def mock_metadata_upload_info(
