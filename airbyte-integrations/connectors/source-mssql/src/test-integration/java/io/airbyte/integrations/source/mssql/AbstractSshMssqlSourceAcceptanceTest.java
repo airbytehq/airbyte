@@ -29,6 +29,7 @@ import java.io.UncheckedIOException;
 import java.util.HashMap;
 
 public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
+
   private static final String STREAM_NAME = "dbo.id_and_name";
   private static final String STREAM_NAME2 = "dbo.starships";
 

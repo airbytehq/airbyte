@@ -42,7 +42,7 @@ class MssqlSourceTest {
   private MsSQLTestDatabase testdb;
 
   private MssqlSource source() {
-    final MssqlSource source =  new MssqlSource();
+    final MssqlSource source = new MssqlSource();
     source.setFeatureFlags(FeatureFlagsWrapper.overridingUseStreamCapableState(new EnvVariableFeatureFlags(), true));
     return source;
   }

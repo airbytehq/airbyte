@@ -161,4 +161,5 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Mssq
   protected boolean supportsPerStream() {
     return true;
   }
+
 }
