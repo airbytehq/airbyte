@@ -27,7 +27,7 @@ async def publish_to_remote_registry(base_image_version: bases.AirbyteConnectorB
     for platform in consts.PLATFORMS_WE_PUBLISH_FOR:
         await base_image_version.run_sanity_checks(platform)
         variants_to_publish.append(base_image_version.get_container(platform))
-    await variants_to_publish[0].export("/tmp/image.tar", forced_compression=dagger.ImageLayerCompression.Gzip) 
+    await variants_to_publish[0].export("/tmp/image.tar", forced_compression=dagger.ImageLayerCompression.Gzip)
     breakpoint()
     # Publish with forced compression to ensure backward compatibility with older versions of docker
     published_address = await variants_to_publish[0].publish(

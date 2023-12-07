@@ -54,7 +54,8 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
             """
 
             container = container.with_exec(
-                ["sh", "-c", "apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1 pandoc libreoffice"], skip_entrypoint=True
+                ["sh", "-c", "apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1 pandoc libreoffice"],
+                skip_entrypoint=True,
             )
 
             return container
