@@ -14,8 +14,8 @@ import org.testcontainers.tidb.TiDBContainer;
 public class TiDBTestDatabase extends
     TestDatabase<TiDBContainer, TiDBTestDatabase, TiDBTestDatabase.TiDBDbConfigBuilder> {
 
-  protected static String USER = "root";
-  protected static String DATABASE = "test";
+  protected static final String USER = "root";
+  protected static final String DATABASE = "test";
   private final TiDBContainer container;
 
   protected TiDBTestDatabase(final TiDBContainer container) {
