@@ -35,10 +35,11 @@ Use the service account ID from above, grant read access to your target bucket. 
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                    |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------|
-| 0.3.2 | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser |
-| 0.3.1 | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema |
-| 0.3.0   | 2023-10-11 | [31212](https://github.com/airbytehq/airbyte/pull/31212) | Migrated to file based CDK |
-| 0.2.0   | 2023-06-26 | [27725](https://github.com/airbytehq/airbyte/pull/27725) | License Update: Elv2       |
-| 0.1.0   | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS            |
+| Version | Date       | Pull Request                                             | Subject                                             |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 0.3.3   | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key |
+| 0.3.2   | 2023-11-16 | [32608](https://github.com/airbytehq/airbyte/pull/32608) | Improve document file type parser                   |
+| 0.3.1   | 2023-11-13 | [32357](https://github.com/airbytehq/airbyte/pull/32357) | Improve spec schema                                 |
+| 0.3.0   | 2023-10-11 | [31212](https://github.com/airbytehq/airbyte/pull/31212) | Migrated to file based CDK                          |
+| 0.2.0   | 2023-06-26 | [27725](https://github.com/airbytehq/airbyte/pull/27725) | License Update: Elv2                                |
+| 0.1.0   | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS                                     |
