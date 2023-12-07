@@ -15,10 +15,16 @@ tools.airbyte-ci.check: # Check if airbyte-ci is installed correctly
 tools.airbyte-ci.clean: ## Clean airbyte-ci installations
 	@./airbyte-ci/connectors/pipelines/pipelines/external_scripts/airbyte_ci_clean.sh
 
-
-tools.pre-commit.install: tools.airbyte-ci.install ## Install pre-commit hooks
+tools.git-hooks.clean: ## Clean git hooks
 	@echo "Unset core.hooksPath"
 	-@git config --unset core.hooksPath
+	@echo "Removing pre-commit hooks..."
+	@pre-commit uninstall
+	@echo "Removing pre-push hooks..."
+	@rm -rf .git/hooks
+	@echo "Git hooks removed."
+
+tools.pre-commit.install: tools.airbyte-ci.install tools.git-hooks.clean ## Install pre-commit hooks
 	@echo "Installing pre-commit..."
 	@brew install pre-commit
 	@echo "Installing pre-push hooks..."
