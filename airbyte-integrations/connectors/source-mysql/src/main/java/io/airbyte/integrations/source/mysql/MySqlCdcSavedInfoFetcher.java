@@ -25,7 +25,7 @@ public class MySqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
     this.savedOffset = savedStatePresent ? savedState.getState().get(MYSQL_CDC_OFFSET) : null;
     this.savedSchemaHistory = savedStatePresent ? savedState.getState().get(MYSQL_DB_HISTORY) : null;
     this.isSavedSchemaHistoryCompressed = savedStatePresent &&
-            savedState.getState().has(IS_COMPRESSED) && savedState.getState().get(IS_COMPRESSED).asBoolean();
+        savedState.getState().has(IS_COMPRESSED) && savedState.getState().get(IS_COMPRESSED).asBoolean();
   }
 
   @Override
