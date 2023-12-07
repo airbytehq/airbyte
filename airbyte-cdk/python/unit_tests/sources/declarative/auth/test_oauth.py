@@ -81,7 +81,6 @@ class TestOauth2Authenticator:
             "client_id": base64.b64encode(config["client_id"].encode("utf-8")).decode(),
             "client_secret": base64.b64encode(config["client_secret"].encode("utf-8")).decode(),
             "refresh_token": None,
-            "scopes": None,
         }
         assert body == expected
 
@@ -104,7 +103,6 @@ class TestOauth2Authenticator:
             "client_id": "some_client_id",
             "client_secret": "some_client_secret",
             "refresh_token": None,
-            "scopes": None,
         }
         assert body == expected
 
@@ -126,7 +124,6 @@ class TestOauth2Authenticator:
             "client_id": "some_client_id",
             "client_secret": "some_client_secret",
             "refresh_token": None,
-            "scopes": None,
         }
         assert body == expected
 
