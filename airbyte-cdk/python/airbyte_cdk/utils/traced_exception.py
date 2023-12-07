@@ -4,6 +4,7 @@
 
 import traceback
 from datetime import datetime
+from typing import Optional
 
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -25,10 +26,10 @@ class AirbyteTracedException(Exception):
 
     def __init__(
         self,
-        internal_message: str = None,
-        message: str = None,
+        internal_message: Optional[str] = None,
+        message: Optional[str] = None,
         failure_type: FailureType = FailureType.system_error,
-        exception: BaseException = None,
+        exception: Optional[BaseException] = None,
     ):
         """
         :param internal_message: the internal error that caused the failure
@@ -81,9 +82,9 @@ class AirbyteTracedException(Exception):
         print(filtered_message)
 
     @classmethod
-    def from_exception(cls, exc: BaseException, *args, **kwargs) -> "AirbyteTracedException":
+    def from_exception(cls, exc: BaseException, *args, **kwargs) -> "AirbyteTracedException":  # type: ignore  # ignoring because of args and kwargs
         """
         Helper to create an AirbyteTracedException from an existing exception
         :param exc: the exception that caused the error
         """
-        return cls(internal_message=str(exc), exception=exc, *args, **kwargs)
+        return cls(internal_message=str(exc), exception=exc, *args, **kwargs)  # type: ignore  # ignoring because of args and kwargs
