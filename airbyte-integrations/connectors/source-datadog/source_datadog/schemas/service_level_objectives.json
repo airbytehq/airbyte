@@ -24,7 +24,7 @@
       "type": ["string", "null"]
     },
     "groups": {
-      "items":{
+      "items": {
         "type": ["string", "null"]
       },
       "type": ["array", "null"]
