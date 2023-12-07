@@ -3,7 +3,6 @@
 from typing import Any, List, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
 
-
 ANY_QUERY_PARAMS = "any query_parameters"
 
 
@@ -42,8 +41,8 @@ class HttpRequest:
                 and self._parsed_url.hostname == other._parsed_url.hostname
                 and self._parsed_url.path == other._parsed_url.path
                 and (
-                        ANY_QUERY_PARAMS in [self._query_params, other._query_params]
-                        or parse_qs(self._parsed_url.query) == parse_qs(other._parsed_url.query)
+                    ANY_QUERY_PARAMS in [self._query_params, other._query_params]
+                    or parse_qs(self._parsed_url.query) == parse_qs(other._parsed_url.query)
                 )
                 and _is_subdict(other._headers, self._headers)
             )
