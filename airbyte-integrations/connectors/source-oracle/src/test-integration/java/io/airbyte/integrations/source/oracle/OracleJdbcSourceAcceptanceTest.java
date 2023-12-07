@@ -22,10 +22,8 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -33,10 +31,12 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -60,13 +60,13 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<OracleSour
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleJdbcSourceAcceptanceTest.class);
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
   protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
-  private static final AirbyteOracleTestContainer  ORACLE_DB = new AirbyteOracleTestContainer()
-          .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD")
-          .withEnv("RELAX_SECURITY", "1")
-          .withUsername("TEST_ORA")
-          .withPassword("oracle")
-          .usingSid()
-          .withEnv("RELAX_SECURITY", "1");
+  private static final AirbyteOracleTestContainer ORACLE_DB = new AirbyteOracleTestContainer()
+      .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD")
+      .withEnv("RELAX_SECURITY", "1")
+      .withUsername("TEST_ORA")
+      .withPassword("oracle")
+      .usingSid()
+      .withEnv("RELAX_SECURITY", "1");
 
   @BeforeAll
   static void init() {
@@ -132,9 +132,9 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<OracleSour
     if (supportsSchemas()) {
       for (final String schemaName : TEST_SCHEMAS) {
         executeOracleStatement(
-                String.format(
-                        "CREATE USER %s IDENTIFIED BY password DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS",
-                        schemaName));
+            String.format(
+                "CREATE USER %s IDENTIFIED BY password DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS",
+                schemaName));
       }
     }
   }
@@ -270,9 +270,9 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<OracleSour
     assertTrue(stateAfterFirstSyncOptional.isPresent());
 
     testdb.with(String.format("INSERT INTO %s(id, name, updated_at) VALUES (4,'riker', '2006-10-19')",
-            getFullyQualifiedTableName(TABLE_NAME)));
+        getFullyQualifiedTableName(TABLE_NAME)));
     testdb.with(String.format("INSERT INTO %s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
-            getFullyQualifiedTableName(TABLE_NAME)));
+        getFullyQualifiedTableName(TABLE_NAME)));
 
     final List<AirbyteMessage> actualMessagesSecondSync = MoreIterators
         .toList(source().read(config(), configuredCatalog,
@@ -298,13 +298,13 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<OracleSour
         .withState(new AirbyteStateMessage()
             .withType(AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState()
-                    .withStreamDescriptor(new StreamDescriptor().withName(streamName()).withNamespace(namespace))
-                    .withStreamState(Jsons.jsonNode(new DbStreamState()
-                            .withStreamNamespace(namespace)
-                            .withStreamName(streamName())
-                            .withCursorField(ImmutableList.of(COL_ID))
-                            .withCursor("5")
-                            .withCursorRecordCount(1L))))
+                .withStreamDescriptor(new StreamDescriptor().withName(streamName()).withNamespace(namespace))
+                .withStreamState(Jsons.jsonNode(new DbStreamState()
+                    .withStreamNamespace(namespace)
+                    .withStreamName(streamName())
+                    .withCursorField(ImmutableList.of(COL_ID))
+                    .withCursor("5")
+                    .withCursorRecordCount(1L))))
             .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(new DbStreamState()

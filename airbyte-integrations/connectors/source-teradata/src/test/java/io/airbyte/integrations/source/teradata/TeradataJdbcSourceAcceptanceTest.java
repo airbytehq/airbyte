@@ -26,13 +26,13 @@ import org.junit.jupiter.api.TestInstance;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TeradataJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<TeradataSource, TeradataTestDatabase> {
+
   private static JsonNode staticConfig;
 
   public static void cleanUpBeforeStarting() {
     try {
       cleanupEnvironment();
-    } catch (final Exception ignored) {
-    }
+    } catch (final Exception ignored) {}
   }
 
   @BeforeAll
@@ -100,8 +100,8 @@ class TeradataJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Teradata
   @Override
   protected void customSetup() {
     executeStatements(List.of(
-                    statement -> statement.executeUpdate("CREATE DATABASE \"database_name\" AS PERMANENT = 120e6, SPOOL = 120e6;")),
-            staticConfig.get("host").asText(), staticConfig.get("username").asText(), staticConfig.get("password").asText());
+        statement -> statement.executeUpdate("CREATE DATABASE \"database_name\" AS PERMANENT = 120e6, SPOOL = 120e6;")),
+        staticConfig.get("host").asText(), staticConfig.get("username").asText(), staticConfig.get("password").asText());
   }
 
   @Override

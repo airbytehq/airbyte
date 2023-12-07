@@ -168,8 +168,7 @@ abstract public class JdbcSourceAcceptanceTest<S extends Source, T extends TestD
     return clause.toString();
   }
 
-  protected void customSetup() {
-  }
+  protected void customSetup() {}
 
   @BeforeEach
   public void setup() throws Exception {
