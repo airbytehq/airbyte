@@ -1,14 +1,6 @@
 import React from "react";
 import styles from "./HeaderDecoration.module.css";
 
-const escape = (string) => {
-  return string
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-};
-
 const capitalizeFirstLetter = (string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
@@ -25,8 +17,7 @@ export const HeaderDecoration = ({
   originalTitle,
   originalId
 }) => {
-  // note - you can't have any leading whitespace here
-  return <><div>
+  return <>
     <dl className={styles.connectorMetadata}>
       <div>
         <dt>Availability</dt>
@@ -36,7 +27,7 @@ export const HeaderDecoration = ({
           }>{
               isCloud ? CHECK_ICON : CROSS_ICON
             } Airbyte Cloud</span>
-          <span class={isOss ? styles.available : styles.unavailable}>{
+          <span className={isOss ? styles.available : styles.unavailable}>{
             isOss ? CHECK_ICON : CROSS_ICON
           } Airbyte OSS</span>
         </dd>
@@ -44,14 +35,12 @@ export const HeaderDecoration = ({
       <div>
         <dt>Support Level</dt>
         <dd>
-          <a href="/project-overview/product-support-levels/">{escape(
-            capitalizeFirstLetter(supportLevel)
-          )}</a>
+          <a href="/project-overview/product-support-levels/">{capitalizeFirstLetter(supportLevel)}</a>
         </dd>
       </div>
       <div>
         <dt>Latest Version</dt>
-        <dd>{escape(dockerImageTag)}</dd>
+        <dd>{dockerImageTag}</dd>
       </div>
     </dl>
 
@@ -59,5 +48,5 @@ export const HeaderDecoration = ({
       <img src={iconUrl} alt="" class={styles.connectorIcon} />
       <h1 id={originalId}>{originalTitle}</h1>
     </div>
-  </div></>;
+  </>;
 };
