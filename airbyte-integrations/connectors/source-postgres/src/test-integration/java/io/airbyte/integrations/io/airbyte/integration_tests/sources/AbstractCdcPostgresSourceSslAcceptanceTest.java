@@ -7,6 +7,8 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import java.util.Map;
 
 public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPostgresSourceAcceptanceTest {
@@ -15,7 +17,7 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    testdb = PostgresTestDatabase.in(getServerImageName(), "withWalLevelLogical", "withCert")
+    testdb = PostgresTestDatabase.in(getServerImage(), ContainerModifier.WAL_LEVEL_LOGICAL, ContainerModifier.CERT)
         .with("CREATE TABLE id_and_name(id INTEGER primary key, name VARCHAR(200));")
         .with("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');")
         .with("CREATE TABLE starships(id INTEGER primary key, name VARCHAR(200));")
@@ -33,7 +35,7 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
         .build();
   }
 
-  protected abstract String getServerImageName();
+  protected abstract BaseImage getServerImage();
 
   public abstract Map<Object, Object> getCertificateConfiguration();
 
