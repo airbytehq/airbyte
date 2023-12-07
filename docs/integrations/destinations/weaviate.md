@@ -77,7 +77,7 @@ If a class doesn't exist in the schema of the cluster, it will be created using 
 
 You can also create the class in Weaviate in advance if you need more control over the schema in Weaviate. In this case, the text properies `_ab_stream` and `_ab_record_id` need to be created for bookkeeping reasons. In case a sync is run in `Overwrite` mode, the class will be deleted and recreated.
 
-As properties have to start will a lowercase letter in Weaviate, field names might be updated during the loading process. The field names `id`, `_id` and `_additional` are reserved keywords in Weaviate, so they will be renamed to `raw_id`, `raw__id` and `raw_additional` respectively.
+As properties have to start will a lowercase letter in Weaviate and can't contain spaces or special characters.  Field names might be updated during the loading process. The field names `id`, `_id` and `_additional` are reserved keywords in Weaviate, so they will be renamed to `raw_id`, `raw__id` and `raw_additional` respectively.
 
 ## Changelog
 
