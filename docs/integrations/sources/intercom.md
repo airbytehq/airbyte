@@ -73,8 +73,9 @@ The Intercom connector should not run into Intercom API limitations under normal
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
-|:--------| :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
-| 0.3.1 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 0.3.2   | 2023-12-07 | [33223](https://github.com/airbytehq/airbyte/pull/33223) | Ignore 404 error for `Conversation Parts`                                                                |
+| 0.3.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                          |
 | 0.3.0   | 2023-05-25 | [29598](https://github.com/airbytehq/airbyte/pull/29598) | Update custom components to make them compatible with latest cdk version, simplify logic, update schemas |
 | 0.2.1   | 2023-05-25 | [26571](https://github.com/airbytehq/airbyte/pull/26571) | Remove authSpecification from spec.json in favour of advancedAuth                                        |
 | 0.2.0   | 2023-04-05 | [23013](https://github.com/airbytehq/airbyte/pull/23013) | Migrated to Low-code (YAML Frramework)                                                                   |
