@@ -4,15 +4,15 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.integrations.source.mssql.MssqlSource.IS_COMPRESSED;
+import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
+import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.debezium.CdcSavedInfoFetcher;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import java.util.Optional;
-
-import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
-import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
-import static io.airbyte.integrations.source.mssql.MssqlSource.IS_COMPRESSED;
 
 public class MssqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
 
