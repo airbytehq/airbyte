@@ -153,11 +153,11 @@ For each destination connector, Destinations V2 is effective as of the following
 
 | Destination Connector | Safe Rollback Version | Destinations V2 Compatible | Upgrade Deadline         |
 |-----------------------|-----------------------|----------------------------|--------------------------|
-| BigQuery              | 1.4.4                 | 2.0.6+                     | November 7, 2023         |
-| Snowflake             | 2.0.0                 | 3.1.0+                     | November 7, 2023         |
-| Redshift              | 0.4.8                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
+| BigQuery              | 1.10.2                | 2.0.6+                     | November 7, 2023         |
+| Snowflake             | 2.1.7                 | 3.1.0+                     | November 7, 2023         |
+| Redshift              | 0.6.11                | [coming soon] 2.0.0+       | [coming soon] early 2024 |
 | Postgres              | 0.4.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
-| MySQL                 | 0.1.20                | [coming soon] 2.0.0+       | [coming soon] early 2024 |
+| MySQL                 | 0.2.0                 | [coming soon] 2.0.0+       | [coming soon] early 2024 |
 
 Note that legacy normalization will be deprecated for ClickHouse, DuckDB, MSSQL, TiDB, and Oracle DB in early 2024. If you wish to add Destinations V2 capability to these destinations, please reference our implementation guide (coming soon).
 
