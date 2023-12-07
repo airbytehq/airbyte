@@ -31,6 +31,7 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -135,7 +136,7 @@ class PostgresSourceTest {
 
   @BeforeEach
   void setup() {
-    testdb = PostgresTestDatabase.in("postgres:16-bullseye")
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE)
         .with("CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));")
         .with("CREATE INDEX i1 ON id_and_name (id);")
         .with("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'), (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');")
@@ -223,7 +224,7 @@ class PostgresSourceTest {
   public void testCanReadUtf8() throws Exception {
     // force the db server to start with sql_ascii encoding to verify the source can read UTF8 even when
     // default settings are in another encoding
-    try (final var asciiTestDB = PostgresTestDatabase.in("postgres:16-alpine", "withASCII")
+    try (final var asciiTestDB = PostgresTestDatabase.in(BaseImage.POSTGRES_16_ALPINE, "withASCII")
         .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
         .with("INSERT INTO id_and_name (id, name) VALUES (1,E'\\u2013 someutfstring'),  (2, E'\\u2215');")) {
       final var config = asciiTestDB.testConfigBuilder().withSchemas(SCHEMA_NAME).withoutSsl().build();
