@@ -84,7 +84,7 @@ public class OracleStrictEncryptTestDatabase extends
         .with(JdbcUtils.USERNAME_KEY, container.getUsername())
         .with(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .with(JdbcUtils.SCHEMAS_KEY, schemaNames)
-        .with("encryption", Jsons.jsonNode(ImmutableMap.builder()
+        .with(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "client_nne")
             .put("encryption_algorithm", "3DES168")
             .build()));
