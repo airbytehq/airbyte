@@ -4,7 +4,6 @@
 
 import logging
 import sys
-
 from types import TracebackType
 from typing import Any, Optional
 

@@ -26,7 +26,7 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.exception_handler import assemble_uncaught_exception
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.sources import Source
-from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, Level, TraceType, Type, AirbyteStreamStatus
+from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, AirbyteStreamStatus, ConfiguredAirbyteCatalog, Level, TraceType, Type
 from pydantic.error_wrappers import ValidationError
 
 
@@ -81,8 +81,8 @@ class EntrypointOutput:
             lambda message: message.trace.stream_status.status,
             filter(
                 lambda message: message.trace.stream_status.stream_descriptor.name == stream_name,
-                self._get_trace_message_by_trace_type(TraceType.STREAM_STATUS)
-            )
+                self._get_trace_message_by_trace_type(TraceType.STREAM_STATUS),
+            ),
         )
         return list(status_messages)
 
@@ -98,7 +98,7 @@ def read(
     config: Mapping[str, Any],
     catalog: ConfiguredAirbyteCatalog,
     state: Optional[Any] = None,
-    expecting_exception: bool = False
+    expecting_exception: bool = False,
 ) -> EntrypointOutput:
     """
     config and state must be json serializable

@@ -1,16 +1,30 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import json
 import logging
 import os
 from typing import Iterator, List
-
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.sources.abstract_source import AbstractSource
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, AirbyteMessage, Type, AirbyteRecordMessage, AirbyteLogMessage, Level, \
-    AirbyteStateMessage, AirbyteTraceMessage, TraceType, AirbyteAnalyticsTraceMessage, AirbyteErrorTraceMessage, AirbyteStreamStatus, \
-    AirbyteStreamStatusTraceMessage, StreamDescriptor
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_protocol.models import (
+    AirbyteAnalyticsTraceMessage,
+    AirbyteErrorTraceMessage,
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    AirbyteStreamStatus,
+    AirbyteStreamStatusTraceMessage,
+    AirbyteTraceMessage,
+    ConfiguredAirbyteCatalog,
+    Level,
+    StreamDescriptor,
+    TraceType,
+    Type,
+)
 
 _A_RECORD = AirbyteMessage(
     type=Type.RECORD,
