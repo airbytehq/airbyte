@@ -228,59 +228,20 @@ public class DefaultTyperDeduperTest {
    * some records for a stream, we should run T+D for that stream.
    */
   @Test
-  void someRecords() throws Exception {
-    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(false, Optional.empty()));
-    typerDeduper.prepareTables();
-    clearInvocations(destinationHandler);
-
-    typerDeduper.typeAndDedupe(Map.of(
-        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new AtomicLong(1),
-        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(1),
-        new StreamDescriptor().withName("dedup_stream").withNamespace("dedup_ns"), new AtomicLong(1)
-    ));
-
-    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING");
-    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING");
-    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING");
-  }
-
-  /**
-   * Test a typical sync, where the previous sync left no unprocessed raw records. If this sync writes
-   * no records for a stream, we should skip T+D for that stream.
-   */
-  @Test
-  void noRecords() throws Exception {
+  void noUnprocessedRecords() throws Exception {
     when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(false, Optional.empty()));
     typerDeduper.prepareTables();
     clearInvocations(destinationHandler);
 
     typerDeduper.typeAndDedupe(Map.of(
         new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new AtomicLong(0),
-        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(0),
-        new StreamDescriptor().withName("dedup_stream").withNamespace("dedup_ns"), new AtomicLong(0)
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(1)
     ));
 
-    verifyNoInteractions(destinationHandler);
-  }
-
-  /**
-   * Test a sync where the previous sync failed to run T+D for some stream, and this sync also emitted some records
-   */
-  @Test
-  void previousSyncSkippedTypingDeduping() throws Exception {
-    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.parse("2023-01-23T12:34:56Z"))));
-    typerDeduper.prepareTables();
-    clearInvocations(destinationHandler);
-
-    typerDeduper.typeAndDedupe(Map.of(
-        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new AtomicLong(1),
-        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(1),
-        new StreamDescriptor().withName("dedup_stream").withNamespace("dedup_ns"), new AtomicLong(1)
-    ));
-
-    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
-    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
-    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
+    // Only append_stream should be T+D-ed. overwrite_stream has explicitly 0 records, and dedup_stream
+    // is missing from the map, so implicitly has 0 records.
+    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING");
+    verifyNoMoreInteractions(destinationHandler);
   }
 
   /**
@@ -288,15 +249,14 @@ public class DefaultTyperDeduperTest {
    * zero records, it should still run T+D.
    */
   @Test
-  void previousSyncSkippedTypingDedupingAndNoRecords() throws Exception {
+  void unprocessedRecords() throws Exception {
     when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.parse("2023-01-23T12:34:56Z"))));
     typerDeduper.prepareTables();
     clearInvocations(destinationHandler);
 
     typerDeduper.typeAndDedupe(Map.of(
         new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new AtomicLong(0),
-        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(0),
-        new StreamDescriptor().withName("dedup_stream").withNamespace("dedup_ns"), new AtomicLong(0)
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(1)
     ));
 
     verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");

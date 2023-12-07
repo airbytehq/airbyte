@@ -51,6 +51,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   private final Set<StreamDescriptor> streamNames;
   private final FlushFailure flushFailure;
   private final String defaultNamespace;
+  // Note that this map will only be populated for streams with nonzero records.
   private final ConcurrentMap<StreamDescriptor, AtomicLong> recordCounts;
 
   private boolean hasStarted;

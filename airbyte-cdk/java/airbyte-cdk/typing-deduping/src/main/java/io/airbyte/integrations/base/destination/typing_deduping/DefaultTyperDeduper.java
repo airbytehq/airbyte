@@ -248,8 +248,10 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     final Set<CompletableFuture<Optional<Exception>>> typeAndDedupeTasks = new HashSet<>();
     parsedCatalog.streams().stream()
         .filter(streamConfig -> {
-          // If record counts is null, assume that we have nonzero records
-          final boolean nonzeroRecords = recordCounts == null || recordCounts.get(streamConfig.id().asStreamDescriptor()).get() > 0;
+          // If recordCounts is null, assume that we have nonzero records
+          final boolean nonzeroRecords =recordCounts == null
+              // If we don't have an entry in the map, then assume that the stream had 0 records
+              || recordCounts.getOrDefault(streamConfig.id().asStreamDescriptor(), new AtomicLong()).get() > 0;
           final boolean unprocessedRecordsPreexist = initialRawTableStateByStream.get(streamConfig.id()).hasUnprocessedRecords();
           // If this sync emitted records, or the previous sync left behind some unprocessed records,
           // then the raw table has some unprocessed records right now.
