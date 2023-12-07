@@ -175,7 +175,7 @@
       }
     },
     "teamsNames": {
-        "type": ["null", "string"]
+      "type": ["null", "string"]
     },
     "taskListName": {
       "type": ["null", "string"]
