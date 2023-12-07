@@ -117,20 +117,6 @@ externalDatabase:
 
 The optional `jdbcUrl` field should be entered in the following format: `jdbc:postgresql://localhost:5432/db-airbyte`. We recommend against using this unless you need to add additional extra arguments can be passed to the JDBC driver at this time (e.g. to handle SSL).
 
-3. Finally, add this configuration into the `global` section of the `charts/airbyte/values.yaml` as well:
-
-```yaml
-global:
-  ...
-  database:
-    secretName: "airbyte-enterprise-airbyte-secrets" ## The name of the existing Kubernetes secret entered above.
-    secretValue: "DATABASE_PASSWORD" ## The Kubernetes secret key entered above.
-    host: "localhost" ## Database host entered above.
-    port: "5432" ## Database port entered above.
-```
-
-If you've used `password` or `jdbcUrl` above instead using a pre-existing Kubernetes secret, then your `secretName` will be `{release-name}-airbyte-secrets`, and `secretValue` will be `DATABASE_PASSWORD`.
-
 #### Configuring External Logging
 
 For Self-Managed Enterprise deployments, we advise against using the default Minio storage (`airbyte/minio`) that Airbyte spins up within the Kubernetes cluster. For production, we recommend spinning up standalone log storage for additional reliability using tools such as S3 and GCS. It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
