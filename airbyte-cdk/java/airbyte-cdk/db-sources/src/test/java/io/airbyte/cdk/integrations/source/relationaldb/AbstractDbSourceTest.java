@@ -10,7 +10,6 @@ import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -78,7 +77,7 @@ public class AbstractDbSourceTest {
     final AbstractDbSource dbSource = spy(AbstractDbSource.class);
     final JsonNode config = mock(JsonNode.class);
 
-    final List<AirbyteStateMessage> result = StateGeneratorUtils.deserializeInitialState(null, false, dbSource.getSupportedStateType(config));
+    final List<AirbyteStateMessage> result = StateGeneratorUtils.deserializeInitialState(null, dbSource.getSupportedStateType(config));
     assertEquals(1, result.size());
     assertEquals(dbSource.getSupportedStateType(config), result.get(0).getType());
   }
