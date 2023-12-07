@@ -79,6 +79,10 @@ public class OracleTestDatabase extends
                 .with(JdbcUtils.SCHEMAS_KEY, schemaNames);
     }
 
+    @Override
+    public void close() {
+    }
+
     static public class OracleDbConfigBuilder extends TestDatabase.ConfigBuilder<OracleTestDatabase, OracleDbConfigBuilder> {
 
         protected OracleDbConfigBuilder(final OracleTestDatabase testdb) {

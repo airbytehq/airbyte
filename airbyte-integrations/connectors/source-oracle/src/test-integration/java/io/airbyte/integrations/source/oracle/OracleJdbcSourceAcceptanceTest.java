@@ -66,7 +66,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<OracleSour
           .withUsername("TEST_ORA")
           .withPassword("oracle")
           .usingSid()
-          .withEnv("RELAX_SECURITY", "1");;
+          .withEnv("RELAX_SECURITY", "1");
 
   @BeforeAll
   static void init() {
@@ -140,29 +140,16 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<OracleSour
   }
 
   @Override
-  public void customSetup() {
-    try {
-      if (testdb != null) {
-        cleanUpTables();
-      }
-    } catch (final SQLException e) {
-      throw new RuntimeException(e);
-    }
+  protected void dropSchemas() {
+    // ORACLE doesn't have DROP SCHEMA query
   }
 
   @Override
   protected void customCleanUp() {
     try {
-      // ORA-12519
-      // https://stackoverflow.com/questions/205160/what-can-cause-intermittent-ora-12519-tns-no-appropriate-handler-found-errors
-      // sleep for 1000
-      executeOracleStatement(String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME)));
-      executeOracleStatement(
-              String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_PK)));
-      executeOracleStatement(
-              String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
+      cleanUpTables();
       Thread.sleep(1000);
-    } catch (final InterruptedException e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
