@@ -249,9 +249,12 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     parsedCatalog.streams().stream()
         .filter(streamConfig -> {
           // If record counts is null, assume that we have nonzero records
-          final boolean unskippableBecauseNonzeroRecords = recordCounts == null || recordCounts.get(streamConfig.id().asStreamDescriptor()).get() > 0;
-          final boolean unskippableBecausePreexistingUnprocessedRecords = initialRawTableStateByStream.get(streamConfig.id()).hasUnprocessedRecords();
-          return unskippableBecauseNonzeroRecords || unskippableBecausePreexistingUnprocessedRecords;
+          final boolean nonzeroRecords = recordCounts == null || recordCounts.get(streamConfig.id().asStreamDescriptor()).get() > 0;
+          final boolean unprocessedRecordsPreexist = initialRawTableStateByStream.get(streamConfig.id()).hasUnprocessedRecords();
+          // If this sync emitted records, or the previous sync left behind some unprocessed records,
+          // then the raw table has some unprocessed records right now.
+          // Run T+D if either of those conditions are true.
+          return nonzeroRecords || unprocessedRecordsPreexist;
         }).forEach(streamConfig -> typeAndDedupeTasks.add(typeAndDedupeTask(streamConfig, true)));
     CompletableFuture.allOf(typeAndDedupeTasks.toArray(CompletableFuture[]::new)).join();
     reduceExceptions(typeAndDedupeTasks, "The Following Exceptions were thrown while typing and deduping tables:\n");

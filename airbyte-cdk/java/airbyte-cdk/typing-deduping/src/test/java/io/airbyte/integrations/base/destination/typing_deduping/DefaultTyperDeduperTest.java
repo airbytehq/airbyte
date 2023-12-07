@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.ignoreStubs;
@@ -18,11 +19,16 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatcher;
+import org.mockito.ArgumentMatchers;
 
 public class DefaultTyperDeduperTest {
 
@@ -215,6 +221,87 @@ public class DefaultTyperDeduperTest {
     typerDeduper.commitFinalTables();
 
     verifyNoInteractions(ignoreStubs(destinationHandler));
+  }
+
+  /**
+   * Test a typical sync, where the previous sync left no unprocessed raw records. If this sync writes
+   * some records for a stream, we should run T+D for that stream.
+   */
+  @Test
+  void someRecords() throws Exception {
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(false, Optional.empty()));
+    typerDeduper.prepareTables();
+    clearInvocations(destinationHandler);
+
+    typerDeduper.typeAndDedupe(Map.of(
+        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new AtomicLong(1),
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(1),
+        new StreamDescriptor().withName("dedup_stream").withNamespace("dedup_ns"), new AtomicLong(1)
+    ));
+
+    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING");
+    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING");
+    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING");
+  }
+
+  /**
+   * Test a typical sync, where the previous sync left no unprocessed raw records. If this sync writes
+   * no records for a stream, we should skip T+D for that stream.
+   */
+  @Test
+  void noRecords() throws Exception {
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(false, Optional.empty()));
+    typerDeduper.prepareTables();
+    clearInvocations(destinationHandler);
+
+    typerDeduper.typeAndDedupe(Map.of(
+        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new AtomicLong(0),
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(0),
+        new StreamDescriptor().withName("dedup_stream").withNamespace("dedup_ns"), new AtomicLong(0)
+    ));
+
+    verifyNoInteractions(destinationHandler);
+  }
+
+  /**
+   * Test a sync where the previous sync failed to run T+D for some stream, and this sync also emitted some records
+   */
+  @Test
+  void previousSyncSkippedTypingDeduping() throws Exception {
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.parse("2023-01-23T12:34:56Z"))));
+    typerDeduper.prepareTables();
+    clearInvocations(destinationHandler);
+
+    typerDeduper.typeAndDedupe(Map.of(
+        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new AtomicLong(1),
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(1),
+        new StreamDescriptor().withName("dedup_stream").withNamespace("dedup_ns"), new AtomicLong(1)
+    ));
+
+    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
+    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
+    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
+  }
+
+  /**
+   * Test a sync where the previous sync failed to run T+D for some stream. Even if this sync writes
+   * zero records, it should still run T+D.
+   */
+  @Test
+  void previousSyncSkippedTypingDedupingAndNoRecords() throws Exception {
+    when(destinationHandler.getInitialRawTableState(any())).thenReturn(new DestinationHandler.InitialRawTableState(true, Optional.of(Instant.parse("2023-01-23T12:34:56Z"))));
+    typerDeduper.prepareTables();
+    clearInvocations(destinationHandler);
+
+    typerDeduper.typeAndDedupe(Map.of(
+        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new AtomicLong(0),
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(0),
+        new StreamDescriptor().withName("dedup_stream").withNamespace("dedup_ns"), new AtomicLong(0)
+    ));
+
+    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
+    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
+    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
   }
 
 }
