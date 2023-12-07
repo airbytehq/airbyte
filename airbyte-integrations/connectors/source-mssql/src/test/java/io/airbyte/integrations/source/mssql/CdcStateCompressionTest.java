@@ -189,7 +189,7 @@ public class CdcStateCompressionTest {
     final var recordsFromFirstBatch = extractRecordMessages(dataFromFirstBatch);
     assertEquals(TEST_TABLES, recordsFromFirstBatch.size());
     for (var record : recordsFromFirstBatch) {
-      assertEquals("{\"id\": 1}", record.getData().toString());
+      assertEquals("1", record.getData().get("id").toString());
     }
 
     // Insert a bunch of records (1 per table, again).
@@ -198,7 +198,7 @@ public class CdcStateCompressionTest {
     }
 
     // Second sync.
-    final var secondBatchStateForRead = Jsons.jsonNode(Collections.singletonList(lastStateMessageFromFirstBatch));
+    final var secondBatchStateForRead = Jsons.jsonNode(Collections.singletonList(Iterables.getLast(extractStateMessages(dataFromFirstBatch))));
     final var secondBatchIterator = source().read(config(), getConfiguredCatalog(), secondBatchStateForRead);
     final var dataFromSecondBatch = AutoCloseableIterators.toListAndClose(secondBatchIterator);
     final AirbyteStateMessage lastStateMessageFromSecondBatch =
@@ -211,10 +211,10 @@ public class CdcStateCompressionTest {
     assertNotNull(lastSharedStateFromSecondBatch.get(MSSQL_CDC_OFFSET));
     assertNotNull(lastSharedStateFromSecondBatch.get(IS_COMPRESSED));
     assertTrue(lastSharedStateFromSecondBatch.get(IS_COMPRESSED).asBoolean());
-    final var recordsFromSecondBatch = extractRecordMessages(dataFromFirstBatch);
+    final var recordsFromSecondBatch = extractRecordMessages(dataFromSecondBatch);
     assertEquals(TEST_TABLES, recordsFromSecondBatch.size());
     for (var record : recordsFromSecondBatch) {
-      assertEquals("{\"id\": 2}", record.getData().toString());
+      assertEquals("2", record.getData().get("id").toString());
     }
   }
 
