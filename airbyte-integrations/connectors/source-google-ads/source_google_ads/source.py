@@ -16,6 +16,7 @@ from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import CustomerModel
 from .streams import (
+    AccessibleBiddingStrategy,
     AccountPerformanceReport,
     AdGroup,
     AdGroupAd,
@@ -27,6 +28,7 @@ from .streams import (
     AdGroupLabel,
     AdListingGroupCriterion,
     Audience,
+    BiddingStrategy,
     Campaign,
     CampaignBiddingStrategy,
     CampaignBudget,
@@ -40,11 +42,12 @@ from .streams import (
     GeographicView,
     KeywordView,
     Label,
+    LeadFormSubmissionData,
     ServiceAccounts,
     ShoppingPerformanceView,
     TopicView,
     UserInterest,
-    UserLocationView,
+    UserLocationView
 )
 from .utils import GAQL
 
@@ -213,6 +216,8 @@ class SourceGoogleAds(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        print('HELLO')
+        print()
         config = self._validate_and_transform(config)
         google_api = GoogleAds(credentials=self.get_credentials(config))
 
@@ -223,7 +228,10 @@ class SourceGoogleAds(AbstractSource):
         default_config = dict(api=google_api, customers=customers)
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
+
+
         streams = [
+            AccessibleBiddingStrategy(**default_config),
             AdGroup(**incremental_config),
             AdGroupAd(**incremental_config),
             AdGroupAdLabel(**default_config),
@@ -233,6 +241,7 @@ class SourceGoogleAds(AbstractSource):
             AdGroupLabel(**default_config),
             AdListingGroupCriterion(**default_config),
             Audience(**default_config),
+            BiddingStrategy(**default_config),
             CampaignBiddingStrategy(**incremental_config),
             CampaignCriterion(**default_config),
             CampaignLabel(google_api, customers=customers),
@@ -240,7 +249,8 @@ class SourceGoogleAds(AbstractSource):
             Customer(**incremental_config),
             CustomerLabel(**default_config),
             Label(**default_config),
-            UserInterest(**default_config),
+            LeadFormSubmissionData(**incremental_config),
+            UserInterest(**default_config)
         ]
         # Metrics streams cannot be requested for a manager account.
         if non_manager_accounts:
