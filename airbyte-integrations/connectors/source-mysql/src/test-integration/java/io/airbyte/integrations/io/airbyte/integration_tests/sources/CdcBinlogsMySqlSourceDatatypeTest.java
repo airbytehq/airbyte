@@ -12,6 +12,7 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -38,7 +39,7 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
 
   @Override
   protected Database setupDatabase() {
-    testdb = MySQLTestDatabase.in("mysql:8.0").withoutStrictMode().withCdcPermissions();
+    testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8).withoutStrictMode().withCdcPermissions();
     return testdb.getDatabase();
   }
 

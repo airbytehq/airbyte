@@ -9,6 +9,7 @@ import io.airbyte.cdk.db.Database;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
 
 public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
 
@@ -28,7 +29,7 @@ public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSour
 
   @Override
   protected Database setupDatabase() {
-    testdb = MySQLTestDatabase.in("mysql:8.0").withoutStrictMode().withCdcPermissions();
+    testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8).withoutStrictMode().withCdcPermissions();
     return testdb.getDatabase();
   }
 
