@@ -24,7 +24,7 @@ tiktoken_dependency = "tiktoken==0.4.0"
 
 unstructured_dependencies = [
     "unstructured==0.10.27",  # can't be bumped higher due to transitive dependencies we can't provide
-    "unstructured[docx,pptx]==0.10.27",
+    "unstructured[docx,pptx,doc,odt]==0.10.27",
     "pdf2image==1.16.3",
     "pdfminer.six==20221105",
     "unstructured.pytesseract>=0.3.12",
