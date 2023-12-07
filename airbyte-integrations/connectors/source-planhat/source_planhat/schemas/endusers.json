@@ -110,6 +110,12 @@
         "object",
         "null"
       ]
+    },
+    "custom": {
+      "type": [
+        "object",
+        "null"
+      ]
     }
   }
 }
