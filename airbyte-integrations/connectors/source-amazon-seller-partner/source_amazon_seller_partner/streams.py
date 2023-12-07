@@ -39,9 +39,8 @@ class AmazonSPStream(HttpStream, ABC):
         replication_start_date: str,
         marketplace_id: str,
         period_in_days: Optional[int],
-        report_options: Optional[str],
-        advanced_stream_options: Optional[str],
         replication_end_date: Optional[str],
+        report_options: Optional[List[Mapping[str, Any]]] = None,
         *args,
         **kwargs,
     ):
@@ -165,9 +164,8 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         replication_start_date: str,
         marketplace_id: str,
         period_in_days: Optional[int],
-        report_options: Optional[str],
         replication_end_date: Optional[str],
-        advanced_stream_options: Optional[str],
+        report_options: Optional[List[Mapping[str, Any]]] = None,
         *args,
         **kwargs,
     ):
@@ -177,11 +175,8 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self._replication_end_date = replication_end_date
         self.marketplace_id = marketplace_id
         self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work as well
-        self._report_options = report_options or "{}"
-        self._advanced_stream_options = dict()
+        self._report_options = report_options
         self._http_method = "GET"
-        if advanced_stream_options is not None:
-            self._advanced_stream_options = json_lib.loads(advanced_stream_options)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -274,17 +269,14 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     def parse_document(self, document):
         return csv.DictReader(StringIO(document), delimiter="\t")
 
-    def report_options(self) -> Mapping[str, Any]:
-        if self._report_options is not None:
-            return json_lib.loads(self._report_options).get(self.name)
-        else:
-            return {}
+    def report_options(self) -> Optional[Mapping[str, Any]]:
+        return {option.get("option_name"): option.get("option_value") for option in self._report_options} if self._report_options else None
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
-        end_date = pendulum.now()
+        end_date = pendulum.now("utc")
         if self._replication_end_date:
             # if replication_start_date is older than 90 days(from current date), we are overriding the value above.
             # when replication_end_date is present, we should use the user provided replication_start_date.
@@ -324,7 +316,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         try:
             report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
         except DefaultBackoffException as e:
-            logger.warn(f"The report for stream '{self.name}' was cancelled due to several failed retry attempts. {e}")
+            logger.warning(f"The report for stream '{self.name}' was cancelled due to several failed retry attempts. {e}")
             return []
 
         # create and retrieve the report
@@ -354,9 +346,9 @@ class ReportsAmazonSPStream(HttpStream, ABC):
                     record["dataEndTime"] = report_end_date.strftime(DATE_FORMAT)
                 yield record
         elif is_fatal:
-            raise AirbyteTracedException(f"The report for stream '{self.name}' was not created - skip reading")
+            raise AirbyteTracedException(message=f"The report for stream '{self.name}' was not created - skip reading")
         elif is_cancelled:
-            logger.warn(f"The report for stream '{self.name}' was cancelled or there is no data to return")
+            logger.warning(f"The report for stream '{self.name}' was cancelled or there is no data to return")
         else:
             raise Exception(f"Unknown response for stream `{self.name}`. Response body {report_payload}")
 
@@ -576,10 +568,9 @@ class AnalyticsStream(ReportsAmazonSPStream):
         data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
         options = self.report_options()
         if options and options.get("reportPeriod") is not None:
-            data.update(self._augmented_data(self, options))
+            data.update(self._augmented_data(options))
         return data
 
-    @staticmethod
     def _augmented_data(self, report_options) -> Mapping[str, Any]:
         now = pendulum.now("utc")
         if report_options["reportPeriod"] == "DAY":
@@ -966,7 +957,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         start_date = pendulum.parse(self._replication_start_date)
-        end_date = pendulum.now().subtract(days=self.availability_sla_days)
+        end_date = pendulum.now("utc").subtract(days=self.availability_sla_days)
 
         if self._replication_end_date:
             end_date = pendulum.parse(self._replication_end_date)
@@ -1006,15 +997,6 @@ class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
     result_key = "salesAndTrafficByAsin"
     cursor_field = "queryEndDate"
     fixed_period_in_days = 1
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        if self.name in self._advanced_stream_options.keys():
-            _options: dict = self._advanced_stream_options[self.name]
-            if isinstance(_options, dict):
-                for _option_attr, _option_val in _options.items():
-                    setattr(self, _option_attr, _option_val)
 
 
 class VendorSalesReports(IncrementalAnalyticsStream):

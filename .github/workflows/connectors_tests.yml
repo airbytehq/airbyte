@@ -20,6 +20,10 @@ on:
       runner:
         description: "The runner to use for this job"
         default: "ci-runner-connector-test-large-dagger-0-6-4"
+      airbyte_ci_binary_url:
+        description: "The URL to download the airbyte-ci binary from"
+        required: false
+        default: https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci
   pull_request:
     types:
       - opened
@@ -66,6 +70,8 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
+          airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
       - name: Test connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         uses: ./.github/actions/run-dagger-pipeline
@@ -80,4 +86,5 @@ jobs:
           github_token: ${{ env.PAT }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
           subcommand: "connectors --modified test"
