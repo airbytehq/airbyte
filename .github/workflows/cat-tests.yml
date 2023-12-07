@@ -16,7 +16,7 @@ on:
 jobs:
   run-cat-unit-tests:
     name: Run CAT unit tests
-    runs-on: "conn-prod-xlarge-runner"
+    runs-on: "ci-runner-connector-test-large-dagger-0-6-4"
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -32,3 +32,4 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-integrations/bases/connector-acceptance-test --test-directory=unit_tests"
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}

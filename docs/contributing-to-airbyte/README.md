@@ -8,7 +8,7 @@ Thank you for your interest in contributing! We love community contributions.
 Read on to learn how to contribute to Airbyte.
 We appreciate first time contributors and we are happy to assist you in getting started. In case of questions, just reach out to us via [email](mailto:hey@airbyte.io) or [Slack](https://slack.airbyte.io)!
 
-Before getting started, please review Airbyte's Code of Conduct. Everyone interacting in Slack, codebases, mailing lists, events, or other Airbyte activities is expected to follow [Code of Conduct](../project-overview/code-of-conduct.md).
+Before getting started, please review Airbyte's Code of Conduct. Everyone interacting in Slack, codebases, mailing lists, events, or other Airbyte activities is expected to follow [Code of Conduct](../community/code-of-conduct.md).
 
 ## Code Contributions
 
@@ -25,6 +25,12 @@ We are prioritizing the following contributions:
 * Bug fixes, features, and enhancements to the following database sources: Postgres, MySQL, MSSQL
 * Bug fixes to the following destinations: BigQuery, Snowflake, Redshift, S3, and Postgres
 * Helm Charts features, bug fixes, and other platform bug fixes
+
+:::warning
+Airbyte is undergoing a major revamp of the shared core Java destinations codebase, with plans to release a new CDK in 2024.
+We are actively working on improving usability, speed (through asynchronous loading), and implementing [Typing and Deduplication](/using-airbyte/core-concepts/typing-deduping) (Destinations V2).
+For this reason, Airbyte is not reviewing/accepting new Java connectors for now.
+:::
 
 
 :::warning

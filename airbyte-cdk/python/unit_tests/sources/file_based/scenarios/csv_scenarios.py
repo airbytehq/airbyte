@@ -76,6 +76,8 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                     "description": 'The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href="https://en.wikipedia.org/wiki/Glob_(programming)">here</a>.',
                                     "type": "array",
                                     "items": {"type": "string"},
+                                    "order": 1,
+                                    "default": ["**"],
                                 },
                                 "legacy_prefix": {
                                     "title": "Legacy Prefix",
@@ -98,6 +100,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                     "title": "Primary Key",
                                     "description": "The column or columns (for a composite key) that serves as the unique identifier of a record.",
                                     "type": "string",
+                                    "airbyte_hidden": True,
                                 },
                                 "days_to_sync_if_history_is_full": {
                                     "title": "Days To Sync If History Is Full",

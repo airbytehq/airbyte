@@ -5,18 +5,10 @@
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DataSourceFactory;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -26,32 +18,15 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
-import java.util.Map;
-import org.jooq.DSLContext;
-import org.junit.jupiter.api.AfterAll;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String SCHEMA_NAME = "dbo";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
-  private static final String TEST_USER_PASSWORD = "testerjester[1]";
   private static final String CDC_ROLE_NAME = "cdc_selector";
-  public static MSSQLServerContainer<?> container;
-  private String dbName;
-  private String testUserName;
-  private JsonNode config;
-  private Database database;
-  private DSLContext dslContext;
 
-  @AfterAll
-  public static void closeContainer() {
-    if (container != null) {
-      container.close();
-      container.stop();
-    }
-  }
+  private MsSQLTestDatabase testdb;
 
   @Override
   protected String getImageName() {
@@ -65,7 +40,10 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-    return config;
+    return testdb.integrationTestConfigBuilder()
+        .withCdcReplication()
+        .withoutSsl()
+        .build();
   }
 
   @Override
@@ -103,123 +81,40 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws InterruptedException {
-    if (container == null) {
-      container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
-      container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
-      container.start();
-    }
-
-    dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
-    testUserName = Strings.addRandomSuffix("test", "_", 5).toLowerCase();
-
-    final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
-        "method", "CDC",
-        "data_to_sync", "Existing and New",
-        "initial_waiting_seconds", 5,
-        "snapshot_isolation", "Snapshot"));
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-        .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put(JdbcUtils.USERNAME_KEY, testUserName)
-        .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
-        .put("replication_method", replicationConfig)
-        .put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")))
-        .build());
-
-    dslContext = DSLContextFactory.create(DataSourceFactory.create(
-        container.getUsername(),
-        container.getPassword(),
-        container.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d;",
-            container.getHost(),
-            container.getFirstMappedPort()),
-        Map.of("encrypt", "false")), null);
-    database = new Database(dslContext);
-
-    executeQuery("CREATE DATABASE " + dbName + ";");
-    executeQuery("ALTER DATABASE " + dbName + "\n\tSET ALLOW_SNAPSHOT_ISOLATION ON");
-    executeQuery("USE " + dbName + "\n" + "EXEC sys.sp_cdc_enable_db");
-
-    setupTestUser();
-    revokeAllPermissions();
-    createAndPopulateTables();
-    grantCorrectPermissions();
-  }
-
-  private void setupTestUser() {
-    executeQuery("USE " + dbName);
-    executeQuery("CREATE LOGIN " + testUserName + " WITH PASSWORD = '" + TEST_USER_PASSWORD + "';");
-    executeQuery("CREATE USER " + testUserName + " FOR LOGIN " + testUserName + ";");
-  }
-
-  private void revokeAllPermissions() {
-    executeQuery("REVOKE ALL FROM " + testUserName + " CASCADE;");
-    executeQuery("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO " + testUserName + ";\"");
-  }
-
-  private void createAndPopulateTables() throws InterruptedException {
-    executeQuery(String.format("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));",
-        SCHEMA_NAME, STREAM_NAME));
-    executeQuery(String.format("INSERT INTO %s.%s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');",
-        SCHEMA_NAME, STREAM_NAME));
-    executeQuery(String.format("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));",
-        SCHEMA_NAME, STREAM_NAME2));
-    executeQuery(String.format("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');",
-        SCHEMA_NAME, STREAM_NAME2));
-
-    // sometimes seeing an error that we can't enable cdc on a table while sql server agent is still
-    // spinning up
-    // solving with a simple while retry loop
-    boolean failingToStart = true;
-    int retryNum = 0;
-    final int maxRetries = 10;
-    while (failingToStart) {
-      try {
-        // enabling CDC on each table
-        final String[] tables = {STREAM_NAME, STREAM_NAME2};
-        for (final String table : tables) {
-          executeQuery(String.format(
-              "EXEC sys.sp_cdc_enable_table\n"
-                  + "\t@source_schema = N'%s',\n"
-                  + "\t@source_name   = N'%s', \n"
-                  + "\t@role_name     = N'%s',\n"
-                  + "\t@supports_net_changes = 0",
-              SCHEMA_NAME, table, CDC_ROLE_NAME));
-        }
-        failingToStart = false;
-      } catch (final Exception e) {
-        if (retryNum >= maxRetries) {
-          throw e;
-        } else {
-          retryNum++;
-          Thread.sleep(10000); // 10 seconds
-        }
-      }
-    }
-  }
-
-  private void grantCorrectPermissions() {
-    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", "db_datareader", testUserName));
-    executeQuery(String.format("USE %s;\n" + "GRANT SELECT ON SCHEMA :: [%s] TO %s", dbName, "cdc", testUserName));
-    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testUserName));
-  }
-
-  private void executeQuery(final String query) {
-    try {
-      database.query(
-          ctx -> ctx
-              .execute(query));
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
-    }
+  protected void setupEnvironment(final TestDestinationEnv environment) {
+    testdb = MsSQLTestDatabase.in("mcr.microsoft.com/mssql/server:2022-latest", "withAgent");
+    final var enableCdcSqlFmt = """
+                                EXEC sys.sp_cdc_enable_table
+                                \t@source_schema = N'%s',
+                                \t@source_name   = N'%s',
+                                \t@role_name     = N'%s',
+                                \t@supports_net_changes = 0""";
+    testdb
+        .withSnapshotIsolation()
+        .withCdc()
+        .withWaitUntilAgentRunning()
+        // create tables
+        .with("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));", SCHEMA_NAME, STREAM_NAME)
+        .with("CREATE TABLE %s.%s(id INTEGER PRIMARY KEY, name VARCHAR(200));", SCHEMA_NAME, STREAM_NAME2)
+        // populate tables
+        .with("INSERT INTO %s.%s (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');", SCHEMA_NAME, STREAM_NAME)
+        .with("INSERT INTO %s.%s (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');", SCHEMA_NAME, STREAM_NAME2)
+        // enable cdc on tables for designated role
+        .with(enableCdcSqlFmt, SCHEMA_NAME, STREAM_NAME, CDC_ROLE_NAME)
+        .with(enableCdcSqlFmt, SCHEMA_NAME, STREAM_NAME2, CDC_ROLE_NAME)
+        .withWaitUntilMaxLsnAvailable()
+        // revoke user permissions
+        .with("REVOKE ALL FROM %s CASCADE;", testdb.getUserName())
+        .with("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO %s;\"", testdb.getUserName())
+        // grant user permissions
+        .with("EXEC sp_addrolemember N'%s', N'%s';", "db_datareader", testdb.getUserName())
+        .with("GRANT SELECT ON SCHEMA :: [cdc] TO %s", testdb.getUserName())
+        .with("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testdb.getUserName());
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
+    testdb.close();
   }
 
 }

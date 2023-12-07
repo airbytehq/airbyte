@@ -23,8 +23,8 @@ cohere_dependency = "cohere==4.21"
 tiktoken_dependency = "tiktoken==0.4.0"
 
 unstructured_dependencies = [
-    "unstructured==0.10.19",
-    "unstructured[docx,pptx]==0.10.19",
+    "unstructured==0.10.27",  # can't be bumped higher due to transitive dependencies we can't provide
+    "unstructured[docx,pptx]==0.10.27",
     "pdf2image==1.16.3",
     "pdfminer.six==20221105",
     "unstructured.pytesseract>=0.3.12",
@@ -36,7 +36,7 @@ setup(
     name="airbyte-cdk",
     # The version of the airbyte-cdk package is used at runtime to validate manifests. That validation must be
     # updated if our semver format changes such as using release candidate versions.
-    version="0.53.4",
+    version="0.55.5",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
