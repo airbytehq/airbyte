@@ -12,7 +12,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.utils import AirbyteTracedException
 
 from .availability_strategy import KlaviyoAvailabilityStrategy
 from .exceptions import KlaviyoBackoffError
@@ -319,16 +318,3 @@ class EmailTemplates(IncrementalKlaviyoStream):
 
     def path(self, **kwargs) -> str:
         return "templates"
-
-
-class BadEvents(IncrementalKlaviyoStream):
-    """WARNING: Just for testing a fix do not merge"""
-
-    cursor_field = "datetime"
-    state_checkpoint_interval = 200  # API can return maximum 200 records per page
-
-    def path(self, **kwargs) -> str:
-        return "events"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        raise AirbyteTracedException(message="failed response", internal_message="failed response")
