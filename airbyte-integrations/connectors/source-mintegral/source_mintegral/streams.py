@@ -25,6 +25,7 @@ class MintegralStream(HttpStream, ABC):
 
         return {
             "limit": self.page_size,
+            "ext_fields": "creatives",
             "page": next_page
         }
 
@@ -38,7 +39,8 @@ class MintegralStream(HttpStream, ABC):
             return next_page_token
         else:
             return {
-                "limit": self.page_size
+                "limit": self.page_size,
+                "ext_fields": "creatives"
             }
 
 

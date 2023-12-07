@@ -51,7 +51,6 @@ class SourceMintegral(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         headers = self.auth_headers(config)
-        print(headers)
         authenticator = HeaderAuthenticator(headers)
 
         args = {
