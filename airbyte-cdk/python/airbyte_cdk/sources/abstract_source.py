@@ -19,7 +19,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
-from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import StreamData
@@ -30,6 +30,8 @@ from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+_default_message_repository = InMemoryMessageRepository()
 
 
 class AbstractSource(Source, ABC):
@@ -269,4 +271,4 @@ class AbstractSource(Source, ABC):
 
     @property
     def message_repository(self) -> Union[None, MessageRepository]:
-        return None
+        return _default_message_repository
