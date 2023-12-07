@@ -63,6 +63,8 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 * [Incidents](https://docs.datadoghq.com/api/latest/incidents/#get-a-list-of-incidents)
 * [Logs](https://docs.datadoghq.com/api/latest/logs/#search-logs)
 * [Metrics](https://docs.datadoghq.com/api/latest/metrics/#get-a-list-of-metrics)
+* [Monitors](https://docs.datadoghq.com/api/latest/monitors/#get-all-monitor-details)
+* [ServiceLevelObjectives](https://docs.datadoghq.com/api/latest/service-level-objectives/#get-all-slos)
 * [SyntheticTests](https://docs.datadoghq.com/api/latest/synthetics/#get-the-list-of-all-tests)
 * [Users](https://docs.datadoghq.com/api/latest/users/#list-all-users)
 * [Series](https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products)
@@ -71,6 +73,7 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                              | Subject                                                                      |
 |:--------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 0.4.0   | 2023-12-04 | [30999](https://github.com/airbytehq/airbyte/pull/30999)  | Add `monitors` and `service_level_objectives` Streams |
 | 0.3.0   | 2023-08-27 | [29885](https://github.com/airbytehq/airbyte/pull/29885)  | Migrate to low code                                                          |
 | 0.2.2   | 2023-07-10 | [28089](https://github.com/airbytehq/airbyte/pull/28089)  | Additional stream and query details in response                              |
 | 0.2.1   | 2023-06-28 | [26534](https://github.com/airbytehq/airbyte/pull/26534)  | Support multiple query streams and pulling data from different datadog sites |

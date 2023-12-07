@@ -16,13 +16,7 @@ from pipelines.airbyte_ci.format.containers import (
 )
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.helpers.cli import (
-    LogOptions,
-    get_all_sibling_commands,
-    invoke_commands_concurrently,
-    invoke_commands_sequentially,
-    log_command_results,
-)
+from pipelines.helpers.cli import LogOptions, invoke_commands_concurrently, invoke_commands_sequentially, log_command_results
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 from pipelines.models.steps import CommandResult, StepStatus
 
@@ -90,10 +84,10 @@ async def all_fix(ctx: click.Context):
 @pass_pipeline_context
 @click_ignore_unused_kwargs
 async def java(ctx: ClickPipelineContext) -> CommandResult:
-    """Format java, groovy, and sql code via spotless."""
+    """Format java and groovy code via spotless in maven."""
     dagger_client = await ctx.get_dagger_client(pipeline_name="Format java")
     container = format_java_container(dagger_client)
-    format_commands = ["./gradlew spotlessApply --scan"]
+    format_commands = ["mvn -f spotless-maven-pom.xml spotless:apply clean"]
     return await get_format_command_result(fix.commands["java"], container, format_commands)
 
 
@@ -127,7 +121,6 @@ async def python(ctx: ClickPipelineContext) -> CommandResult:
     dagger_client = await ctx.get_dagger_client(pipeline_name="Format python")
     container = format_python_container(dagger_client)
     format_commands = [
-        "poetry install --no-root",
         "poetry run isort --settings-file pyproject.toml .",
         "poetry run black --config pyproject.toml .",
     ]
