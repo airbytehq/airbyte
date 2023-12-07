@@ -4,12 +4,10 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
-import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.debezium.CdcStateHandler;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
+import io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
@@ -21,6 +19,11 @@ import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlCdcStateConstants.COMPRESSION_ENABLED;
+import static io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlCdcStateConstants.IS_COMPRESSED;
+import static io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlCdcStateConstants.MSSQL_CDC_OFFSET;
+import static io.airbyte.cdk.integrations.debezium.internals.mssql.MssqlCdcStateConstants.MSSQL_DB_HISTORY;
 
 public class MssqlCdcStateHandler implements CdcStateHandler {
 
@@ -36,6 +39,7 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
     final Map<String, Object> state = new HashMap<>();
     state.put(MSSQL_CDC_OFFSET, offset);
     state.put(MSSQL_DB_HISTORY, dbHistory.schema());
+    state.put(IS_COMPRESSED, dbHistory.isCompressed());
 
     final JsonNode asJson = Jsons.jsonNode(state);
 
@@ -56,4 +60,8 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
     throw new RuntimeException("Snapshot of individual tables is not implemented in MSSQL");
   }
 
+  @Override
+  public boolean compressSchemaHistoryForState() {
+    return COMPRESSION_ENABLED;
+  }
 }
