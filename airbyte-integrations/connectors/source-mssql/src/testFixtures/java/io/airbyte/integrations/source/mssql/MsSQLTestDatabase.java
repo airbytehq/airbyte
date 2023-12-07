@@ -44,7 +44,8 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   public static enum ContainerModifier {
 
     NETWORK("withNetwork"),
-    AGENT("withAgent");
+    AGENT("withAgent"),
+    WITH_SSL_CERTIFICATES("withSslCertificates");
 
     private final String methodName;
 
@@ -273,9 +274,24 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
       return withSsl(Map.of("ssl_method", "unencrypted"));
     }
 
-    @Override
+    @Deprecated
     public MsSQLConfigBuilder withSsl(Map<Object, Object> sslMode) {
       return with("ssl_method", sslMode);
+    }
+
+    public MsSQLConfigBuilder withEncrytedTrustServerCertificate() {
+      return withSsl(Map.of("ssl_method", "encrypted_trust_server_certificate"));
+    }
+
+    public MsSQLConfigBuilder withEncrytedVerifyServerCertificate(String certificate, String hostnameInCertificate) {
+      if (hostnameInCertificate != null) {
+        return withSsl(Map.of("ssl_method", "encrypted_verify_certificate",
+            "certificate", certificate,
+            "hostNameInCertificate", hostnameInCertificate));
+      } else {
+        return withSsl(Map.of("ssl_method", "encrypted_verify_certificate",
+            "certificate", certificate));
+      }
     }
 
   }

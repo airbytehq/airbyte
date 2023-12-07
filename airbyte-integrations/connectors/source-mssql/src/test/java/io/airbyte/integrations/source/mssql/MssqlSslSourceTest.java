@@ -15,7 +15,6 @@ import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.CertificateKey;
 import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import java.net.InetAddress;
-import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -43,8 +42,7 @@ public class MssqlSslSourceTest {
   public void testDiscoverWithCertificateTrustHostname(CertificateKey certificateKey) throws Exception {
     String certificate = testDb.getCertificate(certificateKey);
     JsonNode config = testDb.testConfigBuilder()
-        .withSsl(Map.of("ssl_method", "encrypted_verify_certificate",
-            "certificate", certificate))
+        .withEncrytedVerifyServerCertificate(certificate, null)
         .build();
     try {
       AirbyteCatalog catalog = new MssqlSource().discover(config);
@@ -63,8 +61,7 @@ public class MssqlSslSourceTest {
       String containerIp = InetAddress.getByName(testDb.getContainer().getHost()).getHostAddress();
       String certificate = testDb.getCertificate(certificateKey);
       JsonNode config = testDb.configBuilder()
-          .withSsl(Map.of("ssl_method", "encrypted_verify_certificate",
-              "certificate", certificate))
+          .withEncrytedVerifyServerCertificate(certificate, null)
           .with(JdbcUtils.HOST_KEY, containerIp)
           .with(JdbcUtils.PORT_KEY, testDb.getContainer().getFirstMappedPort())
           .withCredentials()
@@ -90,9 +87,7 @@ public class MssqlSslSourceTest {
     if (certificateKey.isValid) {
       String certificate = testDb.getCertificate(certificateKey);
       JsonNode config = testDb.configBuilder()
-          .withSsl(Map.of("ssl_method", "encrypted_verify_certificate",
-              "certificate", certificate,
-              "hostNameInCertificate", testDb.getContainer().getHost()))
+          .withEncrytedVerifyServerCertificate(certificate, testDb.getContainer().getHost())
           .with(JdbcUtils.HOST_KEY, containerIp)
           .with(JdbcUtils.PORT_KEY, testDb.getContainer().getFirstMappedPort())
           .withCredentials()
