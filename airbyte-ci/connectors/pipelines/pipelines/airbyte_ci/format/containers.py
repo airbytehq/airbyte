@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 import dagger
 from pipelines.airbyte_ci.format.consts import CACHE_MOUNT_PATH, DEFAULT_FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS, Formatter
 from pipelines.consts import GO_IMAGE, MAVEN_IMAGE, NODE_IMAGE, PYTHON_3_10_IMAGE
-from pipelines.helpers.utils import sh_dash_c
+from pipelines.helpers.utils import sh_dash_c, slugify
 
 
 def build_container(
@@ -97,14 +97,14 @@ def format_java_container(dagger_client: dagger.Client, java_code: dagger.Direct
     )
 
 
-def format_js_container(dagger_client: dagger.Client, js_code: dagger.Directory) -> dagger.Container:
+def format_js_container(dagger_client: dagger.Client, js_code: dagger.Directory, prettier_version: str = "3.0.3") -> dagger.Container:
     """Create a Node container with prettier installed with mounted code to format and a cache volume."""
     return build_container(
         dagger_client,
         base_image=NODE_IMAGE,
         dir_to_format=js_code,
-        install_commands=["npm install -g npm@10.1.0 prettier@3.0.3"],
-        cache_volume=dagger_client.cache_volume("js"),
+        install_commands=[f"npm install -g npm@10.1.0 prettier@{prettier_version}"],
+        cache_volume=dagger_client.cache_volume(slugify(f"prettier-{prettier_version}")),
     )
 
 
@@ -120,10 +120,13 @@ def format_license_container(dagger_client: dagger.Client, license_code: dagger.
     )
 
 
-def format_python_container(dagger_client: dagger.Client, python_code: dagger.Directory) -> dagger.Container:
+def format_python_container(
+    dagger_client: dagger.Client, python_code: dagger.Directory, black_version: str = "~22.3.0"
+) -> dagger.Container:
     """Create a Python container with pipx and the global pyproject.toml installed with mounted code to format and a cache volume.
     We warm up the container with the pyproject.toml and poetry.lock files to not repeat the pyproject.toml installation.
     """
+
     warmup_dir = dagger_client.host().directory(".", include=WARM_UP_INCLUSIONS[Formatter.PYTHON], exclude=DEFAULT_FORMAT_IGNORE_LIST)
     return build_container(
         dagger_client,
@@ -137,5 +140,8 @@ def format_python_container(dagger_client: dagger.Client, python_code: dagger.Di
         ],
         dir_to_format=python_code,
         warmup_dir=warmup_dir,
-        cache_volume=dagger_client.cache_volume("python"),
+        # Namespacing the cache volume by black version is likely overkill:
+        # Black already manages cache directories by version internally.
+        # https://github.com/psf/black/blob/e4ae213f06050e7f76ebcf01578c002e412dafdc/src/black/cache.py#L42
+        cache_volume=dagger_client.cache_volume(f"black-{slugify(black_version)}"),
     )

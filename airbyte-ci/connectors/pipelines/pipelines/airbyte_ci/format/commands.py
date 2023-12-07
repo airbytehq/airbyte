@@ -65,7 +65,7 @@ for formatter, fix_command in FORMATTERS_FIX_COMMANDS.items():
     fix.add_command(fix_command, name=formatter.value)
 
 
-@check.command(name="all")
+@check.command(name="all", help="Run all format checks and fail if any checks fail.")
 @click.pass_context
 async def all_checks(ctx: click.Context):
     """
@@ -73,7 +73,7 @@ async def all_checks(ctx: click.Context):
     """
 
     # We disable logging and exit on failure because its this the current command that takes care of reporting.
-    all_commands = [command.disable_logging().dont_exit_on_failure() for command in FORMATTERS_CHECK_COMMANDS.values()]
+    all_commands = [command.set_enable_logging(False).set_exit_on_failure(False) for command in FORMATTERS_CHECK_COMMANDS.values()]
     command_results = await invoke_commands_concurrently(ctx, all_commands)
     failure = any([r.status is StepStatus.FAILURE for r in command_results])
     parent_command = ctx.parent.command
@@ -87,7 +87,7 @@ async def all_checks(ctx: click.Context):
         sys.exit(1)
 
 
-@fix.command(name="all")
+@fix.command(name="all", help="Fix all format failures. Exits with status 1 if any file was modified.")
 @click.pass_context
 async def all_fix(ctx: click.Context):
     """Run code format checks and fix any failures."""
@@ -99,16 +99,16 @@ async def all_fix(ctx: click.Context):
     # If we ran it concurrently with language commands, we face race condition issues.
     # We also want to run it before language specific formatter as they might reformat the license header.
     sequential_commands = [
-        FORMATTERS_FIX_COMMANDS[Formatter.LICENSE].disable_logging().dont_exit_on_failure(),
+        FORMATTERS_FIX_COMMANDS[Formatter.LICENSE].set_enable_logging(False).set_exit_on_failure(False),
     ]
     command_results = await invoke_commands_sequentially(ctx, sequential_commands)
 
     # We can run language commands concurrently because they modify different set of files.
     # We disable logging and exit on failure because its this the current command that takes care of reporting.
     concurrent_commands = [
-        FORMATTERS_FIX_COMMANDS[Formatter.JAVA].disable_logging().dont_exit_on_failure(),
-        FORMATTERS_FIX_COMMANDS[Formatter.PYTHON].disable_logging().dont_exit_on_failure(),
-        FORMATTERS_FIX_COMMANDS[Formatter.JS].disable_logging().dont_exit_on_failure(),
+        FORMATTERS_FIX_COMMANDS[Formatter.JAVA].set_enable_logging(False).set_exit_on_failure(False),
+        FORMATTERS_FIX_COMMANDS[Formatter.PYTHON].set_enable_logging(False).set_exit_on_failure(False),
+        FORMATTERS_FIX_COMMANDS[Formatter.JS].set_enable_logging(False).set_exit_on_failure(False),
     ]
 
     command_results += await invoke_commands_concurrently(ctx, concurrent_commands)
@@ -121,4 +121,6 @@ async def all_fix(ctx: click.Context):
 
     log_command_results(ctx, command_results, logger, log_options)
     if failure:
+        # We exit this command with status 1 because we want to make it fail when fix is modifying files.
+        # It allows us to run it in a Git hook and fail the commit/push if the code is not formatted.
         sys.exit(1)

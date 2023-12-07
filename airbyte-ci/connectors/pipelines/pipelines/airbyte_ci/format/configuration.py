@@ -23,10 +23,10 @@ FORMATTERS_CONFIGURATIONS = {
         "file_filter": ["**/*.json", "**/*.yaml", "**/*.yml"],
         "format_commands": [f"prettier --write . --list-different --cache --cache-location={CACHE_MOUNT_PATH}/.prettier_cache"],
     },
-    # Add license header to all files. The license header is stored in LICENSE_SHORT file.
+    # Add license header to java and python files. The license header is stored in LICENSE_SHORT file.
     Formatter.LICENSE: {
         "get_format_container_fn": format_license_container,
-        "file_filter": ["**/*.java", "**/*.py", LICENSE_FILE_NAME],
+        "file_filter": ["**/*.java", "**/*.py"],
         "format_commands": [f"addlicense -c 'Airbyte, Inc.' -l apache -v -f {LICENSE_FILE_NAME} ."],
     },
     # Run isort and black on all python files.

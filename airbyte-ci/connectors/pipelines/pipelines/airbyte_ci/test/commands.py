@@ -31,7 +31,7 @@ async def test(pipeline_context: ClickPipelineContext):
 
     # The following directories are always mounted because a lot of tests rely on them
     directories_to_always_mount = [
-        ".git", # This is needed as some package tests rely on being in a git repo
+        ".git",  # This is needed as some package tests rely on being in a git repo
         ".github",
         "docs",
         "airbyte-integrations",
