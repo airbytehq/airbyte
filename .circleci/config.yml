@@ -41,7 +41,7 @@ jobs:
       image: ubuntu-2004:202201-02
     steps:
       - checkout
-      -
+
   dependencies_mintegral:
     working_directory: ~/airbyte/airbyte-integrations/connectors/source-mintegral
     machine:
