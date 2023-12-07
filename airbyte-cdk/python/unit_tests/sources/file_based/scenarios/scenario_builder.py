@@ -81,9 +81,13 @@ class TestScenario(Generic[SourceType]):
         for stream in self.source.streams(self.config):
             catalog["streams"].append(
                 {
-                    "stream": stream.name,
+                    "stream": {
+                        "name": stream.name,
+                        "json_schema": {},
+                        "supported_sync_modes": [sync_mode.value],
+                    },
                     "sync_mode": sync_mode.value,
-                    "destination_sync_mode": "append",
+                    "destination_sync_mode": "append"
                 }
             )
 
