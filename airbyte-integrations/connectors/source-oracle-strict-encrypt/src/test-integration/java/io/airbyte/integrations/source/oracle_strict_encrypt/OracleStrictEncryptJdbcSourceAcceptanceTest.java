@@ -23,7 +23,18 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.*;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -82,14 +93,15 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     INSERT_TABLE_NAME_AND_TIMESTAMP_QUERY = "INSERT INTO %s (name, timestamp) VALUES ('%s', TO_TIMESTAMP('%s', 'YYYY-MM-DD HH24:MI:SS'))";
   }
 
+  @Override
   protected void incrementalDateCheck() throws Exception {
     // https://stackoverflow.com/questions/47712930/resultset-meta-data-return-timestamp-instead-of-date-oracle-jdbc
     // Oracle DATE is a java.sql.Timestamp (java.sql.Types.TIMESTAMP) as far as JDBC (and the SQL
     // standard) is concerned as it has both a date and time component.
     incrementalCursorCheck(
         COL_UPDATED_AT,
-        "2005-10-18T00:00:00.000000Z",
-        "2006-10-19T00:00:00.000000Z",
+        "2005-10-18T00:00:00.000000",
+        "2006-10-19T00:00:00.000000",
         Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
@@ -228,6 +240,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     assertEquals(expected, actual);
   }
 
+  @Override
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(List.of(
         CatalogHelpers.createAirbyteStream(
@@ -260,28 +273,28 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
   @Override
   protected List<AirbyteMessage> getTestMessages() {
     return Lists.newArrayList(
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+        new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName())
                 .withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
                     .of(COL_ID, ID_VALUE_1,
                         COL_NAME, "picard",
-                        COL_UPDATED_AT, "2004-10-19T00:00:00.000000Z")))),
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+                        COL_UPDATED_AT, "2004-10-19T00:00:00.000000")))),
+        new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName())
                 .withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
                     .of(COL_ID, ID_VALUE_2,
                         COL_NAME, "crusher",
                         COL_UPDATED_AT,
-                        "2005-10-19T00:00:00.000000Z")))),
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+                        "2005-10-19T00:00:00.000000")))),
+        new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName())
                 .withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
                     .of(COL_ID, ID_VALUE_3,
                         COL_NAME, "vash",
-                        COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
+                        COL_UPDATED_AT, "2006-10-19T00:00:00.000000")))));
   }
 
   @Test
@@ -360,8 +373,8 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
   void testIncrementalTimestampCheckCursor() throws Exception {
     incrementalCursorCheck(
         COL_UPDATED_AT,
-        "2005-10-18T00:00:00.000000Z",
-        "2006-10-19T00:00:00.000000Z",
+        "2005-10-18T00:00:00.000000",
+        "2006-10-19T00:00:00.000000",
         Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
