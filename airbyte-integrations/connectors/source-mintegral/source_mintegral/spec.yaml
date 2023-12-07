@@ -4,9 +4,14 @@ connectionSpecification:
   title: Mintegral Spec
   type: object
   required:
-    - TODO
+    - access_key
+    - api_key
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    access_key:
       type: string
-      description: describe me
+      description: Access key for Mintegral
+      airbyte_secret: true
+    api_key:
+      type: string
+      description: Api key for Mintegral
+      airbyte_secret: true
