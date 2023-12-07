@@ -178,14 +178,14 @@ public class DataSourceFactory {
     private String driverClassName;
     private String host;
     private String jdbcUrl;
-    private int maximumPoolSize = 10;
+    private int maximumPoolSize = 5;
     private int minimumPoolSize = 0;
     private long connectionTimeoutMs;
     private String password;
     private int port = 5432;
     private String username;
     private static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
-    private static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);
+    private static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(120);
 
     private DataSourceBuilder() {}
 
@@ -310,8 +310,11 @@ public class DataSourceFactory {
       config.setMaximumPoolSize(maximumPoolSize);
       config.setMinimumIdle(minimumPoolSize);
       config.setConnectionTimeout(connectionTimeoutMs);
+      config.setIdleTimeout(14000);
+      config.setMaxLifetime(15000); // 30 seconds
       config.setPassword(password);
       config.setUsername(username);
+//      config.setConnectionTestQuery("SELECT 1");  this did not help.
 
       /*
        * Disable to prevent failing on startup. Applications may start prior to the database container

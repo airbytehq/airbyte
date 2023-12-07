@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.mysql.cj.exceptions.CJCommunicationsException;
 import datadog.trace.api.Trace;
 import io.airbyte.cdk.integrations.util.ApmTraceUtils;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
@@ -28,6 +29,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +40,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import io.debezium.jdbc.JdbcConnectionException;
 import org.apache.commons.lang3.ThreadUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
@@ -230,7 +234,12 @@ public class IntegrationRunner {
 
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator, final Consumer<AirbyteMessage> recordCollector) {
     messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Producing messages for stream {}...", s));
-    messageIterator.forEachRemaining(recordCollector);
+
+    try {
+      messageIterator.forEachRemaining(recordCollector);
+    } catch (Exception e) {
+      LOGGER.warn("Exception: {}. This can happen if a database has strict networking settings. Particularly on close.", e.getMessage());
+    }
     messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Finished producing messages for stream {}..."));
   }
 
@@ -268,8 +277,14 @@ public class IntegrationRunner {
   }
 
   private void readSerial(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
-    try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
+    final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null));
+    try {
       produceMessages(messageIterator, outputRecordCollector);
+      try {
+        messageIterator.close();
+      } catch (Exception e) {
+        LOGGER.warn("Exception closing connection: {}. This is generally fine as we've moved all data & are terminating everything. ", e.getMessage());
+      }
     } finally {
       stopOrphanedThreads(EXIT_HOOK,
           INTERRUPT_THREAD_DELAY_MINUTES,

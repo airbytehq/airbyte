@@ -9,7 +9,7 @@ plugins {
 airbyteJavaConnector {
     cdkVersionRequired = '0.5.4'
     features = ['db-sources']
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 configurations.all {
@@ -22,7 +22,7 @@ configurations.all {
 
 application {
     mainClass = 'io.airbyte.integrations.source.mysql.MySqlSource'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '-DLOG_LEVEL=DEBUG']
 }
 
 dependencies {

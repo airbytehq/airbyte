@@ -10,8 +10,12 @@
     </Console>
   </Appenders>
   <Loggers>
-    <Root level="INFO" additivity="false">
+    <Root level="DEBUG" additivity="false">
       <AppenderRef ref="ConsoleJSONAppender"/>
     </Root>
+    <Logger name="com.zaxxer.hikari.pool.HikariPool" level="DEBUG" />
+    <Logger name="com.zaxxer.hikari.pool.PoolBase" level="DEBUG" />
+    <Logger name="com.zaxxer.hikari.HikariDataSource" level="DEBUG" />
+    <Logger name="com.zaxxer.hikari.*" level="DEBUG" />
   </Loggers>
 </Configuration>
