@@ -116,36 +116,37 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slice_ = {}
         stream_state = stream_state or {}
-        cursor_value = stream_state.get(self.cursor_field)
+        cursor_value = self.get_filter_date(self.start_date, stream_state.get(self.cursor_field))
         if cursor_value:
             slice_[self.filter_field] = cursor_value
         yield slice_
+
+    @staticmethod
+    def get_filter_date(start_date: str, state_date: str) -> str:
+        """
+        Calculate the filter date to pass in the request parameters by comparing the start_date 
+        with the value of state obtained from the stream_slice.
+        If only one value exists, use it by default. Otherwise, return None.
+        If no filter_date is provided, the API will fetch all available records.
+        """
+
+        start_date_parsed = pendulum.parse(start_date).to_iso8601_string() if start_date else None
+        state_date_parsed = pendulum.parse(state_date).to_iso8601_string() if state_date else None
+
+        if start_date_parsed and state_date_parsed:
+            return max(start_date_parsed, state_date_parsed)
+        elif state_date_parsed or start_date_parsed:
+            return (state_date_parsed or start_date_parsed)
+        else:
+            return None
 
     def request_params(self, stream_state=None, stream_slice=None, **kwargs):
         stream_state = stream_state or {}
         stream_slice = stream_slice or {}
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        default_params = {"sort_field": self.sort_field, "sort_dir": "ASC", **stream_slice}
+        default_params = {"exclude_fields": f"{self.data_field}._links", "sort_field": self.sort_field, "sort_dir": "ASC", **stream_slice}
         params.update(default_params)
         return params
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        Mailchimp endpoints do not always support filtering by date,
-        so we should filter out records manually against the start_date as a fallback.
-        """
-        response = super().parse_response(response, **kwargs)
-        start_date = pendulum.parse(self.start_date) if self.start_date else None
-
-        if start_date:
-            for record in response:
-                parsed_date = pendulum.parse(record.get(self.cursor_field))
-                if parsed_date >= start_date:
-                    yield record
-        # If no start date is provided, return all records
-        else:
-            for record in response:
-                yield record
 
 
 class MailChimpListSubStream(IncrementalMailChimpStream):
@@ -157,25 +158,15 @@ class MailChimpListSubStream(IncrementalMailChimpStream):
         stream_state = stream_state or {}
         parent = Lists(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
         for slice in parent:
-            yield {"list_id": slice["id"]}
+            slice_ = { "list_id": slice["id"] }
+            cursor_value = self.get_filter_date(self.start_date, stream_state.get(slice["id"], {}).get(self.cursor_field))
+            if cursor_value:
+                slice_[self.filter_field] = cursor_value
+            yield slice_
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         list_id = stream_slice.get("list_id")
         return f"lists/{list_id}/{self.data_field}"
-
-    def request_params(self, stream_state=None, stream_slice=None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-
-        # Exclude the _links field, as it is not user-relevant data
-        params["exclude_fields"] = f"{self.data_field}._links"
-
-        # Get the current state value for this list_id, if it exists
-        # Then, use the value in state to filter the request
-        current_slice = stream_slice.get("list_id")
-        filter_date = stream_state.get(current_slice)
-        if filter_date:
-            params[self.filter_field] = filter_date.get(self.cursor_field)
-        return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
@@ -241,7 +232,8 @@ class EmailActivity(IncrementalMailChimpStream):
             campaigns = Campaigns(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
         for campaign in campaigns:
             slice_ = {"campaign_id": campaign["id"]}
-            cursor_value = stream_state.get(campaign["id"], {}).get(self.cursor_field)
+            state_value = stream_state.get(campaign["id"], {}).get(self.cursor_field)
+            cursor_value = self.get_filter_date(self.start_date, state_value)
             if cursor_value:
                 slice_[self.filter_field] = cursor_value
             yield slice_
@@ -414,17 +406,20 @@ class SegmentMembers(MailChimpListSubStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice, **kwargs) -> Iterable[Mapping]:
         """
-        SegmentMembers endpoint does not support sorting, so we need to filter out records that are older than the current state
+        The SegmentMembers endpoint does not support request_params sorting or filtering, 
+        so we need to apply our own filtering logic before reading.
         """
         response = super().parse_response(response, **kwargs)
 
-        for record in response:
-            # Add the segment_id foreign_key to each record
-            record["segment_id"] = stream_slice.get("segment_id")
+        # Calculate the filter date to compare all records against in this slice
+        slice_cursor_value = stream_state.get(str(stream_slice.get("segment_id")), {}).get(self.cursor_field)
+        filter_date = self.get_filter_date(self.start_date, slice_cursor_value)
 
-            current_cursor_value = stream_state.get(str(record.get("segment_id")), {}).get(self.cursor_field)
+        for record in response:
             record_cursor_value = record.get(self.cursor_field)
-            if current_cursor_value is None or record_cursor_value >= current_cursor_value:
+            if filter_date is None or record_cursor_value >= filter_date:
+                # Add the segment_id foreign_key to each record
+                record["segment_id"] = stream_slice.get("segment_id")
                 yield self.nullify_empty_string_fields(record)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -514,15 +509,20 @@ class Unsubscribes(IncrementalMailChimpStream):
         params["exclude_fields"] = "unsubscribes._links"
         return params
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice, **kwargs) -> Iterable[Mapping]:
+        """
+        The Unsubscribes endpoint does not support request_params sorting or filtering,
+        so we need to apply our own filtering logic before reading.
+        """
 
         response = super().parse_response(response, **kwargs)
 
-        # Unsubscribes endpoint does not support sorting, so we need to filter out records that are older than the current state
+        slice_cursor_value = stream_state.get(stream_slice.get("campaign_id", {}), {}).get(self.cursor_field)
+        filter_date = self.get_filter_date(self.start_date, slice_cursor_value)
+
         for record in response:
-            current_cursor_value = stream_state.get(record.get("campaign_id"), {}).get(self.cursor_field)
             record_cursor_value = record.get(self.cursor_field)
-            if current_cursor_value is None or record_cursor_value >= current_cursor_value:
+            if filter_date is None or record_cursor_value >= filter_date:
                 yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
