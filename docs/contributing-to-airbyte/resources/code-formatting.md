@@ -25,7 +25,7 @@ We wrapped this command in a pre-push hook so that you can't push code that is n
 
 To install the pre-push hook,  run:
 ```bash
-make tools.pre-commit.install
+make tools.pre-commit.setup
 ```
 This will install `airbyte-ci` and the pre-push hook.
 
