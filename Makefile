@@ -20,7 +20,7 @@ tools.airbyte-ci.clean: ## Clean airbyte-ci installations
 
 tools.git-hooks.clean: ## Clean git hooks
 	@echo "Unset core.hooksPath"
-	-@git config --unset core.hooksPath
+	@git config --unset core.hooksPath || true
 	@echo "Removing pre-commit hooks..."
 	@pre-commit uninstall
 	@echo "Removing pre-push hooks..."
