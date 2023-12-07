@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { CustomButton, ButtonRows } from "components/base/Button/CustomButton";
+import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 
 import TestingLoading from "views/Connector/TestConnection/components/TestingLoading";
 import TestingSuccess from "views/Connector/TestConnection/components/TestingSuccess";
@@ -28,21 +28,21 @@ const LoadingContainer = styled.div`
   flex-direction: column;
   // flex: 1;
 `;
-
+// disabled isLoading was removed from back button
 const TestConnection: React.FC<Iprops> = ({ isLoading, type, onBack, onFinish }) => {
   return (
     <Container>
       <LoadingContainer>{isLoading ? <TestingLoading /> : <TestingSuccess type={type} />}</LoadingContainer>
       <ButtonRows>
         {((isLoading && type === "connection") || type !== "connection") && (
-          <CustomButton disabled={isLoading} secondary onClick={onBack}>
+          <BigButton secondary onClick={onBack}>
             <FormattedMessage id="form.button.back" />
-          </CustomButton>
+          </BigButton>
         )}
         {((!isLoading && type === "connection") || type !== "connection") && (
-          <CustomButton disabled={isLoading} onClick={onFinish}>
+          <BigButton disabled={isLoading} onClick={onFinish}>
             <FormattedMessage id={type === "connection" ? "form.button.returnToDashoard" : "form.button.continue"} />
-          </CustomButton>
+          </BigButton>
         )}
       </ButtonRows>
     </Container>

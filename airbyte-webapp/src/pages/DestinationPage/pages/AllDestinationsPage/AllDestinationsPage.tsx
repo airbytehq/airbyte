@@ -1,5 +1,6 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Box } from "@mui/material";
 import { useState, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
@@ -154,11 +155,13 @@ const AllDestinationsPage: React.FC = () => {
       <Separator height="24px" />
       <Footer>
         <PageSize currentPageSize={pageCurrent} totalPage={total / pageSize} onChange={onChangePageSize} />
-        <Pagination
-          pages={total / pageSize}
-          value={filters.pageCurrent}
-          onChange={(value: number) => onSelectFilter("pageCurrent", value)}
-        />
+        <Box paddingLeft="20px">
+          <Pagination
+            pages={total / pageSize}
+            value={filters.pageCurrent}
+            onChange={(value: number) => onSelectFilter("pageCurrent", value)}
+          />
+        </Box>
       </Footer>
       <Separator height="24px" />
     </MainPageWithScroll>

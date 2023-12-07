@@ -41,7 +41,6 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
   const { user } = useUser();
   const jobStatus = getJobStatus(job);
   const isPartialSuccess = partialSuccessCheck(attempts);
-  console.log(job, "job");
   const statusIcon = () => {
     switch (true) {
       case jobStatus === JobStatus.cancelled:

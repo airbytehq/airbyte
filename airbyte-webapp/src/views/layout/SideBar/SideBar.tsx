@@ -7,16 +7,17 @@ import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 
 import { Link } from "components";
-import { DocumentationArrowIcon } from "components/icons/DocumentationArrowIcon";
+// import { DocumentationArrowIcon } from "components/icons/DocumentationArrowIcon";
 import { DocumentationIcon } from "components/icons/DocumentationIcon";
+import { NewTabSecondIcon } from "components/icons/NewTabSecondIcon";
 
 import { links } from "config/links";
 import { useUser } from "core/AuthContext";
 import useRouter from "hooks/useRouter";
 import { LOCALES } from "locales";
 
-import { RoutePaths } from "../../../pages/routePaths";
 import styles from "./SideBar.module.scss";
+import { RoutePaths } from "../../../pages/routePaths";
 
 const Menu = styled.ul`
   padding: 0;
@@ -70,7 +71,7 @@ const UserDetail = styled.div`
 
 const DocumentationArrowIconContainer = styled.div`
   display: block;
-  margin-left: 14px;
+  margin-left: 8px;
 `;
 
 export const useCalculateSidebarStyles = () => {
@@ -164,7 +165,7 @@ const SideBar: React.FC = () => {
             <FormattedMessage id="sidebar.documentation" />
           </Text>
           <DocumentationArrowIconContainer>
-            <DocumentationArrowIcon height={11} width={11} />
+            <NewTabSecondIcon width={13} height={14} />
           </DocumentationArrowIconContainer>
         </a>
         <UserDetail>
