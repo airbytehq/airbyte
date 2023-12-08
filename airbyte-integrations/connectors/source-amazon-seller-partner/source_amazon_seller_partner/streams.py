@@ -270,9 +270,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         return csv.DictReader(StringIO(document), delimiter="\t")
 
     def report_options(self) -> Optional[Mapping[str, Any]]:
-        return {
-            option.get("option_name"): option.get("option_value") for option in self._report_options
-        } if self._report_options else None
+        return {option.get("option_name"): option.get("option_value") for option in self._report_options} if self._report_options else None
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
