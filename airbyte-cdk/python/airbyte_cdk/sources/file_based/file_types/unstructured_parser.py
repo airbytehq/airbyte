@@ -10,6 +10,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 import backoff
 import dpath.util
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.unstructured_format import (
     APIParameterConfigModel,
@@ -22,6 +23,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
+from airbyte_cdk.utils import is_cloud_environment
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unstructured.file_utils.filetype import FILETYPE_TO_MIMETYPE, STR_TO_FILETYPE, FileType, detect_filetype
 
@@ -159,7 +161,7 @@ class UnstructuredParser(FileTypeParser):
             except Exception as e:
                 # Re-throw as config error so the sync is stopped as problems with the external API need to be resolved by the user and are not considered part of the SLA.
                 # Once this parser leaves experimental stage, we should consider making this a system error instead for issues that might be transient.
-                raise AirbyteTracedException.from_exception(e)
+                raise AirbyteTracedException.from_exception(e, failure_type=FailureType.config_error)
 
             return result
 
@@ -197,8 +199,7 @@ class UnstructuredParser(FileTypeParser):
                 return False, "Hi-res strategy is not supported for local processing"
             return True, None
 
-        deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
-        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not format_config.processing.api_url.startswith("https://"):
+        if is_cloud_environment() and not format_config.processing.api_url.startswith("https://"):
             return False, "Base URL must start with https://"
 
         try:
