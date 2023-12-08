@@ -22,37 +22,37 @@ FILE_URI = "path/to/file.xyz"
     [
         pytest.param(
             FileType.MD,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             False,
             id="markdown file",
         ),
         pytest.param(
             FileType.CSV,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             True,
             id="wrong file format",
         ),
         pytest.param(
             FileType.CSV,
-            UnstructuredFormat(skip_unprocessable_file_types=True),
+            UnstructuredFormat(skip_unprocessable_files=True),
             False,
             id="wrong file format skipping",
         ),
         pytest.param(
             FileType.PDF,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             False,
             id="pdf file",
         ),
         pytest.param(
             FileType.DOCX,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             False,
             id="docx file",
         ),
         pytest.param(
             FileType.PPTX,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             False,
             id="pptx file",
         ),
@@ -79,48 +79,59 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
     else:
         schema = loop.run_until_complete(UnstructuredParser().infer_schema(config, MagicMock(), MagicMock(), MagicMock()))
         assert schema == {
-            "content": {"type": "string"},
-            "document_key": {"type": "string"},
+            "content": {"type": "string", "description": "Content of the file as markdown. Might be null if the file could not be parsed"},
+            "document_key": {"type": "string", "description": "Unique identifier of the document, e.g. the file path"},
+            "_ab_source_file_parse_error": {"type": "string", "description": "Error message if the file could not be parsed even though the file is supported"},
         }
     loop.close()
     asyncio.set_event_loop(main_loop)
 
 
 @pytest.mark.parametrize(
-    "filetype, format_config, parse_result, raises, expected_records",
+    "filetype, format_config, parse_result, raises, expected_records, parsing_error",
     [
         pytest.param(
             FileType.MD,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             "test",
             False,
             [
                 {
                     "content": "test",
                     "document_key": FILE_URI,
+                    "_ab_source_file_parse_error": None,
                 }
             ],
+            False,
             id="markdown file",
         ),
         pytest.param(
             FileType.CSV,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             None,
             True,
             None,
+            False,
             id="wrong file format",
         ),
         pytest.param(
             FileType.CSV,
-            UnstructuredFormat(skip_unprocessable_file_types=True),
+            UnstructuredFormat(skip_unprocessable_files=True),
             None,
             False,
-            [],
-            id="skip_unprocessable_file_types",
+            [
+                {
+                    "content": None,
+                    "document_key": FILE_URI,
+                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=path/to/file.xyz message=File type FileType.CSV is not supported. Supported file types are FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX",
+                }
+            ],
+            False,
+            id="skip_unprocessable_files",
         ),
         pytest.param(
             FileType.PDF,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             [
                 Title("heading"),
                 Text("This is the text"),
@@ -132,13 +143,15 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
                 {
                     "content": "# heading\n\nThis is the text\n\n- This is a list item\n\n```\nThis is a formula\n```",
                     "document_key": FILE_URI,
+                    "_ab_source_file_parse_error": None,
                 }
             ],
+            False,
             id="pdf file",
         ),
         pytest.param(
             FileType.PDF,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             [
                 Title("first level heading", metadata=ElementMetadata(category_depth=1)),
                 Title("second level heading", metadata=ElementMetadata(category_depth=2)),
@@ -148,13 +161,15 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
                 {
                     "content": "# first level heading\n\n## second level heading",
                     "document_key": FILE_URI,
+                    "_ab_source_file_parse_error": None,
                 }
             ],
+            False,
             id="multi-level headings",
         ),
         pytest.param(
             FileType.DOCX,
-            UnstructuredFormat(skip_unprocessable_file_types=False),
+            UnstructuredFormat(skip_unprocessable_files=False),
             [
                 Title("heading"),
                 Text("This is the text"),
@@ -166,9 +181,26 @@ def test_infer_schema(mock_detect_filetype, filetype, format_config, raises):
                 {
                     "content": "# heading\n\nThis is the text\n\n- This is a list item\n\n```\nThis is a formula\n```",
                     "document_key": FILE_URI,
+                    "_ab_source_file_parse_error": None,
                 }
             ],
+            False,
             id="docx file",
+        ),
+        pytest.param(
+            FileType.DOCX,
+            UnstructuredFormat(skip_unprocessable_files=True),
+            "",
+            False,
+            [
+                {
+                    "content": None,
+                    "document_key": FILE_URI,
+                    "_ab_source_file_parse_error": "Error parsing record. This could be due to a mismatch between the config's file type and the actual file type, or because the file or record is not parseable. Contact Support if you need assistance.\nfilename=path/to/file.xyz message=weird parsing error"
+                }
+            ],
+            True,
+            id="exception_during_parsing",
         ),
     ],
 )
@@ -188,6 +220,7 @@ def test_parse_records(
     parse_result,
     raises,
     expected_records,
+    parsing_error,
 ):
     stream_reader = MagicMock()
     mock_open(stream_reader.open_file, read_data=bytes(str(parse_result), "utf-8"))
@@ -197,9 +230,14 @@ def test_parse_records(
     config = MagicMock()
     config.format = format_config
     mock_detect_filetype.return_value = filetype
-    mock_partition_docx.return_value = parse_result
-    mock_partition_pptx.return_value = parse_result
-    mock_partition_pdf.return_value = parse_result
+    if parsing_error:
+        mock_partition_docx.side_effect = Exception("weird parsing error")
+        mock_partition_pptx.side_effect = Exception("weird parsing error")
+        mock_partition_pdf.side_effect = Exception("weird parsing error")
+    else:
+        mock_partition_docx.return_value = parse_result
+        mock_partition_pptx.return_value = parse_result
+        mock_partition_pdf.return_value = parse_result
     mock_optional_decode.side_effect = lambda x: x.decode("utf-8")
     if raises:
         with pytest.raises(RecordParseError):

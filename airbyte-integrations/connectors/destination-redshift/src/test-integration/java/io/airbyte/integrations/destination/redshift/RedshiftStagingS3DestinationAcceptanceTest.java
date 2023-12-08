@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.redshift;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.amazon.redshift.util.RedshiftTimestamp;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -28,11 +29,18 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +48,8 @@ import org.slf4j.LoggerFactory;
  * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration
  * test credentials contain S3 credentials - this automatically causes COPY to be selected.
  */
+// these tests are not yet thread-safe, unlike the DV2 tests.
+@Execution(ExecutionMode.SAME_THREAD)
 public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3DestinationAcceptanceTest.class);
@@ -85,7 +95,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     final RedshiftDestination destination = new RedshiftDestination();
     final AirbyteConnectionStatus status = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 28000; Error code: 500310;"));
+    assertTrue(status.getMessage().contains("State code: 28000;"));
   }
 
   @Test
@@ -95,7 +105,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     final RedshiftDestination destination = new RedshiftDestination();
     final AirbyteConnectionStatus status = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 28000; Error code: 500310;"));
+    assertTrue(status.getMessage().contains("State code: 28000;"));
   }
 
   @Test
@@ -105,7 +115,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     final RedshiftDestination destination = new RedshiftDestination();
     final AirbyteConnectionStatus status = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: HY000; Error code: 500150;"));
+    assertTrue(status.getMessage().contains("State code: 08001;"));
   }
 
   @Test
@@ -115,7 +125,7 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     final RedshiftDestination destination = new RedshiftDestination();
     final AirbyteConnectionStatus status = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
-    assertTrue(status.getMessage().contains("State code: 3D000; Error code: 500310;"));
+    assertTrue(status.getMessage().contains("State code: 3D000;"));
   }
 
   /*
@@ -171,6 +181,11 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
   }
 
   @Override
+  protected boolean supportsInDestinationNormalization() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
                                            final String streamName,
                                            final String namespace,
@@ -203,7 +218,33 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
         ctx -> ctx
             .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
             .stream()
-            .map(this::getJsonFromRecord)
+            .map(record -> getJsonFromRecord(
+                record,
+                value -> {
+                  if (value instanceof final RedshiftTimestamp rts) {
+                    // We can't just use rts.toInstant().toString(), because that will mangle historical
+                    // dates (e.g. 1504-02-28...) because toInstant() just converts to epoch millis,
+                    // which works _very badly_ for for very old dates.
+                    // Instead, convert to a string and then parse that string.
+                    // We can't just rts.toString(), because that loses the timezone...
+                    // so instead we use getPostgresqlString and parse that >.>
+                    // Thanks, redshift.
+                    return Optional.of(
+                        ZonedDateTime.parse(
+                            rts.getPostgresqlString(),
+                            new DateTimeFormatterBuilder()
+                                .appendPattern("yyyy-MM-dd HH:mm:ss")
+                                .optionalStart()
+                                .appendFraction(ChronoField.MILLI_OF_SECOND, 0, 9, true)
+                                .optionalEnd()
+                                .appendPattern("X")
+                                .toFormatter())
+                            .withZoneSameInstant(ZoneOffset.UTC)
+                            .toString());
+                  } else {
+                    return Optional.empty();
+                  }
+                }))
             .collect(Collectors.toList()));
   }
 

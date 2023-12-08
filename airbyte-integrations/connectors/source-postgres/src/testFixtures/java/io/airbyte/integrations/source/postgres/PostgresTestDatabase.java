@@ -19,8 +19,42 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public class PostgresTestDatabase extends
     TestDatabase<PostgreSQLContainer<?>, PostgresTestDatabase, PostgresTestDatabase.PostgresConfigBuilder> {
 
-  static public PostgresTestDatabase in(String imageName, String... methods) {
-    final var container = new PostgresContainerFactory().shared(imageName, methods);
+  public static enum BaseImage {
+
+    POSTGRES_16("postgres:16-bullseye"),
+    POSTGRES_12("postgres:12-bullseye"),
+    POSTGRES_9("postgres:9-alpine"),
+    POSTGRES_SSL_DEV("marcosmarxm/postgres-ssl:dev");
+
+    private final String reference;
+
+    private BaseImage(String reference) {
+      this.reference = reference;
+    };
+
+  }
+
+  public static enum ContainerModifier {
+
+    ASCII("withASCII"),
+    CONF("withConf"),
+    NETWORK("withNetwork"),
+    SSL("withSSL"),
+    WAL_LEVEL_LOGICAL("withWalLevelLogical"),
+    CERT("withCert"),
+    ;
+
+    private String methodName;
+
+    private ContainerModifier(String methodName) {
+      this.methodName = methodName;
+    }
+
+  }
+
+  static public PostgresTestDatabase in(BaseImage baseImage, ContainerModifier... modifiers) {
+    String[] methodNames = Stream.of(modifiers).map(im -> im.methodName).toList().toArray(new String[0]);
+    final var container = new PostgresContainerFactory().shared(baseImage.reference, methodNames);
     return new PostgresTestDatabase(container).initialized();
   }
 
