@@ -222,7 +222,8 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 ## Changelog
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-| :-------------- | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.13          | 2023-12-05 | [32326](https://github.com/airbytehq/airbyte/pull/32326)   | Use jdbc metadata for table existence check                                                                                                                     |
 | 3.4.12          | 2023-12-04 | [33084](https://github.com/airbytehq/airbyte/pull/33084)   | T&D SQL statements moved to debug log level                                                                                                                     |
 | 3.4.11          | 2023-11-14 | [\#32526](https://github.com/airbytehq/airbyte/pull/32526) | Clean up memory manager logs.                                                                                                                                   |
 | 3.4.10          | 2023-11-08 | [\#32125](https://github.com/airbytehq/airbyte/pull/32125) | Fix compilation warnings.                                                                                                                                       |

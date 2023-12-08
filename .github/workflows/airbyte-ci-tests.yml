@@ -75,6 +75,7 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/connector_ops"
           airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run airbyte-ci/connectors/pipelines tests
         id: run-airbyte-ci-connectors-pipelines-tests
@@ -89,6 +90,7 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/pipelines"
           airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run airbyte-ci/connectors/base_images tests
         id: run-airbyte-ci-connectors-base-images-tests
@@ -103,6 +105,7 @@ jobs:
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           subcommand: "test airbyte-ci/connectors/base_images"
           airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
 
       - name: Run test pipeline for the metadata lib
         id: metadata_lib-test-pipeline
@@ -115,6 +118,8 @@ jobs:
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
+
       - name: Run test for the metadata orchestrator
         id: metadata_orchestrator-test-pipeline
         if: steps.changes.outputs.metadata_orchestrator_any_changed == 'true'
@@ -126,3 +131,4 @@ jobs:
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url || 'https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci' }}
+          tailscale_auth_key: ${{ secrets.TAILSCALE_AUTH_KEY }}
