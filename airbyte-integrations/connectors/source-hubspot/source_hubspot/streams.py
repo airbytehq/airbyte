@@ -2119,7 +2119,6 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         now = pendulum.now(tz="UTC")
         for parent_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
-
             object_id = parent_slice["parent"][self.object_id_field]
 
             # Take the initial datetime either form config or from state depending whichever value is higher

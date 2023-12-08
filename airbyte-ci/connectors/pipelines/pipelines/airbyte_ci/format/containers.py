@@ -121,9 +121,7 @@ def format_license_container(dagger_client: dagger.Client, license_code: dagger.
     )
 
 
-def format_python_container(
-    dagger_client: dagger.Client, python_code: dagger.Directory, ruff_version: str = "0.1.7"
-) -> dagger.Container:
+def format_python_container(dagger_client: dagger.Client, python_code: dagger.Directory, ruff_version: str = "0.1.7") -> dagger.Container:
     """Create a Python container with pipx and the global pyproject.toml installed with mounted code to format and a cache volume.
     We warm up the container with the pyproject.toml and poetry.lock files to not repeat the pyproject.toml installation.
     """

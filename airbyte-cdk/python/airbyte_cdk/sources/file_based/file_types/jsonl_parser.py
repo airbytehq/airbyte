@@ -15,7 +15,6 @@ from airbyte_cdk.sources.file_based.schema_helpers import PYTHON_TYPE_MAPPING, S
 
 
 class JsonlParser(FileTypeParser):
-
     MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE = 1_000_000
     ENCODING = "utf8"
 

@@ -673,7 +673,6 @@ where 1 = 1
         return template.render(formats=formats, column_name=column_name)
 
     def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
-
         template = Template(
             """
 -- SQL model to build a hash column based on the values of this record
@@ -704,7 +703,6 @@ where 1 = 1
         return sql
 
     def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
-
         return [
             StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1], self.destination_type)
             for field in column_names

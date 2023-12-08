@@ -201,7 +201,6 @@ class CollectionContents(WebflowStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-
         # Webflow default pagination is 100, for debugging pagination we set this to a low value.
         # This should be set back to 100 for production
         params = {"limit": 100}

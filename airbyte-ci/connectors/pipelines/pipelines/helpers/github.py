@@ -92,7 +92,6 @@ def get_pull_request(pull_request_number: int, github_access_token: str) -> Pull
 
 
 def update_global_commit_status_check_for_tests(click_context: dict, github_state: str, logger: Logger = None):
-
     update_commit_status_check(
         click_context["git_revision"],
         github_state,

@@ -298,7 +298,6 @@ class Collectors(SurveymonkeyStream):
         return f"collectors/{stream_slice['collector_id']}"
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs):
-
         survey_collectors = SurveyCollectors(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self.authenticator)
         survey_ids = survey_collectors.stream_slices(stream_state, **kwargs)
         for slice in survey_ids:

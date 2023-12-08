@@ -471,7 +471,6 @@ class SourceAndDestination(BaseResource):
 
 
 class Source(SourceAndDestination):
-
     api = source_api.SourceApi
     create_function_name = "create_source"
     resource_id_field = "source_id"
@@ -850,7 +849,6 @@ class Connection(BaseResource):
         return comparable
 
     def _get_remote_comparable_configuration(self) -> dict:
-
         comparable = {
             k: v for k, v in self.remote_resource.to_dict().items() if k not in self.remote_root_level_keys_to_filter_out_for_comparison
         }

@@ -39,12 +39,10 @@ class TodoistStream(HttpStream):
 
 
 class Tasks(TodoistStream):
-
     primary_key = "id"
 
 
 class Projects(TodoistStream):
-
     primary_key = "id"
 
 

@@ -29,7 +29,6 @@ from .utils import getter
 
 
 class GithubStreamABC(HttpStream, ABC):
-
     primary_key = "id"
 
     # Detect streams with high API load
@@ -62,7 +61,6 @@ class GithubStreamABC(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         params = {"per_page": self.page_size}
 
         if next_page_token:
@@ -729,7 +727,6 @@ class ReviewComments(IncrementalMixin, GithubStream):
 
 
 class GitHubGraphQLStream(GithubStream, ABC):
-
     http_method = "POST"
 
     def path(
@@ -947,7 +944,6 @@ class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
 
 
 class ReactionStream(GithubStream, ABC):
-
     parent_key = "id"
     copy_parent_key = "comment_id"
     cursor_field = "created_at"

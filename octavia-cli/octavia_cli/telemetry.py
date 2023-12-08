@@ -22,7 +22,6 @@ def build_user_agent(octavia_version: str) -> str:
 
 
 class TelemetryClient:
-
     WRITE_KEY = "ER8EjdRVFut7n05XPaaTKrSEnjLscyKr"
 
     def __init__(self, send_data: bool = False) -> None:

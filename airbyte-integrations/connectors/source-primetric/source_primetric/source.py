@@ -88,7 +88,6 @@ class OrganizationPositions(PrimetricStream):
 
 
 class OrganizationRagScopes(PrimetricStream):
-
     primary_key = "text"
 
     def path(self, **kwargs) -> str:
@@ -183,7 +182,6 @@ class SourcePrimetric(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
-
             if not config["client_secret"] or not config["client_id"]:
                 raise Exception("Empty config values! Check your configuration file!")
 

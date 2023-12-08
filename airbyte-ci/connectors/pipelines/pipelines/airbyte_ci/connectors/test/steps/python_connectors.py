@@ -158,7 +158,8 @@ class PytestStep(Step, ABC):
             # Mount the test config file
             .with_mounted_file(test_config_file_name, test_config_file)
             # Mount the secrets
-            .with_(secret_mounting_function).with_env_variable("PYTHONPATH", ".")
+            .with_(secret_mounting_function)
+            .with_env_variable("PYTHONPATH", ".")
         )
 
 

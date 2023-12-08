@@ -120,7 +120,6 @@ def octavia(
     option_based_api_http_headers: Optional[List[Tuple[str, str]]] = None,
     api_http_headers_file_path: Optional[str] = None,
 ) -> None:
-
     ctx = set_context_object(
         ctx,
         airbyte_url,

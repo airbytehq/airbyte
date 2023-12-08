@@ -95,12 +95,10 @@ class MigrateStringToArray(ABC):
 
 
 class MigrateRepository(MigrateStringToArray):
-
     migrate_from_key: str = "repository"
     migrate_to_key: str = "repositories"
 
 
 class MigrateBranch(MigrateStringToArray):
-
     migrate_from_key: str = "branch"
     migrate_to_key: str = "branches"

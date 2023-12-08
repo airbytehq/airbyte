@@ -93,7 +93,6 @@ def read_json(filepath):
 
 
 def get_api_token():
-
     client_id = CREDS.get("client_id")
     secret = CREDS.get("secret")
 
@@ -115,7 +114,6 @@ def random_digits(digits):
 
 
 def make_payment():
-
     # generate new invoice_number
     PAYMENT_DATA["transactions"][0]["invoice_number"] = random_digits(11)
 

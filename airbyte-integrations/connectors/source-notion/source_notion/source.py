@@ -88,7 +88,6 @@ class SourceNotion(AbstractSource):
             return False, str(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-
         authenticator = self._get_authenticator(config)
         args = {"authenticator": authenticator, "config": config}
         pages = Pages(**args)

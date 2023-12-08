@@ -85,7 +85,6 @@ class Destination(Connector, ABC):
         return parsed_args
 
     def run_cmd(self, parsed_args: argparse.Namespace) -> Iterable[AirbyteMessage]:
-
         cmd = parsed_args.command
         if cmd not in self.VALID_CMDS:
             raise Exception(f"Unrecognized command: {cmd}")

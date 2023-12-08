@@ -176,7 +176,6 @@ class GroupRoleAssignments(OktaStream):
 
 
 class Logs(IncrementalOktaStream):
-
     cursor_field = "published"
     primary_key = "uuid"
 

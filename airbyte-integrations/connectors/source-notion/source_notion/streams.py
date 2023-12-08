@@ -29,7 +29,6 @@ class NotionAvailabilityStrategy(HttpAvailabilityStrategy):
     """
 
     def reasons_for_unavailable_status_codes(self, stream: Stream, logger: Logger, source: Source, error: HTTPError) -> Dict[int, str]:
-
         reasons_for_codes: Dict[int, str] = {
             requests.codes.FORBIDDEN: "This is likely due to insufficient permissions for your Notion integration. "
             "Please make sure your integration has read access for the resources you are trying to sync"
@@ -38,7 +37,6 @@ class NotionAvailabilityStrategy(HttpAvailabilityStrategy):
 
 
 class NotionStream(HttpStream, ABC):
-
     url_base = "https://api.notion.com/v1/"
 
     primary_key = "id"
@@ -148,7 +146,6 @@ T = TypeVar("T")
 
 
 class StateValueWrapper(pydantic.BaseModel):
-
     stream: T
     state_value: str
     max_cursor_time = ""
@@ -168,7 +165,6 @@ class StateValueWrapper(pydantic.BaseModel):
 
 
 class IncrementalNotionStream(NotionStream, ABC):
-
     cursor_field = "last_edited_time"
 
     http_method = "POST"
@@ -390,7 +386,6 @@ class Comments(HttpSubStream, IncrementalNotionStream):
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
-
         # Get the parent's "last edited time" to compare against state
         page_last_edited_time = stream_slice.get("page_last_edited_time", "")
         records = response.json().get("results", [])
@@ -406,13 +401,11 @@ class Comments(HttpSubStream, IncrementalNotionStream):
                 yield from transform_properties(record)
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-
         yield from IncrementalNotionStream.read_records(self, **kwargs)
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, **kwargs
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         # Gather parent stream records in full
         parent_records = self.parent.read_records(sync_mode=SyncMode.full_refresh, cursor_field=self.parent.cursor_field)
 

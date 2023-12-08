@@ -58,7 +58,6 @@ class CloseComStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-
         params = {}
         if self.number_of_items_per_page:
             params.update({"_limit": self.number_of_items_per_page})
@@ -88,7 +87,6 @@ class CloseComStream(HttpStream, ABC):
 
 
 class IncrementalCloseComStream(CloseComStream):
-
     cursor_field = "date_updated"
 
     def get_updated_state(
