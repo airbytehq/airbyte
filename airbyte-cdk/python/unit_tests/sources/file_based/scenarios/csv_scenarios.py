@@ -100,6 +100,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                     "title": "Primary Key",
                                     "description": "The column or columns (for a composite key) that serves as the unique identifier of a record.",
                                     "type": "string",
+                                    "airbyte_hidden": True,
                                 },
                                 "days_to_sync_if_history_is_full": {
                                     "title": "Days To Sync If History Is Full",

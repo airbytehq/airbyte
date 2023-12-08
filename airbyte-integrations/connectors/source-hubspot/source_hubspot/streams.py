@@ -1761,7 +1761,7 @@ class OwnersArchived(ClientSideIncrementalStream):
         return params
 
 
-class PropertyHistory(Stream):
+class PropertyHistory(ClientSideIncrementalStream):
     """Contacts Endpoint, API v1
     Is used to get all Contacts and the history of their respective
     Properties. Whenever a property is changed it is added here.
@@ -1783,6 +1783,11 @@ class PropertyHistory(Stream):
     scopes = {"crm.objects.contacts.read"}
     properties_scopes = {"crm.schemas.contacts.read"}
 
+    @property
+    def cursor_field_datetime_format(self):
+        """Cursor value expected to be a timestamp in milliseconds"""
+        return "x"
+
     def request_params(
         self,
         stream_state: Mapping[str, Any],
@@ -1797,11 +1802,11 @@ class PropertyHistory(Stream):
     def _transform(self, records: Iterable) -> Iterable:
         for record in records:
             properties = record.get("properties")
-            vid = record.get("vid")
+            primary_key = record.get(self.primary_key)
             value_dict: Dict
-            for key, value_dict in properties.items():
+            for property_name, value_dict in properties.items():
                 versions = value_dict.get("versions")
-                if key == "lastmodifieddate":
+                if property_name == "lastmodifieddate":
                     # Skipping the lastmodifieddate since it only returns the value
                     # when one field of a contact was changed no matter which
                     # field was changed. It therefore creates overhead, since for
@@ -1810,8 +1815,8 @@ class PropertyHistory(Stream):
                     continue
                 if versions:
                     for version in versions:
-                        version["property"] = key
-                        version["vid"] = vid
+                        version["property"] = property_name
+                        version[self.primary_key] = primary_key
                         yield version
 
 

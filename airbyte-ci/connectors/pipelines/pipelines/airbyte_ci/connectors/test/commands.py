@@ -10,7 +10,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.test.pipeline import run_connector_test_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.consts import ContextState
+from pipelines.consts import LOCAL_BUILD_PLATFORM, ContextState
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
@@ -95,6 +95,7 @@ async def test(
             docker_hub_username=ctx.obj.get("docker_hub_username"),
             docker_hub_password=ctx.obj.get("docker_hub_password"),
             concurrent_cat=concurrent_cat,
+            targeted_platforms=[LOCAL_BUILD_PLATFORM],
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
