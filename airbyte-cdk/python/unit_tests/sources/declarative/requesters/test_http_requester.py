@@ -10,6 +10,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest as pytest
 import requests
+import requests_cache
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.sources.declarative.exceptions import ReadException
@@ -19,8 +20,44 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler imp
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from requests import PreparedRequest
+from requests_cache import CachedResponse
+
+
+@pytest.fixture
+def http_requester_factory():
+    def factory(
+        name: str = "name",
+        url_base: str = "https://test_base_url.com",
+        path: str = "/",
+        http_method: str = HttpMethod.GET,
+        request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None,
+        authenticator: Optional[DeclarativeAuthenticator] = None,
+        error_handler: Optional[ErrorHandler] = None,
+        config: Optional[Config] = None,
+        parameters: Mapping[str, Any] = None,
+        disable_retries: bool = False,
+        message_repository: Optional[MessageRepository] = None,
+        use_cache: bool = False,
+    ) -> HttpRequester:
+        return HttpRequester(
+            name=name,
+            url_base=url_base,
+            path=path,
+            config=config or {},
+            parameters=parameters or {},
+            authenticator=authenticator,
+            http_method=http_method,
+            request_options_provider=request_options_provider,
+            error_handler=error_handler,
+            disable_retries=disable_retries,
+            message_repository=message_repository or MagicMock(),
+            use_cache=use_cache,
+        )
+
+    return factory
 
 
 def test_http_requester():
@@ -869,3 +906,33 @@ def test_connection_pool():
         disable_retries=True,
     )
     assert requester._session.adapters["https://"]._pool_connections == 20
+
+
+def test_caching_filename(http_requester_factory):
+    http_requester = http_requester_factory()
+    assert http_requester.cache_filename == f"{http_requester.name}.sqlite"
+
+
+def test_caching_session_with_enable_use_cache(http_requester_factory):
+    http_requester = http_requester_factory(use_cache=True)
+    assert isinstance(http_requester._session, requests_cache.CachedSession)
+
+
+def test_response_caching_with_enable_use_cache(http_requester_factory, requests_mock):
+    http_requester = http_requester_factory(use_cache=True)
+
+    requests_mock.register_uri("GET", http_requester.url_base, json=[{"id": 12, "title": "test_record"}])
+    http_requester.clear_cache()
+
+    response = http_requester.send_request()
+
+    assert requests_mock.called
+    assert isinstance(response, requests.Response)
+
+    requests_mock.reset_mock()
+    new_response = http_requester.send_request()
+
+    assert not requests_mock.called
+    assert isinstance(new_response, CachedResponse)
+
+    assert len(response.json()) == len(new_response.json())
