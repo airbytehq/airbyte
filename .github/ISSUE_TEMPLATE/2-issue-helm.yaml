@@ -1,5 +1,5 @@
-name: 🐛 Report a platform, infra or deployment bug
-description: Use this template when you have a problem operating Airbyte platform
+name: 🐛 [helm] Report a platform, infra or deployment bug
+description: Use this template when you have a problem operating Airbyte platform on Helm/Kubernetes
 labels: [type/bug, area/platform, needs-triage]
 body:
   - type: markdown
@@ -19,21 +19,11 @@ body:
         Thanks for taking the time to fill out this bug report...
         Make sure to update this issue with a concise title and provide all information you have to 
         help us debug the problem together. Issues not following the template will be closed.
-  - type: dropdown
-    id: deploy
-    validations:
-      required: true
-    attributes:
-      label: What method are you using to run Airbyte?
-      multiple: false
-      options:
-        - Docker
-        - Kubernetes
   - type: input
     id: platform-version
     attributes:
-      label: Platform Version or Helm Chart Version
-      description: "Some examples are: (eg. 0.44.1, 0.30.0), you can find the version in the left bottom in Airbyte UI or in the .env / value.yaml file"
+      label: Helm Chart Version
+      description: "What is the Helm Chart App version you're using"
     validations:
       required: true
   - type: dropdown

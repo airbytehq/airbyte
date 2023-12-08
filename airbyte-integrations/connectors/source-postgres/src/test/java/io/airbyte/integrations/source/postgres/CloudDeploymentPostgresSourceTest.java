@@ -16,6 +16,8 @@ import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.util.List;
 import java.util.Map;
@@ -33,14 +35,14 @@ public class CloudDeploymentPostgresSourceTest {
 
   @BeforeAll
   static void setupContainers() {
-    DB_NO_SSL_WITH_NETWORK = PostgresTestDatabase.in("postgres:16-bullseye", "withNetwork");
+    DB_NO_SSL_WITH_NETWORK = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.NETWORK);
     NETWORK_NO_SSL = DB_NO_SSL_WITH_NETWORK.getContainer().getNetwork();
     BASTION_NO_SSL = new SshBastionContainer();
     BASTION_NO_SSL.initAndStartBastion(NETWORK_NO_SSL);
 
-    DB_WITH_SSL = PostgresTestDatabase.in("marcosmarxm/postgres-ssl:dev", "withSSL");
+    DB_WITH_SSL = PostgresTestDatabase.in(BaseImage.POSTGRES_SSL_DEV, ContainerModifier.SSL);
 
-    DB_WITH_SSL_WITH_NETWORK = PostgresTestDatabase.in("marcosmarxm/postgres-ssl:dev", "withSSL", "withNetwork");
+    DB_WITH_SSL_WITH_NETWORK = PostgresTestDatabase.in(BaseImage.POSTGRES_SSL_DEV, ContainerModifier.SSL, ContainerModifier.NETWORK);
     NETWORK_WITH_SSL = DB_WITH_SSL_WITH_NETWORK.getContainer().getNetwork();
     BASTION_WITH_SSL = new SshBastionContainer();
     BASTION_WITH_SSL.initAndStartBastion(NETWORK_WITH_SSL);

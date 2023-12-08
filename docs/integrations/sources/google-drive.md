@@ -245,9 +245,10 @@ Before parsing each document, the connector exports Google Document files to Doc
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                           |
-|---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
-| 0.0.3   | 2023-11-16 | [31458](https://github.com/airbytehq/airbyte/pull/31458)   | Improve folder id input and update document file type parser                                           |
-| 0.0.2   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458)   | Allow syncs on shared drives                                           |
-| 0.0.1   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458)   | Initial Google Drive source                                           |
+| Version | Date       | Pull Request                                              | Subject                                                      |
+|---------|------------|-----------------------------------------------------------|--------------------------------------------------------------|
+| 0.0.4   | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187)  | Bump CDK version to hide source-defined primary key          |
+| 0.0.3   | 2023-11-16 | [31458](https://github.com/airbytehq/airbyte/pull/31458)  | Improve folder id input and update document file type parser |
+| 0.0.2   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458)  | Allow syncs on shared drives                                 |
+| 0.0.1   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458)  | Initial Google Drive source                                  |
 

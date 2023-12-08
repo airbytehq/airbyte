@@ -8,7 +8,6 @@ import pytest
 from _pytest.capture import CaptureFixture
 from airbyte_cdk.sources.abstract_source import AbstractSource
 from freezegun import freeze_time
-from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.avro_scenarios import (
     avro_all_types_scenario,
     avro_file_with_double_as_number_scenario,
@@ -248,10 +247,8 @@ def test_file_based_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, s
 
 @pytest.mark.parametrize("scenario", read_scenarios, ids=[s.name for s in read_scenarios])
 @freeze_time("2023-06-09T00:00:00Z")
-def test_file_based_read(
-    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
-) -> None:
-    verify_read(capsys, caplog, tmp_path, scenario)
+def test_file_based_read(scenario: TestScenario[AbstractSource]) -> None:
+    verify_read(scenario)
 
 
 @pytest.mark.parametrize("scenario", spec_scenarios, ids=[c.name for c in spec_scenarios])

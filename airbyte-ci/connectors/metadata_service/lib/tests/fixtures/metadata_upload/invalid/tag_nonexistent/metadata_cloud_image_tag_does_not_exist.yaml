@@ -18,7 +18,7 @@ data:
     cloud:
       enabled: true
       dockerRepository: airbyte/exists-3
-      dockerImageTag: 6.6.6 # tag does not exist
+      dockerImageTag: 99.99.99 # tag does not exist
     oss:
       enabled: true
       dockerRepository: airbyte/exists-4
