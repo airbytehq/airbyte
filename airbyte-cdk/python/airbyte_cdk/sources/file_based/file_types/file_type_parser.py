@@ -22,25 +22,21 @@ class FileTypeParser(ABC):
 
     @property
     def parser_max_n_files_for_schema_inference(self) -> Optional[int]:
-        """The discovery policy decides how many files are loaded for schema inference. This method can provide a parser-specific override. If it's defined, the smaller of the two values will be used.
-        """
+        """The discovery policy decides how many files are loaded for schema inference. This method can provide a parser-specific override. If it's defined, the smaller of the two values will be used."""
         return None
 
     @property
     def parser_max_n_files_for_parsability(self) -> Optional[int]:
-        """The availability policy decides how many files are loaded for checking whether parsing works correctly. This method can provide a parser-specific override. If it's defined, the smaller of the two values will be used.
-        """
+        """The availability policy decides how many files are loaded for checking whether parsing works correctly. This method can provide a parser-specific override. If it's defined, the smaller of the two values will be used."""
         return None
 
     def get_parser_defined_primary_key(self, config: FileBasedStreamConfig) -> Optional[str]:
-        """The parser can define a primary key. If no user-defined primary key is provided, this will be used.
-        """
+        """The parser can define a primary key. If no user-defined primary key is provided, this will be used."""
         return None
 
     @abstractmethod
     def check_config(self, config: FileBasedStreamConfig) -> tuple[bool, Optional[str]]:
-        """Check whether the config is valid for this file type. If it is, return True and None. If it's not, return False and an error message explaining why it's invalid.
-        """
+        """Check whether the config is valid for this file type. If it is, return True and None. If it's not, return False and an error message explaining why it's invalid."""
         return True, None
 
     @abstractmethod
@@ -51,8 +47,7 @@ class FileTypeParser(ABC):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> SchemaType:
-        """Infer the JSON Schema for this file.
-        """
+        """Infer the JSON Schema for this file."""
         ...
 
     @abstractmethod
@@ -64,13 +59,11 @@ class FileTypeParser(ABC):
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Record]:
-        """Parse and emit each record.
-        """
+        """Parse and emit each record."""
         ...
 
     @property
     @abstractmethod
     def file_read_mode(self) -> FileReadMode:
-        """The mode in which the file should be opened for reading.
-        """
+        """The mode in which the file should be opened for reading."""
         ...

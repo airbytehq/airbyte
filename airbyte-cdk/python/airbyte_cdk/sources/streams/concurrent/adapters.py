@@ -131,8 +131,7 @@ class StreamFacade(Stream):
             return stream.cursor_field
 
     def __init__(self, stream: AbstractStream, legacy_stream: Stream, cursor: Cursor, slice_logger: SliceLogger, logger: logging.Logger):
-        """:param stream: The underlying AbstractStream
-        """
+        """:param stream: The underlying AbstractStream"""
         self._abstract_stream = stream
         self._legacy_stream = legacy_stream
         self._cursor = cursor
@@ -359,7 +358,13 @@ class StreamPartitionGenerator(PartitionGenerator):
     def generate(self) -> Iterable[Partition]:
         for s in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
             yield StreamPartition(
-                self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor,
+                self._stream,
+                copy.deepcopy(s),
+                self.message_repository,
+                self._sync_mode,
+                self._cursor_field,
+                self._state,
+                self._cursor,
             )
 
 

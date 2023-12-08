@@ -69,8 +69,7 @@ class DBM:
 
     @staticmethod
     def get_date_params_ms(start_date: str, end_date: str = None) -> tuple[str, str]:
-        """Returns `start_date` and `end_date` in milliseconds
-        """
+        """Returns `start_date` and `end_date` in milliseconds"""
         start_date = pendulum.parse(start_date)
         # if end_date is null, take date until yesterday
         end_date = pendulum.parse(end_date) if end_date else pendulum.yesterday()
@@ -135,7 +134,8 @@ class DBM:
         filters = query.get("params").get("filters")
         if filters:
             partner_filter_index = next(
-                (index for (index, filter) in enumerate(filters) if filter["type"] == "FILTER_PARTNER"), None,
+                (index for (index, filter) in enumerate(filters) if filter["type"] == "FILTER_PARTNER"),
+                None,
             )  # get the index of the partner filter
             if partner_filter_index is not None:
                 query["params"]["filters"][partner_filter_index]["value"] = partner_id  # set filter to the partner id in the config
@@ -213,8 +213,7 @@ class DBM:
 
 
 class DBMStream(Stream, ABC):
-    """Base stream class
-    """
+    """Base stream class"""
 
     primary_key = None
 
@@ -285,8 +284,7 @@ class DBMIncrementalStream(DBMStream, ABC):
         super().__init__(credentials, partner_id, filters, start_date, end_date)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Update stream state from latest record
-        """
+        """Update stream state from latest record"""
         current_stream_state = current_stream_state or {}
         record_value = latest_record[self.cursor_field]
         state_value = current_stream_state.get(self.cursor_field) or record_value
@@ -297,8 +295,7 @@ class DBMIncrementalStream(DBMStream, ABC):
         return toreturn
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """Slice the stream by date periods.
-        """
+        """Slice the stream by date periods."""
         stream_state = stream_state or {}
         start_date = stream_state.get(self.cursor_field) or self._start_date
         date_chunks = chunk_date_range(
@@ -318,8 +315,7 @@ class DBMIncrementalStream(DBMStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """This method is overridden to update `start_date` key in the `stream_slice` with the latest read record's cursor value.
-        """
+        """This method is overridden to update `start_date` key in the `stream_slice` with the latest read record's cursor value."""
         records = super().read_records(catalog_fields=catalog_fields, sync_mode=sync_mode, stream_slice=stream_slice)
         for record in records:
             self.state = self.get_updated_state(self.state, record)
@@ -344,35 +340,30 @@ class DBMIncrementalStream(DBMStream, ABC):
 
 
 class AudienceComposition(DBMIncrementalStream):
-    """Audience Composition stream
-    """
+    """Audience Composition stream"""
 
     primary_key = None
 
 
 class Floodlight(DBMIncrementalStream):
-    """Floodlight stream
-    """
+    """Floodlight stream"""
 
     primary_key = None
 
 
 class Standard(DBMIncrementalStream):
-    """Standard stream
-    """
+    """Standard stream"""
 
     primary_key = None
 
 
 class UniqueReachAudience(DBMIncrementalStream):
-    """Unique Reach Audience stream
-    """
+    """Unique Reach Audience stream"""
 
     primary_key = None
 
 
 class Reach(DBMIncrementalStream):
-    """Reach stream
-    """
+    """Reach stream"""
 
     primary_key = None

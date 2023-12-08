@@ -75,8 +75,7 @@ class EventsExtractor(RecordExtractor):
         return schema["properties"]
 
     def _get_date_time_items_from_schema(self):
-        """Get all properties from schema with format: 'date-time'
-        """
+        """Get all properties from schema with format: 'date-time'"""
         result = []
         schema = self._get_schema_root_properties()
         for key, value in schema.items():
@@ -85,8 +84,7 @@ class EventsExtractor(RecordExtractor):
         return result
 
     def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """Transform 'date-time' items to RFC3339 format
-        """
+        """Transform 'date-time' items to RFC3339 format"""
         for item in record:
             if item in self.date_time_fields and record[item]:
                 record[item] = pendulum.parse(record[item]).to_rfc3339_string()

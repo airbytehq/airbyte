@@ -81,8 +81,7 @@ class _CsvReader:
                 csv.unregister_dialect(dialect_name)
 
     def _get_headers(self, fp: IOBase, config_format: CsvFormat, dialect_name: str) -> list[str]:
-        """Assumes the fp is pointing to the beginning of the files and will reset it as such
-        """
+        """Assumes the fp is pointing to the beginning of the files and will reset it as such"""
         # Note that this method assumes the dialect has already been registered if we're parsing the headers
         if isinstance(config_format.header_definition, CsvHeaderUserProvided):
             return config_format.header_definition.column_names  # type: ignore  # should be CsvHeaderUserProvided given the type
@@ -109,8 +108,7 @@ class _CsvReader:
 
     @staticmethod
     def _skip_rows(fp: IOBase, rows_to_skip: int) -> None:
-        """Skip rows before the header. This has to be done on the file object itself, not the reader
-        """
+        """Skip rows before the header. This has to be done on the file object itself, not the reader"""
         for _ in range(rows_to_skip):
             fp.readline()
 
@@ -122,8 +120,7 @@ class CsvParser(FileTypeParser):
         self._csv_reader = csv_reader if csv_reader else _CsvReader()
 
     def check_config(self, config: FileBasedStreamConfig) -> tuple[bool, Optional[str]]:
-        """CsvParser does not require config checks, implicit pydantic validation is enough.
-        """
+        """CsvParser does not require config checks, implicit pydantic validation is enough."""
         return True, None
 
     async def infer_schema(
@@ -193,7 +190,10 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _get_cast_function(
-        deduped_property_types: Mapping[str, str], config_format: CsvFormat, logger: logging.Logger, schemaless: bool,
+        deduped_property_types: Mapping[str, str],
+        config_format: CsvFormat,
+        logger: logging.Logger,
+        schemaless: bool,
     ) -> Callable[[Mapping[str, str]], Mapping[str, str]]:
         # Only cast values if the schema is provided
         if deduped_property_types and not schemaless:
@@ -204,7 +204,10 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _to_nullable(
-        row: Mapping[str, str], deduped_property_types: Mapping[str, str], null_values: set[str], strings_can_be_null: bool,
+        row: Mapping[str, str],
+        deduped_property_types: Mapping[str, str],
+        null_values: set[str],
+        strings_can_be_null: bool,
     ) -> dict[str, Optional[str]]:
         nullable = {
             k: None if CsvParser._value_is_none(v, deduped_property_types.get(k), null_values, strings_can_be_null) else v
@@ -247,7 +250,10 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _cast_types(
-        row: dict[str, str], deduped_property_types: dict[str, str], config_format: CsvFormat, logger: logging.Logger,
+        row: dict[str, str],
+        deduped_property_types: dict[str, str],
+        config_format: CsvFormat,
+        logger: logging.Logger,
     ) -> dict[str, Any]:
         """Casts the values in the input 'row' dictionary according to the types defined in the JSON schema.
 

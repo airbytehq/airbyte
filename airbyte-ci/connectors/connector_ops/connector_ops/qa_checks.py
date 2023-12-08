@@ -141,7 +141,9 @@ def check_connector_icon_is_available(connector: Connector) -> bool:
 
 
 def read_all_files_in_directory(
-    directory: Path, ignored_directories: Optional[set[str]] = None, ignored_filename_patterns: Optional[set[str]] = None,
+    directory: Path,
+    ignored_directories: Optional[set[str]] = None,
+    ignored_filename_patterns: Optional[set[str]] = None,
 ) -> Iterable[tuple[str, str]]:
     ignored_directories = ignored_directories if ignored_directories is not None else {}
     ignored_filename_patterns = ignored_filename_patterns if ignored_filename_patterns is not None else {}
@@ -216,7 +218,9 @@ def check_connector_https_url_only(connector: Connector) -> bool:
     ignore_comment = "# ignore-https-check"  # Define the ignore comment pattern
 
     for filename, line in read_all_files_in_directory(
-        connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS, IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS,
+        connector.code_directory,
+        IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS,
+        IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS,
     ):
         line = line.lower()
         if is_comment(line, filename):

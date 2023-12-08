@@ -41,7 +41,10 @@ class GenesysStream(HttpStream, ABC):
             return dict(urllib.parse.parse_qsl(next_query_string))
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"pageSize": self.page_size}
 
@@ -56,8 +59,7 @@ class GenesysStream(HttpStream, ABC):
 
 
 class RoutingOutboundEvents(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/routing/routing/
-    """
+    """API Docs: https://developer.genesys.cloud/routing/routing/"""
 
     primary_key = "id"
 
@@ -66,8 +68,7 @@ class RoutingOutboundEvents(GenesysStream):
 
 
 class RoutingRoutingAssessments(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/routing/routing/
-    """
+    """API Docs: https://developer.genesys.cloud/routing/routing/"""
 
     page_size = 200
     primary_key = "id"
@@ -78,8 +79,7 @@ class RoutingRoutingAssessments(GenesysStream):
 
 
 class RoutingRoutingQueues(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/routing/routing/
-    """
+    """API Docs: https://developer.genesys.cloud/routing/routing/"""
 
     primary_key = "id"
     cursor_field = "dateModified"
@@ -89,8 +89,7 @@ class RoutingRoutingQueues(GenesysStream):
 
 
 class TelephonyLocations(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/telephony/locations-apis
-    """
+    """API Docs: https://developer.genesys.cloud/telephony/locations-apis"""
 
     primary_key = "id"
 
@@ -99,8 +98,7 @@ class TelephonyLocations(GenesysStream):
 
 
 class TelephonyProvidersEdges(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
-    """
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis"""
 
     primary_key = "id"
     cursor_field = "dateModified"
@@ -110,8 +108,7 @@ class TelephonyProvidersEdges(GenesysStream):
 
 
 class TelephonyProvidersEdgesDids(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
-    """
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis"""
 
     primary_key = "id"
     cursor_field = "dateModified"
@@ -121,8 +118,7 @@ class TelephonyProvidersEdgesDids(GenesysStream):
 
 
 class TelephonyProvidersEdgesDidpools(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
-    """
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis"""
 
     primary_key = "id"
     cursor_field = "dateModified"
@@ -132,8 +128,7 @@ class TelephonyProvidersEdgesDidpools(GenesysStream):
 
 
 class TelephonyProvidersEdgesExtensions(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
-    """
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis"""
 
     primary_key = "id"
     cursor_field = "dateModified"
@@ -143,8 +138,7 @@ class TelephonyProvidersEdgesExtensions(GenesysStream):
 
 
 class TelephonyProvidersEdgesLines(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
-    """
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis"""
 
     primary_key = "id"
     cursor_field = "dateModified"
@@ -154,8 +148,7 @@ class TelephonyProvidersEdgesLines(GenesysStream):
 
 
 class TelephonyProvidersEdgesOutboundroutes(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
-    """
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis"""
 
     primary_key = "id"
     cursor_field = "dateModified"
@@ -165,8 +158,7 @@ class TelephonyProvidersEdgesOutboundroutes(GenesysStream):
 
 
 class TelephonyProvidersEdgesPhones(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
-    """
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis"""
 
     primary_key = "id"
     cursor_field = "dateModified"
@@ -176,8 +168,7 @@ class TelephonyProvidersEdgesPhones(GenesysStream):
 
 
 class TelephonyProvidersEdgesSites(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
-    """
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis"""
 
     primary_key = "id"
     cursor_field = "dateModified"
@@ -187,8 +178,7 @@ class TelephonyProvidersEdgesSites(GenesysStream):
 
 
 class TelephonyProvidersEdgesTrunks(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
-    """
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis"""
 
     primary_key = "id"
     cursor_field = "dateModified"
@@ -198,8 +188,7 @@ class TelephonyProvidersEdgesTrunks(GenesysStream):
 
 
 class TelephonyStations(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/telephony/stations-apis
-    """
+    """API Docs: https://developer.genesys.cloud/telephony/stations-apis"""
 
     primary_key = "id"
 
@@ -208,8 +197,7 @@ class TelephonyStations(GenesysStream):
 
 
 class UserUsers(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/useragentman/users/
-    """
+    """API Docs: https://developer.genesys.cloud/useragentman/users/"""
 
     primary_key = "id"
 
@@ -218,8 +206,7 @@ class UserUsers(GenesysStream):
 
 
 class UserGroups(GenesysStream):
-    """API Docs: https://developer.genesys.cloud/useragentman/groups/
-    """
+    """API Docs: https://developer.genesys.cloud/useragentman/groups/"""
 
     primary_key = "id"
     cursor_field = "dateModified"

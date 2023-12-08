@@ -126,7 +126,8 @@ class SFTPClient:
                 last_modified = file_attr.st_mtime
                 if last_modified is None:
                     logger.warning(
-                        "Cannot read m_time for file %s, defaulting to current epoch time", os.path.join(prefix, file_attr.filename),
+                        "Cannot read m_time for file %s, defaulting to current epoch time",
+                        os.path.join(prefix, file_attr.filename),
                     )
                     last_modified = datetime.utcnow().timestamp()
 

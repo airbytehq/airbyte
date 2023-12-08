@@ -31,8 +31,7 @@ WARNING: Do not modify this file.
 
 @dataclass
 class BraintreeExtractor(RecordExtractor):
-    """Extractor Template for all BrainTree streams.
-    """
+    """Extractor Template for all BrainTree streams."""
 
     @staticmethod
     def _extract_as_array(results, attribute):

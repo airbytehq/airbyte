@@ -14,13 +14,11 @@ from airbyte_cdk.sources.file_based.types import StreamState
 
 
 class AbstractFileBasedCursor(ABC):
-    """Abstract base class for cursors used by file-based streams.
-    """
+    """Abstract base class for cursors used by file-based streams."""
 
     @abstractmethod
     def __init__(self, stream_config: FileBasedStreamConfig, **kwargs: Any):
-        """Common interface for all cursors.
-        """
+        """Common interface for all cursors."""
         ...
 
     @abstractmethod
@@ -38,14 +36,12 @@ class AbstractFileBasedCursor(ABC):
 
     @abstractmethod
     def get_state(self) -> MutableMapping[str, Any]:
-        """Get the state of the cursor.
-        """
+        """Get the state of the cursor."""
         ...
 
     @abstractmethod
     def get_start_time(self) -> datetime:
-        """Returns the start time of the current sync.
-        """
+        """Returns the start time of the current sync."""
         ...
 
     @abstractmethod

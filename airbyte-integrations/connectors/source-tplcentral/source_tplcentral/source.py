@@ -61,7 +61,9 @@ class TplcentralAuthenticator(Oauth2Authenticator):
     def refresh_access_token(self) -> tuple[str, int]:
         try:
             response = requests.post(
-                self.token_refresh_endpoint, auth=HTTPBasicAuth(self.client_id, self.client_secret), json=self.get_refresh_request_body(),
+                self.token_refresh_endpoint,
+                auth=HTTPBasicAuth(self.client_id, self.client_secret),
+                json=self.get_refresh_request_body(),
             )
             response.raise_for_status()
             response_json = response.json()

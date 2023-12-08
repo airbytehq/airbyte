@@ -36,7 +36,10 @@ def get_parent_stream_values(record: dict, key_value_map: dict) -> dict:
 
 
 def transform_change_audit_stamps(
-    record: dict, dict_key: str = "changeAuditStamps", props: list = ["created", "lastModified"], fields: list = ["time"],
+    record: dict,
+    dict_key: str = "changeAuditStamps",
+    props: list = ["created", "lastModified"],
+    fields: list = ["time"],
 ) -> Mapping[str, Any]:
     """:: EXAMPLE `changeAuditStamps` input structure:
         {

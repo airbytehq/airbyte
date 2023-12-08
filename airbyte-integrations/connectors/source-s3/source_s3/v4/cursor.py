@@ -46,7 +46,8 @@ class Cursor(DefaultFileBasedCursor):
                 **state,
                 **{
                     Cursor._V3_MIN_SYNC_DATE_FIELD: datetime.strftime(
-                        self._v3_migration_start_datetime, DefaultFileBasedCursor.DATE_TIME_FORMAT,
+                        self._v3_migration_start_datetime,
+                        DefaultFileBasedCursor.DATE_TIME_FORMAT,
                     ),
                 },
             }

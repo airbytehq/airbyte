@@ -54,7 +54,10 @@ def create_source(config: Mapping[str, Any], limits: TestReadLimits) -> Manifest
 
 
 def read_stream(
-    source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, limits: TestReadLimits,
+    source: DeclarativeSource,
+    config: Mapping[str, Any],
+    configured_catalog: ConfiguredAirbyteCatalog,
+    limits: TestReadLimits,
 ) -> AirbyteMessage:
     try:
         handler = MessageGrouper(limits.max_pages_per_slice, limits.max_slices)
@@ -66,7 +69,8 @@ def read_stream(
         )
     except Exception as exc:
         error = AirbyteTracedException.from_exception(
-            exc, message=f"Error reading stream with config={config} and catalog={configured_catalog}: {exc!s}",
+            exc,
+            message=f"Error reading stream with config={config} and catalog={configured_catalog}: {exc!s}",
         )
         return error.as_airbyte_message()
 

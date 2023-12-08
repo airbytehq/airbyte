@@ -25,8 +25,7 @@ class Spec:
     advanced_auth: Optional[AuthFlow] = None
 
     def generate_spec(self) -> ConnectorSpecification:
-        """Returns the connector specification according the spec block defined in the low code connector manifest.
-        """
+        """Returns the connector specification according the spec block defined in the low code connector manifest."""
         obj = {"connectionSpecification": self.connection_specification}
 
         if self.documentation_url:

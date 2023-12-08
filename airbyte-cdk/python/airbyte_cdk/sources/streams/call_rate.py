@@ -252,7 +252,9 @@ class FixedWindowCallRatePolicy(BaseCallRatePolicy):
 
             if available_calls is not None and current_available_calls > available_calls:
                 logger.debug(
-                    "got rate limit update from api, adjusting available calls from %s to %s", current_available_calls, available_calls,
+                    "got rate limit update from api, adjusting available calls from %s to %s",
+                    current_available_calls,
+                    available_calls,
                 )
                 self._calls_num = self._call_limit - available_calls
 

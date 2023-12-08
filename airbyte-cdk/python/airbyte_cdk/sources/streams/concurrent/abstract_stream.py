@@ -46,8 +46,7 @@ class AbstractStream(ABC):
     @property
     @abstractmethod
     def name(self) -> str:
-        """:return: The stream name
-        """
+        """:return: The stream name"""
 
     @property
     @abstractmethod
@@ -58,20 +57,16 @@ class AbstractStream(ABC):
 
     @abstractmethod
     def check_availability(self) -> StreamAvailability:
-        """:return: The stream's availability
-        """
+        """:return: The stream's availability"""
 
     @abstractmethod
     def get_json_schema(self) -> Mapping[str, Any]:
-        """:return: A dict of the JSON schema representing this stream.
-        """
+        """:return: A dict of the JSON schema representing this stream."""
 
     @abstractmethod
     def as_airbyte_stream(self) -> AirbyteStream:
-        """:return: A dict of the JSON schema representing this stream.
-        """
+        """:return: A dict of the JSON schema representing this stream."""
 
     @abstractmethod
     def log_stream_sync_configuration(self) -> None:
-        """Logs the stream's configuration for debugging purposes.
-        """
+        """Logs the stream's configuration for debugging purposes."""

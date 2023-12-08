@@ -12,8 +12,7 @@ import requests
 
 @dataclass
 class Decoder:
-    """Decoder strategy to transform a requests.Response into a Mapping[str, Any]
-    """
+    """Decoder strategy to transform a requests.Response into a Mapping[str, Any]"""
 
     @abstractmethod
     def decode(self, response: requests.Response) -> Union[Mapping[str, Any], list]:

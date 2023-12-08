@@ -18,8 +18,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 
 class AdjustReportStream(HttpStream, IncrementalMixin):
-    """Adjust reports service integration with support for incremental synchronization.
-    """
+    """Adjust reports service integration with support for incremental synchronization."""
 
     def __init__(self, connector: "SourceAdjust", config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
@@ -68,8 +67,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
-        """Report URL path suffix.
-        """
+        """Report URL path suffix."""
         return "report"
 
     def request_params(
@@ -78,8 +76,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        """Get query parameter definitions.
-        """
+        """Get query parameter definitions."""
         required_dimensions = ["day"]
         dimensions = required_dimensions + self.config["dimensions"]
         metrics = self.config["metrics"] + self.config["additional_metrics"]
@@ -136,8 +133,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
             date += datetime.timedelta(days=1)
 
     def get_json_schema(self):
-        """Prune the schema to only include selected fields to synchronize.
-        """
+        """Prune the schema to only include selected fields to synchronize."""
         schema = source_adjust.model.Report.schema()
         properties = schema["properties"]
 
@@ -155,8 +151,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
 
     @property
     def cursor_field(self) -> str:
-        """Name of the field in the API response body used as cursor.
-        """
+        """Name of the field in the API response body used as cursor."""
         return "day"
 
     @property
@@ -197,8 +192,7 @@ class SourceAdjust(AbstractSource):
         return self._streams
 
     def checkpoint(self):
-        """Checkpoint state.
-        """
+        """Checkpoint state."""
         state = AirbyteMessage(
             type=Type.STATE,
             state=AirbyteStateMessage(

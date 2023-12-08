@@ -25,8 +25,7 @@ class ParquetParser(FileTypeParser):
     ENCODING = None
 
     def check_config(self, config: FileBasedStreamConfig) -> tuple[bool, Optional[str]]:
-        """ParquetParser does not require config checks, implicit pydantic validation is enough.
-        """
+        """ParquetParser does not require config checks, implicit pydantic validation is enough."""
         return True, None
 
     async def infer_schema(
@@ -88,8 +87,7 @@ class ParquetParser(FileTypeParser):
 
     @staticmethod
     def _to_output_value(parquet_value: Scalar, parquet_format: ParquetFormat) -> Any:
-        """Convert a pyarrow scalar to a value that can be output by the source.
-        """
+        """Convert a pyarrow scalar to a value that can be output by the source."""
         # Convert date and datetime objects to isoformat strings
         if pa.types.is_time(parquet_value.type) or pa.types.is_timestamp(parquet_value.type) or pa.types.is_date(parquet_value.type):
             return parquet_value.as_py().isoformat()

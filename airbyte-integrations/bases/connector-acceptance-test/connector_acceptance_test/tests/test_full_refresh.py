@@ -54,7 +54,12 @@ class TestFullRefresh(BaseTest):
         assert max_emitted_at_first_read < min_emitted_at_second_read, "emitted_at should increase on subsequent runs"
 
     def assert_two_sequential_reads_produce_same_or_subset_records(
-        self, records_1, records_2, configured_catalog, ignored_fields, detailed_logger,
+        self,
+        records_1,
+        records_2,
+        configured_catalog,
+        ignored_fields,
+        detailed_logger,
     ):
         records_by_stream_1 = defaultdict(list)
         for record in records_1:
@@ -109,5 +114,9 @@ class TestFullRefresh(BaseTest):
 
         self.assert_emitted_at_increase_on_subsequent_runs(records_1, records_2)
         self.assert_two_sequential_reads_produce_same_or_subset_records(
-            records_1, records_2, configured_catalog, ignored_fields, detailed_logger,
+            records_1,
+            records_2,
+            configured_catalog,
+            ignored_fields,
+            detailed_logger,
         )

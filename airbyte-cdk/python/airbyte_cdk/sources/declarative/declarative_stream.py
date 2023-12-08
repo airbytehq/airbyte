@@ -58,8 +58,7 @@ class DeclarativeStream(Stream):
 
     @property  # type: ignore
     def name(self) -> str:
-        """:return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
-        """
+        """:return: Stream name. By default this is the implementing class name, but it can be overridden as needed."""
         return self._name
 
     @name.setter
@@ -77,7 +76,9 @@ class DeclarativeStream(Stream):
         self.retriever.state = value
 
     def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any],
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
         return self.state
 
@@ -96,8 +97,7 @@ class DeclarativeStream(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """:param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
-        """
+        """:param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state."""
         yield from self.retriever.read_records(stream_slice)
 
     def get_json_schema(self) -> Mapping[str, Any]:  # type: ignore
@@ -109,7 +109,11 @@ class DeclarativeStream(Stream):
         return self._schema_loader.get_json_schema()
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[list[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
+        self,
+        *,
+        sync_mode: SyncMode,
+        cursor_field: Optional[list[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """Override to define the slices for this stream. See the stream slicing section of the docs for more information.
 

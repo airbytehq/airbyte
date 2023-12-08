@@ -24,7 +24,11 @@ class HttpMode(BaseModel):
     ssl: bool = Field(..., title="SSL", description="Whether to use SSL to connect to the Chroma server", order=2)
     username: Optional[str] = Field(default="", title="Username", description="Username used in server/client mode only", order=3)
     password: Optional[str] = Field(
-        default="", title="Password", description="Password used in server/client mode only", airbyte_secret=True, order=4,
+        default="",
+        title="Password",
+        description="Password used in server/client mode only",
+        airbyte_secret=True,
+        order=4,
     )
 
     class Config:
@@ -43,7 +47,12 @@ class PersistentMode(BaseModel):
 
 class ChromaIndexingConfigModel(BaseModel):
     auth_method: Union[PersistentMode, HttpMode] = Field(
-        ..., title="Connection Mode", description="Mode how to connect to Chroma", discriminator="mode", type="object", order=0,
+        ...,
+        title="Connection Mode",
+        description="Mode how to connect to Chroma",
+        discriminator="mode",
+        type="object",
+        order=0,
     )
     collection_name: str = Field(..., title="Collection Name", description="The collection to load data into", order=3)
 

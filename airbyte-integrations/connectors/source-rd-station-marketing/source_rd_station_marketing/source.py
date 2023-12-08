@@ -42,8 +42,7 @@ class SourceRDStationMarketing(AbstractSource):
             )
 
     def streams(self, config: Mapping[str, Any]) -> list[Stream]:
-        """:param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         stream_kwargs = self.get_stream_kwargs(config)
         incremental_kwargs = {**stream_kwargs, "start_date": pendulum.parse(config["start_date"])}
         streams = [

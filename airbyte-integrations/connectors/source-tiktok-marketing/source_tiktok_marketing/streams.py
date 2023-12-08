@@ -219,8 +219,7 @@ class TiktokStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        """Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890920013825
-        """
+        """Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890920013825"""
         if self.is_sandbox:
             return "https://sandbox-ads.tiktok.com/open_api/v1.3/"
         return "https://business-api.tiktok.com/open_api/v1.3/"
@@ -248,8 +247,7 @@ class TiktokStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """The system uses a second call limit for each developer app. The set limit varies according to the app's call limit level.
-        """
+        """The system uses a second call limit for each developer app. The set limit varies according to the app's call limit level."""
         # Basic: 	10/sec
         # Advanced: 	20/sec
         # Premium: 	30/sec
@@ -394,8 +392,7 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
         return result
 
     def unnest_cursor_and_pk(self, record: Mapping[str, Any]):
-        """Unnest nested cursor_field and primary_key from nested `dimensions` object to root-level for *_reports streams
-        """
+        """Unnest nested cursor_field and primary_key from nested `dimensions` object to root-level for *_reports streams"""
 
         def to_list(s):
             if not isinstance(s, list):
@@ -410,7 +407,11 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
         return record
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping]:
         """Additional data filtering"""
         state_cursor_value = self.select_cursor_field_value(stream_state) or self._start_time
@@ -593,8 +594,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
     @property
     @abstractmethod
     def report_level(self) -> ReportLevel:
-        """Returns a necessary level value
-        """
+        """Returns a necessary level value"""
 
     @property
     def deprecated_cursor_field(self):
@@ -776,7 +776,10 @@ class BasicReports(IncrementalTiktokStream, ABC):
         return "report/integrated/get/"
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
 
@@ -851,7 +854,10 @@ class AudienceReport(BasicReports, ABC):
         return result
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
         params["report_type"] = "AUDIENCE"

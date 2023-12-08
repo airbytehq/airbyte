@@ -65,7 +65,10 @@ class DocumentProcessor:
         return None
 
     def _get_text_splitter(
-        self, chunk_size: int, chunk_overlap: int, splitter_config: Optional[TextSplitterConfigModel],
+        self,
+        chunk_size: int,
+        chunk_overlap: int,
+        splitter_config: Optional[TextSplitterConfigModel],
     ) -> RecursiveCharacterTextSplitter:
         if splitter_config is None:
             splitter_config = SeparatorSplitterConfigModel(mode="separator")

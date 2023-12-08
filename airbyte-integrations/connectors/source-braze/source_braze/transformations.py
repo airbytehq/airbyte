@@ -20,8 +20,7 @@ class TransformToRecordComponent(AddFields):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> Record:
-        """Transforms incoming string to a dictionary record.
-        """
+        """Transforms incoming string to a dictionary record."""
         _record = {}
         kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
         for parsed_field in self._parsed_fields:

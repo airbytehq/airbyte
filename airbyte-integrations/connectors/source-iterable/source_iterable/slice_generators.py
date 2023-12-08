@@ -22,8 +22,7 @@ class StreamSlice:
 
 
 class SliceGenerator:
-    """Base class for slice generators.
-    """
+    """Base class for slice generators."""
 
     _start_date: DateTime = None
     _end_data: DateTime = None

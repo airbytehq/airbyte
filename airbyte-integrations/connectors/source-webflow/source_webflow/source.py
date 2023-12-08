@@ -52,10 +52,12 @@ class WebflowStream(HttpStream, ABC):
         return self._session.auth
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        """Common params e.g. pagination size etc.
-        """
+        """Common params e.g. pagination size etc."""
         return {}
 
 
@@ -130,8 +132,7 @@ class CollectionsList(WebflowStream):
         return path
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """This API returns a list containing json objects. So we can just yield each element from the list
-        """
+        """This API returns a list containing json objects. So we can just yield each element from the list"""
         response_json = response.json()
         yield from response_json
 
@@ -201,8 +202,7 @@ class CollectionContents(WebflowStream):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """Webflow items API returns an array of items contained in the "items" field.
-        """
+        """Webflow items API returns an array of items contained in the "items" field."""
         response_json = response.json()
         # The items API returns records inside a container list called "items"
         for item in response_json["items"]:

@@ -16,8 +16,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 
 @dataclass
 class CustomFieldTransformation(RecordTransformation):
-    """Remove all "empty" (e.g. '0000-00-00', '0000-00-00 00:00:00') 'date' and 'date-time' fields from record
-    """
+    """Remove all "empty" (e.g. '0000-00-00', '0000-00-00 00:00:00') 'date' and 'date-time' fields from record"""
 
     config: Config
     parameters: InitVar[Mapping[str, Any]]
@@ -33,8 +32,7 @@ class CustomFieldTransformation(RecordTransformation):
         return schema["properties"]
 
     def _get_fields_with_property_formats_from_schema(self, property_formats: tuple[str, ...]) -> list[str]:
-        """Get all properties from schema within property_formats
-        """
+        """Get all properties from schema within property_formats"""
         return [k for k, v in self._schema.items() if v.get("format") in property_formats]
 
     def transform(

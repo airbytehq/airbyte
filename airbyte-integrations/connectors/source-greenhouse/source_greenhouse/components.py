@@ -58,8 +58,7 @@ class GreenHouseSlicer(Cursor):
         return True
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
-        """Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
-        """
+        """Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice"""
         first_cursor_value = first.get(self.cursor_field, "")
         second_cursor_value = second.get(self.cursor_field, "")
         if first_cursor_value and second_cursor_value:
@@ -102,10 +101,15 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         for parent_stream_slice in self.parent_stream.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=self.get_stream_state(),
+            sync_mode=SyncMode.full_refresh,
+            cursor_field=None,
+            stream_state=self.get_stream_state(),
         ):
             for parent_record in self.parent_stream.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None,
+                sync_mode=SyncMode.full_refresh,
+                cursor_field=None,
+                stream_slice=parent_stream_slice,
+                stream_state=None,
             ):
                 parent_state_value = parent_record.get(self.parent_key)
                 yield {
@@ -120,7 +124,8 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
         for id_ in substream_ids:
             self._state[id_] = {
                 self.cursor_field: self._max_dt_str(
-                    stream_state.get(id_, {}).get(self.cursor_field), self._state.get(id_, {}).get(self.cursor_field),
+                    stream_state.get(id_, {}).get(self.cursor_field),
+                    self._state.get(id_, {}).get(self.cursor_field),
                 ),
             }
 

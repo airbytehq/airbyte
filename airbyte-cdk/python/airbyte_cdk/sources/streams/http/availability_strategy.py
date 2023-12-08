@@ -59,7 +59,11 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             return is_available, reason
 
     def handle_http_error(
-        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError,
+        self,
+        stream: Stream,
+        logger: logging.Logger,
+        source: Optional["Source"],
+        error: HTTPError,
     ) -> tuple[bool, Optional[str]]:
         """Override this method to define error handling for various `HTTPError`s
         that are raised while attempting to check a stream's availability.
@@ -91,7 +95,11 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         return False, reason
 
     def reasons_for_unavailable_status_codes(
-        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError,
+        self,
+        stream: Stream,
+        logger: logging.Logger,
+        source: Optional["Source"],
+        error: HTTPError,
     ) -> dict[int, str]:
         """Returns a dictionary of HTTP status codes that indicate stream
         unavailability and reasons explaining why a given status code may

@@ -26,7 +26,10 @@ class Destination(Connector, ABC):
 
     @abstractmethod
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
+        self,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         """Implement to define how the connector writes data to the destination"""
 
@@ -43,7 +46,10 @@ class Destination(Connector, ABC):
                 logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")
 
     def _run_write(
-        self, config: Mapping[str, Any], configured_catalog_path: str, input_stream: io.TextIOWrapper,
+        self,
+        config: Mapping[str, Any],
+        configured_catalog_path: str,
+        input_stream: io.TextIOWrapper,
     ) -> Iterable[AirbyteMessage]:
         catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
         input_messages = self._parse_input_stream(input_stream)

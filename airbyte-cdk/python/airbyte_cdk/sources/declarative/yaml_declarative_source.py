@@ -14,8 +14,7 @@ class YamlDeclarativeSource(ManifestDeclarativeSource):
     """Declarative source defined by a yaml file"""
 
     def __init__(self, path_to_yaml, debug: bool = False):
-        """:param path_to_yaml: Path to the yaml file describing the source
-        """
+        """:param path_to_yaml: Path to the yaml file describing the source"""
         self._path_to_yaml = path_to_yaml
         source_config = self._read_and_parse_yaml_file(path_to_yaml)
         super().__init__(source_config, debug)

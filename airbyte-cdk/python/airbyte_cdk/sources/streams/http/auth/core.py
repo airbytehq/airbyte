@@ -18,8 +18,7 @@ class HttpAuthenticator(ABC):
 
     @abstractmethod
     def get_auth_header(self) -> Mapping[str, Any]:
-        """:return: A dictionary containing all the necessary headers to authenticate.
-        """
+        """:return: A dictionary containing all the necessary headers to authenticate."""
 
 
 @deprecated(version="0.1.20", reason="Set `authenticator=None` instead")

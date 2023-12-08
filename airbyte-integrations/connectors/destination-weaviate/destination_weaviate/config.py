@@ -62,7 +62,12 @@ class WeaviateIndexingConfigModel(BaseModel):
         examples=["https://my-cluster.weaviate.network"],
     )
     auth: Union[TokenAuth, UsernamePasswordAuth, NoAuth] = Field(
-        ..., title="Authentication", description="Authentication method", discriminator="mode", type="object", order=2,
+        ...,
+        title="Authentication",
+        description="Authentication method",
+        discriminator="mode",
+        type="object",
+        order=2,
     )
     batch_size: int = Field(title="Batch Size", description="The number of records to send to Weaviate in each batch", default=128)
     text_field: str = Field(title="Text Field", description="The field in the object that contains the embedded text", default="text")

@@ -29,8 +29,7 @@ class AllOptional(ModelMetaclass):
     """
 
     def __new__(mcs, name, bases, namespaces, **kwargs):
-        """Iterate through fields and wrap then with typing.Optional type.
-        """
+        """Iterate through fields and wrap then with typing.Optional type."""
         annotations = resolve_annotations(namespaces.get("__annotations__", {}), namespaces.get("__module__", None))
         for base in bases:
             annotations = {**annotations, **getattr(base, "__annotations__", {})}

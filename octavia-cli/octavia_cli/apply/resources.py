@@ -191,7 +191,10 @@ class ResourceState:
         """
         state_to_migrate = ResourceState.from_file(state_to_migrate_path)
         new_state = ResourceState.create(
-            state_to_migrate.configuration_path, state_to_migrate.configuration_hash, workspace_id, state_to_migrate.resource_id,
+            state_to_migrate.configuration_path,
+            state_to_migrate.configuration_hash,
+            workspace_id,
+            state_to_migrate.resource_id,
         )
         state_to_migrate.delete()
         return new_state
@@ -265,7 +268,11 @@ class BaseResource(abc.ABC):
         pass
 
     def __init__(
-        self, api_client: airbyte_api_client.ApiClient, workspace_id: str, raw_configuration: dict, configuration_path: str,
+        self,
+        api_client: airbyte_api_client.ApiClient,
+        workspace_id: str,
+        raw_configuration: dict,
+        configuration_path: str,
     ) -> None:
         """Create a BaseResource object.
 
@@ -389,7 +396,12 @@ class BaseResource(abc.ABC):
         self,
         operation_fn: Callable,
         payload: Union[
-            SourceCreate, SourceUpdate, DestinationCreate, DestinationUpdate, WebBackendConnectionCreate, WebBackendConnectionUpdate,
+            SourceCreate,
+            SourceUpdate,
+            DestinationCreate,
+            DestinationUpdate,
+            WebBackendConnectionCreate,
+            WebBackendConnectionUpdate,
         ],
     ) -> Union[SourceRead, DestinationRead]:
         """Wrapper to trigger create or update of remote resource.
@@ -409,7 +421,10 @@ class BaseResource(abc.ABC):
         try:
             result = operation_fn(self.api_instance, payload)
             new_state = ResourceState.create(
-                self.configuration_path, self.configuration_hash, self.workspace_id, result[self.resource_id_field],
+                self.configuration_path,
+                self.configuration_hash,
+                self.workspace_id,
+                result[self.resource_id_field],
             )
             return result, new_state
         except airbyte_api_client.ApiException as api_error:
@@ -421,7 +436,8 @@ class BaseResource(abc.ABC):
                 raise api_error
 
     def manage(
-        self, resource_id: str,
+        self,
+        resource_id: str,
     ) -> Union[tuple[SourceRead, ResourceState], tuple[DestinationRead, ResourceState], tuple[ConnectionRead, ResourceState]]:
         """Declare a remote resource as locally managed by creating a local state
 
@@ -702,7 +718,8 @@ class Connection(BaseResource):
         """
         try:
             source_state = ResourceState.from_configuration_path_and_workspace(
-                self.raw_configuration["source_configuration_path"], self.workspace_id,
+                self.raw_configuration["source_configuration_path"],
+                self.workspace_id,
             )
         except FileNotFoundError:
             raise MissingStateError(
@@ -722,7 +739,8 @@ class Connection(BaseResource):
         """
         try:
             destination_state = ResourceState.from_configuration_path_and_workspace(
-                self.raw_configuration["destination_configuration_path"], self.workspace_id,
+                self.raw_configuration["destination_configuration_path"],
+                self.workspace_id,
             )
         except FileNotFoundError:
             raise MissingStateError(
@@ -739,12 +757,16 @@ class Connection(BaseResource):
         """
         if self.raw_configuration["configuration"].get("operations") is not None:
             self.configuration["operations"] = self._deserialize_operations(
-                self.raw_configuration["configuration"]["operations"], OperationCreate,
+                self.raw_configuration["configuration"]["operations"],
+                OperationCreate,
             )
         for k in self.local_root_level_keys_to_remove_during_create:
             self.configuration.pop(k, None)
         return WebBackendConnectionCreate(
-            name=self.resource_name, source_id=self.source_id, destination_id=self.destination_id, **self.configuration,
+            name=self.resource_name,
+            source_id=self.source_id,
+            destination_id=self.destination_id,
+            **self.configuration,
         )
 
     @property
@@ -766,7 +788,8 @@ class Connection(BaseResource):
         """
         if self.raw_configuration["configuration"].get("operations") is not None:
             self.configuration["operations"] = self._deserialize_operations(
-                self.raw_configuration["configuration"]["operations"], WebBackendOperationCreateOrUpdate,
+                self.raw_configuration["configuration"]["operations"],
+                WebBackendOperationCreateOrUpdate,
             )
         return WebBackendConnectionUpdate(connection_id=self.resource_id, **self.configuration)
 
@@ -797,13 +820,16 @@ class Connection(BaseResource):
                 ]
             streams_and_configurations.append(
                 AirbyteStreamAndConfiguration(
-                    stream=AirbyteStream(**stream["stream"]), config=AirbyteStreamConfiguration(**stream["config"]),
+                    stream=AirbyteStream(**stream["stream"]),
+                    config=AirbyteStreamConfiguration(**stream["config"]),
                 ),
             )
         return AirbyteCatalog(streams_and_configurations)
 
     def _deserialize_operations(
-        self, operations: list[dict], outputModelClass: Union[type[OperationCreate], type[WebBackendOperationCreateOrUpdate]],
+        self,
+        operations: list[dict],
+        outputModelClass: Union[type[OperationCreate], type[WebBackendOperationCreateOrUpdate]],
     ) -> list[Union[OperationCreate, WebBackendOperationCreateOrUpdate]]:
         """Deserialize operations to OperationCreate (to create connection) or WebBackendOperationCreateOrUpdate (to update connection) models.
 
@@ -858,7 +884,9 @@ class Connection(BaseResource):
         """
         error_message = "These keys should be in snake_case since version 0.37.0, please edit or regenerate your connection configuration"
         self._check_for_invalid_configuration_keys(
-            configuration_to_check, {"syncCatalog", "namespaceDefinition", "namespaceFormat", "resourceRequirements"}, error_message,
+            configuration_to_check,
+            {"syncCatalog", "namespaceDefinition", "namespaceFormat", "resourceRequirements"},
+            error_message,
         )
         self._check_for_invalid_configuration_keys(configuration_to_check.get("schedule", {}), {"timeUnit"}, error_message)
         for stream in configuration_to_check["sync_catalog"]["streams"]:
@@ -868,7 +896,9 @@ class Connection(BaseResource):
                 error_message,
             )
             self._check_for_invalid_configuration_keys(
-                stream["config"], {"aliasName", "cursorField", "destinationSyncMode", "primaryKey", "syncMode"}, error_message,
+                stream["config"],
+                {"aliasName", "cursorField", "destinationSyncMode", "primaryKey", "syncMode"},
+                error_message,
             )
 
     # TODO this check can be removed when all our active user are on > 0.39.18

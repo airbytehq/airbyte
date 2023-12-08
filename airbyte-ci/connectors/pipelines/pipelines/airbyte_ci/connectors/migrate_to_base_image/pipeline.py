@@ -35,7 +35,9 @@ class UpgradeBaseImageMetadata(Step):
     async def get_latest_base_image_address(self) -> Optional[str]:
         try:
             version_registry_for_language = await version_registry.get_registry_for_language(
-                self.dagger_client, self.context.connector.language, (self.context.docker_hub_username, self.context.docker_hub_password),
+                self.dagger_client,
+                self.context.connector.language,
+                (self.context.docker_hub_username, self.context.docker_hub_password),
             )
             return version_registry_for_language.latest_not_pre_released_published_entry.published_docker_image.address
         except NotImplementedError:

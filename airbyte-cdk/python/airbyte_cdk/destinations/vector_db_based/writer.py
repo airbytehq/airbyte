@@ -26,7 +26,12 @@ class Writer:
     """
 
     def __init__(
-        self, processing_config: ProcessingConfigModel, indexer: Indexer, embedder: Embedder, batch_size: int, omit_raw_text: bool,
+        self,
+        processing_config: ProcessingConfigModel,
+        indexer: Indexer,
+        embedder: Embedder,
+        batch_size: int,
+        omit_raw_text: bool,
     ) -> None:
         self.processing_config = processing_config
         self.indexer = indexer

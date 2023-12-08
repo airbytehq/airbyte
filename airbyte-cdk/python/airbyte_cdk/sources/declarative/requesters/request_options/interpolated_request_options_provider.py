@@ -51,16 +51,24 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
             raise ValueError("RequestOptionsProvider should only contain either 'request_body_data' or 'request_body_json' not both")
 
         self._parameter_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_parameters, parameters=parameters,
+            config=self.config,
+            request_inputs=self.request_parameters,
+            parameters=parameters,
         )
         self._headers_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_headers, parameters=parameters,
+            config=self.config,
+            request_inputs=self.request_headers,
+            parameters=parameters,
         )
         self._body_data_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_data, parameters=parameters,
+            config=self.config,
+            request_inputs=self.request_body_data,
+            parameters=parameters,
         )
         self._body_json_interpolator = InterpolatedNestedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_json, parameters=parameters,
+            config=self.config,
+            request_inputs=self.request_body_json,
+            parameters=parameters,
         )
 
     def get_request_params(
@@ -71,7 +79,11 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         interpolated_value = self._parameter_interpolator.eval_request_inputs(
-            stream_state, stream_slice, next_page_token, valid_key_types=(str,), valid_value_types=ValidRequestTypes,
+            stream_state,
+            stream_slice,
+            next_page_token,
+            valid_key_types=(str,),
+            valid_value_types=ValidRequestTypes,
         )
         if isinstance(interpolated_value, dict):
             return interpolated_value

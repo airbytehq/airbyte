@@ -27,8 +27,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         return S3File
 
     def filepath_iterator(self, stream_state: Mapping[str, Any] = None) -> Iterator[FileInfo]:
-        """:yield: url filepath to use in S3File()
-        """
+        """:yield: url filepath to use in S3File()"""
         stream_state = self._get_converted_stream_state(stream_state)
         prefix = self._provider.get("path_prefix")
         if prefix is None:
@@ -41,7 +40,8 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         client_config = None
         if S3File.use_aws_account(provider):
             session = boto3session.Session(
-                aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"],
+                aws_access_key_id=provider["aws_access_key_id"],
+                aws_secret_access_key=provider["aws_secret_access_key"],
             )
         else:
             session = boto3session.Session()

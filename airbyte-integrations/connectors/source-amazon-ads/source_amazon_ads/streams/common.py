@@ -73,8 +73,7 @@ class ErrorResponse(BaseModel):
 
 
 class BasicAmazonAdsStream(Stream, ABC):
-    """Base class for all Amazon Ads streams.
-    """
+    """Base class for all Amazon Ads streams."""
 
     def __init__(self, config: Mapping[str, Any], profiles: list[Profile] = None):
         self._profiles = profiles or []
@@ -84,8 +83,7 @@ class BasicAmazonAdsStream(Stream, ABC):
     @property
     @abstractmethod
     def model(self) -> CatalogModel:
-        """Pydantic model to represent json schema
-        """
+        """Pydantic model to represent json schema"""
 
     def get_json_schema(self):
         schema = self.model.schema()
@@ -95,8 +93,7 @@ class BasicAmazonAdsStream(Stream, ABC):
 
 # Basic full refresh stream
 class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
-    """Class for getting data from streams that based on single http request.
-    """
+    """Class for getting data from streams that based on single http request."""
 
     data_field = ""
 
@@ -120,8 +117,7 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
         return {"Amazon-Advertising-API-ClientId": self._client_id}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """:return an object representing single record in the response
-        """
+        """:return an object representing single record in the response"""
         if response.status_code == HTTPStatus.OK:
             if self.data_field:
                 yield from response.json().get(self.data_field, [])
@@ -163,8 +159,7 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
 
 
 class SubProfilesStream(AmazonAdsStream):
-    """Stream for getting resources with pagination support and getting resources based on list of profiles set by source.
-    """
+    """Stream for getting resources with pagination support and getting resources based on list of profiles set by source."""
 
     page_size = 100
 
@@ -197,8 +192,7 @@ class SubProfilesStream(AmazonAdsStream):
         }
 
     def read_records(self, *args, **kvargs) -> Iterable[Mapping[str, Any]]:
-        """Iterate through self._profiles list and send read all records for each profile.
-        """
+        """Iterate through self._profiles list and send read all records for each profile."""
         for profile in self._profiles:
             self._current_profile_id = profile.profileId
             yield from super().read_records(*args, **kvargs)

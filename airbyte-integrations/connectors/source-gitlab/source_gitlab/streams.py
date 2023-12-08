@@ -130,7 +130,10 @@ class GitlabChildStream(GitlabStream):
         return "/".join(template + [self.name])
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, any]]]:
         for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
             for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
@@ -183,7 +186,10 @@ class IncrementalGitlabChildStream(GitlabChildStream):
             current_start = current_end + datetime.timedelta(seconds=1)
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
         super_slices = super().stream_slices(sync_mode, cursor_field, stream_state)

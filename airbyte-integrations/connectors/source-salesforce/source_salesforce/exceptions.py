@@ -14,13 +14,11 @@ class Error(Exception):
 
 
 class SalesforceException(Exception):
-    """Default Salesforce exception.
-    """
+    """Default Salesforce exception."""
 
 
 class TypeSalesforceException(SalesforceException):
-    """We use this exception for unknown input data types for Salesforce.
-    """
+    """We use this exception for unknown input data types for Salesforce."""
 
 
 class TmpFileIOError(Error):

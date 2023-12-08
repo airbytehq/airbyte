@@ -36,8 +36,7 @@ class TransformConfig(Flag):
 
 
 class TypeTransformer:
-    """Class for transforming object before output.
-    """
+    """Class for transforming object before output."""
 
     _custom_normalizer: Optional[Callable[[Any, dict[str, Any]], Any]] = None
 
@@ -183,6 +182,4 @@ class TypeTransformer:
     def get_error_message(self, e: ValidationError) -> str:
         instance_json_type = python_to_json[type(e.instance)]
         key_path = "." + ".".join(map(str, e.path))
-        return (
-            f"Failed to transform value {e.instance!r} of type '{instance_json_type}' to '{e.validator_value}', key path: '{key_path}'"
-        )
+        return f"Failed to transform value {e.instance!r} of type '{instance_json_type}' to '{e.validator_value}', key path: '{key_path}'"

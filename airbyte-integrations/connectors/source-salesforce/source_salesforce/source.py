@@ -116,7 +116,8 @@ class SourceSalesforce(AbstractSource):
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
                 start_date = config.get(
-                    "start_date", (datetime.now() - relativedelta(years=cls.START_DATE_OFFSET_IN_YEARS)).strftime(cls.DATETIME_FORMAT),
+                    "start_date",
+                    (datetime.now() - relativedelta(years=cls.START_DATE_OFFSET_IN_YEARS)).strftime(cls.DATETIME_FORMAT),
                 )
                 stream = incremental(**streams_kwargs, replication_key=replication_key, start_date=start_date)
             else:

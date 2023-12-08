@@ -19,8 +19,7 @@ from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
 
 class AirbyteTracedException(Exception):
-    """An exception that should be emitted as an AirbyteTraceMessage
-    """
+    """An exception that should be emitted as an AirbyteTraceMessage"""
 
     def __init__(
         self,
@@ -41,8 +40,7 @@ class AirbyteTracedException(Exception):
         super().__init__(internal_message)
 
     def as_airbyte_message(self) -> AirbyteMessage:
-        """Builds an AirbyteTraceMessage from the exception
-        """
+        """Builds an AirbyteTraceMessage from the exception"""
         now_millis = datetime.now().timestamp() * 1000.0
 
         trace_exc = self._exception or self
@@ -64,7 +62,8 @@ class AirbyteTracedException(Exception):
     def as_connection_status_message(self) -> AirbyteMessage:
         if self.failure_type == FailureType.config_error:
             output_message = AirbyteMessage(
-                type=MessageType.CONNECTION_STATUS, connectionStatus=AirbyteConnectionStatus(status=Status.FAILED, message=self.message),
+                type=MessageType.CONNECTION_STATUS,
+                connectionStatus=AirbyteConnectionStatus(status=Status.FAILED, message=self.message),
             )
             return output_message
 

@@ -17,13 +17,11 @@ class GoogleSheetsWriter(WriteBufferMixin):
         super().__init__()
 
     def delete_stream_entries(self, stream_name: str):
-        """Deletes all the records belonging to the input stream.
-        """
+        """Deletes all the records belonging to the input stream."""
         self.spreadsheet.clean_worksheet(stream_name)
 
     def check_headers(self, stream_name: str):
-        """Checks whether data headers belonging to the input stream are set.
-        """
+        """Checks whether data headers belonging to the input stream are set."""
         stream = self.stream_info[stream_name]
         if not stream["is_set"]:
             self.spreadsheet.set_headers(stream_name, stream["headers"])

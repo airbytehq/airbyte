@@ -147,7 +147,11 @@ class SwaggerParser(BaseLookerStream):
 
             schema = get_data["responses"]["200"]["schema"]
             endpoints[name] = self.Endpoint(
-                name=name, path=path, schema=self.format_schema(schema), summary=get_data["summary"], operation_id=get_data["operationId"],
+                name=name,
+                path=path,
+                schema=self.format_schema(schema),
+                summary=get_data["summary"],
+                operation_id=get_data["operationId"],
             )
 
         # stream "lookml_dashboards" uses same endpoints
@@ -228,7 +232,11 @@ class LookerStream(BaseLookerStream, ABC):
     def generate_looker_stream(self, name: str, request_params: Mapping[str, Any] = None) -> "LookerStream":
         """Generate a stream object. It can be used for loading of parent data"""
         return LookerStream(
-            name, authenticator=self.authenticator, swagger_parser=self._swagger_parser, domain=self._domain, request_params=request_params,
+            name,
+            authenticator=self.authenticator,
+            swagger_parser=self._swagger_parser,
+            domain=self._domain,
+            request_params=request_params,
         )
 
     def get_parent_endpoints(self) -> list[SwaggerParser.Endpoint]:
@@ -471,7 +479,8 @@ class RunLooks(LookerStream):
 
     def stream_slices(self, sync_mode: SyncMode, **kwargs: Any) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream = self.generate_looker_stream(
-            "search_looks", request_params={"id": ",".join(self._run_look_ids), "limit": "10000", "fields": "id,title,model(id)"},
+            "search_looks",
+            request_params={"id": ",".join(self._run_look_ids), "limit": "10000", "fields": "id,title,model(id)"},
         )
         found_look_ids = []
         for slice in parent_stream.stream_slices(sync_mode=sync_mode):
@@ -528,7 +537,8 @@ class RunLooks(LookerStream):
         and their types for run_look endpoint JSON Schema generation
         """
         stream = self.generate_looker_stream(
-            "explore_models", request_params={"fields": "fields(dimensions(name, type),measures(name, type))"},
+            "explore_models",
+            request_params={"fields": "fields(dimensions(name, type),measures(name, type))"},
         )
         slice = {"lookml_model_name": model, "explore_name": explore}
         data = next(stream.read_records(sync_mode=None, stream_slice=slice))["fields"]

@@ -112,8 +112,7 @@ DIMENSIONS = typing.Literal[
 
 
 class Spec(pydantic.BaseModel):
-    """Adjust reporting API connector.
-    """
+    """Adjust reporting API connector."""
 
     api_token: str = pydantic.Field(
         ...,

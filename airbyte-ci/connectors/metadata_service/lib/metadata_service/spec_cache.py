@@ -69,7 +69,10 @@ def get_docker_info_from_spec_cache_path(spec_cache_path: str) -> CachedSpec:
     docker_repository = without_file.replace(f"/{docker_image_tag}", "")
 
     return CachedSpec(
-        docker_repository=docker_repository, docker_image_tag=docker_image_tag, spec_cache_path=spec_cache_path, registry=registry,
+        docker_repository=docker_repository,
+        docker_image_tag=docker_image_tag,
+        spec_cache_path=spec_cache_path,
+        registry=registry,
     )
 
 

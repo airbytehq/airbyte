@@ -206,7 +206,9 @@ class SourceHubspot(AbstractSource):
             )
 
     def get_web_analytics_custom_objects_stream(
-        self, custom_object_stream_instances: list[CustomObject], common_params: Any,
+        self,
+        custom_object_stream_instances: list[CustomObject],
+        common_params: Any,
     ) -> WebAnalyticsStream:
         for custom_object_stream_instance in custom_object_stream_instances:
 
@@ -221,7 +223,9 @@ class SourceHubspot(AbstractSource):
                 super(self.__class__, self).__init__(parent=parent, **kwargs)
 
             custom_web_analytics_stream_class = type(
-                f"{custom_object_stream_instance.name.capitalize()}WebAnalytics", (WebAnalyticsStream,), {"__init__": __init__},
+                f"{custom_object_stream_instance.name.capitalize()}WebAnalytics",
+                (WebAnalyticsStream,),
+                {"__init__": __init__},
             )
 
             yield custom_web_analytics_stream_class(**common_params)

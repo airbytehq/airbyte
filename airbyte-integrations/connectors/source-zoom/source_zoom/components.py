@@ -77,7 +77,8 @@ class ServerToServerOauthAuthenticator(NoAuth):
             token = base64.b64encode(f"{self._client_id}:{self._client_secret}".encode("ascii")).decode("utf-8")
             headers = {"Authorization": f"Basic {token}", "Content-type": "application/json"}
             rest = requests.post(
-                url=f"{self._authorization_endpoint}?grant_type={self._grant_type}&account_id={self._account_id}", headers=headers,
+                url=f"{self._authorization_endpoint}?grant_type={self._grant_type}&account_id={self._account_id}",
+                headers=headers,
             )
             if rest.status_code != HTTPStatus.OK:
                 raise HTTPError(rest.text)

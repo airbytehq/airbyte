@@ -146,8 +146,7 @@ class SendgridStreamMetadataPagination(SendgridStream):
     @staticmethod
     @abstractmethod
     def initial_path() -> str:
-        """:return: initial path for the API endpoint if no next metadata url found
-        """
+        """:return: initial path for the API endpoint if no next metadata url found"""
 
     def path(
         self,
@@ -229,8 +228,7 @@ class Contacts(SendgridStream):
         return urls, job_status
 
     def create_export_job(self, url: str) -> Optional[str]:
-        """docs: https://docs.sendgrid.com/api-reference/contacts/export-contacts
-        """
+        """docs: https://docs.sendgrid.com/api-reference/contacts/export-contacts"""
         try:
             response = self._send_http_request("POST", url)
             job_id: str = response.json().get("id")
@@ -247,8 +245,7 @@ class Contacts(SendgridStream):
         return None
 
     def wait_for_job(self, url: str) -> tuple[list[str], str]:
-        """docs: https://docs.sendgrid.com/api-reference/contacts/export-contacts-status
-        """
+        """docs: https://docs.sendgrid.com/api-reference/contacts/export-contacts-status"""
         expiration_time: DateTime = pendulum.now().add(seconds=self.DEFAULT_WAIT_TIMEOUT_SECONDS)
         job_status = "pending"
         urls: list[str] = []
@@ -292,7 +289,8 @@ class Contacts(SendgridStream):
         url_parsed = urlparse(url)
         tmp_file = os.path.realpath(os.path.basename(url_parsed.path[1:-5]))
         with closing(self._send_http_request("GET", f"{url}", stream=True, enable_auth=False)) as response, open(
-            tmp_file, "wb",
+            tmp_file,
+            "wb",
         ) as data_file:
             for chunk in response.iter_content(chunk_size=chunk_size):
                 data_file.write(decompressor.decompress(chunk))
@@ -341,8 +339,7 @@ class Segments(SendgridStream):
 
 
 class SingleSends(SendgridStreamMetadataPagination):
-    """https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-single-sends-stats
-    """
+    """https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-single-sends-stats"""
 
     data_field = "results"
 

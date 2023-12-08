@@ -31,7 +31,9 @@ def apply(ctx: click.Context, configurations_files: list[click.Path], force: boo
 
 
 def get_resources_to_apply(
-    configuration_files: list[str], api_client: airbyte_api_client.ApiClient, workspace_id: str,
+    configuration_files: list[str],
+    api_client: airbyte_api_client.ApiClient,
+    workspace_id: str,
 ) -> list[BaseResource]:
     """Create resource objects with factory and sort according to apply priority.
 

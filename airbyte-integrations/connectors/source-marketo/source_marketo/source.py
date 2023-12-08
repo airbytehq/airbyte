@@ -146,8 +146,7 @@ class SemiIncrementalMarketoStream(IncrementalMarketoStream):
 
 
 class MarketoExportBase(IncrementalMarketoStream):
-    """Base class for all the streams which support bulk extract.
-    """
+    """Base class for all the streams which support bulk extract."""
 
     # Polling Job Status - https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/
     # The status is only updated once every 60 seconds
@@ -181,7 +180,10 @@ class MarketoExportBase(IncrementalMarketoStream):
         return f"bulk/v1/{self.stream_name}/export/{stream_slice['id']}/file.json"
 
     def stream_slices(
-        self, sync_mode, stream_state: MutableMapping[str, Any] = None, **kwargs,
+        self,
+        sync_mode,
+        stream_state: MutableMapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Optional[MutableMapping[str, any]]]:
         date_slices = super().stream_slices(sync_mode, stream_state, **kwargs)
 
@@ -459,8 +461,7 @@ class Programs(IncrementalMarketoStream):
         return params
 
     def normalize_datetime(self, dt: str, format="%Y-%m-%dT%H:%M:%SZ%z"):
-        """Convert '2018-09-07T17:37:18Z+0000' -> '2018-09-07T17:37:18Z'
-        """
+        """Convert '2018-09-07T17:37:18Z+0000' -> '2018-09-07T17:37:18Z'"""
         try:
             res = datetime.datetime.strptime(dt, format)
         except ValueError:
@@ -529,8 +530,7 @@ class MarketoAuthenticator(Oauth2Authenticator):
         return payload
 
     def refresh_access_token(self) -> tuple[str, int]:
-        """Returns a tuple of (access_token, token_lifespan_in_seconds)
-        """
+        """Returns a tuple of (access_token, token_lifespan_in_seconds)"""
         try:
             response = requests.request(method="GET", url=self.token_refresh_endpoint, params=self.get_refresh_request_params())
             response.raise_for_status()
@@ -541,12 +541,10 @@ class MarketoAuthenticator(Oauth2Authenticator):
 
 
 class SourceMarketo(AbstractSource):
-    """Source Marketo fetch data of personalized multi-channel programs and campaigns to prospects and customers.
-    """
+    """Source Marketo fetch data of personalized multi-channel programs and campaigns to prospects and customers."""
 
     def check_connection(self, logger, config) -> tuple[bool, any]:
-        """Testing connection availability for the connector by granting the credentials.
-        """
+        """Testing connection availability for the connector by granting the credentials."""
         try:
             url = f"{config['domain_url']}/rest/v1/leads/describe"
 

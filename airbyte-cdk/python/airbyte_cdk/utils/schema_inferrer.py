@@ -25,8 +25,7 @@ class NoRequiredObj(Object):
 
 
 class IntegerToNumber(Number):
-    """This class has the regular Number behaviour, but it will never emit an integer type.
-    """
+    """This class has the regular Number behaviour, but it will never emit an integer type."""
 
     def __init__(self, node_class: SchemaNode):
         super().__init__(node_class)
@@ -91,6 +90,5 @@ class SchemaInferrer:
         return node
 
     def get_stream_schema(self, stream_name: str) -> Optional[InferredSchema]:
-        """Returns the inferred JSON schema for the specified stream. Might be `None` if there were no records for the given stream name.
-        """
+        """Returns the inferred JSON schema for the specified stream. Might be `None` if there were no records for the given stream name."""
         return self._clean(self.stream_to_builder[stream_name].to_schema()) if stream_name in self.stream_to_builder else None

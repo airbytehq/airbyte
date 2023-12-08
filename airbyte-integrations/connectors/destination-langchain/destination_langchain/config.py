@@ -90,10 +90,20 @@ class DocArrayHnswSearchIndexingModel(BaseModel):
 class ConfigModel(BaseModel):
     processing: ProcessingConfigModel
     embedding: Union[OpenAIEmbeddingConfigModel, FakeEmbeddingConfigModel] = Field(
-        ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object",
+        ...,
+        title="Embedding",
+        description="Embedding configuration",
+        discriminator="mode",
+        group="embedding",
+        type="object",
     )
     indexing: Union[PineconeIndexingModel, DocArrayHnswSearchIndexingModel, ChromaLocalIndexingModel] = Field(
-        ..., title="Indexing", description="Indexing configuration", discriminator="mode", group="indexing", type="object",
+        ...,
+        title="Indexing",
+        description="Indexing configuration",
+        discriminator="mode",
+        group="indexing",
+        type="object",
     )
 
     class Config:

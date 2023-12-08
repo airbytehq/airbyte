@@ -56,7 +56,10 @@ class CommcareStream(HttpStream, ABC):
             return ex
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"format": "json"}
         return params
@@ -70,7 +73,10 @@ class Application(CommcareStream):
         self.app_id = app_id
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return f"application/{self.app_id}/"
 
@@ -78,7 +84,10 @@ class Application(CommcareStream):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"format": "json", "extras": "true"}
         return params
@@ -121,7 +130,10 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
             return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"format": "json"}
         if next_page_token:
@@ -135,8 +147,7 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
 
 
 class Case(IncrementalStream):
-    """docs: https://www.commcarehq.org/a/[domain]/api/[version]/case/
-    """
+    """docs: https://www.commcarehq.org/a/[domain]/api/[version]/case/"""
 
     cursor_field = "indexed_on"
     primary_key = "id"
@@ -157,12 +168,18 @@ class Case(IncrementalStream):
         return "zzz_case"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "case"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # start date is what we saved for forms
         # if self.cursor_field in self.state else (CommcareStream.last_form_date or self.initial_date)
@@ -200,8 +217,7 @@ class Case(IncrementalStream):
 
 
 class Form(IncrementalStream):
-    """docs: https://www.commcarehq.org/a/[domain]/api/[version]/form/
-    """
+    """docs: https://www.commcarehq.org/a/[domain]/api/[version]/form/"""
 
     cursor_field = "indexed_on"
     primary_key = "id"
@@ -222,12 +238,18 @@ class Form(IncrementalStream):
         return self.schema
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "form"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # if self.cursor_field in self.state else self.initial_date
         ix = self.state[self.cursor_field]

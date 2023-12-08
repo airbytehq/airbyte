@@ -173,7 +173,10 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return self._raise_on_http_errors
 
     def request_body_json(
-        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs: Any,
+        self,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        **kwargs: Any,
     ) -> Optional[Mapping]:
         metrics = [{"expression": metric} for metric in self.metrics]
         dimensions = [{"name": dimension} for dimension in self.dimensions]
@@ -199,8 +202,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return request_body
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """Override get_json_schema CDK method to retrieve the schema information for GoogleAnalyticsV4 Object dynamically.
-        """
+        """Override get_json_schema CDK method to retrieve the schema information for GoogleAnalyticsV4 Object dynamically."""
         schema: dict[str, Any] = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": ["null", "object"],
@@ -273,8 +275,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return report_body.get("data", {}).get("rows", [])
 
     def lookup_data_type(self, field_type: str, attribute: str) -> str:
-        """Get the data type of a metric or a dimension
-        """
+        """Get the data type of a metric or a dimension"""
         try:
             if field_type == "dimension":
                 if attribute.startswith(("ga:dimension", "ga:customVarName", "ga:customVarValue", "ga:segment")):
@@ -489,7 +490,10 @@ class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
             if response_json and "error" in response_json:
                 raise Exception(
                     "Error refreshing access token {}. Error: {}; Error details: {}; Exception: {}".format(
-                        response_json, response_json["error"], response_json["error_description"], e,
+                        response_json,
+                        response_json["error"],
+                        response_json["error_description"],
+                        e,
                     ),
                 ) from e
             raise Exception(f"Error refreshing access token: {e}") from e
@@ -497,8 +501,7 @@ class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
             return response_json["access_token"], response_json["expires_in"]
 
     def get_refresh_request_params(self) -> Mapping[str, Any]:
-        """Sign the JWT with RSA-256 using the private key found in service account JSON file.
-        """
+        """Sign the JWT with RSA-256 using the private key found in service account JSON file."""
         token_lifetime = 3600  # token lifetime is 1 hour
 
         issued_at = time.time()
@@ -530,8 +533,7 @@ class TestStreamConnection(GoogleAnalyticsV4Stream):
         return None
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs: Any) -> Iterable[Optional[Mapping[str, Any]]]:
-        """Override this method to fetch records from start_date up to now for testing case
-        """
+        """Override this method to fetch records from start_date up to now for testing case"""
         start_date = pendulum.parse(self.start_date).date()
         end_date = pendulum.now().date()
         return [{"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}]

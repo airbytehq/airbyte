@@ -53,8 +53,7 @@ def _import_unstructured() -> None:
 
 
 def user_error(e: Exception) -> bool:
-    """Return True if this exception is caused by user error, False otherwise.
-    """
+    """Return True if this exception is caused by user error, False otherwise."""
     if not isinstance(e, requests.exceptions.RequestException):
         return False
     return bool(e.response and 400 <= e.response.status_code < 500)
@@ -66,14 +65,12 @@ CLOUD_DEPLOYMENT_MODE = "cloud"
 class UnstructuredParser(FileTypeParser):
     @property
     def parser_max_n_files_for_schema_inference(self) -> Optional[int]:
-        """Just check one file as the schema is static
-        """
+        """Just check one file as the schema is static"""
         return 1
 
     @property
     def parser_max_n_files_for_parsability(self) -> Optional[int]:
-        """Do not check any files for parsability because it might be an expensive operation and doesn't give much confidence whether the sync will succeed.
-        """
+        """Do not check any files for parsability because it might be an expensive operation and doesn't give much confidence whether the sync will succeed."""
         return 0
 
     def get_parser_defined_primary_key(self, config: FileBasedStreamConfig) -> Optional[str]:
@@ -208,10 +205,13 @@ class UnstructuredParser(FileTypeParser):
 
     @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=5, giveup=user_error)
     def _read_file_remotely_with_retries(
-        self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str,
+        self,
+        file_handle: IOBase,
+        format: APIProcessingConfigModel,
+        filetype: FileType,
+        strategy: str,
     ) -> str:
-        """Read a file remotely, retrying up to 5 times if the error is not caused by user error. This is useful for transient network errors or the API server being overloaded temporarily.
-        """
+        """Read a file remotely, retrying up to 5 times if the error is not caused by user error. This is useful for transient network errors or the API server being overloaded temporarily."""
         return self._read_file_remotely(file_handle, format, filetype, strategy)
 
     def _read_file_remotely(self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str) -> str:

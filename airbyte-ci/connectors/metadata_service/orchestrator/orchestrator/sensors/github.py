@@ -11,8 +11,7 @@ EXPECTED_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
 def github_connector_nightly_workflow_run_sensor(job, resources_def) -> SensorDefinition:
-    """This sensor is responsible for polling the github connector nightly workflow for new runs.
-    """
+    """This sensor is responsible for polling the github connector nightly workflow for new runs."""
 
     @sensor(
         name=f"{job.name}_on_github_connector_nightly_workflow_success",

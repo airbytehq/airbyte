@@ -76,7 +76,10 @@ class ScaffoldSourceHttpStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         """TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
@@ -91,14 +94,16 @@ class ScaffoldSourceHttpStream(HttpStream, ABC):
 
 
 class Customers(ScaffoldSourceHttpStream):
-    """TODO: Change class name to match the table/data source this stream corresponds to.
-    """
+    """TODO: Change class name to match the table/data source this stream corresponds to."""
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "customer_id"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         """TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
@@ -133,8 +138,7 @@ class IncrementalScaffoldSourceHttpStream(ScaffoldSourceHttpStream, ABC):
 
 
 class Employees(IncrementalScaffoldSourceHttpStream):
-    """TODO: Change class name to match the table/data source this stream corresponds to.
-    """
+    """TODO: Change class name to match the table/data source this stream corresponds to."""
 
     # TODO: Fill in the cursor_field. Required.
     cursor_field = "start_date"

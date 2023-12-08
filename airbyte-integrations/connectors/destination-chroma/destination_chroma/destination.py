@@ -40,7 +40,10 @@ class DestinationChroma(Destination):
         self.indexer = ChromaIndexer(config.indexing)
 
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
+        self,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         """Reads the input stream of messages, config, and catalog to write data to the destination.
 
@@ -58,7 +61,11 @@ class DestinationChroma(Destination):
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)
         writer = Writer(
-            config_model.processing, self.indexer, self.embedder, batch_size=BATCH_SIZE, omit_raw_text=config_model.omit_raw_text,
+            config_model.processing,
+            self.indexer,
+            self.embedder,
+            batch_size=BATCH_SIZE,
+            omit_raw_text=config_model.omit_raw_text,
         )
         yield from writer.write(configured_catalog, input_messages)
 

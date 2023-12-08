@@ -29,8 +29,7 @@ class MondayGraphqlRequester(HttpRequester):
         self.name = parameters.get("name", "").lower()
 
     def _ensure_type(self, t: type, o: Any):
-        """Ensure given object `o` is of type `t`
-        """
+        """Ensure given object `o` is of type `t`"""
         if not isinstance(o, t):
             raise TypeError(f"{type(o)} {o} is not of type {t}")
 
@@ -136,8 +135,7 @@ class MondayGraphqlRequester(HttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        """Combines queries to a single GraphQL query.
-        """
+        """Combines queries to a single GraphQL query."""
         limit = self.limit.eval(self.config)
 
         page = next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME]

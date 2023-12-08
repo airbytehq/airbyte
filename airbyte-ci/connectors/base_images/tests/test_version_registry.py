@@ -26,16 +26,24 @@ class TestVersionRegistry:
         # Please keep this list ordered by version
         return [
             version_registry.VersionRegistryEntry(
-                published_docker_image=mocker.Mock(), changelog_entry="first version", version=semver.VersionInfo.parse("1.0.0"),
+                published_docker_image=mocker.Mock(),
+                changelog_entry="first version",
+                version=semver.VersionInfo.parse("1.0.0"),
             ),
             version_registry.VersionRegistryEntry(
-                published_docker_image=mocker.Mock(), changelog_entry="second version", version=semver.VersionInfo.parse("2.0.0"),
+                published_docker_image=mocker.Mock(),
+                changelog_entry="second version",
+                version=semver.VersionInfo.parse("2.0.0"),
             ),
             version_registry.VersionRegistryEntry(
-                published_docker_image=mocker.Mock(), changelog_entry="pre-release", version=semver.VersionInfo.parse("3.0.0-rc.1"),
+                published_docker_image=mocker.Mock(),
+                changelog_entry="pre-release",
+                version=semver.VersionInfo.parse("3.0.0-rc.1"),
             ),
             version_registry.VersionRegistryEntry(
-                published_docker_image=None, changelog_entry="third version", version=semver.VersionInfo.parse("3.0.0"),
+                published_docker_image=None,
+                changelog_entry="third version",
+                version=semver.VersionInfo.parse("3.0.0"),
             ),
         ]
 
@@ -129,14 +137,21 @@ class TestVersionRegistry:
         mock_remote_registry.get_all_images.return_value = sample_published_images
 
         published_images = await version_registry.VersionRegistry.get_all_published_base_images(
-            mock_dagger_client, fake_docker_credentials, mocker.Mock(),
+            mock_dagger_client,
+            fake_docker_credentials,
+            mocker.Mock(),
         )
 
         assert published_images == sample_published_images
 
     @pytest.mark.anyio()
     async def test_load_with_mocks(
-        self, mocker, mock_dagger_client, fake_docker_credentials, fake_changelog_entries, fake_published_images,
+        self,
+        mocker,
+        mock_dagger_client,
+        fake_docker_credentials,
+        fake_changelog_entries,
+        fake_published_images,
     ):
         mocker.patch.object(version_registry.VersionRegistry, "get_changelog_entries", return_value=fake_changelog_entries)
         mocker.patch.object(version_registry.VersionRegistry, "get_all_published_base_images", return_value=fake_published_images)

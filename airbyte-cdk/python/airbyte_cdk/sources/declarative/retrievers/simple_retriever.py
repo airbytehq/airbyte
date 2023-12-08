@@ -69,8 +69,7 @@ class SimpleRetriever(Retriever):
 
     @property  # type: ignore
     def name(self) -> str:
-        """:return: Stream name
-        """
+        """:return: Stream name"""
         return str(self._name.eval(self.config)) if isinstance(self._name, InterpolatedString) else self._name
 
     @name.setter
@@ -79,7 +78,9 @@ class SimpleRetriever(Retriever):
             self._name = value
 
     def _get_mapping(
-        self, method: Callable[..., Optional[Union[Mapping[str, Any], str]]], **kwargs: Any,
+        self,
+        method: Callable[..., Optional[Union[Mapping[str, Any], str]]],
+        **kwargs: Any,
     ) -> tuple[Union[Mapping[str, Any], str], set[str]]:
         """Get mapping from the provided method, and get the keys of the mapping.
         If the method returns a string, it will return the string and an empty set.
@@ -218,7 +219,10 @@ class SimpleRetriever(Retriever):
 
         self._last_response = response
         records = self.record_selector.select_records(
-            response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
+            response=response,
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
         )
         self._records_from_last_response = records
         return records
@@ -243,7 +247,10 @@ class SimpleRetriever(Retriever):
         return self._paginator.next_page_token(response, self._records_from_last_response)
 
     def _fetch_next_page(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any],
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[requests.Response]:
         return self.requester.send_request(
             path=self._paginator_path(),
@@ -253,10 +260,14 @@ class SimpleRetriever(Retriever):
             request_headers=self._request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             request_params=self._request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             request_body_data=self._request_body_data(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
             ),
             request_body_json=self._request_body_json(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
             ),
         )
 
@@ -302,7 +313,10 @@ class SimpleRetriever(Retriever):
         return
 
     def _get_most_recent_record(
-        self, current_most_recent: Optional[Record], stream_data: StreamData, stream_slice: StreamSlice,
+        self,
+        current_most_recent: Optional[Record],
+        stream_data: StreamData,
+        stream_slice: StreamSlice,
     ) -> Optional[Record]:
         if self.cursor and (record := self._extract_record(stream_data, stream_slice)):
             if not current_most_recent:
@@ -379,7 +393,10 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
         return islice(super().stream_slices(), self.maximum_number_of_slices)
 
     def _fetch_next_page(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any],
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[requests.Response]:
         return self.requester.send_request(
             path=self._paginator_path(),
@@ -389,10 +406,14 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
             request_headers=self._request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             request_params=self._request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             request_body_data=self._request_body_data(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
             ),
             request_body_json=self._request_body_json(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
             ),
             log_formatter=lambda response: format_http_message(
                 response,

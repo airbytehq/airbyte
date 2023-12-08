@@ -61,7 +61,10 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
     )
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
-        title="Authentication", description="Credentials for connecting to the Google Drive API", discriminator="auth_type", type="object",
+        title="Authentication",
+        description="Credentials for connecting to the Google Drive API",
+        discriminator="auth_type",
+        type="object",
     )
 
     @classmethod
@@ -75,8 +78,7 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
 
     @classmethod
     def schema(cls, *args: Any, **kwargs: Any) -> dict[str, Any]:
-        """Generates the mapping comprised of the config fields
-        """
+        """Generates the mapping comprised of the config fields"""
         schema = super().schema(*args, **kwargs)
 
         cls.remove_discriminator(schema)

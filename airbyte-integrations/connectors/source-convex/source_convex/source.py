@@ -21,10 +21,12 @@ class ConvexConfig(TypedDict):
     deployment_url: str
     access_key: str
 
+
 class ConvexState(TypedDict):
     snapshot_cursor: Optional[str]
     snapshot_has_more: bool
     delta_cursor: Optional[int]
+
 
 CONVEX_CLIENT_VERSION = "0.3.0"
 
@@ -56,8 +58,7 @@ class SourceConvex(AbstractSource):
             return False, format_http_error("Connection to Convex via json_schemas endpoint failed", resp)
 
     def streams(self, config: Mapping[str, Any]) -> list[Stream]:
-        """:param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         config = cast(ConvexConfig, config)
         resp = self._json_schemas(config)
         if resp.status_code != 200:
@@ -195,15 +196,13 @@ class ConvexStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> dict[str, str]:
-        """Custom headers for each HTTP request, not including Authorization.
-        """
+        """Custom headers for each HTTP request, not including Authorization."""
         return {
             "Convex-Client": f"airbyte-export-{CONVEX_CLIENT_VERSION}",
         }
 
     def get_updated_state(self, current_stream_state: ConvexState, latest_record: Mapping[str, Any]) -> ConvexState:
-        """This (deprecated) method is still used by AbstractSource to update state between calls to `read_records`.
-        """
+        """This (deprecated) method is still used by AbstractSource to update state between calls to `read_records`."""
         return cast(ConvexState, self.state)
 
     def read_records(self, sync_mode: SyncMode, *args: Any, **kwargs: Any) -> Iterator[Any]:

@@ -10,8 +10,7 @@ from destination_convex.client import ConvexClient
 
 
 class ConvexWriter:
-    """Buffers messages before sending them to Convex.
-    """
+    """Buffers messages before sending them to Convex."""
 
     write_buffer: list[Mapping[str, Any]] = []
     flush_interval = 1000

@@ -25,8 +25,7 @@ API_VERSION = 3
 
 
 class JiraStream(HttpStream, ABC):
-    """Jira API Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/
-    """
+    """Jira API Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/"""
 
     page_size = 50
     primary_key: Optional[str] = "id"
@@ -173,7 +172,10 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
         return self._start_date
 
     def read_records(
-        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs,
+        self,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         start_point = self.get_starting_point(stream_state=stream_state)
         for record in super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs):
@@ -187,8 +189,7 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
 
 
 class ApplicationRoles(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-application-roles/#api-rest-api-3-applicationrole-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-application-roles/#api-rest-api-3-applicationrole-get"""
 
     primary_key = "key"
     skip_http_status_codes = [
@@ -201,8 +202,7 @@ class ApplicationRoles(JiraStream):
 
 
 class Avatars(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-avatars/#api-rest-api-3-avatar-type-system-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-avatars/#api-rest-api-3-avatar-type-system-get"""
 
     extract_field = "system"
     avatar_types = ("issuetype", "project", "user")
@@ -216,8 +216,7 @@ class Avatars(JiraStream):
 
 
 class Boards(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get
-    """
+    """https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get"""
 
     skip_http_status_codes = [
         # for user that have no valid license
@@ -246,8 +245,7 @@ class Boards(JiraStream):
 
 
 class BoardIssues(IncrementalJiraStream):
-    """https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get
-    """
+    """https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get"""
 
     cursor_field = "updated"
     extract_field = "issues"
@@ -306,8 +304,7 @@ class BoardIssues(IncrementalJiraStream):
 
 
 class Dashboards(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-dashboards/#api-rest-api-3-dashboard-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-dashboards/#api-rest-api-3-dashboard-get"""
 
     extract_field = "dashboards"
 
@@ -316,8 +313,7 @@ class Dashboards(JiraStream):
 
 
 class Filters(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-search-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-search-get"""
 
     extract_field = "values"
     use_cache = True
@@ -332,8 +328,7 @@ class Filters(JiraStream):
 
 
 class FilterSharing(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get"""
 
     def __init__(self, render_fields: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -352,8 +347,7 @@ class FilterSharing(JiraStream):
 
 
 class Groups(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-rest-api-3-group-bulk-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-rest-api-3-group-bulk-get"""
 
     extract_field = "values"
     primary_key = "groupId"
@@ -363,8 +357,7 @@ class Groups(JiraStream):
 
 
 class Issues(IncrementalJiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get"""
 
     cursor_field = "updated"
     extract_field = "issues"
@@ -446,8 +439,7 @@ class Issues(IncrementalJiraStream):
 
 
 class IssueComments(IncrementalJiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get"""
 
     extract_field = "comments"
     cursor_field = "updated"
@@ -465,7 +457,10 @@ class IssueComments(IncrementalJiraStream):
         return f"issue/{stream_slice['key']}/comment"
 
     def read_records(
-        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs,
+        self,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         for issue in read_incremental(self.issues_stream, stream_state=stream_state):
             stream_slice = {"key": issue["key"]}
@@ -477,8 +472,7 @@ class IssueComments(IncrementalJiraStream):
 
 
 class IssueFields(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get"""
 
     use_cache = True
 
@@ -493,8 +487,7 @@ class IssueFields(JiraStream):
 
 
 class IssueFieldConfigurations(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get"""
 
     extract_field = "values"
     skip_http_status_codes = [
@@ -507,8 +500,7 @@ class IssueFieldConfigurations(JiraStream):
 
 
 class IssueCustomFieldContexts(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get"""
 
     use_cache = True
     extract_field = "values"
@@ -531,7 +523,8 @@ class IssueCustomFieldContexts(JiraStream):
         for field in read_full_refresh(self.issue_fields_stream):
             if field.get("custom", False):
                 yield from super().read_records(
-                    stream_slice={"field_id": field["id"], "field_type": field.get("schema", {}).get("type")}, **kwargs,
+                    stream_slice={"field_id": field["id"], "field_type": field.get("schema", {}).get("type")},
+                    **kwargs,
                 )
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
@@ -541,8 +534,7 @@ class IssueCustomFieldContexts(JiraStream):
 
 
 class IssueCustomFieldOptions(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-rest-api-3-field-fieldid-context-contextid-option-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-rest-api-3-field-fieldid-context-contextid-option-get"""
 
     skip_http_status_codes = [
         requests.codes.NOT_FOUND,
@@ -555,7 +547,9 @@ class IssueCustomFieldOptions(JiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.issue_custom_field_contexts_stream = IssueCustomFieldContexts(
-            authenticator=self.authenticator, domain=self._domain, projects=self._projects,
+            authenticator=self.authenticator,
+            domain=self._domain,
+            projects=self._projects,
         )
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -573,8 +567,7 @@ class IssueCustomFieldOptions(JiraStream):
 
 
 class IssueLinkTypes(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get"""
 
     extract_field = "issueLinkTypes"
 
@@ -583,8 +576,7 @@ class IssueLinkTypes(JiraStream):
 
 
 class IssueNavigatorSettings(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-navigator-settings/#api-rest-api-3-settings-columns-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-navigator-settings/#api-rest-api-3-settings-columns-get"""
 
     primary_key = None
     skip_http_status_codes = [
@@ -597,8 +589,7 @@ class IssueNavigatorSettings(JiraStream):
 
 
 class IssueNotificationSchemes(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-notification-schemes/#api-rest-api-3-notificationscheme-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-notification-schemes/#api-rest-api-3-notificationscheme-get"""
 
     extract_field = "values"
 
@@ -607,8 +598,7 @@ class IssueNotificationSchemes(JiraStream):
 
 
 class IssuePriorities(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-priorities/#api-rest-api-3-priority-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-priorities/#api-rest-api-3-priority-get"""
 
     extract_field = "values"
 
@@ -617,8 +607,7 @@ class IssuePriorities(JiraStream):
 
 
 class IssuePropertyKeys(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-get"""
 
     extract_field = "keys"
     use_cache = True
@@ -637,8 +626,7 @@ class IssuePropertyKeys(JiraStream):
 
 
 class IssueProperties(StartDateJiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-propertykey-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-propertykey-get"""
 
     primary_key = "key"
 
@@ -666,8 +654,7 @@ class IssueProperties(StartDateJiraStream):
 
 
 class IssueRemoteLinks(StartDateJiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -694,8 +681,7 @@ class IssueRemoteLinks(StartDateJiraStream):
 
 
 class IssueResolutions(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-resolutions/#api-rest-api-3-resolution-search-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-resolutions/#api-rest-api-3-resolution-search-get"""
 
     extract_field = "values"
 
@@ -704,8 +690,7 @@ class IssueResolutions(JiraStream):
 
 
 class IssueSecuritySchemes(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-security-schemes/#api-rest-api-3-issuesecurityschemes-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-security-schemes/#api-rest-api-3-issuesecurityschemes-get"""
 
     extract_field = "issueSecuritySchemes"
     skip_http_status_codes = [
@@ -718,16 +703,14 @@ class IssueSecuritySchemes(JiraStream):
 
 
 class IssueTypes(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-group-issue-types
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-group-issue-types"""
 
     def path(self, **kwargs) -> str:
         return "issuetype"
 
 
 class IssueTypeSchemes(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-schemes/#api-rest-api-3-issuetypescheme-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-schemes/#api-rest-api-3-issuetypescheme-get"""
 
     extract_field = "values"
     skip_http_status_codes = [
@@ -740,8 +723,7 @@ class IssueTypeSchemes(JiraStream):
 
 
 class IssueTypeScreenSchemes(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-screen-schemes/#api-rest-api-3-issuetypescreenscheme-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-screen-schemes/#api-rest-api-3-issuetypescreenscheme-get"""
 
     extract_field = "values"
     skip_http_status_codes = [
@@ -754,8 +736,7 @@ class IssueTypeScreenSchemes(JiraStream):
 
 
 class IssueTransitions(StartDateJiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get"""
 
     primary_key = ["issueId", "id"]
     extract_field = "transitions"
@@ -852,8 +833,7 @@ class IssueWatchers(StartDateJiraStream):
 
 
 class IssueWorklogs(IncrementalJiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get"""
 
     extract_field = "worklogs"
     cursor_field = "updated"
@@ -871,7 +851,10 @@ class IssueWorklogs(IncrementalJiraStream):
         return f"issue/{stream_slice['key']}/worklog"
 
     def read_records(
-        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs,
+        self,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         for issue in read_incremental(self.issues_stream, stream_state=stream_state):
             stream_slice = {"key": issue["key"]}
@@ -879,8 +862,7 @@ class IssueWorklogs(IncrementalJiraStream):
 
 
 class JiraSettings(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-rest-api-3-application-properties-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-rest-api-3-application-properties-get"""
 
     skip_http_status_codes = [
         # No permission
@@ -892,8 +874,7 @@ class JiraSettings(JiraStream):
 
 
 class Labels(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-labels/#api-rest-api-3-label-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-labels/#api-rest-api-3-label-get"""
 
     extract_field = "values"
     primary_key = "label"
@@ -906,8 +887,7 @@ class Labels(JiraStream):
 
 
 class Permissions(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permissions/#api-rest-api-3-permissions-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permissions/#api-rest-api-3-permissions-get"""
 
     extract_field = "permissions"
     primary_key = "key"
@@ -926,8 +906,7 @@ class Permissions(JiraStream):
 
 
 class PermissionSchemes(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permission-schemes/#api-rest-api-3-permissionscheme-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permission-schemes/#api-rest-api-3-permissionscheme-get"""
 
     extract_field = "permissionSchemes"
 
@@ -936,8 +915,7 @@ class PermissionSchemes(JiraStream):
 
 
 class Projects(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get"""
 
     extract_field = "values"
     use_cache = True
@@ -958,8 +936,7 @@ class Projects(JiraStream):
 
 
 class ProjectAvatars(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -982,16 +959,14 @@ class ProjectAvatars(JiraStream):
 
 
 class ProjectCategories(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-categories/#api-rest-api-3-projectcategory-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-categories/#api-rest-api-3-projectcategory-get"""
 
     def path(self, **kwargs) -> str:
         return "projectCategory"
 
 
 class ProjectComponents(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-components/#api-rest-api-3-project-projectidorkey-component-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-components/#api-rest-api-3-project-projectidorkey-component-get"""
 
     extract_field = "values"
 
@@ -1008,8 +983,7 @@ class ProjectComponents(JiraStream):
 
 
 class ProjectEmail(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-email/#api-rest-api-3-project-projectid-email-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-email/#api-rest-api-3-project-projectid-email-get"""
 
     primary_key = "projectId"
     skip_http_status_codes = [
@@ -1034,8 +1008,7 @@ class ProjectEmail(JiraStream):
 
 
 class ProjectPermissionSchemes(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-permission-schemes/#api-rest-api-3-project-projectkeyorid-securitylevel-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-permission-schemes/#api-rest-api-3-project-projectkeyorid-securitylevel-get"""
 
     extract_field = "levels"
 
@@ -1056,8 +1029,7 @@ class ProjectPermissionSchemes(JiraStream):
 
 
 class ProjectRoles(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-roles#api-rest-api-3-role-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-roles#api-rest-api-3-role-get"""
 
     primary_key = "id"
     skip_http_status_codes = [
@@ -1070,8 +1042,7 @@ class ProjectRoles(JiraStream):
 
 
 class ProjectTypes(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-types/#api-rest-api-3-project-type-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-types/#api-rest-api-3-project-type-get"""
 
     primary_key = None
 
@@ -1080,8 +1051,7 @@ class ProjectTypes(JiraStream):
 
 
 class ProjectVersions(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-versions/#api-rest-api-3-project-projectidorkey-version-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-versions/#api-rest-api-3-project-projectidorkey-version-get"""
 
     extract_field = "values"
 
@@ -1144,7 +1114,10 @@ class PullRequests(IncrementalJiraStream):
         return matches > 0
 
     def read_records(
-        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs,
+        self,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
         dev_field_ids = field_ids_by_name.get("Development", [])
@@ -1152,7 +1125,8 @@ class PullRequests(IncrementalJiraStream):
             for dev_field_id in dev_field_ids:
                 if self.has_pull_requests(issue["fields"].get(dev_field_id)):
                     yield from super().read_records(
-                        stream_slice={"id": issue["id"], self.cursor_field: issue["fields"][self.cursor_field]}, **kwargs,
+                        stream_slice={"id": issue["id"], self.cursor_field: issue["fields"][self.cursor_field]},
+                        **kwargs,
                     )
                     break
 
@@ -1163,8 +1137,7 @@ class PullRequests(IncrementalJiraStream):
 
 
 class Screens(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-get"""
 
     extract_field = "values"
     use_cache = True
@@ -1178,8 +1151,7 @@ class Screens(JiraStream):
 
 
 class ScreenTabs(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tabs/#api-rest-api-3-screens-screenid-tabs-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tabs/#api-rest-api-3-screens-screenid-tabs-get"""
 
     raise_on_http_errors = False
     use_cache = True
@@ -1214,8 +1186,7 @@ class ScreenTabs(JiraStream):
 
 
 class ScreenTabFields(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tab-fields/#api-rest-api-3-screens-screenid-tabs-tabid-fields-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tab-fields/#api-rest-api-3-screens-screenid-tabs-tabid-fields-get"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -1238,8 +1209,7 @@ class ScreenTabFields(JiraStream):
 
 
 class ScreenSchemes(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-schemes/#api-rest-api-3-screenscheme-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-schemes/#api-rest-api-3-screenscheme-get"""
 
     extract_field = "values"
     skip_http_status_codes = [
@@ -1252,8 +1222,7 @@ class ScreenSchemes(JiraStream):
 
 
 class Sprints(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-sprint-get
-    """
+    """https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-sprint-get"""
 
     extract_field = "values"
     use_cache = True
@@ -1303,8 +1272,7 @@ class Sprints(JiraStream):
 
 
 class SprintIssues(IncrementalJiraStream):
-    """https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-agile-1-0-sprint-sprintid-issue-get
-    """
+    """https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-agile-1-0-sprint-sprintid-issue-get"""
 
     cursor_field = "updated"
     extract_field = "issues"
@@ -1355,8 +1323,7 @@ class SprintIssues(IncrementalJiraStream):
 
 
 class TimeTracking(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-time-tracking/#api-rest-api-3-configuration-timetracking-list-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-time-tracking/#api-rest-api-3-configuration-timetracking-list-get"""
 
     primary_key = "key"
     skip_http_status_codes = [
@@ -1369,8 +1336,7 @@ class TimeTracking(JiraStream):
 
 
 class Users(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-users-search-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-users-search-get"""
 
     primary_key = "accountId"
     use_cache = True
@@ -1380,8 +1346,7 @@ class Users(JiraStream):
 
 
 class UsersGroupsDetailed(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-get"""
 
     primary_key = "accountId"
 
@@ -1409,8 +1374,7 @@ class UsersGroupsDetailed(JiraStream):
 
 
 class Workflows(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get"""
 
     extract_field = "values"
     skip_http_status_codes = [
@@ -1423,8 +1387,7 @@ class Workflows(JiraStream):
 
 
 class WorkflowSchemes(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-get"""
 
     extract_field = "values"
     skip_http_status_codes = [
@@ -1437,8 +1400,7 @@ class WorkflowSchemes(JiraStream):
 
 
 class WorkflowStatuses(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get"""
 
     skip_http_status_codes = [
         # for user that have no valid license
@@ -1450,8 +1412,7 @@ class WorkflowStatuses(JiraStream):
 
 
 class WorkflowStatusCategories(JiraStream):
-    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-status-categories/#api-rest-api-3-statuscategory-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-status-categories/#api-rest-api-3-statuscategory-get"""
 
     def path(self, **kwargs) -> str:
         return "statuscategory"

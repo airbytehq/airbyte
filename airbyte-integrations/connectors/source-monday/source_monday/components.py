@@ -93,8 +93,7 @@ class IncrementalSingleSlice(Cursor):
         return True
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
-        """Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
-        """
+        """Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice"""
         first_cursor_value = first.get(self.cursor_field.eval(self.config)) if first else None
         second_cursor_value = second.get(self.cursor_field.eval(self.config)) if second else None
         if first_cursor_value and second_cursor_value:
@@ -162,7 +161,10 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
             self._state[self.parent_stream_name] = parent_state
 
     def read_parent_stream(
-        self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any],
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[str],
+        stream_state: Mapping[str, Any],
     ) -> Iterable[Mapping[str, Any]]:
         self.parent_stream.state = stream_state
 
@@ -178,7 +180,10 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
 
         for parent_slice in self.parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
             for parent_record in self.parent_stream.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state,
+                sync_mode=sync_mode,
+                cursor_field=cursor_field,
+                stream_slice=parent_slice,
+                stream_state=stream_state,
             ):
                 # Skip non-records (eg AirbyteLogMessage)
                 if isinstance(parent_record, AirbyteMessage):

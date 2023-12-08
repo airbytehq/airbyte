@@ -65,8 +65,7 @@ class DefaultFileBasedCursor(AbstractFileBasedCursor):
         return None
 
     def _is_history_full(self) -> bool:
-        """Returns true if the state's history is full, meaning new entries will start to replace old entries.
-        """
+        """Returns true if the state's history is full, meaning new entries will start to replace old entries."""
         return len(self._file_to_datetime_history) >= self.DEFAULT_MAX_HISTORY_SIZE
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:

@@ -37,7 +37,9 @@ def sources_connectors(ctx: click.Context):
 
 
 @connectors.command(
-    cls=OctaviaCommand, name="destinations", help="List all the destination connectors currently available on your Airbyte instance",
+    cls=OctaviaCommand,
+    name="destinations",
+    help="List all the destination connectors currently available on your Airbyte instance",
 )
 @click.pass_context
 def destinations_connectors(ctx: click.Context):

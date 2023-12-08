@@ -69,8 +69,7 @@ from source_bing_ads.report_streams import (  # noqa: F401
 
 
 class SourceBingAds(AbstractSource):
-    """Source implementation of Bing Ads API. Fetches advertising data from accounts
-    """
+    """Source implementation of Bing Ads API. Fetches advertising data from accounts"""
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         try:

@@ -123,15 +123,13 @@ class JsonSchemaHelper:
         return node
 
     def get_parent_path(self, path: str, separator="/") -> Any:
-        """Returns the parent path of the supplied path
-        """
+        """Returns the parent path of the supplied path"""
         absolute_path = f"{separator}{path}" if not path.startswith(separator) else path
         parent_path, _ = absolute_path.rsplit(sep=separator, maxsplit=1)
         return parent_path
 
     def get_parent(self, path: str, separator="/") -> Any:
-        """Returns the parent dict of a given path within the `obj` dict
-        """
+        """Returns the parent dict of a given path within the `obj` dict"""
         parent_path = self.get_parent_path(path, separator=separator)
         if parent_path == "":
             return self._schema

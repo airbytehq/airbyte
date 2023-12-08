@@ -32,12 +32,18 @@ class ExchangeRates(HttpStream):
         return None
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return stream_slice["date"]
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         # The api requires that we include apikey as a header so we do that in this method
         return {"apikey": self.apikey}
@@ -85,7 +91,10 @@ class ExchangeRates(HttpStream):
         return dates
 
     def stream_slices(
-        self, sync_mode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, any]]]:
         start_date = datetime.strptime(stream_state["date"], "%Y-%m-%d") if stream_state and "date" in stream_state else self.start_date
         return self._chunk_date_range(start_date)

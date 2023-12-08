@@ -134,8 +134,7 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
         return True
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
-        """Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
-        """
+        """Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice"""
         first_cursor_value = first.get("timestamp")
         second_cursor_value = second.get("timestamp")
         if first_cursor_value and second_cursor_value:

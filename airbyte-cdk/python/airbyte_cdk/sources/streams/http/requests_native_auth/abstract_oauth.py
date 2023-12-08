@@ -149,14 +149,12 @@ class AbstractOauth2Authenticator(AuthBase):
 
     @property
     def token_expiry_is_time_of_expiration(self) -> bool:
-        """Indicates that the Token Expiry returns the date until which the token will be valid, not the amount of time it will be valid.
-        """
+        """Indicates that the Token Expiry returns the date until which the token will be valid, not the amount of time it will be valid."""
         return False
 
     @property
     def token_expiry_date_format(self) -> Optional[str]:
-        """Format of the datetime; exists it if expires_in is returned as the expiration datetime instead of seconds until it expires
-        """
+        """Format of the datetime; exists it if expires_in is returned as the expiration datetime instead of seconds until it expires"""
         return None
 
     @abstractmethod
@@ -215,8 +213,7 @@ class AbstractOauth2Authenticator(AuthBase):
 
     @property
     def _message_repository(self) -> Optional[MessageRepository]:
-        """The implementation can define a message_repository if it wants debugging logs for HTTP requests
-        """
+        """The implementation can define a message_repository if it wants debugging logs for HTTP requests"""
         return _NOOP_MESSAGE_REPOSITORY
 
     def _log_response(self, response: requests.Response):

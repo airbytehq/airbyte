@@ -9,8 +9,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 
 class Interpolation(ABC):
-    """Strategy for evaluating the interpolated value of a string at runtime using Jinja.
-    """
+    """Strategy for evaluating the interpolated value of a string at runtime using Jinja."""
 
     @abstractmethod
     def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_options):

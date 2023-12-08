@@ -92,8 +92,7 @@ CONNECTORS_NAMES = get_connectors_names()
 
 
 def _run_single_connector_task(args: Iterable) -> int:
-    """Wrapper for unpack task arguments.
-    """
+    """Wrapper for unpack task arguments."""
     return _run_task(*args)
 
 
@@ -106,8 +105,7 @@ def _run_task(
     task_commands: dict = TASK_COMMANDS,
     **kwargs: Any,
 ) -> int:
-    """Run task in its own environment.
-    """
+    """Run task in its own environment."""
     cur_dir = os.getcwd()
     if multi_envs:
         if module_path:

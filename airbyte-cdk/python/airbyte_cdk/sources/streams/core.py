@@ -78,8 +78,7 @@ class IncrementalMixin(ABC):
 
 
 class Stream(ABC):
-    """Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
-    """
+    """Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol."""
 
     # Use self.logger in subclasses to log any messages
     @property
@@ -91,8 +90,7 @@ class Stream(ABC):
 
     @property
     def name(self) -> str:
-        """:return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
-        """
+        """:return: Stream name. By default this is the implementing class name, but it can be overridden as needed."""
         return casing.camel_to_snake(self.__class__.__name__)
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
@@ -182,8 +180,7 @@ class Stream(ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        """This method should be overridden by subclasses to read records based on the inputs
-        """
+        """This method should be overridden by subclasses to read records based on the inputs"""
 
     @cache
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -214,8 +211,7 @@ class Stream(ABC):
 
     @property
     def supports_incremental(self) -> bool:
-        """:return: True if this stream supports incrementally reading data
-        """
+        """:return: True if this stream supports incrementally reading data"""
         return len(self._wrapped_cursor_field()) > 0
 
     def _wrapped_cursor_field(self) -> list[str]:
@@ -237,8 +233,7 @@ class Stream(ABC):
 
     @property
     def source_defined_cursor(self) -> bool:
-        """Return False if the cursor can be configured by the user.
-        """
+        """Return False if the cursor can be configured by the user."""
         return True
 
     def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> tuple[bool, Optional[str]]:
@@ -257,8 +252,7 @@ class Stream(ABC):
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        """:return: The AvailabilityStrategy used to check whether this stream is available.
-        """
+        """:return: The AvailabilityStrategy used to check whether this stream is available."""
         return None
 
     @property
@@ -269,7 +263,11 @@ class Stream(ABC):
         """
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[list[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
+        self,
+        *,
+        sync_mode: SyncMode,
+        cursor_field: Optional[list[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """Override to define the slices for this stream. See the stream slicing section of the docs for more information.
 
@@ -295,7 +293,9 @@ class Stream(ABC):
 
     @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.")
     def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any],
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
         """Override to extract state from the latest record. Needed to implement incremental sync.
 
@@ -311,8 +311,7 @@ class Stream(ABC):
         return {}
 
     def log_stream_sync_configuration(self) -> None:
-        """Logs the configuration of this stream.
-        """
+        """Logs the configuration of this stream."""
         self.logger.debug(
             f"Syncing stream instance: {self.name}",
             extra={
@@ -323,8 +322,7 @@ class Stream(ABC):
 
     @staticmethod
     def _wrapped_primary_key(keys: Optional[Union[str, list[str], list[list[str]]]]) -> Optional[list[list[str]]]:
-        """:return: wrap the primary_key property in a list of list of strings required by the Airbyte Stream object.
-        """
+        """:return: wrap the primary_key property in a list of list of strings required by the Airbyte Stream object."""
         if not keys:
             return None
 

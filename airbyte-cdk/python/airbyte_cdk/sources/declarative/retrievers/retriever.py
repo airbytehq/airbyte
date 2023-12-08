@@ -13,8 +13,7 @@ from airbyte_cdk.sources.streams.core import StreamData
 
 @dataclass
 class Retriever:
-    """Responsible for fetching a stream's records from an HTTP API source.
-    """
+    """Responsible for fetching a stream's records from an HTTP API source."""
 
     @abstractmethod
     def read_records(

@@ -60,7 +60,9 @@ def _enforce_no_additional_top_level_properties(json_schema: dict[str, Any]):
 
 
 def verify_records_schema(
-    records: list[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: bool,
+    records: list[AirbyteRecordMessage],
+    catalog: ConfiguredAirbyteCatalog,
+    fail_on_extra_columns: bool,
 ) -> Mapping[str, Mapping[str, ValidationError]]:
     """Check records against their schemas from the catalog, yield error messages.
     Only first record with error will be yielded for each stream.
@@ -71,7 +73,8 @@ def verify_records_schema(
         if fail_on_extra_columns:
             schema_to_validate_against = _enforce_no_additional_top_level_properties(schema_to_validate_against)
         stream_validators[stream.stream.name] = Draft7ValidatorWithStrictInteger(
-            schema_to_validate_against, format_checker=CustomFormatChecker(),
+            schema_to_validate_against,
+            format_checker=CustomFormatChecker(),
         )
     stream_errors = defaultdict(dict)
     for record in records:

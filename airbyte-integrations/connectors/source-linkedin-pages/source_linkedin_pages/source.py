@@ -38,7 +38,10 @@ class LinkedinPagesStream(HttpStream, ABC):
         return None
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         return [response.json()]
 
@@ -67,7 +70,10 @@ class FollowerStatistics(LinkedinPagesStream):
         return path
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         yield from response.json().get("elements")
 
@@ -78,7 +84,10 @@ class ShareStatistics(LinkedinPagesStream):
         return path
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         yield from response.json().get("elements")
 

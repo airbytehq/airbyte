@@ -15,8 +15,7 @@ from pipelines.models.steps import Step, StepResult, StepStatus
 
 
 class BuildConnectorImagesBase(Step, ABC):
-    """A step to build connector images for a set of platforms.
-    """
+    """A step to build connector images for a set of platforms."""
 
     @property
     def title(self):
@@ -35,7 +34,9 @@ class BuildConnectorImagesBase(Step, ABC):
                     await connector.with_exec(["spec"])
                 except ExecError:
                     return StepResult(
-                        self, StepStatus.FAILURE, stderr=f"Failed to run spec on the connector built for platform {platform}.",
+                        self,
+                        StepStatus.FAILURE,
+                        stderr=f"Failed to run spec on the connector built for platform {platform}.",
                     )
                 build_results_per_platform[platform] = connector
             except QueryError as e:
@@ -97,7 +98,9 @@ class LoadContainerToLocalDockerHost(Step):
                     loaded_images.append(full_image_name)
             except docker.errors.DockerException as e:
                 return StepResult(
-                    self, StepStatus.FAILURE, stderr=f"Something went wrong while interacting with the local docker client: {e}",
+                    self,
+                    StepStatus.FAILURE,
+                    stderr=f"Something went wrong while interacting with the local docker client: {e}",
                 )
 
         return StepResult(self, StepStatus.SUCCESS, stdout=f"Loaded image {','.join(loaded_images)} to your Docker host ({image_sha}).")

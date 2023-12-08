@@ -28,7 +28,6 @@ class SourceZohoCrm(AbstractSource):
         return api.check_connection()
 
     def streams(self, config: Mapping[str, Any]) -> list["Stream"]:
-        """:param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         stream_factory = ZohoStreamFactory(config)
         return stream_factory.produce()

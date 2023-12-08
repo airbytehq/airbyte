@@ -105,8 +105,7 @@ class SentryIncremental(SentryStreamPagination, IncrementalMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        """Define state as a max between given value and current state
-        """
+        """Define state as a max between given value and current state"""
         if not self._cursor_value:
             self._cursor_value = value.get(self.cursor_field)
         else:
@@ -116,8 +115,7 @@ class SentryIncremental(SentryStreamPagination, IncrementalMixin):
 
 
 class Events(SentryIncremental):
-    """Docs: https://docs.sentry.io/api/events/list-a-projects-events/
-    """
+    """Docs: https://docs.sentry.io/api/events/list-a-projects-events/"""
 
     primary_key = "id"
     cursor_field = "dateCreated"
@@ -148,8 +146,7 @@ class Events(SentryIncremental):
 
 
 class Issues(SentryIncremental):
-    """Docs: https://docs.sentry.io/api/events/list-a-projects-issues/
-    """
+    """Docs: https://docs.sentry.io/api/events/list-a-projects-issues/"""
 
     primary_key = "id"
     cursor_field = "lastSeen"
@@ -203,8 +200,7 @@ class Issues(SentryIncremental):
 
 
 class Projects(SentryIncremental):
-    """Docs: https://docs.sentry.io/api/projects/list-your-projects/
-    """
+    """Docs: https://docs.sentry.io/api/projects/list-your-projects/"""
 
     primary_key = "id"
     cursor_field = "dateCreated"
@@ -219,8 +215,7 @@ class Projects(SentryIncremental):
 
 
 class ProjectDetail(SentryStream):
-    """Docs: https://docs.sentry.io/api/projects/retrieve-a-project/
-    """
+    """Docs: https://docs.sentry.io/api/projects/retrieve-a-project/"""
 
     def __init__(self, organization: str, project: str, **kwargs):
         super().__init__(**kwargs)
@@ -240,8 +235,7 @@ class ProjectDetail(SentryStream):
 
 
 class Releases(SentryIncremental):
-    """Docs: https://docs.sentry.io/api/releases/list-an-organizations-releases/
-    """
+    """Docs: https://docs.sentry.io/api/releases/list-an-organizations-releases/"""
 
     primary_key = "id"
     cursor_field = "dateCreated"

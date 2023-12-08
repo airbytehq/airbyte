@@ -43,7 +43,12 @@ class ConcurrentSource:
             logger,
         )
         return ConcurrentSource(
-            threadpool, logger, slice_logger, message_repository, initial_number_of_partitions_to_generate, timeout_seconds,
+            threadpool,
+            logger,
+            slice_logger,
+            message_repository,
+            initial_number_of_partitions_to_generate,
+            timeout_seconds,
         )
 
     def __init__(

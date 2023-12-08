@@ -12,8 +12,7 @@ from airbyte_cdk.test.http import HttpRequest, HttpRequestMatcher, HttpResponse
 
 
 class HttpMocker(contextlib.ContextDecorator):
-    """WARNING: This implementation only works if the lib used to perform HTTP requests is `requests`
-    """
+    """WARNING: This implementation only works if the lib used to perform HTTP requests is `requests`"""
 
     def __init__(self) -> None:
         self._mocker = requests_mock.Mocker()

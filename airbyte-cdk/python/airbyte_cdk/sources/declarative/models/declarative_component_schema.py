@@ -607,7 +607,6 @@ class RequestOption(BaseModel):
 
 
 class Schemas(BaseModel):
-
     class Config:
         extra = Extra.allow
 

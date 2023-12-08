@@ -196,7 +196,8 @@ class IncrementalMessageStream(ChanneledStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
         current_stream_state[self.cursor_field] = max(
-            latest_record[self.cursor_field], current_stream_state.get(self.cursor_field, self._start_ts),
+            latest_record[self.cursor_field],
+            current_stream_state.get(self.cursor_field, self._start_ts),
         )
 
         return current_stream_state

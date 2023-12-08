@@ -48,7 +48,10 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         return self.get_funnel_slices(sync_mode)
 
     def stream_slices(
-        self, sync_mode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Mapping[str, Any]]]]:
         """Return stream slices which is a combination of all funnel_ids and related date ranges, like:
         stream_slices = [
@@ -90,7 +93,10 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
                 yield {**funnel_slice, **date_slice}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # NOTE: funnel_id type:
         #    - int in stream_slice
@@ -147,7 +153,9 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
             }
 
     def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any],
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
     ) -> Mapping[str, Mapping[str, str]]:
         """Update existing stream state for particular funnel_id
         stream_state = {

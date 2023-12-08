@@ -160,19 +160,25 @@ def check_review_requirements_file(capsys, expected_teams: list):
 
 
 def test_find_mandatory_reviewers_backward_compatibility(
-    mock_diffed_branched, capsys, not_strategic_backward_compatibility_change_expected_team,
+    mock_diffed_branched,
+    capsys,
+    not_strategic_backward_compatibility_change_expected_team,
 ):
     check_review_requirements_file(capsys, not_strategic_backward_compatibility_change_expected_team)
 
 
 def test_find_mandatory_reviewers_test_strictness_level(
-    mock_diffed_branched, capsys, not_strategic_test_strictness_level_change_expected_team,
+    mock_diffed_branched,
+    capsys,
+    not_strategic_test_strictness_level_change_expected_team,
 ):
     check_review_requirements_file(capsys, not_strategic_test_strictness_level_change_expected_team)
 
 
 def test_find_mandatory_reviewers_not_strategic_bypass_reason(
-    mock_diffed_branched, capsys, not_strategic_bypass_reason_file_change_expected_team,
+    mock_diffed_branched,
+    capsys,
+    not_strategic_bypass_reason_file_change_expected_team,
 ):
     check_review_requirements_file(capsys, not_strategic_bypass_reason_file_change_expected_team)
 
@@ -182,19 +188,25 @@ def test_find_mandatory_reviewers_ga(mock_diffed_branched, capsys, strategic_con
 
 
 def test_find_mandatory_reviewers_strategic_backward_compatibility(
-    mock_diffed_branched, capsys, strategic_connector_backward_compatibility_file_change_expected_team,
+    mock_diffed_branched,
+    capsys,
+    strategic_connector_backward_compatibility_file_change_expected_team,
 ):
     check_review_requirements_file(capsys, strategic_connector_backward_compatibility_file_change_expected_team)
 
 
 def test_find_mandatory_reviewers_strategic_bypass_reason(
-    mock_diffed_branched, capsys, strategic_connector_bypass_reason_file_change_expected_team,
+    mock_diffed_branched,
+    capsys,
+    strategic_connector_bypass_reason_file_change_expected_team,
 ):
     check_review_requirements_file(capsys, strategic_connector_bypass_reason_file_change_expected_team)
 
 
 def test_find_mandatory_reviewers_strategic_test_strictness_level(
-    mock_diffed_branched, capsys, strategic_connector_test_strictness_level_file_change_expected_team,
+    mock_diffed_branched,
+    capsys,
+    strategic_connector_test_strictness_level_file_change_expected_team,
 ):
     check_review_requirements_file(capsys, strategic_connector_test_strictness_level_file_change_expected_team)
 

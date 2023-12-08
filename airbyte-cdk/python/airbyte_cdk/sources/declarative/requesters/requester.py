@@ -16,8 +16,7 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 class HttpMethod(Enum):
-    """Http Method to use when submitting an outgoing HTTP request
-    """
+    """Http Method to use when submitting an outgoing HTTP request"""
 
     GET = "GET"
     POST = "POST"
@@ -26,13 +25,11 @@ class HttpMethod(Enum):
 class Requester(RequestOptionsProvider):
     @abstractmethod
     def get_authenticator(self) -> DeclarativeAuthenticator:
-        """Specifies the authenticator to use when submitting requests
-        """
+        """Specifies the authenticator to use when submitting requests"""
 
     @abstractmethod
     def get_url_base(self) -> str:
-        """:return: URL base for the  API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "https://myapi.com/v1/"
-        """
+        """:return: URL base for the  API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "https://myapi.com/v1/" """
 
     @abstractmethod
     def get_path(
@@ -42,13 +39,11 @@ class Requester(RequestOptionsProvider):
         stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
     ) -> str:
-        """Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
-        """
+        """Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity" """
 
     @abstractmethod
     def get_method(self) -> HttpMethod:
-        """Specifies the HTTP method to use
-        """
+        """Specifies the HTTP method to use"""
 
     @abstractmethod
     def get_request_params(
@@ -82,8 +77,7 @@ class Requester(RequestOptionsProvider):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        """Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
-        """
+        """Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method."""
 
     @abstractmethod
     def get_request_body_data(

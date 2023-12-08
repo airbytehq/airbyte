@@ -44,7 +44,10 @@ class OrbStream(HttpStream, ABC):
             return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {
             "limit": self.page_size,
@@ -103,8 +106,7 @@ class IncrementalOrbStream(OrbStream, ABC):
         return "created_at"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """In order to update the state of the stream, take the max of the current `created_at` time and what might already be in the state.
-        """
+        """In order to update the state of the stream, take the max of the current `created_at` time and what might already be in the state."""
         latest_record_state_dt = pendulum.parse(latest_record.get(self.cursor_field))
         current_state_isoformat = current_stream_state.get(self.cursor_field)
         current_state_dt = pendulum.parse(current_state_isoformat) if current_state_isoformat is not None else pendulum.DateTime.min
@@ -142,16 +144,14 @@ class IncrementalOrbStream(OrbStream, ABC):
 
 
 class Customers(IncrementalOrbStream):
-    """API Docs: https://docs.withorb.com/reference/list-customers
-    """
+    """API Docs: https://docs.withorb.com/reference/list-customers"""
 
     def path(self, **kwargs) -> str:
         return "customers"
 
 
 class Subscriptions(IncrementalOrbStream):
-    """API Docs: https://docs.withorb.com/reference/list-subscriptions
-    """
+    """API Docs: https://docs.withorb.com/reference/list-subscriptions"""
 
     def path(self, **kwargs) -> str:
         return "subscriptions"
@@ -213,8 +213,7 @@ def chunk_date_range(start_date: pendulum.DateTime, end_date: Optional[pendulum.
 
 
 class SubscriptionUsage(IncrementalOrbStream):
-    """API Docs: https://docs.withorb.com/docs/orb-docs/api-reference/operations/get-a-subscription-usage
-    """
+    """API Docs: https://docs.withorb.com/docs/orb-docs/api-reference/operations/get-a-subscription-usage"""
 
     cursor_field = "timeframe_start"
 
@@ -426,8 +425,7 @@ class SubscriptionUsage(IncrementalOrbStream):
 
 
 class Plans(IncrementalOrbStream):
-    """API Docs: https://docs.withorb.com/reference/list-plans
-    """
+    """API Docs: https://docs.withorb.com/reference/list-plans"""
 
     def path(self, **kwargs) -> str:
         return "plans"
@@ -464,7 +462,10 @@ class CreditsLedgerEntries(IncrementalOrbStream):
     """
 
     def __init__(
-        self, string_event_properties_keys: Optional[list[str]] = None, numeric_event_properties_keys: Optional[list[str]] = None, **kwargs,
+        self,
+        string_event_properties_keys: Optional[list[str]] = None,
+        numeric_event_properties_keys: Optional[list[str]] = None,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.string_event_properties_keys = string_event_properties_keys
@@ -680,7 +681,9 @@ class SourceOrb(AbstractSource):
             return False, e
 
     def input_keys_mutually_exclusive(
-        self, string_event_properties_keys: Optional[list[str]] = None, numeric_event_properties_keys: Optional[list[str]] = None,
+        self,
+        string_event_properties_keys: Optional[list[str]] = None,
+        numeric_event_properties_keys: Optional[list[str]] = None,
     ):
         if string_event_properties_keys is None or numeric_event_properties_keys is None:
             return True

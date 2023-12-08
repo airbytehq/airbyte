@@ -66,8 +66,7 @@ class MondayActivityExtractor(RecordExtractor):
 
 @dataclass
 class MondayIncrementalItemsExtractor(RecordExtractor):
-    """Record extractor that searches a decoded response over a path defined as an array of fields.
-    """
+    """Record extractor that searches a decoded response over a path defined as an array of fields."""
 
     field_path: list[Union[InterpolatedString, str]]
     config: Config

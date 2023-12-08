@@ -12,8 +12,7 @@ import requests
 
 @dataclass
 class RecordExtractor:
-    """Responsible for translating an HTTP response into a list of records by extracting records from the response.
-    """
+    """Responsible for translating an HTTP response into a list of records by extracting records from the response."""
 
     @abstractmethod
     def extract_records(

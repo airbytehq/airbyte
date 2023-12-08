@@ -93,7 +93,10 @@ class AttributionReport(AmazonAdsStream):
         return schema
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for profile in self._profiles:
             start_date = pendulum.now(tz=profile.timezone).subtract(days=1).date()
@@ -124,7 +127,10 @@ class AttributionReport(AmazonAdsStream):
             raise e
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         headers["Amazon-Advertising-API-Scope"] = str(stream_slice["profileId"])

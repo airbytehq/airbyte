@@ -114,8 +114,7 @@ class Client:
         return tokens
 
     def is_token_expiring(self) -> bool:
-        """Performs check if access token expiring in less than refresh_token_safe_delta seconds
-        """
+        """Performs check if access token expiring in less than refresh_token_safe_delta seconds"""
         token_total_lifetime: timedelta = datetime.utcnow() - self.oauth.access_token_received_datetime
         token_updated_expires_in: int = self.oauth.access_token_expires_in_seconds - token_total_lifetime.seconds
         return False if token_updated_expires_in > self.refresh_token_safe_delta else True
@@ -168,8 +167,7 @@ class Client:
         params: Mapping[str, Any],
         is_report_service: bool = False,
     ) -> Mapping[str, Any]:
-        """Executes appropriate Service Operation on Bing Ads API
-        """
+        """Executes appropriate Service Operation on Bing Ads API"""
         if self.is_token_expiring():
             self.oauth = self._get_access_token()
 
@@ -256,8 +254,7 @@ class Client:
         account_id: Optional[str] = None,
         start_date: Optional[str] = None,
     ) -> str:
-        """Return path with zipped csv archive
-        """
+        """Return path with zipped csv archive"""
         download_parameters = DownloadParameters(
             # campaign_ids=None,
             data_scope=data_scope,

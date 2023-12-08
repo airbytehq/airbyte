@@ -31,13 +31,15 @@ class BambooHrStream(HttpStream, ABC):
         return f"https://api.bamboohr.com/api/gateway.php/{self.config['subdomain']}/v1/"
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """BambooHR does not support pagination.
-        """
+        """BambooHR does not support pagination."""
 
 
 class MetaFieldsStream(BambooHrStream):
@@ -134,14 +136,12 @@ class SourceBambooHr(AbstractSource):
 
     @staticmethod
     def add_authenticator_to_config(config: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Adds an authenticator entry to the config and returns the config.
-        """
+        """Adds an authenticator entry to the config and returns the config."""
         config["authenticator"] = SourceBambooHr._get_authenticator(config["api_key"])
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, Optional[Any]]:
-        """Verifies the config and attempts to fetch the fields from the meta/fields endpoint.
-        """
+        """Verifies the config and attempts to fetch the fields from the meta/fields endpoint."""
         config = SourceBambooHr.add_authenticator_to_config(config)
 
         if not config.get("custom_reports_fields") and not config.get("custom_reports_include_default_fields"):

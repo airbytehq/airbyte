@@ -11,8 +11,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import
 
 @dataclass
 class DeclarativeAuthenticator(AbstractHeaderAuthenticator):
-    """Interface used to associate which authenticators can be used as part of the declarative framework
-    """
+    """Interface used to associate which authenticators can be used as part of the declarative framework"""
 
     def get_request_params(self) -> Mapping[str, Any]:
         """HTTP request parameter to add to the requests"""

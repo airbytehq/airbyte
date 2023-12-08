@@ -10,8 +10,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 
 
 class Partition(ABC):
-    """A partition is responsible for reading a specific set of data from a source.
-    """
+    """A partition is responsible for reading a specific set of data from a source."""
 
     @abstractmethod
     def read(self) -> Iterable[Record]:
@@ -36,8 +35,7 @@ class Partition(ABC):
 
     @abstractmethod
     def close(self) -> None:
-        """Closes the partition.
-        """
+        """Closes the partition."""
 
     @abstractmethod
     def is_closed(self) -> bool:

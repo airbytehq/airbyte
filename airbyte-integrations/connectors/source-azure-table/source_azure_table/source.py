@@ -94,10 +94,13 @@ class SourceAzureTable(AbstractSource):
             raise Exception(f"An exception occurred: {e!s}")
 
     def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None,
+        self,
+        logger: AirbyteLogger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: MutableMapping[str, Any] = None,
     ) -> Iterator[AirbyteMessage]:
-        """This method is overridden to check whether the stream `quotes` exists in the source, if not skip reading that stream.
-        """
+        """This method is overridden to check whether the stream `quotes` exists in the source, if not skip reading that stream."""
         stream_instances = {s.name: s for s in self.streams(logger=logger, config=config)}
         state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         logger.info(f"Starting syncing {self.name}")

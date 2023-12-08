@@ -23,8 +23,7 @@ class Paginator(ABC, RequestOptionsProvider):
 
     @abstractmethod
     def reset(self) -> None:
-        """Reset the pagination's inner state
-        """
+        """Reset the pagination's inner state"""
 
     @abstractmethod
     def next_page_token(self, response: requests.Response, last_records: list[Record]) -> Optional[Mapping[str, Any]]:

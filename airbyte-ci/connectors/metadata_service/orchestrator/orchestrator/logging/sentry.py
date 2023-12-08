@@ -56,16 +56,12 @@ def setup_dagster_sentry():
 
 
 def _is_context(context):
-    """Check if the given object is a valid context object.
-    """
-    return (
-        isinstance(context, AssetExecutionContext | OpExecutionContext | SensorEvaluationContext)
-    )
+    """Check if the given object is a valid context object."""
+    return isinstance(context, AssetExecutionContext | OpExecutionContext | SensorEvaluationContext)
 
 
 def _get_context_from_args_kwargs(args, kwargs):
-    """Given args and kwargs from a function call, return the context object if it exists.
-    """
+    """Given args and kwargs from a function call, return the context object if it exists."""
     # if the first arg is a context object, return it
     if len(args) > 0 and _is_context(args[0]):
         return args[0]
@@ -81,8 +77,7 @@ def _get_context_from_args_kwargs(args, kwargs):
 
 
 def _with_sentry_op_asset_transaction(context: OpExecutionContext):
-    """Start or continue a Sentry transaction for the Dagster Op/Asset
-    """
+    """Start or continue a Sentry transaction for the Dagster Op/Asset"""
     op_name = context.op_def.name
     job_name = context.job_name
 
@@ -104,8 +99,7 @@ def _with_sentry_op_asset_transaction(context: OpExecutionContext):
 
 
 def capture_asset_op_context(func):
-    """Capture Dagster OP context for Sentry Error handling
-    """
+    """Capture Dagster OP context for Sentry Error handling"""
 
     @functools.wraps(func)
     def wrapped_fn(*args, **kwargs):
@@ -122,8 +116,7 @@ def capture_asset_op_context(func):
 
 
 def capture_sensor_context(func):
-    """Capture Dagster Sensor context for Sentry Error handling
-    """
+    """Capture Dagster Sensor context for Sentry Error handling"""
 
     @functools.wraps(func)
     def wrapped_fn(*args, **kwargs):
@@ -163,8 +156,7 @@ def capture_exceptions(func):
 
 
 def start_sentry_transaction(func):
-    """Start a Sentry transaction for the Dagster Op/Asset
-    """
+    """Start a Sentry transaction for the Dagster Op/Asset"""
 
     def wrapped_fn(*args, **kwargs):
         context = _get_context_from_args_kwargs(args, kwargs)

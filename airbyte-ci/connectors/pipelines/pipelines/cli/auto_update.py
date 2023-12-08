@@ -27,13 +27,16 @@ AUTO_UPDATE_AGREE_KEY = "yes_auto_update"
 def pre_confirm_auto_update_flag(f):
     """Decorator to add a --yes-auto-update flag to a command."""
     return click.option(
-        "--yes-auto-update", AUTO_UPDATE_AGREE_KEY, is_flag=True, default=False, help="Skip prompts and automatically upgrade pipelines",
+        "--yes-auto-update",
+        AUTO_UPDATE_AGREE_KEY,
+        is_flag=True,
+        default=False,
+        help="Skip prompts and automatically upgrade pipelines",
     )(f)
 
 
 def _is_version_available(version: str, is_dev: bool) -> bool:
-    """Check if an given version is available.
-    """
+    """Check if an given version is available."""
     # Given that they can install from source, we don't need to check for upgrades
     if is_dev:
         return True
@@ -58,8 +61,7 @@ def _get_latest_version() -> str:
 
 
 def is_dev_command() -> bool:
-    """Check if the current command is the dev version of the command
-    """
+    """Check if the current command is the dev version of the command"""
     current_command = " ".join(sys.argv)
     return DEV_COMMAND in current_command
 
@@ -111,7 +113,9 @@ def check_for_upgrade(
 
     # Ask the user if they want to upgrade
     if enable_auto_update and confirm(
-        "Do you want to automatically upgrade?", default=True, additional_pre_confirm_key=AUTO_UPDATE_AGREE_KEY,
+        "Do you want to automatically upgrade?",
+        default=True,
+        additional_pre_confirm_key=AUTO_UPDATE_AGREE_KEY,
     ):
         # if the current command contains `airbyte-ci-dev` is the dev version of the command
         logging.info(f"[{'DEV' if is_dev_version else 'BINARY'}] Upgrading pipelines...")

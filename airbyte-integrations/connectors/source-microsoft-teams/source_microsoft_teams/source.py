@@ -30,7 +30,11 @@ class SourceMicrosoftTeams(BaseSource):
         return AirbyteCatalog(streams=client.get_streams())
 
     def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: dict[str, any],
+        self,
+        logger: AirbyteLogger,
+        config: json,
+        catalog: ConfiguredAirbyteCatalog,
+        state: dict[str, any],
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._get_client(config)
 

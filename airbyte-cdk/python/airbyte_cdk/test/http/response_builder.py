@@ -117,7 +117,10 @@ class RecordBuilder:
 
 class HttpResponseBuilder:
     def __init__(
-        self, template: dict[str, Any], records_path: Union[FieldPath, NestedPath], pagination_strategy: Optional[PaginationStrategy],
+        self,
+        template: dict[str, Any],
+        records_path: Union[FieldPath, NestedPath],
+        pagination_strategy: Optional[PaginationStrategy],
     ):
         self._response = template
         self._records: list[RecordBuilder] = []
@@ -169,8 +172,7 @@ def create_builders_from_resource(
     record_cursor_path: Optional[Union[FieldPath, NestedPath]] = None,
     pagination_strategy: Optional[PaginationStrategy] = None,
 ) -> tuple[RecordBuilder, HttpResponseBuilder]:
-    """This will use the first record define at `records_path` as a template for the records. If more records are defined, they will be ignored
-    """
+    """This will use the first record define at `records_path` as a template for the records. If more records are defined, they will be ignored"""
     if not isinstance(records_path, (FieldPath, NestedPath)):
         raise ValueError(f"records_path only supports FieldPath and NestedPath but {type(records_path)} was provided")
 

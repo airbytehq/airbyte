@@ -166,8 +166,7 @@ class SourceGoogleSearchConsole(AbstractSource):
             }
 
     def streams(self, config: Mapping[str, Any]) -> list[Stream]:
-        """:param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         config = self._validate_and_transform(config)
         stream_config = self.get_stream_kwargs(config)
 

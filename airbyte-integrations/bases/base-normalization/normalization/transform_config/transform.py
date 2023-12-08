@@ -31,7 +31,11 @@ class TransformConfig:
         parser = argparse.ArgumentParser(add_help=False)
         parser.add_argument("--config", type=str, required=True, help="path to original config")
         parser.add_argument(
-            "--integration-type", type=DestinationType, choices=list(DestinationType), required=True, help="type of integration",
+            "--integration-type",
+            type=DestinationType,
+            choices=list(DestinationType),
+            required=True,
+            help="type of integration",
         )
         parser.add_argument("--out", type=str, required=True, help="path to output transformed config to")
 
@@ -101,8 +105,7 @@ class TransformConfig:
 
     @staticmethod
     def pick_a_port() -> int:
-        """This function finds a free port, starting with 50001 and adding 1 until we find an open port.
-        """
+        """This function finds a free port, starting with 50001 and adding 1 until we find an open port."""
         port_to_check = 50001  # just past start of dynamic port range (49152:65535)
         while not TransformConfig.is_port_free(port_to_check):
             port_to_check += 1

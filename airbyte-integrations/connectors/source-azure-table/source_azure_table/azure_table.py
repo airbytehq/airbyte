@@ -56,7 +56,9 @@ class AzureTableReader:
         self.access_key = config[constants.azure_storage_access_key_key_name]
         self.endpoint_suffix = config[constants.azure_storage_endpoint_suffix_key_name]
         self.connection_string = "DefaultEndpointsProtocol=https;AccountName={};AccountKey={};EndpointSuffix={}".format(
-            self.account_name, self.access_key, self.endpoint_suffix,
+            self.account_name,
+            self.access_key,
+            self.endpoint_suffix,
         )
 
     def get_table_service_client(self) -> TableServiceClient:
@@ -87,8 +89,7 @@ class AzureTableReader:
             raise Exception(f"An exception occurred: {e!s}")
 
     def get_tables(self) -> ItemPaged:
-        """Fetches all tables from storage account and returns them in Airbyte stream.
-        """
+        """Fetches all tables from storage account and returns them in Airbyte stream."""
         try:
             table_service_client = self.get_table_service_client()
             tables_iterator = table_service_client.list_tables(results_per_page=constants.results_per_page)

@@ -287,8 +287,7 @@ class TestSpec(BaseTest):
             pytest.fail("\n".join(errors))
 
     def test_property_type_is_not_array(self, actual_connector_spec: ConnectorSpecification):
-        """Each field has one or multiple types, but the UI only supports a single type and optionally "null" as a second type.
-        """
+        """Each field has one or multiple types, but the UI only supports a single type and optionally "null" as a second type."""
         errors = []
         for type_path, type_value in dpath.util.search(actual_connector_spec.connectionSpecification, "**/properties/*/type", yielded=True):
             if isinstance(type_value, list):
@@ -322,8 +321,7 @@ class TestSpec(BaseTest):
         self._fail_on_errors(errors)
 
     def test_array_type(self, actual_connector_spec: ConnectorSpecification):
-        """Each array has one or multiple types for its items, but the UI only supports a single type which can either be object, string or an enum
-        """
+        """Each array has one or multiple types for its items, but the UI only supports a single type which can either be object, string or an enum"""
         schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
         errors = []
         for type_path, type_type in dpath.util.search(actual_connector_spec.connectionSpecification, "**/type", yielded=True):
@@ -341,8 +339,7 @@ class TestSpec(BaseTest):
         self._fail_on_errors(errors)
 
     def test_forbidden_complex_types(self, actual_connector_spec: ConnectorSpecification):
-        """not, anyOf, patternProperties, prefixItems, allOf, if, then, else, dependentSchemas and dependentRequired are not allowed
-        """
+        """not, anyOf, patternProperties, prefixItems, allOf, if, then, else, dependentSchemas and dependentRequired are not allowed"""
         forbidden_keys = [
             "not",
             "anyOf",
@@ -363,7 +360,9 @@ class TestSpec(BaseTest):
         for forbidden_key in forbidden_keys:
             # remove forbidden keys if they are used as properties directly
             for path, _value in dpath.util.search(
-                actual_connector_spec.connectionSpecification, f"**/properties/{forbidden_key}", yielded=True,
+                actual_connector_spec.connectionSpecification,
+                f"**/properties/{forbidden_key}",
+                yielded=True,
             ):
                 found_keys.remove(path)
 
@@ -392,8 +391,7 @@ class TestSpec(BaseTest):
                 )
 
     def test_date_format(self, actual_connector_spec: ConnectorSpecification, detailed_logger):
-        """Properties with a pattern that looks like a date should have their format set to date or date-time.
-        """
+        """Properties with a pattern that looks like a date should have their format set to date or date-time."""
         schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
         for pattern_path, pattern in dpath.util.search(actual_connector_spec.connectionSpecification, "**/pattern", yielded=True):
             if not isinstance(pattern, str):
@@ -454,8 +452,7 @@ class TestSpec(BaseTest):
         self._fail_on_errors(errors)
 
     def test_display_type(self, actual_connector_spec: ConnectorSpecification):
-        """The display_type property can only be set on fields which have a oneOf property, and must be either "dropdown" or "radio"
-        """
+        """The display_type property can only be set on fields which have a oneOf property, and must be either "dropdown" or "radio" """
         errors = []
         schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
         for result in dpath.util.search(actual_connector_spec.connectionSpecification, "/properties/**/display_type", yielded=True):
@@ -533,7 +530,8 @@ class TestSpec(BaseTest):
         Read https://github.com/airbytehq/airbyte/issues/14196 for more details
         """
         additional_properties_values = find_all_values_for_key_in_schema(
-            actual_connector_spec.connectionSpecification, "additionalProperties",
+            actual_connector_spec.connectionSpecification,
+            "additionalProperties",
         )
         if additional_properties_values:
             assert all(
@@ -611,7 +609,9 @@ class TestDiscovery(BaseTest):
 
     @pytest.fixture()
     async def skip_backward_compatibility_tests_for_version(
-        self, inputs: DiscoveryTestConfig, previous_connector_docker_runner: ConnectorRunner,
+        self,
+        inputs: DiscoveryTestConfig,
+        previous_connector_docker_runner: ConnectorRunner,
     ):
         # Get the real connector version in case 'latest' is used in the config:
         previous_connector_version = await previous_connector_docker_runner.get_container_label("io.airbyte.version")
@@ -827,8 +827,7 @@ class TestBasicRead(BaseTest):
 
     @staticmethod
     def _validate_schema(records: list[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: Boolean):
-        """Check if data type and structure in records matches the one in json_schema of the stream in catalog
-        """
+        """Check if data type and structure in records matches the one in json_schema of the stream in catalog"""
         TestBasicRead._validate_records_structure(records, configured_catalog)
         bar = "-" * 80
         streams_errors = verify_records_schema(records, configured_catalog, fail_on_extra_columns)
@@ -841,8 +840,7 @@ class TestBasicRead(BaseTest):
             pytest.fail(f"Please check your json_schema in selected streams {tuple(streams_errors.keys())}.")
 
     def _validate_empty_streams(self, records, configured_catalog, allowed_empty_streams):
-        """Only certain streams allowed to be empty
-        """
+        """Only certain streams allowed to be empty"""
         allowed_empty_stream_names = set([allowed_empty_stream.name for allowed_empty_stream in allowed_empty_streams])
         counter = Counter(record.stream for record in records)
 
@@ -872,14 +870,14 @@ class TestBasicRead(BaseTest):
         return sorted(list(expected_paths))
 
     def _validate_field_appears_at_least_once(self, records: list[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
-        """Validate if each field in a stream has appeared at least once in some record.
-        """
+        """Validate if each field in a stream has appeared at least once in some record."""
         stream_name_to_empty_fields_mapping = {}
         for stream in configured_catalog.streams:
             stream_records = [record.data for record in records if record.stream == stream.stream.name]
 
             empty_field_paths = self._validate_field_appears_at_least_once_in_stream(
-                records=stream_records, schema=stream.stream.json_schema,
+                records=stream_records,
+                schema=stream.stream.json_schema,
             )
             if empty_field_paths:
                 stream_name_to_empty_fields_mapping[stream.stream.name] = empty_field_paths
@@ -897,8 +895,7 @@ class TestBasicRead(BaseTest):
         ignored_fields: Optional[Mapping[str, list[IgnoredFieldsConfiguration]]],
         detailed_logger: Logger,
     ):
-        """We expect some records from stream to match expected_records, partially or fully, in exact or any order.
-        """
+        """We expect some records from stream to match expected_records, partially or fully, in exact or any order."""
         actual_by_stream = self.group_by_stream(records)
         for stream_name, expected in expected_records_by_stream.items():
             actual = actual_by_stream.get(stream_name, [])
@@ -987,7 +984,9 @@ class TestBasicRead(BaseTest):
 
         if should_validate_schema:
             self._validate_schema(
-                records=records, configured_catalog=configured_catalog, fail_on_extra_columns=should_fail_on_extra_columns,
+                records=records,
+                configured_catalog=configured_catalog,
+                fail_on_extra_columns=should_fail_on_extra_columns,
             )
 
         self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=empty_streams)

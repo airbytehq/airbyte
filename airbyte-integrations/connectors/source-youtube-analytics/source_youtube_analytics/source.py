@@ -88,8 +88,7 @@ class CustomBackoffMixin:
 
     @property
     def retry_factor(self) -> float:
-        """Default FreeQuotaRequestsPerMinutePerProject is 60 reqs/min, so reasonable delay is 30 seconds
-        """
+        """Default FreeQuotaRequestsPerMinutePerProject is 60 reqs/min, so reasonable delay is 30 seconds"""
         return 30
 
 
@@ -168,7 +167,10 @@ class ReportResources(CustomBackoffMixin, HttpStream):
         super().__init__(**kwargs)
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         if not self.job_id:
             self.job_id = self.jobs_resource.create(self.name)
@@ -231,7 +233,10 @@ class ChannelReports(CustomBackoffMixin, HttpSubStream):
         return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return stream_slice["parent"]["downloadUrl"]
 
@@ -295,7 +300,11 @@ class SourceYoutubeAnalytics(AbstractSource):
             dimensions = channel_report["dimensions"]
             job_id = report_to_job_id.get(stream_name)
             parent = ReportResources(
-                name=stream_name, jobs_resource=jobs_resource, job_id=job_id, start_time=start_time, authenticator=authenticator,
+                name=stream_name,
+                jobs_resource=jobs_resource,
+                job_id=job_id,
+                start_time=start_time,
+                authenticator=authenticator,
             )
             streams.append(ChannelReports(name=stream_name, dimensions=dimensions, parent=parent, authenticator=authenticator))
         return streams

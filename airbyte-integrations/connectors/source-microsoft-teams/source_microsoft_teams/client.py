@@ -28,8 +28,7 @@ def log_backoff_attempt(details):
 
 
 class Client:
-    """Microsoft Teams API Reference: https://docs.microsoft.com/en-us/graph/api/resources/teams-api-overview?view=graph-rest-1.0
-    """
+    """Microsoft Teams API Reference: https://docs.microsoft.com/en-us/graph/api/resources/teams-api-overview?view=graph-rest-1.0"""
 
     MICROSOFT_GRAPH_BASE_API_URL: str = "https://graph.microsoft.com/"
     MICROSOFT_GRAPH_API_VERSION: str = "v1.0"

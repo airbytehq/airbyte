@@ -26,7 +26,10 @@ class CohortMembers(Engage):
         return {"filter_by_cohort": stream_slice}
 
     def stream_slices(
-        self, sync_mode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if sync_mode == SyncMode.incremental:
             self.set_cursor(cursor_field)

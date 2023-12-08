@@ -91,11 +91,15 @@ def import_connection(
     remote_configuration.pop("schedule", None)
     source_name, destination_name = remote_configuration["source"]["name"], remote_configuration["destination"]["name"]
     source_configuration_path = renderers.ConnectorSpecificationRenderer.get_output_path(
-        project_path=".", definition_type="source", resource_name=source_name,
+        project_path=".",
+        definition_type="source",
+        resource_name=source_name,
     )
 
     destination_configuration_path = renderers.ConnectorSpecificationRenderer.get_output_path(
-        project_path=".", definition_type="destination", resource_name=destination_name,
+        project_path=".",
+        definition_type="destination",
+        resource_name=destination_name,
     )
     if not source_configuration_path.is_file():
         raise MissingResourceDependencyError(

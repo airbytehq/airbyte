@@ -267,8 +267,7 @@ class AbstractSource(Source, ABC):
                     return
 
     def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream) -> AirbyteMessage:
-        """Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
-        """
+        """Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage"""
         if isinstance(record_data_or_message, AirbyteMessage):
             return record_data_or_message
         else:

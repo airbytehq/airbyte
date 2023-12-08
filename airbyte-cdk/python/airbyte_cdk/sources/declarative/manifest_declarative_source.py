@@ -84,7 +84,10 @@ class ManifestDeclarativeSource(DeclarativeSource):
         if "type" not in check:
             check["type"] = "CheckStream"
         check_stream = self._constructor.create_component(
-            CheckStreamModel, check, dict(), emit_connector_builder_messages=self._emit_connector_builder_messages,
+            CheckStreamModel,
+            check,
+            dict(),
+            emit_connector_builder_messages=self._emit_connector_builder_messages,
         )
         if isinstance(check_stream, ConnectionChecker):
             return check_stream
@@ -97,7 +100,10 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
         source_streams = [
             self._constructor.create_component(
-                DeclarativeStreamModel, stream_config, config, emit_connector_builder_messages=self._emit_connector_builder_messages,
+                DeclarativeStreamModel,
+                stream_config,
+                config,
+                emit_connector_builder_messages=self._emit_connector_builder_messages,
             )
             for stream_config in self._initialize_cache_for_parent_streams(deepcopy(stream_configs))
         ]
@@ -167,14 +173,12 @@ class ManifestDeclarativeSource(DeclarativeSource):
         yield from super().read(logger, config, catalog, state)
 
     def _configure_logger_level(self, logger: logging.Logger) -> None:
-        """Set the log level to logging.DEBUG if debug mode is enabled
-        """
+        """Set the log level to logging.DEBUG if debug mode is enabled"""
         if self._debug:
             logger.setLevel(logging.DEBUG)
 
     def _validate_source(self) -> None:
-        """Validates the connector manifest against the declarative component schema
-        """
+        """Validates the connector manifest against the declarative component schema"""
         try:
             raw_component_schema = pkgutil.get_data("airbyte_cdk", "sources/declarative/declarative_component_schema.yaml")
             if raw_component_schema is not None:
@@ -216,8 +220,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     @staticmethod
     def _get_version_parts(version: str, version_type: str) -> tuple[int, int, int]:
-        """Takes a semantic version represented as a string and splits it into a tuple of its major, minor, and patch versions.
-        """
+        """Takes a semantic version represented as a string and splits it into a tuple of its major, minor, and patch versions."""
         version_parts = re.split(r"\.", version)
         if len(version_parts) != 3 or not all([part.isdigit() for part in version_parts]):
             raise ValidationError(f"The {version_type} version {version} specified is not a valid version format (ex. 1.2.3)")

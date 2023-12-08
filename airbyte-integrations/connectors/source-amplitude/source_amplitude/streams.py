@@ -83,8 +83,7 @@ class Events(HttpStream):
         return {self.cursor_field: max(latest_state, current_stream_state.get(self.cursor_field, ""))}
 
     def _get_date_time_items_from_schema(self):
-        """Get all properties from schema with format: 'date-time'
-        """
+        """Get all properties from schema with format: 'date-time'"""
         result = []
         schema = self.get_json_schema()
         for key, value in schema["properties"].items():
@@ -93,8 +92,7 @@ class Events(HttpStream):
         return result
 
     def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """Transform 'date-time' items to RFC3339 format
-        """
+        """Transform 'date-time' items to RFC3339 format"""
         for item in record:
             if item in self.date_time_fields and record[item]:
                 record[item] = pendulum.parse(record[item]).to_rfc3339_string()

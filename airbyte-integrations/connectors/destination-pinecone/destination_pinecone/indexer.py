@@ -41,7 +41,8 @@ class PineconeIndexer(Indexer):
         for stream in catalog.streams:
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 self.delete_vectors(
-                    filter={METADATA_STREAM_FIELD: create_stream_identifier(stream.stream)}, namespace=stream.stream.namespace,
+                    filter={METADATA_STREAM_FIELD: create_stream_identifier(stream.stream)},
+                    namespace=stream.stream.namespace,
                 )
 
     def post_sync(self):
@@ -68,8 +69,7 @@ class PineconeIndexer(Indexer):
             query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k, namespace=namespace)
 
     def _truncate_metadata(self, metadata: dict) -> dict:
-        """Normalize metadata to ensure it is within the size limit and doesn't contain complex objects.
-        """
+        """Normalize metadata to ensure it is within the size limit and doesn't contain complex objects."""
         result = {}
         current_size = 0
 

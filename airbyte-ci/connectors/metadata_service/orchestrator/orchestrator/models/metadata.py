@@ -53,7 +53,6 @@ class LatestMetadataEntry(BaseModel):
 
     @property
     def is_latest_version_path(self) -> bool:
-        """Path is considered a latest version path if the subfolder containing METADATA_FILE_NAME is "latest"
-        """
+        """Path is considered a latest version path if the subfolder containing METADATA_FILE_NAME is "latest" """
         ending_path = f"latest/{METADATA_FILE_NAME}"
         return self.file_path.endswith(ending_path)

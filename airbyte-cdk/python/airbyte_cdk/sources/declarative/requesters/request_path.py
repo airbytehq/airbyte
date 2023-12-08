@@ -9,7 +9,6 @@ from typing import Any
 
 @dataclass
 class RequestPath:
-    """Describes that a component value should be inserted into the path
-    """
+    """Describes that a component value should be inserted into the path"""
 
     parameters: InitVar[Mapping[str, Any]]

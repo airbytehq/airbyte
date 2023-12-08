@@ -37,13 +37,11 @@ class AbstractFileBasedSpec(BaseModel):
     @classmethod
     @abstractmethod
     def documentation_url(cls) -> AnyUrl:
-        """:return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
-        """
+        """:return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3" """
 
     @classmethod
     def schema(cls, *args: Any, **kwargs: Any) -> dict[str, Any]:
-        """Generates the mapping comprised of the config fields
-        """
+        """Generates the mapping comprised of the config fields"""
         schema = super().schema(*args, **kwargs)
         transformed_schema: dict[str, Any] = copy.deepcopy(schema)
         schema_helpers.expand_refs(transformed_schema)
@@ -89,7 +87,8 @@ class AbstractFileBasedSpec(BaseModel):
         if len(csv_format_schemas) != 1:
             raise ValueError(f"Expecting only one CSV format but got {csv_format_schemas}")
         csv_format_schemas[0]["properties"]["header_definition"]["oneOf"] = csv_format_schemas[0]["properties"]["header_definition"].pop(
-            "anyOf", [],
+            "anyOf",
+            [],
         )
         csv_format_schemas[0]["properties"]["header_definition"]["type"] = "object"
         return schema

@@ -131,7 +131,10 @@ class SourceFacebookMarketing(AbstractSource):
         report_start_date = config.start_date or pendulum.now().add(years=-2)
 
         insights_args = dict(
-            api=api, start_date=report_start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window,
+            api=api,
+            start_date=report_start_date,
+            end_date=config.end_date,
+            insights_lookback_window=config.insights_lookback_window,
         )
         streams = [
             AdAccount(api=api),

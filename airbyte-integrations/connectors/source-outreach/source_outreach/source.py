@@ -49,7 +49,10 @@ class OutreachStream(HttpStream, ABC):
             raise KeyError(f"error parsing next_page token: {e}")
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"page[size]": self.page_size, "count": "false", "sort": "updatedAt"}
         if next_page_token and "after" in next_page_token:
@@ -91,7 +94,10 @@ class IncrementalOutreachStream(OutreachStream, ABC):
         return {self.cursor_field: max(current_stream_state_date, latest_record_date)}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         if self.cursor_field in stream_state:
@@ -255,7 +261,10 @@ class Snippets(IncrementalOutreachStream):
 class OutreachAuthenticator(Oauth2Authenticator):
     def __init__(self, redirect_uri: str, token_refresh_endpoint: str, client_id: str, client_secret: str, refresh_token: str):
         super().__init__(
-            token_refresh_endpoint=token_refresh_endpoint, client_id=client_id, client_secret=client_secret, refresh_token=refresh_token,
+            token_refresh_endpoint=token_refresh_endpoint,
+            client_id=client_id,
+            client_secret=client_secret,
+            refresh_token=refresh_token,
         )
         self.redirect_uri = redirect_uri
 

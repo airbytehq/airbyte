@@ -69,7 +69,8 @@ def get_latest_reports(blobs: list[storage.Blob], number_to_get: int) -> list[st
 
 
 def get_relevant_test_outputs(
-    latest_nightly_test_output_file_blobs: list[storage.Blob], latest_nightly_complete_file_blobs: list[storage.Blob],
+    latest_nightly_test_output_file_blobs: list[storage.Blob],
+    latest_nightly_complete_file_blobs: list[storage.Blob],
 ) -> list[storage.Blob]:
     """Get the relevant test output blobs that are in the same folder to any latest nightly runs
 
@@ -97,7 +98,8 @@ def get_relevant_test_outputs(
 
 
 def compute_connector_nightly_report_history(
-    nightly_report_complete_df: pd.DataFrame, nightly_report_test_output_df: pd.DataFrame,
+    nightly_report_complete_df: pd.DataFrame,
+    nightly_report_test_output_df: pd.DataFrame,
 ) -> pd.DataFrame:
     # Add a new column to nightly_report_complete_df that is the parent file path of the complete.json file
     nightly_report_complete_df["parent_prefix"] = nightly_report_complete_df["file_path"].apply(
@@ -122,18 +124,19 @@ def compute_connector_nightly_report_history(
 
 
 @asset(
-    required_resource_keys={"slack", "latest_nightly_complete_file_blobs", "latest_nightly_test_output_file_blobs"}, group_name=GROUP_NAME,
+    required_resource_keys={"slack", "latest_nightly_complete_file_blobs", "latest_nightly_test_output_file_blobs"},
+    group_name=GROUP_NAME,
 )
 @sentry.instrument_asset_op
 def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]:
-    """Generate the Connector Nightly Report from the latest 10 nightly runs
-    """
+    """Generate the Connector Nightly Report from the latest 10 nightly runs"""
     latest_nightly_complete_file_blobs = context.resources.latest_nightly_complete_file_blobs
     latest_nightly_test_output_file_blobs = context.resources.latest_nightly_test_output_file_blobs
 
     latest_10_nightly_complete_file_blobs = get_latest_reports(latest_nightly_complete_file_blobs, 10)
     relevant_nightly_test_output_file_blobs = get_relevant_test_outputs(
-        latest_nightly_test_output_file_blobs, latest_10_nightly_complete_file_blobs,
+        latest_nightly_test_output_file_blobs,
+        latest_10_nightly_complete_file_blobs,
     )
 
     nightly_report_complete_df = blobs_to_typed_df(latest_10_nightly_complete_file_blobs, ConnectorNightlyReport)

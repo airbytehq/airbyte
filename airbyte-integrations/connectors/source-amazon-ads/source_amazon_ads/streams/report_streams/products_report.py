@@ -268,8 +268,7 @@ class SponsoredProductsReportStream(ReportStream):
         return f"/{self.API_VERSION}/reports"
 
     def _download_report(self, report_info: ReportInfo, url: str) -> list[dict]:
-        """Download and parse report result
-        """
+        """Download and parse report result"""
         return super()._download_report(None, url)
 
     def _get_init_report_body(self, report_date: str, record_type: str, profile):

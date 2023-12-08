@@ -84,7 +84,10 @@ class CartStream(HttpStream, ABC):
         yield from result
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"count": 1000}
         if next_page_token:
@@ -127,8 +130,7 @@ class IncrementalCartStream(CartStream, ABC):
 
 
 class CustomersCart(IncrementalCartStream):
-    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1customers/get
-    """
+    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1customers/get"""
 
     data_field = "customers"
 
@@ -137,36 +139,30 @@ class CustomersCart(IncrementalCartStream):
 
 
 class Orders(IncrementalCartStream):
-    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1orders/get
-    """
+    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1orders/get"""
 
 
 class OrderPayments(IncrementalCartStream):
-    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_payments/get
-    """
+    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_payments/get"""
 
     data_field = "payments"
 
 
 class OrderItems(IncrementalCartStream):
-    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_items/get
-    """
+    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_items/get"""
 
     data_field = "items"
 
 
 class OrderStatuses(CartStream):
-    """Docs: https://developers.cart.com/docs/rest-api/ff5ada86bc8a0-get-order-statuses
-    """
+    """Docs: https://developers.cart.com/docs/rest-api/ff5ada86bc8a0-get-order-statuses"""
 
     data_field = "order_statuses"
 
 
 class Products(IncrementalCartStream):
-    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get
-    """
+    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get"""
 
 
 class Addresses(IncrementalCartStream):
-    """Docs: https://developers.cart.com/docs/rest-api/b3A6MjMzMTc3Njc-get-addresses
-    """
+    """Docs: https://developers.cart.com/docs/rest-api/b3A6MjMzMTc3Njc-get-addresses"""

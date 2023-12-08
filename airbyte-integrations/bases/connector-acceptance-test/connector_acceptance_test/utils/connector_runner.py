@@ -175,7 +175,11 @@ class ConnectorRunner:
         )
 
     async def call_read(
-        self, config: SecretDict, catalog: ConfiguredAirbyteCatalog, raise_container_error: bool = False, enable_caching: bool = True,
+        self,
+        config: SecretDict,
+        catalog: ConfiguredAirbyteCatalog,
+        raise_container_error: bool = False,
+        enable_caching: bool = True,
     ) -> list[AirbyteMessage]:
         return await self._run(
             ["read", "--config", self.IN_CONTAINER_CONFIG_PATH, "--catalog", self.IN_CONTAINER_CATALOG_PATH],

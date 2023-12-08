@@ -21,8 +21,7 @@ class Portfolios(AmazonAdsStream):
         return "v2/portfolios/extended"
 
     def read_records(self, *args, **kvargs) -> Iterable[Mapping[str, Any]]:
-        """Iterate through self._profiles list and send read all records for each profile.
-        """
+        """Iterate through self._profiles list and send read all records for each profile."""
         for profile in self._profiles:
             self._current_profile_id = profile.profileId
             yield from super().read_records(*args, **kvargs)

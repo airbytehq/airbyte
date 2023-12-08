@@ -9,8 +9,7 @@ from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimePar
 
 
 class DatetimeFormatInferrer:
-    """This class is used to detect toplevel fields in records that might be datetime values, along with the used format.
-    """
+    """This class is used to detect toplevel fields in records that might be datetime values, along with the used format."""
 
     def __init__(self) -> None:
         self._parser = DatetimeParser()

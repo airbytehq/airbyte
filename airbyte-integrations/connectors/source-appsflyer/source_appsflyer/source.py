@@ -41,7 +41,13 @@ class AppsflyerStream(HttpStream, ABC):
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     def __init__(
-        self, app_id: str, api_token: str, timezone: str, start_date: Union[date, str] = None, end_date: Union[date, str] = None, **kwargs,
+        self,
+        app_id: str,
+        api_token: str,
+        timezone: str,
+        start_date: Union[date, str] = None,
+        end_date: Union[date, str] = None,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.app_id = app_id
@@ -58,7 +64,10 @@ class AppsflyerStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {
             "api_token": self.api_token,
@@ -145,7 +154,10 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
             ) from e
 
     def stream_slices(
-        self, sync_mode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         cursor_value = stream_state.get(self.cursor_field)
@@ -177,7 +189,10 @@ class RawDataMixin:
     additional_fields = fields.raw_data.additional_fields
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["from"] = stream_slice.get(self.cursor_field).to_datetime_string()
@@ -192,7 +207,10 @@ class AggregateDataMixin:
     cursor_field = "date"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["from"] = stream_slice.get(self.cursor_field).to_date_string()
@@ -203,7 +221,10 @@ class AggregateDataMixin:
 
 class RetargetingMixin:
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["reattr"] = True
@@ -216,7 +237,10 @@ class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "event_time"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "in_app_events_report/v5"
 
@@ -226,7 +250,10 @@ class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
     additional_fields = fields.uninstall_events.additional_fields
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "uninstall_events_report/v5"
 
@@ -235,7 +262,10 @@ class Installs(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "install_time"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "installs_report/v5"
 
@@ -252,7 +282,10 @@ class PartnersReport(AggregateDataMixin, IncrementalAppsflyerStream):
     main_fields = fields.partners_report.main_fields
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "partners_by_date_report/v5"
 
@@ -261,7 +294,10 @@ class DailyReport(AggregateDataMixin, IncrementalAppsflyerStream):
     main_fields = fields.daily_report.main_fields
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "daily_report/v5"
 
@@ -270,7 +306,10 @@ class GeoReport(AggregateDataMixin, IncrementalAppsflyerStream):
     main_fields = fields.geo_report.main_fields
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "geo_by_date_report/v5"
 

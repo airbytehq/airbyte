@@ -79,7 +79,11 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
         return self._check_availability_for_sync_mode(stream, SyncMode.incremental, logger, source, {stream.cursor_field: 0})
 
     def handle_http_error(
-        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError,
+        self,
+        stream: Stream,
+        logger: logging.Logger,
+        source: Optional["Source"],
+        error: HTTPError,
     ) -> tuple[bool, Optional[str]]:
         status_code = error.response.status_code
         if status_code not in [400, 403]:

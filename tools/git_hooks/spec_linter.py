@@ -52,8 +52,7 @@ def read_spec_file(spec_path: str) -> bool:
 
 
 def print_error(spec_path: str, error_message: str, failed_field: Optional[str] = None) -> None:
-    """Logs error in following format: <BOLD>SPEC PATH</BOLD> ERROR MSG <RED>FIELD NAME</RED>
-    """
+    """Logs error in following format: <BOLD>SPEC PATH</BOLD> ERROR MSG <RED>FIELD NAME</RED>"""
     error = f"\033[1m{spec_path}\033[0m: {error_message}"
     if failed_field:
         error += f" \x1b[31;1m{failed_field}\033[0m"
@@ -66,8 +65,7 @@ def validate_schema(
     schema: Mapping[str, Any],
     parent_fields: Optional[list[str]] = None,
 ) -> list[tuple[str, str]]:
-    """Validates given spec dictionary object. Returns list of errors
-    """
+    """Validates given spec dictionary object. Returns list of errors"""
     errors: list[tuple[str, str]] = []
     parent_fields = parent_fields if parent_fields else []
     for field_name, field_schema in schema.items():
@@ -89,8 +87,7 @@ def validate_schema(
 
 
 def fetch_oneof_schemas(schema: Mapping[str, Any]) -> list[Mapping[str, Any]]:
-    """Finds subschemas in oneOf field
-    """
+    """Finds subschemas in oneOf field"""
     return [spec for spec in schema.get("oneOf", []) if spec.get("properties")]
 
 
@@ -99,8 +96,7 @@ def validate_field(
     schema: Mapping[str, Any],
     parent_fields: Optional[list[str]] = None,
 ) -> list[tuple[str, str]]:
-    """Validates single field objects and return errors if they exist
-    """
+    """Validates single field objects and return errors if they exist"""
     if "const" in schema.keys():
         # Field with "const" value is metainfo and not expected to contain title
         # and description.

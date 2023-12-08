@@ -223,12 +223,14 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._api.account.get_insights(params=params, is_async=False)
 
     def _response_data_is_valid(self, data: Iterable[Mapping[str, Any]]) -> bool:
-        """Ensure data contains all the fields specified in self.breakdowns
-        """
+        """Ensure data contains all the fields specified in self.breakdowns"""
         return all([breakdown in data for breakdown in self.breakdowns])
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
         This solution for Async was chosen because:

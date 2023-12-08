@@ -92,4 +92,3 @@ class CustomFileBasedException(AirbyteTracedException):
 
     This exception is designed to bypass the default error handling in the file-based CDK, allowing the use of custom error messages.
     """
-

@@ -20,14 +20,12 @@ class KvDbClient:
         return self.batch_write([(key, value)])
 
     def batch_write(self, keys_and_values: list[tuple[str, Mapping[str, Any]]]):
-        """https://kvdb.io/docs/api/#execute-transaction
-        """
+        """https://kvdb.io/docs/api/#execute-transaction"""
         request_body = {"txn": [{"set": key, "value": value} for key, value in keys_and_values]}
         return self._request("POST", json=request_body)
 
     def list_keys(self, list_values: bool = False, prefix: str = None) -> Iterable[Union[str, list]]:
-        """https://kvdb.io/docs/api/#list-keys
-        """
+        """https://kvdb.io/docs/api/#list-keys"""
         # TODO handle rate limiting
         pagination_complete = False
         offset = 0
@@ -52,8 +50,7 @@ class KvDbClient:
             offset += self.PAGE_SIZE
 
     def delete(self, key: Union[str, list[str]]):
-        """https://kvdb.io/docs/api/#execute-transaction
-        """
+        """https://kvdb.io/docs/api/#execute-transaction"""
         key_list = key if isinstance(key, list) else [key]
         request_body = {"txn": [{"delete": k} for k in key_list]}
         return self._request("POST", json=request_body)
@@ -65,7 +62,11 @@ class KvDbClient:
         return {"Authorization": f"Bearer {self.secret_key}"} if self.secret_key else {}
 
     def _request(
-        self, http_method: str, endpoint: str = None, params: Mapping[str, Any] = None, json: Mapping[str, Any] = None,
+        self,
+        http_method: str,
+        endpoint: str = None,
+        params: Mapping[str, Any] = None,
+        json: Mapping[str, Any] = None,
     ) -> requests.Response:
         url = self._get_base_url() + (endpoint or "")
         headers = {"Accept": "application/json", **self._get_auth_headers()}

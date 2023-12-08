@@ -100,7 +100,10 @@ class ReadReportStream(HttpStream):
                 logger.error("stream_state is in unhandled date-time format. Required format: %Y-%m-%dT%H:%M:%S")
 
         generate_report = GenerateReportStream(
-            base_path=self.base_path, start_date=latest_state, timezone=self.timezone, authenticator=self.authenticator,
+            base_path=self.base_path,
+            start_date=latest_state,
+            timezone=self.timezone,
+            authenticator=self.authenticator,
         )
         report_id = next(generate_report.read_records(SyncMode.full_refresh))
 

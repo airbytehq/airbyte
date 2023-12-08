@@ -73,21 +73,18 @@ class SourceAppstoreSinger(SingerSource):
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!s}")
 
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
-        """Return the string commands to invoke the tap with the --discover flag and the right configuration options
-        """
+        """Return the string commands to invoke the tap with the --discover flag and the right configuration options"""
         return f"{self.TAP_CMD} -c {config_path} --discover"
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        """Return the string commands to invoke the tap with the right configuration options to read data from the source
-        """
+        """Return the string commands to invoke the tap with the right configuration options to read data from the source"""
         config_option = f"--config {config_path}"
         properties_option = f"--properties {catalog_path}"
         state_option = f"--state {state_path}" if state_path else ""
         return f"{self.TAP_CMD} {config_option} {properties_option} {state_option}"
 
     def transform_config(self, raw_config: json) -> json:
-        """Return the string commands to invoke the tap with the right configuration options to read data from the source
-        """
+        """Return the string commands to invoke the tap with the right configuration options to read data from the source"""
         # path where we will write the private key.
         keyfile_path = "/tmp/keyfile.p8"
 

@@ -11,7 +11,9 @@ from base_images import errors
 
 
 async def check_env_var_with_printenv(
-    container: dagger.Container, expected_env_var_name: str, expected_env_var_value: Optional[str] = None,
+    container: dagger.Container,
+    expected_env_var_name: str,
+    expected_env_var_value: Optional[str] = None,
 ):
     """This checks if an environment variable is correctly defined by calling the printenv command in a container.
 

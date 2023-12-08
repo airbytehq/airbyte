@@ -44,8 +44,7 @@ class BaseConnector(ABC, Generic[TConfig]):
 
     @abstractmethod
     def configure(self, config: Mapping[str, Any], temp_dir: str) -> TConfig:
-        """Persist config in temporary directory to run the Source job
-        """
+        """Persist config in temporary directory to run the Source job"""
 
     @staticmethod
     def read_config(config_path: str) -> Mapping[str, Any]:

@@ -77,7 +77,10 @@ def test_find_spec_cache_with_fallback(mock_spec_cache, image, tag, given_regist
         (
             "specs/airbyte/source-azure-blob-storage/1.1.1/spec.json",
             CachedSpec(
-                "airbyte/source-azure-blob-storage", "1.1.1", "specs/airbyte/source-azure-blob-storage/1.1.1/spec.json", Registries.OSS,
+                "airbyte/source-azure-blob-storage",
+                "1.1.1",
+                "specs/airbyte/source-azure-blob-storage/1.1.1/spec.json",
+                Registries.OSS,
             ),
         ),
         (

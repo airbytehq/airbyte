@@ -92,7 +92,10 @@ class Engage(IncrementalMixpanelStream):
         return {"include_all_users": True}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params = {**params, "page_size": self.page_size}
@@ -213,7 +216,10 @@ class Engage(IncrementalMixpanelStream):
         self.cursor_field = cursor_field[0]
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if sync_mode == SyncMode.incremental:
             self.set_cursor(cursor_field)

@@ -115,7 +115,10 @@ def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_c
 
 
 def upload_file_if_changed(
-    local_file_path: Path, bucket: storage.bucket.Bucket, blob_path: str, disable_cache: bool = False,
+    local_file_path: Path,
+    bucket: storage.bucket.Bucket,
+    blob_path: str,
+    disable_cache: bool = False,
 ) -> tuple[bool, str]:
     local_file_md5_hash = compute_gcs_md5(local_file_path)
     remote_blob = bucket.blob(blob_path)
@@ -155,7 +158,11 @@ def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket
 
 
 def _doc_upload(
-    metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, docs_path: Path, latest: bool, inapp: bool,
+    metadata: ConnectorMetadataDefinitionV0,
+    bucket: storage.bucket.Bucket,
+    docs_path: Path,
+    latest: bool,
+    inapp: bool,
 ) -> tuple[bool, str]:
     local_doc_path = get_doc_local_file_path(metadata, docs_path, inapp)
     if not local_doc_path:

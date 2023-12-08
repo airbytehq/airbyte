@@ -83,8 +83,7 @@ class Oauth2Authenticator(HttpAuthenticator):
         max_time=300,
     )
     def refresh_access_token(self) -> tuple[str, int]:
-        """Returns a tuple of (access_token, token_lifespan_in_seconds)
-        """
+        """Returns a tuple of (access_token, token_lifespan_in_seconds)"""
         try:
             response = requests.request(
                 method="POST",

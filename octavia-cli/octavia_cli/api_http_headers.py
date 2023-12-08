@@ -70,7 +70,8 @@ def deserialize_option_based_headers(api_http_headers: list[tuple[str, str]]) ->
 
 
 def merge_api_headers(
-    option_based_api_http_headers: Optional[list[tuple[str, str]]], api_http_headers_file_path: Optional[str],
+    option_based_api_http_headers: Optional[list[tuple[str, str]]],
+    api_http_headers_file_path: Optional[str],
 ) -> list[ApiHttpHeader]:
     """Deserialize headers from options and files into ApiHttpHeader and merge options based headers with file based headers.
 

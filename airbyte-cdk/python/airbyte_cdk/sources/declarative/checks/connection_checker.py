@@ -11,8 +11,7 @@ from airbyte_cdk.sources.source import Source
 
 
 class ConnectionChecker(ABC):
-    """Abstract base class for checking a connection
-    """
+    """Abstract base class for checking a connection"""
 
     @abstractmethod
     def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, any]:

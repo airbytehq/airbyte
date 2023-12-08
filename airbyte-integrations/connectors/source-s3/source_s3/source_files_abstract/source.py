@@ -27,20 +27,17 @@ class SourceFilesAbstract(AbstractSource, ABC):
     @property
     @abstractmethod
     def stream_class(self) -> type:
-        """:return: reference to the relevant FileStream class e.g. IncrementalFileStreamS3
-        """
+        """:return: reference to the relevant FileStream class e.g. IncrementalFileStreamS3"""
 
     @property
     @abstractmethod
     def spec_class(self) -> type:
-        """:return: reference to the relevant pydantic spec class e.g. SourceS3Spec
-        """
+        """:return: reference to the relevant pydantic spec class e.g. SourceS3Spec"""
 
     @property
     @abstractmethod
     def documentation_url(self) -> str:
-        """:return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
-        """
+        """:return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3" """
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Optional[Any]]:
         """This method checks two things:

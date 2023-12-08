@@ -16,13 +16,11 @@ class GoogleSheets:
 
     @property
     def spreadsheet(self) -> Spreadsheet:
-        """Returns pygsheets.Spreadsheet with opened target spreadsheet by key.
-        """
+        """Returns pygsheets.Spreadsheet with opened target spreadsheet by key."""
         return self.client.open_by_key(self.spreadsheet_id)
 
     def open_worksheet(self, stream_name: str) -> Worksheet:
-        """Opens the connection to target worksheet, if exists. Otherwise, creates one.
-        """
+        """Opens the connection to target worksheet, if exists. Otherwise, creates one."""
         try:
             stream = self.spreadsheet.worksheet_by_title(stream_name)
         except WorksheetNotFound:
@@ -30,8 +28,7 @@ class GoogleSheets:
         return stream
 
     def clean_worksheet(self, stream_name: str):
-        """Cleans up the existing records inside the worksheet or creates one, if doesn't exist.
-        """
+        """Cleans up the existing records inside the worksheet or creates one, if doesn't exist."""
         try:
             stream = self.open_worksheet(stream_name)
             stream.clear()
@@ -39,8 +36,7 @@ class GoogleSheets:
             self.spreadsheet.add_worksheet(stream_name)
 
     def set_headers(self, stream_name: str, headers_list: list[str]):
-        """Sets headers belonging to the input stream
-        """
+        """Sets headers belonging to the input stream"""
         stream: Worksheet = self.open_worksheet(stream_name)
         if headers_list:
             stream.update_row(1, headers_list)

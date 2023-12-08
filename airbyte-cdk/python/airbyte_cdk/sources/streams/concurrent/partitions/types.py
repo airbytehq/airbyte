@@ -15,8 +15,7 @@ class PartitionCompleteSentinel:
     """
 
     def __init__(self, partition: Partition):
-        """:param partition: The partition that was processed
-        """
+        """:param partition: The partition that was processed"""
         self.partition = partition
 
 

@@ -258,7 +258,10 @@ class PipelineContext:
         )
 
     async def __aexit__(
-        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType],
+        self,
+        exception_type: Optional[type[BaseException]],
+        exception_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
     ) -> bool:
         """Perform teardown operation for the PipelineContext.
 

@@ -110,7 +110,9 @@ class SingerHelper:
 
     @staticmethod
     def singer_catalog_to_airbyte_catalog(
-        singer_catalog: dict[str, Any], sync_mode_overrides: dict[str, SyncModeInfo], primary_key_overrides: dict[str, list[str]],
+        singer_catalog: dict[str, Any],
+        sync_mode_overrides: dict[str, SyncModeInfo],
+        primary_key_overrides: dict[str, list[str]],
     ) -> AirbyteCatalog:
         """:param singer_catalog:
         :param sync_mode_overrides: A dict from stream name to the sync modes it should use. Each stream in this dict must exist in the Singer catalog,
@@ -143,7 +145,11 @@ class SingerHelper:
     @staticmethod
     def _read_singer_catalog(logger, shell_command: str) -> Mapping[str, Any]:
         completed_process = subprocess.run(
-            shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            shell_command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
         )
         for line in completed_process.stderr.splitlines():
             logger.log(*log_by_prefix(line, "ERROR"))

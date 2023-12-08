@@ -177,7 +177,14 @@ class AwsHandler:
         )
 
     def _write(
-        self, df: pd.DataFrame, path: str, database: str, table: str, mode: str, dtype: dict[str, str], partition_cols: list = None,
+        self,
+        df: pd.DataFrame,
+        path: str,
+        database: str,
+        table: str,
+        mode: str,
+        dtype: dict[str, str],
+        partition_cols: list = None,
     ) -> Any:
         self._create_database_if_not_exists(database)
 

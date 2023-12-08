@@ -3,7 +3,6 @@
 #
 
 
-
 """This list holds the Zuora Object names (API object names) that could not be processed or
 plays the service role for other objects and doesn't hold the actual data, while being called using API call.
 Extend this list if needed.

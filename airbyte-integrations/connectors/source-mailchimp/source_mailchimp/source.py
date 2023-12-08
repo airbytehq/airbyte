@@ -40,7 +40,8 @@ class MailChimpAuthenticator:
         """
         try:
             response = requests.get(
-                "https://login.mailchimp.com/oauth2/metadata", headers={"Authorization": f"OAuth {access_token}"},
+                "https://login.mailchimp.com/oauth2/metadata",
+                headers={"Authorization": f"OAuth {access_token}"},
             )
 
             # Requests to this endpoint will return a 200 status code even if the access token is invalid.
@@ -83,7 +84,8 @@ class SourceMailchimp(AbstractSource):
         try:
             authenticator = MailChimpAuthenticator().get_auth(config)
             response = requests.get(
-                f"https://{authenticator.data_center}.api.mailchimp.com/3.0/ping", headers=authenticator.get_auth_header(),
+                f"https://{authenticator.data_center}.api.mailchimp.com/3.0/ping",
+                headers=authenticator.get_auth_header(),
             )
 
             # A successful response will return a simple JSON object with a single key: health_status.

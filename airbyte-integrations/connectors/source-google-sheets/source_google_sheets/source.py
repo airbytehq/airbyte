@@ -39,8 +39,7 @@ socket.setdefaulttimeout(DEFAULT_SOCKET_TIMEOUT)
 
 
 class SourceGoogleSheets(Source):
-    """Spreadsheets API Reference: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets
-    """
+    """Spreadsheets API Reference: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets"""
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         # Check involves verifying that the specified spreadsheet is reachable with our credentials.
@@ -90,7 +89,8 @@ class SourceGoogleSheets(Source):
                 else:
                     logger.error(str(err))
                     return AirbyteConnectionStatus(
-                        status=Status.FAILED, message=f"Unable to read the schema of sheet {sheet_name}. Error: {err!s}",
+                        status=Status.FAILED,
+                        message=f"Unable to read the schema of sheet {sheet_name}. Error: {err!s}",
                     )
         if duplicate_headers_in_sheet:
             duplicate_headers_error_message = ", ".join(
@@ -157,7 +157,10 @@ class SourceGoogleSheets(Source):
         # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been
         # a blank row, emit the row batch
         sheet_to_column_index_to_name = Helpers.get_available_sheets_to_column_index_to_name(
-            client, spreadsheet_id, sheet_to_column_name, config.get("names_conversion"),
+            client,
+            spreadsheet_id,
+            sheet_to_column_name,
+            config.get("names_conversion"),
         )
         sheet_row_counts = Helpers.get_sheet_row_count(client, spreadsheet_id)
         logger.info(f"Row counts: {sheet_row_counts}")
@@ -195,7 +198,8 @@ class SourceGoogleSheets(Source):
                     for row in row_values:
                         if not Helpers.is_row_empty(row) and Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
                             yield AirbyteMessage(
-                                type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name),
+                                type=Type.RECORD,
+                                record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name),
                             )
             else:
                 logger.info(f"Skipping syncing sheet {sheet}: {reason}")

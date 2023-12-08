@@ -164,8 +164,7 @@ class CatalogProcessor:
         return result
 
     def process_substreams(self, substreams: list[StreamProcessor], tables_registry: TableNameRegistry):
-        """Handle nested stream/substream/children
-        """
+        """Handle nested stream/substream/children"""
         while substreams:
             children = substreams
             substreams = []
@@ -179,8 +178,7 @@ class CatalogProcessor:
                     output_sql_file(os.path.join(self.output_directory, file), substream.sql_outputs[file])
 
     def write_yaml_sources_file(self, schema_to_source_tables: dict[str, set[str]]):
-        """Generate the sources.yaml file as described in https://docs.getdbt.com/docs/building-a-dbt-project/using-sources/
-        """
+        """Generate the sources.yaml file as described in https://docs.getdbt.com/docs/building-a-dbt-project/using-sources/"""
         schemas = []
         for entry in sorted(schema_to_source_tables.items(), key=lambda kv: kv[0]):
             schema = entry[0]
@@ -224,8 +222,7 @@ def read_json(input_path: str) -> Any:
 
 
 def get_field(config: dict, key: str, message: str):
-    """Retrieve value of field in a Dict object. Throw an error if key is not found with message as reason.
-    """
+    """Retrieve value of field in a Dict object. Throw an error if key is not found with message as reason."""
     if key in config:
         return config[key]
     else:
@@ -233,8 +230,7 @@ def get_field(config: dict, key: str, message: str):
 
 
 def get_source_sync_mode(stream_config: dict, stream_name: str) -> SyncMode:
-    """Read the source sync_mode field from config or return a default value if not found
-    """
+    """Read the source sync_mode field from config or return a default value if not found"""
     if "sync_mode" in stream_config:
         sync_mode = get_field(stream_config, "sync_mode", "")
     else:
@@ -249,8 +245,7 @@ def get_source_sync_mode(stream_config: dict, stream_name: str) -> SyncMode:
 
 
 def get_destination_sync_mode(stream_config: dict, stream_name: str) -> DestinationSyncMode:
-    """Read the destination_sync_mode field from config or return a default value if not found
-    """
+    """Read the destination_sync_mode field from config or return a default value if not found"""
     if "destination_sync_mode" in stream_config:
         dest_sync_mode = get_field(stream_config, "destination_sync_mode", "")
     else:
@@ -265,8 +260,7 @@ def get_destination_sync_mode(stream_config: dict, stream_name: str) -> Destinat
 
 
 def add_table_to_sources(schema_to_source_tables: dict[str, set[str]], schema_name: str, table_name: str):
-    """Keeps track of source tables used in this catalog to build a source.yaml file for DBT
-    """
+    """Keeps track of source tables used in this catalog to build a source.yaml file for DBT"""
     if schema_name not in schema_to_source_tables:
         schema_to_source_tables[schema_name] = set()
     if table_name not in schema_to_source_tables[schema_name]:

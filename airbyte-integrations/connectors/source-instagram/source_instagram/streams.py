@@ -28,8 +28,7 @@ class DatetimeTransformerMixin:
     @staticmethod
     @transformer.registerCustomTransform
     def custom_transform_datetime_rfc3339(original_value, field_schema):
-        """Transform datetime string to RFC 3339 format
-        """
+        """Transform datetime string to RFC 3339 format"""
         if original_value and field_schema.get("format") == "date-time" and field_schema.get("airbyte_type") == "timestamp_with_timezone":
             # Parse the ISO format timestamp
             dt = pendulum.parse(original_value)
@@ -65,7 +64,10 @@ class InstagramStream(Stream, ABC):
         return {"limit": self.page_size}
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """Override to define the slices for this stream. See the stream slicing section of the docs for more information.
 
@@ -266,7 +268,10 @@ class UserInsights(DatetimeTransformerMixin, InstagramIncrementalStream):
                 self.state = self._update_state(self.state, record)
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """Extend default slicing based on accounts with slices based on date intervals"""
         stream_state = stream_state or {}
@@ -328,8 +333,7 @@ class Media(DatetimeTransformerMixin, InstagramStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """This method should be overridden by subclasses to read records based on the inputs
-        """
+        """This method should be overridden by subclasses to read records based on the inputs"""
         account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
         media = ig_account.get_media(params=self.request_params(), fields=self.fields)

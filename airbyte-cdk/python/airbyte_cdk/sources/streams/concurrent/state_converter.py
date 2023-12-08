@@ -49,8 +49,7 @@ class ConcurrentStreamStateConverter(ABC):
         ...
 
     def _get_latest_complete_time(self, slices: list[MutableMapping[str, Any]]) -> Optional[Any]:
-        """Get the latest time before which all records have been processed.
-        """
+        """Get the latest time before which all records have been processed."""
         if slices:
             first_interval = self.merge_intervals(slices)[0][self.END_KEY]
             return first_interval
@@ -60,8 +59,7 @@ class ConcurrentStreamStateConverter(ABC):
     @staticmethod
     @abstractmethod
     def increment(timestamp: Any) -> Any:
-        """Increment a timestamp by a single unit.
-        """
+        """Increment a timestamp by a single unit."""
         ...
 
     @classmethod

@@ -51,7 +51,9 @@ def get_secrets_properties_from_registry_entry(registry_entry: dict) -> list[str
 @asset(group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def all_specs_secrets(
-    context: OpExecutionContext, persisted_oss_registry: ConnectorRegistryV0, persisted_cloud_registry: ConnectorRegistryV0,
+    context: OpExecutionContext,
+    persisted_oss_registry: ConnectorRegistryV0,
+    persisted_cloud_registry: ConnectorRegistryV0,
 ) -> set[str]:
     oss_registry_from_metadata_dict = persisted_oss_registry.dict()
     cloud_registry_from_metadata_dict = persisted_cloud_registry.dict()

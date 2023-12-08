@@ -71,7 +71,10 @@ class MailChimpStream(HttpStream, ABC):
     ) -> Iterable[StreamData]:
         try:
             yield from super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
+                sync_mode=sync_mode,
+                cursor_field=cursor_field,
+                stream_slice=stream_slice,
+                stream_state=stream_state,
             )
         except requests.exceptions.JSONDecodeError:
             logger.error(f"Unknown error while reading stream {self.name}. Response cannot be read properly. ")
@@ -104,7 +107,11 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         return {self.cursor_field: max(latest_state, current_state)}
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        *,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slice_ = {}
         stream_state = stream_state or {}
@@ -123,8 +130,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
 
 
 class MailChimpListSubStream(IncrementalMailChimpStream):
-    """Base class for incremental Mailchimp streams that are children of the Lists stream.
-    """
+    """Base class for incremental Mailchimp streams that are children of the Lists stream."""
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
@@ -204,7 +210,11 @@ class EmailActivity(IncrementalMailChimpStream):
         self.campaign_id = campaign_id
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        *,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
         if self.campaign_id:
@@ -263,8 +273,7 @@ class InterestCategories(MailChimpStream, HttpSubStream):
     data_field = "categories"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        """Get the list_id from the parent stream slice and use it to construct the path.
-        """
+        """Get the list_id from the parent stream slice and use it to construct the path."""
         list_id = stream_slice.get("parent").get("id")
         return f"lists/{list_id}/interest-categories"
 
@@ -283,8 +292,7 @@ class Interests(MailChimpStream, HttpSubStream):
     data_field = "interests"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        """Get the list_id from the parent stream slice and use it to construct the path.
-        """
+        """Get the list_id from the parent stream slice and use it to construct the path."""
         list_id = stream_slice.get("parent").get("list_id")
         category_id = stream_slice.get("parent").get("id")
         return f"lists/{list_id}/interest-categories/{category_id}/interests"
@@ -357,8 +365,7 @@ class SegmentMembers(MailChimpListSubStream):
         return element
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """Each slice consists of a list_id and segment_id pair
-        """
+        """Each slice consists of a list_id and segment_id pair"""
         segments_slices = Segments(authenticator=self.authenticator).stream_slices(sync_mode=SyncMode.full_refresh)
 
         for slice in segments_slices:
@@ -373,8 +380,7 @@ class SegmentMembers(MailChimpListSubStream):
         return f"lists/{list_id}/segments/{segment_id}/members"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice, **kwargs) -> Iterable[Mapping]:
-        """SegmentMembers endpoint does not support sorting, so we need to filter out records that are older than the current state
-        """
+        """SegmentMembers endpoint does not support sorting, so we need to filter out records that are older than the current state"""
         response = super().parse_response(response, **kwargs)
 
         for record in response:
@@ -422,8 +428,7 @@ class Tags(MailChimpStream, HttpSubStream):
         return f"lists/{list_id}/tag-search"
 
     def parse_response(self, response: requests.Response, stream_slice, **kwargs) -> Iterable[Mapping]:
-        """Tags do not reference parent_ids, so we need to add the list_id to each record.
-        """
+        """Tags do not reference parent_ids, so we need to add the list_id to each record."""
         response = super().parse_response(response, **kwargs)
 
         for record in response:
@@ -447,7 +452,11 @@ class Unsubscribes(IncrementalMailChimpStream):
         self.campaign_id = campaign_id
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        *,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.campaign_id:
             # Similar to EmailActivity stream, this is a workaround to speed up SATs

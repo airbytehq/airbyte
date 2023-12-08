@@ -35,7 +35,9 @@ class PurchaseGenerator:
         numeric = Numeric(seed=seed_with_offset)
 
     def random_date_in_range(
-        self, start_date: datetime.datetime, end_date: datetime.datetime = datetime.datetime.now(),
+        self,
+        start_date: datetime.datetime,
+        end_date: datetime.datetime = datetime.datetime.now(),
     ) -> datetime.datetime:
         time_between_dates = end_date - start_date
         days_between_dates = time_between_dates.days

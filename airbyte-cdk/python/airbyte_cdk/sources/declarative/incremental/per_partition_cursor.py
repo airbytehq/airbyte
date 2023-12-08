@@ -149,7 +149,8 @@ class PerPartitionCursor(Cursor):
                 Record(most_recent_record.data, stream_slice.cursor_slice) if most_recent_record else most_recent_record
             )
             self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].close_slice(
-                stream_slice.cursor_slice, cursor_most_recent_record,
+                stream_slice.cursor_slice,
+                cursor_most_recent_record,
             )
         except KeyError as exception:
             raise ValueError(
@@ -209,9 +210,13 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._partition_router.get_request_params(
-            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token,
+            stream_state=stream_state,
+            stream_slice=stream_slice.partition,
+            next_page_token=next_page_token,
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_params(
-            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token,
+            stream_state=stream_state,
+            stream_slice=stream_slice.cursor_slice,
+            next_page_token=next_page_token,
         )
 
     def get_request_headers(
@@ -222,9 +227,13 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._partition_router.get_request_headers(
-            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token,
+            stream_state=stream_state,
+            stream_slice=stream_slice.partition,
+            next_page_token=next_page_token,
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_headers(
-            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token,
+            stream_state=stream_state,
+            stream_slice=stream_slice.cursor_slice,
+            next_page_token=next_page_token,
         )
 
     def get_request_body_data(
@@ -235,9 +244,13 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._partition_router.get_request_body_data(
-            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token,
+            stream_state=stream_state,
+            stream_slice=stream_slice.partition,
+            next_page_token=next_page_token,
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_body_data(
-            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token,
+            stream_state=stream_state,
+            stream_slice=stream_slice.cursor_slice,
+            next_page_token=next_page_token,
         )
 
     def get_request_body_json(
@@ -248,9 +261,13 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._partition_router.get_request_body_json(
-            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token,
+            stream_state=stream_state,
+            stream_slice=stream_slice.partition,
+            next_page_token=next_page_token,
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_body_json(
-            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token,
+            stream_state=stream_state,
+            stream_slice=stream_slice.cursor_slice,
+            next_page_token=next_page_token,
         )
 
     def should_be_synced(self, record: Record) -> bool:
@@ -263,7 +280,8 @@ class PerPartitionCursor(Cursor):
             )
 
         return self._get_cursor(first).is_greater_than_or_equal(
-            self._convert_record_to_cursor_record(first), self._convert_record_to_cursor_record(second),
+            self._convert_record_to_cursor_record(first),
+            self._convert_record_to_cursor_record(second),
         )
 
     @staticmethod

@@ -35,7 +35,10 @@ class PivotalTrackerStream(HttpStream, ABC):
         return {"offset": current_offset + page_size}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params: MutableMapping[str, Any] = {}
         if next_page_token:
@@ -50,7 +53,10 @@ class PivotalTrackerStream(HttpStream, ABC):
 
 class Projects(PivotalTrackerStream):
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "projects"
 

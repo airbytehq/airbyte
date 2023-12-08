@@ -88,8 +88,7 @@ class FileBasedSource(AbstractSource, ABC):
         return not bool(errors), (errors or None)
 
     def streams(self, config: Mapping[str, Any]) -> list[Stream]:
-        """Return a list of this source's streams.
-        """
+        """Return a list of this source's streams."""
         try:
             parsed_config = self._get_parsed_config(config)
             self.stream_reader.config = parsed_config
@@ -127,8 +126,7 @@ class FileBasedSource(AbstractSource, ABC):
             yield create_analytics_message(f"file-cdk-{parser}-stream-count", count)
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
-        """Returns the specification describing what fields can be configured by a user when setting up a file-based source.
-        """
+        """Returns the specification describing what fields can be configured by a user when setting up a file-based source."""
         return ConnectorSpecification(
             documentationUrl=self.spec_class.documentation_url(),
             connectionSpecification=self.spec_class.schema(),
@@ -141,7 +139,8 @@ class FileBasedSource(AbstractSource, ABC):
         if stream_config.validation_policy not in self.validation_policies:
             # This should never happen because we validate the config against the schema's validation_policy enum
             raise ValidationError(
-                f"`validation_policy` must be one of {list(self.validation_policies.keys())}", model=FileBasedStreamConfig,
+                f"`validation_policy` must be one of {list(self.validation_policies.keys())}",
+                model=FileBasedStreamConfig,
             )
         return self.validation_policies[stream_config.validation_policy]
 

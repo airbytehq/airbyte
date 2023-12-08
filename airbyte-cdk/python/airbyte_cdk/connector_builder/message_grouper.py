@@ -231,15 +231,17 @@ class MessageGrouper:
         current_slice_pages: list[StreamReadPages],
         current_page_records: list[Mapping[str, Any]],
     ) -> None:
-        """Close a page when parsing message groups
-        """
+        """Close a page when parsing message groups"""
         current_slice_pages.append(
             StreamReadPages(request=current_page_request, response=current_page_response, records=deepcopy(current_page_records)),  # type: ignore
         )
         current_page_records.clear()
 
     def _read_stream(
-        self, source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog,
+        self,
+        source: DeclarativeSource,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
     ) -> Iterator[AirbyteMessage]:
         # the generator can raise an exception
         # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage

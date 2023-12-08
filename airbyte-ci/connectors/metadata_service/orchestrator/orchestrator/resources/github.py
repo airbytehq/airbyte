@@ -11,8 +11,7 @@ from orchestrator.config import CONNECTORS_PATH
 
 
 def _valid_metadata_file_path(path: str) -> bool:
-    """Ensure that the path is a metadata file and not a scaffold file.
-    """
+    """Ensure that the path is a metadata file and not a scaffold file."""
     return METADATA_FILE_NAME in path and CONNECTORS_PATH in path and "-scaffold-" not in path
 
 
@@ -93,7 +92,9 @@ def github_workflow_runs(resource_context: InitResourceContext) -> list[ContentF
     # Note: We must do this as pygithub does not support all required
     #       parameters for this endpoint
     status, data = github_connector_repo._requester.requestJsonAndCheck(
-        "GET", f"{github_connector_repo.url}/actions/workflows/{workflow_id}/runs", parameters=params,
+        "GET",
+        f"{github_connector_repo.url}/actions/workflows/{workflow_id}/runs",
+        parameters=params,
     )
 
     workflow_runs = data.get("workflow_runs", [])

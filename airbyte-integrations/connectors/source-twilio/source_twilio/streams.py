@@ -44,8 +44,7 @@ class TwilioStream(HttpStream, ABC):
 
     @property
     def changeable_fields(self):
-        """:return list of changeable fields that should be removed from the records
-        """
+        """:return list of changeable fields that should be removed from the records"""
         return []
 
     @property
@@ -64,8 +63,7 @@ class TwilioStream(HttpStream, ABC):
             return next_page_params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """:return an iterable containing each record in the response
-        """
+        """:return an iterable containing each record in the response"""
         records = response.json().get(self.data_field, [])
         if self.changeable_fields:
             for record in records:
@@ -142,14 +140,12 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     @property
     @abstractmethod
     def lower_boundary_filter_field(self) -> str:
-        """return: date filter query parameter name
-        """
+        """return: date filter query parameter name"""
 
     @property
     @abstractmethod
     def upper_boundary_filter_field(self) -> str:
-        """return: date filter query parameter name
-        """
+        """return: date filter query parameter name"""
 
     @property
     def state(self) -> Mapping[str, Any]:
@@ -193,7 +189,10 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
             current_start = current_end + self.slice_granularity
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for super_slice in super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
             for dt_range in self.generate_date_ranges():
@@ -252,8 +251,7 @@ class TwilioNestedStream(TwilioStream):
     @property
     @abstractmethod
     def parent_stream(self) -> TwilioStream:
-        """:return: parent stream class
-        """
+        """:return: parent stream class"""
 
     @cached_property
     def parent_stream_instance(self):
@@ -267,7 +265,9 @@ class TwilioNestedStream(TwilioStream):
         stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
         for stream_slice in stream_slices:
             for item in stream_instance.read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field,
+                sync_mode=SyncMode.full_refresh,
+                stream_slice=stream_slice,
+                cursor_field=stream_instance.cursor_field,
             ):
                 if not self.uri_from_subresource:
                     yield self.parent_record_to_stream_slice(item)
@@ -400,8 +400,7 @@ class ConferenceParticipants(TwilioNestedStream):
 
 
 class Flows(TwilioStream):
-    """https://www.twilio.com/docs/studio/rest-api/flow#read-a-list-of-flows
-    """
+    """https://www.twilio.com/docs/studio/rest-api/flow#read-a-list-of-flows"""
 
     url_base = TWILIO_STUDIO_API_BASE
 
@@ -410,8 +409,7 @@ class Flows(TwilioStream):
 
 
 class Executions(TwilioNestedStream):
-    """https://www.twilio.com/docs/studio/rest-api/execution#read-a-list-of-executions
-    """
+    """https://www.twilio.com/docs/studio/rest-api/execution#read-a-list-of-executions"""
 
     parent_stream = Flows
     url_base = TWILIO_STUDIO_API_BASE
@@ -425,8 +423,7 @@ class Executions(TwilioNestedStream):
 
 
 class Step(TwilioNestedStream):
-    """https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources
-    """
+    """https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources"""
 
     parent_stream = Executions
     url_base = TWILIO_STUDIO_API_BASE
@@ -456,8 +453,7 @@ class Recordings(IncrementalTwilioStream, TwilioNestedStream):
 
 
 class Services(TwilioStream):
-    """https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
-    """
+    """https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources"""
 
     url_base = TWILIO_CHAT_BASE
 
@@ -466,8 +462,7 @@ class Services(TwilioStream):
 
 
 class VerifyServices(TwilioStream):
-    """https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
-    """
+    """https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources"""
 
     # Unlike other endpoints, this one won't accept requests where pageSize >100
     page_size = 100
@@ -479,8 +474,7 @@ class VerifyServices(TwilioStream):
 
 
 class Roles(TwilioNestedStream):
-    """https://www.twilio.com/docs/chat/rest/role-resource#read-multiple-role-resources
-    """
+    """https://www.twilio.com/docs/chat/rest/role-resource#read-multiple-role-resources"""
 
     parent_stream = Services
     url_base = TWILIO_CHAT_BASE
@@ -500,8 +494,7 @@ class Transcriptions(TwilioNestedStream):
 
 
 class Trunks(TwilioStream):
-    """https://www.twilio.com/docs/sip-trunking/api/trunk-resource#trunk-properties
-    """
+    """https://www.twilio.com/docs/sip-trunking/api/trunk-resource#trunk-properties"""
 
     url_base = TWILIO_TRUNKING_URL_BASE
 
@@ -548,8 +541,7 @@ class UsageNestedStream(TwilioNestedStream):
     @property
     @abstractmethod
     def path_name(self) -> str:
-        """return: name of the end of the usage paths
-        """
+        """return: name of the end of the usage paths"""
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs):
         return f"Accounts/{stream_slice['account_sid']}/Usage/{self.path_name}.json"

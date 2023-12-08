@@ -40,7 +40,11 @@ class InterpolatedBoolean:
             return self.condition
         else:
             evaluated = self._interpolation.eval(
-                self.condition, config, self._default, parameters=self._parameters, **additional_parameters,
+                self.condition,
+                config,
+                self._default,
+                parameters=self._parameters,
+                **additional_parameters,
             )
             if evaluated in FALSE_VALUES:
                 return False

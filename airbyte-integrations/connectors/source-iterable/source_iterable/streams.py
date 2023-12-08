@@ -54,16 +54,14 @@ class IterableStream(HttpStream, ABC):
     @property
     @abstractmethod
     def data_field(self) -> str:
-        """:return: Default field name to get data from response
-        """
+        """:return: Default field name to get data from response"""
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """Iterable API does not support pagination
-        """
+        """Iterable API does not support pagination"""
         return None
 
     def check_unauthorized_key(self, response: requests.Response) -> bool:
@@ -379,8 +377,7 @@ class CampaignsMetrics(IterableStream):
     data_field = None
 
     def __init__(self, start_date: str, end_date: Optional[str] = None, **kwargs):
-        """https://api.iterable.com/api/docs#campaigns_metrics
-        """
+        """https://api.iterable.com/api/docs#campaigns_metrics"""
         super().__init__(**kwargs)
         self.start_date = start_date
         self.end_date = end_date
@@ -474,8 +471,7 @@ class Metadata(IterableStream):
 
 
 class Events(IterableStream):
-    """https://api.iterable.com/api/docs#export_exportUserEvents
-    """
+    """https://api.iterable.com/api/docs#export_exportUserEvents"""
 
     primary_key = None
     data_field = "events"

@@ -83,8 +83,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         return self._drive_service
 
     def get_matching_files(self, globs: list[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
-        """Get all files matching the specified glob patterns.
-        """
+        """Get all files matching the specified glob patterns."""
         service = self.google_drive_service
         root_folder_id = get_folder_id(self.config.folder_url)
         # ignore prefix argument as it's legacy only and this is a new connector
@@ -142,8 +141,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                     break
 
     def _is_exportable_document(self, mime_type: str):
-        """Returns true if the given file is a Google App document that can be exported.
-        """
+        """Returns true if the given file is a Google App document that can be exported."""
         return mime_type in EXPORTABLE_DOCUMENTS_MIME_TYPES
 
     def open_file(self, file: GoogleDriveRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:

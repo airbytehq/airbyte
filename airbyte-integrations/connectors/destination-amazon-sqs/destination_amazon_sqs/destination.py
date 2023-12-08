@@ -80,7 +80,10 @@ class DestinationAmazonSqs(Destination):
 
     # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
+        self,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         # Required propeties
         queue_url = config["queue_url"]
@@ -165,13 +168,16 @@ class DestinationAmazonSqs(Destination):
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
             else:
                 return AirbyteConnectionStatus(
-                    status=Status.FAILED, message="Amazon SQS Destination Config Check - Could not connect to queue",
+                    status=Status.FAILED,
+                    message="Amazon SQS Destination Config Check - Could not connect to queue",
                 )
         except ClientError as e:
             return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"Amazon SQS Destination Config Check - Error in AWS Client: {e!s}",
+                status=Status.FAILED,
+                message=f"Amazon SQS Destination Config Check - Error in AWS Client: {e!s}",
             )
         except Exception as e:
             return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"Amazon SQS Destination Config Check - An exception occurred: {e!s}",
+                status=Status.FAILED,
+                message=f"Amazon SQS Destination Config Check - An exception occurred: {e!s}",
             )

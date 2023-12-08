@@ -73,8 +73,7 @@ class EntrypointOutput:
 
 
 def read(source: Source, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: Optional[Any] = None) -> EntrypointOutput:
-    """Config and state must be json serializable
-    """
+    """Config and state must be json serializable"""
     log_capture_buffer = StringIO()
     stream_handler = logging.StreamHandler(log_capture_buffer)
     stream_handler.setLevel(logging.INFO)

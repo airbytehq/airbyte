@@ -14,8 +14,7 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamSta
 
 @dataclass
 class NoPagination(Paginator):
-    """Pagination implementation that never returns a next page.
-    """
+    """Pagination implementation that never returns a next page."""
 
     parameters: InitVar[Mapping[str, Any]]
 

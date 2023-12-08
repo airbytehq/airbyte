@@ -10,7 +10,11 @@ from airbyte_cdk.sources.message import LogMessage
 
 
 def format_http_message(
-    response: requests.Response, title: str, description: str, stream_name: Optional[str], is_auxiliary: bool = None,
+    response: requests.Response,
+    title: str,
+    description: str,
+    stream_name: Optional[str],
+    is_auxiliary: bool = None,
 ) -> LogMessage:
     request = response.request
     log_message = {

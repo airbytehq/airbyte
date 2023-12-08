@@ -28,7 +28,8 @@ class DocumentProcessor:
         self.max_metadata_size = max_metadata_size
 
         self.splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-            chunk_size=config.chunk_size, chunk_overlap=config.chunk_overlap,
+            chunk_size=config.chunk_size,
+            chunk_overlap=config.chunk_overlap,
         )
         self.text_fields = config.text_fields
         self.logger = logging.getLogger("airbyte.document_processor")
@@ -98,8 +99,7 @@ class DocumentProcessor:
         return "_".join(primary_key)
 
     def _truncate_metadata(self, metadata: dict) -> dict:
-        """Normalize metadata to ensure it is within the size limit and doesn't contain complex objects.
-        """
+        """Normalize metadata to ensure it is within the size limit and doesn't contain complex objects."""
         result = {}
         current_size = 0
 

@@ -213,7 +213,9 @@ def remove_date_time_pattern_format(schema: dict[str, Any]) -> dict[str, Any]:
 
 
 def validate_previous_configs(
-    previous_connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification, number_of_configs_to_generate=100,
+    previous_connector_spec: ConnectorSpecification,
+    actual_connector_spec: ConnectorSpecification,
+    number_of_configs_to_generate=100,
 ):
     """Use hypothesis and hypothesis-jsonschema to run property based testing:
     1. Generate fake previous config with the previous connector specification json schema.

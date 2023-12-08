@@ -134,7 +134,8 @@ def octavia(
 
     click.echo(
         click.style(
-            f"🐙 - Octavia is targetting your Airbyte instance running at {airbyte_url} on workspace {ctx.obj['WORKSPACE_ID']}.", fg="green",
+            f"🐙 - Octavia is targetting your Airbyte instance running at {airbyte_url} on workspace {ctx.obj['WORKSPACE_ID']}.",
+            fg="green",
         ),
     )
     if not ctx.obj["PROJECT_IS_INITIALIZED"]:
@@ -142,7 +143,11 @@ def octavia(
 
 
 def get_api_client(
-    airbyte_url: str, airbyte_username: str, airbyte_password: str, user_agent: str, api_http_headers: Optional[list[ApiHttpHeader]],
+    airbyte_url: str,
+    airbyte_username: str,
+    airbyte_password: str,
+    user_agent: str,
+    api_http_headers: Optional[list[ApiHttpHeader]],
 ):
     client_configuration = airbyte_api_client.Configuration(host=f"{airbyte_url}/api", username=airbyte_username, password=airbyte_password)
     api_client = airbyte_api_client.ApiClient(client_configuration)

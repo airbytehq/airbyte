@@ -119,15 +119,13 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
 
     @property
     def _message_repository(self) -> MessageRepository:
-        """Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs
-        """
+        """Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs"""
         return self.message_repository
 
 
 @dataclass
 class DeclarativeSingleUseRefreshTokenOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator, DeclarativeAuthenticator):
-    """Declarative version of SingleUseRefreshTokenOauth2Authenticator which can be used in declarative connectors.
-    """
+    """Declarative version of SingleUseRefreshTokenOauth2Authenticator which can be used in declarative connectors."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

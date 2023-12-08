@@ -62,8 +62,7 @@ def get_report_stream(report: BasicReports, granularity: ReportGranularity) -> B
 
 
 class TiktokTokenAuthenticator(TokenAuthenticator):
-    """Docs: https://business-api.tiktok.com/marketing_api/docs?rid=sta6fe2yww&id=1701890922708994
-    """
+    """Docs: https://business-api.tiktok.com/marketing_api/docs?rid=sta6fe2yww&id=1701890922708994"""
 
     def __init__(self, token: str, **kwargs):
         super().__init__(token, **kwargs)
@@ -117,8 +116,7 @@ class SourceTiktokMarketing(AbstractSource):
         return stream_args
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, any]:
-        """Tests if the input configuration can be used to successfully connect to the integration
-        """
+        """Tests if the input configuration can be used to successfully connect to the integration"""
         try:
             advertisers = Advertisers(**self._prepare_stream_args(config))
             for slice_ in advertisers.stream_slices():

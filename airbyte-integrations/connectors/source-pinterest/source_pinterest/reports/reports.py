@@ -65,7 +65,10 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         return self._construct_request_body(stream_slice["start_date"], stream_slice["end_date"], self.granularity, get_analytics_columns())
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         """Return the request parameters."""
         return {}
@@ -73,7 +76,9 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
             return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout, interval=10)(func)(
-                self, *args, **kwargs,
+                self,
+                *args,
+                **kwargs,
             )
 
         return wrapped
@@ -81,7 +86,10 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
     def backoff_max_tries(func):
         def wrapped(self, *args, **kwargs):
             return backoff.on_exception(
-                backoff.expo, ReportGenerationFailure, max_tries=self.report_generation_maximum_retries, max_time=self.report_wait_timeout,
+                backoff.expo,
+                ReportGenerationFailure,
+                max_tries=self.report_generation_maximum_retries,
+                max_time=self.report_wait_timeout,
             )(func)(self, *args, **kwargs)
 
         return wrapped
@@ -159,7 +167,9 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         """Verify the report status and return it along with the report URL."""
         api_path = self._build_api_path(stream_slice["parent"]["id"])
         response_data = self._http_get(
-            urljoin(self.url_base, api_path), params={"token": report.token}, headers=self.authenticator.get_auth_header(),
+            urljoin(self.url_base, api_path),
+            params={"token": report.token},
+            headers=self.authenticator.get_auth_header(),
         )
         try:
             report_status = ReportStatusDetails.parse_raw(json.dumps(response_data))

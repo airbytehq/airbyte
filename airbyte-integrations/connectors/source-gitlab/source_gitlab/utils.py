@@ -3,7 +3,6 @@
 #
 
 
-
 def parse_url(url: str) -> tuple[bool, str, str]:
     parts = url.split("://")
     if len(parts) > 1:

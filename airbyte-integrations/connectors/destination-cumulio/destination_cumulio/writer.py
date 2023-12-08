@@ -97,9 +97,7 @@ class CumulioWriter:
                     unknown_data = False
                     # Cumul.io doesn't support storing or querying nested (list, dict) or boolean data.
                     # we'll stringify this data via json.dumps
-                    if (
-                        isinstance(airbyte_data[column], bool | dict | list)
-                    ):
+                    if isinstance(airbyte_data[column], bool | dict | list):
                         data[index] = json.dumps(airbyte_data[column])
                     else:
                         data[index] = airbyte_data[column]

@@ -33,8 +33,7 @@ from .streams import (
 
 
 class SourceRecurly(AbstractSource):
-    """Recurly API Reference: https://developers.recurly.com/api/v2021-02-25/
-    """
+    """Recurly API Reference: https://developers.recurly.com/api/v2021-02-25/"""
 
     def __init__(self):
         super(SourceRecurly, self).__init__()

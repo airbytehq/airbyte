@@ -62,13 +62,15 @@ class PinterestStream(HttpStream, ABC):
             return {"bookmark": next_page}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        """Parsing response data with respect to Rate Limits.
-        """
+        """Parsing response data with respect to Rate Limits."""
         data = response.json()
 
         if not self.max_rate_limit_exceeded:
@@ -105,10 +107,15 @@ class PinterestStream(HttpStream, ABC):
 
 class PinterestSubStream(HttpSubStream):
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state,
+            sync_mode=SyncMode.full_refresh,
+            cursor_field=cursor_field,
+            stream_state=stream_state,
         )
         # iterate over all parent stream_slices
         for stream_slice in parent_stream_slices:
@@ -152,7 +159,11 @@ class CatalogsFeeds(PinterestStream):
 
 class CatalogsProductGroupsAvailabilityStrategy(HttpAvailabilityStrategy):
     def reasons_for_unavailable_status_codes(
-        self, stream: Stream, logger: logging.Logger, source: Optional[Source], error: HTTPError,
+        self,
+        stream: Stream,
+        logger: logging.Logger,
+        source: Optional[Source],
+        error: HTTPError,
     ) -> dict[int, str]:
         reasons_for_codes: dict[int, str] = super().reasons_for_unavailable_status_codes(stream, logger, source, error)
         reasons_for_codes[409] = "Can't access catalog product groups because there is no existing catalog."
@@ -236,7 +247,10 @@ class IncrementalPinterestStream(PinterestStream, ABC):
         return {self.cursor_field: max(latest_state, current_state)}
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, any]]]:
         """Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
         Returns list of dict, example: [{
@@ -288,7 +302,10 @@ class IncrementalPinterestSubStream(IncrementalPinterestStream):
         self.with_data_slices = with_data_slices
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         date_slices = super().stream_slices(sync_mode, cursor_field, stream_state) if self.with_data_slices else [{}]
         parents_slices = PinterestSubStream.stream_slices(self, sync_mode, cursor_field, stream_state) if self.parent else [{}]
@@ -326,7 +343,10 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
         return super().backoff_time(response)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params.update(

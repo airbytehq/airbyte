@@ -30,8 +30,7 @@ class HttpRequest:
         return urlencode(query_params, doseq=True)
 
     def matches(self, other: Any) -> bool:
-        """Note that headers only need to be a subset of `other` in order to match
-        """
+        """Note that headers only need to be a subset of `other` in order to match"""
         if isinstance(other, HttpRequest):
             return (
                 self._parsed_url.scheme == other._parsed_url.scheme

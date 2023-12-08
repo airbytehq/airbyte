@@ -34,8 +34,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
-    """The default file-based stream.
-    """
+    """The default file-based stream."""
 
     DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
     ab_last_mod_col = "_ab_source_file_last_modified"
@@ -156,7 +155,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             schema = self._get_raw_json_schema()
         except (InvalidSchemaError, NoFilesMatchingError) as config_exception:
             raise AirbyteTracedException(
-                message=FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value, exception=config_exception, failure_type=FailureType.config_error,
+                message=FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value,
+                exception=config_exception,
+                failure_type=FailureType.config_error,
             ) from config_exception
         except Exception as exc:
             raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, stream=self.name) from exc
@@ -197,8 +198,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         return schema
 
     def get_files(self) -> Iterable[RemoteFile]:
-        """Return all files that belong to the stream as defined by the stream's globs.
-        """
+        """Return all files that belong to the stream as defined by the stream's globs."""
         return self.stream_reader.get_matching_files(self.config.globs or [], self.config.legacy_prefix, self.logger)
 
     def infer_schema(self, files: list[RemoteFile]) -> Mapping[str, Any]:

@@ -3,7 +3,6 @@
 #
 
 
-
 ZUORA_TENANT_ENDPOINT_MAP: dict = {
     # Production
     "US Production": "https://rest.zuora.com",

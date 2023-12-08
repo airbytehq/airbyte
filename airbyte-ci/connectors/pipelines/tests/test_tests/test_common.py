@@ -122,7 +122,11 @@ class TestAcceptanceTests:
     ):
         """Test the behavior of the run function using a dummy container."""
         cat_container = self.get_dummy_cat_container(
-            test_context.dagger_client, exit_code, secrets_file_names, stdout="hello", stderr="world",
+            test_context.dagger_client,
+            exit_code,
+            secrets_file_names,
+            stdout="hello",
+            stderr="world",
         )
         async_mock = mocker.AsyncMock(return_value=cat_container)
         mocker.patch.object(common.AcceptanceTests, "_build_connector_acceptance_test", side_effect=async_mock)
@@ -156,7 +160,12 @@ class TestAcceptanceTests:
         return common.AcceptanceTests(test_context)
 
     async def test_cat_container_provisioning(
-        self, dagger_client, mocker, test_context, test_input_dir, dummy_connector_under_test_container,
+        self,
+        dagger_client,
+        mocker,
+        test_context,
+        test_input_dir,
+        dummy_connector_under_test_container,
     ):
         """Check that the acceptance test container is correctly provisioned.
         We check that:
@@ -196,7 +205,8 @@ class TestAcceptanceTests:
         with freeze_time(initial_datetime) as frozen_datetime:
             acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context, test_input_dir)
             cat_container = await acceptance_test_step._build_connector_acceptance_test(
-                dummy_connector_under_test_container, test_input_dir,
+                dummy_connector_under_test_container,
+                test_input_dir,
             )
             cat_container = cat_container.with_exec(["date"])
             fist_date_result = await cat_container.stdout()
@@ -204,7 +214,8 @@ class TestAcceptanceTests:
             frozen_datetime.tick(delta=datetime.timedelta(hours=5))
             # Check that cache is used in the same day
             cat_container = await acceptance_test_step._build_connector_acceptance_test(
-                dummy_connector_under_test_container, test_input_dir,
+                dummy_connector_under_test_container,
+                test_input_dir,
             )
             cat_container = cat_container.with_exec(["date"])
             second_date_result = await cat_container.stdout()
@@ -213,7 +224,8 @@ class TestAcceptanceTests:
             # Check that cache bursted after a day
             frozen_datetime.tick(delta=datetime.timedelta(days=1, seconds=1))
             cat_container = await acceptance_test_step._build_connector_acceptance_test(
-                dummy_connector_under_test_container, test_input_dir,
+                dummy_connector_under_test_container,
+                test_input_dir,
             )
             cat_container = cat_container.with_exec(["date"])
             third_date_result = await cat_container.stdout()
@@ -222,7 +234,8 @@ class TestAcceptanceTests:
             time.sleep(1)
             # Check that changing the container invalidates the cache
             cat_container = await acceptance_test_step._build_connector_acceptance_test(
-                another_dummy_connector_under_test_container, test_input_dir,
+                another_dummy_connector_under_test_container,
+                test_input_dir,
             )
             cat_container = cat_container.with_exec(["date"])
             fourth_date_result = await cat_container.stdout()

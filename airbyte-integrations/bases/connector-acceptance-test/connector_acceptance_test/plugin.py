@@ -35,7 +35,10 @@ def pytest_load_initial_conftests(early_config: Config, parser: Parser, args: li
 def pytest_addoption(parser):
     """Hook function to add CLI option `acceptance-test-config`"""
     parser.addoption(
-        "--acceptance-test-config", action="store", default=".", help="Folder with standard test config - acceptance_test_config.yml",
+        "--acceptance-test-config",
+        action="store",
+        default=".",
+        help="Folder with standard test config - acceptance_test_config.yml",
     )
 
 
@@ -54,7 +57,10 @@ def pytest_generate_tests(metafunc):
         global_config = load_config(metafunc.config.getoption("--acceptance-test-config"))
         test_configuration: GenericTestConfig = getattr(global_config.acceptance_tests, test_config_key, None)
         test_action, reason = parametrize_skip_or_fail(
-            metafunc.cls, metafunc.function, global_config.test_strictness_level, test_configuration,
+            metafunc.cls,
+            metafunc.function,
+            global_config.test_strictness_level,
+            test_configuration,
         )
 
         if test_action == TestAction.PARAMETRIZE:

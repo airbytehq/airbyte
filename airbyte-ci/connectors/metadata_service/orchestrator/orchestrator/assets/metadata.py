@@ -48,8 +48,7 @@ def get_field_with_fallback(merged_df, field):
 
 
 def compute_registry_overrides(merged_df):
-    """Returns the registry overrides section for the metadata file.
-    """
+    """Returns the registry overrides section for the metadata file."""
     cloud_only = merged_df["_merge"] == "right_only"
     oss_only = merged_df["_merge"] == "left_only"
 

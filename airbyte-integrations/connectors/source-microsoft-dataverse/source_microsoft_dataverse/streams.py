@@ -52,10 +52,12 @@ class MicrosoftDataverseStream(HttpStream, ABC):
             return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        """:return a dict containing the parameters to be used in the request
-        """
+        """:return a dict containing the parameters to be used in the request"""
         request_params = super().request_params(stream_state)
         # If there is not a nextLink(contains "next_page_token") in the response, means it is the last page.
         # In this case, the deltatoken is passed instead.
@@ -67,13 +69,15 @@ class MicrosoftDataverseStream(HttpStream, ABC):
             return request_params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """:return an iterable containing each record in the response
-        """
+        """:return an iterable containing each record in the response"""
         for result in response.json()["value"]:
             yield result
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         return {
             "Cache-Control": "no-cache",
@@ -116,10 +120,12 @@ class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalM
         self._cursor_value = value[self.delta_token_field]
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        """Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
-        """
+        """Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method."""
         request_headers = super().request_headers(stream_state=stream_state)
         request_headers.update(
             {"Prefer": "odata.track-changes," + request_headers["Prefer"]},

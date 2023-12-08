@@ -52,7 +52,8 @@ class MilvusIndexer(Indexer):
         This uses an IVF_FLAT index with 1024 clusters. This is a good default for most use cases. If more control is needed, the index can be created manually (this is also stated in the documentation)
         """
         collection.create_index(
-            field_name=self.config.vector_field, index_params={"metric_type": "L2", "index_type": "IVF_FLAT", "params": {"nlist": 1024}},
+            field_name=self.config.vector_field,
+            index_params={"metric_type": "L2", "index_type": "IVF_FLAT", "params": {"nlist": 1024}},
         )
 
     def _create_client(self):

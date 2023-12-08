@@ -27,8 +27,7 @@ class BaseEmbeddedIntegration(ABC, Generic[TConfig, TOutput]):
 
     @abstractmethod
     def _handle_record(self, record: AirbyteRecordMessage, id: Optional[str]) -> Optional[TOutput]:
-        """Turn an Airbyte record into the appropriate output type for the integration.
-        """
+        """Turn an Airbyte record into the appropriate output type for the integration."""
 
     def _load_data(self, stream_name: str, state: Optional[AirbyteStateMessage] = None) -> Iterable[TOutput]:
         catalog = self.source.discover(self.config)

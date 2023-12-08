@@ -143,7 +143,10 @@ class OpenAICompatibleEmbeddingConfigModel(BaseModel):
     mode: Literal["openai_compatible"] = Field("openai_compatible", const=True)
     api_key: str = Field(title="API key", default="", airbyte_secret=True)
     base_url: str = Field(
-        ..., title="Base URL", description="The base URL for your OpenAI-compatible service", examples=["https://your-service-name.com"],
+        ...,
+        title="Base URL",
+        description="The base URL for your OpenAI-compatible service",
+        examples=["https://your-service-name.com"],
     )
     model_name: str = Field(
         title="Model name",
@@ -152,7 +155,9 @@ class OpenAICompatibleEmbeddingConfigModel(BaseModel):
         examples=["text-embedding-ada-002"],
     )
     dimensions: int = Field(
-        title="Embedding dimensions", description="The number of dimensions the embedding model is generating", examples=[1536, 384],
+        title="Embedding dimensions",
+        description="The number of dimensions the embedding model is generating",
+        examples=[1536, 384],
     )
 
     class Config(OneOfOptionConfig):
@@ -200,10 +205,16 @@ class FakeEmbeddingConfigModel(BaseModel):
 class FromFieldEmbeddingConfigModel(BaseModel):
     mode: Literal["from_field"] = Field("from_field", const=True)
     field_name: str = Field(
-        ..., title="Field name", description="Name of the field in the record that contains the embedding", examples=["embedding", "vector"],
+        ...,
+        title="Field name",
+        description="Name of the field in the record that contains the embedding",
+        examples=["embedding", "vector"],
     )
     dimensions: int = Field(
-        ..., title="Embedding dimensions", description="The number of dimensions the embedding model is generating", examples=[1536, 384],
+        ...,
+        title="Embedding dimensions",
+        description="The number of dimensions the embedding model is generating",
+        examples=[1536, 384],
     )
 
     class Config(OneOfOptionConfig):

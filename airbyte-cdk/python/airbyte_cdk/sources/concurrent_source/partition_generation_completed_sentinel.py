@@ -10,6 +10,5 @@ class PartitionGenerationCompletedSentinel:
     """
 
     def __init__(self, stream: AbstractStream):
-        """:param stream: The stream that was processed
-        """
+        """:param stream: The stream that was processed"""
         self.stream = stream

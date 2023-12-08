@@ -56,7 +56,10 @@ class RecordSelector(HttpSelector):
     ) -> list[Mapping[str, Any]]:
         if self.record_filter:
             return self.record_filter.filter_records(
-                records, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
+                records,
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
             )
         return records
 

@@ -16,8 +16,7 @@ MAX_BUFFER_SIZE_DEFAULT: int = 16 * BUFFER_SIZE_DEFAULT
 
 
 class RemoteFileInsideArchive(RemoteFile):
-    """A file inside archive in a file-based stream.
-    """
+    """A file inside archive in a file-based stream."""
 
     start_offset: int
     compressed_size: int
@@ -26,8 +25,7 @@ class RemoteFileInsideArchive(RemoteFile):
 
 
 class ZipFileHandler:
-    """Handler class for extracting information from ZIP files stored in AWS S3.
-    """
+    """Handler class for extracting information from ZIP files stored in AWS S3."""
 
     # Class constants for ZIP file signatures
     EOCD_SIGNATURE: bytes = b"\x50\x4b\x05\x06"
@@ -179,20 +177,17 @@ class DecompressedStream(io.IOBase):
         return file_start + self.LOCAL_FILE_HEADER_SIZE + name_len + extra_len  # Calculate the actual start by skipping the header
 
     def _reset_decompressor(self):
-        """Reset the decompressor object.
-        """
+        """Reset the decompressor object."""
         self.decompressor = zipfile._get_decompressor(self.compression_method)
 
     def _decompress_chunk(self, chunk: bytes) -> bytes:
-        """Decompress a chunk of data based on the compression method.
-        """
+        """Decompress a chunk of data based on the compression method."""
         if self.compression_method == zipfile.ZIP_STORED:
             return chunk
         return self.decompressor.decompress(chunk)
 
     def read(self, size: int = -1) -> bytes:
-        """Read a specified number of bytes from the stream.
-        """
+        """Read a specified number of bytes from the stream."""
         # Size not specified, read till end
         if size == -1:
             size = self.uncompressed_size - self.position
@@ -227,8 +222,7 @@ class DecompressedStream(io.IOBase):
         return data
 
     def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
-        """Seek to a specific position in the uncompressed stream.
-        """
+        """Seek to a specific position in the uncompressed stream."""
         if whence == io.SEEK_SET:
             self._buffer = bytearray()
         elif whence == io.SEEK_CUR:
@@ -254,23 +248,19 @@ class DecompressedStream(io.IOBase):
         return self.position
 
     def tell(self) -> int:
-        """Return the current position in the uncompressed stream.
-        """
+        """Return the current position in the uncompressed stream."""
         return self.position
 
     def readable(self) -> bool:
-        """Return if the stream is readable.
-        """
+        """Return if the stream is readable."""
         return True
 
     def seekable(self) -> bool:
-        """Return if the stream is seekable.
-        """
+        """Return if the stream is seekable."""
         return True
 
     def close(self):
-        """Close the stream and underlying file object.
-        """
+        """Close the stream and underlying file object."""
         self._file.close()
 
 
@@ -293,21 +283,18 @@ class ZipContentReader:
         self._closed = False
 
     def __iter__(self):
-        """Make the class iterable.
-        """
+        """Make the class iterable."""
         return self
 
     def __next__(self) -> Union[str, bytes]:
-        """Iterate over the lines in the reader.
-        """
+        """Iterate over the lines in the reader."""
         line = self.readline()
         if not line:
             raise StopIteration
         return line
 
     def readline(self, limit: int = -1) -> Union[str, bytes]:
-        """Read a single line from the stream.
-        """
+        """Read a single line from the stream."""
         if limit != -1:
             raise NotImplementedError("Limits other than -1 not implemented yet")
 
@@ -329,8 +316,7 @@ class ZipContentReader:
         return line
 
     def read(self, size: int = -1) -> Union[str, bytes]:
-        """Read a specified number of bytes/characters from the reader.
-        """
+        """Read a specified number of bytes/characters from the reader."""
         while len(self.buffer) < size:
             chunk = self.raw.read(self.buffer_size)
             if not chunk:
@@ -343,26 +329,22 @@ class ZipContentReader:
         return data.decode(self.encoding) if self.encoding else bytes(data)
 
     def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
-        """Seek to a specific position in the decompressed stream.
-        """
+        """Seek to a specific position in the decompressed stream."""
         self.buffer = bytearray()
         return self.raw.seek(offset, whence)
 
     def close(self):
-        """Close the reader and underlying decompressed stream.
-        """
+        """Close the reader and underlying decompressed stream."""
         self._closed = True
         self.raw.close()
 
     def tell(self) -> int:
-        """Return the current position in the decompressed stream.
-        """
+        """Return the current position in the decompressed stream."""
         return self.raw.tell()
 
     @property
     def closed(self) -> bool:
-        """Check if the reader is closed.
-        """
+        """Check if the reader is closed."""
         return self._closed
 
     def __enter__(self) -> "ZipContentReader":

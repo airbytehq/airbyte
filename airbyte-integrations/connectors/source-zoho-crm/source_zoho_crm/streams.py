@@ -37,7 +37,10 @@ class ZohoCrmStream(HttpStream, ABC):
         return {"page": pagination["page"] + 1}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
 
@@ -95,7 +98,10 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
             yield record
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         last_modified = stream_state.get(self.cursor_field, self._start_datetime)
         # since API filters inclusively, we add 1 sec to prevent duplicate reads

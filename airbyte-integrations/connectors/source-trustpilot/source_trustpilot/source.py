@@ -39,7 +39,8 @@ class SourceTrustpilot(AbstractSource):
     def _oauth2_auth_params(self, config: MutableMapping[str, Any]):
         if not self.__oauth2_auth_params:
             auth = TrustpilotOauth2Authenticator(
-                config, token_refresh_endpoint="https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/refresh",
+                config,
+                token_refresh_endpoint="https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/refresh",
             )
             self.__oauth2_auth_params = {"authenticator": auth, "api_key": config["credentials"]["client_id"]}
         return self.__oauth2_auth_params
@@ -48,7 +49,8 @@ class SourceTrustpilot(AbstractSource):
         if not self.__configured_business_units_stream:
             public_auth_params = self._public_auth_params(config)
             self.__configured_business_units_stream = ConfiguredBusinessUnits(
-                business_unit_names=config["business_units"], **public_auth_params,
+                business_unit_names=config["business_units"],
+                **public_auth_params,
             )
         return self.__configured_business_units_stream
 

@@ -26,8 +26,7 @@ generate_registry_entry = define_asset_job(
 
 @op(required_resource_keys={"slack", "all_metadata_file_blobs"})
 def add_new_metadata_partitions_op(context):
-    """This op is responsible for polling for new metadata files and adding their etag to the dynamic partition.
-    """
+    """This op is responsible for polling for new metadata files and adding their etag to the dynamic partition."""
     all_metadata_file_blobs = context.resources.all_metadata_file_blobs
     partition_name = registry_entry.metadata_partitions_def.name
 
@@ -62,6 +61,5 @@ def add_new_metadata_partitions_op(context):
 
 @job(tags={"dagster/priority": HIGH_QUEUE_PRIORITY})
 def add_new_metadata_partitions():
-    """This job is responsible for polling for new metadata files and adding their etag to the dynamic partition.
-    """
+    """This job is responsible for polling for new metadata files and adding their etag to the dynamic partition."""
     add_new_metadata_partitions_op()

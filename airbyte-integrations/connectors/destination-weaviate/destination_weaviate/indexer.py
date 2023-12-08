@@ -50,7 +50,9 @@ class WeaviateIndexer(Indexer):
 
         # disable dynamic batching because it's handled asynchroniously in the client
         self.client.batch.configure(
-            batch_size=None, dynamic=False, weaviate_error_retries=weaviate.WeaviateErrorRetryConf(number_retries=5),
+            batch_size=None,
+            dynamic=False,
+            weaviate_error_retries=weaviate.WeaviateErrorRetryConf(number_retries=5),
         )
 
     def check(self) -> Optional[str]:

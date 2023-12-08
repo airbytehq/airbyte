@@ -46,7 +46,9 @@ class MissingCachedSpecError(Exception):
 @sentry_sdk.trace
 def apply_spec_to_registry_entry(registry_entry: dict, spec_cache: SpecCache, registry_name: str) -> dict:
     cached_spec = spec_cache.find_spec_cache_with_fallback(
-        registry_entry["dockerRepository"], registry_entry["dockerImageTag"], registry_name,
+        registry_entry["dockerRepository"],
+        registry_entry["dockerImageTag"],
+        registry_name,
     )
     if cached_spec is None:
         raise MissingCachedSpecError(f"No cached spec found for {registry_entry['dockerRepository']}:{registry_entry['dockerImageTag']}")
@@ -87,7 +89,9 @@ def apply_connector_release_defaults(metadata: dict) -> Optional[pd.DataFrame]:
     if breaking_changes is not None:
         for version, breaking_change in breaking_changes.items():
             breaking_change["migrationDocumentationUrl"] = calculate_migration_documentation_url(
-                breaking_change, documentation_url, version,
+                breaking_change,
+                documentation_url,
+                version,
             )
 
     return metadata_releases
@@ -222,7 +226,9 @@ def _get_latest_entry_write_path(metadata_path: Optional[str], registry_name: st
 
 
 def get_registry_entry_write_path(
-    registry_entry: Optional[PolymorphicRegistryEntry], metadata_entry: LatestMetadataEntry, registry_name: str,
+    registry_entry: Optional[PolymorphicRegistryEntry],
+    metadata_entry: LatestMetadataEntry,
+    registry_name: str,
 ) -> str:
     """Get the write path for the registry entry."""
     if metadata_entry.is_latest_version_path:
@@ -432,8 +438,7 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
 )
 @sentry.instrument_asset_op
 def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry]) -> Output[Optional[dict]]:
-    """Generate the registry entry files from the given metadata file, and persist it to GCS.
-    """
+    """Generate the registry entry files from the given metadata file, and persist it to GCS."""
     if not metadata_entry:
         # if the metadata entry is invalid, return an empty dict
         return Output(metadata={"empty_metadata": True}, value=None)

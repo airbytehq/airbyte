@@ -233,7 +233,9 @@ def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> list[Path
 
 
 def get_all_gradle_dependencies(
-    build_file: Path, with_test_dependencies: bool = True, found_dependencies: Optional[list[Path]] = None,
+    build_file: Path,
+    with_test_dependencies: bool = True,
+    found_dependencies: Optional[list[Path]] = None,
 ) -> list[Path]:
     """Recursively retrieve all transitive dependencies of a Gradle project.
 
@@ -564,13 +566,17 @@ class Connector:
         dependencies_paths = []
         if self.language == ConnectorLanguage.JAVA:
             dependencies_paths += get_all_gradle_dependencies(
-                self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies,
+                self.code_directory / "build.gradle",
+                with_test_dependencies=with_test_dependencies,
             )
         return sorted(list(set(dependencies_paths)))
 
 
 def get_changed_connectors(
-    modified_files: Optional[set[Union[str, Path]]] = None, source: bool = True, destination: bool = True, third_party: bool = True,
+    modified_files: Optional[set[Union[str, Path]]] = None,
+    source: bool = True,
+    destination: bool = True,
+    third_party: bool = True,
 ) -> set[Connector]:
     """Retrieve a set of Connectors that were changed in the current branch (compared to master)."""
     if modified_files is None:

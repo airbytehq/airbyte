@@ -47,7 +47,13 @@ class SalesforceStream(HttpStream, ABC):
     encoding = DEFAULT_ENCODING
 
     def __init__(
-        self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs,
+        self,
+        sf_api: Salesforce,
+        pk: str,
+        stream_name: str,
+        sobject_options: Mapping[str, Any] = None,
+        schema: dict = None,
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.sf_api = sf_api
@@ -97,8 +103,7 @@ class SalesforceStream(HttpStream, ABC):
 
 
 class PropertyChunk:
-    """Object that is used to keep track of the current state of a chunk of properties for the stream of records being synced.
-    """
+    """Object that is used to keep track of the current state of a chunk of properties for the stream of records being synced."""
 
     properties: Mapping[str, Any]
     first_time: bool
@@ -138,8 +143,7 @@ class RestSalesforceStream(SalesforceStream):
         next_page_token: Mapping[str, Any] = None,
         property_chunk: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        """Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
-        """
+        """Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm"""
         if next_page_token:
             """
             If `next_page_token` is set, subsequent requests use `nextRecordsUrl`, and do not include any parameters.
@@ -193,7 +197,8 @@ class RestSalesforceStream(SalesforceStream):
     def _read_pages(
         self,
         records_generator_fn: Callable[
-            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData],
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Mapping[str, Any]],
+            Iterable[StreamData],
         ],
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
@@ -211,7 +216,10 @@ class RestSalesforceStream(SalesforceStream):
 
             property_chunk = property_chunks[chunk_id]
             request, response = self._fetch_next_page_for_chunk(
-                stream_slice, stream_state, property_chunk.next_page, property_chunk.properties,
+                stream_slice,
+                stream_state,
+                property_chunk.next_page,
+                property_chunk.properties,
             )
 
             # When this is the first time we're getting a chunk's records, we set this to False to be used when deciding the next chunk
@@ -271,7 +279,10 @@ class RestSalesforceStream(SalesforceStream):
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
             params=self.request_params(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, property_chunk=property_chunk,
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+                property_chunk=property_chunk,
             ),
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
@@ -301,8 +312,7 @@ class BulkSalesforceStream(SalesforceStream):
         return response
 
     def create_stream_job(self, query: str, url: str) -> Optional[str]:
-        """docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.html
-        """
+        """docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.html"""
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         try:
             response = self._send_http_request("POST", url, json=json)
@@ -432,8 +442,7 @@ class BulkSalesforceStream(SalesforceStream):
         return job_full_url, job_status
 
     def filter_null_bytes(self, b: bytes):
-        """https://github.com/airbytehq/airbyte/issues/8300
-        """
+        """https://github.com/airbytehq/airbyte/issues/8300"""
         res = b.replace(b"\x00", b"")
         if len(res) < len(b):
             self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(b), len(res))
@@ -466,7 +475,8 @@ class BulkSalesforceStream(SalesforceStream):
         # set filepath for binary data from response
         tmp_file = str(uuid.uuid4())
         with closing(self._send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
-            tmp_file, "wb",
+            tmp_file,
+            "wb",
         ) as data_file:
             response_headers = response.headers
             response_encoding = self.get_response_encoding(response_headers)
@@ -525,10 +535,12 @@ class BulkSalesforceStream(SalesforceStream):
         )
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        """Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
-        """
+        """Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm"""
         select_fields = self.get_query_select_fields()
         query = f"SELECT {select_fields} FROM {self.name}"
         if next_page_token:
@@ -562,7 +574,10 @@ class BulkSalesforceStream(SalesforceStream):
                     self.logger.warning(f"Skipped syncing stream '{standard_instance.name}' because it was unavailable. Error: {error}")
                     return
                 yield from standard_instance.read_records(
-                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
+                    sync_mode=sync_mode,
+                    cursor_field=cursor_field,
+                    stream_slice=stream_slice,
+                    stream_state=stream_state,
                 )
                 return
             raise SalesforceException(f"Job for {self.name} stream using BULK API was failed.")
@@ -626,7 +641,11 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         return None
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        *,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start, end = (None, None)
         now = pendulum.now(tz="UTC")
@@ -698,7 +717,10 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
     state_checkpoint_interval = None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         start_date = stream_slice["start_date"]
         end_date = stream_slice["end_date"]
@@ -727,7 +749,6 @@ class Describe(Stream):
             self.sobjects_to_describe = [s.stream.name for s in catalog.streams if s.stream.name != self.name]
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        """Yield describe response of SObjects defined in catalog as streams only.
-        """
+        """Yield describe response of SObjects defined in catalog as streams only."""
         for sobject in self.sobjects_to_describe:
             yield self.sf_api.describe(sobject=sobject)

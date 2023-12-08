@@ -44,7 +44,6 @@ class ExpiredPageTokenError(AirbyteTracedException):
     """
 
 
-
 def is_error_type(error_value, target_enum_value):
     """Compares error value with target enum value after converting both to integers."""
     return int(error_value) == int(target_enum_value)
@@ -65,7 +64,8 @@ def traced_exception(ga_exception: GoogleAdsException, customer_id: str, catch_d
         request_error = error.error_code.request_error
 
         if is_error_type(authorization_error, AuthorizationErrorEnum.AuthorizationError.USER_PERMISSION_DENIED) or is_error_type(
-            authentication_error, AuthenticationErrorEnum.AuthenticationError.CUSTOMER_NOT_FOUND,
+            authentication_error,
+            AuthenticationErrorEnum.AuthenticationError.CUSTOMER_NOT_FOUND,
         ):
             message = (
                 f"Failed to access the customer '{customer_id}'. "

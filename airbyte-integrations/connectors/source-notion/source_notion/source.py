@@ -52,12 +52,12 @@ class SourceNotion(AbstractSource):
         return None
 
     def _extract_error_message(self, response: requests.Response) -> str:
-        """Return a human-readable error message from a Notion API response, for use in connection check.
-        """
+        """Return a human-readable error message from a Notion API response, for use in connection check."""
         error_json = response.json()
         error_code = error_json.get("code", "unknown_error")
         error_message = error_json.get(
-            "message", "An unspecified error occurred while connecting to Notion. Please check your credentials and try again.",
+            "message",
+            "An unspecified error occurred while connecting to Notion. Please check your credentials and try again.",
         )
 
         if error_code == "unauthorized":

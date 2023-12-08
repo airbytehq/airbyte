@@ -43,7 +43,10 @@ class SalesloftStream(HttpStream, ABC):
             raise KeyError(f"error parsing next_page token: {e}")
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"per_page": 100, "page": 1}
         if self.created_at_field:
@@ -76,7 +79,10 @@ class IncrementalSalesloftStream(SalesloftStream, ABC):
         return {self.cursor_field: cursor_value.strftime(self.datetime_format)}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)

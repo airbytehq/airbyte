@@ -53,8 +53,7 @@ class PartitionScheme(Enum):
 
 
 class TableMaterializationType(Enum):
-    """Defines the folders and dbt materialization mode of models (as configured in dbt_project.yml file)
-    """
+    """Defines the folders and dbt materialization mode of models (as configured in dbt_project.yml file)"""
 
     CTE = "airbyte_ctes"
     VIEW = "airbyte_views"
@@ -98,8 +97,7 @@ class StreamProcessor:
         tables_registry: TableNameRegistry,
         from_table: Union[str, dbt_macro.Macro],
     ):
-        """See StreamProcessor.create()
-        """
+        """See StreamProcessor.create()"""
         self.stream_name: str = stream_name
         self.destination_type: DestinationType = destination_type
         self.raw_schema: str = raw_schema
@@ -128,7 +126,12 @@ class StreamProcessor:
 
     @staticmethod
     def create_from_parent(
-        parent, child_name: str, json_column_name: str, properties: dict, is_nested_array: bool, from_table: str,
+        parent,
+        child_name: str,
+        json_column_name: str,
+        properties: dict,
+        is_nested_array: bool,
+        from_table: str,
     ) -> "StreamProcessor":
         """@param parent is the Stream Processor that originally created this instance to handle a nested column from that parent table.
 
@@ -617,8 +620,7 @@ where 1 = 1
 
     @staticmethod
     def generate_snowflake_timestamp_tz_statement(column_name: str) -> Any:
-        """Generates snowflake DB specific timestamp case when statement
-        """
+        """Generates snowflake DB specific timestamp case when statement"""
         formats = [
             {"regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{4}", "format": "YYYY-MM-DDTHH24:MI:SSTZHTZM"},
             {"regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{2}", "format": "YYYY-MM-DDTHH24:MI:SSTZH"},
@@ -643,8 +645,7 @@ where 1 = 1
 
     @staticmethod
     def generate_snowflake_timestamp_statement(column_name: str) -> Any:
-        """Generates snowflake DB specific timestamp case when statement
-        """
+        """Generates snowflake DB specific timestamp case when statement"""
         formats = [
             {"regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}", "format": "YYYY-MM-DDTHH24:MI:SS"},
             {"regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}", "format": "YYYY-MM-DDTHH24:MI:SS.FF"},
@@ -1351,9 +1352,9 @@ where 1 = 1
             else:
                 config["cluster_by"] = f'"{self.airbyte_emitted_at}"'
             if partition_by == PartitionScheme.ACTIVE_ROW:
-                config["partition_by"] = (
-                    '{"field": "_airbyte_active_row", "data_type": "int64", "range": {"start": 0, "end": 1, "interval": 1}}'
-                )
+                config[
+                    "partition_by"
+                ] = '{"field": "_airbyte_active_row", "data_type": "int64", "range": {"start": 0, "end": 1, "interval": 1}}'
             elif partition_by == PartitionScheme.NOTHING:
                 pass
             else:

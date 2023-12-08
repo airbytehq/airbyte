@@ -134,7 +134,9 @@ class DocArrayHnswSearchIndexer(Indexer):
 
     def _init_vectorstore(self):
         self.vectorstore = DocArrayHnswSearch.from_params(
-            embedding=self.embedder.embeddings, work_dir=self.config.destination_path, n_dim=self.embedder.embedding_dimensions,
+            embedding=self.embedder.embeddings,
+            work_dir=self.config.destination_path,
+            n_dim=self.embedder.embedding_dimensions,
         )
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):

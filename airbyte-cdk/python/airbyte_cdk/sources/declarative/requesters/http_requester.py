@@ -87,7 +87,8 @@ class HttpRequester(Requester):
         self.decoder = JsonDecoder(parameters={})
         self._session = self.request_cache()
         self._session.mount(
-            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE),
+            "https://",
+            requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE),
         )
 
         if isinstance(self._authenticator, AuthBase):
@@ -101,8 +102,7 @@ class HttpRequester(Requester):
 
     @property
     def cache_filename(self) -> str:
-        """Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
-        """
+        """Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only."""
         return f"{self.name}.sqlite"
 
     def request_cache(self) -> requests.Session:
@@ -119,8 +119,7 @@ class HttpRequester(Requester):
             return requests.Session()
 
     def clear_cache(self) -> None:
-        """Clear cached requests for current session, can be called any time
-        """
+        """Clear cached requests for current session, can be called any time"""
         if isinstance(self._session, requests_cache.CachedSession):
             self._session.cache.clear()  # type: ignore # cache.clear is not typed
 
@@ -131,7 +130,11 @@ class HttpRequester(Requester):
         return os.path.join(self._url_base.eval(self.config), "")
 
     def get_path(
-        self, *, stream_state: Optional[StreamState], stream_slice: Optional[StreamSlice], next_page_token: Optional[Mapping[str, Any]],
+        self,
+        *,
+        stream_state: Optional[StreamState],
+        stream_slice: Optional[StreamSlice],
+        next_page_token: Optional[Mapping[str, Any]],
     ) -> str:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         path = str(self._path.eval(self.config, **kwargs))
@@ -159,7 +162,9 @@ class HttpRequester(Requester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return self._request_options_provider.get_request_params(
-            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
         )
 
     def get_request_headers(
@@ -170,7 +175,9 @@ class HttpRequester(Requester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._request_options_provider.get_request_headers(
-            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
         )
 
     # fixing request options provider types has a lot of dependencies
@@ -183,7 +190,9 @@ class HttpRequester(Requester):
     ) -> Union[Mapping[str, Any], str]:
         return (
             self._request_options_provider.get_request_body_data(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
             )
             or {}
         )
@@ -197,7 +206,9 @@ class HttpRequester(Requester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
         return self._request_options_provider.get_request_body_json(
-            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
         )
 
     @property
@@ -210,8 +221,7 @@ class HttpRequester(Requester):
 
     @property
     def max_time(self) -> Union[int, None]:
-        """Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
-        """
+        """Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit."""
         if self.error_handler is None:
             return self._DEFAULT_MAX_TIME
         return self.error_handler.max_time
@@ -322,7 +332,12 @@ class HttpRequester(Requester):
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
         options = self._get_request_options(
-            stream_state, stream_slice, next_page_token, self.get_request_params, self.get_authenticator().get_request_params, extra_params,
+            stream_state,
+            stream_slice,
+            next_page_token,
+            self.get_request_params,
+            self.get_authenticator().get_request_params,
+            extra_params,
         )
         if isinstance(options, str):
             raise ValueError("Request params cannot be a string")
@@ -449,8 +464,7 @@ class HttpRequester(Requester):
         request: requests.PreparedRequest,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> requests.Response:
-        """Creates backoff wrappers which are responsible for retry logic
-        """
+        """Creates backoff wrappers which are responsible for retry logic"""
         """
         Backoff package has max_tries parameter that means total number of
         tries before giving up, so if this number is 0 no calls expected to be done.
@@ -510,7 +524,8 @@ class HttpRequester(Requester):
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
         self.logger.debug(
-            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body},
+            "Making outbound API request",
+            extra={"headers": request.headers, "url": request.url, "request_body": request.body},
         )
         response: requests.Response = self._session.send(request)
         self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})

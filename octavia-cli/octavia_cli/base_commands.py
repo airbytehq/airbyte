@@ -9,7 +9,11 @@ import click
 
 class OctaviaCommand(click.Command):
     def make_context(
-        self, info_name: t.Optional[str], args: list[str], parent: t.Optional[click.Context] = None, **extra: t.Any,
+        self,
+        info_name: t.Optional[str],
+        args: list[str],
+        parent: t.Optional[click.Context] = None,
+        **extra: t.Any,
     ) -> click.Context:
         """Wrap parent make context with telemetry sending in case of failure.
 

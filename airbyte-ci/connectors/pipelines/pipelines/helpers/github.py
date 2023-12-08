@@ -33,7 +33,14 @@ def safe_log(logger: Optional[Logger], message: str, level: str = "info") -> Non
 
 
 def update_commit_status_check(
-    sha: str, state: str, target_url: str, description: str, context: str, is_optional=False, should_send=True, logger: Logger = None,
+    sha: str,
+    state: str,
+    target_url: str,
+    description: str,
+    context: str,
+    is_optional=False,
+    should_send=True,
+    logger: Logger = None,
 ):
     """Call the GitHub API to create commit status check.
 

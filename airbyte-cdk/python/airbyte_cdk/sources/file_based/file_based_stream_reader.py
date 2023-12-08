@@ -78,8 +78,7 @@ class AbstractFileBasedStreamReader(ABC):
         ...
 
     def filter_files_by_globs_and_start_date(self, files: list[RemoteFile], globs: list[str]) -> Iterable[RemoteFile]:
-        """Utility method for filtering files based on globs.
-        """
+        """Utility method for filtering files based on globs."""
         start_date = datetime.strptime(self.config.start_date, self.DATE_TIME_FORMAT) if self.config and self.config.start_date else None
         seen = set()
 
@@ -97,7 +96,6 @@ class AbstractFileBasedStreamReader(ABC):
 
     @staticmethod
     def get_prefixes_from_globs(globs: list[str]) -> set[str]:
-        """Utility method for extracting prefixes from the globs.
-        """
+        """Utility method for extracting prefixes from the globs."""
         prefixes = {glob.split("*")[0] for glob in globs}
         return set(filter(lambda x: bool(x), prefixes))

@@ -106,7 +106,9 @@ class VersionRegistry:
 
     @staticmethod
     async def get_all_published_base_images(
-        dagger_client: dagger.Client, docker_credentials: tuple[str, str], ConnectorBaseImageClass: type[AirbyteConnectorBaseImage],
+        dagger_client: dagger.Client,
+        docker_credentials: tuple[str, str],
+        ConnectorBaseImageClass: type[AirbyteConnectorBaseImage],
     ) -> list[published_image.PublishedImage]:
         """Returns all the published base images for a given base image version class.
 
@@ -124,7 +126,9 @@ class VersionRegistry:
 
     @staticmethod
     async def load(
-        ConnectorBaseImageClass: type[AirbyteConnectorBaseImage], dagger_client: dagger.Client, docker_credentials: tuple[str, str],
+        ConnectorBaseImageClass: type[AirbyteConnectorBaseImage],
+        dagger_client: dagger.Client,
+        docker_credentials: tuple[str, str],
     ) -> VersionRegistry:
         """Instantiates a registry by fetching available versions from the remote registry and loading the changelog from disk.
 
@@ -142,7 +146,9 @@ class VersionRegistry:
 
         # Instantiate a crane client and a remote registry to fetch published images from DockerHub
         published_docker_images = await VersionRegistry.get_all_published_base_images(
-            dagger_client, docker_credentials, ConnectorBaseImageClass,
+            dagger_client,
+            docker_credentials,
+            ConnectorBaseImageClass,
         )
 
         # Build a dict of published images by version number for easier lookup
@@ -250,7 +256,9 @@ async def get_python_registry(dagger_client: dagger.Client, docker_credentials: 
 
 
 async def get_registry_for_language(
-    dagger_client: dagger.Client, language: ConnectorLanguage, docker_credentials: tuple[str, str],
+    dagger_client: dagger.Client,
+    language: ConnectorLanguage,
+    docker_credentials: tuple[str, str],
 ) -> VersionRegistry:
     """Returns the registry for a given language.
     It is meant to be used externally to get the registry for a given connector language.

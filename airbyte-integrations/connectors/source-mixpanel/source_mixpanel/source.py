@@ -138,8 +138,7 @@ class SourceMixpanel(AbstractSource):
 
     @adapt_streams_if_testing
     def streams(self, config: Mapping[str, Any]) -> list[Stream]:
-        """:param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         config = self._validate_and_transform(config)
         logger = logging.getLogger("airbyte")
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")

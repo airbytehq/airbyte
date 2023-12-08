@@ -85,7 +85,9 @@ class QdrantIndexer(Indexer):
             )
         for field in [METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD]:
             self._client.create_payload_index(
-                collection_name=self.config.collection, field_name=field, field_schema=PayloadSchemaType.KEYWORD,
+                collection_name=self.config.collection,
+                field_name=field,
+                field_schema=PayloadSchemaType.KEYWORD,
             )
 
     def delete(self, delete_ids, namespace, stream):
@@ -121,7 +123,8 @@ class QdrantIndexer(Indexer):
             self._client.close()
             return [
                 AirbyteMessage(
-                    type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Qdrant Database Client has been closed successfully"),
+                    type=Type.LOG,
+                    log=AirbyteLogMessage(level=Level.INFO, message="Qdrant Database Client has been closed successfully"),
                 ),
             ]
         except Exception as e:

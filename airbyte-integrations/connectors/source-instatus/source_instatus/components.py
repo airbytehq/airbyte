@@ -89,7 +89,10 @@ class UpdatesSubstreamPartitionRouter(SubstreamPartitionRouter):
                     parent_slice = parent_stream_slice
 
                     for parent_record in parent_stream.read_records(
-                        sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None,
+                        sync_mode=SyncMode.full_refresh,
+                        cursor_field=None,
+                        stream_slice=parent_stream_slice,
+                        stream_state=None,
                     ):
                         # Skip non-records (eg AirbyteLogMessage)
                         if isinstance(parent_record, AirbyteMessage):

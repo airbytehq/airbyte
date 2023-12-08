@@ -10,8 +10,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 
 class MissingAccessTokenError(Exception):
-    """Raised when the token is `None` instead of the real value
-    """
+    """Raised when the token is `None` instead of the real value"""
 
 
 class NotImplementedAuth(Exception):
@@ -25,8 +24,7 @@ class NotImplementedAuth(Exception):
 
 
 class ShopifyAuthenticator(TokenAuthenticator):
-    """Making Authenticator to be able to accept Header-Based authentication.
-    """
+    """Making Authenticator to be able to accept Header-Based authentication."""
 
     def __init__(self, config: Mapping[str, Any]):
         self.config = config

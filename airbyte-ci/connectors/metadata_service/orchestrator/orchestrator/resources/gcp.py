@@ -154,8 +154,7 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
     },
 )
 def gcs_directory_blobs(resource_context: InitResourceContext) -> storage.Blob:
-    """List all blobs in a bucket that match the prefix.
-    """
+    """List all blobs in a bucket that match the prefix."""
     gcs_bucket = resource_context.resource_config["gcs_bucket"]
     prefix = resource_context.resource_config["prefix"]
     match_regex = resource_context.resource_config["match_regex"]

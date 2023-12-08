@@ -49,15 +49,13 @@ class DestinationNameTransformer:
     """
 
     def __init__(self, destination_type: DestinationType):
-        """@param destination_type is the destination type of warehouse
-        """
+        """@param destination_type is the destination type of warehouse"""
         self.destination_type: DestinationType = destination_type
 
     # Public methods
 
     def needs_quotes(self, input_name: str) -> bool:
-        """@param input_name to test if it needs to manipulated with quotes or not
-        """
+        """@param input_name to test if it needs to manipulated with quotes or not"""
         if is_reserved_keyword(input_name, self.destination_type):
             return True
         if self.destination_type.value == DestinationType.BIGQUERY.value:
@@ -79,7 +77,12 @@ class DestinationNameTransformer:
         return self.__normalize_non_column_identifier_name(input_name=schema_name, in_jinja=in_jinja, truncate=truncate)
 
     def normalize_table_name(
-        self, table_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0,
+        self,
+        table_name: str,
+        in_jinja: bool = False,
+        truncate: bool = True,
+        conflict: bool = False,
+        conflict_level: int = 0,
     ) -> str:
         """@param table_name is the table to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
@@ -91,11 +94,20 @@ class DestinationNameTransformer:
         if self.destination_type == DestinationType.ORACLE and table_name.startswith("_"):
             table_name = table_name[1:]
         return self.__normalize_non_column_identifier_name(
-            input_name=table_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level,
+            input_name=table_name,
+            in_jinja=in_jinja,
+            truncate=truncate,
+            conflict=conflict,
+            conflict_level=conflict_level,
         )
 
     def normalize_column_name(
-        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0,
+        self,
+        column_name: str,
+        in_jinja: bool = False,
+        truncate: bool = True,
+        conflict: bool = False,
+        conflict_level: int = 0,
     ) -> str:
         """@param column_name is the column to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
@@ -105,7 +117,11 @@ class DestinationNameTransformer:
         @param conflict_level is the json_path level conflict happened
         """
         return self.__normalize_identifier_name(
-            column_name=column_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level,
+            column_name=column_name,
+            in_jinja=in_jinja,
+            truncate=truncate,
+            conflict=conflict,
+            conflict_level=conflict_level,
         )
 
     def truncate_identifier_name(self, input_name: str, custom_limit: int = -1, conflict: bool = False, conflict_level: int = 0) -> str:
@@ -140,7 +156,12 @@ class DestinationNameTransformer:
     # Private methods
 
     def __normalize_non_column_identifier_name(
-        self, input_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0,
+        self,
+        input_name: str,
+        in_jinja: bool = False,
+        truncate: bool = True,
+        conflict: bool = False,
+        conflict_level: int = 0,
     ) -> str:
         # We force standard naming for non column names (see issue #1785)
         result = transform_standard_naming(input_name)
@@ -156,7 +177,12 @@ class DestinationNameTransformer:
         return result
 
     def __normalize_identifier_name(
-        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0,
+        self,
+        column_name: str,
+        in_jinja: bool = False,
+        truncate: bool = True,
+        conflict: bool = False,
+        conflict_level: int = 0,
     ) -> str:
         result = self.__normalize_naming_conventions(column_name, is_column=True)
         if truncate:

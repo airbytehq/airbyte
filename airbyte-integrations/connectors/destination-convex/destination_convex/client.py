@@ -17,25 +17,21 @@ class ConvexClient:
         self.table_metadata = table_metadata
 
     def batch_write(self, records: list[Mapping[str, Any]]) -> requests.Response:
-        """See Convex docs: https://docs.convex.dev/http-api/#post-apistreaming_importimport_airbyte_records
-        """
+        """See Convex docs: https://docs.convex.dev/http-api/#post-apistreaming_importimport_airbyte_records"""
         request_body = {"tables": self.table_metadata, "messages": records}
         return self._request("POST", endpoint="import_airbyte_records", json=request_body)
 
     def delete(self, keys: list[str]) -> requests.Response:
-        """See Convex docs: https://docs.convex.dev/http-api/#put-apistreaming_importclear_tables
-        """
+        """See Convex docs: https://docs.convex.dev/http-api/#put-apistreaming_importclear_tables"""
         request_body = {"tableNames": keys}
         return self._request("PUT", endpoint="clear_tables", json=request_body)
 
     def add_primary_key_indexes(self, indexes: Mapping[str, list[list[str]]]) -> requests.Response:
-        """See Convex docs: https://docs.convex.dev/http-api/#put-apistreaming_importadd_primary_key_indexes
-        """
+        """See Convex docs: https://docs.convex.dev/http-api/#put-apistreaming_importadd_primary_key_indexes"""
         return self._request("PUT", "add_primary_key_indexes", json={"indexes": indexes})
 
     def primary_key_indexes_ready(self, tables: list[str]) -> requests.Response:
-        """See Convex docs: https://docs.convex.dev/http-api/#get-apistreaming_importprimary_key_indexes_ready
-        """
+        """See Convex docs: https://docs.convex.dev/http-api/#get-apistreaming_importprimary_key_indexes_ready"""
         return self._request("GET", "primary_key_indexes_ready", json={"tables": tables})
 
     def _get_auth_headers(self) -> Mapping[str, str]:

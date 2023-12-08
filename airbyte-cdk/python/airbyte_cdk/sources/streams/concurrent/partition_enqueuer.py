@@ -10,8 +10,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
 
 
 class PartitionEnqueuer:
-    """Generates partitions from a partition generator and puts them in a queue.
-    """
+    """Generates partitions from a partition generator and puts them in a queue."""
 
     def __init__(self, queue: Queue[QueueItem]) -> None:
         """:param queue:  The queue to put the partitions in.

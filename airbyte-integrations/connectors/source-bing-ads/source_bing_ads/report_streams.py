@@ -59,8 +59,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
     @property
     @abstractmethod
     def report_name(self) -> str:
-        """Specifies bing ads report naming
-        """
+        """Specifies bing ads report naming"""
 
     @property
     @abstractmethod
@@ -72,8 +71,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
     @property
     @abstractmethod
     def report_schema_name(self) -> str:
-        """Specifies file name with schema
-        """
+        """Specifies file name with schema"""
 
     @property
     def default_time_periods(self):
@@ -119,7 +117,10 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         return request_date
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, account_id: str = None, **kwargs: Mapping[str, Any],
+        self,
+        stream_state: Mapping[str, Any] = None,
+        account_id: str = None,
+        **kwargs: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         stream_slice = kwargs["stream_slice"]
         start_date = self.get_start_date(stream_state, account_id)
@@ -214,8 +215,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         return report_request
 
     def get_report_record_timestamp(self, datestring: str) -> str:
-        """Parse report date field based on aggregation type
-        """
+        """Parse report date field based on aggregation type"""
         return (
             self.transformer._custom_normalizer(datestring, self.get_json_schema()["properties"][self.cursor_field])
             if self.transformer._custom_normalizer
@@ -722,8 +722,7 @@ class CustomReport(BingAdsReportingServicePerformanceStream, ABC):
         return column_enum_items_values
 
     def get_report_record_timestamp(self, datestring: str) -> str:
-        """Parse report date field based on aggregation type
-        """
+        """Parse report date field based on aggregation type"""
         if not self.report_aggregation or self.report_aggregation == "Summary":
             datestring = transform_date_format_to_rfc_3339(datestring)
         elif self.report_aggregation == "Hourly":

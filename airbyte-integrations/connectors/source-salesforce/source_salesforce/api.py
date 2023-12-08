@@ -282,7 +282,9 @@ class Salesforce:
             filtered_stream_list = []
             for stream_criteria in config["streams_criteria"]:
                 filtered_stream_list += filter_streams_by_criteria(
-                    streams_list=stream_names, search_word=stream_criteria["value"], search_criteria=stream_criteria["criteria"],
+                    streams_list=stream_names,
+                    search_word=stream_criteria["value"],
+                    search_criteria=stream_criteria["criteria"],
                 )
             stream_names = list(set(filtered_stream_list))
 
@@ -291,7 +293,13 @@ class Salesforce:
 
     @default_backoff_handler(max_tries=5, factor=5)
     def _make_request(
-        self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None,
+        self,
+        http_method: str,
+        url: str,
+        headers: dict = None,
+        body: dict = None,
+        stream: bool = False,
+        params: dict = None,
     ) -> requests.models.Response:
         try:
             if http_method == "GET":
@@ -358,7 +366,8 @@ class Salesforce:
             chunk_stream_names = stream_names[i : i + self.parallel_tasks_size]
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 for stream_name, schema, err in executor.map(
-                    lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names],
+                    lambda args: load_schema(*args),
+                    [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names],
                 ):
                     if err:
                         self.logger.error(f"Loading error of the {stream_name} schema: {err}")

@@ -178,7 +178,10 @@ async def connector_container(dagger_client, image_tag):
 
 @pytest.fixture(name="docker_runner", autouse=True)
 def docker_runner_fixture(
-    connector_container, connector_config_path, custom_environment_variables, deployment_mode,
+    connector_container,
+    connector_config_path,
+    custom_environment_variables,
+    deployment_mode,
 ) -> connector_runner.ConnectorRunner:
     return connector_runner.ConnectorRunner(
         connector_container,
@@ -207,7 +210,8 @@ async def previous_version_connector_container(
 
 @pytest.fixture(name="previous_connector_docker_runner")
 async def previous_connector_docker_runner_fixture(
-    previous_version_connector_container, deployment_mode,
+    previous_version_connector_container,
+    deployment_mode,
 ) -> connector_runner.ConnectorRunner:
     """Fixture to create a connector runner with the previous connector docker image.
     Returns None if the latest image was not found, to skip downstream tests if the current connector is not yet published to the docker registry.
@@ -328,8 +332,7 @@ async def previous_discovered_catalog_fixture(
 
 @pytest.fixture()
 def detailed_logger() -> Logger:
-    """Create logger object for recording detailed test information into a file
-    """
+    """Create logger object for recording detailed test information into a file"""
     LOG_DIR = "acceptance_tests_logs"
     if os.environ.get("ACCEPTANCE_TEST_DOCKER_CONTAINER"):
         LOG_DIR = os.path.join("/test_input", LOG_DIR)
@@ -356,7 +359,8 @@ async def actual_connector_spec_fixture(docker_runner: connector_runner.Connecto
 
 @pytest.fixture(name="previous_connector_spec")
 async def previous_connector_spec_fixture(
-    request: BaseTest, previous_connector_docker_runner: connector_runner.ConnectorRunner,
+    request: BaseTest,
+    previous_connector_docker_runner: connector_runner.ConnectorRunner,
 ) -> Optional[ConnectorSpecification]:
     if previous_connector_docker_runner is None:
         logging.warning(

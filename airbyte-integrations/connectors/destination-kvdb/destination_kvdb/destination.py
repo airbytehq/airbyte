@@ -18,7 +18,10 @@ from destination_kvdb.writer import KvDbWriter
 
 class DestinationKvdb(Destination):
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
+        self,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         """Reads the input stream of messages, config, and catalog to write data to the destination.
 
@@ -42,7 +45,9 @@ class DestinationKvdb(Destination):
             elif message.type == Type.RECORD:
                 record = message.record
                 writer.queue_write_operation(
-                    record.stream, record.data, time.time_ns() / 1_000_000,
+                    record.stream,
+                    record.data,
+                    time.time_ns() / 1_000_000,
                 )  # convert from nanoseconds to milliseconds
             else:
                 # ignore other message types for now
@@ -64,7 +69,8 @@ class DestinationKvdb(Destination):
         except Exception as e:
             traceback.print_exc()
             return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"An exception occurred: {e}. \nStacktrace: \n{traceback.format_exc()}",
+                status=Status.FAILED,
+                message=f"An exception occurred: {e}. \nStacktrace: \n{traceback.format_exc()}",
             )
         else:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)

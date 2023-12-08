@@ -61,8 +61,7 @@ class ColumnInfo:
 
 
 def dataframe_to_table_html(df: pd.DataFrame, column_mapping: list[ColumnInfo]) -> str:
-    """Convert a dataframe to an HTML table.
-    """
+    """Convert a dataframe to an HTML table."""
     # convert true and false to checkmarks and x's
     df.replace({True: "✅", False: "❌"}, inplace=True)
 

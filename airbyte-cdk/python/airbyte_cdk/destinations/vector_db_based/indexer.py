@@ -29,8 +29,7 @@ class Indexer(ABC):
         """
 
     def post_sync(self) -> list[AirbyteMessage]:
-        """Run after the sync finishes. This method should be used to perform any cleanup operations and can return a list of AirbyteMessages to be logged.
-        """
+        """Run after the sync finishes. This method should be used to perform any cleanup operations and can return a list of AirbyteMessages to be logged."""
         return []
 
     @abstractmethod
@@ -52,8 +51,7 @@ class Indexer(ABC):
 
     @abstractmethod
     def check(self) -> Optional[str]:
-        """Check if the indexer is configured correctly. This method should be used to check if the indexer is configured correctly and return an error message if it is not.
-        """
+        """Check if the indexer is configured correctly. This method should be used to check if the indexer is configured correctly and return an error message if it is not."""
 
 
 T = TypeVar("T")

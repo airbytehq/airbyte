@@ -17,13 +17,11 @@ class BaseBackoffException(requests.exceptions.HTTPError):
 
 
 class RequestBodyException(Exception):
-    """Raised when there are issues in configuring a request body
-    """
+    """Raised when there are issues in configuring a request body"""
 
 
 class UserDefinedBackoffException(BaseBackoffException):
-    """An exception that exposes how long it attempted to backoff
-    """
+    """An exception that exposes how long it attempted to backoff"""
 
     def __init__(self, backoff: Union[int, float], request: requests.PreparedRequest, response: requests.Response, error_message: str = ""):
         """:param backoff: how long to backoff in seconds

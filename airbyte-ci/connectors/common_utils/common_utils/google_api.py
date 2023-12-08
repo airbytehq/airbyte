@@ -17,8 +17,7 @@ TOKEN_TTL = 3600
 
 @dataclass
 class GoogleApi:
-    """Simple Google API client
-    """
+    """Simple Google API client"""
 
     logger: ClassVar[Logger] = Logger()
 

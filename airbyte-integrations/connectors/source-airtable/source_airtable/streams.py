@@ -29,8 +29,7 @@ class AirtableBases(HttpStream):
     raise_on_http_errors = True
 
     def path(self, **kwargs) -> str:
-        """Documentation: https://airtable.com/developers/web/api/list-bases
-        """
+        """Documentation: https://airtable.com/developers/web/api/list-bases"""
         return "meta/bases"
 
     def should_retry(self, response: requests.Response) -> bool:
@@ -58,8 +57,7 @@ class AirtableBases(HttpStream):
             return 30.0
 
     def next_page_token(self, response: requests.Response, **kwargs) -> str:
-        """The bases list could be more than 100 records, therefore the pagination is required to fetch all of them.
-        """
+        """The bases list could be more than 100 records, therefore the pagination is required to fetch all of them."""
         next_page = response.json().get("offset")
         if next_page:
             return next_page
@@ -102,8 +100,7 @@ class AirtableTables(AirtableBases):
     name = "tables"
 
     def path(self, **kwargs) -> str:
-        """Documentation: https://airtable.com/developers/web/api/list-bases
-        """
+        """Documentation: https://airtable.com/developers/web/api/list-bases"""
         return f"{super().path()}/{self.base_id}/tables"
 
 
@@ -150,8 +147,7 @@ class AirtableStream(HttpStream, ABC):
         return None
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        """All available params: https://airtable.com/developers/web/api/list-records#query
-        """
+        """All available params: https://airtable.com/developers/web/api/list-records#query"""
         params = {}
         if next_page_token:
             params["offset"] = next_page_token

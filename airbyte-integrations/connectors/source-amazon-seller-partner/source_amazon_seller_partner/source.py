@@ -131,8 +131,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             return False, error_message
 
     def streams(self, config: Mapping[str, Any]) -> list[Stream]:
-        """:param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         self.validate_stream_report_options(config)
         streams = []
         stream_kwargs = self._get_stream_kwargs(config)

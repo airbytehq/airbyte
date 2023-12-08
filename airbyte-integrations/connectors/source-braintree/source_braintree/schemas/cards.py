@@ -28,8 +28,7 @@ class Address(CatalogModel):
 
 
 class CreditCard(CatalogModel):
-    """https://developer.paypal.com/braintree/docs/reference/response/credit-card
-    """
+    """https://developer.paypal.com/braintree/docs/reference/response/credit-card"""
 
     billing_address: Address
     bin: str
@@ -61,26 +60,22 @@ class CreditCard(CatalogModel):
 
 
 class ApplePayCard(CreditCard):
-    """https://developer.paypal.com/braintree/docs/reference/response/apple-pay-card
-    """
+    """https://developer.paypal.com/braintree/docs/reference/response/apple-pay-card"""
 
     source_description: str
     payment_instrument_name: str
 
 
 class SamsungPayCard(CreditCard):
-    """https://developer.paypal.com/braintree/docs/reference/response/samsung-pay-card
-    """
+    """https://developer.paypal.com/braintree/docs/reference/response/samsung-pay-card"""
 
 
 class MasterpassCard(CreditCard):
-    """https://developer.paypal.com/braintree/docs/reference/response/masterpass-card
-    """
+    """https://developer.paypal.com/braintree/docs/reference/response/masterpass-card"""
 
 
 class AndroidPayCard(CreditCard):
-    """https://developer.paypal.com/braintree/docs/reference/response/android-pay-card
-    """
+    """https://developer.paypal.com/braintree/docs/reference/response/android-pay-card"""
 
     google_transaction_id: str
     source_card_type: str
@@ -93,13 +88,11 @@ class AndroidPayCard(CreditCard):
 
 
 class VisaCheckoutCard(CreditCard):
-    """https://developer.paypal.com/braintree/docs/reference/response/visa-checkout-card
-    """
+    """https://developer.paypal.com/braintree/docs/reference/response/visa-checkout-card"""
 
 
 class VenmoAccount(CreditCard):
-    """https://developer.paypal.com/braintree/docs/reference/response/venmo-account
-    """
+    """https://developer.paypal.com/braintree/docs/reference/response/venmo-account"""
 
     source_description: str
     username: str
@@ -107,8 +100,7 @@ class VenmoAccount(CreditCard):
 
 
 class PayPalAccount(CreditCard):
-    """https://developer.paypal.com/braintree/docs/reference/response/paypal-account
-    """
+    """https://developer.paypal.com/braintree/docs/reference/response/paypal-account"""
 
     billing_agreement_id: str
     email: str
@@ -117,8 +109,7 @@ class PayPalAccount(CreditCard):
 
 
 class USBankAccount(CreditCard):
-    """https://developer.paypal.com/braintree/docs/reference/response/us-bank-account
-    """
+    """https://developer.paypal.com/braintree/docs/reference/response/us-bank-account"""
 
     account_holder_name: str
     account_type: str
@@ -135,5 +126,12 @@ class USBankAccount(CreditCard):
 
 
 PaymentMethod = Union[
-    CreditCard, AndroidPayCard, ApplePayCard, SamsungPayCard, USBankAccount, PayPalAccount, VenmoAccount, VisaCheckoutCard,
+    CreditCard,
+    AndroidPayCard,
+    ApplePayCard,
+    SamsungPayCard,
+    USBankAccount,
+    PayPalAccount,
+    VenmoAccount,
+    VisaCheckoutCard,
 ]

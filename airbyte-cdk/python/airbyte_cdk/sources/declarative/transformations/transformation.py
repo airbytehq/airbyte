@@ -12,8 +12,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 
 @dataclass
 class RecordTransformation:
-    """Implementations of this class define transformations that can be applied to records of a stream.
-    """
+    """Implementations of this class define transformations that can be applied to records of a stream."""
 
     @abstractmethod
     def transform(

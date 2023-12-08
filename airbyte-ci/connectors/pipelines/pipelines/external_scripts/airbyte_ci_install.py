@@ -55,8 +55,7 @@ def get_ssl_context():
 
 
 def get_airbyte_os_name():
-    """Returns 'ubuntu' if the system is Linux or 'macos' if the system is macOS.
-    """
+    """Returns 'ubuntu' if the system is Linux or 'macos' if the system is macOS."""
     OS = os.uname().sysname
     if OS == "Linux":
         print("Linux based system detected.")

@@ -12,16 +12,14 @@ from pipelines.models.steps import StepResult, StepStatus
 
 
 class BuildConnectorDistributionTar(GradleTask):
-    """A step to build a Java connector image using the distTar Gradle task.
-    """
+    """A step to build a Java connector image using the distTar Gradle task."""
 
     title = "Build connector tar"
     gradle_task_name = "distTar"
 
 
 class BuildConnectorImages(BuildConnectorImagesBase):
-    """A step to build Java connector images using the distTar Gradle task.
-    """
+    """A step to build Java connector images using the distTar Gradle task."""
 
     async def _run(self, dist_dir: Directory) -> StepResult:
         dist_tar: File

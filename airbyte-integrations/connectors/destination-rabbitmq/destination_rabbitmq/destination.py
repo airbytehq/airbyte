@@ -38,7 +38,10 @@ def create_connection(config: Mapping[str, Any]) -> BlockingConnection:
 
 class DestinationRabbitmq(Destination):
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
+        self,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         exchange = config.get("exchange")
         routing_key = config["routing_key"]
@@ -60,7 +63,10 @@ class DestinationRabbitmq(Destination):
                     headers = {"stream": record.stream, "emitted_at": record.emitted_at, "namespace": record.namespace}
                     properties = BasicProperties(content_type="application/json", headers=headers)
                     channel.basic_publish(
-                        exchange=exchange or "", routing_key=routing_key, properties=properties, body=json.dumps(record.data),
+                        exchange=exchange or "",
+                        routing_key=routing_key,
+                        properties=properties,
+                        body=json.dumps(record.data),
                     )
                 else:
                     # Let's ignore other message types for now

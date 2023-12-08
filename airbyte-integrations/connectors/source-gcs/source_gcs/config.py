@@ -65,14 +65,12 @@ class Config(AbstractFileBasedSpec):
 
     @classmethod
     def documentation_url(cls) -> AnyUrl:
-        """Returns the documentation URL.
-        """
+        """Returns the documentation URL."""
         return AnyUrl("https://docs.airbyte.com/integrations/sources/gcs", scheme="https")
 
     @staticmethod
     def replace_enum_allOf_and_anyOf(schema):
-        """Replace allOf with anyOf when appropriate in the schema with one value.
-        """
+        """Replace allOf with anyOf when appropriate in the schema with one value."""
         objects_to_check = schema["properties"]["streams"]["items"]["properties"]["format"]
         if len(objects_to_check.get("allOf", [])) == 1:
             objects_to_check["anyOf"] = objects_to_check.pop("allOf")

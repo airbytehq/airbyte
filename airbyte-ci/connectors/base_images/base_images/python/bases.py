@@ -53,7 +53,8 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
             These tools are necessary for OCR (Optical Character Recognition) processes and working with PDFs, respectively.
             """
             container = container.with_exec(
-                ["sh", "-c", "apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1"], skip_entrypoint=True,
+                ["sh", "-c", "apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1"],
+                skip_entrypoint=True,
             )
 
             return container
@@ -66,7 +67,8 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
             """
             container = with_tesseract_and_poppler(container)
             container = container.with_exec(["mkdir", self.nltk_data_path], skip_entrypoint=True).with_directory(
-                self.nltk_data_path, get_nltk_data_dir(),
+                self.nltk_data_path,
+                get_nltk_data_dir(),
             )
             return container
 

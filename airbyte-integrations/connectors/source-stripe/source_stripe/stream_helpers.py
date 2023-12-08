@@ -24,7 +24,10 @@ def get_first_stream_slice(stream, sync_mode, stream_state) -> Optional[Mapping[
 
 
 def get_first_record_for_slice(
-    stream: Stream, sync_mode: SyncMode, stream_slice: Optional[Mapping[str, Any]], stream_state: Optional[Mapping[str, Any]],
+    stream: Stream,
+    sync_mode: SyncMode,
+    stream_slice: Optional[Mapping[str, Any]],
+    stream_state: Optional[Mapping[str, Any]],
 ) -> StreamData:
     """Gets the first record for a stream_slice of a stream.
     :param stream: stream

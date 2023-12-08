@@ -81,8 +81,7 @@ class SourceHarvest(AbstractSource):
             return False, f"Unable to connect to Harvest API with the provided credentials - {error!r}"
 
     def streams(self, config: Mapping[str, Any]) -> list[Stream]:
-        """:param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         auth = self.get_authenticator(config)
         replication_start_date = pendulum.parse(config["replication_start_date"])
         from_date = replication_start_date.date()

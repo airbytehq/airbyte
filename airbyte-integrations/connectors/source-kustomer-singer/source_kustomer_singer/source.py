@@ -38,13 +38,11 @@ class SourceKustomerSinger(SingerSource):
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!r}")
 
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
-        """Return the string commands to invoke the tap with the --discover flag and the right configuration options
-        """
+        """Return the string commands to invoke the tap with the --discover flag and the right configuration options"""
         return f"{self.TAP_CMD} -c {config_path} --discover"
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        """Return the string commands to invoke the tap with the right configuration options to read data from the source
-        """
+        """Return the string commands to invoke the tap with the right configuration options to read data from the source"""
         config_option = f"--config {config_path}"
         properties_option = f"--catalog {catalog_path}"
         state_option = f"--state {state_path}" if state_path else ""

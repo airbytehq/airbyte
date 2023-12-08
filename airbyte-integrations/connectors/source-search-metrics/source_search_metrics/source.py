@@ -109,7 +109,10 @@ class IncrementalSearchMetricsStream(ProjectsChildStream, SearchMetricsStream):
     cursor_field = "date"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["date_from"] = stream_slice["date_from"]
@@ -296,8 +299,7 @@ class SearchMetricsAuthenticator(Oauth2Authenticator):
         return headers
 
     def refresh_access_token(self) -> tuple[str, int]:
-        """Returns a tuple of (access_token, token_lifespan_in_seconds)
-        """
+        """Returns a tuple of (access_token, token_lifespan_in_seconds)"""
         try:
             response = requests.request(
                 method="POST",
@@ -315,8 +317,7 @@ class SearchMetricsAuthenticator(Oauth2Authenticator):
 # Source
 class SourceSearchMetrics(AbstractSource):
     def check_connection(self, logger, config) -> tuple[bool, any]:
-        """Testing connection availability for the connector by granting the credentials.
-        """
+        """Testing connection availability for the connector by granting the credentials."""
         authenticator = SearchMetricsAuthenticator(config)
 
         try:

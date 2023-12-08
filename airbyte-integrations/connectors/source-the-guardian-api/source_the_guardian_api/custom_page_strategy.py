@@ -13,8 +13,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_incre
 
 @dataclass
 class CustomPageIncrement(PageIncrement):
-    """Starts page from 1 instead of the default value that is 0. Stops Pagination when currentPage is equal to totalPages.
-    """
+    """Starts page from 1 instead of the default value that is 0. Stops Pagination when currentPage is equal to totalPages."""
 
     def next_page_token(self, response: requests.Response, last_records: list[Mapping[str, Any]]) -> Optional[Any]:
         res = response.json().get("response")

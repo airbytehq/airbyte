@@ -37,7 +37,11 @@ class InterpolatedMapping:
         valid_value_types = additional_parameters.pop("valid_value_types", None)
         return {
             self._interpolation.eval(
-                name, config, valid_types=valid_key_types, parameters=self._parameters, **additional_parameters,
+                name,
+                config,
+                valid_types=valid_key_types,
+                parameters=self._parameters,
+                **additional_parameters,
             ): self._eval(value, config, valid_types=valid_value_types, **additional_parameters)
             for name, value in self.mapping.items()
         }

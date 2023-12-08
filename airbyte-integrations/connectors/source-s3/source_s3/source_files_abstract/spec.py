@@ -62,7 +62,10 @@ class SourceFilesAbstractSpec(BaseModel):
     )
 
     format: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat] = Field(
-        default="csv", title="File Format", description="The format of the files you'd like to replicate", order=20,
+        default="csv",
+        title="File Format",
+        description="The format of the files you'd like to replicate",
+        order=20,
     )
 
     user_schema: str = Field(

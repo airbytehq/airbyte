@@ -155,7 +155,8 @@ def test_upload(
     )
     commands.upload_metadata_to_gcs.return_value = upload_info
     result = runner.invoke(
-        commands.upload, [metadata_file_path, str(tmp_path), "my-bucket"],
+        commands.upload,
+        [metadata_file_path, str(tmp_path), "my-bucket"],
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
 
     if latest_uploaded:
@@ -184,7 +185,8 @@ def test_upload(
         commands.click.secho.assert_has_calls(
             [
                 mocker.call(
-                    f"The versioned inapp doc file for {metadata_file_path} was uploaded to doc_inapp_version_blob_id.", color="green",
+                    f"The versioned inapp doc file for {metadata_file_path} was uploaded to doc_inapp_version_blob_id.",
+                    color="green",
                 ),
             ],
         )
@@ -218,7 +220,8 @@ def test_upload_prerelease(mocker, valid_metadata_yaml_files, tmp_path):
     upload_info = mock_metadata_upload_info(False, True, False, True, False, False, False, metadata_file_path)
     commands.upload_metadata_to_gcs.return_value = upload_info
     result = runner.invoke(
-        commands.upload, [metadata_file_path, str(tmp_path), bucket, "--prerelease", prerelease_tag],
+        commands.upload,
+        [metadata_file_path, str(tmp_path), bucket, "--prerelease", prerelease_tag],
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
 
     commands.upload_metadata_to_gcs.assert_has_calls([mocker.call(bucket, pathlib.Path(metadata_file_path), validator_opts)])
@@ -239,7 +242,8 @@ def test_upload_with_errors(mocker, valid_metadata_yaml_files, tmp_path, error, 
     mocker.patch.object(commands, "upload_metadata_to_gcs")
     commands.upload_metadata_to_gcs.side_effect = error
     result = runner.invoke(
-        commands.upload, [valid_metadata_yaml_files[0], str(tmp_path), "my-bucket"],
+        commands.upload,
+        [valid_metadata_yaml_files[0], str(tmp_path), "my-bucket"],
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
     assert result.exit_code == 1
     if handled:

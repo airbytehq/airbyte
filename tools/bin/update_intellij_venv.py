@@ -21,8 +21,7 @@ def is_environment_in_jdk_table(environment_name, table):
 
 
 def add_venv_to_xml_root(module: str, module_full_path: str, xml_root):
-    """Add a new entry for the virtual environment to IntelliJ's list of known interpreters
-    """
+    """Add a new entry for the virtual environment to IntelliJ's list of known interpreters"""
     path_to_lib = f"{module_full_path}/.venv/lib/"
 
     python_version = os.listdir(path_to_lib)[0]
@@ -92,7 +91,9 @@ def create_parser():
     parser = argparse.ArgumentParser(description="Prepare Python virtual environments for Python connectors")
     actions_group = parser.add_argument_group("actions")
     actions_group.add_argument(
-        "--install-venv", action="store_true", help="Create virtual environment and install the module's dependencies",
+        "--install-venv",
+        action="store_true",
+        help="Create virtual environment and install the module's dependencies",
     )
     actions_group.add_argument("--update-intellij", action="store_true", help="Add interpreter to IntelliJ's list of known interpreters")
 

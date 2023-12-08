@@ -35,18 +35,15 @@ class SingerSource(BaseSource[ConfigContainer, str, str]):
 
     # Can be overridden to change an input config
     def transform_config(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Singer source may need to adapt the Config object for the singer tap specifics
-        """
+        """Singer source may need to adapt the Config object for the singer tap specifics"""
         return config
 
     def read_catalog(self, catalog_path: str) -> str:
-        """Since singer source don't need actual catalog object, we override this to return path only
-        """
+        """Since singer source don't need actual catalog object, we override this to return path only"""
         return catalog_path
 
     def read_state(self, state_path: str) -> str:
-        """Since singer source don't need actual state object, we override this to return path only
-        """
+        """Since singer source don't need actual state object, we override this to return path only"""
         return state_path
 
     def check_config(self, logger: logging.Logger, config_path: str, config: ConfigContainer) -> AirbyteConnectionStatus:
@@ -71,23 +68,24 @@ class SingerSource(BaseSource[ConfigContainer, str, str]):
     def _discover_internal(self, logger: logging.Logger, config_path: str) -> Catalogs:
         cmd = self.discover_cmd(logger, config_path)
         catalogs = SingerHelper.get_catalogs(
-            logger, cmd, self.get_sync_mode_overrides(), self.get_primary_key_overrides(), self.get_excluded_streams(),
+            logger,
+            cmd,
+            self.get_sync_mode_overrides(),
+            self.get_primary_key_overrides(),
+            self.get_excluded_streams(),
         )
         return catalogs
 
     def check(self, logger: logging.Logger, config: ConfigContainer) -> AirbyteConnectionStatus:
-        """Tests if the input configuration can be used to successfully connect to the integration
-        """
+        """Tests if the input configuration can be used to successfully connect to the integration"""
         return self.check_config(logger, config.config_path, config)
 
     def discover(self, logger: logging.Logger, config: ConfigContainer) -> AirbyteCatalog:
-        """Implements the parent class discover method.
-        """
+        """Implements the parent class discover method."""
         return self._discover_internal(logger, config.config_path).airbyte_catalog
 
     def read(self, logger: logging.Logger, config: ConfigContainer, catalog_path: str, state_path: str = None) -> Iterable[AirbyteMessage]:
-        """Implements the parent class read method.
-        """
+        """Implements the parent class read method."""
         catalogs = self._discover_internal(logger, config.config_path)
         masked_airbyte_catalog = ConfiguredAirbyteCatalog.parse_obj(self._read_json_file(catalog_path))
         selected_singer_catalog_path = SingerHelper.create_singer_catalog_with_selection(masked_airbyte_catalog, catalogs.singer_catalog)

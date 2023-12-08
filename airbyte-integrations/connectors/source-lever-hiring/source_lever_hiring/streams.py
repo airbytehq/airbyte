@@ -80,16 +80,14 @@ class IncrementalLeverHiringStream(LeverHiringStream, ABC):
 
 
 class Opportunities(IncrementalLeverHiringStream):
-    """Opportunities stream: https://hire.lever.co/developer/documentation#list-all-opportunities
-    """
+    """Opportunities stream: https://hire.lever.co/developer/documentation#list-all-opportunities"""
 
     schema = Opportunity
     base_params = {"include": "followers", "confidentiality": "all"}
 
 
 class Users(LeverHiringStream):
-    """Users stream: https://hire.lever.co/developer/documentation#list-all-users
-    """
+    """Users stream: https://hire.lever.co/developer/documentation#list-all-users"""
 
     schema = User
     base_params = {"includeDeactivated": True}
@@ -111,35 +109,30 @@ class OpportynityChildStream(LeverHiringStream, ABC):
 
 
 class Applications(OpportynityChildStream):
-    """Applications stream: https://hire.lever.co/developer/documentation#list-all-applications
-    """
+    """Applications stream: https://hire.lever.co/developer/documentation#list-all-applications"""
 
     schema = Application
 
 
 class Interviews(OpportynityChildStream):
-    """Interviews stream: https://hire.lever.co/developer/documentation#list-all-interviews
-    """
+    """Interviews stream: https://hire.lever.co/developer/documentation#list-all-interviews"""
 
     schema = Interview
 
 
 class Notes(OpportynityChildStream):
-    """Notes stream: https://hire.lever.co/developer/documentation#list-all-notes
-    """
+    """Notes stream: https://hire.lever.co/developer/documentation#list-all-notes"""
 
     schema = Note
 
 
 class Offers(OpportynityChildStream):
-    """Offers stream: https://hire.lever.co/developer/documentation#list-all-offers
-    """
+    """Offers stream: https://hire.lever.co/developer/documentation#list-all-offers"""
 
     schema = Offer
 
 
 class Referrals(OpportynityChildStream):
-    """Referrals stream: https://hire.lever.co/developer/documentation#list-all-referrals
-    """
+    """Referrals stream: https://hire.lever.co/developer/documentation#list-all-referrals"""
 
     schema = Referral

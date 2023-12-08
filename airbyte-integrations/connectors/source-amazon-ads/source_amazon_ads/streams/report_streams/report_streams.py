@@ -85,13 +85,11 @@ class ReportInitFailure(RetryableException):
 
 
 class TooManyRequests(Exception):
-    """Custom exception occured when response with 429 status code received
-    """
+    """Custom exception occured when response with 429 status code received"""
 
 
 class ReportStream(BasicAmazonAdsStream, ABC):
-    """Common base class for report streams
-    """
+    """Common base class for report streams"""
 
     API_VERSION = "v2"
     primary_key = ["profileId", "recordType", "reportDate", "recordId"]
@@ -180,7 +178,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
             return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout * 60, interval=10)(func)(
-                self, *args, **kwargs,
+                self,
+                *args,
+                **kwargs,
             )
 
         return wrapped
@@ -188,7 +188,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def backoff_max_tries(func):
         def wrapped(self, *args, **kwargs):
             return backoff.on_exception(backoff.expo, ReportGenerationFailure, max_tries=self.report_generation_maximum_retries)(func)(
-                self, *args, **kwargs,
+                self,
+                *args,
+                **kwargs,
             )
 
         return wrapped
@@ -256,18 +258,15 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     @property
     @abstractmethod
     def metrics_map(self) -> dict[str, list]:
-        """:return: Map record type to list of available metrics
-        """
+        """:return: Map record type to list of available metrics"""
 
     @property
     @abstractmethod
     def metrics_type_to_id_map(self) -> dict[str, list]:
-        """:return: Map record type to to its unique identifier in metrics
-        """
+        """:return: Map record type to to its unique identifier in metrics"""
 
     def _check_status(self, report_info: ReportInfo) -> tuple[Status, str]:
-        """Check report status and return download link if report generated successfuly
-        """
+        """Check report status and return download link if report generated successfuly"""
         check_endpoint = f"/{self.API_VERSION}/reports/{report_info.report_id}"
         resp = self._send_http_request(urljoin(self._url, check_endpoint), report_info.profile_id)
 
@@ -321,7 +320,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             yield {"profile": profile, self.cursor_field: report_date}
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
         no_data = True
@@ -358,8 +360,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     @abstractmethod
     def _get_init_report_body(self, report_date: str, record_type: str, profile) -> dict[str, Any]:
-        """Override to return dict representing body of POST request for initiating report creation.
-        """
+        """Override to return dict representing body of POST request for initiating report creation."""
 
     @backoff.on_exception(
         backoff.expo,
@@ -420,8 +421,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         max_tries=5,
     )
     def _download_report(self, report_info: ReportInfo, url: str) -> list[dict]:
-        """Download and parse report result
-        """
+        """Download and parse report result"""
         response = self._send_http_request(url, report_info.profile_id) if report_info else self._send_http_request(url, None)
         response.raise_for_status()
         raw_string = decompress(response.content).decode("utf")
@@ -440,8 +440,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         return response_json.get("details")
 
     def _skip_known_errors(self, response) -> bool:
-        """Return True if we get known error which we need to skip
-        """
+        """Return True if we get known error which we need to skip"""
         response_details = self._get_response_error_details(response)
         if response_details:
             for status_code, details in self.ERRORS:

@@ -8,8 +8,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action i
 
 
 class ResponseStatus:
-    """ResponseAction amended with backoff time if an action is RETRY
-    """
+    """ResponseAction amended with backoff time if an action is RETRY"""
 
     def __init__(self, response_action: Union[ResponseAction, str], retry_in: Optional[float] = None, error_message: str = ""):
         """:param response_action: response action to execute

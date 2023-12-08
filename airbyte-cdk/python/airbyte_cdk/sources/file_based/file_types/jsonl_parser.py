@@ -20,8 +20,7 @@ class JsonlParser(FileTypeParser):
     ENCODING = "utf8"
 
     def check_config(self, config: FileBasedStreamConfig) -> tuple[bool, Optional[str]]:
-        """JsonlParser does not require config checks, implicit pydantic validation is enough.
-        """
+        """JsonlParser does not require config checks, implicit pydantic validation is enough."""
         return True, None
 
     async def infer_schema(

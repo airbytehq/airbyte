@@ -69,8 +69,7 @@ class SourceTwilio(AbstractSource):
             return False, f"Unable to connect to Twilio API with the provided credentials - {error!r}"
 
     def streams(self, config: Mapping[str, Any]) -> list[Stream]:
-        """:param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         auth = HttpBasicAuthenticator(
             (
                 config["account_sid"],

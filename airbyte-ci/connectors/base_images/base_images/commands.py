@@ -115,7 +115,9 @@ async def _generate_release(dagger_client: dagger.Client):
 
 
 async def _publish(
-    dagger_client: dagger.Client, BaseImageClassToPublish: type[bases.AirbyteConnectorBaseImage], version: semver.VersionInfo,
+    dagger_client: dagger.Client,
+    BaseImageClassToPublish: type[bases.AirbyteConnectorBaseImage],
+    version: semver.VersionInfo,
 ):
     """This function will publish a specific version of a base image to our remote registry.
     Users are prompted for confirmation before overwriting an existing version.
@@ -131,7 +133,8 @@ async def _publish(
         force_answers = inquirer.prompt(
             [
                 inquirer.Confirm(
-                    "force", message="This version has already been published to our remote registry. Would you like to overwrite it?",
+                    "force",
+                    message="This version has already been published to our remote registry. Would you like to overwrite it?",
                 ),
             ],
         )

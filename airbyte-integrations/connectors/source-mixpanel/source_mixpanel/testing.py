@@ -10,8 +10,7 @@ from .streams import Funnels
 
 
 def funnel_slices_patched(self: Funnels, sync_mode):
-    """Return only first result from funnels
-    """
+    """Return only first result from funnels"""
     funnel_slices_values = self.get_funnel_slices(sync_mode)
     single_slice = next(funnel_slices_values, None)
     return [single_slice] if single_slice else []

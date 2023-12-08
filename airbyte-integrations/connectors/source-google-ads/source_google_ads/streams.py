@@ -68,7 +68,9 @@ class GoogleAdsStream(Stream, ABC):
         factor=5,
     )
     def parse_records_with_backoff(
-        self, response_records: Iterator[SearchGoogleAdsResponse], stream_slice: Optional[Mapping[str, Any]] = None,
+        self,
+        response_records: Iterator[SearchGoogleAdsResponse],
+        stream_slice: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         for response in response_records:
             yield from self.parse_response(response, stream_slice)
@@ -149,8 +151,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
             self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
 
     def _handle_expired_page_exception(self, exception: ExpiredPageTokenError, stream_slice: MutableMapping[str, Any], customer_id: str):
-        """Handle Google Ads EXPIRED_PAGE_TOKEN error by updating the stream slice.
-        """
+        """Handle Google Ads EXPIRED_PAGE_TOKEN error by updating the stream slice."""
         start_date, end_date = parse_dates(stream_slice)
         current_state = self.get_current_state(customer_id)
 
@@ -165,7 +166,11 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
         stream_slice["start_date"] = self.get_current_state(customer_id, default=stream_slice["start_date"])
 
     def read_records(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_slice: MutableMapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         """This method is overridden to handle GoogleAdsException with EXPIRED_PAGE_TOKEN error code,
         and update `start_date` key in the `stream_slice` with the latest read record's cursor value, then retry the sync.
@@ -193,14 +198,16 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
         cursor_condition = [f"{self.cursor_field} >= '{start_date}' AND {self.cursor_field} <= '{end_date}'"]
 
         query = GoogleAds.convert_schema_into_query(
-            fields=fields, table_name=table_name, conditions=cursor_condition, order_field=self.cursor_field,
+            fields=fields,
+            table_name=table_name,
+            conditions=cursor_condition,
+            order_field=self.cursor_field,
         )
         return query
 
 
 class Customer(IncrementalGoogleAdsStream):
-    """Customer stream: https://developers.google.com/google-ads/api/fields/v11/customer
-    """
+    """Customer stream: https://developers.google.com/google-ads/api/fields/v11/customer"""
 
     primary_key = ["customer.id", "segments.date"]
 
@@ -212,31 +219,27 @@ class Customer(IncrementalGoogleAdsStream):
 
 
 class CustomerLabel(GoogleAdsStream):
-    """Customer Label stream: https://developers.google.com/google-ads/api/fields/v14/customer_label
-    """
+    """Customer Label stream: https://developers.google.com/google-ads/api/fields/v14/customer_label"""
 
     primary_key = ["customer_label.resource_name"]
 
 
 class ServiceAccounts(GoogleAdsStream):
-    """This stream is intended to be used as a service class, not exposed to a user
-    """
+    """This stream is intended to be used as a service class, not exposed to a user"""
 
     CATCH_CUSTOMER_NOT_ENABLED_ERROR = False
     primary_key = ["customer.id"]
 
 
 class Campaign(IncrementalGoogleAdsStream):
-    """Campaign stream: https://developers.google.com/google-ads/api/fields/v11/campaign
-    """
+    """Campaign stream: https://developers.google.com/google-ads/api/fields/v11/campaign"""
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = ["campaign.id", "segments.date", "segments.hour", "segments.ad_network_type"]
 
 
 class CampaignBudget(IncrementalGoogleAdsStream):
-    """Campaigns stream: https://developers.google.com/google-ads/api/fields/v13/campaign_budget
-    """
+    """Campaigns stream: https://developers.google.com/google-ads/api/fields/v13/campaign_budget"""
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = [
@@ -249,62 +252,54 @@ class CampaignBudget(IncrementalGoogleAdsStream):
 
 
 class CampaignBiddingStrategy(IncrementalGoogleAdsStream):
-    """Campaign Bidding Strategy stream: https://developers.google.com/google-ads/api/fields/v14/campaign
-    """
+    """Campaign Bidding Strategy stream: https://developers.google.com/google-ads/api/fields/v14/campaign"""
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = ["campaign.id", "bidding_strategy.id", "segments.date"]
 
 
 class CampaignLabel(GoogleAdsStream):
-    """Campaign labels stream: https://developers.google.com/google-ads/api/fields/v11/campaign_label
-    """
+    """Campaign labels stream: https://developers.google.com/google-ads/api/fields/v11/campaign_label"""
 
     # Note that this is a string type. Google doesn't return a more convenient identifier.
     primary_key = ["campaign.id", "label.id"]
 
 
 class AdGroup(IncrementalGoogleAdsStream):
-    """AdGroup stream: https://developers.google.com/google-ads/api/fields/v11/ad_group
-    """
+    """AdGroup stream: https://developers.google.com/google-ads/api/fields/v11/ad_group"""
 
     primary_key = ["ad_group.id", "segments.date"]
 
 
 class AdGroupLabel(GoogleAdsStream):
-    """Ad Group Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_label
-    """
+    """Ad Group Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_label"""
 
     # Note that this is a string type. Google doesn't return a more convenient identifier.
     primary_key = ["ad_group.id", "label.id"]
 
 
 class AdGroupBiddingStrategy(IncrementalGoogleAdsStream):
-    """Ad Group Bidding Strategies stream: https://developers.google.com/google-ads/api/fields/v14/ad_group
-    """
+    """Ad Group Bidding Strategies stream: https://developers.google.com/google-ads/api/fields/v14/ad_group"""
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = ["ad_group.id", "bidding_strategy.id", "segments.date"]
 
 
 class AdGroupCriterionLabel(GoogleAdsStream):
-    """Ad Group Criterion Label stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion_label
-    """
+    """Ad Group Criterion Label stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion_label"""
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = ["ad_group_criterion_label.resource_name"]
 
 
 class AdGroupAd(IncrementalGoogleAdsStream):
-    """Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad
-    """
+    """Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad"""
 
     primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date"]
 
 
 class AdGroupAdLabel(GoogleAdsStream):
-    """Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad_label
-    """
+    """Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad_label"""
 
     primary_key = ["ad_group.id", "ad_group_ad.ad.id", "label.id"]
 
@@ -374,22 +369,19 @@ class UserLocationView(IncrementalGoogleAdsStream):
 
 
 class GeographicView(IncrementalGoogleAdsStream):
-    """UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/geographic_view
-    """
+    """UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/geographic_view"""
 
     primary_key = ["customer.id", "geographic_view.country_criterion_id", "geographic_view.location_type", "segments.date"]
 
 
 class KeywordView(IncrementalGoogleAdsStream):
-    """UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/keyword_view
-    """
+    """UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/keyword_view"""
 
     primary_key = ["ad_group.id", "ad_group_criterion.criterion_id", "segments.date"]
 
 
 class ClickView(IncrementalGoogleAdsStream):
-    """ClickView stream: https://developers.google.com/google-ads/api/reference/rpc/v11/ClickView
-    """
+    """ClickView stream: https://developers.google.com/google-ads/api/reference/rpc/v11/ClickView"""
 
     primary_key = ["click_view.gclid", "segments.date", "segments.ad_network_type"]
     days_of_data_storage = 90
@@ -399,22 +391,19 @@ class ClickView(IncrementalGoogleAdsStream):
 
 
 class UserInterest(GoogleAdsStream):
-    """Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad_label
-    """
+    """Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad_label"""
 
     primary_key = ["user_interest.user_interest_id"]
 
 
 class Audience(GoogleAdsStream):
-    """Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad_label
-    """
+    """Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad_label"""
 
     primary_key = ["customer.id", "audience.id"]
 
 
 class Label(GoogleAdsStream):
-    """Label stream: https://developers.google.com/google-ads/api/fields/v14/label
-    """
+    """Label stream: https://developers.google.com/google-ads/api/fields/v14/label"""
 
     primary_key = ["label.id"]
 
@@ -441,7 +430,11 @@ class ChangeStatus(IncrementalGoogleAdsStream):
         return 10000
 
     def read_records(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_slice: MutableMapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         """This method is overridden to handle GoogleAdsException with EXPIRED_PAGE_TOKEN error code,
         and update `start_date` key in the `stream_slice` with the latest read record's cursor value, then retry the sync.
@@ -485,7 +478,11 @@ class ChangeStatus(IncrementalGoogleAdsStream):
         conditions.append(f"change_status.resource_type = '{resource_type}'")
 
         query = GoogleAds.convert_schema_into_query(
-            fields=fields, table_name=table_name, conditions=conditions, order_field=self.cursor_field, limit=self.query_limit,
+            fields=fields,
+            table_name=table_name,
+            conditions=conditions,
+            order_field=self.cursor_field,
+            limit=self.query_limit,
         )
         return query
 
@@ -534,8 +531,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         return self.parent_stream.get_current_state(customer_id, default)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
-        """If state exists read updates from parent stream otherwise return slices with only customer id to sync all records for stream
-        """
+        """If state exists read updates from parent stream otherwise return slices with only customer id to sync all records for stream"""
         if stream_state:
             slices_generator = self.read_parent_stream(SyncMode.incremental, self.parent_cursor_field, stream_state)
             yield from slices_generator
@@ -559,10 +555,15 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         return True
 
     def read_parent_stream(
-        self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any],
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[str],
+        stream_state: Mapping[str, Any],
     ) -> Iterable[Mapping[str, Any]]:
         for parent_slice in self.parent_stream.stream_slices(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state.get(self.parent_stream_name),
+            sync_mode=sync_mode,
+            cursor_field=cursor_field,
+            stream_state=stream_state.get(self.parent_stream_name),
         ):
             customer_id = parent_slice.get("customer_id")
             child_slice = {"customer_id": customer_id, "updated_ids": set(), "deleted_ids": set(), "record_changed_time_map": dict()}
@@ -632,10 +633,13 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
             yield {"updated_ids": chunk_ids, "record_changed_time_map": chunk_time_map, "customer_id": customer_id, "deleted_ids": set()}
 
     def read_records(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_slice: MutableMapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
-        """This method is overridden to read records using parent stream
-        """
+        """This method is overridden to read records using parent stream"""
         # if state is present read records by ids from slice otherwise full refresh sync
         for stream_slice_part in self._split_slice(stream_slice):
             yield from super().read_records(sync_mode, stream_slice=stream_slice_part)
@@ -665,8 +669,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
 
 
 class AdGroupCriterion(IncrementalEventsStream):
-    """Ad Group Criterion stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion
-    """
+    """Ad Group Criterion stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion"""
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = ["ad_group_criterion.resource_name"]
@@ -684,8 +687,7 @@ class AdListingGroupCriterion(AdGroupCriterion):
 
 
 class CampaignCriterion(IncrementalEventsStream):
-    """Campaign Criterion stream: https://developers.google.com/google-ads/api/fields/v14/campaign_criterion
-    """
+    """Campaign Criterion stream: https://developers.google.com/google-ads/api/fields/v14/campaign_criterion"""
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = ["campaign_criterion.resource_name"]

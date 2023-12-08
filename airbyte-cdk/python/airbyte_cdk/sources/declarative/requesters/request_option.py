@@ -9,8 +9,7 @@ from typing import Any
 
 
 class RequestOptionType(Enum):
-    """Describes where to set a value on a request
-    """
+    """Describes where to set a value on a request"""
 
     request_parameter = "request_parameter"
     header = "header"

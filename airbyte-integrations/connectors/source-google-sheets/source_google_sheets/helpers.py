@@ -140,7 +140,10 @@ class Helpers:
 
     @staticmethod
     def get_available_sheets_to_column_index_to_name(
-        client, spreadsheet_id: str, requested_sheets_and_columns: dict[str, frozenset[str]], names_conversion: bool = False,
+        client,
+        spreadsheet_id: str,
+        requested_sheets_and_columns: dict[str, frozenset[str]],
+        names_conversion: bool = False,
     ) -> dict[str, dict[int, str]]:
         available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
         logger.info(f"Available sheets: {available_sheets}")

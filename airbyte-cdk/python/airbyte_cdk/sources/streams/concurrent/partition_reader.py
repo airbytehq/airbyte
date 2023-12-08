@@ -9,12 +9,10 @@ from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCom
 
 
 class PartitionReader:
-    """Generates records from a partition and puts them in a queue.
-    """
+    """Generates records from a partition and puts them in a queue."""
 
     def __init__(self, queue: Queue[QueueItem]) -> None:
-        """:param queue: The queue to put the records in.
-        """
+        """:param queue: The queue to put the records in."""
         self._queue = queue
 
     def process_partition(self, partition: Partition) -> None:

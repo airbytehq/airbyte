@@ -100,14 +100,12 @@ class IncrementalSingleSliceCursor(Cursor):
         yield {}
 
     def should_be_synced(self, record: Record) -> bool:
-        """Evaluating if a record should be synced allows for filtering and stop condition on pagination
-        """
+        """Evaluating if a record should be synced allows for filtering and stop condition on pagination"""
         record_cursor_value = record.get(self.cursor_field.eval(self.config))
         return bool(record_cursor_value)
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
-        """Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
-        """
+        """Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice"""
         cursor_field = self.cursor_field.eval(self.config)
         first_cursor_value = first.get(cursor_field) if first else None
         second_cursor_value = second.get(cursor_field) if second else None
@@ -158,17 +156,25 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
         yield from [slice for slice in slices_generator] if self.parent_complete_fetch else slices_generator
 
     def read_parent_stream(
-        self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any],
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[str],
+        stream_state: Mapping[str, Any],
     ) -> Iterable[Mapping[str, Any]]:
         self.parent_stream.state = stream_state
 
         parent_stream_slices_gen = self.parent_stream.stream_slices(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state,
+            sync_mode=sync_mode,
+            cursor_field=cursor_field,
+            stream_state=stream_state,
         )
 
         for parent_slice in parent_stream_slices_gen:
             parent_records_gen = self.parent_stream.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state,
+                sync_mode=sync_mode,
+                cursor_field=cursor_field,
+                stream_slice=parent_slice,
+                stream_state=stream_state,
             )
 
             for parent_record in parent_records_gen:
@@ -292,7 +298,10 @@ class IntercomRateLimiter:
             def wrapper_balance_rate_limit(*args, **kwargs):
                 IntercomRateLimiter.backoff_time(
                     IntercomRateLimiter.get_backoff_time(
-                        *args, threshold=threshold, rate_limit_header=rate_limit_header, rate_limit_remain_header=rate_limit_remain_header,
+                        *args,
+                        threshold=threshold,
+                        rate_limit_header=rate_limit_header,
+                        rate_limit_remain_header=rate_limit_remain_header,
                     ),
                 )
                 return func(*args, **kwargs)
@@ -323,13 +332,19 @@ class HttpRequesterWithRateLimiter(HttpRequester):
         self.request_body_json = self.request_body_json if self.request_body_json else {}
 
         self._parameter_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_parameters, parameters=parameters,
+            config=self.config,
+            request_inputs=self.request_parameters,
+            parameters=parameters,
         )
         self._headers_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_headers, parameters=parameters,
+            config=self.config,
+            request_inputs=self.request_headers,
+            parameters=parameters,
         )
         self._body_json_interpolator = InterpolatedNestedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_json, parameters=parameters,
+            config=self.config,
+            request_inputs=self.request_body_json,
+            parameters=parameters,
         )
 
     # The RateLimiter is applied to balance the api requests.

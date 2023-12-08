@@ -60,7 +60,10 @@ class KlaviyoStream(HttpStream, ABC):
         return {str(k): str(v) for (k, v) in urllib.parse.parse_qsl(next_url.query)}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # If next_page_token is set, all the parameters are already provided
         if next_page_token:
@@ -165,7 +168,10 @@ class SemiIncrementalKlaviyoStream(KlaviyoStream, ABC):
         stream_state = stream_state or {}
         starting_point = stream_state.get(self.cursor_field, self._start_ts)
         for record in super().read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
+            sync_mode=sync_mode,
+            cursor_field=cursor_field,
+            stream_slice=stream_slice,
+            stream_state=stream_state,
         ):
             if starting_point and record[self.cursor_field] > starting_point or not starting_point:
                 yield record
@@ -205,8 +211,7 @@ class ArchivedRecordsMixin(IncrementalKlaviyoStream, ABC):
         return ArchivedRecordsStream(self.path(), self.cursor_field, self._start_ts, self.api_revision, api_key=self._api_key)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Extend the stream state with `archived` property to store such records' state separately from the stream state
-        """
+        """Extend the stream state with `archived` property to store such records' state separately from the stream state"""
         if latest_record.get("attributes", {}).get("archived", False):
             current_archived_stream_cursor_value = current_stream_state.get("archived", {}).get(self.cursor_field, self._start_ts)
             latest_archived_cursor = pendulum.parse(latest_record[self.cursor_field])

@@ -43,8 +43,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
             yield from super().read(logger, config, configured_catalog_for_regular_streams, state)
 
     def _select_abstract_streams(self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> list[AbstractStream]:
-        """Selects streams that can be processed concurrently and returns their abstract representations.
-        """
+        """Selects streams that can be processed concurrently and returns their abstract representations."""
         all_streams = self.streams(config)
         stream_name_to_instance: Mapping[str, Stream] = {s.name: s for s in all_streams}
         abstract_streams: list[AbstractStream] = []

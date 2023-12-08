@@ -279,8 +279,7 @@ class StreamWriter:
         return result
 
     def _get_glue_dtypes_from_json_schema(self, schema: dict[str, Any]) -> tuple[dict[str, str], list[str]]:
-        """Helper that infers glue dtypes from a json schema.
-        """
+        """Helper that infers glue dtypes from a json schema."""
         type_mapper = GLUE_TYPE_MAPPING_DECIMAL if self._config.glue_catalog_float_as_decimal else GLUE_TYPE_MAPPING_DOUBLE
 
         column_types = {}

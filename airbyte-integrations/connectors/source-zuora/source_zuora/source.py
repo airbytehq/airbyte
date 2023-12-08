@@ -29,8 +29,7 @@ from .zuora_excluded_streams import ZUORA_EXCLUDED_STREAMS
 
 
 class ZuoraStream(HttpStream, ABC):
-    """Parent class for all other classes, except of SourceZuora.
-    """
+    """Parent class for all other classes, except of SourceZuora."""
 
     # Define primary key
     primary_key = "id"
@@ -49,8 +48,7 @@ class ZuoraStream(HttpStream, ABC):
 
     @property
     def window_in_days(self) -> float:
-        """Converting `Query Window` config parameter from string type into type float.
-        """
+        """Converting `Query Window` config parameter from string type into type float."""
         try:
             value = self._config["window_in_days"]
             return float(value)
@@ -66,8 +64,7 @@ class ZuoraStream(HttpStream, ABC):
         return {}
 
     def base_query_params(self) -> MutableMapping[str, Any]:
-        """Returns base query parameters for default CDK request_json_body method
-        """
+        """Returns base query parameters for default CDK request_json_body method"""
         params = {"compression": "NONE", "output": {"target": "S3"}, "outputFormat": "JSON"}
         if self._config["data_query"] == "Unlimited":
             params["sourceData"] = "DATAHUB"
@@ -84,8 +81,7 @@ class ZuoraBase(ZuoraStream):
         return ""
 
     def request_kwargs(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Mapping[str, Any]:
-        """Override of default CDK method to return date_slices as stream_slices
-        """
+        """Override of default CDK method to return date_slices as stream_slices"""
         return stream_slice if stream_slice else {}
 
     def get_zuora_data(self, date_slice: dict, config: dict, full_object: bool = False) -> Iterable[Mapping[str, Any]]:
@@ -115,8 +111,7 @@ class ZuoraBase(ZuoraStream):
         yield from ZuoraGetJobResult(list(job_data_url)[0]).read_records(sync_mode=None)
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-        """Override for _send_request CDK method to send HTTP request to the Zuora API
-        """
+        """Override for _send_request CDK method to send HTTP request to the Zuora API"""
         try:
             # try to fetch with default cursor_field = UpdatedDate
             yield from self.get_zuora_data(date_slice=request_kwargs, config=self._config)
@@ -183,8 +178,7 @@ class ZuoraObjectsBase(ZuoraBase):
             return None
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """Override get_json_schema CDK method to retrieve the schema information for Zuora Object dynamicaly.
-        """
+        """Override get_json_schema CDK method to retrieve the schema information for Zuora Object dynamicaly."""
         schema = list(ZuoraDescribeObject(self.name, config=self._config).read_records(sync_mode=None))
         return {"type": "object", "properties": {key: d[key] for d in schema for key in d}}
 
@@ -205,14 +199,12 @@ class ZuoraObjectsBase(ZuoraBase):
         return stream
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Update the state value, default CDK method.
-        """
+        """Update the state value, default CDK method."""
         updated_state = max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))
         return {self.cursor_field: updated_state} if updated_state else {}
 
     def query(self, stream_name: str, cursor_field: str = None, date_slice: dict = None, full_object: bool = False) -> str:
-        """Custom method. Returns the SQL-like query in a way Zuora API endpoint accepts the jobs.
-        """
+        """Custom method. Returns the SQL-like query in a way Zuora API endpoint accepts the jobs."""
         if full_object:
             return f"""select * from {stream_name}"""
 
@@ -250,8 +242,7 @@ class ZuoraObjectsBase(ZuoraBase):
 
 
 class ZuoraListObjects(ZuoraBase):
-    """Provides functionality to retrieve the list of Zuora Objects as list of object names.
-    """
+    """Provides functionality to retrieve the list of Zuora Objects as list of object names."""
 
     def query(self, **kwargs) -> str:
         return "SHOW TABLES"
@@ -335,8 +326,7 @@ class ZuoraSubmitJob(ZuoraStream):
         return "/query/jobs"
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
-        """Override of default CDK method to return SQL-like query and use it in _send_request method.
-        """
+        """Override of default CDK method to return SQL-like query and use it in _send_request method."""
         params = self.base_query_params()
         params["query"] = self.query
         return params
@@ -465,16 +455,14 @@ class ZuoraGetJobResult(HttpStream):
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> str:
-        """Return records from JSONLines file from dataFile URL.
-        """
+        """Return records from JSONLines file from dataFile URL."""
         for line in response.text.splitlines():
             yield json.loads(line)
 
 
 class SourceZuora(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, any]:
-        """Testing connection availability for the connector by granting the token.
-        """
+        """Testing connection availability for the connector by granting the token."""
         auth = ZuoraAuthenticator(config).get_auth()
         try:
             auth.get_auth_header()

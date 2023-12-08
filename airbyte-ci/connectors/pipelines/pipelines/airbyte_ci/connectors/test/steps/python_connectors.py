@@ -64,7 +64,10 @@ class PytestStep(Step, ABC):
 
         test_config_file_name, test_config_file = await self.get_config_file_name_and_file()
         test_environment = await self.install_testing_environment(
-            connector_under_test, test_config_file_name, test_config_file, self.extra_dependencies_names,
+            connector_under_test,
+            test_config_file_name,
+            test_config_file,
+            self.extra_dependencies_names,
         )
         pytest_command = self.get_pytest_command(test_config_file_name)
 
@@ -152,7 +155,8 @@ class PytestStep(Step, ABC):
         )
         if self.common_test_dependencies:
             container_with_test_deps = container_with_test_deps.with_exec(
-                ["pip", "install", f'{" ".join(self.common_test_dependencies)}'], skip_entrypoint=True,
+                ["pip", "install", f'{" ".join(self.common_test_dependencies)}'],
+                skip_entrypoint=True,
             )
         return (
             container_with_test_deps

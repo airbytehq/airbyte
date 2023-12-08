@@ -29,8 +29,7 @@ FILE_FORMAT = "csv"  # TODO: Change if other file formats are implemented
 
 
 class SourceGCSStreamReader(AbstractFileBasedStreamReader):
-    """Stream reader for Google Cloud Storage (GCS).
-    """
+    """Stream reader for Google Cloud Storage (GCS)."""
 
     def __init__(self):
         super().__init__()
@@ -62,8 +61,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         return self._initialize_gcs_client()
 
     def get_matching_files(self, globs: list[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
-        """Retrieve all files matching the specified glob patterns in GCS.
-        """
+        """Retrieve all files matching the specified glob patterns in GCS."""
         try:
             start_date = (
                 datetime.strptime(self.config.start_date, self.DATE_TIME_FORMAT) if self.config and self.config.start_date else None
@@ -96,8 +94,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
 
     @contextmanager
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
-        """Open and yield a remote file from GCS for reading.
-        """
+        """Open and yield a remote file from GCS for reading."""
         logger.debug(f"Trying to open {file.uri}")
         try:
             result = smart_open.open(file.uri, mode=mode.value, encoding=encoding)

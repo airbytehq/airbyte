@@ -17,20 +17,17 @@ from airbyte_cdk.utils import AirbyteTracedException
 
 
 class AirtableOAuth(SingleUseRefreshTokenOauth2Authenticator):
-    """https://airtable.com/developers/web/api/oauth-reference#token-expiry-refresh-tokens
-    """
+    """https://airtable.com/developers/web/api/oauth-reference#token-expiry-refresh-tokens"""
 
     def build_refresh_request_headers(self) -> Mapping[str, Any]:
-        """https://airtable.com/developers/web/api/oauth-reference#token-refresh-request-headers
-        """
+        """https://airtable.com/developers/web/api/oauth-reference#token-refresh-request-headers"""
         return {
             "Authorization": BasicHttpAuthenticator(self.get_client_id(), self.get_client_secret()).token,
             "Content-Type": "application/x-www-form-urlencoded",
         }
 
     def build_refresh_request_body(self) -> Mapping[str, Any]:
-        """https://airtable.com/developers/web/api/oauth-reference#token-refresh-request-body
-        """
+        """https://airtable.com/developers/web/api/oauth-reference#token-refresh-request-body"""
         return {
             "grant_type": self.get_grant_type(),
             "refresh_token": self.get_refresh_token(),

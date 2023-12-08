@@ -56,7 +56,11 @@ class BaseSource(Source):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def read(
-        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None,
+        self,
+        logger: logging.Logger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: MutableMapping[str, Any] = None,
     ) -> Iterable[AirbyteMessage]:
         state = state or {}
         client = self._get_client(config)
@@ -74,7 +78,11 @@ class BaseSource(Source):
         logger.info(f"Finished syncing {self.name}")
 
     def _read_stream(
-        self, logger: logging.Logger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: MutableMapping[str, Any],
+        self,
+        logger: logging.Logger,
+        client: BaseClient,
+        configured_stream: ConfiguredAirbyteStream,
+        state: MutableMapping[str, Any],
     ):
         stream_name = configured_stream.stream.name
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and client.stream_has_state(stream_name)

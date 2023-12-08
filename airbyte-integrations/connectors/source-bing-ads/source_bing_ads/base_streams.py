@@ -30,19 +30,16 @@ class BingAdsStream(BingAdsBaseStream, ABC):
     @property
     @abstractmethod
     def operation_name(self) -> str:
-        """Specifies operation name to use for a current stream
-        """
+        """Specifies operation name to use for a current stream"""
 
     @property
     @abstractmethod
     def service_name(self) -> str:
-        """Specifies bing ads service name for a current stream
-        """
+        """Specifies bing ads service name for a current stream"""
 
     @property
     def parent_key_to_foreign_key_map(self) -> MutableMapping[str, str]:
-        """Specifies dict with field in record as kay and slice key as value to be inserted in record in transform method.
-        """
+        """Specifies dict with field in record as kay and slice key as value to be inserted in record in transform method."""
         return {}
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
@@ -72,8 +69,7 @@ class BingAdsStream(BingAdsBaseStream, ABC):
                     raise error
 
     def next_page_token(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
-        """Default method for streams that don't support pagination
-        """
+        """Default method for streams that don't support pagination"""
         return None
 
     def send_request(self, params: Mapping[str, Any], customer_id: str, account_id: str = None) -> Mapping[str, Any]:
@@ -125,8 +121,7 @@ class BingAdsCampaignManagementStream(BingAdsStream, ABC):
     @property
     @abstractmethod
     def data_field(self) -> str:
-        """Specifies root object name in a stream response
-        """
+        """Specifies root object name in a stream response"""
 
     @property
     @abstractmethod
@@ -269,7 +264,8 @@ class AdGroups(BingAdsCampaignManagementStream):
         campaigns = Campaigns(self.client, self.config)
         for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
             for campaign in campaigns.read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]},
+                sync_mode=SyncMode.full_refresh,
+                stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]},
             ):
                 yield {"campaign_id": campaign["Id"], "account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 

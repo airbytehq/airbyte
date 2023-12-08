@@ -53,8 +53,7 @@ class UsCensusStream(HttpStream, ABC):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        """Adds request parameters and api key from the config.
-        """
+        """Adds request parameters and api key from the config."""
         return prepare_request_params(self.query_params, self.api_key)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -165,8 +164,7 @@ class UsCensusStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        """Gets path from the config.
-        """
+        """Gets path from the config."""
         return self.query_path
 
 

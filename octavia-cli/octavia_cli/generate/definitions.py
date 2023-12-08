@@ -141,7 +141,10 @@ class DestinationDefinitionSpecification(DefinitionSpecification):
 
 
 def factory(
-    definition_type: str, api_client: airbyte_api_client.ApiClient, workspace_id: str, definition_id: str,
+    definition_type: str,
+    api_client: airbyte_api_client.ApiClient,
+    workspace_id: str,
+    definition_id: str,
 ) -> Union[SourceDefinition, DestinationDefinition]:
     if definition_type == "source":
         definition = SourceDefinition(api_client, definition_id)

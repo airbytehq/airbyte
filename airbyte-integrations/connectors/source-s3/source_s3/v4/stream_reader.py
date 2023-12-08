@@ -62,8 +62,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         return self._s3_client
 
     def get_matching_files(self, globs: list[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
-        """Get all files matching the specified glob patterns.
-        """
+        """Get all files matching the specified glob patterns."""
         s3 = self.s3_client
         prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
         seen = set()
@@ -79,7 +78,9 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         except ClientError as exc:
             if exc.response["Error"]["Code"] == "NoSuchBucket":
                 raise CustomFileBasedException(
-                    f"The bucket {self.config.bucket} does not exist.", failure_type=FailureType.config_error, exception=exc,
+                    f"The bucket {self.config.bucket} does not exist.",
+                    failure_type=FailureType.config_error,
+                    exception=exc,
                 )
             self._raise_error_listing_files(globs, exc)
         except Exception as exc:
@@ -109,7 +110,10 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 result = ZipContentReader(decompressed_stream, encoding)
             else:
                 result = smart_open.open(
-                    f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value, encoding=encoding,
+                    f"s3://{self.config.bucket}/{file.uri}",
+                    transport_params=params,
+                    mode=mode.value,
+                    encoding=encoding,
                 )
         except OSError:
             logger.warning(
@@ -125,10 +129,15 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         return file["Key"].endswith("/")
 
     def _page(
-        self, s3: BaseClient, globs: list[str], bucket: str, prefix: Optional[str], seen: set[str], logger: logging.Logger,
+        self,
+        s3: BaseClient,
+        globs: list[str],
+        bucket: str,
+        prefix: Optional[str],
+        seen: set[str],
+        logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
-        """Page through lists of S3 objects.
-        """
+        """Page through lists of S3 objects."""
         total_n_keys_for_prefix = 0
         kwargs = {"Bucket": bucket}
         while True:
@@ -182,8 +191,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
 
 def _get_s3_compatible_client_args(config: Config) -> dict:
-    """Returns map of args used for creating s3 boto3 client.
-    """
+    """Returns map of args used for creating s3 boto3 client."""
     client_kv_args = {
         "config": ClientConfig(s3={"addressing_style": "auto"}),
         "endpoint_url": config.endpoint,

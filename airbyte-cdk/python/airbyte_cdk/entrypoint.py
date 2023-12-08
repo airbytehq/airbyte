@@ -65,7 +65,9 @@ class AirbyteEntrypoint:
 
         # discover
         discover_parser = subparsers.add_parser(
-            "discover", help="outputs a catalog describing the source's schema", parents=[parent_parser],
+            "discover",
+            help="outputs a catalog describing the source's schema",
+            parents=[parent_parser],
         )
         required_discover_parser = discover_parser.add_argument_group("required named arguments")
         required_discover_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
@@ -77,7 +79,10 @@ class AirbyteEntrypoint:
         required_read_parser = read_parser.add_argument_group("required named arguments")
         required_read_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
         required_read_parser.add_argument(
-            "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read",
+            "--catalog",
+            type=str,
+            required=True,
+            help="path to the catalog used to determine which data to read",
         )
 
         return main_parser.parse_args(args)
@@ -155,7 +160,11 @@ class AirbyteEntrypoint:
         yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
 
     def read(
-        self, source_spec: ConnectorSpecification, config: TConfig, catalog: Any, state: Union[list[Any], MutableMapping[str, Any]],
+        self,
+        source_spec: ConnectorSpecification,
+        config: TConfig,
+        catalog: Any,
+        state: Union[list[Any], MutableMapping[str, Any]],
     ) -> Iterable[AirbyteMessage]:
         self.set_up_secret_filter(config, source_spec.connectionSpecification)
         if self.source.check_config_against_spec:
@@ -217,8 +226,7 @@ def launch(source: Source, args: list[str]) -> None:
 
 
 def _init_internal_request_filter() -> None:
-    """Wraps the Python requests library to prevent sending requests to internal URL endpoints.
-    """
+    """Wraps the Python requests library to prevent sending requests to internal URL endpoints."""
     wrapped_fn = Session.send
 
     @wraps(wrapped_fn)
@@ -253,8 +261,7 @@ def _init_internal_request_filter() -> None:
 
 
 def _is_private_url(hostname: str, port: int) -> bool:
-    """Helper method that checks if any of the IP addresses associated with a hostname belong to a private network.
-    """
+    """Helper method that checks if any of the IP addresses associated with a hostname belong to a private network."""
     address_info_entries = socket.getaddrinfo(hostname, port)
     for entry in address_info_entries:
         # getaddrinfo() returns entries in the form of a 5-tuple where the IP is stored as the sockaddr. For IPv4 this

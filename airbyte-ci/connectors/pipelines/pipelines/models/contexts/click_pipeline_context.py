@@ -76,8 +76,7 @@ class ClickPipelineContext(BaseModel, Singleton):
     _dagger_client_lock: anyio.Lock = PrivateAttr(default_factory=anyio.Lock)
 
     async def get_dagger_client(self, pipeline_name: Optional[str] = None, log_output: Optional[TextIO] = sys.stdout) -> Client:
-        """Get (or initialize) the Dagger Client instance.
-        """
+        """Get (or initialize) the Dagger Client instance."""
         if not self._dagger_client:
             async with self._dagger_client_lock:
                 if not self._dagger_client:

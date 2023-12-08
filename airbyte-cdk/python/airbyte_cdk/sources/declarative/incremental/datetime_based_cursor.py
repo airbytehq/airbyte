@@ -195,8 +195,7 @@ class DatetimeBasedCursor(Cursor):
 
     @classmethod
     def _parse_timedelta(cls, time_str) -> Union[datetime.timedelta, Duration]:
-        """:return Parses an ISO 8601 durations into datetime.timedelta or Duration objects.
-        """
+        """:return Parses an ISO 8601 durations into datetime.timedelta or Duration objects."""
         if not time_str:
             return datetime.timedelta(0)
         return parse_duration(time_str)

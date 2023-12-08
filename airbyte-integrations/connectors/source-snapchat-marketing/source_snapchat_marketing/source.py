@@ -177,7 +177,10 @@ class SnapchatMarketingStream(HttpStream, ABC):
             return {"cursor": dict(parse_qsl(urlparse(next_page_cursor["next_link"]).query))["cursor"]}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
 
@@ -272,7 +275,10 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
             return {self.cursor_field: self.initial_state}
 
     def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         """This structure is used to set the class variable current_slice to the current stream slice for the
         purposes described above.
@@ -378,7 +384,10 @@ class Stats(SnapchatMarketingStream, ABC):
         return f"{self.parent_name}/{stream_slice['id']}/stats"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["granularity"] = self.granularity.value
@@ -397,7 +406,10 @@ class Stats(SnapchatMarketingStream, ABC):
     ) -> Iterable[Mapping]:
         """Customized by adding stream state setting"""
         for record in super().parse_response(
-            response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
+            response=response,
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
         ):
             # move all 'stats' metrics to root level
             record.update(record.pop("stats", {}))
@@ -461,7 +473,10 @@ class StatsIncremental(Stats, IncrementalMixin):
         return stream_slices
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         """start/end date param should be set for Daily and Hourly streams"""
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
@@ -500,7 +515,10 @@ class StatsIncremental(Stats, IncrementalMixin):
         self.state = {self.cursor_field: stream_slice[self.cursor_field]}
 
         for record in super().parse_response(
-            response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
+            response=response,
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
         ):
             record_identifiers = {
                 "id": record["id"],
@@ -736,8 +754,7 @@ class SnapchatOauth2Authenticator(Oauth2Authenticator):
         max_time=300,
     )
     def refresh_access_token(self) -> tuple[str, int]:
-        """Returns a tuple of (access_token, token_lifespan_in_seconds)
-        """
+        """Returns a tuple of (access_token, token_lifespan_in_seconds)"""
         try:
             response = requests.request(
                 method="POST",

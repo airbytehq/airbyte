@@ -32,7 +32,9 @@ class SmartSheetAPIWrapper:
         credentials = config.get("credentials")
         if config.get("credentials", {}).get("auth_type") == "oauth2.0":
             authenticator = SingleUseRefreshTokenOauth2Authenticator(
-                config, token_refresh_endpoint="https://api.smartsheet.com/2.0/token", refresh_request_body=self.get_token_hash(config),
+                config,
+                token_refresh_endpoint="https://api.smartsheet.com/2.0/token",
+                refresh_request_body=self.get_token_hash(config),
             )
             return authenticator.get_access_token()
 

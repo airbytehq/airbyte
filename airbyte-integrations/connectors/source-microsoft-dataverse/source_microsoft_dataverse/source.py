@@ -38,7 +38,9 @@ class SourceMicrosoftDataverse(AbstractSource):
             if entity["CanChangeTrackingBeEnabled"]["Value"] and entity["ChangeTrackingEnabled"]:
                 schema["properties"].update({"_ab_cdc_updated_at": {"type": "string"}, "_ab_cdc_deleted_at": {"type": ["null", "string"]}})
                 stream = AirbyteStream(
-                    name=entity["LogicalName"], json_schema=schema, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+                    name=entity["LogicalName"],
+                    json_schema=schema,
+                    supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
                 )
                 if "modifiedon" in schema["properties"]:
                     stream.source_defined_cursor = True
@@ -74,8 +76,7 @@ class SourceMicrosoftDataverse(AbstractSource):
         return super().read(logger, config, catalog, state)
 
     def streams(self, config: Mapping[str, Any]) -> list[Stream]:
-        """:param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         auth = get_auth(config)
 
         streams = []

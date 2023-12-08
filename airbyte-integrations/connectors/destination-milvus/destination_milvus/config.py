@@ -51,7 +51,12 @@ class MilvusIndexingConfigModel(BaseModel):
     db: Optional[str] = Field(title="Database Name", description="The database to connect to", default="")
     collection: str = Field(..., title="Collection Name", description="The collection to load data into", order=3)
     auth: Union[TokenAuth, UsernamePasswordAuth, NoAuth] = Field(
-        ..., title="Authentication", description="Authentication method", discriminator="mode", type="object", order=2,
+        ...,
+        title="Authentication",
+        description="Authentication method",
+        discriminator="mode",
+        type="object",
+        order=2,
     )
     vector_field: str = Field(title="Vector Field", description="The field in the entity that contains the vector", default="vector")
     text_field: str = Field(title="Text Field", description="The field in the entity that contains the embedded text", default="text")

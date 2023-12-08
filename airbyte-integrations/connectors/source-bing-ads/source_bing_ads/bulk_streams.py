@@ -35,14 +35,12 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
     @property
     @abstractmethod
     def data_scope(self) -> list[str]:
-        """Defines scopes or types of data to download. Docs: https://learn.microsoft.com/en-us/advertising/bulk-service/datascope?view=bingads-13
-        """
+        """Defines scopes or types of data to download. Docs: https://learn.microsoft.com/en-us/advertising/bulk-service/datascope?view=bingads-13"""
 
     @property
     @abstractmethod
     def download_entities(self) -> list[str]:
-        """Defines the entities that should be downloaded. Docs: https://learn.microsoft.com/en-us/advertising/bulk-service/downloadentity?view=bingads-13
-        """
+        """Defines the entities that should be downloaded. Docs: https://learn.microsoft.com/en-us/advertising/bulk-service/downloadentity?view=bingads-13"""
 
     def stream_slices(
         self,
@@ -64,8 +62,7 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
             self._state.update({str(value["Account Id"]): {self.cursor_field: new_state_value}})
 
     def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None) -> Optional[pendulum.DateTime]:
-        """The start_date in the query can only be specified if it is within a period of up to 30 days from today.
-        """
+        """The start_date in the query can only be specified if it is within a period of up to 30 days from today."""
         min_available_date = pendulum.now().subtract(days=30).astimezone(tz=timezone.utc)
         start_date = self.client.reports_start_date
         if stream_state.get(account_id, {}).get(self.cursor_field):
@@ -125,56 +122,49 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
 
 
 class AppInstallAds(BingAdsBulkStream):
-    """https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13
-    """
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13"""
 
     data_scope = ["EntityData"]
     download_entities = ["AppInstallAds"]
 
 
 class AppInstallAdLabels(BingAdsBulkStream):
-    """https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13
-    """
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13"""
 
     data_scope = ["EntityData"]
     download_entities = ["AppInstallAdLabels"]
 
 
 class Labels(BingAdsBulkStream):
-    """https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
-    """
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13"""
 
     data_scope = ["EntityData"]
     download_entities = ["Labels"]
 
 
 class KeywordLabels(BingAdsBulkStream):
-    """https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13
-    """
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13"""
 
     data_scope = ["EntityData"]
     download_entities = ["KeywordLabels"]
 
 
 class Keywords(BingAdsBulkStream):
-    """https://learn.microsoft.com/en-us/advertising/bulk-service/keyword?view=bingads-13
-    """
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/keyword?view=bingads-13"""
 
     data_scope = ["EntityData"]
     download_entities = ["Keywords"]
 
 
 class CampaignLabels(BingAdsBulkStream):
-    """https://learn.microsoft.com/en-us/advertising/bulk-service/campaign-label?view=bingads-13
-    """
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/campaign-label?view=bingads-13"""
 
     data_scope = ["EntityData"]
     download_entities = ["CampaignLabels"]
 
 
 class AdGroupLabels(BingAdsBulkStream):
-    """https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13
-    """
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13"""
 
     data_scope = ["EntityData"]
     download_entities = ["AdGroupLabels"]

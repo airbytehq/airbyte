@@ -183,7 +183,11 @@ def test_get_connectors_eligible_for_cloud(qa_report: pd.DataFrame):
     ],
 )
 def test_latest_build_is_successful(
-    mocker, connector_qa_data: pd.Series, build_file_payload: object, build_file_status: int, expected_is_successful: bool,
+    mocker,
+    connector_qa_data: pd.Series,
+    build_file_payload: object,
+    build_file_status: int,
+    expected_is_successful: bool,
 ):
     # Mock the api call to get the latest build status for a connector version
     mock_response = MagicMock()

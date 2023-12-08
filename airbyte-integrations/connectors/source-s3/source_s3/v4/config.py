@@ -53,7 +53,8 @@ class Config(AbstractFileBasedSpec):
         aws_secret_access_key = values.get("aws_secret_access_key")
         if (aws_access_key_id or aws_secret_access_key) and not (aws_access_key_id and aws_secret_access_key):
             raise ValidationError(
-                "`aws_access_key_id` and `aws_secret_access_key` are both required to authenticate with AWS.", model=Config,
+                "`aws_access_key_id` and `aws_secret_access_key` are both required to authenticate with AWS.",
+                model=Config,
             )
 
         if is_cloud_environment():

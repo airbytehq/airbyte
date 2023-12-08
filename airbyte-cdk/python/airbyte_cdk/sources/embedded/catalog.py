@@ -31,7 +31,11 @@ def to_configured_stream(
     primary_key: Optional[list[list[str]]] = None,
 ) -> ConfiguredAirbyteStream:
     return ConfiguredAirbyteStream(
-        stream=stream, sync_mode=sync_mode, destination_sync_mode=destination_sync_mode, cursor_field=cursor_field, primary_key=primary_key,
+        stream=stream,
+        sync_mode=sync_mode,
+        destination_sync_mode=destination_sync_mode,
+        cursor_field=cursor_field,
+        primary_key=primary_key,
     )
 
 

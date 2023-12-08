@@ -71,8 +71,7 @@ class AbstractFileBasedStream(Stream):
 
     @abstractmethod
     def get_files(self) -> Iterable[RemoteFile]:
-        """List all files that belong to the stream as defined by the stream's globs.
-        """
+        """List all files that belong to the stream as defined by the stream's globs."""
         ...
 
     def read_records(
@@ -92,12 +91,15 @@ class AbstractFileBasedStream(Stream):
 
     @abstractmethod
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
-        """Yield all records from all remote files in `list_files_for_this_sync`.
-        """
+        """Yield all records from all remote files in `list_files_for_this_sync`."""
         ...
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[list[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
+        self,
+        *,
+        sync_mode: SyncMode,
+        cursor_field: Optional[list[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """This method acts as an adapter between the generic Stream interface and the file-based's
         stream since file-based streams manage their own states.
@@ -114,14 +116,12 @@ class AbstractFileBasedStream(Stream):
     @abstractmethod
     @cache
     def get_json_schema(self) -> Mapping[str, Any]:
-        """Return the JSON Schema for a stream.
-        """
+        """Return the JSON Schema for a stream."""
         ...
 
     @abstractmethod
     def infer_schema(self, files: list[RemoteFile]) -> Mapping[str, Any]:
-        """Infer the schema for files in the stream.
-        """
+        """Infer the schema for files in the stream."""
         ...
 
     def get_parser(self) -> FileTypeParser:
@@ -135,7 +135,9 @@ class AbstractFileBasedStream(Stream):
             return self.validation_policy.record_passes_validation_policy(record=record, schema=self.catalog_schema)
         else:
             raise RecordParseError(
-                FileBasedSourceError.UNDEFINED_VALIDATION_POLICY, stream=self.name, validation_policy=self.config.validation_policy,
+                FileBasedSourceError.UNDEFINED_VALIDATION_POLICY,
+                stream=self.name,
+                validation_policy=self.config.validation_policy,
             )
 
     @cached_property

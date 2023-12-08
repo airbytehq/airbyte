@@ -272,7 +272,9 @@ def test_upload_metadata_to_gcs_valid_metadata(
         # Call function under tests
 
         upload_info = gcs_upload.upload_metadata_to_gcs(
-            "my_bucket", metadata_file_path, validator_opts=ValidatorOptions(docs_path=DOCS_PATH),
+            "my_bucket",
+            metadata_file_path,
+            validator_opts=ValidatorOptions(docs_path=DOCS_PATH),
         )
 
         # Assertions
@@ -369,7 +371,9 @@ def test_upload_invalid_metadata_to_gcs(mocker, invalid_metadata_yaml_files):
         error_match_if_validation_succeeds = "Please set the GCS_CREDENTIALS env var."
 
         assert_upload_invalid_metadata_fails_correctly(
-            metadata_file_path, error_match_if_validation_fails_as_expected, error_match_if_validation_succeeds,
+            metadata_file_path,
+            error_match_if_validation_fails_as_expected,
+            error_match_if_validation_succeeds,
         )
 
 
@@ -388,7 +392,9 @@ def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_u
         error_match_if_validation_succeeds = "Unexpected path"
 
         assert_upload_invalid_metadata_fails_correctly(
-            metadata_file_path, error_match_if_validation_fails_as_expected, error_match_if_validation_succeeds,
+            metadata_file_path,
+            error_match_if_validation_fails_as_expected,
+            error_match_if_validation_succeeds,
         )
 
 

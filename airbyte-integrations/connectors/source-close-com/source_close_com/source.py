@@ -104,8 +104,7 @@ class IncrementalCloseComStream(CloseComStream):
 
 
 class CloseComActivitiesStream(IncrementalCloseComStream):
-    """General class for activities. Define request params based on cursor_field value.
-    """
+    """General class for activities. Define request params based on cursor_field value."""
 
     cursor_field = "date_created"
     number_of_items_per_page = 100
@@ -238,8 +237,7 @@ class Leads(IncrementalCloseComStream):
 
 
 class CloseComTasksStream(IncrementalCloseComStream):
-    """General class for tasks. Define request params based on _type value.
-    """
+    """General class for tasks. Define request params based on _type value."""
 
     cursor_field = "date_created"
     number_of_items_per_page = 1000
@@ -322,8 +320,7 @@ class IncomingSmsTasks(CloseComTasksStream):
 
 
 class CloseComCustomFieldsStream(CloseComStream):
-    """General class for custom fields. Define path based on _type value.
-    """
+    """General class for custom fields. Define path based on _type value."""
 
     number_of_items_per_page = 1000
 
@@ -457,8 +454,7 @@ class EmailTemplates(CloseComStream):
 
 
 class CloseComConnectedAccountsStream(CloseComStream):
-    """General class for connected accounts. Define request params based on _type value.
-    """
+    """General class for connected accounts. Define request params based on _type value."""
 
     number_of_items_per_page = 100
 

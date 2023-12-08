@@ -123,8 +123,7 @@ def chunk_analytics_fields(
     base_fields: list = BASE_ANALLYTICS_FIELDS,
     fields_chunk_size: int = FIELDS_CHUNK_SIZE,
 ) -> Iterable[list]:
-    """Chunks the list of available fields into the chunks of equal size.
-    """
+    """Chunks the list of available fields into the chunks of equal size."""
     # Make chunks
     chunks = list(fields[f : f + fields_chunk_size] for f in range(0, len(fields), fields_chunk_size))
     # Make sure base_fields are within the chunks
@@ -158,7 +157,10 @@ def make_date_slices(start_date: str, end_date: str = None, window_in_days: int 
 
 
 def make_analytics_slices(
-    record: Mapping[str, Any], key_value_map: Mapping[str, Any], start_date: str, end_date: str = None,
+    record: Mapping[str, Any],
+    key_value_map: Mapping[str, Any],
+    start_date: str,
+    end_date: str = None,
 ) -> Iterable[Mapping[str, Any]]:
     """We drive the ability to directly pass the prepared parameters inside the stream_slice.
     The output of this method is ready slices for analytics streams:
@@ -176,8 +178,7 @@ def make_analytics_slices(
 
 
 def update_analytics_params(stream_slice: Mapping[str, Any]) -> Mapping[str, Any]:
-    """Produces the date range parameters from input stream_slice
-    """
+    """Produces the date range parameters from input stream_slice"""
     date_range = stream_slice["dateRange"]
     return {
         "dateRange": f"(start:(year:{date_range['start.year']},month:{date_range['start.month']},day:{date_range['start.day']}),"

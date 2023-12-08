@@ -15,8 +15,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class WaitUntilMidnightBackoffStrategy(BackoffStrategy):
-    """Backoff strategy that waits until next midnight
-    """
+    """Backoff strategy that waits until next midnight"""
 
     parameters: InitVar[Mapping[str, Any]]
     config: Config

@@ -74,8 +74,7 @@ class SourceNetsuite(AbstractSource):
                 return False, e
 
     def get_schemas(self, object_names: Union[list[str], str], session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
-        """Handles multivariance of object_names type input and fetches the schema for each object type provided.
-        """
+        """Handles multivariance of object_names type input and fetches the schema for each object type provided."""
         try:
             if isinstance(object_names, list):
                 schemas = {}
@@ -92,8 +91,7 @@ class SourceNetsuite(AbstractSource):
             self.logger.error(f"Unexpected output while fetching the object schema. Full error: {e.__repr__()}")
 
     def fetch_schema(self, object_name: str, session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
-        """Calls the API for specific object type and returns schema as a dict.
-        """
+        """Calls the API for specific object type and returns schema as a dict."""
         return {object_name.lower(): session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json()}
 
     def generate_stream(
@@ -129,7 +127,9 @@ class SourceNetsuite(AbstractSource):
         else:
             retry_attempt = 1
             while retry_attempt <= max_retry:
-                self.logger.warning(f"Object `{object_name}` schema has missing `properties` key. Retry attempt: {retry_attempt}/{max_retry}")
+                self.logger.warning(
+                    f"Object `{object_name}` schema has missing `properties` key. Retry attempt: {retry_attempt}/{max_retry}"
+                )
                 # somethimes object metadata returns data with missing `properties` key,
                 # we should try to fetch metadata again to that object
                 schemas = self.get_schemas(object_name, session, metadata_url)
@@ -155,7 +155,11 @@ class SourceNetsuite(AbstractSource):
         input_args = {"session": session, "metadata_url": metadata_url}
         schemas = self.get_schemas(object_names, **input_args)
         input_args.update(
-            auth=auth, base_url=base_url, start_datetime=config["start_datetime"], window_in_days=config["window_in_days"], schemas=schemas,
+            auth=auth,
+            base_url=base_url,
+            start_datetime=config["start_datetime"],
+            window_in_days=config["window_in_days"],
+            schemas=schemas,
         )
         # build streams
         streams: list = []

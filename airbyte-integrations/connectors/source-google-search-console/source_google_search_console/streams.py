@@ -52,7 +52,10 @@ class GoogleSearchConsole(HttpStream, ABC):
         return None
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for site_url in self._site_urls:
             yield {"site_url": site_url}
@@ -84,8 +87,7 @@ class GoogleSearchConsole(HttpStream, ABC):
 
 
 class Sites(GoogleSearchConsole):
-    """API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites
-    """
+    """API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites"""
 
     primary_key = None
 
@@ -99,8 +101,7 @@ class Sites(GoogleSearchConsole):
 
 
 class Sitemaps(GoogleSearchConsole):
-    """API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps
-    """
+    """API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps"""
 
     primary_key = None
     data_field = "sitemap"
@@ -115,8 +116,7 @@ class Sitemaps(GoogleSearchConsole):
 
 
 class SearchAnalytics(GoogleSearchConsole, ABC):
-    """API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics
-    """
+    """API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics"""
 
     data_field = "rows"
     aggregation_type = QueryAggregationType.auto
@@ -142,7 +142,10 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         return "POST"
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """The `stream_slices` implements iterator functionality for `site_urls` and `searchType`. The user can pass many `site_url`,
         and we have to process all of them, we can also pass the` searchType` parameter in the `request body` to get data using some`

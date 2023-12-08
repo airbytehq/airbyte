@@ -197,7 +197,10 @@ class NetsuiteStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def read_records(
-        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs,
+        self,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         try:
             yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
@@ -255,7 +258,10 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         return {self.cursor_field: max(latest_cursor, current_cursor)}
 
     def request_params(
-        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs,
+        self,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        **kwargs,
     ) -> MutableMapping[str, Any]:
         params = {**(next_page_token or {})}
         if stream_slice:

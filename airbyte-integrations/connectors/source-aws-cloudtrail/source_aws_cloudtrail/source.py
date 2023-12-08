@@ -34,7 +34,11 @@ class Client:
         )
 
         self.session: botocore.client.CloudTrail = boto3.client(
-            "cloudtrail", aws_access_key_id=aws_key_id, aws_secret_access_key=aws_secret_key, region_name=aws_region_name, config=config,
+            "cloudtrail",
+            aws_access_key_id=aws_key_id,
+            aws_secret_access_key=aws_secret_key,
+            region_name=aws_region_name,
+            config=config,
         )
 
 
@@ -56,7 +60,10 @@ class AwsCloudtrailStream(Stream, ABC):
         return response.get("NextToken")
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"MaxResults": self.limit}
 
@@ -72,8 +79,7 @@ class AwsCloudtrailStream(Stream, ABC):
 
     @abstractmethod
     def send_request(self, **kwargs) -> Mapping[str, Any]:
-        """This method should be overridden by subclasses to send proper request with appropriate parameters to CloudTrail
-        """
+        """This method should be overridden by subclasses to send proper request with appropriate parameters to CloudTrail"""
 
     def is_read_limit_reached(self) -> bool:
         if self.records_left <= 0:
@@ -138,7 +144,10 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
         return self.client.session.lookup_events(**kwargs)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
@@ -159,10 +168,12 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
             yield event
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """Slices whole time range to more granular slices (24h slices). Latest time slice should be the first to avoid data loss
-        """
+        """Slices whole time range to more granular slices (24h slices). Latest time slice should be the first to avoid data loss"""
         cursor_data = stream_state.get(self.cursor_field) if stream_state else 0
         end_time = pendulum.now()
         # API stores data for last 90 days. Adjust starting time to avoid unnecessary API requests

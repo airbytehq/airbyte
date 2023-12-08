@@ -176,7 +176,8 @@ class SourceGithub(AbstractSource):
 
     @staticmethod
     def _get_branches_data(
-        selected_branches: list, full_refresh_args: dict[str, Any] = None,
+        selected_branches: list,
+        full_refresh_args: dict[str, Any] = None,
     ) -> tuple[dict[str, str], dict[str, list[str]]]:
         selected_branches = set(selected_branches)
 
@@ -257,7 +258,10 @@ class SourceGithub(AbstractSource):
             user_message = self.user_friendly_error_message(message)
             if user_message:
                 raise AirbyteTracedException(
-                    internal_message=message, message=user_message, failure_type=FailureType.config_error, exception=e,
+                    internal_message=message,
+                    message=user_message,
+                    failure_type=FailureType.config_error,
+                    exception=e,
                 )
             else:
                 raise e

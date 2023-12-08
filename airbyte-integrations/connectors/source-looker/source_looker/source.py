@@ -47,8 +47,7 @@ class CustomTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceLooker(AbstractSource):
-    """Source Intercom fetch data from messaging platform.
-    """
+    """Source Intercom fetch data from messaging platform."""
 
     def get_authenticator(self, config: Mapping[str, Any]) -> CustomTokenAuthenticator:
         return CustomTokenAuthenticator(domain=config["domain"], client_id=config["client_id"], client_secret=config["client_secret"])

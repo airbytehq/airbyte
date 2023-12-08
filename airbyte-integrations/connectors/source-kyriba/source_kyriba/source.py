@@ -60,7 +60,10 @@ class KyribaStream(HttpStream):
         return {"page.offset": next_offset} if next_page else None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return next_page_token
 
@@ -107,7 +110,10 @@ class IncrementalKyribaStream(KyribaStream, ABC):
         return {self.cursor_field: max(current_cursor, latest_cursor)}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"sort": self.cursor_field}
         latest_cursor = stream_state.get(self.cursor_field) or self.start_date.isoformat() + "T00:00:00Z"
@@ -144,7 +150,10 @@ class AccountSubStream(HttpSubStream, KyribaStream):
 
 class CashBalancesStream(AccountSubStream):
     def stream_slices(
-        self, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None, **kwargs,
+        self,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         account_uuids = self.get_account_uuids()
@@ -169,7 +178,10 @@ class CashBalancesStream(AccountSubStream):
         return f"cash-balances/accounts/{account_uuid}/balances"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return {
             "endDate": stream_slice["endDate"],
@@ -192,7 +204,10 @@ class CashBalancesIntraday(CashBalancesStream):
 
 class BankBalancesStream(AccountSubStream):
     def stream_slices(
-        self, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None, **kwargs,
+        self,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         account_uuids = self.get_account_uuids()
@@ -209,7 +224,10 @@ class BankBalancesStream(AccountSubStream):
         return f"bank-balances/accounts/{account_uuid}/balances"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return {
             "date": stream_slice["date"],
@@ -232,7 +250,10 @@ class CashFlows(IncrementalKyribaStream):
         return "cash-flows"
 
     def stream_slices(
-        self, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None, **kwargs,
+        self,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         end_date = self.end_date or date.today()
         if stream_state and stream_state.get(self.cursor_field):

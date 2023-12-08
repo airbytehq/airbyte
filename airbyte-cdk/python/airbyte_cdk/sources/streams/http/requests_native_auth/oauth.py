@@ -253,6 +253,5 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
 
     @property
     def _message_repository(self) -> MessageRepository:
-        """Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs
-        """
+        """Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs"""
         return self.__message_repository

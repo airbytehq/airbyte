@@ -132,8 +132,7 @@ class ShopifyDeletedEventsStream(ShopifyStream):
 
     @property
     def availability_strategy(self) -> None:
-        """No need to apply the `availability strategy` for this service stream.
-        """
+        """No need to apply the `availability strategy` for this service stream."""
         return
 
     def __init__(self, config: dict, deleted_events_api_name: str):
@@ -144,8 +143,7 @@ class ShopifyDeletedEventsStream(ShopifyStream):
         return f"{self.data_field}.json"
 
     def get_json_schema(self) -> None:
-        """No need to apply the `schema` for this service stream.
-        """
+        """No need to apply the `schema` for this service stream."""
         return {}
 
     def produce_deleted_records_from_events(self, delete_events: Iterable[Mapping[str, Any]] = []) -> None:
@@ -276,8 +274,7 @@ class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream):
         return ""
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """We extend the stream state with `deleted` property to store the `destroyed` records STATE separetely from the Stream State.
-        """
+        """We extend the stream state with `deleted` property to store the `destroyed` records STATE separetely from the Stream State."""
         state = super().get_updated_state(current_stream_state, latest_record)
         # add `deleted` property to each stream supports `deleted events`,
         # to povide the `Incremental` sync mode, for the `Incremental Delete` records.
@@ -323,8 +320,7 @@ class ShopifySubstream(IncrementalShopifyStream):
 
     @cached_property
     def parent_stream(self) -> object:
-        """Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
-        """
+        """Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency."""
         return self.parent_stream_class(self.config) if self.parent_stream_class else None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -386,7 +382,8 @@ class ShopifySubstream(IncrementalShopifyStream):
                             {
                                 self.slice_key: sub_record[self.nested_substream_list_field_id],
                                 self.cursor_field: record[self.nested_substream][0].get(
-                                    self.cursor_field, self.default_state_comparison_value,
+                                    self.cursor_field,
+                                    self.default_state_comparison_value,
                                 ),
                             }
                             for sub_record in record[self.nested_record]
@@ -492,7 +489,10 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
         return f"{self.data_field}.json"
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
@@ -563,7 +563,10 @@ class ProductsGraphQl(IncrementalShopifyStream):
         else:
             filter_value = self.default_filter_field_value
         query = get_query_products(
-            first=self.limit, filter_field=self.filter_field, filter_value=filter_value, next_page_token=next_page_token,
+            first=self.limit,
+            filter_field=self.filter_field,
+            filter_value=filter_value,
+            next_page_token=next_page_token,
         )
         return {"query": query}
 
@@ -648,7 +651,10 @@ class AbandonedCheckouts(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
@@ -961,8 +967,7 @@ class ConnectionCheckTest:
 
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, any]:
-        """Testing connection availability for the connector.
-        """
+        """Testing connection availability for the connector."""
         config["shop"] = self.get_shop_name(config)
         config["authenticator"] = ShopifyAuthenticator(config)
         return ConnectionCheckTest(config).test_connection()

@@ -55,8 +55,7 @@ class WriteBufferMixin:
         self.records_buffer[stream_name].append(norm_values)
 
     def clear_buffer(self, stream_name: str):
-        """Cleans up the `records_buffer` values, belonging to input stream.
-        """
+        """Cleans up the `records_buffer` values, belonging to input stream."""
         self.records_buffer[stream_name].clear()
 
     def _normalize_record(self, stream_name: str, record: Mapping) -> Mapping[str, Any]:

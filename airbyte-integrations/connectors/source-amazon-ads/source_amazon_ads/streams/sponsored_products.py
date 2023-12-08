@@ -83,10 +83,17 @@ class SponsoredProductAdGroupWithSlicesABC(AmazonAdsStream, ABC):
         return headers
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        *,
+        sync_mode: SyncMode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         yield from SponsoredProductAdGroupsWithProfileId(*self.__args, **self.__kwargs).read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=None, stream_state=stream_state,
+            sync_mode=sync_mode,
+            cursor_field=cursor_field,
+            stream_slice=None,
+            stream_state=stream_state,
         )
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:

@@ -44,7 +44,8 @@ class AuthenticatorFacebookPageAccessToken(NoAuth):
         # https://developers.facebook.com/docs/pages/access-tokens#get-a-page-access-token
         try:
             r = requests.get(
-                f"https://graph.facebook.com/{self._page_id}", params={"fields": "access_token", "access_token": self._access_token},
+                f"https://graph.facebook.com/{self._page_id}",
+                params={"fields": "access_token", "access_token": self._access_token},
             )
             if r.status_code != HTTPStatus.OK:
                 raise HTTPError(r.text)
@@ -71,16 +72,14 @@ class CustomFieldTransformation(RecordTransformation):
         return schema["properties"]
 
     def _get_date_time_dpath_from_schema(self):
-        """Get all dpath in format 'a/b/*/c' from schema with format: 'date-time'
-        """
+        """Get all dpath in format 'a/b/*/c' from schema with format: 'date-time'"""
         schema = self._get_schema_root_properties()
         all_results = dpath.util.search(schema, "**", yielded=True, afilter=lambda x: True if "date-time" in str(x) else False)
         full_dpath = [x[0] for x in all_results if isinstance(x[1], dict) and x[1].get("format") == "date-time"]
         return [path.replace("/properties", "").replace("items", "*") for path in full_dpath]
 
     def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """Transform 'date-time' items to RFC3339 format
-        """
+        """Transform 'date-time' items to RFC3339 format"""
         date_time_paths = self._get_date_time_dpath_from_schema()
         for path in date_time_paths:
             if "*" not in path:

@@ -16,7 +16,8 @@ from pydantic.generics import GenericModel
 config_path: str = Field(default="secrets/config.json", description="Path to a JSON object representing a valid connector configuration")
 invalid_config_path: str = Field(description="Path to a JSON object representing an invalid connector configuration")
 spec_path: str = Field(
-    default="secrets/spec.json", description="Path to a JSON object representing the spec expected to be output by this connector",
+    default="secrets/spec.json",
+    description="Path to a JSON object representing the spec expected to be output by this connector",
 )
 configured_catalog_path: Optional[str] = Field(default=None, description="Path to configured catalog")
 timeout_seconds: int = Field(default=None, description="Test execution timeout_seconds", ge=0)
@@ -36,10 +37,14 @@ TestConfigT = TypeVar("TestConfigT")
 
 class BackwardCompatibilityTestsConfig(BaseConfig):
     previous_connector_version: str = Field(
-        regex=SEMVER_REGEX, default="latest", description="Previous connector version to use for backward compatibility tests.",
+        regex=SEMVER_REGEX,
+        default="latest",
+        description="Previous connector version to use for backward compatibility tests.",
     )
     disable_for_version: Optional[str] = Field(
-        regex=SEMVER_REGEX, default=None, description="Disable backward compatibility tests for a specific connector version.",
+        regex=SEMVER_REGEX,
+        default=None,
+        description="Disable backward compatibility tests for a specific connector version.",
     )
 
 
@@ -49,7 +54,8 @@ class SpecTestConfig(BaseConfig):
     timeout_seconds: int = timeout_seconds
     deployment_mode: Optional[str] = deployment_mode
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
-        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig(),
+        description="Configuration for the backward compatibility tests.",
+        default=BackwardCompatibilityTestsConfig(),
     )
 
 
@@ -70,7 +76,8 @@ class DiscoveryTestConfig(BaseConfig):
     timeout_seconds: int = timeout_seconds
     deployment_mode: Optional[str] = deployment_mode
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
-        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig(),
+        description="Configuration for the backward compatibility tests.",
+        default=BackwardCompatibilityTestsConfig(),
     )
 
 
@@ -83,7 +90,8 @@ class ExpectedRecordsConfig(BaseModel):
     extra_fields: bool = Field(False, description="Allow records to have other fields")
     exact_order: bool = Field(False, description="Ensure that records produced in exact same order")
     extra_records: bool = Field(
-        True, description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced",
+        True,
+        description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced",
     )
 
     @validator("exact_order", always=True)
@@ -130,14 +138,16 @@ class BasicReadTestConfig(BaseConfig):
     deployment_mode: Optional[str] = deployment_mode
     configured_catalog_path: Optional[str] = configured_catalog_path
     empty_streams: set[EmptyStreamConfiguration] = Field(
-        default_factory=set, description="We validate that all streams has records. These are exceptions",
+        default_factory=set,
+        description="We validate that all streams has records. These are exceptions",
     )
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
     fail_on_extra_columns: bool = Field(True, description="Fail if extra top-level properties (i.e. columns) are detected in records.")
     # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
     validate_data_points: bool = Field(
-        False, description="Set whether we need to validate that all fields in all streams contained at least one data point",
+        False,
+        description="Set whether we need to validate that all fields in all streams contained at least one data point",
     )
     expect_trace_message_on_failure: bool = Field(True, description="Ensure that a trace message is emitted when the connector crashes")
     timeout_seconds: int = timeout_seconds
@@ -171,7 +181,8 @@ class IncrementalConfig(BaseConfig):
     timeout_seconds: int = timeout_seconds
     deployment_mode: Optional[str] = deployment_mode
     skip_comprehensive_incremental_tests: Optional[bool] = Field(
-        description="Determines whether to skip more granular testing for incremental syncs", default=False,
+        description="Determines whether to skip more granular testing for incremental syncs",
+        default=False,
     )
 
     class Config:
@@ -211,7 +222,8 @@ class Config(BaseConfig):
         description="Corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run.",
     )
     custom_environment_variables: Optional[Mapping] = Field(
-        default={}, description="Mapping of custom environment variables to pass to the connector under test.",
+        default={},
+        description="Mapping of custom environment variables to pass to the connector under test.",
     )
 
     @staticmethod

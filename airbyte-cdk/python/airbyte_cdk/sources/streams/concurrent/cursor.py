@@ -39,14 +39,12 @@ class CursorField:
 class Cursor(ABC):
     @abstractmethod
     def observe(self, record: Record) -> None:
-        """Indicate to the cursor that the record has been emitted
-        """
+        """Indicate to the cursor that the record has been emitted"""
         raise NotImplementedError
 
     @abstractmethod
     def close_partition(self, partition: Partition) -> None:
-        """Indicate to the cursor that the partition has been successfully processed
-        """
+        """Indicate to the cursor that the partition has been successfully processed"""
         raise NotImplementedError
 
 
@@ -133,7 +131,9 @@ class ConcurrentCursor(Cursor):
     def _emit_state_message(self) -> None:
         self._connector_state_manager.update_state_for_stream(self._stream_name, self._stream_namespace, self._state)
         state_message = self._connector_state_manager.create_state_message(
-            self._stream_name, self._stream_namespace, send_per_stream_state=True,
+            self._stream_name,
+            self._stream_namespace,
+            send_per_stream_state=True,
         )
         self._message_repository.emit_message(state_message)
 

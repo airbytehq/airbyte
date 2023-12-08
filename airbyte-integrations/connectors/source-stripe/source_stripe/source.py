@@ -336,7 +336,10 @@ class SourceStripe(AbstractSource):
                 **args,
             ),
             IncrementalStripeStream(
-                name="coupons", path="coupons", event_types=["coupon.created", "coupon.updated", "coupon.deleted"], **args,
+                name="coupons",
+                path="coupons",
+                event_types=["coupon.created", "coupon.updated", "coupon.deleted"],
+                **args,
             ),
             IncrementalStripeStream(
                 name="disputes",
@@ -381,7 +384,10 @@ class SourceStripe(AbstractSource):
             ),
             IncrementalStripeStream(name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], **args),
             IncrementalStripeStream(
-                name="products", path="products", event_types=["product.created", "product.updated", "product.deleted"], **args,
+                name="products",
+                path="products",
+                event_types=["product.created", "product.updated", "product.deleted"],
+                **args,
             ),
             IncrementalStripeStream(name="reviews", path="reviews", event_types=["review.closed", "review.opened"], **args),
             subscriptions,
@@ -434,7 +440,10 @@ class SourceStripe(AbstractSource):
                 **args,
             ),
             IncrementalStripeStream(
-                name="cards", path="issuing/cards", event_types=["issuing_card.created", "issuing_card.updated"], **args,
+                name="cards",
+                path="issuing/cards",
+                event_types=["issuing_card.created", "issuing_card.updated"],
+                **args,
             ),
             IncrementalStripeStream(
                 name="transactions",

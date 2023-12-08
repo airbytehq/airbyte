@@ -38,7 +38,10 @@ class SourceAirtable(AbstractSource):
             return False, str(e)
 
     def _remove_missed_streams_from_catalog(
-        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog,
+        self,
+        logger: logging.Logger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
     ) -> ConfiguredAirbyteCatalog:
         config, _ = split_config(config)
         stream_instances = {s.name: s for s in self.streams(config)}

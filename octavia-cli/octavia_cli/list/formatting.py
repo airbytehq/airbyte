@@ -3,7 +3,6 @@
 #
 
 
-
 def compute_columns_width(data: list[list[str]], padding: int = 2) -> list[int]:
     """Compute columns width for display purposes:
     Find size for each columns in the data and add padding.

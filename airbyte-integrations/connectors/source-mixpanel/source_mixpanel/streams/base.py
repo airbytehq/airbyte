@@ -79,7 +79,10 @@ class MixpanelStream(HttpStream, ABC):
         return None
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
 
@@ -117,8 +120,7 @@ class MixpanelStream(HttpStream, ABC):
         return 3
 
     def backoff_time(self, response: requests.Response) -> float:
-        """Some API endpoints do not return "Retry-After" header.
-        """
+        """Some API endpoints do not return "Retry-After" header."""
         retry_after = response.headers.get("Retry-After")
         if retry_after:
             self.logger.debug(f"API responded with `Retry-After` header: {retry_after}")
@@ -140,8 +142,7 @@ class MixpanelStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def get_stream_params(self) -> Mapping[str, Any]:
-        """Fetch required parameters in a given stream. Used to create sub-streams
-        """
+        """Fetch required parameters in a given stream. Used to create sub-streams"""
         params = {
             "authenticator": self.authenticator,
             "region": self.region,
@@ -188,7 +189,10 @@ class DateSlicesMixin:
         yield from super().parse_response(*args, **kwargs)
 
     def stream_slices(
-        self, sync_mode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
+        self,
+        sync_mode,
+        cursor_field: list[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # use the latest date between self.start_date and stream_state
         start_date = self.start_date
@@ -222,7 +226,10 @@ class DateSlicesMixin:
             start_date = current_end_date + timedelta(days=1)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         return {

@@ -17,7 +17,11 @@ if typing.TYPE_CHECKING:
 
 class SalesforceAvailabilityStrategy(HttpAvailabilityStrategy):
     def handle_http_error(
-        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError,
+        self,
+        stream: Stream,
+        logger: logging.Logger,
+        source: Optional["Source"],
+        error: HTTPError,
     ) -> tuple[bool, Optional[str]]:
         """There are several types of Salesforce sobjects that require additional processing:
         1. Sobjects for which the user, after setting up the data using Airbyte, restricted access,

@@ -12,8 +12,7 @@ from destination_databend.client import DatabendClient
 
 
 class DatabendWriter:
-    """Base class for shared writer logic.
-    """
+    """Base class for shared writer logic."""
 
     flush_interval = 1000
 
@@ -78,8 +77,7 @@ class DatabendWriter:
         raise NotImplementedError
 
     def flush(self):
-        """Stub for the data flush at the end of writing operation.
-        """
+        """Stub for the data flush at the end of writing operation."""
         raise NotImplementedError
 
 
@@ -112,8 +110,7 @@ class DatabendSQLWriter(DatabendWriter):
         self._values = 0
 
     def flush(self) -> None:
-        """Final data flush after all data has been written to memory.
-        """
+        """Final data flush after all data has been written to memory."""
         self._flush()
 
 

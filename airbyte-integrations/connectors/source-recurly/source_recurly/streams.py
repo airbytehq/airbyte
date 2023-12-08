@@ -35,8 +35,7 @@ class BaseStream(Stream):
 
     @property
     def name(self):
-        """The name of the Recurly resource. By default it converts the class name from `CamelCase` to `snake_case`.
-        """
+        """The name of the Recurly resource. By default it converts the class name from `CamelCase` to `snake_case`."""
         return CAMEL_CASE_PATTERN.sub("_", type(self).__name__).lower()
 
     @property
@@ -72,8 +71,7 @@ class BaseStream(Stream):
 
     @property
     def limit(self) -> int:
-        """Returns the number of records limit
-        """
+        """Returns the number of records limit"""
         return DEFAULT_LIMIT
 
     @property
@@ -95,8 +93,7 @@ class BaseStream(Stream):
 
     @property
     def default_params(self) -> dict:
-        """Returns the parameters to be sent together with the API call to Recurly
-        """
+        """Returns the parameters to be sent together with the API call to Recurly"""
         return {"order": "asc", "sort": self.sort_key, "limit": self.limit}
 
     def read_records(
@@ -142,8 +139,7 @@ class BaseStream(Stream):
         return {self.cursor_field: max(latest_record_updated_at, current_updated_at)}
 
     def _item_to_dict(self, resource):
-        """Recursively converts the Recurly resource object to `dict`
-        """
+        """Recursively converts the Recurly resource object to `dict`"""
         if isinstance(resource, dict):
             return dict((key, self._item_to_dict(value)) for key, value in resource.items())
         elif hasattr(resource, "__iter__") and not isinstance(resource, str):
@@ -157,8 +153,7 @@ class BaseStream(Stream):
 class BaseAccountResourceStream(BaseStream):
     @property
     def account_params(self) -> dict:
-        """Returns the account API call params
-        """
+        """Returns the account API call params"""
         return self.default_params
 
     def read_records(

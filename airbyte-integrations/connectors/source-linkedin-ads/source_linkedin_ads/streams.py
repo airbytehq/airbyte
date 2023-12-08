@@ -27,8 +27,7 @@ LINKEDIN_VERSION_API = "202305"
 
 
 class LinkedinAdsStream(HttpStream, ABC):
-    """Basic class provides base functionality for all streams.
-    """
+    """Basic class provides base functionality for all streams."""
 
     url_base = "https://api.linkedin.com/rest/"
     primary_key = "id"
@@ -42,8 +41,7 @@ class LinkedinAdsStream(HttpStream, ABC):
         self.date_time_fields = self._get_date_time_items_from_schema()
 
     def _get_date_time_items_from_schema(self):
-        """Get all properties from schema with format: 'date-time'
-        """
+        """Get all properties from schema with format: 'date-time'"""
         schema = self.get_json_schema()
         return [k for k, v in schema["properties"].items() if v.get("format") == "date-time"]
 
@@ -74,7 +72,10 @@ class LinkedinAdsStream(HttpStream, ABC):
         return {"start": parsed_response.get("paging").get("start") + self.records_limit}
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         return {"Linkedin-Version": LINKEDIN_VERSION_API}
 
@@ -90,14 +91,12 @@ class LinkedinAdsStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
-        """
+        """We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied."""
         for record in transform_data(response.json().get("elements")):
             yield self._date_time_to_rfc3339(record)
 
     def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """Transform 'date-time' items to RFC3339 format
-        """
+        """Transform 'date-time' items to RFC3339 format"""
         for item in record:
             if item in self.date_time_fields and record[item]:
                 record[item] = pendulum.parse(record[item]).to_rfc3339_string()
@@ -188,7 +187,9 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
     parent_values_map = {"account_id": "id"}
 
     def filter_records_newer_than_state(
-        self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping[str, Any]] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        records_slice: Iterable[Mapping[str, Any]] = None,
     ) -> Iterable:
         """For the streams that provide the cursor_field `lastModified`, we filter out the old records."""
         if stream_state:
@@ -199,7 +200,10 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
             yield from records_slice
 
     def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         parent_stream = self.parent_stream(config=self.config)
@@ -243,7 +247,10 @@ class CampaignGroups(LinkedInAdsStreamSlicing):
         return f"{self.parent_stream.endpoint}/{stream_slice.get('account_id')}/{self.endpoint}"
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         return headers | {"X-Restli-Protocol-Version": "2.0.0"}
@@ -278,7 +285,10 @@ class Campaigns(LinkedInAdsStreamSlicing):
         return f"{self.parent_stream.endpoint}/{stream_slice.get('account_id')}/{self.endpoint}"
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         return headers | {"X-Restli-Protocol-Version": "2.0.0"}
@@ -317,7 +327,10 @@ class Creatives(LinkedInAdsStreamSlicing):
         return f"{self.parent_stream.endpoint}/{stream_slice.get('account_id')}/{self.endpoint}"
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         headers.update({"X-RestLi-Method": "FINDER"})
@@ -351,7 +364,10 @@ class Conversions(LinkedInAdsStreamSlicing):
     search_param = "account"
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         headers.update({"X-Restli-Protocol-Version": "2.0.0"})
@@ -412,7 +428,10 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         return {"q": "analytics", "pivot": f"(value:{self.pivot_by})", "timeGranularity": f"(value:{self.time_granularity})"}
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         return headers | {"X-Restli-Protocol-Version": "2.0.0"}
@@ -445,29 +464,33 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         return stream_slice.get(self.primary_slice_key)
 
     def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {self.cursor_field: self.config.get("start_date")}
         parent_stream = self.parent_stream(config=self.config)
         for record in parent_stream.read_records(**kwargs):
             result_chunks = []
             for analytics_slice in make_analytics_slices(
-                record, self.parent_values_map, stream_state.get(self.cursor_field), self.config.get("end_date"),
+                record,
+                self.parent_values_map,
+                stream_state.get(self.cursor_field),
+                self.config.get("end_date"),
             ):
                 child_stream_slice = super().read_records(stream_slice=analytics_slice, **kwargs)
                 result_chunks.append(child_stream_slice)
             yield from merge_chunks(result_chunks, self.cursor_field)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
-        """
+        """We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied."""
         for rec in transform_data(response.json().get("elements")):
             yield rec | {"pivotValue": f"urn:li:{self.search_param_value}:{self.get_primary_key_from_slice(kwargs.get('stream_slice'))}"}
 
 
 class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
-    """Campaign Analytics stream.
-    """
+    """Campaign Analytics stream."""
 
     endpoint = "adAnalytics"
 
@@ -480,8 +503,7 @@ class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
 
 
 class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
-    """Creative Analytics stream.
-    """
+    """Creative Analytics stream."""
 
     parent_stream = Creatives
     parent_values_map = {"creative_id": "id"}

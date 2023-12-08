@@ -13,20 +13,17 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status i
 
 @dataclass
 class ErrorHandler:
-    """Defines whether a request was successful and how to handle a failure.
-    """
+    """Defines whether a request was successful and how to handle a failure."""
 
     @property
     @abstractmethod
     def max_retries(self) -> Union[int, None]:
-        """Specifies maximum amount of retries for backoff policy. Return None for no limit.
-        """
+        """Specifies maximum amount of retries for backoff policy. Return None for no limit."""
 
     @property
     @abstractmethod
     def max_time(self) -> Union[int, None]:
-        """Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
-        """
+        """Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit."""
 
     @abstractmethod
     def interpret_response(self, response: requests.Response) -> ResponseStatus:

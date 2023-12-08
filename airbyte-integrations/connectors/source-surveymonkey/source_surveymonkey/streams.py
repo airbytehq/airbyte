@@ -43,7 +43,10 @@ class SurveymonkeyStream(HttpStream, ABC):
             return params
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
 
@@ -64,7 +67,10 @@ class SurveymonkeyStream(HttpStream, ABC):
         with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json", decode_compressed_response=True):
             try:
                 yield from super().read_records(
-                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
+                    sync_mode=sync_mode,
+                    cursor_field=cursor_field,
+                    stream_slice=stream_slice,
+                    stream_state=stream_state,
                 )
             except requests.exceptions.HTTPError as e:
                 if e.response.status_code == 404:
@@ -213,8 +219,7 @@ class SurveyQuestions(SurveyIDSliceMixin, SurveymonkeyStream):
 
 
 class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
-    """Docs: https://developer.surveymonkey.com/api/v3/#api-endpoints-survey-responses
-    """
+    """Docs: https://developer.surveymonkey.com/api/v3/#api-endpoints-survey-responses"""
 
     cursor_field = "date_modified"
 
@@ -243,7 +248,10 @@ class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
         return current_stream_state
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         if next_page_token:
             return next_page_token
@@ -268,8 +276,7 @@ class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
 
 
 class SurveyCollectors(SurveyIDSliceMixin, SurveymonkeyStream):
-    """API Docs: https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-surveys-id-collectors
-    """
+    """API Docs: https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-surveys-id-collectors"""
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"surveys/{ stream_slice['survey_id'] }/collectors"
@@ -282,8 +289,7 @@ class SurveyCollectors(SurveyIDSliceMixin, SurveymonkeyStream):
 
 
 class Collectors(SurveymonkeyStream):
-    """API Docs: https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-collectors-id-
-    """
+    """API Docs: https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-collectors-id-"""
 
     data_field = None
 

@@ -30,7 +30,9 @@ class QdrantIndexingConfigModel(BaseModel):
         order=1,
     )
     prefer_grpc: bool = Field(
-        title="Prefer gRPC", description="Whether to prefer gRPC over HTTP. Set to true for Qdrant cloud clusters", default=True,
+        title="Prefer gRPC",
+        description="Whether to prefer gRPC over HTTP. Set to true for Qdrant cloud clusters",
+        default=True,
     )
     collection: str = Field(..., title="Collection Name", description="The collection to load data into", order=2)
     distance_metric: str = Field(

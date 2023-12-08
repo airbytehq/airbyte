@@ -49,7 +49,9 @@ class CsvFormat(BaseModel):
         order=4,
     )
     double_quote: bool = Field(
-        default=True, description="Whether two quotes in a quoted CSV value denote a single quote in the data.", order=5,
+        default=True,
+        description="Whether two quotes in a quoted CSV value denote a single quote in the data.",
+        order=5,
     )
     newlines_in_values: bool = Field(
         title="Allow newlines in values",

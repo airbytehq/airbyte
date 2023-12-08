@@ -14,7 +14,11 @@ from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabil
 
 class KlaviyoAvailabilityStrategy(HttpAvailabilityStrategy):
     def reasons_for_unavailable_status_codes(
-        self, stream: Stream, logger: logging.Logger, source: Optional[Source], error: HTTPError,
+        self,
+        stream: Stream,
+        logger: logging.Logger,
+        source: Optional[Source],
+        error: HTTPError,
     ) -> dict[int, str]:
         reasons_for_codes: dict[int, str] = super().reasons_for_unavailable_status_codes(stream, logger, source, error)
         reasons_for_codes[codes.UNAUTHORIZED] = (

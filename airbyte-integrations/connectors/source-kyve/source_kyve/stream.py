@@ -77,7 +77,10 @@ class KYVEStream(HttpStream, IncrementalMixin):
         return schema
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return f"/kyve/v1/bundles/{self.pool_id}"
 

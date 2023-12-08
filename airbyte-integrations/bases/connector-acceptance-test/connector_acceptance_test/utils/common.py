@@ -123,7 +123,8 @@ def find_all_values_for_key_in_schema(schema: dict, searched_key: str):
 
 
 def build_configured_catalog_from_discovered_catalog_and_empty_streams(
-    discovered_catalog: MutableMapping[str, AirbyteStream], empty_streams: set[EmptyStreamConfiguration],
+    discovered_catalog: MutableMapping[str, AirbyteStream],
+    empty_streams: set[EmptyStreamConfiguration],
 ):
     """Build a configured catalog from the discovered catalog with empty streams removed.
 

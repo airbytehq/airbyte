@@ -7,8 +7,7 @@ from typing import Any
 
 
 class Record:
-    """Represents a record read from a stream.
-    """
+    """Represents a record read from a stream."""
 
     def __init__(self, data: Mapping[str, Any], stream_name: str):
         self.data = data

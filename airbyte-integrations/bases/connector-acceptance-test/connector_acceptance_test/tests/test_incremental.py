@@ -91,8 +91,7 @@ def construct_latest_state_from_messages(messages: list[AirbyteMessage]) -> dict
 
 
 def naive_diff_records(records_1: list[AirbyteMessage], records_2: list[AirbyteMessage]) -> DeepDiff:
-    """Naively diff two lists of records by comparing their data field.
-    """
+    """Naively diff two lists of records by comparing their data field."""
     records_1_data = [record.record.data for record in records_1]
     records_2_data = [record.record.data for record in records_2]
 
@@ -155,7 +154,11 @@ class TestIncremental(BaseTest):
         assert diff, f"Records should change between reads but did not.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_2: {records_2} \n\n diff: {diff}"
 
     async def test_read_sequential_slices(
-        self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, docker_runner: ConnectorRunner,
+        self,
+        inputs: IncrementalConfig,
+        connector_config,
+        configured_catalog_for_incremental,
+        docker_runner: ConnectorRunner,
     ):
         """Incremental test that makes calls to the read method without a state checkpoint. Then we partition the results by stream and
         slice checkpoints.
@@ -217,7 +220,9 @@ class TestIncremental(BaseTest):
                 continue
 
             state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(
-                state_message, mutating_stream_name_to_per_stream_state, is_per_stream,
+                state_message,
+                mutating_stream_name_to_per_stream_state,
+                is_per_stream,
             )
 
             output_N = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
@@ -228,7 +233,11 @@ class TestIncremental(BaseTest):
             assert diff, f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 2}: {records_N} \n\n diff: {diff}"
 
     async def test_state_with_abnormally_large_values(
-        self, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner,
+        self,
+        connector_config,
+        configured_catalog,
+        future_state,
+        docker_runner: ConnectorRunner,
     ):
         configured_catalog = incremental_only_catalog(configured_catalog)
         output = await docker_runner.call_read_with_state(config=connector_config, catalog=configured_catalog, state=future_state)
