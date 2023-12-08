@@ -102,22 +102,20 @@ class StreamBreakingChangeScope(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    affected_streams: List[str] = Field(
+    impactedStreams: List[str] = Field(
         ...,
-        description="List of streams that are affected by the breaking change.",
+        description="List of streams that are impacted by the breaking change.",
         min_items=1,
     )
 
 
-class AffectedStreamField(BaseModel):
+class ImpactedStreamField(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    stream: str = Field(
-        ..., description="The stream that is affected by the breaking change."
-    )
+    stream: str = Field(..., description="The stream that the field belongs to.")
     field: str = Field(
-        ..., description="The field that is affected by the breaking change."
+        ..., description="The field that is impacted by the breaking change."
     )
 
 
@@ -125,9 +123,9 @@ class StreamFieldBreakingChangeScope(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    affected_stream_fields: List[AffectedStreamField] = Field(
+    impactedStreamFields: List[ImpactedStreamField] = Field(
         ...,
-        description="List of streams that are affected by the breaking change.",
+        description="List of specific stream fields that are impacted by the breaking change.",
         min_items=1,
     )
 
@@ -185,9 +183,9 @@ class VersionBreakingChange(BaseModel):
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
     )
-    impactLimitedToScopes: Optional[List[BreakingChangeScope]] = Field(
+    scopedImpact: Optional[List[BreakingChangeScope]] = Field(
         None,
-        description="List of scopes that are affected by the breaking change. If not specified, the breaking change cannot be scoped to smaller impact via the supported scope types.",
+        description="List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.",
         min_items=1,
     )
 

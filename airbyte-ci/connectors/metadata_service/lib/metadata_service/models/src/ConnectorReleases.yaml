@@ -42,8 +42,8 @@ definitions:
         description: URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}
         type: string
         format: uri
-      impactLimitedToScopes:
-        description: List of scopes that are affected by the breaking change. If not specified, the breaking change cannot be scoped to smaller impact via the supported scope types.
+      scopedImpact:
+        description: List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.
         type: array
         minItems: 1
         items:
@@ -59,10 +59,10 @@ definitions:
     type: object
     additionalProperties: false
     required:
-      - affected_streams
+      - impactedStreams
     properties:
-      affected_streams:
-        description: List of streams that are affected by the breaking change.
+      impactedStreams:
+        description: List of streams that are impacted by the breaking change.
         type: array
         minItems: 1
         items:
@@ -72,10 +72,10 @@ definitions:
     type: object
     additionalProperties: false
     required:
-      - affected_stream_fields
+      - impactedStreamFields
     properties:
-      affected_stream_fields:
-        description: List of streams that are affected by the breaking change.
+      impactedStreamFields:
+        description: List of specific stream fields that are impacted by the breaking change.
         type: array
         minItems: 1
         items:
@@ -86,8 +86,8 @@ definitions:
             - field
           properties:
             stream:
-              description: The stream that is affected by the breaking change.
+              description: The stream that the field belongs to.
               type: string
             field:
-              description: The field that is affected by the breaking change.
+              description: The field that is impacted by the breaking change.
               type: string
