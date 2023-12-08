@@ -11,7 +11,6 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from requests import HTTPError
 from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
@@ -215,21 +214,10 @@ class SourceHubspot(AbstractSource):
                 )
                 super(self.__class__, self).__init__(parent=parent, **kwargs)
 
-            def get_json_schema(self):
-                raw_schema = {
-                    "$schema": "http://json-schema.org/draft-07/schema#",
-                    "type": ["null", "object"],
-                    "$ref": "default_event_properties.json"
-                }
-                return ResourceSchemaLoader("source_hubspot")._resolve_schema_references(raw_schema=raw_schema)
-
             custom_web_analytics_stream_class = type(
                 f"{custom_object_stream_instance.name.capitalize()}WebAnalytics",
                 (WebAnalyticsStream,),
-                {
-                    "__init__": __init__,
-                    "get_json_schema": get_json_schema
-                }
+                {"__init__": __init__}
             )
 
             yield custom_web_analytics_stream_class(**common_params)
