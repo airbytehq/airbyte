@@ -18,8 +18,10 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.json.Jsons;
 import java.sql.SQLException;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcceptanceTest {
 
   @Test

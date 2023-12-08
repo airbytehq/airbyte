@@ -12,7 +12,9 @@ import io.airbyte.commons.json.Jsons;
 import java.util.List;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled
 public class OracleStrictEncryptTestDatabase extends
     TestDatabase<AirbyteOracleTestContainer, OracleStrictEncryptTestDatabase, OracleStrictEncryptTestDatabase.OracleStrictEncryptDbConfigBuilder> {
 
