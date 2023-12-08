@@ -49,7 +49,6 @@ Follow these instructions to add the Airbyte helm repository:
 
 ### Clone & Configure Airbyte
 
-
 1. `git clone` the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
 
 2. Create a new `airbyte.yml` file in the `configs` directory of the `airbyte-platform` folder. You may also copy `airbyte.sample.yml` to use as a template:
@@ -83,9 +82,12 @@ To configure basic auth (deploy without SSO), remove the entire `auth:` section 
 
 #### Configuring the Airbyte Database
 
-For Self-Managed Enterprise deployments, we advise against using the default Postgres database (`airbyte/db`) that Airbyte spins up within the Kubernetes cluster. For production, you should instead use a dedicated instance for better reliability, and backups (such as AWS RDS or GCP Cloud SQL).
+For Self-Managed Enterprise deployments, we recommend using a dedicated database instance for better reliability, and backups (such as AWS RDS or GCP Cloud SQL) instead of the default internal Postgres database (`airbyte/db`) that Airbyte spins up within the Kubernetes cluster.
 
 We assume in the following that you've already configured a Postgres instance:
+
+<details>
+<summary>External database setup steps</summary>
 
 1. In the `charts/airbyte/values.yaml` file, disable the default Postgres database (`airbyte/db`):
 
@@ -117,9 +119,14 @@ externalDatabase:
 
 The optional `jdbcUrl` field should be entered in the following format: `jdbc:postgresql://localhost:5432/db-airbyte`. We recommend against using this unless you need to add additional extra arguments can be passed to the JDBC driver at this time (e.g. to handle SSL).
 
+</details>
+
 #### Configuring External Logging
 
-For Self-Managed Enterprise deployments, we advise against using the default Minio storage (`airbyte/minio`) that Airbyte spins up within the Kubernetes cluster. For production, we recommend spinning up standalone log storage for additional reliability using tools such as S3 and GCS. It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
+For Self-Managed Enterprise deployments, we recommend spinning up standalone log storage for additional reliability using tools such as S3 and GCS instead of against using the defaul internal Minio storage (`airbyte/minio`). It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
+
+<details>
+<summary>External log storage setup steps</summary>
 
 1. In the `charts/airbyte/values.yaml` file, disable the default Minio instance (`airbyte/minio`):
 
@@ -128,12 +135,11 @@ minio:
   enabled: false
 ```
 
-How critical is the reliability of the state storage? Is it critical, does it need to be durable? Or is it just a fallback?
-
 2. In the `charts/airbyte/values.yaml` file, enable and configure external log storage:
 
+
 <Tabs>
-    <TabItem value="S3" label="S3">
+<TabItem value="S3" label="S3">
 
 ```yaml
 global:
@@ -187,6 +193,8 @@ Note that the `credentials` and `credentialsJson` fields are mutually exclusive.
 
 </TabItem>
 </Tabs>
+</details>
+
 
 #### Configuring Ingress
 
@@ -197,21 +205,21 @@ apiVersion: networking.k8s.io/v1
  kind: Ingress
  spec:
    rules:
-   - host: enterprise-demo.airbyte.com
+   - host: ## example: enterprise-demo.airbyte.com
      http:
        paths:
        - backend:
            service:
              name: airbyte-pro-airbyte-webapp-svc
              port:
-               number: 30080
+               number: ## example: 30080
          path: /
          pathType: Prefix
        - backend:
            service:
              name: airbyte-pro-airbyte-keycloak-svc
              port:
-               number: 30081
+               number: ## example: 30081
          path: /auth
          pathType: Prefix
 ```
