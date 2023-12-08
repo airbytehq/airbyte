@@ -5,6 +5,7 @@
 import pkgutil
 
 import yaml
+
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 
@@ -13,8 +14,7 @@ class YamlDeclarativeSource(ManifestDeclarativeSource):
     """Declarative source defined by a yaml file"""
 
     def __init__(self, path_to_yaml, debug: bool = False):
-        """
-        :param path_to_yaml: Path to the yaml file describing the source
+        """:param path_to_yaml: Path to the yaml file describing the source
         """
         self._path_to_yaml = path_to_yaml
         source_config = self._read_and_parse_yaml_file(path_to_yaml)
@@ -33,8 +33,7 @@ class YamlDeclarativeSource(ManifestDeclarativeSource):
 
     @staticmethod
     def _parse(connection_definition_str: str) -> ConnectionDefinition:
-        """
-        Parses a yaml file into a manifest. Component references still exist in the manifest which will be
+        """Parses a yaml file into a manifest. Component references still exist in the manifest which will be
         resolved during the creating of the DeclarativeSource.
         :param connection_definition_str: yaml string to parse
         :return: The ConnectionDefinition parsed from connection_definition_str

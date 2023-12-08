@@ -2,11 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping, Union
+from typing import Any, Union
 
 import dpath.util
 import requests
+
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Record
@@ -14,8 +16,7 @@ from airbyte_cdk.sources.declarative.types import Record
 
 @dataclass
 class ObjectDpathExtractor(DpathExtractor):
-    """
-    Record extractor that searches a decoded response over a path defined as an array of fields.
+    """Record extractor that searches a decoded response over a path defined as an array of fields.
 
     Extends the DpathExtractor to allow for a list of records to be generated from a dpath that points
     to an object, where the object's values are individual records.

@@ -11,9 +11,10 @@ import os
 import re
 import sys
 import unicodedata
+from collections.abc import Callable
 from io import TextIOWrapper
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, Any, Optional
 
 import anyio
 import asyncer
@@ -119,7 +120,7 @@ def catch_exec_error_group():
         raise
 
 
-async def get_container_output(container: Container) -> Tuple[str, str]:
+async def get_container_output(container: Container) -> tuple[str, str]:
     """Retrieve both stdout and stderr of a container, concurrently.
 
     Args:
@@ -135,7 +136,7 @@ async def get_container_output(container: Container) -> Tuple[str, str]:
     return soon_stdout.value, soon_stderr.value
 
 
-async def get_exec_result(container: Container) -> Tuple[int, str, str]:
+async def get_exec_result(container: Container) -> tuple[int, str, str]:
     """Retrieve the exit_code along with stdout and stderr of a container by handling the ExecError.
 
     Note: It is preferrable to not worry about the exit code value and just capture
@@ -198,8 +199,7 @@ def get_current_epoch_time() -> int:  # noqa D103
 
 
 def slugify(value: Any, allow_unicode: bool = False):
-    """
-    Taken from https://github.com/django/django/blob/master/django/utils/text.py.
+    """Taken from https://github.com/django/django/blob/master/django/utils/text.py.
 
     Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
     dashes to single dashes. Remove characters that aren't alphanumerics,
@@ -257,7 +257,7 @@ def create_and_open_file(file_path: Path) -> TextIOWrapper:
     return file_path.open("w")
 
 
-async def execute_concurrently(steps: List[Callable], concurrency=5):
+async def execute_concurrently(steps: list[Callable], concurrency=5):
     tasks = []
     # Asyncer does not have builtin semaphore, so control concurrency via chunks of steps
     # Anyio has semaphores but does not have the soonify method which allow access to results via the value task attribute.
@@ -268,8 +268,8 @@ async def execute_concurrently(steps: List[Callable], concurrency=5):
 
 
 async def export_container_to_tarball(
-    context: ConnectorContext, container: Container, platform: Platform, tar_file_name: Optional[str] = None
-) -> Tuple[Optional[File], Optional[Path]]:
+    context: ConnectorContext, container: Container, platform: Platform, tar_file_name: Optional[str] = None,
+) -> tuple[Optional[File], Optional[Path]]:
     """Save the container image to the host filesystem as a tar archive.
 
     Exports a container to a tarball file.
@@ -299,18 +299,18 @@ async def export_container_to_tarball(
 def format_duration(time_delta: datetime.timedelta) -> str:
     total_seconds = time_delta.total_seconds()
     if total_seconds < 60:
-        return "{:.2f}s".format(total_seconds)
+        return f"{total_seconds:.2f}s"
     minutes = int(total_seconds // 60)
     seconds = int(total_seconds % 60)
-    return "{:02d}mn{:02d}s".format(minutes, seconds)
+    return f"{minutes:02d}mn{seconds:02d}s"
 
 
-def sh_dash_c(lines: List[str]) -> List[str]:
+def sh_dash_c(lines: list[str]) -> list[str]:
     """Wrap sequence of commands in shell for safe usage of dagger Container's with_exec method."""
     return ["sh", "-c", " && ".join(["set -o xtrace"] + lines)]
 
 
-def transform_strs_to_paths(str_paths: Set[str]) -> List[Path]:
+def transform_strs_to_paths(str_paths: set[str]) -> list[Path]:
     """Transform a list of string paths to an ordered list of Path objects.
 
     Args:
@@ -325,5 +325,5 @@ def transform_strs_to_paths(str_paths: Set[str]) -> List[Path]:
 def fail_if_missing_docker_hub_creds(ctx: click.Context):
     if ctx.obj["docker_hub_username"] is None or ctx.obj["docker_hub_password"] is None:
         raise click.UsageError(
-            "You need to be logged to DockerHub registry to run this command. Please set DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables."
+            "You need to be logged to DockerHub registry to run this command. Please set DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables.",
         )

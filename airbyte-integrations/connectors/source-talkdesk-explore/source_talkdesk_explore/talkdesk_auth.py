@@ -3,7 +3,8 @@
 #
 
 import base64
-from typing import Any, Dict, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 import requests
 
@@ -27,7 +28,7 @@ class TalkdeskAuth:
         base64_bytes = base64.b64encode(key.encode("ascii"))
         return base64_bytes.decode("ascii")
 
-    def request_bearer_token(self) -> Dict:
+    def request_bearer_token(self) -> dict:
         headers = {
             "Authorization": f"Basic {self._encode_key(self.api_key)}",
             "Content-Type": "application/x-www-form-urlencoded",

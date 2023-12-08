@@ -5,16 +5,18 @@
 
 from abc import ABC
 from calendar import timegm
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Optional
 
 import feedparser
 import pytz
 import requests
+from dateutil.parser import parse
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from dateutil.parser import parse
 
 item_keys = [
     "title",
@@ -133,14 +135,14 @@ class Items(IncrementalRssStream):
     primary_key = None
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return self.url
 
 
 # Source
 class SourceRss(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             resp = requests.get(config.get("url"))
             status = resp.status_code
@@ -151,5 +153,5 @@ class SourceRss(AbstractSource):
         except Exception as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         return [Items(config.get("url"))]

@@ -4,7 +4,8 @@
 
 
 import logging
-from typing import Any, List, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
@@ -15,8 +16,7 @@ logger = logging.getLogger("airbyte_logger")
 
 
 class MigrateStartDate:
-    """
-    This class stands for migrating the config at runtime,
+    """This class stands for migrating the config at runtime,
     while providing the backward compatibility when falling back to the previous source version.
 
     Delete start_date field if it set to None or an empty string ("").
@@ -28,8 +28,7 @@ class MigrateStartDate:
 
     @classmethod
     def should_migrate(cls, config: Mapping[str, Any]) -> bool:
-        """
-        Determines if a configuration requires migration.
+        """Determines if a configuration requires migration.
 
         Args:
         - config (Mapping[str, Any]): The configuration data to check.
@@ -42,8 +41,7 @@ class MigrateStartDate:
 
     @classmethod
     def delete_from_config(cls, config: Mapping[str, Any], source: Source = None) -> Mapping[str, Any]:
-        """
-        Removes the specified key from the configuration.
+        """Removes the specified key from the configuration.
 
         Args:
         - config (Mapping[str, Any]): The configuration from which the key should be removed.
@@ -57,8 +55,7 @@ class MigrateStartDate:
 
     @classmethod
     def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Modifies the configuration and then saves it back to the source.
+        """Modifies the configuration and then saves it back to the source.
 
         Args:
         - config_path (str): The path where the configuration is stored.
@@ -74,8 +71,7 @@ class MigrateStartDate:
 
     @classmethod
     def emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
-        """
-        Emits the control messages related to configuration migration.
+        """Emits the control messages related to configuration migration.
 
         Args:
         - migrated_config (Mapping[str, Any]): The migrated configuration.
@@ -85,9 +81,8 @@ class MigrateStartDate:
             print(message.json(exclude_unset=True))
 
     @classmethod
-    def migrate(cls, args: List[str], source: Source) -> None:
-        """
-        Orchestrates the configuration migration process.
+    def migrate(cls, args: list[str], source: Source) -> None:
+        """Orchestrates the configuration migration process.
 
         It first checks if the `--config` argument is provided, and if so,
         determines whether migration is needed, and then performs the migration

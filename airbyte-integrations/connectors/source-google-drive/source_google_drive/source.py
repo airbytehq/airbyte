@@ -20,10 +20,8 @@ class SourceGoogleDrive(FileBasedSource):
         )
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
+        """Returns the specification describing what fields can be configured by a user when setting up a file-based source.
         """
-        Returns the specification describing what fields can be configured by a user when setting up a file-based source.
-        """
-
         return ConnectorSpecification(
             documentationUrl=self.spec_class.documentation_url(),
             connectionSpecification=self.spec_class.schema(),

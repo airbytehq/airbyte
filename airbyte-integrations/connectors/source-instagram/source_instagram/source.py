@@ -2,14 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from datetime import datetime
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, Optional
 
 import pendulum
+from pydantic import BaseModel, Field
+
 from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, DestinationSyncMode, OAuthConfigSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from pydantic import BaseModel, Field
 from source_instagram.api import InstagramAPI
 from source_instagram.streams import Media, MediaInsights, Stories, StoryInsights, UserInsights, UserLifetimeInsights, Users
 
@@ -49,7 +51,7 @@ class ConnectorConfig(BaseModel):
 
 
 class SourceInstagram(AbstractSource):
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
         :param config:  the user-input config object conforming to the connector's spec.json
@@ -78,7 +80,7 @@ class SourceInstagram(AbstractSource):
             if pendulum.parse(config["start_date"]) > pendulum.now():
                 raise ValueError("Please fix the start_date parameter in config, it cannot be in the future")
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         """Discovery method, returns available streams
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
@@ -98,8 +100,7 @@ class SourceInstagram(AbstractSource):
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
-        """
-        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
+        """Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
         required to run this integration.
         """
         return ConnectorSpecification(

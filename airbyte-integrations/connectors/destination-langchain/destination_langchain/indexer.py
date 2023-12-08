@@ -6,9 +6,13 @@ import itertools
 import os
 import uuid
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import pinecone
+from langchain.document_loaders.base import Document
+from langchain.vectorstores import Chroma
+from langchain.vectorstores.docarray import DocArrayHnswSearch
+
 from airbyte_cdk.destinations.vector_db_based import Embedder
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import AirbyteLogMessage, AirbyteMessage, DestinationSyncMode, Level, Type
@@ -16,25 +20,21 @@ from destination_langchain.config import ChromaLocalIndexingModel, DocArrayHnswS
 from destination_langchain.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from destination_langchain.measure_time import measure_time
 from destination_langchain.utils import format_exception
-from langchain.document_loaders.base import Document
-from langchain.vectorstores import Chroma
-from langchain.vectorstores.docarray import DocArrayHnswSearch
 
 
 class Indexer(ABC):
     def __init__(self, config: Any, embedder: Embedder):
         self.config = config
         self.embedder = embedder
-        pass
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
         pass
 
-    def post_sync(self) -> List[AirbyteMessage]:
+    def post_sync(self) -> list[AirbyteMessage]:
         return []
 
     @abstractmethod
-    def index(self, document_chunks: List[Document], delete_ids: List[str]):
+    def index(self, document_chunks: list[Document], delete_ids: list[str]):
         pass
 
     @abstractmethod
@@ -134,14 +134,14 @@ class DocArrayHnswSearchIndexer(Indexer):
 
     def _init_vectorstore(self):
         self.vectorstore = DocArrayHnswSearch.from_params(
-            embedding=self.embedder.embeddings, work_dir=self.config.destination_path, n_dim=self.embedder.embedding_dimensions
+            embedding=self.embedder.embeddings, work_dir=self.config.destination_path, n_dim=self.embedder.embedding_dimensions,
         )
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
         for stream in catalog.streams:
             if stream.destination_sync_mode != DestinationSyncMode.overwrite:
                 raise Exception(
-                    f"DocArrayHnswSearchIndexer only supports overwrite mode, got {stream.destination_sync_mode} for stream {stream.stream.name}"
+                    f"DocArrayHnswSearchIndexer only supports overwrite mode, got {stream.destination_sync_mode} for stream {stream.stream.name}",
                 )
         for file in os.listdir(self.config.destination_path):
             os.remove(os.path.join(self.config.destination_path, file))
@@ -151,7 +151,7 @@ class DocArrayHnswSearchIndexer(Indexer):
         return [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.WARN, message=self.index._get_stats()))]
 
     @measure_time
-    def index(self, document_chunks, delete_ids: List[str]):
+    def index(self, document_chunks, delete_ids: list[str]):
         # does not support deleting documents, always full refresh sync
         self.vectorstore.add_documents(document_chunks)
 

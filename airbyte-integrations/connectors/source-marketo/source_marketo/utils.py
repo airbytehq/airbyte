@@ -18,16 +18,14 @@ STRING_TYPES = [
 
 
 def to_datetime_str(date: datetime) -> str:
-    """
-    Returns the formated datetime string.
+    """Returns the formated datetime string.
     :: Output example: '2021-07-15T0:0:0Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
     """
     return date.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def clean_string(string: str) -> str:
-    """
-    input -> output
+    """Input -> output
     "updatedAt" -> "updated_at"
     "UpdatedAt" -> "updated_at"
     "base URL" -> "base_url"
@@ -37,7 +35,6 @@ def clean_string(string: str) -> str:
     "updatedat" -> "updatedat"
     "updated at" -> "updated_at"
     """
-
     fix = {
         "api method name": "Api Method Name",
         "modifying user": "Modifying User",

@@ -4,7 +4,8 @@
 import abc
 import logging
 from abc import ABC
-from typing import Any, List, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
@@ -16,8 +17,7 @@ logger = logging.getLogger("airbyte_logger")
 
 
 class MigrateStringToArray(ABC):
-    """
-    This class stands for migrating the config at runtime,
+    """This class stands for migrating the config at runtime,
     while providing the backward compatibility when falling back to the previous source version.
 
     Specifically, starting from `1.7.1`, the `groups` and `projects` properties should be like :
@@ -40,8 +40,8 @@ class MigrateStringToArray(ABC):
 
     @classmethod
     def _should_migrate(cls, config: Mapping[str, Any]) -> bool:
-        """
-        This method determines whether config require migration.
+        """This method determines whether config require migration.
+
         Returns:
             > True, if the transformation is necessary
             > False, otherwise.
@@ -76,9 +76,8 @@ class MigrateStringToArray(ABC):
             print(message.json(exclude_unset=True))
 
     @classmethod
-    def migrate(cls, args: List[str], source: SourceGitlab) -> None:
-        """
-        This method checks the input args, should the config be migrated,
+    def migrate(cls, args: list[str], source: SourceGitlab) -> None:
+        """This method checks the input args, should the config be migrated,
         transform if necessary and emit the CONTROL message.
         """
         # get config path

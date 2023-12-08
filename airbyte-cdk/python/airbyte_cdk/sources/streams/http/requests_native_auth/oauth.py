@@ -2,18 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Optional, Sequence, Tuple, Union
+from collections.abc import Mapping, Sequence
+from typing import Any, Optional, Union
 
 import dpath
 import pendulum
+
 from airbyte_cdk.config_observation import create_connector_config_control_message, emit_configuration_as_airbyte_control_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
 
 
 class Oauth2Authenticator(AbstractOauth2Authenticator):
-    """
-    Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials.
+    """Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials.
     The generated access token is attached to each request via the Authorization header.
     If a connector_config is provided any mutation of it's value in the scope of this class will emit AirbyteControlConnectorConfigMessage.
     """
@@ -24,7 +25,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         client_id: str,
         client_secret: str,
         refresh_token: str,
-        scopes: List[str] = None,
+        scopes: list[str] = None,
         token_expiry_date: pendulum.DateTime = None,
         token_expiry_date_format: str = None,
         access_token_name: str = "access_token",
@@ -32,9 +33,9 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         refresh_request_body: Mapping[str, Any] = None,
         grant_type: str = "refresh_token",
         token_expiry_is_time_of_expiration: bool = False,
-        refresh_token_error_status_codes: Tuple[int, ...] = (),
+        refresh_token_error_status_codes: tuple[int, ...] = (),
         refresh_token_error_key: str = "",
-        refresh_token_error_values: Tuple[str, ...] = (),
+        refresh_token_error_values: tuple[str, ...] = (),
     ):
         self._token_refresh_endpoint = token_refresh_endpoint
         self._client_secret = client_secret
@@ -103,8 +104,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
 
 
 class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
-    """
-    Authenticator that should be used for API implementing single use refresh tokens:
+    """Authenticator that should be used for API implementing single use refresh tokens:
     when refreshing access token some API returns a new refresh token that needs to used in the next refresh flow.
     This authenticator updates the configuration with new refresh token by emitting Airbyte control message from an observed mutation.
     By default, this authenticator expects a connector config with a "credentials" field with the following nested fields: client_id,
@@ -116,7 +116,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         self,
         connector_config: Mapping[str, Any],
         token_refresh_endpoint: str,
-        scopes: List[str] = None,
+        scopes: list[str] = None,
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
         refresh_token_name: str = "refresh_token",
@@ -130,28 +130,27 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         token_expiry_date_format: Optional[str] = None,
         message_repository: MessageRepository = NoopMessageRepository(),
         token_expiry_is_time_of_expiration: bool = False,
-        refresh_token_error_status_codes: Tuple[int, ...] = (),
+        refresh_token_error_status_codes: tuple[int, ...] = (),
         refresh_token_error_key: str = "",
-        refresh_token_error_values: Tuple[str, ...] = (),
+        refresh_token_error_values: tuple[str, ...] = (),
     ):
-        """
-        Args:
-            connector_config (Mapping[str, Any]): The full connector configuration
-            token_refresh_endpoint (str): Full URL to the token refresh endpoint
-            scopes (List[str], optional): List of OAuth scopes to pass in the refresh token request body. Defaults to None.
-            access_token_name (str, optional): Name of the access token field, used to parse the refresh token response. Defaults to "access_token".
-            expires_in_name (str, optional): Name of the name of the field that characterizes when the current access token will expire, used to parse the refresh token response. Defaults to "expires_in".
-            refresh_token_name (str, optional): Name of the name of the refresh token field, used to parse the refresh token response. Defaults to "refresh_token".
-            refresh_request_body (Mapping[str, Any], optional): Custom key value pair that will be added to the refresh token request body. Defaults to None.
-            grant_type (str, optional): OAuth grant type. Defaults to "refresh_token".
-            client_id (Optional[str]): The client id to authenticate. If not specified, defaults to credentials.client_id in the config object.
-            client_secret (Optional[str]): The client secret to authenticate. If not specified, defaults to credentials.client_secret in the config object.
-            access_token_config_path (Sequence[str]): Dpath to the access_token field in the connector configuration. Defaults to ("credentials", "access_token").
-            refresh_token_config_path (Sequence[str]): Dpath to the refresh_token field in the connector configuration. Defaults to ("credentials", "refresh_token").
-            token_expiry_date_config_path (Sequence[str]): Dpath to the token_expiry_date field in the connector configuration. Defaults to ("credentials", "token_expiry_date").
-            token_expiry_date_format (Optional[str]): Date format of the token expiry date field (set by expires_in_name). If not specified the token expiry date is interpreted as number of seconds until expiration.
-            token_expiry_is_time_of_expiration bool: set True it if expires_in is returned as time of expiration instead of the number seconds until expiration
-            message_repository (MessageRepository): the message repository used to emit logs on HTTP requests and control message on config update
+        """Args:
+        connector_config (Mapping[str, Any]): The full connector configuration
+        token_refresh_endpoint (str): Full URL to the token refresh endpoint
+        scopes (List[str], optional): List of OAuth scopes to pass in the refresh token request body. Defaults to None.
+        access_token_name (str, optional): Name of the access token field, used to parse the refresh token response. Defaults to "access_token".
+        expires_in_name (str, optional): Name of the name of the field that characterizes when the current access token will expire, used to parse the refresh token response. Defaults to "expires_in".
+        refresh_token_name (str, optional): Name of the name of the refresh token field, used to parse the refresh token response. Defaults to "refresh_token".
+        refresh_request_body (Mapping[str, Any], optional): Custom key value pair that will be added to the refresh token request body. Defaults to None.
+        grant_type (str, optional): OAuth grant type. Defaults to "refresh_token".
+        client_id (Optional[str]): The client id to authenticate. If not specified, defaults to credentials.client_id in the config object.
+        client_secret (Optional[str]): The client secret to authenticate. If not specified, defaults to credentials.client_secret in the config object.
+        access_token_config_path (Sequence[str]): Dpath to the access_token field in the connector configuration. Defaults to ("credentials", "access_token").
+        refresh_token_config_path (Sequence[str]): Dpath to the refresh_token field in the connector configuration. Defaults to ("credentials", "refresh_token").
+        token_expiry_date_config_path (Sequence[str]): Dpath to the token_expiry_date field in the connector configuration. Defaults to ("credentials", "token_expiry_date").
+        token_expiry_date_format (Optional[str]): Date format of the token expiry date field (set by expires_in_name). If not specified the token expiry date is interpreted as number of seconds until expiration.
+        token_expiry_is_time_of_expiration bool: set True it if expires_in is returned as time of expiration instead of the number seconds until expiration
+        message_repository (MessageRepository): the message repository used to emit logs on HTTP requests and control message on config update
         """
         self._client_id = client_id if client_id is not None else dpath.util.get(connector_config, ("credentials", "client_id"))
         self._client_secret = (
@@ -244,7 +243,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
                 emit_configuration_as_airbyte_control_message(self._connector_config)
         return self.access_token
 
-    def refresh_access_token(self) -> Tuple[str, str, str]:
+    def refresh_access_token(self) -> tuple[str, str, str]:
         response_json = self._get_refresh_access_token_response()
         return (
             response_json[self.get_access_token_name()],
@@ -254,7 +253,6 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
 
     @property
     def _message_repository(self) -> MessageRepository:
-        """
-        Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs
+        """Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs
         """
         return self.__message_repository

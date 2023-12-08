@@ -2,9 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping, Union
+from collections.abc import Mapping
+from typing import Any, Union
 
 import requests
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.requests_native_auth import (
     BasicHttpAuthenticator,
@@ -15,13 +17,11 @@ from airbyte_cdk.utils import AirbyteTracedException
 
 
 class AirtableOAuth(SingleUseRefreshTokenOauth2Authenticator):
-    """
-    https://airtable.com/developers/web/api/oauth-reference#token-expiry-refresh-tokens
+    """https://airtable.com/developers/web/api/oauth-reference#token-expiry-refresh-tokens
     """
 
     def build_refresh_request_headers(self) -> Mapping[str, Any]:
-        """
-        https://airtable.com/developers/web/api/oauth-reference#token-refresh-request-headers
+        """https://airtable.com/developers/web/api/oauth-reference#token-refresh-request-headers
         """
         return {
             "Authorization": BasicHttpAuthenticator(self.get_client_id(), self.get_client_secret()).token,
@@ -29,8 +29,7 @@ class AirtableOAuth(SingleUseRefreshTokenOauth2Authenticator):
         }
 
     def build_refresh_request_body(self) -> Mapping[str, Any]:
-        """
-        https://airtable.com/developers/web/api/oauth-reference#token-refresh-request-body
+        """https://airtable.com/developers/web/api/oauth-reference#token-refresh-request-body
         """
         return {
             "grant_type": self.get_grant_type(),

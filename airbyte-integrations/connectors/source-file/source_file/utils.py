@@ -12,8 +12,7 @@ LOCAL_STORAGE_NAME = "local"
 
 
 def dropbox_force_download(url):
-    """
-    https://help.dropbox.com/share/force-download
+    """https://help.dropbox.com/share/force-download
     """
     parse_result = urlparse(url)
     if parse_result.netloc.split(".")[-2:] == ["dropbox", "com"]:

@@ -4,15 +4,16 @@
 
 import logging
 from decimal import Decimal
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import awswrangler as wr
 import boto3
 import pandas as pd
-from airbyte_cdk.destinations import Destination
 from awswrangler import _data_types
 from botocore.exceptions import ClientError
 from retrying import retry
+
+from airbyte_cdk.destinations import Destination
 
 from .config_reader import CompressionCodec, ConnectorConfig, CredentialsType, OutputFormat
 from .constants import BOOLEAN_VALUES, EMPTY_VALUES
@@ -46,7 +47,7 @@ def _cast_pandas_column(df: pd.DataFrame, col: str, current_type: str, desired_t
         except (TypeError, ValueError) as ex:
             if "object cannot be converted to an IntegerDtype" not in str(ex):
                 raise ex
-            logger.warn(
+            logger.warning(
                 "Object cannot be converted to an IntegerDtype. Integer columns in Python cannot contain "
                 "missing values. If your input data contains missing values, it will be encoded as floats"
                 "which may cause precision loss.",
@@ -124,7 +125,7 @@ class AwsHandler:
         database: str,
         table: str,
         mode: str,
-        dtype: Optional[Dict[str, str]],
+        dtype: Optional[dict[str, str]],
         partition_cols: list = None,
     ) -> Any:
         return wr.s3.to_parquet(
@@ -152,7 +153,7 @@ class AwsHandler:
         database: str,
         table: str,
         mode: str,
-        dtype: Optional[Dict[str, str]],
+        dtype: Optional[dict[str, str]],
         partition_cols: list = None,
     ) -> Any:
         return wr.s3.to_json(
@@ -176,7 +177,7 @@ class AwsHandler:
         )
 
     def _write(
-        self, df: pd.DataFrame, path: str, database: str, table: str, mode: str, dtype: Dict[str, str], partition_cols: list = None
+        self, df: pd.DataFrame, path: str, database: str, table: str, mode: str, dtype: dict[str, str], partition_cols: list = None,
     ) -> Any:
         self._create_database_if_not_exists(database)
 
@@ -229,7 +230,7 @@ class AwsHandler:
             self.delete_table(database, table)
             self.delete_table_objects(database, table)
 
-    def write(self, df: pd.DataFrame, database: str, table: str, dtype: Dict[str, str], partition_cols: list):
+    def write(self, df: pd.DataFrame, database: str, table: str, dtype: dict[str, str], partition_cols: list):
         path = self._get_s3_path(database, table)
         return self._write(
             df,
@@ -241,7 +242,7 @@ class AwsHandler:
             partition_cols,
         )
 
-    def append(self, df: pd.DataFrame, database: str, table: str, dtype: Dict[str, str], partition_cols: list):
+    def append(self, df: pd.DataFrame, database: str, table: str, dtype: dict[str, str], partition_cols: list):
         path = self._get_s3_path(database, table)
         return self._write(
             df,
@@ -253,7 +254,7 @@ class AwsHandler:
             partition_cols,
         )
 
-    def upsert(self, df: pd.DataFrame, database: str, table: str, dtype: Dict[str, str], partition_cols: list):
+    def upsert(self, df: pd.DataFrame, database: str, table: str, dtype: dict[str, str], partition_cols: list):
         path = self._get_s3_path(database, table)
         return self._write(
             df,

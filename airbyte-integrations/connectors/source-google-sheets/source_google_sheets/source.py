@@ -5,7 +5,12 @@
 
 import json
 import socket
-from typing import Any, Generator, List, MutableMapping, Union
+from collections.abc import Generator, MutableMapping
+from typing import Any, Union
+
+from apiclient import errors
+from google.auth import exceptions as google_exceptions
+from requests.status_codes import codes as status_codes
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import FailureType
@@ -20,9 +25,6 @@ from airbyte_cdk.models.airbyte_protocol import (
 )
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.utils import AirbyteTracedException
-from apiclient import errors
-from google.auth import exceptions as google_exceptions
-from requests.status_codes import codes as status_codes
 
 from .client import GoogleSheetsClient
 from .helpers import Helpers
@@ -37,8 +39,7 @@ socket.setdefaulttimeout(DEFAULT_SOCKET_TIMEOUT)
 
 
 class SourceGoogleSheets(Source):
-    """
-    Spreadsheets API Reference: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets
+    """Spreadsheets API Reference: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets
     """
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
@@ -85,18 +86,18 @@ class SourceGoogleSheets(Source):
                     duplicate_headers_in_sheet[sheet_name] = duplicate_headers
             except Exception as err:
                 if str(err).startswith("Expected data for exactly one row for sheet"):
-                    logger.warn(f"Skip empty sheet: {sheet_name}")
+                    logger.warning(f"Skip empty sheet: {sheet_name}")
                 else:
                     logger.error(str(err))
                     return AirbyteConnectionStatus(
-                        status=Status.FAILED, message=f"Unable to read the schema of sheet {sheet_name}. Error: {str(err)}"
+                        status=Status.FAILED, message=f"Unable to read the schema of sheet {sheet_name}. Error: {err!s}",
                     )
         if duplicate_headers_in_sheet:
             duplicate_headers_error_message = ", ".join(
                 [
                     f"[sheet:{sheet_name}, headers:{duplicate_sheet_headers}]"
                     for sheet_name, duplicate_sheet_headers in duplicate_headers_in_sheet.items()
-                ]
+                ],
             )
             return AirbyteConnectionStatus(
                 status=Status.FAILED,
@@ -123,7 +124,7 @@ class SourceGoogleSheets(Source):
                     streams.append(stream)
                 except Exception as err:
                     if str(err).startswith("Expected data for exactly one row for sheet"):
-                        logger.warn(f"Skip empty sheet: {sheet_name}")
+                        logger.warning(f"Skip empty sheet: {sheet_name}")
                     else:
                         logger.error(str(err))
             return AirbyteCatalog(streams=streams)
@@ -145,7 +146,7 @@ class SourceGoogleSheets(Source):
         logger: AirbyteLogger,
         config: json,
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Union[list[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Generator[AirbyteMessage, None, None]:
         client = GoogleSheetsClient(self.get_credentials(config))
 
@@ -156,7 +157,7 @@ class SourceGoogleSheets(Source):
         # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been
         # a blank row, emit the row batch
         sheet_to_column_index_to_name = Helpers.get_available_sheets_to_column_index_to_name(
-            client, spreadsheet_id, sheet_to_column_name, config.get("names_conversion")
+            client, spreadsheet_id, sheet_to_column_name, config.get("names_conversion"),
         )
         sheet_row_counts = Helpers.get_sheet_row_count(client, spreadsheet_id)
         logger.info(f"Row counts: {sheet_row_counts}")
@@ -177,7 +178,7 @@ class SourceGoogleSheets(Source):
                             row_cursor=row_cursor,
                             spreadsheetId=spreadsheet_id,
                             majorDimension="ROWS",
-                        )
+                        ),
                     )
 
                     row_cursor += client.Backoff.row_batch_size + 1
@@ -194,7 +195,7 @@ class SourceGoogleSheets(Source):
                     for row in row_values:
                         if not Helpers.is_row_empty(row) and Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
                             yield AirbyteMessage(
-                                type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name)
+                                type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name),
                             )
             else:
                 logger.info(f"Skipping syncing sheet {sheet}: {reason}")
@@ -204,7 +205,7 @@ class SourceGoogleSheets(Source):
         logger: AirbyteLogger,
         config: json,
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Union[list[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Generator[AirbyteMessage, None, None]:
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
         try:

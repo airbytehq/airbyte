@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from functools import lru_cache
-from typing import Any, Dict, Mapping
+from typing import Any
 
 from .streams import GoogleAdsStream, IncrementalGoogleAdsStream
 from .utils import GAQL
@@ -16,8 +17,7 @@ class CustomQueryMixin:
 
     @property
     def primary_key(self) -> str:
-        """
-        The primary_key option is disabled. Config should not provide the primary key.
+        """The primary_key option is disabled. Config should not provide the primary key.
         It will be ignored if provided.
         If you need to enable it, uncomment the next line instead of `return None` and modify your config
         """
@@ -30,13 +30,11 @@ class CustomQueryMixin:
 
     # IncrementalGoogleAdsStream uses get_json_schema a lot while parsing
     # responses, caching playing crucial role for performance here.
-    @lru_cache()
-    def get_json_schema(self) -> Dict[str, Any]:
-        """
-        Compose json schema based on user defined query.
+    @lru_cache
+    def get_json_schema(self) -> dict[str, Any]:
+        """Compose json schema based on user defined query.
         :return Dict object representing jsonschema
         """
-
         local_json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -88,8 +86,7 @@ class IncrementalCustomQuery(CustomQueryMixin, IncrementalGoogleAdsStream):
 
     @staticmethod
     def insert_segments_date_expr(query: GAQL, start_date: str, end_date: str) -> GAQL:
-        """
-        Insert segments.date condition to break query into slices for incremental stream.
+        """Insert segments.date condition to break query into slices for incremental stream.
         :param query Origin user defined query
         :param start_date start date for metric (inclusive)
         :param end_date end date for metric (inclusive)

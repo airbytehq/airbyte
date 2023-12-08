@@ -3,8 +3,9 @@
 #
 
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Optional
+from typing import Any, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.types import Config
@@ -12,8 +13,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class InterpolatedMapping:
-    """
-    Wrapper around a Mapping[str, str] where both the keys and values are to be interpolated.
+    """Wrapper around a Mapping[str, str] where both the keys and values are to be interpolated.
 
     Attributes:
         mapping (Mapping[str, str]): to be evaluated
@@ -27,8 +27,7 @@ class InterpolatedMapping:
         self._parameters = parameters
 
     def eval(self, config: Config, **additional_parameters):
-        """
-        Wrapper around a Mapping[str, str] that allows for both keys and values to be interpolated.
+        """Wrapper around a Mapping[str, str] that allows for both keys and values to be interpolated.
 
         :param config: The user-provided configuration as specified by the source's spec
         :param additional_parameters: Optional parameters used for interpolation
@@ -38,7 +37,7 @@ class InterpolatedMapping:
         valid_value_types = additional_parameters.pop("valid_value_types", None)
         return {
             self._interpolation.eval(
-                name, config, valid_types=valid_key_types, parameters=self._parameters, **additional_parameters
+                name, config, valid_types=valid_key_types, parameters=self._parameters, **additional_parameters,
             ): self._eval(value, config, valid_types=valid_value_types, **additional_parameters)
             for name, value in self.mapping.items()
         }

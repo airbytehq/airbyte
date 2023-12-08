@@ -8,8 +8,8 @@ import os
 import platform
 import sys
 
-import segment.analytics as analytics
 from asyncclick import get_current_context
+from segment import analytics
 
 analytics.write_key = "G6G7whgro81g9xM00kN2buclGKvcOjFd"
 analytics.send = True
@@ -36,8 +36,7 @@ def _get_anonymous_system_id():
 
 
 def click_track_command(f):
-    """
-    Decorator to track CLI commands with segment.io
+    """Decorator to track CLI commands with segment.io
     """
 
     def wrapper(*args, **kwargs):

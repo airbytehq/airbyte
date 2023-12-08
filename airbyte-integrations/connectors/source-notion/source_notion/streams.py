@@ -3,11 +3,14 @@
 #
 
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional, TypeVar
 
 import pendulum
 import pydantic
 import requests
+from requests import HTTPError
+
 from airbyte_cdk.logger import AirbyteLogger as Logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
@@ -15,7 +18,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
-from requests import HTTPError
 
 from .utils import transform_properties
 
@@ -24,14 +26,13 @@ MAX_BLOCK_DEPTH = 30
 
 
 class NotionAvailabilityStrategy(HttpAvailabilityStrategy):
-    """
-    Inherit from HttpAvailabilityStrategy with slight modification to 403 error message.
+    """Inherit from HttpAvailabilityStrategy with slight modification to 403 error message.
     """
 
-    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: Logger, source: Source, error: HTTPError) -> Dict[int, str]:
-        reasons_for_codes: Dict[int, str] = {
+    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: Logger, source: Source, error: HTTPError) -> dict[int, str]:
+        reasons_for_codes: dict[int, str] = {
             requests.codes.FORBIDDEN: "This is likely due to insufficient permissions for your Notion integration. "
-            "Please make sure your integration has read access for the resources you are trying to sync"
+            "Please make sure your integration has read access for the resources you are trying to sync",
         }
         return reasons_for_codes
 
@@ -79,15 +80,13 @@ class NotionStream(HttpStream, ABC):
 
     @staticmethod
     def throttle_request_page_size(current_page_size):
-        """
-        Helper method to halve page_size when encountering a 504 Gateway Timeout error.
+        """Helper method to halve page_size when encountering a 504 Gateway Timeout error.
         """
         throttled_page_size = max(current_page_size // 2, 10)
         return throttled_page_size
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Notion's rate limit is approx. 3 requests per second, with larger bursts allowed.
+        """Notion's rate limit is approx. 3 requests per second, with larger bursts allowed.
         For a 429 response, we can use the retry-header to determine how long to wait before retrying.
         For 500-level errors, we use Airbyte CDK's default exponential backoff with a retry_factor of 5.
         Docs: https://developers.notion.com/reference/errors#rate-limiting
@@ -123,8 +122,7 @@ class NotionStream(HttpStream, ABC):
         self,
         response: requests.Response,
     ) -> Optional[Mapping[str, Any]]:
-        """
-        An example of response:
+        """An example of response:
         {
             "next_cursor": "fe2cc560-036c-44cd-90e8-294d5a74cebc",
             "has_more": true,
@@ -183,7 +181,7 @@ class IncrementalNotionStream(NotionStream, ABC):
 
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
         if not self.obj_type:
-            return
+            return None
 
         # search request body
         # Docs: https://developers.notion.com/reference/post-search
@@ -235,8 +233,7 @@ class IncrementalNotionStream(NotionStream, ABC):
 
 
 class Users(NotionStream):
-    """
-    Docs: https://developers.notion.com/reference/get-users
+    """Docs: https://developers.notion.com/reference/get-users
     """
 
     def path(self, **kwargs) -> str:
@@ -250,8 +247,7 @@ class Users(NotionStream):
 
 
 class Databases(IncrementalNotionStream):
-    """
-    Docs: https://developers.notion.com/reference/post-search
+    """Docs: https://developers.notion.com/reference/post-search
     """
 
     state_checkpoint_interval = 100
@@ -261,8 +257,7 @@ class Databases(IncrementalNotionStream):
 
 
 class Pages(IncrementalNotionStream):
-    """
-    Docs: https://developers.notion.com/reference/post-search
+    """Docs: https://developers.notion.com/reference/post-search
     """
 
     state_checkpoint_interval = 100
@@ -272,8 +267,7 @@ class Pages(IncrementalNotionStream):
 
 
 class Blocks(HttpSubStream, IncrementalNotionStream):
-    """
-    Docs: https://developers.notion.com/reference/get-block-children
+    """Docs: https://developers.notion.com/reference/get-block-children
     """
 
     http_method = "GET"
@@ -293,7 +287,7 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
     def stream_slices(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # gather parent stream records in full
@@ -336,11 +330,11 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 404:
-            setattr(self, "raise_on_http_errors", False)
+            self.raise_on_http_errors = False
             self.logger.error(
                 f"Stream {self.name}: {response.json().get('message')}. 404 HTTP response returns if the block specified by id doesn't"
                 " exist, or if the integration doesn't have access to the block."
-                "See more in docs: https://developers.notion.com/reference/get-block-children"
+                "See more in docs: https://developers.notion.com/reference/get-block-children",
             )
             return False
 
@@ -348,9 +342,9 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
             error_code = response.json().get("code")
             error_msg = response.json().get("message")
             if "validation_error" in error_code and "ai_block is not supported" in error_msg:
-                setattr(self, "raise_on_http_errors", False)
+                self.raise_on_http_errors = False
                 self.logger.error(
-                    f"Stream {self.name}: `ai_block` type is not supported, skipping. See https://developers.notion.com/reference/block for available block type."
+                    f"Stream {self.name}: `ai_block` type is not supported, skipping. See https://developers.notion.com/reference/block for available block type.",
                 )
                 return False
             else:
@@ -359,8 +353,7 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
 
 
 class Comments(HttpSubStream, IncrementalNotionStream):
-    """
-    Comments Object Docs: https://developers.notion.com/reference/comment-object
+    """Comments Object Docs: https://developers.notion.com/reference/comment-object
     Comments Endpoint Docs: https://developers.notion.com/reference/retrieve-a-comment
     """
 
@@ -373,7 +366,7 @@ class Comments(HttpSubStream, IncrementalNotionStream):
         return "comments"
 
     def request_params(
-        self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+        self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         block_id = stream_slice.get("block_id")
         params = {"block_id": block_id, "page_size": self.page_size}
@@ -384,7 +377,7 @@ class Comments(HttpSubStream, IncrementalNotionStream):
         return params
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
+        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs,
     ) -> Iterable[Mapping]:
         # Get the parent's "last edited time" to compare against state
         page_last_edited_time = stream_slice.get("page_last_edited_time", "")
@@ -404,7 +397,7 @@ class Comments(HttpSubStream, IncrementalNotionStream):
         yield from IncrementalNotionStream.read_records(self, **kwargs)
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, **kwargs
+        self, sync_mode: SyncMode, cursor_field: Optional[list[str]] = None, **kwargs,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # Gather parent stream records in full
         parent_records = self.parent.read_records(sync_mode=SyncMode.full_refresh, cursor_field=self.parent.cursor_field)

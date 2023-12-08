@@ -6,8 +6,7 @@ from pydantic import BaseModel, Field
 
 
 class SourceGCSSpec(BaseModel):
-    """
-    The SourceGCSSpec class defines the expected input configuration
+    """The SourceGCSSpec class defines the expected input configuration
     for the Google Cloud Storage (GCS) source. It uses Pydantic for data
     validation through the defined data models.
 

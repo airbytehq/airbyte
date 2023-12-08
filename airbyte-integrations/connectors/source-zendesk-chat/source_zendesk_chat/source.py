@@ -3,7 +3,8 @@
 #
 
 
-from typing import Any, Dict, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -16,12 +17,11 @@ from .streams import Accounts, Agents, AgentTimelines, Bans, Chats, Departments,
 class ZendeskAuthentication:
     """Provides the authentication capabilities for both old and new methods."""
 
-    def __init__(self, config: Dict):
+    def __init__(self, config: dict):
         self.config = config
 
     def get_auth(self) -> TokenAuthenticator:
         """Return the TokenAuthenticator object with access_token."""
-
         # the old config supports for backward capability
         access_token = self.config.get("access_token")
         if not access_token:
@@ -32,7 +32,7 @@ class ZendeskAuthentication:
 
 
 class SourceZendeskChat(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         authenticator = ZendeskAuthentication(config).get_auth()
         try:
             records = RoutingSettings(authenticator=authenticator).read_records(sync_mode=SyncMode.full_refresh)
@@ -41,7 +41,7 @@ class SourceZendeskChat(AbstractSource):
         except Exception as error:
             return False, f"Unable to connect to Zendesk Chat API with the provided credentials - {error}"
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         authenticator = ZendeskAuthentication(config).get_auth()
         return [
             Accounts(authenticator=authenticator),

@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from copy import deepcopy
-from typing import Any, List, Mapping, Tuple
+from typing import Any
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
@@ -13,12 +15,12 @@ from .stream import KYVEStream
 
 
 class SourceKyve(AbstractSource):
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger, config: Mapping[str, Any]) -> tuple[bool, any]:
         # check that pools and bundles are the same length
         pools = config.get("pool_ids").split(",")
         start_ids = config.get("start_ids").split(",")
 
-        if not len(pools) == len(start_ids):
+        if len(pools) != len(start_ids):
             return False, "Please add a start_id for every pool"
 
         for pool_id in pools:
@@ -33,8 +35,8 @@ class SourceKyve(AbstractSource):
 
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        streams: List[Stream] = []
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        streams: list[Stream] = []
 
         pools = config.get("pool_ids").split(",")
         start_ids = config.get("start_ids").split(",")

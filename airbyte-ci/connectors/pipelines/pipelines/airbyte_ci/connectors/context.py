@@ -4,15 +4,17 @@
 
 """Module declaring context related classes."""
 
+from collections.abc import Iterable
 from datetime import datetime
 from types import TracebackType
-from typing import Iterable, Optional
+from typing import Optional
 
 import yaml
 from anyio import Path
 from asyncer import asyncify
 from dagger import Directory, Platform, Secret
 from github import PullRequest
+
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import BUILD_PLATFORMS
 from pipelines.dagger.actions import secrets
@@ -92,7 +94,6 @@ class ConnectorContext(PipelineContext):
             concurrent_cat (bool, optional): Whether to run the CAT tests in parallel. Defaults to False.
             targeted_platforms (Optional[Iterable[Platform]], optional): The platforms to build the connector image for. Defaults to BUILD_PLATFORMS.
         """
-
         self.pipeline_name = pipeline_name
         self.connector = connector
         self.use_remote_secrets = use_remote_secrets
@@ -224,7 +225,7 @@ class ConnectorContext(PipelineContext):
         return await vanilla_connector_dir.with_timestamps(1)
 
     async def __aexit__(
-        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
+        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType],
     ) -> bool:
         """Perform teardown operation for the ConnectorContext.
 
@@ -233,10 +234,12 @@ class ConnectorContext(PipelineContext):
             - Write a test report in JSON format locally and to S3 if running in a CI environment
             - Update the commit status check on GitHub if running in a CI environment.
         It should gracefully handle the execution error that happens and always upload a test report and update commit status check.
+
         Args:
             exception_type (Optional[type[BaseException]]): The exception type if an exception was raised in the context execution, None otherwise.
             exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
             traceback (Optional[TracebackType]): The traceback if an exception was raised in the context execution, None otherwise.
+
         Returns:
             bool: Whether the teardown operation ran successfully.
         """

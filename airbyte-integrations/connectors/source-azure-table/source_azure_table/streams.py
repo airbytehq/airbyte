@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Optional
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
 from airbyte_cdk.sources.streams import Stream
@@ -32,12 +33,11 @@ class AzureTableStream(Stream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """
-        Create and retrieve the report.
+        """Create and retrieve the report.
         Decrypt and parse the report is its fully proceed, then yield the report document records.
         """
         table_client = self.azure_table_reader.get_table_client(self.stream_name)

@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping, MutableMapping
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -18,8 +20,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 
 @dataclass
 class DefaultPaginator(Paginator):
-    """
-    Default paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
+    """Default paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
 
     Examples:
         1.
@@ -101,7 +102,7 @@ class DefaultPaginator(Paginator):
             self.url_base = InterpolatedString(string=self.url_base, parameters=parameters)
         self._token = self.pagination_strategy.initial_token
 
-    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response, last_records: list[Record]) -> Optional[Mapping[str, Any]]:
         self._token = self.pagination_strategy.next_page_token(response, last_records)
         if self._token:
             return {"next_page_token": self._token}
@@ -171,8 +172,7 @@ class DefaultPaginator(Paginator):
 
 
 class PaginatorTestReadDecorator(Paginator):
-    """
-    In some cases, we want to limit the number of requests that are made to the backend source. This class allows for limiting the number of
+    """In some cases, we want to limit the number of requests that are made to the backend source. This class allows for limiting the number of
     pages that are queried throughout a read command.
     """
 
@@ -185,7 +185,7 @@ class PaginatorTestReadDecorator(Paginator):
         self._decorated = decorated
         self._page_count = self._PAGE_COUNT_BEFORE_FIRST_NEXT_CALL
 
-    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response, last_records: list[Record]) -> Optional[Mapping[str, Any]]:
         if self._page_count >= self._maximum_number_of_pages:
             return None
 

@@ -2,19 +2,20 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, Optional
 
 import dpath.exceptions
 import dpath.util
+
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, FieldPointer, StreamSlice, StreamState
 
 
 @dataclass
 class RemoveFields(RecordTransformation):
-    """
-    A transformation which removes fields from a record. The fields removed are designated using FieldPointers.
+    """A transformation which removes fields from a record. The fields removed are designated using FieldPointers.
     During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
 
     If an input field pointer references an item in a list (e.g: ["k", 0] in the object {"k": ["a", "b", "c"]}) then
@@ -38,7 +39,7 @@ class RemoveFields(RecordTransformation):
         field_pointers (List[FieldPointer]): pointers to the fields that should be removed
     """
 
-    field_pointers: List[FieldPointer]
+    field_pointers: list[FieldPointer]
     parameters: InitVar[Mapping[str, Any]]
 
     def transform(
@@ -48,8 +49,7 @@ class RemoveFields(RecordTransformation):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> Mapping[str, Any]:
-        """
-        :param record: The record to be transformed
+        """:param record: The record to be transformed
         :return: the input record with the requested fields removed
         """
         for pointer in self.field_pointers:

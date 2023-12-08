@@ -3,7 +3,8 @@
 #
 
 from collections import defaultdict
-from typing import Iterable, Iterator, NamedTuple
+from collections.abc import Iterable, Iterator
+from typing import NamedTuple
 
 
 class TransformationResult(NamedTuple):
@@ -12,8 +13,7 @@ class TransformationResult(NamedTuple):
 
 
 def transform_property_names(property_names: Iterable[str]) -> Iterator[TransformationResult]:
-    """
-    Transform property names using this rules:
+    """Transform property names using this rules:
     1. Remove leading "$" from property_name
     2. Resolve naming conflicts, like `userName` and `username`,
     that will break normalization in the future, by adding `_userName`to property name

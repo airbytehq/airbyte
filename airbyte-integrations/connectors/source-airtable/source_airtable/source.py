@@ -4,7 +4,8 @@
 
 
 import logging
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Tuple, Union
+from collections.abc import Iterable, Iterator, Mapping, MutableMapping
+from typing import Any, Union
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
@@ -23,7 +24,7 @@ class SourceAirtable(AbstractSource):
     streams_catalog: Iterable[Mapping[str, Any]] = []
     _auth: AirtableAuth = None
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         auth = AirtableAuth(config)
         try:
             # try reading first table from each base, to check the connectivity,
@@ -37,7 +38,7 @@ class SourceAirtable(AbstractSource):
             return False, str(e)
 
     def _remove_missed_streams_from_catalog(
-        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog
+        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog,
     ) -> ConfiguredAirbyteCatalog:
         config, _ = split_config(config)
         stream_instances = {s.name: s for s in self.streams(config)}
@@ -49,7 +50,7 @@ class SourceAirtable(AbstractSource):
                 logger.warning(
                     f"The requested stream {configured_stream.stream.name} was not found in the source. Please check if this stream was renamed or removed previously and reset data, removing from catalog for this sync run. For more information please refer to documentation: https://docs.airbyte.com/integrations/sources/airtable/#note-on-changed-table-names-and-deleted-tables"
                     f" Similar streams: {similar_streams}"
-                    f" Available streams: {stream_instances.keys()}"
+                    f" Available streams: {stream_instances.keys()}",
                 )
                 del catalog.streams[index]
         return catalog
@@ -59,15 +60,14 @@ class SourceAirtable(AbstractSource):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Union[list[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Override to provide filtering of catalog in case if streams were renamed/removed previously"""
         catalog = self._remove_missed_streams_from_catalog(logger, config, catalog)
         return super().read(logger, config, catalog, state)
 
     def discover(self, logger: AirbyteLogger, config) -> AirbyteCatalog:
-        """
-        Override to provide the dynamic schema generation capabilities,
+        """Override to provide the dynamic schema generation capabilities,
         using resource available for authenticated user.
 
         Retrieve: Bases, Tables from each Base, generate JSON Schema for each table.
@@ -87,13 +87,12 @@ class SourceAirtable(AbstractSource):
                             SchemaHelpers.get_json_schema(table),
                         ),
                         "table_name": table.get("name"),
-                    }
+                    },
                 )
         return AirbyteCatalog(streams=[stream["stream"] for stream in self.streams_catalog])
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        The Discover method is triggered during each synchronization to fetch all available streams (tables).
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """The Discover method is triggered during each synchronization to fetch all available streams (tables).
         If a stream becomes unavailable, an ERROR message will be printed in the logs.
         """
         self._auth = AirtableAuth(config)

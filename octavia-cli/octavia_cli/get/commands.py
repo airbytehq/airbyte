@@ -3,10 +3,11 @@
 #
 
 import uuid
-from typing import List, Optional, Tuple, Type, Union
+from typing import Optional, Union
+
+import click
 
 import airbyte_api_client
-import click
 from octavia_cli.base_commands import OctaviaCommand
 
 from .resources import Connection, Destination, Source
@@ -26,7 +27,7 @@ def build_help_message(resource_type: str) -> str:
     return f"Get a JSON representation of a remote {resource_type}."
 
 
-def get_resource_id_or_name(resource: str) -> Tuple[Optional[str], Optional[str]]:
+def get_resource_id_or_name(resource: str) -> tuple[Optional[str], Optional[str]]:
     """Helper function to detect if the resource argument passed to the CLI is a resource ID or name.
 
     Args:
@@ -47,11 +48,10 @@ def get_resource_id_or_name(resource: str) -> Tuple[Optional[str], Optional[str]
 def get_json_representation(
     api_client: airbyte_api_client.ApiClient,
     workspace_id: str,
-    ResourceClass: Type[Union[Source, Destination, Connection]],
+    ResourceClass: type[Union[Source, Destination, Connection]],
     resource_to_get: str,
 ) -> str:
     """Helper function to retrieve a resource json representation and avoid repeating the same logic for Source/Destination and connection.
-
 
     Args:
         api_client (airbyte_api_client.ApiClient): The Airbyte API client.
@@ -97,7 +97,7 @@ def connection(ctx: click.Context, resource: str):
     click.echo(get_json_representation(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], Connection, resource))
 
 
-AVAILABLE_COMMANDS: List[click.Command] = [source, destination, connection]
+AVAILABLE_COMMANDS: list[click.Command] = [source, destination, connection]
 
 
 def add_commands_to_list():

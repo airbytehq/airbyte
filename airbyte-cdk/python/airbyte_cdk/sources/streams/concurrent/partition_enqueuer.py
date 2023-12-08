@@ -10,20 +10,17 @@ from airbyte_cdk.sources.streams.concurrent.partitions.types import QueueItem
 
 
 class PartitionEnqueuer:
-    """
-    Generates partitions from a partition generator and puts them in a queue.
+    """Generates partitions from a partition generator and puts them in a queue.
     """
 
     def __init__(self, queue: Queue[QueueItem]) -> None:
-        """
-        :param queue:  The queue to put the partitions in.
+        """:param queue:  The queue to put the partitions in.
         :param sentinel: The sentinel to put in the queue when all the partitions have been generated.
         """
         self._queue = queue
 
     def generate_partitions(self, stream: AbstractStream) -> None:
-        """
-        Generate partitions from a partition generator and put them in a queue.
+        """Generate partitions from a partition generator and put them in a queue.
         When all the partitions are added to the queue, a sentinel is added to the queue to indicate that all the partitions have been generated.
 
         If an exception is encountered, the exception will be caught and put in the queue.

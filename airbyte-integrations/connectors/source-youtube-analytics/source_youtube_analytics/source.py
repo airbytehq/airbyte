@@ -8,10 +8,12 @@ import datetime
 import io
 import json
 import pkgutil
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -55,8 +57,7 @@ class CustomBackoffMixin:
         return False
 
     def should_retry(self, response: requests.Response) -> bool:
-        """
-        Override to set different conditions for backoff based on the response from the server.
+        """Override to set different conditions for backoff based on the response from the server.
 
         By default, back off on the following HTTP response statuses:
          - 500s to handle transient server errors
@@ -87,15 +88,13 @@ class CustomBackoffMixin:
 
     @property
     def retry_factor(self) -> float:
-        """
-        Default FreeQuotaRequestsPerMinutePerProject is 60 reqs/min, so reasonable delay is 30 seconds
+        """Default FreeQuotaRequestsPerMinutePerProject is 60 reqs/min, so reasonable delay is 30 seconds
         """
         return 30
 
 
 class JobsResource(CustomBackoffMixin, HttpStream):
-    """
-    https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs
+    """https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs
 
     All YouTube Analytics streams require a created reporting job.
     This class allows to `list` all existing reporting jobs or `create` new reporting job for a specific stream. One stream can have only one reporting job.
@@ -122,7 +121,7 @@ class JobsResource(CustomBackoffMixin, HttpStream):
         # if the connected Google account is not bounded with target Youtube account,
         # we receive `401: UNAUTHENTICATED`
         if response.status_code == 401:
-            setattr(self, "raise_on_http_errors", False)
+            self.raise_on_http_errors = False
             return False
         else:
             return super().should_retry(response)
@@ -169,12 +168,12 @@ class ReportResources(CustomBackoffMixin, HttpStream):
         super().__init__(**kwargs)
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         if not self.job_id:
             self.job_id = self.jobs_resource.create(self.name)
             self.logger.info(f"YouTube reporting job is created: '{self.job_id}'")
-        return "jobs/{}/reports".format(self.job_id)
+        return f"jobs/{self.job_id}/reports"
 
     def request_params(
         self,
@@ -212,7 +211,7 @@ class ChannelReports(CustomBackoffMixin, HttpSubStream):
     url_base = ""
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    def __init__(self, name: str, dimensions: List[str], **kwargs):
+    def __init__(self, name: str, dimensions: list[str], **kwargs):
         self.name = name
         self.primary_key = dimensions
         super().__init__(**kwargs)
@@ -232,7 +231,7 @@ class ChannelReports(CustomBackoffMixin, HttpSubStream):
         return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return stream_slice["parent"]["downloadUrl"]
 
@@ -260,7 +259,7 @@ class SourceYoutubeAnalytics(AbstractSource):
             refresh_token=refresh_token,
         )
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         authenticator = self.get_authenticator(config)
         jobs_resource = JobsResource(authenticator=authenticator)
         result = jobs_resource.list()
@@ -272,7 +271,7 @@ class SourceYoutubeAnalytics(AbstractSource):
                 "The Youtube account is not valid. Please make sure you're trying to use the active Youtube Account connected to your Google Account.",
             )
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         authenticator = self.get_authenticator(config)
         jobs_resource = JobsResource(authenticator=authenticator)
         jobs = jobs_resource.list()
@@ -296,7 +295,7 @@ class SourceYoutubeAnalytics(AbstractSource):
             dimensions = channel_report["dimensions"]
             job_id = report_to_job_id.get(stream_name)
             parent = ReportResources(
-                name=stream_name, jobs_resource=jobs_resource, job_id=job_id, start_time=start_time, authenticator=authenticator
+                name=stream_name, jobs_resource=jobs_resource, job_id=job_id, start_time=start_time, authenticator=authenticator,
             )
             streams.append(ChannelReports(name=stream_name, dimensions=dimensions, parent=parent, authenticator=authenticator))
         return streams

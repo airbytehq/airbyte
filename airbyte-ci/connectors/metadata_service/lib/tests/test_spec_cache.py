@@ -8,10 +8,10 @@ import pytest
 from metadata_service.spec_cache import CachedSpec, Registries, SpecCache, get_docker_info_from_spec_cache_path
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_spec_cache():
     with patch("google.cloud.storage.Client.create_anonymous_client") as MockClient, patch(
-        "google.cloud.storage.Client.bucket"
+        "google.cloud.storage.Client.bucket",
     ) as MockBucket:
         # Create stub mock client and bucket
         MockClient.return_value
@@ -77,7 +77,7 @@ def test_find_spec_cache_with_fallback(mock_spec_cache, image, tag, given_regist
         (
             "specs/airbyte/source-azure-blob-storage/1.1.1/spec.json",
             CachedSpec(
-                "airbyte/source-azure-blob-storage", "1.1.1", "specs/airbyte/source-azure-blob-storage/1.1.1/spec.json", Registries.OSS
+                "airbyte/source-azure-blob-storage", "1.1.1", "specs/airbyte/source-azure-blob-storage/1.1.1/spec.json", Registries.OSS,
             ),
         ),
         (

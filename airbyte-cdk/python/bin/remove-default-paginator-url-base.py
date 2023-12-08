@@ -32,8 +32,7 @@ def has_default_paginator(manifest_lines):
 
 
 def remove_lines(lines):
-    """
-    This is a very imperfect implementation of remove DefaultPaginator.url_base. It is flawed because:
+    """This is a very imperfect implementation of remove DefaultPaginator.url_base. It is flawed because:
     * If "type: DefaultPaginator" is after the property `url_base`, the property `url_base` will not be removed
     """
     line_iterator = iter(lines)
@@ -54,7 +53,7 @@ def remove_lines(lines):
 
 
 def rewrite_manifest(manifest_path):
-    with open(manifest_path, "r") as manifest_file:
+    with open(manifest_path) as manifest_file:
         manifest_lines = manifest_file.readlines()
 
     if not has_default_paginator(manifest_lines):

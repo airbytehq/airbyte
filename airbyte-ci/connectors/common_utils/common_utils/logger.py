@@ -7,7 +7,7 @@ import inspect
 import logging
 import logging.handlers
 import sys
-from typing import Callable
+from collections.abc import Callable
 
 
 class MyFormatter(logging.Formatter):

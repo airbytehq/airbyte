@@ -26,4 +26,4 @@ def is_valid_collection_name(stream_name: str):
     except ValueError:
         if re.match("^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$", stream_name):
             return "The collection name must not be a valid IP address."
-        return
+        return None

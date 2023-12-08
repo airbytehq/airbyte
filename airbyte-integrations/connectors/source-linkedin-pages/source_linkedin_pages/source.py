@@ -4,9 +4,11 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -36,7 +38,7 @@ class LinkedinPagesStream(HttpStream, ABC):
         return None
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         return [response.json()]
 
@@ -65,7 +67,7 @@ class FollowerStatistics(LinkedinPagesStream):
         return path
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         yield from response.json().get("elements")
 
@@ -76,7 +78,7 @@ class ShareStatistics(LinkedinPagesStream):
         return path
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         yield from response.json().get("elements")
 
@@ -88,16 +90,14 @@ class TotalFollowerCount(LinkedinPagesStream):
 
 
 class SourceLinkedinPages(AbstractSource):
-    """
-    Abstract Source inheritance, provides:
+    """Abstract Source inheritance, provides:
     - implementation for `check` connector's connectivity
     - implementation to call each stream with it's input parameters.
     """
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> TokenAuthenticator:
-        """
-        Validate input parameters and generate a necessary Authentication object
+        """Validate input parameters and generate a necessary Authentication object
         This connectors support 2 auth methods:
         1) direct access token with TTL = 2 months
         2) refresh token (TTL = 1 year) which can be converted to access tokens
@@ -117,15 +117,12 @@ class SourceLinkedinPages(AbstractSource):
             )
         raise Exception("incorrect input parameters")
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, any]:
         # RUN $ python main.py check --config secrets/config.json
-
-        """
-        Testing connection availability for the connector.
+        """Testing connection availability for the connector.
         :: for this check method the Customer must have the "r_liteprofile" scope enabled.
         :: more info: https://docs.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin
         """
-
         config["authenticator"] = self.get_authenticator(config)
         stream = OrganizationLookup(config)
         stream.records_limit = 1
@@ -137,7 +134,7 @@ class SourceLinkedinPages(AbstractSource):
 
         # RUN: $ python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         config["authenticator"] = self.get_authenticator(config)
         return [
             OrganizationLookup(config),

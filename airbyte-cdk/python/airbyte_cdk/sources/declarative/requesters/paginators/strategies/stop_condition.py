@@ -3,9 +3,10 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.types import Record
@@ -14,12 +15,11 @@ from airbyte_cdk.sources.declarative.types import Record
 class PaginationStopCondition(ABC):
     @abstractmethod
     def is_met(self, record: Record) -> bool:
-        """
-        Given a condition is met, the pagination will stop
+        """Given a condition is met, the pagination will stop
 
         :param record: a record used to evaluate the condition
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class CursorStopCondition(PaginationStopCondition):
@@ -35,7 +35,7 @@ class StopConditionPaginationStrategyDecorator(PaginationStrategy):
         self._delegate = _delegate
         self._stop_condition = stop_condition
 
-    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Any]:
+    def next_page_token(self, response: requests.Response, last_records: list[Record]) -> Optional[Any]:
         # We evaluate in reverse order because the assumption is that most of the APIs using data feed structure will return records in
         # descending order. In terms of performance/memory, we return the records lazily
         if last_records and any(self._stop_condition.is_met(record) for record in reversed(last_records)):

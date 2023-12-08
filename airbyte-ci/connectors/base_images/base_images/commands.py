@@ -4,14 +4,15 @@
 
 import argparse
 import sys
-from typing import Callable, Type
+from collections.abc import Callable
 
 import anyio
 import dagger
 import inquirer  # type: ignore
 import semver
-from base_images import bases, console, consts, errors, hacks, publish, utils, version_registry
 from jinja2 import Environment, FileSystemLoader
+
+from base_images import bases, console, consts, errors, hacks, publish, utils, version_registry
 
 
 async def _generate_docs(dagger_client: dagger.Client):
@@ -41,8 +42,8 @@ async def _generate_release(dagger_client: dagger.Client):
                 "BaseImageClass",
                 message="Which base image would you like to release a new version for?",
                 choices=[(BaseImageClass.repository, BaseImageClass) for BaseImageClass in version_registry.MANAGED_BASE_IMAGES],
-            )
-        ]
+            ),
+        ],
     )
     BaseImageClass = select_base_image_class_answers["BaseImageClass"]
     registry = await version_registry.VersionRegistry.load(BaseImageClass, dagger_client, docker_credentials)
@@ -58,7 +59,7 @@ async def _generate_release(dagger_client: dagger.Client):
 
     if latest_version != seed_version and not latest_entry.published:  # type: ignore
         console.log(
-            f"The latest version of {BaseImageClass.repository} ({latest_version}) has not been published yet. Please publish it first before cutting a new version."
+            f"The latest version of {BaseImageClass.repository} ({latest_version}) has not been published yet. Please publish it first before cutting a new version.",
         )
         sys.exit(1)
 
@@ -76,7 +77,7 @@ async def _generate_release(dagger_client: dagger.Client):
             ),
             inquirer.Text("changelog_entry", message="What should the changelog entry be?", validate=lambda _, entry: len(entry) > 0),
             inquirer.Confirm("publish_now", message="Would you like to publish it to our remote registry now?"),
-        ]
+        ],
     )
     new_version, changelog_entry, publish_now = (
         new_version_answers["new_version"],
@@ -103,7 +104,7 @@ async def _generate_release(dagger_client: dagger.Client):
     else:
         published_docker_image = None
         console.log(
-            f"Skipping publication. You can publish it later by running `poetry run publish {base_image_version.repository} {new_version}`."
+            f"Skipping publication. You can publish it later by running `poetry run publish {base_image_version.repository} {new_version}`.",
         )
 
     new_registry_entry = version_registry.VersionRegistryEntry(published_docker_image, changelog_entry, new_version)
@@ -114,7 +115,7 @@ async def _generate_release(dagger_client: dagger.Client):
 
 
 async def _publish(
-    dagger_client: dagger.Client, BaseImageClassToPublish: Type[bases.AirbyteConnectorBaseImage], version: semver.VersionInfo
+    dagger_client: dagger.Client, BaseImageClassToPublish: type[bases.AirbyteConnectorBaseImage], version: semver.VersionInfo,
 ):
     """This function will publish a specific version of a base image to our remote registry.
     Users are prompted for confirmation before overwriting an existing version.
@@ -130,9 +131,9 @@ async def _publish(
         force_answers = inquirer.prompt(
             [
                 inquirer.Confirm(
-                    "force", message="This version has already been published to our remote registry. Would you like to overwrite it?"
+                    "force", message="This version has already been published to our remote registry. Would you like to overwrite it?",
                 ),
-            ]
+            ],
         )
         if not force_answers["force"]:
             console.log("Not overwriting the already exiting image.")

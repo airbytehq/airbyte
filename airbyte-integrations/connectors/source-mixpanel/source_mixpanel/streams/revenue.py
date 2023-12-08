@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Iterable, Mapping
+from collections.abc import Iterable, Mapping
 
 import requests
 
@@ -23,8 +23,7 @@ class Revenue(DateSlicesMixin, IncrementalMixpanelStream):
         return "engage/revenue"
 
     def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        response.json() example:
+        """response.json() example:
         {
             'computed_at': '2021-07-03T12:43:48.889421+00:00',
             'results': {

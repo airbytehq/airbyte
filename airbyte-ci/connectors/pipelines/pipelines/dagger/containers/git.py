@@ -3,6 +3,7 @@
 from typing import Optional
 
 from dagger import Client, Container
+
 from pipelines.helpers.utils import AIRBYTE_REPO_URL
 
 
@@ -32,7 +33,7 @@ async def checked_out_git_container(
                 diffed_branch if diffed_branch is not None else current_git_branch,
                 "origin",
                 AIRBYTE_REPO_URL,
-            ]
+            ],
         )
         .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
     )

@@ -6,11 +6,11 @@ import json
 import logging
 import logging.config
 import traceback
-from typing import Tuple
+
+from deprecated import deprecated
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
-from deprecated import deprecated
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -66,8 +66,7 @@ class AirbyteLogFormatter(logging.Formatter):
 
     @staticmethod
     def extract_extra_args_from_record(record: logging.LogRecord):
-        """
-        The python logger conflates default args with extra args. We use an empty log record and set operations
+        """The python logger conflates default args with extra args. We use an empty log record and set operations
         to isolate fields passed to the log record via extra by the developer.
         """
         default_attrs = logging.LogRecord("", 0, "", 0, None, None, None).__dict__.keys()
@@ -75,7 +74,7 @@ class AirbyteLogFormatter(logging.Formatter):
         return {k: str(getattr(record, k)) for k in extra_keys if hasattr(record, k)}
 
 
-def log_by_prefix(msg: str, default_level: str) -> Tuple[int, str]:
+def log_by_prefix(msg: str, default_level: str) -> tuple[int, str]:
     """Custom method, which takes log level from first word of message"""
     valid_log_types = ["FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"]
     split_line = msg.split()

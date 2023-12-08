@@ -3,6 +3,7 @@
 #
 
 from dagger import CacheSharingMode, CacheVolume, Client, Container
+
 from pipelines.airbyte_ci.connectors.context import PipelineContext
 from pipelines.consts import (
     CONNECTOR_TESTING_REQUIREMENTS,
@@ -28,7 +29,6 @@ def with_python_base(context: PipelineContext, python_version: str = "3.10") -> 
     Returns:
         Container: The python base environment container.
     """
-
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
 
     base_container = (
@@ -41,8 +41,8 @@ def with_python_base(context: PipelineContext, python_version: str = "3.10") -> 
                     "apt-get update",
                     "apt-get install -y build-essential cmake g++ libffi-dev libstdc++6 git",
                     "pip install pip==23.1.2",
-                ]
-            )
+                ],
+            ),
         )
     )
 
@@ -62,12 +62,13 @@ def with_testing_dependencies(context: PipelineContext) -> Container:
     pyproject_toml_file = context.get_repo_dir(".", include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
 
     return python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS).with_file(
-        f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file
+        f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file,
     )
 
 
 def with_pip_cache(container: Container, dagger_client: Client) -> Container:
     """Mounts the pip cache in the container.
+
     Args:
         container (Container): A container with python installed
 
@@ -80,6 +81,7 @@ def with_pip_cache(container: Container, dagger_client: Client) -> Container:
 
 def with_poetry_cache(container: Container, dagger_client: Client) -> Container:
     """Mounts the poetry cache in the container.
+
     Args:
         container (Container): A container with python installed
 

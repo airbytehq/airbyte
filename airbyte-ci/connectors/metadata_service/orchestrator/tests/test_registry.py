@@ -208,8 +208,7 @@ def test_merged_registry_dataframes(oss_registry_dict, cloud_registry_dict):
     ],
 )
 def test_definition_id_conversion(registry_type, connector_type, expected_id_field):
-    """
-    Test if the definitionId in the metadata is successfully converted to
+    """Test if the definitionId in the metadata is successfully converted to
     destinationDefinitionId or sourceDefinitionId in the registry entry.
     """
     metadata = {"data": {"connectorType": connector_type, "definitionId": "test-id", "registries": {registry_type: {"enabled": True}}}}
@@ -224,8 +223,7 @@ def test_definition_id_conversion(registry_type, connector_type, expected_id_fie
 
 
 def test_tombstone_custom_public_set():
-    """
-    Test if tombstone, custom and public are set correctly in the registry entry.
+    """Test if tombstone, custom and public are set correctly in the registry entry.
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 
@@ -240,8 +238,7 @@ def test_tombstone_custom_public_set():
 
 
 def test_fields_deletion():
-    """
-    Test if registries, connectorType, and definitionId fields were deleted from the registry entry.
+    """Test if registries, connectorType, and definitionId fields were deleted from the registry entry.
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 
@@ -260,8 +257,7 @@ def test_fields_deletion():
     [("cloud", "cloud_tag", "cloud_value"), ("oss", "oss_tag", "oss_value")],
 )
 def test_overrides_application(registry_type, expected_docker_image_tag, expected_additional_field):
-    """
-    Test if the overrides for cloud or oss are properly applied to the registry entry.
+    """Test if the overrides for cloud or oss are properly applied to the registry entry.
     """
     # Assuming 'overriddenField' is a field to be overridden in metadata for the sake of this test.
     metadata = {
@@ -273,7 +269,7 @@ def test_overrides_application(registry_type, expected_docker_image_tag, expecte
                 "oss": {"enabled": True, "dockerImageTag": "oss_tag", "additionalField": "oss_value"},
                 "cloud": {"enabled": True, "dockerImageTag": "cloud_tag", "additionalField": "cloud_value"},
             },
-        }
+        },
     }
 
     mock_metadata_entry = mock.Mock()
@@ -290,8 +286,7 @@ def test_overrides_application(registry_type, expected_docker_image_tag, expecte
 
 
 def test_source_type_extraction():
-    """
-    Test if sourceType is successfully extracted from connectorSubtype in the registry entry.
+    """Test if sourceType is successfully extracted from connectorSubtype in the registry entry.
     """
     metadata = {
         "data": {
@@ -299,7 +294,7 @@ def test_source_type_extraction():
             "connectorSubtype": "database",
             "definitionId": "test-id",
             "registries": {"oss": {"enabled": True}},
-        }
+        },
     }
 
     mock_metadata_entry = mock.Mock()
@@ -311,8 +306,7 @@ def test_source_type_extraction():
 
 
 def test_support_level_default():
-    """
-    Test if supportLevel is defaulted to alpha in the registry entry.
+    """Test if supportLevel is defaulted to alpha in the registry entry.
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 
@@ -325,8 +319,7 @@ def test_support_level_default():
 
 
 def test_migration_documentation_url_default():
-    """
-    Test if migrationDocumentationUrl is successfully defaulted in releases.migrationDocumentationUrl in the registry entry.
+    """Test if migrationDocumentationUrl is successfully defaulted in releases.migrationDocumentationUrl in the registry entry.
     """
     metadata = {
         "data": {
@@ -335,7 +328,7 @@ def test_migration_documentation_url_default():
             "documentationUrl": "test-doc-url",
             "registries": {"oss": {"enabled": True}},
             "releases": {"migrationDocumentationUrl": None, "breakingChanges": {"1.0.0": {"migrationDocumentationUrl": None}}},
-        }
+        },
     }
 
     mock_metadata_entry = mock.Mock()
@@ -351,8 +344,7 @@ def test_migration_documentation_url_default():
 
 
 def test_breaking_changes_migration_documentation_url():
-    """
-    Test if migrationDocumentationUrl is successfully defaulted for all entries in releases.breakingChanges including the key as the version.
+    """Test if migrationDocumentationUrl is successfully defaulted for all entries in releases.breakingChanges including the key as the version.
     """
     metadata = {
         "data": {
@@ -364,7 +356,7 @@ def test_breaking_changes_migration_documentation_url():
                 "migrationDocumentationUrl": "test-migration-doc-url",
                 "breakingChanges": {"1.0.0": {"migrationDocumentationUrl": "test-migration-doc-url-version"}},
             },
-        }
+        },
     }
 
     mock_metadata_entry = mock.Mock()
@@ -377,8 +369,7 @@ def test_breaking_changes_migration_documentation_url():
 
 
 def test_icon_url():
-    """
-    Test if the iconUrl in the metadata entry is correctly set in the registry entry.
+    """Test if the iconUrl in the metadata entry is correctly set in the registry entry.
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 

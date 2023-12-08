@@ -3,12 +3,14 @@
 #
 
 import logging
-from typing import Any, List, Mapping
+from collections.abc import Mapping
+from typing import Any
+
+from requests.auth import HTTPBasicAuth
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.streams import Stream
-from requests.auth import HTTPBasicAuth
 from source_freshdesk.streams import (
     Agents,
     BusinessHours,
@@ -43,8 +45,7 @@ from source_freshdesk.streams import (
 
 class FreshdeskAuth(HTTPBasicAuth):
     def __init__(self, api_key: str) -> None:
-        """
-        Freshdesk expects the user to provide an api_key. Any string can be used as password:
+        """Freshdesk expects the user to provide an api_key. Any string can be used as password:
         https://developers.freshdesk.com/api/#authentication
         """
         super().__init__(username=api_key, password="unused_with_api_key")
@@ -62,7 +63,7 @@ class SourceFreshdesk(AbstractSource):
         except Exception as error:
             return False, repr(error)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         return [
             Agents(**self._get_stream_kwargs(config)),
             BusinessHours(**self._get_stream_kwargs(config)),

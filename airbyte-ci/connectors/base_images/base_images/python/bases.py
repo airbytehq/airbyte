@@ -4,9 +4,11 @@
 
 from __future__ import annotations
 
-from typing import Callable, Final
+from collections.abc import Callable
+from typing import Final
 
 import dagger
+
 from base_images import bases, published_image
 from base_images import sanity_checks as base_sanity_checks
 from base_images.python import sanity_checks as python_sanity_checks
@@ -21,7 +23,7 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
     ntlk_data = {
         "tokenizers": {"https://github.com/nltk/nltk_data/raw/5db857e6f7df11eabb5e5665836db9ec8df07e28/packages/tokenizers/punkt.zip"},
         "taggers": {
-            "https://github.com/nltk/nltk_data/raw/5db857e6f7df11eabb5e5665836db9ec8df07e28/packages/taggers/averaged_perceptron_tagger.zip"
+            "https://github.com/nltk/nltk_data/raw/5db857e6f7df11eabb5e5665836db9ec8df07e28/packages/taggers/averaged_perceptron_tagger.zip",
         },
     }
 
@@ -47,27 +49,24 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
             return data_container.directory(self.nltk_data_path)
 
         def with_tesseract_and_poppler(container: dagger.Container) -> dagger.Container:
-            """
-            Installs Tesseract-OCR and Poppler-utils in the base image.
+            """Installs Tesseract-OCR and Poppler-utils in the base image.
             These tools are necessary for OCR (Optical Character Recognition) processes and working with PDFs, respectively.
             """
-
             container = container.with_exec(
-                ["sh", "-c", "apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1"], skip_entrypoint=True
+                ["sh", "-c", "apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1"], skip_entrypoint=True,
             )
 
             return container
 
         def with_file_based_connector_dependencies(container: dagger.Container) -> dagger.Container:
-            """
-            Installs the dependencies for file-based connectors. This includes:
+            """Installs the dependencies for file-based connectors. This includes:
             - tesseract-ocr
             - poppler-utils
             - nltk data
             """
             container = with_tesseract_and_poppler(container)
             container = container.with_exec(["mkdir", self.nltk_data_path], skip_entrypoint=True).with_directory(
-                self.nltk_data_path, get_nltk_data_dir()
+                self.nltk_data_path, get_nltk_data_dir(),
             )
             return container
 

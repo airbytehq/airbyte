@@ -3,7 +3,8 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -21,7 +22,7 @@ class SourcePardot(AbstractSource):
         pardot.login()
         return pardot
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             pardot = self._get_pardot_object(config)
             pardot.access_token
@@ -29,7 +30,7 @@ class SourcePardot(AbstractSource):
         except Exception as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         pardot = self._get_pardot_object(config)
         auth = TokenAuthenticator(pardot.access_token)
         args = {"authenticator": auth, "config": config}

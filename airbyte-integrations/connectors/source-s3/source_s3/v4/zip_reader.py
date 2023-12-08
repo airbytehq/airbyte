@@ -3,10 +3,11 @@
 import io
 import struct
 import zipfile
-from typing import IO, List, Optional, Tuple, Union
+from typing import IO, Optional, Union
+
+from botocore.client import BaseClient
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from botocore.client import BaseClient
 from source_s3.v4.config import Config
 
 # Buffer constants
@@ -15,8 +16,7 @@ MAX_BUFFER_SIZE_DEFAULT: int = 16 * BUFFER_SIZE_DEFAULT
 
 
 class RemoteFileInsideArchive(RemoteFile):
-    """
-    A file inside archive in a file-based stream.
+    """A file inside archive in a file-based stream.
     """
 
     start_offset: int
@@ -26,8 +26,7 @@ class RemoteFileInsideArchive(RemoteFile):
 
 
 class ZipFileHandler:
-    """
-    Handler class for extracting information from ZIP files stored in AWS S3.
+    """Handler class for extracting information from ZIP files stored in AWS S3.
     """
 
     # Class constants for ZIP file signatures
@@ -43,8 +42,7 @@ class ZipFileHandler:
     ZIP64_CENTRAL_DIR_START_OFFSET: int = 48
 
     def __init__(self, s3_client: BaseClient, config: Config):
-        """
-        Initialize the ZipFileHandler with an S3 client and configuration.
+        """Initialize the ZipFileHandler with an S3 client and configuration.
 
         :param s3_client: The AWS S3 client.
         :param config: Configuration containing bucket and other details.
@@ -53,8 +51,7 @@ class ZipFileHandler:
         self.config = config
 
     def _fetch_data_from_s3(self, filename: str, start: int, size: Optional[int] = None) -> bytes:
-        """
-        Fetch a specific range of bytes from a file in S3.
+        """Fetch a specific range of bytes from a file in S3.
 
         :param filename: The name of the file in S3.
         :param start: The starting byte position.
@@ -73,8 +70,7 @@ class ZipFileHandler:
         initial_buffer_size: int = BUFFER_SIZE_DEFAULT,
         max_buffer_size: int = MAX_BUFFER_SIZE_DEFAULT,
     ) -> Optional[bytes]:
-        """
-        Search for a specific signature in the file by checking chunks of increasing size.
+        """Search for a specific signature in the file by checking chunks of increasing size.
         If the signature is not found within the max_buffer_size, None is returned.
 
         :param filename: The name of the file in S3.
@@ -95,8 +91,7 @@ class ZipFileHandler:
         return None
 
     def _fetch_zip64_data(self, filename: str) -> bytes:
-        """
-        Fetch the ZIP64 End of Central Directory (EOCD) data from a ZIP file.
+        """Fetch the ZIP64 End of Central Directory (EOCD) data from a ZIP file.
 
         :param filename: The name of the file in S3.
         :return: The ZIP64 EOCD data.
@@ -106,8 +101,7 @@ class ZipFileHandler:
         return self._fetch_data_from_s3(filename, zip64_eocd_offset, self.ZIP64_EOCD_SIZE)
 
     def _get_central_directory_start(self, filename: str) -> int:
-        """
-        Determine the starting position of the central directory in the ZIP file.
+        """Determine the starting position of the central directory in the ZIP file.
         Adjusts for ZIP64 format if necessary.
 
         :param filename: The name of the file in S3.
@@ -123,9 +117,8 @@ class ZipFileHandler:
 
         return central_dir_start
 
-    def get_zip_files(self, filename: str) -> Tuple[List[zipfile.ZipInfo], int]:
-        """
-        Extract metadata about the files inside a ZIP archive stored in S3.
+    def get_zip_files(self, filename: str) -> tuple[list[zipfile.ZipInfo], int]:
+        """Extract metadata about the files inside a ZIP archive stored in S3.
 
         :param filename: The name of the ZIP file in S3.
         :return: A tuple containing a list of ZipInfo objects representing the files inside the ZIP archive
@@ -140,8 +133,7 @@ class ZipFileHandler:
 
 
 class DecompressedStream(io.IOBase):
-    """
-    A custom stream class that handles decompression of data from a given file object.
+    """A custom stream class that handles decompression of data from a given file object.
     This class supports seeking, reading, and other basic file operations on compressed data.
     """
 
@@ -149,8 +141,7 @@ class DecompressedStream(io.IOBase):
     NAME_LENGTH_OFFSET: int = 26
 
     def __init__(self, file_obj: IO[bytes], file_info: RemoteFileInsideArchive, buffer_size: int = BUFFER_SIZE_DEFAULT):
-        """
-        Initialize a DecompressedStream.
+        """Initialize a DecompressedStream.
 
         :param file_obj: Underlying file-like object.
         :param file_info: Meta information about the file inside the archive.
@@ -170,8 +161,7 @@ class DecompressedStream(io.IOBase):
         self.offset_map = {0: self.file_start, self.uncompressed_size: self.file_start + self.compressed_size}
 
     def _calculate_actual_start(self, file_start: int) -> int:
-        """
-        Determine the actual start position of the file content within the ZIP archive.
+        """Determine the actual start position of the file content within the ZIP archive.
 
         In a ZIP archive, each file entry is preceded by a local file header. This header contains
         metadata about the file, including the lengths of the file's name and any extra data.
@@ -189,22 +179,19 @@ class DecompressedStream(io.IOBase):
         return file_start + self.LOCAL_FILE_HEADER_SIZE + name_len + extra_len  # Calculate the actual start by skipping the header
 
     def _reset_decompressor(self):
-        """
-        Reset the decompressor object.
+        """Reset the decompressor object.
         """
         self.decompressor = zipfile._get_decompressor(self.compression_method)
 
     def _decompress_chunk(self, chunk: bytes) -> bytes:
-        """
-        Decompress a chunk of data based on the compression method.
+        """Decompress a chunk of data based on the compression method.
         """
         if self.compression_method == zipfile.ZIP_STORED:
             return chunk
         return self.decompressor.decompress(chunk)
 
     def read(self, size: int = -1) -> bytes:
-        """
-        Read a specified number of bytes from the stream.
+        """Read a specified number of bytes from the stream.
         """
         # Size not specified, read till end
         if size == -1:
@@ -240,8 +227,7 @@ class DecompressedStream(io.IOBase):
         return data
 
     def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
-        """
-        Seek to a specific position in the uncompressed stream.
+        """Seek to a specific position in the uncompressed stream.
         """
         if whence == io.SEEK_SET:
             self._buffer = bytearray()
@@ -268,39 +254,33 @@ class DecompressedStream(io.IOBase):
         return self.position
 
     def tell(self) -> int:
-        """
-        Return the current position in the uncompressed stream.
+        """Return the current position in the uncompressed stream.
         """
         return self.position
 
     def readable(self) -> bool:
-        """
-        Return if the stream is readable.
+        """Return if the stream is readable.
         """
         return True
 
     def seekable(self) -> bool:
-        """
-        Return if the stream is seekable.
+        """Return if the stream is seekable.
         """
         return True
 
     def close(self):
-        """
-        Close the stream and underlying file object.
+        """Close the stream and underlying file object.
         """
         self._file.close()
 
 
 class ZipContentReader:
-    """
-    A custom reader class that provides buffered reading capabilities on a decompressed stream.
+    """A custom reader class that provides buffered reading capabilities on a decompressed stream.
     Supports reading lines, reading chunks, and iterating over the content.
     """
 
     def __init__(self, decompressed_stream: DecompressedStream, encoding: Optional[str] = None, buffer_size: int = BUFFER_SIZE_DEFAULT):
-        """
-        Initialize a ZipContentReader.
+        """Initialize a ZipContentReader.
 
         :param decompressed_stream: A DecompressedStream object.
         :param encoding: Encoding to decode the bytes. If None, bytes are returned.
@@ -313,14 +293,12 @@ class ZipContentReader:
         self._closed = False
 
     def __iter__(self):
-        """
-        Make the class iterable.
+        """Make the class iterable.
         """
         return self
 
     def __next__(self) -> Union[str, bytes]:
-        """
-        Iterate over the lines in the reader.
+        """Iterate over the lines in the reader.
         """
         line = self.readline()
         if not line:
@@ -328,8 +306,7 @@ class ZipContentReader:
         return line
 
     def readline(self, limit: int = -1) -> Union[str, bytes]:
-        """
-        Read a single line from the stream.
+        """Read a single line from the stream.
         """
         if limit != -1:
             raise NotImplementedError("Limits other than -1 not implemented yet")
@@ -352,8 +329,7 @@ class ZipContentReader:
         return line
 
     def read(self, size: int = -1) -> Union[str, bytes]:
-        """
-        Read a specified number of bytes/characters from the reader.
+        """Read a specified number of bytes/characters from the reader.
         """
         while len(self.buffer) < size:
             chunk = self.raw.read(self.buffer_size)
@@ -367,29 +343,25 @@ class ZipContentReader:
         return data.decode(self.encoding) if self.encoding else bytes(data)
 
     def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
-        """
-        Seek to a specific position in the decompressed stream.
+        """Seek to a specific position in the decompressed stream.
         """
         self.buffer = bytearray()
         return self.raw.seek(offset, whence)
 
     def close(self):
-        """
-        Close the reader and underlying decompressed stream.
+        """Close the reader and underlying decompressed stream.
         """
         self._closed = True
         self.raw.close()
 
     def tell(self) -> int:
-        """
-        Return the current position in the decompressed stream.
+        """Return the current position in the decompressed stream.
         """
         return self.raw.tell()
 
     @property
     def closed(self) -> bool:
-        """
-        Check if the reader is closed.
+        """Check if the reader is closed.
         """
         return self._closed
 

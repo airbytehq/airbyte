@@ -4,7 +4,7 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from .common import AllOptional, CatalogModel
 
@@ -30,13 +30,13 @@ class Dispute(CatalogModel):
     chargeback_protection_level: Optional[str]
     created_at: datetime
     currency_iso_code: str
-    evidence: Union[Evidence, List[Evidence]]
+    evidence: Union[Evidence, list[Evidence]]
     graphql_id: str
     id: str
     kind: str
     merchant_account_id: str
     original_dispute_id: Optional[str]
-    paypal_messages: List[PaypalMessage]
+    paypal_messages: list[PaypalMessage]
     processor_comments: Optional[str]
     reason: str
     reason_code: str

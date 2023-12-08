@@ -4,17 +4,19 @@
 
 import json
 import logging
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Optional
 
 import dpath.util
+from langchain.document_loaders.base import Document
+from langchain.text_splitter import Language, RecursiveCharacterTextSplitter
+from langchain.utils import stringify_dict
+
 from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel, SeparatorSplitterConfigModel, TextSplitterConfigModel
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
-from langchain.document_loaders.base import Document
-from langchain.text_splitter import Language, RecursiveCharacterTextSplitter
-from langchain.utils import stringify_dict
 
 METADATA_STREAM_FIELD = "_ab_stream"
 METADATA_RECORD_ID_FIELD = "_ab_record_id"
@@ -25,17 +27,16 @@ CDC_DELETED_FIELD = "_ab_cdc_deleted_at"
 @dataclass
 class Chunk:
     page_content: Optional[str]
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
     record: AirbyteRecordMessage
-    embedding: Optional[List[float]] = None
+    embedding: Optional[list[float]] = None
 
 
 headers_to_split_on = ["(?:^|\n)# ", "(?:^|\n)## ", "(?:^|\n)### ", "(?:^|\n)#### ", "(?:^|\n)##### ", "(?:^|\n)###### "]
 
 
 class DocumentProcessor:
-    """
-    DocumentProcessor is a helper class that generates documents from Airbyte records.
+    """DocumentProcessor is a helper class that generates documents from Airbyte records.
 
     It is used to generate documents from records before writing them to the destination:
     * The text fields are extracted from the record and concatenated to a single string.
@@ -64,7 +65,7 @@ class DocumentProcessor:
         return None
 
     def _get_text_splitter(
-        self, chunk_size: int, chunk_overlap: int, splitter_config: Optional[TextSplitterConfigModel]
+        self, chunk_size: int, chunk_overlap: int, splitter_config: Optional[TextSplitterConfigModel],
     ) -> RecursiveCharacterTextSplitter:
         if splitter_config is None:
             splitter_config = SeparatorSplitterConfigModel(mode="separator")
@@ -102,9 +103,8 @@ class DocumentProcessor:
         self.field_name_mappings = config.field_name_mappings
         self.logger = logging.getLogger("airbyte.document_processor")
 
-    def process(self, record: AirbyteRecordMessage) -> Tuple[List[Chunk], Optional[str]]:
-        """
-        Generate documents from records.
+    def process(self, record: AirbyteRecordMessage) -> tuple[list[Chunk], Optional[str]]:
+        """Generate documents from records.
         :param records: List of AirbyteRecordMessages
         :return: Tuple of (List of document chunks, record id to delete if a stream is in dedup mode to avoid stale documents in the vector store)
         """
@@ -133,7 +133,7 @@ class DocumentProcessor:
         metadata = self._extract_metadata(record)
         return Document(page_content=text, metadata=metadata)
 
-    def _extract_relevant_fields(self, record: AirbyteRecordMessage, fields: Optional[List[str]]) -> Dict[str, Any]:
+    def _extract_relevant_fields(self, record: AirbyteRecordMessage, fields: Optional[list[str]]) -> dict[str, Any]:
         relevant_fields = {}
         if fields and len(fields) > 0:
             for field in fields:
@@ -144,7 +144,7 @@ class DocumentProcessor:
             relevant_fields = record.data
         return self._remap_field_names(relevant_fields)
 
-    def _extract_metadata(self, record: AirbyteRecordMessage) -> Dict[str, Any]:
+    def _extract_metadata(self, record: AirbyteRecordMessage) -> dict[str, Any]:
         metadata = self._extract_relevant_fields(record, self.metadata_fields)
         metadata[METADATA_STREAM_FIELD] = create_stream_identifier(record)
         primary_key = self._extract_primary_key(record)
@@ -168,11 +168,11 @@ class DocumentProcessor:
         stringified_primary_key = "_".join(primary_key)
         return f"{stream_identifier}_{stringified_primary_key}"
 
-    def _split_document(self, doc: Document) -> List[Document]:
-        chunks: List[Document] = self.splitter.split_documents([doc])
+    def _split_document(self, doc: Document) -> list[Document]:
+        chunks: list[Document] = self.splitter.split_documents([doc])
         return chunks
 
-    def _remap_field_names(self, fields: Dict[str, Any]) -> Dict[str, Any]:
+    def _remap_field_names(self, fields: dict[str, Any]) -> dict[str, Any]:
         if not self.field_name_mappings:
             return fields
 

@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 from metadata_service.constants import METADATA_FILE_NAME
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
@@ -10,8 +10,7 @@ from pydantic import BaseModel, ValidationError
 
 
 class PydanticDelayValidationMixin:
-    """
-    This is to allow us to delay validation until we have all the data we need.
+    """This is to allow us to delay validation until we have all the data we need.
     Note: To use this mixin you will want to construct your model with the pydantic
     `construct` method. This will allow you to set the values of the model before
     validation occurs.
@@ -22,7 +21,7 @@ class PydanticDelayValidationMixin:
             super().validate(self.dict())
 
     @property
-    def is_valid(self) -> Tuple[bool, Optional[Any]]:
+    def is_valid(self) -> tuple[bool, Optional[Any]]:
         try:
             self.validate()
             return (True, None)
@@ -54,8 +53,7 @@ class LatestMetadataEntry(BaseModel):
 
     @property
     def is_latest_version_path(self) -> bool:
-        """
-        Path is considered a latest version path if the subfolder containing METADATA_FILE_NAME is "latest"
+        """Path is considered a latest version path if the subfolder containing METADATA_FILE_NAME is "latest"
         """
         ending_path = f"latest/{METADATA_FILE_NAME}"
         return self.file_path.endswith(ending_path)

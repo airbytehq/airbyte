@@ -4,11 +4,13 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 from urllib import parse
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -95,7 +97,7 @@ class IncrementalOktaStream(OktaStream, ABC):
             self.cursor_field: max(
                 latest_record.get(self.cursor_field, min_cursor_value),
                 current_stream_state.get(self.cursor_field, min_cursor_value),
-            )
+            ),
         }
 
     def request_params(
@@ -188,13 +190,11 @@ class Logs(IncrementalOktaStream):
         return self._raise_on_http_errors
 
     def should_retry(self, response: requests.Response) -> bool:
-        """
-        When the connector gets abnormal state API retrun errror with 400 status code
+        """When the connector gets abnormal state API retrun errror with 400 status code
         and internal error code E0000001. The connector ignores an error with 400 code
         to finish successfully sync and inform the user about an error in logs with an
         error message.
         """
-
         if response.status_code == 400 and response.json().get("errorCode") == "E0000001":
             self.logger.info(f"{response.json()['errorSummary']}")
             self._raise_on_http_errors = False
@@ -340,7 +340,7 @@ class Permissions(OktaStream):
 
 
 class SourceOkta(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             auth = initialize_authenticator(config)
             api_endpoint = get_api_endpoint(config)
@@ -359,7 +359,7 @@ class SourceOkta(AbstractSource):
         except Exception:
             return False, "Failed to authenticate with the provided credentials"
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         auth = initialize_authenticator(config)
         api_endpoint = get_api_endpoint(config)
         start_date = get_start_date(config)

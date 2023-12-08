@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Literal, Optional, Union
+from typing import Literal, Optional, Union
+
+from pydantic import BaseModel, Field
 
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
-from pydantic import BaseModel, Field
 
 
 class LocalProcessingConfigModel(BaseModel):
@@ -45,7 +46,7 @@ class APIProcessingConfigModel(BaseModel):
         examples=["https://api.unstructured.com"],
     )
 
-    parameters: Optional[List[APIParameterConfigModel]] = Field(
+    parameters: Optional[list[APIParameterConfigModel]] = Field(
         default=[],
         always_show=True,
         title="Additional URL Parameters",

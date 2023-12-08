@@ -3,10 +3,12 @@
 #
 
 import logging
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from collections.abc import Mapping
+from typing import Any, Optional
 
 import facebook_business
 import pendulum
+
 from airbyte_cdk.models import (
     AdvancedAuth,
     AuthFlowType,
@@ -14,7 +16,6 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     FailureType,
     OAuthConfigSpecification,
-    SyncMode,
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -78,7 +79,7 @@ class SourceFacebookMarketing(AbstractSource):
             config.end_date = pendulum.instance(config.end_date)
         return config
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, Optional[Any]]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
         :param logger: source logger
@@ -103,7 +104,7 @@ class SourceFacebookMarketing(AbstractSource):
             return False, f"{e.message}. Full error: {e.internal_message}"
 
         except Exception as e:
-            return False, f"Unexpected error: {repr(e)}"
+            return False, f"Unexpected error: {e!r}"
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
         for stream in self.get_custom_insights_streams(api, config):
@@ -113,7 +114,7 @@ class SourceFacebookMarketing(AbstractSource):
                 return False, e._api_error_message
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Type[Stream]]:
+    def streams(self, config: Mapping[str, Any]) -> list[type[Stream]]:
         """Discovery method, returns available streams
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
@@ -130,7 +131,7 @@ class SourceFacebookMarketing(AbstractSource):
         report_start_date = config.start_date or pendulum.now().add(years=-2)
 
         insights_args = dict(
-            api=api, start_date=report_start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
+            api=api, start_date=report_start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window,
         )
         streams = [
             AdAccount(api=api),
@@ -235,7 +236,7 @@ class SourceFacebookMarketing(AbstractSource):
                             "access_token": {
                                 "type": "string",
                                 "path_in_connector_config": ["access_token"],
-                            }
+                            },
                         },
                     },
                     complete_oauth_server_input_specification={
@@ -254,8 +255,8 @@ class SourceFacebookMarketing(AbstractSource):
             ),
         )
 
-    def get_custom_insights_streams(self, api: API, config: ConnectorConfig) -> List[Type[Stream]]:
-        """return custom insights streams"""
+    def get_custom_insights_streams(self, api: API, config: ConnectorConfig) -> list[type[Stream]]:
+        """Return custom insights streams"""
         streams = []
         for insight in config.custom_insights or []:
             insight_fields = set(insight.fields)

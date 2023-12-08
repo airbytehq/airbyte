@@ -4,16 +4,16 @@ import functools
 import json
 from abc import ABC, abstractmethod
 from pathlib import Path as FilePath
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from airbyte_cdk.test.http import HttpResponse
 
 
-def _extract(path: List[str], response_template: Dict[str, Any]) -> Any:
+def _extract(path: list[str], response_template: dict[str, Any]) -> Any:
     return functools.reduce(lambda a, b: a[b], path, response_template)
 
 
-def _replace_value(dictionary: Dict[str, Any], path: List[str], value: Any) -> None:
+def _replace_value(dictionary: dict[str, Any], path: list[str], value: Any) -> None:
     current = dictionary
     for key in path[:-1]:
         current = current[key]
@@ -22,10 +22,10 @@ def _replace_value(dictionary: Dict[str, Any], path: List[str], value: Any) -> N
 
 class Path(ABC):
     @abstractmethod
-    def update(self, template: Dict[str, Any], value: Any) -> None:
+    def update(self, template: dict[str, Any], value: Any) -> None:
         pass
 
-    def extract(self, template: Dict[str, Any]) -> Any:
+    def extract(self, template: dict[str, Any]) -> Any:
         pass
 
 
@@ -33,10 +33,10 @@ class FieldPath(Path):
     def __init__(self, field: str):
         self._path = [field]
 
-    def update(self, template: Dict[str, Any], value: Any) -> None:
+    def update(self, template: dict[str, Any], value: Any) -> None:
         _replace_value(template, self._path, value)
 
-    def extract(self, template: Dict[str, Any]) -> Any:
+    def extract(self, template: dict[str, Any]) -> Any:
         return _extract(self._path, template)
 
     def __str__(self) -> str:
@@ -44,13 +44,13 @@ class FieldPath(Path):
 
 
 class NestedPath(Path):
-    def __init__(self, path: List[str]):
+    def __init__(self, path: list[str]):
         self._path = path
 
-    def update(self, template: Dict[str, Any], value: Any) -> None:
+    def update(self, template: dict[str, Any], value: Any) -> None:
         _replace_value(template, self._path, value)
 
-    def extract(self, template: Dict[str, Any]) -> Any:
+    def extract(self, template: dict[str, Any]) -> Any:
         return _extract(self._path, template)
 
     def __str__(self) -> str:
@@ -59,7 +59,7 @@ class NestedPath(Path):
 
 class PaginationStrategy(ABC):
     @abstractmethod
-    def update(self, response: Dict[str, Any]) -> None:
+    def update(self, response: dict[str, Any]) -> None:
         pass
 
 
@@ -68,12 +68,12 @@ class FieldUpdatePaginationStrategy(PaginationStrategy):
         self._path = path
         self._value = value
 
-    def update(self, response: Dict[str, Any]) -> None:
+    def update(self, response: dict[str, Any]) -> None:
         self._path.update(response, self._value)
 
 
 class RecordBuilder:
-    def __init__(self, template: Dict[str, Any], id_path: Optional[Path], cursor_path: Optional[Union[FieldPath, NestedPath]]):
+    def __init__(self, template: dict[str, Any], id_path: Optional[Path], cursor_path: Optional[Union[FieldPath, NestedPath]]):
         self._record = template
         self._id_path = id_path
         self._cursor_path = cursor_path
@@ -107,20 +107,20 @@ class RecordBuilder:
         if not path:
             raise ValueError(
                 f"{field_name}_path was not provided and hence, the record {field_name} can't be modified. Please provide `id_field` while "
-                f"instantiating RecordBuilder to leverage this capability"
+                f"instantiating RecordBuilder to leverage this capability",
             )
         path.update(self._record, value)
 
-    def build(self) -> Dict[str, Any]:
+    def build(self) -> dict[str, Any]:
         return self._record
 
 
 class HttpResponseBuilder:
     def __init__(
-        self, template: Dict[str, Any], records_path: Union[FieldPath, NestedPath], pagination_strategy: Optional[PaginationStrategy]
+        self, template: dict[str, Any], records_path: Union[FieldPath, NestedPath], pagination_strategy: Optional[PaginationStrategy],
     ):
         self._response = template
-        self._records: List[RecordBuilder] = []
+        self._records: list[RecordBuilder] = []
         self._records_path = records_path
         self._pagination_strategy = pagination_strategy
         self._status_code = 200
@@ -133,7 +133,7 @@ class HttpResponseBuilder:
         if not self._pagination_strategy:
             raise ValueError(
                 "`pagination_strategy` was not provided and hence, fields related to the pagination can't be modified. Please provide "
-                "`pagination_strategy` while instantiating ResponseBuilder to leverage this capability"
+                "`pagination_strategy` while instantiating ResponseBuilder to leverage this capability",
             )
         self._pagination_strategy.update(self._response)
         return self
@@ -156,21 +156,20 @@ def _get_unit_test_folder(execution_folder: str) -> FilePath:
     return path
 
 
-def find_template(resource: str, execution_folder: str) -> Dict[str, Any]:
+def find_template(resource: str, execution_folder: str) -> dict[str, Any]:
     response_template_filepath = str(_get_unit_test_folder(execution_folder) / "resource" / "http" / "response" / f"{resource}.json")
-    with open(response_template_filepath, "r") as template_file:
+    with open(response_template_filepath) as template_file:
         return json.load(template_file)  # type: ignore  # we assume the dev correctly set up the resource file
 
 
 def create_builders_from_resource(
-    response_template: Dict[str, Any],
+    response_template: dict[str, Any],
     records_path: Union[FieldPath, NestedPath],
     record_id_path: Optional[Path] = None,
     record_cursor_path: Optional[Union[FieldPath, NestedPath]] = None,
     pagination_strategy: Optional[PaginationStrategy] = None,
-) -> Tuple[RecordBuilder, HttpResponseBuilder]:
-    """
-    This will use the first record define at `records_path` as a template for the records. If more records are defined, they will be ignored
+) -> tuple[RecordBuilder, HttpResponseBuilder]:
+    """This will use the first record define at `records_path` as a template for the records. If more records are defined, they will be ignored
     """
     if not isinstance(records_path, (FieldPath, NestedPath)):
         raise ValueError(f"records_path only supports FieldPath and NestedPath but {type(records_path)} was provided")
@@ -180,7 +179,7 @@ def create_builders_from_resource(
         if not record_template:
             raise ValueError(
                 f"Could not extract any record from template at path `{records_path}`. "
-                f"Please fix the template to provide a record sample or fix `records_path`."
+                f"Please fix the template to provide a record sample or fix `records_path`.",
             )
         return (
             RecordBuilder(record_template, record_id_path, record_cursor_path),

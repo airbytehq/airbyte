@@ -4,18 +4,20 @@
 
 import re
 import time
+from collections.abc import Callable, Generator, Iterable, MutableMapping
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Callable, Generator, Iterable, MutableMapping, Optional, Tuple, Type, Union
+from typing import Any, Optional, Union
 
 import pendulum
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v13.errors.types.authentication_error import AuthenticationErrorEnum
 from google.ads.googleads.v13.errors.types.authorization_error import AuthorizationErrorEnum
 from google.ads.googleads.v13.errors.types.quota_error import QuotaErrorEnum
 from google.ads.googleads.v13.errors.types.request_error import RequestErrorEnum
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from source_google_ads.google_ads import logger
 
 
@@ -37,12 +39,10 @@ REPORT_MAPPING = {
 
 
 class ExpiredPageTokenError(AirbyteTracedException):
-    """
-    Custom AirbyteTracedException exception to handle the scenario when the page token has expired
+    """Custom AirbyteTracedException exception to handle the scenario when the page token has expired
     while processing a response from Google Ads.
     """
 
-    pass
 
 
 def is_error_type(error_value, target_enum_value):
@@ -65,7 +65,7 @@ def traced_exception(ga_exception: GoogleAdsException, customer_id: str, catch_d
         request_error = error.error_code.request_error
 
         if is_error_type(authorization_error, AuthorizationErrorEnum.AuthorizationError.USER_PERMISSION_DENIED) or is_error_type(
-            authentication_error, AuthenticationErrorEnum.AuthenticationError.CUSTOMER_NOT_FOUND
+            authentication_error, AuthenticationErrorEnum.AuthenticationError.CUSTOMER_NOT_FOUND,
         ):
             message = (
                 f"Failed to access the customer '{customer_id}'. "
@@ -122,7 +122,7 @@ def traced_exception(ga_exception: GoogleAdsException, customer_id: str, catch_d
 
 def generator_backoff(
     wait_gen: Callable,
-    exception: Union[Type[Exception], tuple],
+    exception: Union[type[Exception], tuple],
     max_tries: Optional[int] = None,
     max_time: Optional[float] = None,
     on_backoff: Optional[Callable] = None,
@@ -169,7 +169,7 @@ def generator_backoff(
                                 "elapsed": elapsed_time,
                                 "wait": sleep_time,
                                 "exception": e,
-                            }
+                            },
                         )
 
                     time.sleep(sleep_time)
@@ -195,8 +195,7 @@ def chunk_date_range(
     slice_duration: pendulum.Duration = pendulum.duration(days=14),
     slice_step: pendulum.Duration = pendulum.duration(days=1),
 ) -> Iterable[Optional[MutableMapping[str, any]]]:
-    """
-    Splits a date range into smaller chunks based on the provided parameters.
+    """Splits a date range into smaller chunks based on the provided parameters.
 
     Args:
         start_date (str): The beginning date of the range.
@@ -245,12 +244,11 @@ def chunk_date_range(
 
 @dataclass(repr=False, eq=False, frozen=True)
 class GAQL:
-    """
-    Simple regex parser of Google Ads Query Language
+    """Simple regex parser of Google Ads Query Language
     https://developers.google.com/google-ads/api/docs/query/grammar
     """
 
-    fields: Tuple[str]
+    fields: tuple[str]
     resource_name: str
     where: str
     order_by: str

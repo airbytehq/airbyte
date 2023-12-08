@@ -6,17 +6,19 @@
 import json
 import socket
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from datetime import datetime, timedelta
 from functools import partial
-from typing import Any, Callable, Dict, Iterator, Mapping, Optional, Sequence
+from typing import Any, Optional
 
 import backoff
 import pendulum
 import pytz
-from airbyte_cdk.entrypoint import logger
 from google.oauth2 import service_account
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError as GoogleApiHttpError
+
+from airbyte_cdk.entrypoint import logger
 
 from .utils import rate_limit_handling
 
@@ -31,7 +33,7 @@ class API:
         self._resource = None
         self.lookback = lookback
 
-    def _load_account_info(self) -> Dict:
+    def _load_account_info(self) -> dict:
         account_info = json.loads(self._credentials_json)
         return account_info
 
@@ -51,7 +53,7 @@ class API:
         return getattr(service, name)
 
     @backoff.on_exception(backoff.expo, (GoogleApiHttpError, socket.timeout), max_tries=7, giveup=rate_limit_handling)
-    def get(self, name: str, params: Dict = None) -> Dict:
+    def get(self, name: str, params: dict = None) -> dict:
         if not self._resource:
             self._resource = self._get_resource(name)
         response = self._resource().list(**params).execute()
@@ -74,7 +76,7 @@ class StreamAPI(ABC):
     def name(self):
         """Name of the stream"""
 
-    def _api_get(self, resource: str, params: Dict = None):
+    def _api_get(self, resource: str, params: dict = None):
         return self._api.get(resource, params=params)
 
     @abstractmethod
@@ -82,10 +84,10 @@ class StreamAPI(ABC):
         """Iterate over entities"""
 
     @abstractmethod
-    def process_response(self, response: Dict) -> Iterator[dict]:
+    def process_response(self, response: dict) -> Iterator[dict]:
         """Process Google Workspace Admin SDK Reports API response"""
 
-    def read(self, getter: Callable, params: Dict = None) -> Iterator:
+    def read(self, getter: Callable, params: dict = None) -> Iterator:
         """Read using getter"""
         params = params or {}
         params["maxResults"] = self.results_per_page
@@ -141,7 +143,7 @@ class IncrementalStreamAPI(StreamAPI, ABC):
 class ActivitiesAPI(IncrementalStreamAPI):
     application_name = None
 
-    def get_params(self) -> Dict:
+    def get_params(self) -> dict:
         params = {"userKey": "all", "applicationName": self.application_name}
 
         if self._start_time:
@@ -149,7 +151,7 @@ class ActivitiesAPI(IncrementalStreamAPI):
 
         return params
 
-    def process_response(self, response: Dict) -> Iterator[dict]:
+    def process_response(self, response: dict) -> Iterator[dict]:
         activities = response.get("items", [])
         for activity in activities:
             activity_id = activity.get("id", {})

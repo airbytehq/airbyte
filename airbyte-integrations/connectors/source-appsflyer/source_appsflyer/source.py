@@ -4,21 +4,23 @@
 
 import csv
 from abc import ABC
+from collections.abc import Callable, Iterable, Mapping, MutableMapping
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from http import HTTPStatus
 from operator import add
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import pendulum
 import requests
+from pendulum.tz.timezone import Timezone
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from pendulum.tz.timezone import Timezone
 
 from . import fields
 
@@ -39,7 +41,7 @@ class AppsflyerStream(HttpStream, ABC):
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     def __init__(
-        self, app_id: str, api_token: str, timezone: str, start_date: Union[date, str] = None, end_date: Union[date, str] = None, **kwargs
+        self, app_id: str, api_token: str, timezone: str, start_date: Union[date, str] = None, end_date: Union[date, str] = None, **kwargs,
     ):
         super().__init__(**kwargs)
         self.app_id = app_id
@@ -56,7 +58,7 @@ class AppsflyerStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {
             "api_token": self.api_token,
@@ -117,7 +119,7 @@ class AppsflyerStream(HttpStream, ABC):
         return wait_time
 
     @transformer.registerCustomTransform
-    def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+    def transform_function(original_value: Any, field_schema: dict[str, Any]) -> Any:
         if original_value == "" or original_value == "N/A" or original_value == "NULL":
             return None
         if isinstance(original_value, float):
@@ -139,11 +141,11 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
             return {}
         except TypeError as e:
             raise TypeError(
-                f"Expected {self.cursor_field} type '{type(current_state).__name__}' but returned type '{type(latest_state).__name__}'."
+                f"Expected {self.cursor_field} type '{type(current_state).__name__}' but returned type '{type(latest_state).__name__}'.",
             ) from e
 
     def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, any]]]:
         stream_state = stream_state or {}
         cursor_value = stream_state.get(self.cursor_field)
@@ -160,7 +162,7 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
         date = comparator(cursor_value, default_date)
         return date
 
-    def chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
+    def chunk_date_range(self, start_date: datetime) -> list[Mapping[str, any]]:
         dates = []
         delta = timedelta(days=self.intervals)
         while start_date <= self.end_date:
@@ -175,7 +177,7 @@ class RawDataMixin:
     additional_fields = fields.raw_data.additional_fields
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["from"] = stream_slice.get(self.cursor_field).to_datetime_string()
@@ -190,7 +192,7 @@ class AggregateDataMixin:
     cursor_field = "date"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["from"] = stream_slice.get(self.cursor_field).to_date_string()
@@ -201,7 +203,7 @@ class AggregateDataMixin:
 
 class RetargetingMixin:
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["reattr"] = True
@@ -214,7 +216,7 @@ class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "event_time"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "in_app_events_report/v5"
 
@@ -224,7 +226,7 @@ class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
     additional_fields = fields.uninstall_events.additional_fields
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "uninstall_events_report/v5"
 
@@ -233,7 +235,7 @@ class Installs(RawDataMixin, IncrementalAppsflyerStream):
     cursor_field = "install_time"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "installs_report/v5"
 
@@ -250,7 +252,7 @@ class PartnersReport(AggregateDataMixin, IncrementalAppsflyerStream):
     main_fields = fields.partners_report.main_fields
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "partners_by_date_report/v5"
 
@@ -259,7 +261,7 @@ class DailyReport(AggregateDataMixin, IncrementalAppsflyerStream):
     main_fields = fields.daily_report.main_fields
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "daily_report/v5"
 
@@ -268,7 +270,7 @@ class GeoReport(AggregateDataMixin, IncrementalAppsflyerStream):
     main_fields = fields.geo_report.main_fields
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "geo_by_date_report/v5"
 
@@ -287,7 +289,7 @@ class RetargetingGeoReport(RetargetingMixin, GeoReport):
 
 # Source
 class SourceAppsflyer(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             timezone = config.get("timezone", "UTC")
             if timezone not in pendulum.timezones:
@@ -317,7 +319,7 @@ class SourceAppsflyer(AbstractSource):
 
         return start_date
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         config["timezone"] = config.get("timezone", "UTC")
         timezone = pendulum.timezone(config.get("timezone", "UTC"))
         earliest_date = pendulum.today(timezone) - timedelta(days=90)

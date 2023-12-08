@@ -6,8 +6,9 @@ import abc
 import json
 from typing import Optional, Union
 
-import airbyte_api_client
 import click
+
+import airbyte_api_client
 from airbyte_api_client.api import destination_api, source_api, web_backend_api
 from airbyte_api_client.model.destination_id_request_body import DestinationIdRequestBody
 from airbyte_api_client.model.destination_read import DestinationRead
@@ -104,7 +105,6 @@ class BaseResource(abc.ABC):
         Returns:
             Union[WebBackendConnectionRead, SourceRead, DestinationRead]: The remote resource model instance.
         """
-
         api_response = self._list_for_workspace_fn(self.api_instance, self.list_for_workspace_payload)
         matching_resources = []
         for resource in getattr(api_response, f"{self.name}s"):
@@ -114,7 +114,7 @@ class BaseResource(abc.ABC):
             raise ResourceNotFoundError(f"The {self.name} {self.resource_name} was not found in your current Airbyte workspace.")
         if len(matching_resources) > 1:
             raise DuplicateResourceError(
-                f"{len(matching_resources)} {self.name}s with the name {self.resource_name} were found in your current Airbyte workspace."
+                f"{len(matching_resources)} {self.name}s with the name {self.resource_name} were found in your current Airbyte workspace.",
             )
         return matching_resources[0]
 
@@ -157,6 +157,7 @@ class Source(BaseResource):
     @property
     def get_payload(self) -> Optional[SourceIdRequestBody]:
         """Defines the payload to retrieve the remote source according to its resource_id.
+
         Returns:
             SourceIdRequestBody: The SourceIdRequestBody payload.
         """
@@ -172,6 +173,7 @@ class Destination(BaseResource):
     @property
     def get_payload(self) -> Optional[DestinationIdRequestBody]:
         """Defines the payload to retrieve the remote destination according to its resource_id.
+
         Returns:
             DestinationIdRequestBody: The DestinationIdRequestBody payload.
         """
@@ -187,6 +189,7 @@ class Connection(BaseResource):
     @property
     def get_payload(self) -> Optional[WebBackendConnectionRequestBody]:
         """Defines the payload to retrieve the remote connection according to its resource_id.
+
         Returns:
             WebBackendConnectionRequestBody: The WebBackendConnectionRequestBody payload.
         """

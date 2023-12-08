@@ -14,6 +14,7 @@ from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
+
 from source_facebook_marketing.streams.common import retry_pattern
 
 logger = logging.getLogger("airbyte")
@@ -128,8 +129,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
             sleep(sleep_time.total_seconds())
 
     def _update_insights_throttle_limit(self, response: FacebookResponse):
-        """
-        For /insights call every response contains x-fb-ads-insights-throttle
+        """For /insights call every response contains x-fb-ads-insights-throttle
         header representing current throttle limit parameter for async insights
         jobs for current app/account.  We need this information to adjust
         number of running async jobs for optimal performance.
@@ -143,8 +143,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
             )
 
     def _should_restore_default_page_size(self, params):
-        """
-        Track the state of the `request_record_limit_is_reduced` and `last_api_call_is_successfull`,
+        """Track the state of the `request_record_limit_is_reduced` and `last_api_call_is_successfull`,
         based on the logic from `@backoff_policy` (common.py > `reduce_request_record_limit` and `revert_request_record_limit`)
         """
         params = True if params else False
@@ -163,7 +162,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
         if self._should_restore_default_page_size(params):
-            params.update(**{"limit": self.default_page_size})
+            params.update(limit=self.default_page_size)
         response = super().call(method, path, params, headers, files, url_override, api_version)
         self._update_insights_throttle_limit(response)
         self._handle_call_rate_limit(response, params)
@@ -179,7 +178,7 @@ class API:
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         # adding the default page size from config to the api base class
         # reference issue: https://github.com/airbytehq/airbyte/issues/25383
-        setattr(self.api, "default_page_size", page_size)
+        self.api.default_page_size = page_size
         # set the default API client to Facebook lib.
         FacebookAdsApi.set_default_api(self.api)
 

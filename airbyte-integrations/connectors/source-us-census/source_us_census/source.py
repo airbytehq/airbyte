@@ -4,10 +4,12 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 from urllib.parse import parse_qs
 
 import requests
+
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -22,8 +24,7 @@ def prepare_request_params(query_params: str, api_key: str) -> dict:
 
 
 class UsCensusStream(HttpStream, ABC):
-    """
-    Generic stream to ingest US Census data.
+    """Generic stream to ingest US Census data.
 
     You should get an API key at https://api.census.gov/data/key_signup.html.
     """
@@ -52,14 +53,12 @@ class UsCensusStream(HttpStream, ABC):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        Adds request parameters and api key from the config.
+        """Adds request parameters and api key from the config.
         """
         return prepare_request_params(self.query_params, self.api_key)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        Parses the response from the us census website.
+        """Parses the response from the us census website.
 
         The US Census provides data in an atypical format,
         which motivated the creation of this source rather
@@ -133,7 +132,7 @@ class UsCensusStream(HttpStream, ABC):
                         zip(
                             header,
                             split_values,
-                        )
+                        ),
                     )
                 buffer = ""
             else:
@@ -141,8 +140,7 @@ class UsCensusStream(HttpStream, ABC):
             is_prev_escape = False
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        The US Census website hosts many APIs: https://www.census.gov/data/developers/data-sets.html
+        """The US Census website hosts many APIs: https://www.census.gov/data/developers/data-sets.html
 
         These APIs return data in a non standard format.
         We create the JSON schemas dynamically by reading the first "row" of data we get.
@@ -167,17 +165,15 @@ class UsCensusStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
-        """
-        Gets path from the config.
+        """Gets path from the config.
         """
         return self.query_path
 
 
 # Source
 class SourceUsCensus(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Tests the connection and the API key for the US census website.
+    def check_connection(self, logger, config) -> tuple[bool, any]:
+        """Tests the connection and the API key for the US census website.
 
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
@@ -200,9 +196,8 @@ class SourceUsCensus(AbstractSource):
         except Exception as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        The US Census website hosts many APIs: https://www.census.gov/data/developers/data-sets.html
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """The US Census website hosts many APIs: https://www.census.gov/data/developers/data-sets.html
 
         We provide one generic stream of all the US Census APIs rather than one stream per API.
 
@@ -214,5 +209,5 @@ class SourceUsCensus(AbstractSource):
                 query_path=config.get("query_path"),
                 api_key=config.get("api_key"),
                 authenticator=NoAuth(),
-            )
+            ),
         ]

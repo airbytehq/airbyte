@@ -5,7 +5,8 @@
 
 import traceback
 import uuid
-from typing import Any, Iterable, Mapping
+from collections.abc import Iterable, Mapping
+from typing import Any
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
@@ -20,8 +21,7 @@ class DestinationSftpJson(Destination):
         configured_catalog: ConfiguredAirbyteCatalog,
         input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
-        """
-        Reads the input stream of messages, config, and catalog to write data to the destination.
+        """Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
         in the input message stream. Outputting a state message means that every AirbyteRecordMessage which came before it has been
@@ -53,8 +53,7 @@ class DestinationSftpJson(Destination):
                     continue
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
+        """Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
 
         :param logger: Logging object to display debug/info/error to the logs

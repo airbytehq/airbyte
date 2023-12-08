@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional, Tuple
+from typing import Optional
 
-import airbyte_api_client
 import click
 import pkg_resources
+
+import airbyte_api_client
 from airbyte_api_client.api import workspace_api
 from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 
@@ -20,7 +21,7 @@ from .init import commands as init_commands
 from .list import commands as list_commands
 from .telemetry import TelemetryClient, build_user_agent
 
-AVAILABLE_COMMANDS: List[click.Command] = [
+AVAILABLE_COMMANDS: list[click.Command] = [
     list_commands._list,
     get_commands.get,
     import_commands._import,
@@ -37,7 +38,7 @@ def set_context_object(
     airbyte_password: str,
     workspace_id: str,
     enable_telemetry: bool,
-    option_based_api_http_headers: Optional[List[Tuple[str, str]]],
+    option_based_api_http_headers: Optional[list[tuple[str, str]]],
     api_http_headers_file_path: Optional[str],
 ) -> click.Context:
     """Fill the context object with resources that will be reused by other commands.
@@ -117,7 +118,7 @@ def octavia(
     airbyte_password: str,
     workspace_id: str,
     enable_telemetry: bool,
-    option_based_api_http_headers: Optional[List[Tuple[str, str]]] = None,
+    option_based_api_http_headers: Optional[list[tuple[str, str]]] = None,
     api_http_headers_file_path: Optional[str] = None,
 ) -> None:
     ctx = set_context_object(
@@ -133,15 +134,15 @@ def octavia(
 
     click.echo(
         click.style(
-            f"🐙 - Octavia is targetting your Airbyte instance running at {airbyte_url} on workspace {ctx.obj['WORKSPACE_ID']}.", fg="green"
-        )
+            f"🐙 - Octavia is targetting your Airbyte instance running at {airbyte_url} on workspace {ctx.obj['WORKSPACE_ID']}.", fg="green",
+        ),
     )
     if not ctx.obj["PROJECT_IS_INITIALIZED"]:
         click.echo(click.style("🐙 - Project is not yet initialized.", fg="red", bold=True))
 
 
 def get_api_client(
-    airbyte_url: str, airbyte_username: str, airbyte_password: str, user_agent: str, api_http_headers: Optional[List[ApiHttpHeader]]
+    airbyte_url: str, airbyte_username: str, airbyte_password: str, user_agent: str, api_http_headers: Optional[list[ApiHttpHeader]],
 ):
     client_configuration = airbyte_api_client.Configuration(host=f"{airbyte_url}/api", username=airbyte_username, password=airbyte_password)
     api_client = airbyte_api_client.ApiClient(client_configuration)

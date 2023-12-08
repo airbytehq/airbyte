@@ -5,8 +5,9 @@
 
 import json
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from functools import partial
-from typing import Any, Callable, Dict, Iterator, Mapping, Sequence
+from typing import Any
 
 import backoff
 from google.auth.transport.requests import Request
@@ -27,7 +28,7 @@ class API:
         self._service = None
 
     @staticmethod
-    def _load_account_info(credentials_json: str) -> Dict:
+    def _load_account_info(credentials_json: str) -> dict:
         account_info = json.loads(credentials_json)
         return account_info
 
@@ -68,7 +69,7 @@ class API:
         return getattr(self._service, name)
 
     @backoff.on_exception(backoff.expo, GoogleApiHttpError, max_tries=7, giveup=rate_limit_handling)
-    def get(self, name: str, params: Dict = None) -> Dict:
+    def get(self, name: str, params: dict = None) -> dict:
         resource = self._get_resource(name)
         response = resource().list(**params).execute()
         return response
@@ -81,7 +82,7 @@ class StreamAPI(ABC):
         super().__init__(*args, **kwargs)
         self._api = api
 
-    def _api_get(self, resource: str, params: Dict = None):
+    def _api_get(self, resource: str, params: dict = None):
         return self._api.get(resource, params=params)
 
     @abstractmethod
@@ -89,10 +90,10 @@ class StreamAPI(ABC):
         """Iterate over entities"""
 
     @abstractmethod
-    def process_response(self, response: Dict) -> Iterator[dict]:
+    def process_response(self, response: dict) -> Iterator[dict]:
         """Process Google Directory API response"""
 
-    def read(self, getter: Callable, params: Dict = None) -> Iterator:
+    def read(self, getter: Callable, params: dict = None) -> Iterator:
         """Read using getter"""
         params = params or {}
         params["maxResults"] = self.results_per_page
@@ -107,7 +108,7 @@ class StreamAPI(ABC):
 
 
 class UsersAPI(StreamAPI):
-    def process_response(self, response: Dict) -> Iterator[dict]:
+    def process_response(self, response: dict) -> Iterator[dict]:
         return response["users"]
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -116,7 +117,7 @@ class UsersAPI(StreamAPI):
 
 
 class GroupsAPI(StreamAPI):
-    def process_response(self, response: Dict) -> Iterator[dict]:
+    def process_response(self, response: dict) -> Iterator[dict]:
         return response["groups"]
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
@@ -125,7 +126,7 @@ class GroupsAPI(StreamAPI):
 
 
 class GroupMembersAPI(StreamAPI):
-    def process_response(self, response: Dict) -> Iterator[dict]:
+    def process_response(self, response: dict) -> Iterator[dict]:
         return response.get("members", [])
 
     def list(self, fields: Sequence[str] = None) -> Iterator[dict]:

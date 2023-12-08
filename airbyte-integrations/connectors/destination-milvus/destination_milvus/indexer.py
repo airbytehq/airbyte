@@ -7,13 +7,14 @@ import os
 from multiprocessing import Process
 from typing import Optional
 
+from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
+
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier, format_exception
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_milvus.config import MilvusIndexingConfigModel
-from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
 
 CLOUD_DEPLOYMENT_MODE = "cloud"
 
@@ -46,13 +47,12 @@ class MilvusIndexer(Indexer):
             raise Exception("Connection timed out, check your host and credentials")
 
     def _create_index(self, collection: Collection):
-        """
-        Create an index on the vector field when auto-creating the collection.
+        """Create an index on the vector field when auto-creating the collection.
 
         This uses an IVF_FLAT index with 1024 clusters. This is a good default for most use cases. If more control is needed, the index can be created manually (this is also stated in the documentation)
         """
         collection.create_index(
-            field_name=self.config.vector_field, index_params={"metric_type": "L2", "index_type": "IVF_FLAT", "params": {"nlist": 1024}}
+            field_name=self.config.vector_field, index_params={"metric_type": "L2", "index_type": "IVF_FLAT", "params": {"nlist": 1024}},
         )
 
     def _create_client(self):
@@ -93,7 +93,7 @@ class MilvusIndexer(Indexer):
         return None
 
     def _uses_safe_config(self) -> bool:
-        return self.config.host.startswith("https://") and not self.config.auth.mode == "no_auth"
+        return self.config.host.startswith("https://") and self.config.auth.mode != "no_auth"
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()

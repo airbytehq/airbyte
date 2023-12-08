@@ -7,12 +7,14 @@ import gzip
 import json as json_lib
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, MutableMapping
 from io import StringIO
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
 import pendulum
 import requests
 import xmltodict
+
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -40,7 +42,7 @@ class AmazonSPStream(HttpStream, ABC):
         marketplace_id: str,
         period_in_days: Optional[int],
         replication_end_date: Optional[str],
-        report_options: Optional[List[Mapping[str, Any]]] = None,
+        report_options: Optional[list[Mapping[str, Any]]] = None,
         *args,
         **kwargs,
     ):
@@ -87,11 +89,11 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
 
     @property
     @abstractmethod
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Union[str, list[str]]:
         pass
 
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         if next_page_token:
             return dict(next_page_token)
@@ -114,16 +116,14 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
             return {self.next_page_token_field: next_page_token}
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss,
     ) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
+        """:return an iterable containing each record in the response
         """
         yield from response.json().get(self.data_field, [])
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_benchmark = latest_record[self.cursor_field]
@@ -165,7 +165,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         marketplace_id: str,
         period_in_days: Optional[int],
         replication_end_date: Optional[str],
-        report_options: Optional[List[Mapping[str, Any]]] = None,
+        report_options: Optional[list[Mapping[str, Any]]] = None,
         *args,
         **kwargs,
     ):
@@ -205,7 +205,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     def _report_data(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
@@ -218,7 +218,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     def _create_report(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
@@ -247,8 +247,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
 
     @default_backoff_handler(factor=5, max_tries=5)
     def download_and_decompress_report_document(self, payload: dict) -> str:
-        """
-        Unpacks a report document
+        """Unpacks a report document
         """
         report = requests.get(payload.get("url"))
         report.raise_for_status()
@@ -257,7 +256,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         return report.content.decode("iso-8859-1")
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs,
     ) -> Iterable[Mapping]:
         payload = response.json()
 
@@ -273,7 +272,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         return {option.get("option_name"): option.get("option_value") for option in self._report_options} if self._report_options else None
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
         end_date = pendulum.now("utc")
@@ -300,12 +299,11 @@ class ReportsAmazonSPStream(HttpStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """
-        Create and retrieve the report.
+        """Create and retrieve the report.
         Decrypt and parse the report is its fully proceed, then yield the report document records.
         """
         report_payload = {}
@@ -366,24 +364,21 @@ class RapidRetailAnalyticsInventoryReport(ReportsAmazonSPStream):
 
 
 class FlatFileOrdersReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
+    """Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
     """
 
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
 
 
 class FbaStorageFeesReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202086720
+    """Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202086720
     """
 
     name = "GET_FBA_STORAGE_FEE_CHARGES_DATA"
 
 
 class FulfilledShipmentsReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
+    """Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
     """
 
     name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
@@ -396,24 +391,21 @@ class FlatFileOpenListingsReports(ReportsAmazonSPStream):
 
 
 class FbaOrdersReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110
+    """Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110
     """
 
     name = "GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA"
 
 
 class FlatFileActionableOrderDataShipping(ReportsAmazonSPStream):
-    """
-    Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_flat_file_actionable_order_data_shipping
+    """Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_flat_file_actionable_order_data_shipping
     """
 
     name = "GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING"
 
 
 class OrderReportDataShipping(ReportsAmazonSPStream):
-    """
-    Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_order_report_data_shipping
+    """Field definitions: https://developer-docs.amazon.com/sp-api/docs/order-reports-attributes#get_order_report_data_shipping
     """
 
     name = "GET_ORDER_REPORT_DATA_SHIPPING"
@@ -422,7 +414,7 @@ class OrderReportDataShipping(ReportsAmazonSPStream):
         try:
             parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message"})
         except Exception as e:
-            self.logger.warning(f"Unable to parse the report for the stream {self.name}, error: {str(e)}")
+            self.logger.warning(f"Unable to parse the report for the stream {self.name}, error: {e!s}")
             return []
 
         reports = parsed.get("AmazonEnvelope", {}).get("Message", {})
@@ -434,24 +426,21 @@ class OrderReportDataShipping(ReportsAmazonSPStream):
 
 
 class FbaShipmentsReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100
+    """Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100
     """
 
     name = "GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA"
 
 
 class FbaReplacementsReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/help/hub/reference/200453300
+    """Field definitions: https://sellercentral.amazon.com/help/hub/reference/200453300
     """
 
     name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA"
 
 
 class RestockInventoryReports(ReportsAmazonSPStream):
-    """
-    Field definitions: 	https://sellercentral.amazon.com/help/hub/reference/202105670
+    """Field definitions: 	https://sellercentral.amazon.com/help/hub/reference/202105670
     """
 
     name = "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT"
@@ -461,10 +450,10 @@ class GetXmlBrowseTreeData(ReportsAmazonSPStream):
     def parse_document(self, document):
         try:
             parsed = xmltodict.parse(
-                document, dict_constructor=dict, attr_prefix="", cdata_key="text", force_list={"attribute", "id", "refinementField"}
+                document, dict_constructor=dict, attr_prefix="", cdata_key="text", force_list={"attribute", "id", "refinementField"},
             )
         except Exception as e:
-            self.logger.warning(f"Unable to parse the report for the stream {self.name}, error: {str(e)}")
+            self.logger.warning(f"Unable to parse the report for the stream {self.name}, error: {e!s}")
             return []
 
         return parsed.get("Result", {}).get("Node", [])
@@ -501,7 +490,7 @@ class XmlAllOrdersDataByOrderDataGeneral(ReportsAmazonSPStream):
         try:
             parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message", "OrderItem"})
         except Exception as e:
-            self.logger.warning(f"Unable to parse the report for the stream {self.name}, error: {str(e)}")
+            self.logger.warning(f"Unable to parse the report for the stream {self.name}, error: {e!s}")
             return []
 
         orders = parsed.get("AmazonEnvelope", {}).get("Message", [])
@@ -561,7 +550,7 @@ class AnalyticsStream(ReportsAmazonSPStream):
     def _report_data(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
@@ -610,8 +599,7 @@ class BrandAnalyticsMarketBasketReports(AnalyticsStream):
 
 
 class BrandAnalyticsSearchTermsReports(AnalyticsStream):
-    """
-    Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
+    """Field definitions: https://sellercentral.amazon.co.uk/help/hub/reference/G5NXWNY8HUD3VDCW
     """
 
     name = "GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT"
@@ -634,8 +622,7 @@ class BrandAnalyticsItemComparisonReports(AnalyticsStream):
 
 
 class VendorInventoryReports(AnalyticsStream):
-    """
-    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#vendor-retail-analytics-reports
+    """Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#vendor-retail-analytics-reports
     """
 
     name = "GET_VENDOR_INVENTORY_REPORT"
@@ -651,12 +638,11 @@ class VendorTrafficReport(AnalyticsStream):
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
     @property
     @abstractmethod
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Union[str, list[str]]:
         pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_benchmark = latest_record[self.cursor_field]
@@ -666,8 +652,7 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
 
 
 class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202125660
+    """Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202125660
     """
 
     # The list of MarketplaceIds can be found here https://docs.developer.amazonservices.com/en_UK/dev_guide/DG_Endpoints.html
@@ -709,7 +694,7 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
         self.transformer.registerCustomTransform(self.get_transform_function())
 
     def get_transform_function(self):
-        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+        def transform_function(original_value: Any, field_schema: dict[str, Any]) -> Any:
             if original_value and "format" in field_schema and field_schema["format"] == "date":
                 date_format = self.MARKETPLACE_DATE_FORMAT_MAP.get(self.marketplace_id)
                 if not date_format:
@@ -736,8 +721,7 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
 
 
 class FbaAfnInventoryReports(IncrementalReportsAmazonSPStream):
-    """
-    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
+    """Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
     Report has a long-running issue (fails when requested frequently): https://github.com/amzn/selling-partner-api-docs/issues/2231
     """
 
@@ -746,8 +730,7 @@ class FbaAfnInventoryReports(IncrementalReportsAmazonSPStream):
 
 
 class FbaAfnInventoryByCountryReports(IncrementalReportsAmazonSPStream):
-    """
-    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
+    """Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
     Report has a long-running issue (fails when requested frequently): https://github.com/amzn/selling-partner-api-docs/issues/2231
     """
 
@@ -756,8 +739,7 @@ class FbaAfnInventoryByCountryReports(IncrementalReportsAmazonSPStream):
 
 
 class FlatFileOrdersReportsByLastUpdate(IncrementalReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
+    """Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=201648780
     """
 
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL"
@@ -765,8 +747,7 @@ class FlatFileOrdersReportsByLastUpdate(IncrementalReportsAmazonSPStream):
 
 
 class Orders(IncrementalAmazonSPStream):
-    """
-    API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md
+    """API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/orders-api/ordersV0.md
     API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/orders-api-model/ordersV0.json
     """
 
@@ -784,14 +765,14 @@ class Orders(IncrementalAmazonSPStream):
         return f"orders/{ORDERS_API_VERSION}/orders"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         params.update({"MarketplaceIds": self.marketplace_id})
         return params
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs,
     ) -> Iterable[Mapping]:
         yield from response.json().get(self.data_field, {}).get(self.name, [])
 
@@ -804,8 +785,7 @@ class Orders(IncrementalAmazonSPStream):
 
 
 class OrderItems(AmazonSPStream, ABC):
-    """
-    API docs: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems
+    """API docs: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems
     API model: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#orderitemslist
     """
 
@@ -818,7 +798,7 @@ class OrderItems(AmazonSPStream, ABC):
     page_size_field = None
     default_backoff_time = 10
     default_stream_slice_delay_time = 1
-    cached_state: Dict = {}
+    cached_state: dict = {}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -828,7 +808,7 @@ class OrderItems(AmazonSPStream, ABC):
         return f"orders/{ORDERS_API_VERSION}/orders/{stream_slice[self.stream_slice_cursor_field]}/orderItems"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         if next_page_token:
             return dict(next_page_token)
@@ -865,7 +845,7 @@ class OrderItems(AmazonSPStream, ABC):
             return self.default_backoff_time
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs,
     ) -> Iterable[Mapping]:
         order_items_list = response.json().get(self.data_field, {})
         self.logger.info(f"order_items_list efim {order_items_list}")
@@ -878,8 +858,7 @@ class OrderItems(AmazonSPStream, ABC):
 
 
 class LedgerDetailedViewReports(IncrementalReportsAmazonSPStream):
-    """
-    API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values
+    """API docs: https://developer-docs.amazon.com/sp-api/docs/report-type-values
     """
 
     name = "GET_LEDGER_DETAIL_VIEW_DATA"
@@ -891,7 +870,7 @@ class LedgerDetailedViewReports(IncrementalReportsAmazonSPStream):
         self.transformer.registerCustomTransform(self.get_transform_function())
 
     def get_transform_function(self):
-        def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+        def transform_function(original_value: Any, field_schema: dict[str, Any]) -> Any:
             if original_value and field_schema.get("format") == "date":
                 transformed_value = pendulum.from_format(original_value, "MM/DD/YYYY").to_date_string()
                 return transformed_value
@@ -905,13 +884,13 @@ class IncrementalAnalyticsStream(AnalyticsStream):
 
     @property
     @abstractmethod
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Union[str, list[str]]:
         pass
 
     def _report_data(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
@@ -927,7 +906,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
         return data
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs,
     ) -> Iterable[Mapping]:
         payload = response.json()
 
@@ -941,8 +920,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
             yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_benchmark = latest_record[self.cursor_field]
@@ -951,7 +929,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
         return {self.cursor_field: latest_benchmark}
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date = pendulum.parse(self._replication_start_date)
         end_date = pendulum.now("utc").subtract(days=self.availability_sla_days)
@@ -978,7 +956,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
                 {
                     "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
                     "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
-                }
+                },
             )
             start_date = end_date_slice
 
@@ -986,8 +964,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
 
 
 class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
-    """
-    Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#seller-retail-analytics-reports
+    """Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#seller-retail-analytics-reports
     """
 
     name = "GET_SALES_AND_TRAFFIC_REPORT"
@@ -1004,8 +981,7 @@ class VendorSalesReports(IncrementalAnalyticsStream):
 
 
 class VendorDirectFulfillmentShipping(AmazonSPStream):
-    """
-    API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/vendor-direct-fulfillment-shipping-api/vendorDirectFulfillmentShippingV1.md
+    """API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/vendor-direct-fulfillment-shipping-api/vendorDirectFulfillmentShippingV1.md
     API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/vendor-direct-fulfillment-shipping-api-model/vendorDirectFulfillmentShippingV1.json
 
     Returns a list of shipping labels created during the time frame that you specify.
@@ -1025,7 +1001,7 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
         return f"vendor/directFulfillment/shipping/{VENDORS_API_VERSION}/shippingLabels"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
@@ -1034,7 +1010,7 @@ class VendorDirectFulfillmentShipping(AmazonSPStream):
                 end_date = self._replication_end_date
 
             start_date = max(pendulum.parse(self._replication_start_date), pendulum.parse(end_date).subtract(days=7, hours=1)).strftime(
-                self.time_format
+                self.time_format,
             )
 
             params.update({self.replication_start_date_field: start_date, self.replication_end_date_field: end_date})
@@ -1062,7 +1038,7 @@ class FinanceStream(AmazonSPStream, ABC):
         pass
 
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         if next_page_token:
             return dict(next_page_token)
@@ -1074,7 +1050,7 @@ class FinanceStream(AmazonSPStream, ABC):
 
         # start date and end date should not be more than 180 days apart.
         start_date = max(pendulum.parse(self._replication_start_date), pendulum.parse(end_date).subtract(days=180)).strftime(
-            DATE_TIME_FORMAT
+            DATE_TIME_FORMAT,
         )
 
         # logging to make sure user knows taken start date
@@ -1102,8 +1078,7 @@ class FinanceStream(AmazonSPStream, ABC):
 
 
 class ListFinancialEventGroups(FinanceStream):
-    """
-    API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/finances-api/financesV0.md#listfinancialeventgroups
+    """API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/finances-api/financesV0.md#listfinancialeventgroups
     API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/finances-api-model/financesV0.json
     """
 
@@ -1119,8 +1094,7 @@ class ListFinancialEventGroups(FinanceStream):
 
 
 class ListFinancialEvents(FinanceStream):
-    """
-    API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/finances-api/financesV0.md#listfinancialevents
+    """API docs: https://github.com/amzn/selling-partner-api-docs/blob/main/references/finances-api/financesV0.md#listfinancialevents
     API model: https://github.com/amzn/selling-partner-api-models/blob/main/models/finances-api-model/financesV0.json
     """
 
@@ -1146,7 +1120,7 @@ class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
     def _create_report(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
@@ -1154,17 +1128,15 @@ class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
         return {"reportId": stream_slice.get("report_id")}
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        From https://developer-docs.amazon.com/sp-api/docs/report-type-values
+        """From https://developer-docs.amazon.com/sp-api/docs/report-type-values
         documentation:
         ```Settlement reports cannot be requested or scheduled.
             They are automatically scheduled by Amazon.
             You can search for these reports using the getReports operation.
         ```
         """
-
         strict_start_date = pendulum.now("utc").subtract(days=90)
         utc_now = pendulum.now("utc").date().to_date_string()
 
@@ -1210,8 +1182,7 @@ class FlatFileSettlementV2Reports(IncrementalReportsAmazonSPStream):
 
 
 class FbaReimbursementsReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/help/hub/reference/G200732720
+    """Field definitions: https://sellercentral.amazon.com/help/hub/reference/G200732720
     """
 
     name = "GET_FBA_REIMBURSEMENTS_DATA"

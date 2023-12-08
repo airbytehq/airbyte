@@ -7,6 +7,7 @@ from datetime import timedelta
 import anyio
 import pytest
 from dagger import DaggerError
+
 from pipelines.models import reports, steps
 
 pytestmark = [
@@ -24,7 +25,7 @@ class TestStep:
             await anyio.sleep(run_duration.total_seconds())
             return steps.StepResult(self, steps.StepStatus.SUCCESS)
 
-    @pytest.fixture
+    @pytest.fixture()
     def test_context(self, mocker):
         return mocker.Mock(secrets_to_mask=[])
 
@@ -67,7 +68,7 @@ class TestStep:
         step.max_duration = timedelta(seconds=60)
         step.retry_delay = timedelta(seconds=0)
         step._run = mocker.AsyncMock(
-            side_effect=[steps.StepResult(step, step_status, exc_info=exc_info)] * (max(max_dagger_error_retries, max_retries) + 1)
+            side_effect=[steps.StepResult(step, step_status, exc_info=exc_info)] * (max(max_dagger_error_retries, max_retries) + 1),
         )
 
         step_result = await step.run()
@@ -80,7 +81,7 @@ class TestStep:
 
 
 class TestReport:
-    @pytest.fixture
+    @pytest.fixture()
     def test_context(self, mocker):
         return mocker.Mock()
 
@@ -91,7 +92,7 @@ class TestReport:
         assert not report.success
 
         report = reports.Report(
-            test_context, [steps.StepResult(None, steps.StepStatus.FAILURE), steps.StepResult(None, steps.StepStatus.SUCCESS)]
+            test_context, [steps.StepResult(None, steps.StepStatus.FAILURE), steps.StepResult(None, steps.StepStatus.SUCCESS)],
         )
         assert not report.success
 
@@ -99,7 +100,7 @@ class TestReport:
         assert report.success
 
         report = reports.Report(
-            test_context, [steps.StepResult(None, steps.StepStatus.SUCCESS), steps.StepResult(None, steps.StepStatus.SKIPPED)]
+            test_context, [steps.StepResult(None, steps.StepStatus.SUCCESS), steps.StepResult(None, steps.StepStatus.SKIPPED)],
         )
         assert report.success
 

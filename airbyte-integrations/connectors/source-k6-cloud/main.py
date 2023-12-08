@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_k6_cloud import SourceK6Cloud
+
+from airbyte_cdk.entrypoint import launch
 
 if __name__ == "__main__":
     source = SourceK6Cloud()

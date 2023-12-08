@@ -5,25 +5,33 @@
 
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, MutableMapping
 from functools import cached_property
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import requests
+from requests.exceptions import ConnectionError, InvalidURL, JSONDecodeError, RequestException, SSLError
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from requests.exceptions import ConnectionError, InvalidURL, JSONDecodeError, RequestException, SSLError
 
 from .auth import MissingAccessTokenError, ShopifyAuthenticator
 from .graphql import get_query_products
 from .transform import DataTypeEnforcer
-from .utils import SCOPES_MAPPING, ApiTypeEnum
+from .utils import (
+    SCOPES_MAPPING,
+    ApiTypeEnum,
+    ShopifyAccessScopesError,
+    ShopifyBadJsonError,
+    ShopifyConnectionError,
+    ShopifyNonRetryableErrors,
+    ShopifyWrongShopNameError,
+)
 from .utils import EagerlyCachedStreamState as stream_state_cache
-from .utils import ShopifyAccessScopesError, ShopifyBadJsonError, ShopifyConnectionError, ShopifyNonRetryableErrors
 from .utils import ShopifyRateLimiter as limiter
-from .utils import ShopifyWrongShopNameError
 
 
 class ShopifyStream(HttpStream, ABC):
@@ -42,7 +50,7 @@ class ShopifyStream(HttpStream, ABC):
     raise_on_http_errors = True
     max_retries = 5
 
-    def __init__(self, config: Dict):
+    def __init__(self, config: dict):
         super().__init__(authenticator=config["authenticator"])
         self._transformer = DataTypeEnforcer(self.get_json_schema())
         self.config = config
@@ -110,7 +118,7 @@ class ShopifyStream(HttpStream, ABC):
         known_errors = ShopifyNonRetryableErrors(self.name)
         status = response.status_code
         if status in known_errors.keys():
-            setattr(self, "raise_on_http_errors", False)
+            self.raise_on_http_errors = False
             self.logger.warning(known_errors.get(status))
             return False
         else:
@@ -124,12 +132,11 @@ class ShopifyDeletedEventsStream(ShopifyStream):
 
     @property
     def availability_strategy(self) -> None:
+        """No need to apply the `availability strategy` for this service stream.
         """
-        No need to apply the `availability strategy` for this service stream.
-        """
-        return None
+        return
 
-    def __init__(self, config: Dict, deleted_events_api_name: str):
+    def __init__(self, config: dict, deleted_events_api_name: str):
         self.deleted_events_api_name = deleted_events_api_name
         super().__init__(config)
 
@@ -137,8 +144,7 @@ class ShopifyDeletedEventsStream(ShopifyStream):
         return f"{self.data_field}.json"
 
     def get_json_schema(self) -> None:
-        """
-        No need to apply the `schema` for this service stream.
+        """No need to apply the `schema` for this service stream.
         """
         return {}
 
@@ -166,7 +172,7 @@ class ShopifyDeletedEventsStream(ShopifyStream):
         params = {}
 
         if not next_page_token:
-            params.update(**{"filter": self.deleted_events_api_name, "verb": "destroy"})
+            params.update(filter=self.deleted_events_api_name, verb="destroy")
             if stream_state:
                 state = stream_state.get("deleted", {}).get(self.cursor_field)
                 if state:
@@ -226,13 +232,13 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                     else:
                         # old entities could have cursor field in place, but set to null
                         self.logger.warning(
-                            f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` cursor value is: {record_value}, record is emitted without state comparison"
+                            f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` cursor value is: {record_value}, record is emitted without state comparison",
                         )
                         yield record
                 else:
                     # old entities could miss the cursor field
                     self.logger.warning(
-                        f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` missing cursor field: {self.cursor_field}, record is emitted without state comparison"
+                        f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` missing cursor field: {self.cursor_field}, record is emitted without state comparison",
                     )
                     yield record
         else:
@@ -243,38 +249,34 @@ class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream):
     @property
     @abstractmethod
     def deleted_events_api_name(self) -> str:
-        """
-        The string value of the Shopify Events Object to pull:
+        """The string value of the Shopify Events Object to pull:
 
-            articles -> Article
-            blogs -> Blog
-            custom_collections -> Collection
-            orders -> Order
-            pages -> Page
-            price_rules -> PriceRule
-            products -> Product
+        articles -> Article
+        blogs -> Blog
+        custom_collections -> Collection
+        orders -> Order
+        pages -> Page
+        price_rules -> PriceRule
+        products -> Product
 
         """
 
     @property
     def deleted_events(self) -> ShopifyDeletedEventsStream:
-        """
-        The Events stream instance to fetch the `destroyed` records for specified `deleted_events_api_name`, like: `Product`.
+        """The Events stream instance to fetch the `destroyed` records for specified `deleted_events_api_name`, like: `Product`.
         See more in `ShopifyDeletedEventsStream` class.
         """
         return ShopifyDeletedEventsStream(self.config, self.deleted_events_api_name)
 
     @property
     def default_deleted_state_comparison_value(self) -> Union[int, str]:
-        """
-        Set the default STATE comparison value for cases when the deleted record doesn't have it's value.
+        """Set the default STATE comparison value for cases when the deleted record doesn't have it's value.
         We expect the `deleted_at` cursor field for destroyed records would be always type of String.
         """
         return ""
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        We extend the stream state with `deleted` property to store the `destroyed` records STATE separetely from the Stream State.
+        """We extend the stream state with `deleted` property to store the `destroyed` records STATE separetely from the Stream State.
         """
         state = super().get_updated_state(current_stream_state, latest_record)
         # add `deleted` property to each stream supports `deleted events`,
@@ -298,8 +300,7 @@ class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream):
 
 
 class ShopifySubstream(IncrementalShopifyStream):
-    """
-    ShopifySubstream - provides slicing functionality for streams using parts of data from parent stream.
+    """ShopifySubstream - provides slicing functionality for streams using parts of data from parent stream.
     For example:
        - `Refunds Orders` is the entity of `Orders`,
        - `OrdersRisks` is the entity of `Orders`,
@@ -322,8 +323,7 @@ class ShopifySubstream(IncrementalShopifyStream):
 
     @cached_property
     def parent_stream(self) -> object:
-        """
-        Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
+        """Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
         """
         return self.parent_stream_class(self.config) if self.parent_stream_class else None
 
@@ -355,8 +355,7 @@ class ShopifySubstream(IncrementalShopifyStream):
         return params
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Reading the parent stream for slices with structure:
+        """Reading the parent stream for slices with structure:
         EXAMPLE: for given nested_record as `id` of Orders,
 
         Outputs:
@@ -387,11 +386,11 @@ class ShopifySubstream(IncrementalShopifyStream):
                             {
                                 self.slice_key: sub_record[self.nested_substream_list_field_id],
                                 self.cursor_field: record[self.nested_substream][0].get(
-                                    self.cursor_field, self.default_state_comparison_value
+                                    self.cursor_field, self.default_state_comparison_value,
                                 ),
                             }
                             for sub_record in record[self.nested_record]
-                        ]
+                        ],
                     )
             elif self.nested_substream:
                 if record.get(self.nested_substream):
@@ -399,7 +398,7 @@ class ShopifySubstream(IncrementalShopifyStream):
                         {
                             self.slice_key: record[self.nested_record],
                             self.cursor_field: record[self.nested_substream][0].get(self.cursor_field, self.default_state_comparison_value),
-                        }
+                        },
                     )
             else:
                 # avoid checking `deleted` records for substreams, a.k.a `Metafields` streams,
@@ -422,7 +421,6 @@ class ShopifySubstream(IncrementalShopifyStream):
         **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         """Reading child streams records for each `id`"""
-
         slice_data = stream_slice.get(self.slice_key)
         # sometimes the stream_slice.get(self.slice_key) has the list of records,
         # to avoid data exposition inside the logs, we should get the data we need correctly out of stream_slice.
@@ -494,7 +492,7 @@ class Orders(IncrementalShopifyStreamWithDeletedEvents):
         return f"{self.data_field}.json"
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
@@ -565,7 +563,7 @@ class ProductsGraphQl(IncrementalShopifyStream):
         else:
             filter_value = self.default_filter_field_value
         query = get_query_products(
-            first=self.limit, filter_field=self.filter_field, filter_value=filter_value, next_page_token=next_page_token
+            first=self.limit, filter_field=self.filter_field, filter_value=filter_value, next_page_token=next_page_token,
         )
         return {"query": query}
 
@@ -650,7 +648,7 @@ class AbandonedCheckouts(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
@@ -679,8 +677,7 @@ class MetafieldSmartCollections(MetafieldShopifySubstream):
 
 
 class Collects(IncrementalShopifyStream):
-    """
-    Collects stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
+    """Collects stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
     https://shopify.dev/docs/admin-api/rest/reference/products/collect
 
     The Collect stream is the link between Products and Collections, if the Collection is created for Products,
@@ -719,9 +716,7 @@ class MetafieldCollections(MetafieldShopifySubstream):
 
 
 class BalanceTransactions(IncrementalShopifyStream):
-
-    """
-    PaymentsTransactions stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
+    """PaymentsTransactions stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
     https://shopify.dev/api/admin-rest/2021-07/resources/transactions
     """
 
@@ -809,8 +804,7 @@ class DiscountCodes(ShopifySubstream):
 
 
 class Locations(ShopifyStream):
-    """
-    The location API does not support any form of filtering.
+    """The location API does not support any form of filtering.
     https://shopify.dev/api/admin-rest/2021-07/resources/location
 
     Therefore, only FULL_REFRESH mode is supported.
@@ -966,17 +960,15 @@ class ConnectionCheckTest:
 
 
 class SourceShopify(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        """
-        Testing connection availability for the connector.
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, any]:
+        """Testing connection availability for the connector.
         """
         config["shop"] = self.get_shop_name(config)
         config["authenticator"] = ShopifyAuthenticator(config)
         return ConnectionCheckTest(config).test_connection()
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Mapping a input config of the user input configuration as defined in the connector spec.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
         config["shop"] = self.get_shop_name(config)

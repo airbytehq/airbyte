@@ -26,15 +26,14 @@ import json
 import os
 import sys
 
-from airbyte_cdk.models import AirbyteMessage, Type
 from genson import SchemaBuilder
 from genson.schema.strategies.object import Object
-import genson.schema.strategies as strategies
+
+from airbyte_cdk.models import AirbyteMessage, Type
 
 
 class NoRequiredObj(Object):
-    """
-    This class has Object behaviour, but it does not generate "required[]" fields
+    """This class has Object behaviour, but it does not generate "required[]" fields
     every time it parses object. So we dont add unnecessary extra field.
     """
 

@@ -5,7 +5,8 @@
 
 import inspect
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Generator, List, Mapping, Tuple
+from collections.abc import Callable, Generator, Mapping
+from typing import Any
 
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
@@ -53,7 +54,7 @@ class BaseClient(StreamStateMixin, ABC):
         return mapping
 
     @staticmethod
-    def _get_fields_from_stream(stream: AirbyteStream) -> List[str]:
+    def _get_fields_from_stream(stream: AirbyteStream) -> list[str]:
         return list(stream.json_schema.get("properties", {}).keys())
 
     def _get_stream_method(self, name: str) -> Callable:
@@ -62,7 +63,7 @@ class BaseClient(StreamStateMixin, ABC):
             raise ValueError(f"Client does not know how to read stream `{name}`")
         return method
 
-    def read_stream(self, stream: AirbyteStream) -> Generator[Dict[str, Any], None, None]:
+    def read_stream(self, stream: AirbyteStream) -> Generator[dict[str, Any], None, None]:
         """Yield records from stream"""
         method = self._get_stream_method(stream.name)
         fields = self._get_fields_from_stream(stream)
@@ -88,7 +89,7 @@ class BaseClient(StreamStateMixin, ABC):
             )
 
     @abstractmethod
-    def health_check(self) -> Tuple[bool, str]:
+    def health_check(self) -> tuple[bool, str]:
         """Check if service is up and running"""
 
 

@@ -3,12 +3,14 @@
 #
 
 import re
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional, Union
+
+from recurly import Client
+from recurly.errors import MissingFeatureError, NotFoundError, ValidationError
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from recurly import Client
-from recurly.errors import MissingFeatureError, NotFoundError, ValidationError
 
 DEFAULT_PRIMARY_KEY = "id"
 DEFAULT_CURSOR = "updated_at"
@@ -33,15 +35,13 @@ class BaseStream(Stream):
 
     @property
     def name(self):
-        """
-        The name of the Recurly resource. By default it converts the class name from `CamelCase` to `snake_case`.
+        """The name of the Recurly resource. By default it converts the class name from `CamelCase` to `snake_case`.
         """
         return CAMEL_CASE_PATTERN.sub("_", type(self).__name__).lower()
 
     @property
     def client_method_name(self) -> str:
-        """
-        Returns the Recurly client method to call to retrieve the resource data.
+        """Returns the Recurly client method to call to retrieve the resource data.
 
         :return: The Recurly client method to call for the Recurly resource. For example `list_accounts` for the
                 Recurly `accounts` resource
@@ -50,9 +50,8 @@ class BaseStream(Stream):
         return f"list_{self.name}"
 
     @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        """
-        The Recurly resource primary key. Most of the Recurly resources have `id` as a primary ID. Other Recurly
+    def primary_key(self) -> Optional[Union[str, list[str], list[list[str]]]]:
+        """The Recurly resource primary key. Most of the Recurly resources have `id` as a primary ID. Other Recurly
         resources have different primary key or a composite key can override this method.
 
         :return: The Recurly resource primary key(s)
@@ -62,8 +61,7 @@ class BaseStream(Stream):
 
     @property
     def sort_key(self) -> str:
-        """
-        Sets the sort key when calling the Recurly API. Most of the Recurly API resources accept `params` dictionary
+        """Sets the sort key when calling the Recurly API. Most of the Recurly API resources accept `params` dictionary
         with `sort` key. For more details:
          https://developers.recurly.com/api/v2021-02-25/#section/Getting-Started/Pagination#query-parameters
 
@@ -74,15 +72,13 @@ class BaseStream(Stream):
 
     @property
     def limit(self) -> int:
-        """
-        Returns the number of records limit
+        """Returns the number of records limit
         """
         return DEFAULT_LIMIT
 
     @property
-    def cursor_field(self) -> Union[str, List[str]]:
-        """
-        Returns the cursor field to be used in the `incremental` sync mode.
+    def cursor_field(self) -> Union[str, list[str]]:
+        """Returns the cursor field to be used in the `incremental` sync mode.
 
         By default enable the `incremental` sync mode for all resources using the `begin_time` field. Any other
         Recurly resource that either does not support `incremental` sync mode such as the `export_dates` or resources
@@ -99,20 +95,18 @@ class BaseStream(Stream):
 
     @property
     def default_params(self) -> dict:
-        """
-        Returns the parameters to be sent together with the API call to Recurly
+        """Returns the parameters to be sent together with the API call to Recurly
         """
         return {"order": "asc", "sort": self.sort_key, "limit": self.limit}
 
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """
-        The method to be called to retrieve records from the Recurly API. It uses the Recurly Python client.
+        """The method to be called to retrieve records from the Recurly API. It uses the Recurly Python client.
         Resources having different logic (such as the `export_dates`) can override this method
 
         :return: Iterable of dictionaries representing the Recurly resource
@@ -135,8 +129,7 @@ class BaseStream(Stream):
             yield self._item_to_dict(item)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        """
-        Compares the current stream state cursor with the latest record cursor value and returns the latest or the most
+        """Compares the current stream state cursor with the latest record cursor value and returns the latest or the most
         recent cursor value (either the current cursor value or the latest record cursor value depending which of those
         is the maximum).
 
@@ -149,8 +142,7 @@ class BaseStream(Stream):
         return {self.cursor_field: max(latest_record_updated_at, current_updated_at)}
 
     def _item_to_dict(self, resource):
-        """
-        Recursively converts the Recurly resource object to `dict`
+        """Recursively converts the Recurly resource object to `dict`
         """
         if isinstance(resource, dict):
             return dict((key, self._item_to_dict(value)) for key, value in resource.items())
@@ -165,20 +157,18 @@ class BaseStream(Stream):
 class BaseAccountResourceStream(BaseStream):
     @property
     def account_params(self) -> dict:
-        """
-        Returns the account API call params
+        """Returns the account API call params
         """
         return self.default_params
 
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """
-        The method to be called to retrieve the accounts sub-resources such as the account coupon redemptions, shipping addresses, ... etc
+        """The method to be called to retrieve the accounts sub-resources such as the account coupon redemptions, shipping addresses, ... etc
         from Recurly. To retrieve the account's sub-resources, a separate call to list all the accounts sub-resources be made to pass
         the `account_id` to the sub-resource API call.
 
@@ -226,7 +216,7 @@ class AccountNotes(BaseAccountResourceStream):
         return "created_at"
 
     @property
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Union[str, list[str]]:
         return "created_at"
 
     @property
@@ -257,12 +247,11 @@ class ExportDates(BaseStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """
-        Reads the `export_dates` response from Recurly. This is a special API call different from other Recurly
+        """Reads the `export_dates` response from Recurly. This is a special API call different from other Recurly
         resources and hence treated differently
         """
         yield {"dates": self._client.get_export_dates().dates or [""]}
@@ -304,12 +293,11 @@ class UniqueCoupons(BaseStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """
-        The method to be called to retrieve the unique coupons from Recurly. To retrieve the unique coupons, a separate call to
+        """The method to be called to retrieve the unique coupons from Recurly. To retrieve the unique coupons, a separate call to
         get unique coupons should be made to pass the `coupon_id` to the unique coupons API call.
 
         :return: Iterable of dictionaries representing the Recurly resource

@@ -2,9 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 import pendulum
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -26,7 +28,7 @@ from source_rd_station_marketing.streams import (
 
 
 class SourceRDStationMarketing(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         try:
             stream_kwargs = self.get_stream_kwargs(config)
             segmentations = Segmentations(**stream_kwargs)
@@ -36,12 +38,11 @@ class SourceRDStationMarketing(AbstractSource):
         except Exception as error:
             return (
                 False,
-                f"Unable to connect to RD Station Marketing API with the provided credentials - {repr(error)}",
+                f"Unable to connect to RD Station Marketing API with the provided credentials - {error!r}",
             )
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """:param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         stream_kwargs = self.get_stream_kwargs(config)
         incremental_kwargs = {**stream_kwargs, "start_date": pendulum.parse(config["start_date"])}

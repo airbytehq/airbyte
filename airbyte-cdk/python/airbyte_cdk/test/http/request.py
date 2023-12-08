@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import Any, List, Mapping, Optional, Union
+from collections.abc import Mapping
+from typing import Any, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
 
 
@@ -12,7 +13,7 @@ class HttpRequest:
     def __init__(
         self,
         url: str,
-        query_params: Optional[Union[str, Mapping[str, Union[str, List[str]]]]] = None,
+        query_params: Optional[Union[str, Mapping[str, Union[str, list[str]]]]] = None,
         headers: Optional[Mapping[str, str]] = None,
     ) -> None:
         self._parsed_url = urlparse(url)
@@ -23,14 +24,13 @@ class HttpRequest:
 
         self._headers = headers or {}
 
-    def _encode_qs(self, query_params: Union[str, Mapping[str, Union[str, List[str]]]]) -> str:
+    def _encode_qs(self, query_params: Union[str, Mapping[str, Union[str, list[str]]]]) -> str:
         if isinstance(query_params, str):
             return query_params
         return urlencode(query_params, doseq=True)
 
     def matches(self, other: Any) -> bool:
-        """
-        Note that headers only need to be a subset of `other` in order to match
+        """Note that headers only need to be a subset of `other` in order to match
         """
         if isinstance(other, HttpRequest):
             return (

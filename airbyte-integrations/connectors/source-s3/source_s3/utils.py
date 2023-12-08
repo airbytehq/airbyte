@@ -4,16 +4,17 @@
 
 import multiprocessing as mp
 import traceback
+from collections.abc import Callable, Mapping
 from multiprocessing import Queue
-from typing import Any, Callable, List, Mapping
+from typing import Any
 
 import dill
+
 from airbyte_cdk.logger import AirbyteLogger
 
 
-def run_in_external_process(fn: Callable, timeout: int, max_timeout: int, logger: AirbyteLogger, args: List[Any]) -> Mapping[str, Any]:
-    """
-    fn passed in must return a tuple of (desired return value, Exception OR None)
+def run_in_external_process(fn: Callable, timeout: int, max_timeout: int, logger: AirbyteLogger, args: list[Any]) -> Mapping[str, Any]:
+    """Fn passed in must return a tuple of (desired return value, Exception OR None)
     This allows propagating any errors from the process up and raising accordingly
     """
     result = None
@@ -46,7 +47,7 @@ def run_in_external_process(fn: Callable, timeout: int, max_timeout: int, logger
 
 
 def multiprocess_queuer(func: Callable, queue: mp.Queue, *args: Any, **kwargs: Any) -> None:
-    """this is our multiprocesser helper function, lives at top-level to be Windows-compatible"""
+    """This is our multiprocesser helper function, lives at top-level to be Windows-compatible"""
     queue.put(dill.loads(func)(*args, **kwargs))
 
 

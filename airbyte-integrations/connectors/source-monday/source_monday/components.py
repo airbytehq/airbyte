@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Iterable, Mapping
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Optional, Union
 
 import dpath.util
+
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -85,15 +87,13 @@ class IncrementalSingleSlice(Cursor):
         yield {}
 
     def should_be_synced(self, record: Record) -> bool:
-        """
-        As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
+        """As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
         implementation is irrelevant for greenhouse
         """
         return True
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
-        """
-        Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
+        """Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
         """
         first_cursor_value = first.get(self.cursor_field.eval(self.config)) if first else None
         second_cursor_value = second.get(self.cursor_field.eval(self.config)) if second else None
@@ -107,8 +107,7 @@ class IncrementalSingleSlice(Cursor):
 
 @dataclass
 class IncrementalSubstreamSlicer(IncrementalSingleSlice):
-    """
-    Like SubstreamSlicer, but works incrementaly with both parent and substream.
+    """Like SubstreamSlicer, but works incrementaly with both parent and substream.
 
     Input Arguments:
 
@@ -122,7 +121,7 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     cursor_field: Union[InterpolatedString, str]
-    parent_stream_configs: List[ParentStreamConfig]
+    parent_stream_configs: list[ParentStreamConfig]
     nested_items_per_page: int
     parent_complete_fetch: bool = field(default=False)
 
@@ -146,7 +145,7 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
             self._state[self.cursor_field.eval(self.config)] = cursor_value
         if self.parent_stream_name in stream_state and stream_state.get(self.parent_stream_name, {}).get(self.parent_cursor_field):
             self._state[self.parent_stream_name] = {
-                self.parent_cursor_field: stream_state[self.parent_stream_name][self.parent_cursor_field]
+                self.parent_cursor_field: stream_state[self.parent_stream_name][self.parent_cursor_field],
             }
 
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
@@ -163,7 +162,7 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
             self._state[self.parent_stream_name] = parent_state
 
     def read_parent_stream(
-        self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any]
+        self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any],
     ) -> Iterable[Mapping[str, Any]]:
         self.parent_stream.state = stream_state
 
@@ -179,7 +178,7 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
 
         for parent_slice in self.parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
             for parent_record in self.parent_stream.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state,
             ):
                 # Skip non-records (eg AirbyteLogMessage)
                 if isinstance(parent_record, AirbyteMessage):

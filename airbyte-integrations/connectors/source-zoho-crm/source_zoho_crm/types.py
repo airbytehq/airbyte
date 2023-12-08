@@ -4,9 +4,10 @@
 
 import copy
 import dataclasses
+from collections.abc import Iterable, MutableMapping
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Dict, Iterable, List, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
 from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 
@@ -14,16 +15,16 @@ from .exceptions import IncompleteMetaDataException, UnknownDataTypeException
 @dataclasses.dataclass
 class Schema:
     description: str
-    properties: Dict[str, Any]
+    properties: dict[str, Any]
     schema: str = "http://json-schema.org/draft-07/schema#"
     type: str = "object"
     additionalProperties: Any = True
-    required: Optional[List[str]] = dataclasses.field(default_factory=list)
+    required: Optional[list[str]] = dataclasses.field(default_factory=list)
 
 
 class ZohoBaseType(Enum):
     @classmethod
-    def all(cls) -> List[str]:
+    def all(cls) -> list[str]:
         return list(map(lambda f: f.value, cls))
 
     def __eq__(self, other: object) -> bool:
@@ -77,7 +78,7 @@ class FromDictMixin:
         return [field.name for field in dataclasses.fields(cls)]
 
     @classmethod
-    def _filter_by_names(cls, dct: Dict[Any, Any]) -> Dict[Any, Any]:
+    def _filter_by_names(cls, dct: dict[Any, Any]) -> dict[Any, Any]:
         return {key: val for key, val in dct.items() if key in cls._field_names()}
 
     @classmethod
@@ -101,7 +102,7 @@ class AutoNumberDict(FromDictMixin):
     suffix: str
 
 
-FieldType = Dict[Any, Any]
+FieldType = dict[Any, Any]
 
 
 @dataclasses.dataclass
@@ -113,10 +114,10 @@ class FieldMeta(FromDictMixin):
     decimal_place: Optional[int]
     system_mandatory: bool
     display_label: str
-    pick_list_values: Optional[List[ZohoPickListItem]]
+    pick_list_values: Optional[list[ZohoPickListItem]]
     auto_number: Optional[AutoNumberDict] = AutoNumberDict(prefix="", suffix="")
 
-    def _default_type_kwargs(self) -> Dict[str, str]:
+    def _default_type_kwargs(self) -> dict[str, str]:
         return {"title": self.display_label}
 
     def _picklist_items(self) -> Iterable[Union[str, None]]:

@@ -3,20 +3,22 @@
 #
 
 import json
+from collections.abc import Mapping, MutableMapping
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, MutableMapping, Tuple, Union
+from typing import Any, Union
 
 import pytest
+from deepdiff import DeepDiff
+
 from airbyte_protocol.models import AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog, SyncMode, Type
 from connector_acceptance_test import BaseTest
 from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, incremental_only_catalog
 from connector_acceptance_test.utils.timeouts import TWENTY_MINUTES
-from deepdiff import DeepDiff
 
 
 @pytest.fixture(name="future_state_configuration")
-def future_state_configuration_fixture(inputs, base_path, test_strictness_level) -> Tuple[Path, List[EmptyStreamConfiguration]]:
+def future_state_configuration_fixture(inputs, base_path, test_strictness_level) -> tuple[Path, list[EmptyStreamConfiguration]]:
     """Fixture with connector's future state path (relative to base_path)"""
     if inputs.future_state and inputs.future_state.bypass_reason is not None:
         pytest.skip("`future_state` has a bypass reason, skipping.")
@@ -24,17 +26,17 @@ def future_state_configuration_fixture(inputs, base_path, test_strictness_level)
         return Path(base_path) / inputs.future_state.future_state_path, inputs.future_state.missing_streams
     elif test_strictness_level is Config.TestStrictnessLevel.high:
         pytest.fail(
-            "High test strictness level error: a future state configuration must be provided in high test strictness level or a bypass reason should be filled."
+            "High test strictness level error: a future state configuration must be provided in high test strictness level or a bypass reason should be filled.",
         )
     else:
         pytest.skip("`future_state` not specified, skipping.")
 
 
 @pytest.fixture(name="future_state")
-def future_state_fixture(future_state_configuration, test_strictness_level, configured_catalog) -> List[MutableMapping]:
+def future_state_fixture(future_state_configuration, test_strictness_level, configured_catalog) -> list[MutableMapping]:
     """"""
     future_state_path, missing_streams = future_state_configuration
-    with open(str(future_state_path), "r") as file:
+    with open(str(future_state_path)) as file:
         contents = file.read()
     states = json.loads(contents)
     if test_strictness_level is Config.TestStrictnessLevel.high:
@@ -48,7 +50,7 @@ def future_state_fixture(future_state_configuration, test_strictness_level, conf
         undeclared_missing_streams_names = all_stream_names - declared_missing_streams_names - streams_in_states
         if undeclared_missing_streams_names:
             pytest.fail(
-                f"High test strictness level error: {', '.join(undeclared_missing_streams_names)} streams are missing in your future_state file, please declare a state for those streams or fill-in a valid bypass_reason."
+                f"High test strictness level error: {', '.join(undeclared_missing_streams_names)} streams are missing in your future_state file, please declare a state for those streams or fill-in a valid bypass_reason.",
             )
     return states
 
@@ -65,7 +67,7 @@ def configured_catalog_for_incremental_fixture(configured_catalog) -> Configured
                     f"All incremental streams should either have `cursor_field` \
                     declared in the configured_catalog or `default_cursor_field` \
                     specified in the catalog output by discover. \
-                    Stream {stream.stream.name} does not have either property defined."
+                    Stream {stream.stream.name} does not have either property defined.",
                 )
 
     return catalog
@@ -75,9 +77,8 @@ def is_per_stream_state(message: AirbyteMessage) -> bool:
     return message.state and isinstance(message.state, AirbyteStateMessage) and message.state.type == AirbyteStateType.STREAM
 
 
-def construct_latest_state_from_messages(messages: List[AirbyteMessage]) -> Dict[str, Mapping[str, Any]]:
-    """
-    Because connectors that have migrated to per-stream state only emit state messages with the new state value for a single
+def construct_latest_state_from_messages(messages: list[AirbyteMessage]) -> dict[str, Mapping[str, Any]]:
+    """Because connectors that have migrated to per-stream state only emit state messages with the new state value for a single
     stream, this helper method reconstructs the final state of all streams after going through each AirbyteMessage
     """
     latest_per_stream_by_name = dict()
@@ -89,9 +90,8 @@ def construct_latest_state_from_messages(messages: List[AirbyteMessage]) -> Dict
     return latest_per_stream_by_name
 
 
-def naive_diff_records(records_1: List[AirbyteMessage], records_2: List[AirbyteMessage]) -> DeepDiff:
-    """
-    Naively diff two lists of records by comparing their data field.
+def naive_diff_records(records_1: list[AirbyteMessage], records_2: list[AirbyteMessage]) -> DeepDiff:
+    """Naively diff two lists of records by comparing their data field.
     """
     records_1_data = [record.record.data for record in records_1]
     records_2_data = [record.record.data for record in records_2]
@@ -109,8 +109,7 @@ class TestIncremental(BaseTest):
         configured_catalog_for_incremental: ConfiguredAirbyteCatalog,
         docker_runner: ConnectorRunner,
     ):
-        """
-        This test makes two calls to the read method and verifies that the records returned are different.
+        """This test makes two calls to the read method and verifies that the records returned are different.
 
         Important!
 
@@ -142,7 +141,7 @@ class TestIncremental(BaseTest):
                     {
                         "type": "STREAM",
                         "stream": {"stream_descriptor": stream_descriptor, "stream_state": stream_state},
-                    }
+                    },
                 )
         else:
             state_input = states_1[-1].state.data
@@ -156,10 +155,9 @@ class TestIncremental(BaseTest):
         assert diff, f"Records should change between reads but did not.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_2: {records_2} \n\n diff: {diff}"
 
     async def test_read_sequential_slices(
-        self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, docker_runner: ConnectorRunner
+        self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, docker_runner: ConnectorRunner,
     ):
-        """
-        Incremental test that makes calls to the read method without a state checkpoint. Then we partition the results by stream and
+        """Incremental test that makes calls to the read method without a state checkpoint. Then we partition the results by stream and
         slice checkpoints.
         Then we make additional read method calls using the state message and verify the correctness of the
         messages in the response.
@@ -219,7 +217,7 @@ class TestIncremental(BaseTest):
                 continue
 
             state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(
-                state_message, mutating_stream_name_to_per_stream_state, is_per_stream
+                state_message, mutating_stream_name_to_per_stream_state, is_per_stream,
             )
 
             output_N = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
@@ -230,7 +228,7 @@ class TestIncremental(BaseTest):
             assert diff, f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 2}: {records_N} \n\n diff: {diff}"
 
     async def test_state_with_abnormally_large_values(
-        self, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner
+        self, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner,
     ):
         configured_catalog = incremental_only_catalog(configured_catalog)
         output = await docker_runner.call_read_with_state(config=connector_config, catalog=configured_catalog, state=future_state)
@@ -247,7 +245,7 @@ class TestIncremental(BaseTest):
         state_message: AirbyteStateMessage,
         stream_name_to_per_stream_state: MutableMapping,
         is_per_stream,
-    ) -> Tuple[Union[List[MutableMapping], MutableMapping], MutableMapping]:
+    ) -> tuple[Union[list[MutableMapping], MutableMapping], MutableMapping]:
         if is_per_stream:
             # Including all the latest state values from previous batches, update the combined stream state
             # with the current batch's stream state and then use it in the following read() request

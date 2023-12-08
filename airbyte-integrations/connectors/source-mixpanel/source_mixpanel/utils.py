@@ -21,8 +21,7 @@ ISO_FORMAT_PATTERN = re.compile(r"^(\d{4}-\d{2}-\d{2})[ t](\d{2}:\d{2}:\d{2})$")
 
 
 def to_iso_format(s: str) -> str:
-    """
-    Convert a date string to ISO format if it matches recognized patterns.
+    """Convert a date string to ISO format if it matches recognized patterns.
 
     Args:
     - s (str): Input string to be converted.
@@ -39,8 +38,7 @@ def to_iso_format(s: str) -> str:
 
 
 def fix_date_time(record):
-    """
-    Recursively process a data structure to fix date and time formats.
+    """Recursively process a data structure to fix date and time formats.
 
     Args:
     - record (dict or list): The input data structure, which can be a dictionary or a list.

@@ -4,11 +4,12 @@
 
 import json
 import uuid
-from typing import List, Tuple
 
 import anyio
-from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification
 from dagger import Container, ExecError, File, ImageLayerCompression, QueryError
+from pydantic import ValidationError
+
+from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
@@ -17,7 +18,6 @@ from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValid
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
 from pipelines.models.steps import Step, StepResult, StepStatus
-from pydantic import ValidationError
 
 
 class InvalidSpecOutputError(Exception):
@@ -58,7 +58,7 @@ class PushConnectorImageToRegistry(Step):
     def latest_docker_image_name(self):
         return f"{self.context.docker_repository}:latest"
 
-    async def _run(self, built_containers_per_platform: List[Container], attempts: int = 3) -> StepResult:
+    async def _run(self, built_containers_per_platform: list[Container], attempts: int = 3) -> StepResult:
         try:
             image_ref = await built_containers_per_platform[0].publish(
                 f"docker.io/{self.context.docker_image}",
@@ -75,7 +75,7 @@ class PushConnectorImageToRegistry(Step):
         except QueryError as e:
             if attempts > 0:
                 self.context.logger.error(str(e))
-                self.context.logger.warn(f"Failed to publish {self.context.docker_image}. Retrying. {attempts} attempts left.")
+                self.context.logger.warning(f"Failed to publish {self.context.docker_image}. Retrying. {attempts} attempts left.")
                 await anyio.sleep(5)
                 return await self._run(built_containers_per_platform, attempts - 1)
             return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
@@ -93,7 +93,7 @@ class PullConnectorImageFromRegistry(Step):
         """
         for platform in consts.BUILD_PLATFORMS:
             inspect = docker.with_crane(self.context).with_exec(
-                ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image}"]
+                ["manifest", "--platform", f"{platform!s}", f"docker.io/{self.context.docker_image}"],
             )
             try:
                 inspect_stdout = await inspect.stdout()
@@ -169,7 +169,7 @@ class UploadSpecToCache(Step):
                 ConnectorSpecification.parse_obj(parsed_spec)
                 return json.dumps(parsed_spec)
             except (ValidationError, ValueError) as e:
-                raise InvalidSpecOutputError(f"The SPEC message did not pass schema validation: {str(e)}.")
+                raise InvalidSpecOutputError(f"The SPEC message did not pass schema validation: {e!s}.")
         raise InvalidSpecOutputError("No spec found in the output of the SPEC command.")
 
     async def _get_connector_spec(self, connector: Container, deployment_mode: str) -> str:
@@ -186,7 +186,7 @@ class UploadSpecToCache(Step):
         except InvalidSpecOutputError as e:
             return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
 
-        specs_to_uploads: List[Tuple[str, File]] = [(self.oss_spec_key, await self._get_spec_as_file(oss_spec))]
+        specs_to_uploads: list[tuple[str, File]] = [(self.oss_spec_key, await self._get_spec_as_file(oss_spec))]
 
         if oss_spec != cloud_spec:
             specs_to_uploads.append((self.cloud_spec_key, await self._get_spec_as_file(cloud_spec, "cloud_spec_to_cache.json")))
@@ -221,7 +221,6 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
     Returns:
         ConnectorReport: The reports holding publish results.
     """
-
     metadata_upload_step = MetadataUpload(
         context=context,
         metadata_service_gcs_credentials_secret=context.metadata_service_gcs_credentials_secret,
@@ -232,7 +231,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
         pre_release_tag=context.docker_image_tag,
     )
 
-    def create_connector_report(results: List[StepResult]) -> ConnectorReport:
+    def create_connector_report(results: list[StepResult]) -> ConnectorReport:
         report = ConnectorReport(context, results, name="PUBLISH RESULTS")
         context.report = report
         return report
@@ -257,7 +256,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             # We also need to upload the spec to the spec cache bucket.
             if check_connector_image_results.status is StepStatus.SKIPPED:
                 context.logger.info(
-                    "The connector version is already published. Let's upload metadata.yaml and spec to GCS even if no version bump happened."
+                    "The connector version is already published. Let's upload metadata.yaml and spec to GCS even if no version bump happened.",
                 )
                 already_published_connector = context.dagger_client.container().from_(context.docker_image)
                 upload_to_spec_cache_results = await UploadSpecToCache(context).run(already_published_connector)
@@ -306,7 +305,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             return create_connector_report(results)
 
 
-def reorder_contexts(contexts: List[PublishConnectorContext]) -> List[PublishConnectorContext]:
+def reorder_contexts(contexts: list[PublishConnectorContext]) -> list[PublishConnectorContext]:
     """Reorder contexts so that the ones that are for strict-encrypt/secure connectors come first.
     The metadata upload on publish checks if the the connectors referenced in the metadata file are already published to DockerHub.
     Non strict-encrypt variant reference the strict-encrypt variant in their metadata file for cloud.

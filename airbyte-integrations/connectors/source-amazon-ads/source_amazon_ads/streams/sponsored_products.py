@@ -3,10 +3,12 @@
 #
 
 from abc import ABC
+from collections.abc import Iterable, Mapping, MutableMapping
 from http import HTTPStatus
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Optional
 
 import requests as requests
+
 from airbyte_protocol.models import SyncMode
 from source_amazon_ads.schemas import (
     Keywords,
@@ -22,8 +24,7 @@ from source_amazon_ads.streams.common import AmazonAdsStream, SubProfilesStream
 
 
 class SponsoredProductCampaigns(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Campaigns
+    """This stream corresponds to Amazon Advertising API - Sponsored Products Campaigns
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns
     """
 
@@ -46,8 +47,7 @@ class SponsoredProductCampaigns(SubProfilesStream):
 
 
 class SponsoredProductAdGroups(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Ad groups
+    """This stream corresponds to Amazon Advertising API - Sponsored Products Ad groups
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Ad%20groups
     """
 
@@ -83,10 +83,10 @@ class SponsoredProductAdGroupWithSlicesABC(AmazonAdsStream, ABC):
         return headers
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         yield from SponsoredProductAdGroupsWithProfileId(*self.__args, **self.__kwargs).read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=None, stream_state=stream_state
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=None, stream_state=stream_state,
         )
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -101,14 +101,14 @@ class SponsoredProductAdGroupWithSlicesABC(AmazonAdsStream, ABC):
             #   Getting keyword recommendations for AD Group in Auto Targeted Campaign is not supported
             self.logger.warning(
                 f"Skip current AdGroup because it does not support request {response.request.url} for "
-                f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {response.text}"
+                f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {response.text}",
             )
         elif response.status_code == HTTPStatus.NOT_FOUND:
             # 404 Either the specified ad group identifier was not found,
             # or the specified ad group was found but no associated bid was found.
             self.logger.warning(
                 f"Skip current AdGroup because the specified ad group has no associated bid {response.request.url} for "
-                f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {response.text}"
+                f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {response.text}",
             )
 
         else:
@@ -152,8 +152,7 @@ class SponsoredProductAdGroupSuggestedKeywords(SponsoredProductAdGroupWithSlices
 
 
 class SponsoredProductKeywords(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Keywords
+    """This stream corresponds to Amazon Advertising API - Sponsored Products Keywords
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Keywords
     """
 
@@ -165,8 +164,7 @@ class SponsoredProductKeywords(SubProfilesStream):
 
 
 class SponsoredProductNegativeKeywords(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Negative Keywords
+    """This stream corresponds to Amazon Advertising API - Sponsored Products Negative Keywords
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords
     """
 
@@ -178,8 +176,7 @@ class SponsoredProductNegativeKeywords(SubProfilesStream):
 
 
 class SponsoredProductCampaignNegativeKeywords(SponsoredProductNegativeKeywords):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Negative Keywords
+    """This stream corresponds to Amazon Advertising API - Sponsored Products Negative Keywords
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords
     """
 
@@ -188,8 +185,7 @@ class SponsoredProductCampaignNegativeKeywords(SponsoredProductNegativeKeywords)
 
 
 class SponsoredProductAds(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Ads
+    """This stream corresponds to Amazon Advertising API - Sponsored Products Ads
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20ads
     """
 
@@ -201,8 +197,7 @@ class SponsoredProductAds(SubProfilesStream):
 
 
 class SponsoredProductTargetings(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Products Targetings
+    """This stream corresponds to Amazon Advertising API - Sponsored Products Targetings
     https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting
     """
 

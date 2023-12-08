@@ -3,14 +3,14 @@
 #
 
 import logging
-from typing import Any, Dict, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class MissingAccessTokenError(Exception):
-    """
-    Raised when the token is `None` instead of the real value
+    """Raised when the token is `None` instead of the real value
     """
 
 
@@ -25,9 +25,7 @@ class NotImplementedAuth(Exception):
 
 
 class ShopifyAuthenticator(TokenAuthenticator):
-
-    """
-    Making Authenticator to be able to accept Header-Based authentication.
+    """Making Authenticator to be able to accept Header-Based authentication.
     """
 
     def __init__(self, config: Mapping[str, Any]):
@@ -35,7 +33,7 @@ class ShopifyAuthenticator(TokenAuthenticator):
 
     def get_auth_header(self) -> Mapping[str, Any]:
         auth_header: str = "X-Shopify-Access-Token"
-        credentials: Dict = self.config.get("credentials", self.config.get("auth_method"))
+        credentials: dict = self.config.get("credentials", self.config.get("auth_method"))
         auth_method: str = credentials.get("auth_method")
 
         if auth_method in ["oauth2.0", "access_token"]:

@@ -4,7 +4,7 @@
 
 import logging
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 
@@ -15,7 +15,7 @@ class DateTimeTransformer(TypeTransformer):
     api_date_time_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 
     @staticmethod
-    def default_convert(original_item: Any, subschema: Dict[str, Any]) -> Any:
+    def default_convert(original_item: Any, subschema: dict[str, Any]) -> Any:
         target_format = subschema.get("format", "")
         if target_format == "date-time":
             if isinstance(original_item, str):

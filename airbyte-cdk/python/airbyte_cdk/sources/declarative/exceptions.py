@@ -4,6 +4,5 @@
 
 
 class ReadException(Exception):
-    """
-    Raise when there is an error reading data from an API Source
+    """Raise when there is an error reading data from an API Source
     """

@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -13,7 +13,7 @@ from .source_files_abstract.file_info import FileInfo
 class S3Exception(AirbyteTracedException):
     def __init__(
         self,
-        file_info: Union[List[FileInfo], FileInfo],
+        file_info: Union[list[FileInfo], FileInfo],
         internal_message: Optional[str] = None,
         message: Optional[str] = None,
         failure_type: FailureType = FailureType.system_error,

@@ -5,8 +5,9 @@
 import copy
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Iterator, Mapping
 from enum import Enum
-from typing import Any, Iterator, List, Mapping, Optional, Type, Union
+from typing import Any, Optional, Union
 
 import backoff
 import pendulum
@@ -17,6 +18,7 @@ from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
 from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
+
 from source_facebook_marketing.streams.common import retry_pattern
 
 from ..utils import validate_start_date
@@ -32,7 +34,7 @@ logger = logging.getLogger("airbyte")
 backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=10, factor=5)
 
 
-def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
+def update_in_batch(api: FacebookAdsApi, jobs: list["AsyncJob"]):
     """Update status of each job in the list in a batch, making it most efficient way to update status.
 
     :param api:
@@ -120,14 +122,14 @@ class AsyncJob(ABC):
         """Retrieve result of the finished job."""
 
     @abstractmethod
-    def split_job(self) -> List["AsyncJob"]:
+    def split_job(self) -> list["AsyncJob"]:
         """Split existing job in few smaller ones"""
 
 
 class ParentAsyncJob(AsyncJob):
     """Group of async jobs"""
 
-    def __init__(self, jobs: List["InsightAsyncJob"], **kwargs):
+    def __init__(self, jobs: list["InsightAsyncJob"], **kwargs):
         """Initialize jobs"""
         super().__init__(**kwargs)
         self._jobs = jobs
@@ -165,7 +167,7 @@ class ParentAsyncJob(AsyncJob):
         for job in self._jobs:
             yield from job.get_result()
 
-    def split_job(self) -> List["AsyncJob"]:
+    def split_job(self) -> list["AsyncJob"]:
         """Split existing job in few smaller ones."""
         new_jobs = []
         for job in self._jobs:
@@ -212,7 +214,7 @@ class InsightAsyncJob(AsyncJob):
         self._finish_time = None
         self._failed = False
 
-    def split_job(self) -> List["AsyncJob"]:
+    def split_job(self) -> list["AsyncJob"]:
         """Split existing job in few smaller ones grouped by ParentAsyncJob class."""
         if isinstance(self._edge_object, AdAccount):
             return self._split_by_edge_class(Campaign)
@@ -222,7 +224,7 @@ class InsightAsyncJob(AsyncJob):
             return self._split_by_edge_class(Ad)
         raise ValueError("The job is already splitted to the smallest size.")
 
-    def _split_by_edge_class(self, edge_class: Union[Type[Campaign], Type[AdSet], Type[Ad]]) -> List[AsyncJob]:
+    def _split_by_edge_class(self, edge_class: Union[type[Campaign], type[AdSet], type[Ad]]) -> list[AsyncJob]:
         """Split insight job by creating insight jobs from lower edge object, i.e.
         Account -> Campaign -> AdSet
         TODO: use some cache to avoid expensive queries across different streams.

@@ -2,11 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping, MutableMapping
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
-import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import requests
+
+from airbyte_cdk.sources.declarative.requesters.error_handlers import response_status
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
 )
@@ -20,8 +22,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class DefaultErrorHandler(ErrorHandler):
-    """
-    Default error handler.
+    """Default error handler.
 
     By default, the handler will only retry server errors (HTTP 5XX) and too many requests (HTTP 429) with exponential backoff.
 
@@ -93,12 +94,12 @@ class DefaultErrorHandler(ErrorHandler):
 
     parameters: InitVar[Mapping[str, Any]]
     config: Config
-    response_filters: Optional[List[HttpResponseFilter]] = None
+    response_filters: Optional[list[HttpResponseFilter]] = None
     max_retries: Optional[int] = 5
     max_time: int = 60 * 10
     _max_retries: int = field(init=False, repr=False, default=5)
     _max_time: int = field(init=False, repr=False, default=60 * 10)
-    backoff_strategies: Optional[List[BackoffStrategy]] = None
+    backoff_strategies: Optional[list[BackoffStrategy]] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.response_filters = self.response_filters or []
@@ -106,8 +107,8 @@ class DefaultErrorHandler(ErrorHandler):
         if not self.response_filters:
             self.response_filters.append(
                 HttpResponseFilter(
-                    ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS, config=self.config, parameters={}
-                )
+                    ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS, config=self.config, parameters={},
+                ),
             )
             self.response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, config={}, parameters={}))
 
@@ -137,7 +138,7 @@ class DefaultErrorHandler(ErrorHandler):
         if self.response_filters:
             for response_filter in self.response_filters:
                 matched_status = response_filter.matches(
-                    response=response, backoff_time=self._backoff_time(response, self._last_request_to_attempt_count[request])
+                    response=response, backoff_time=self._backoff_time(response, self._last_request_to_attempt_count[request]),
                 )
                 if matched_status is not None:
                     return matched_status

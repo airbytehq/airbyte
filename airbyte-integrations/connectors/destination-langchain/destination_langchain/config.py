@@ -4,12 +4,13 @@
 
 import json
 import re
-from typing import List, Literal, Optional, Union
+from typing import Literal, Optional, Union
 
 import dpath.util
-from airbyte_cdk.destinations.vector_db_based.embedder import FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
+
+from airbyte_cdk.destinations.vector_db_based.embedder import FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
 
 
 class ProcessingConfigModel(BaseModel):
@@ -24,7 +25,7 @@ class ProcessingConfigModel(BaseModel):
         description="Size of overlap between chunks in tokens to store in vector store to better capture relevant context",
         default=0,
     )
-    text_fields: Optional[List[str]] = Field(
+    text_fields: Optional[list[str]] = Field(
         ...,
         title="Text fields to embed",
         description="List of fields in the record that should be used to calculate the embedding. All other fields are passed along as meta fields. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
@@ -45,7 +46,7 @@ class PineconeIndexingModel(BaseModel):
     class Config:
         title = "Pinecone"
         schema_extra = {
-            "description": "Pinecone is a popular vector store that can be used to store and retrieve embeddings. It is a managed service and can also be queried from outside of langchain."
+            "description": "Pinecone is a popular vector store that can be used to store and retrieve embeddings. It is a managed service and can also be queried from outside of langchain.",
         }
 
 
@@ -66,7 +67,7 @@ class ChromaLocalIndexingModel(BaseModel):
     class Config:
         title = "Chroma (local persistance)"
         schema_extra = {
-            "description": "Chroma is a popular vector store that can be used to store and retrieve embeddings. It will build its index in memory and persist it to disk by the end of the sync."
+            "description": "Chroma is a popular vector store that can be used to store and retrieve embeddings. It will build its index in memory and persist it to disk by the end of the sync.",
         }
 
 
@@ -82,17 +83,17 @@ class DocArrayHnswSearchIndexingModel(BaseModel):
     class Config:
         title = "DocArrayHnswSearch"
         schema_extra = {
-            "description": "DocArrayHnswSearch is a lightweight Document Index implementation provided by Docarray that runs fully locally and is best suited for small- to medium-sized datasets. It stores vectors on disk in hnswlib, and stores all other data in SQLite."
+            "description": "DocArrayHnswSearch is a lightweight Document Index implementation provided by Docarray that runs fully locally and is best suited for small- to medium-sized datasets. It stores vectors on disk in hnswlib, and stores all other data in SQLite.",
         }
 
 
 class ConfigModel(BaseModel):
     processing: ProcessingConfigModel
     embedding: Union[OpenAIEmbeddingConfigModel, FakeEmbeddingConfigModel] = Field(
-        ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object"
+        ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object",
     )
     indexing: Union[PineconeIndexingModel, DocArrayHnswSearchIndexingModel, ChromaLocalIndexingModel] = Field(
-        ..., title="Indexing", description="Indexing configuration", discriminator="mode", group="indexing", type="object"
+        ..., title="Indexing", description="Indexing configuration", discriminator="mode", group="indexing", type="object",
     )
 
     class Config:
@@ -102,7 +103,7 @@ class ConfigModel(BaseModel):
                 {"id": "processing", "title": "Processing"},
                 {"id": "embedding", "title": "Embedding"},
                 {"id": "indexing", "title": "Indexing"},
-            ]
+            ],
         }
 
     @staticmethod
@@ -119,12 +120,12 @@ class ConfigModel(BaseModel):
 
     @staticmethod
     def remove_discriminator(schema: dict) -> None:
-        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
+        """Pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
         dpath.util.delete(schema, "properties/*/discriminator")
 
     @classmethod
     def schema(cls):
-        """we're overriding the schema classmethod to enable some post-processing"""
+        """We're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema()
         schema = cls.resolve_refs(schema)
         cls.remove_discriminator(schema)

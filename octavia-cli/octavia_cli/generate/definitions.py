@@ -3,10 +3,12 @@
 #
 
 import abc
-from typing import Any, Callable, Union
+from collections.abc import Callable
+from typing import Any, Union
+
+import click
 
 import airbyte_api_client
-import click
 from airbyte_api_client.api import (
     destination_definition_api,
     destination_definition_specification_api,
@@ -139,7 +141,7 @@ class DestinationDefinitionSpecification(DefinitionSpecification):
 
 
 def factory(
-    definition_type: str, api_client: airbyte_api_client.ApiClient, workspace_id: str, definition_id: str
+    definition_type: str, api_client: airbyte_api_client.ApiClient, workspace_id: str, definition_id: str,
 ) -> Union[SourceDefinition, DestinationDefinition]:
     if definition_type == "source":
         definition = SourceDefinition(api_client, definition_id)

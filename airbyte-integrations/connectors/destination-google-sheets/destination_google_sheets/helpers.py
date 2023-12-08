@@ -4,12 +4,12 @@
 
 
 import re
-from typing import List
+
+from pygsheets import Spreadsheet, Worksheet
+from pygsheets.exceptions import WorksheetNotFound
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from pygsheets import Spreadsheet, Worksheet
-from pygsheets.exceptions import WorksheetNotFound
 
 STREAMS_COUNT_LIMIT = 200
 
@@ -24,7 +24,7 @@ def get_spreadsheet_id(id_or_url: str) -> str:
             return m.group(2)
         else:
             logger.error(
-                "The provided URL doesn't match the requirements. See <a href='https://docs.airbyte.com/integrations/destinations/google-sheets#sheetlink'>this guide</a> for more details."
+                "The provided URL doesn't match the requirements. See <a href='https://docs.airbyte.com/integrations/destinations/google-sheets#sheetlink'>this guide</a> for more details.",
             )
     else:
         return id_or_url
@@ -33,22 +33,20 @@ def get_spreadsheet_id(id_or_url: str) -> str:
 def get_streams_from_catalog(catalog: ConfiguredAirbyteCatalog, limit: int = STREAMS_COUNT_LIMIT):
     streams_count = len(catalog.streams)
     if streams_count > limit:
-        logger.warn(f"Only {limit} of {streams_count} will be processed due to Google Sheets (worksheet count < {limit}) limitations.")
+        logger.warning(f"Only {limit} of {streams_count} will be processed due to Google Sheets (worksheet count < {limit}) limitations.")
         return catalog.streams[:limit]
     return catalog.streams
 
 
 class ConnectionTest:
-
-    """
-    Performs connection test write operation to ensure the target spreadsheet is available for writing.
+    """Performs connection test write operation to ensure the target spreadsheet is available for writing.
     Initiating the class itself, performs the connection test and stores the result in ConnectionTest.result property.
     """
 
     def __init__(self, spreadsheet: Spreadsheet):
         self.spreadsheet = spreadsheet
         self.wks_name: str = "_airbyte_conn_test"
-        self.test_data: List[str] = ["conn_test", "success"]
+        self.test_data: list[str] = ["conn_test", "success"]
 
     def add_test_wks(self) -> Worksheet:
         self.spreadsheet.spreadsheet.add_worksheet(self.wks_name, rows=2, cols=1)

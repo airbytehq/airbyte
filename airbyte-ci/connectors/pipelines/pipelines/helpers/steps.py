@@ -6,9 +6,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Tuple, Union
+from typing import TYPE_CHECKING, Union
 
 import asyncer
+
 from pipelines.models.steps import Step, StepStatus
 
 if TYPE_CHECKING:
@@ -16,8 +17,8 @@ if TYPE_CHECKING:
 
 
 async def run_steps(
-    steps_and_run_args: List[Union[Step, Tuple[Step, Tuple]] | List[Union[Step, Tuple[Step, Tuple]]]], results: List[StepResult] = []
-) -> List[StepResult]:
+    steps_and_run_args: list[Union[Step, tuple[Step, tuple]] | list[Union[Step, tuple[Step, tuple]]]], results: list[StepResult] = [],
+) -> list[StepResult]:
     """Run multiple steps sequentially, or in parallel if steps are wrapped into a sublist.
 
     Args:
@@ -35,7 +36,7 @@ async def run_steps(
     if any(result.status is StepStatus.FAILURE for result in results):
         skipped_results = []
         for step_and_run_args in steps_and_run_args:
-            if isinstance(step_and_run_args, Tuple):
+            if isinstance(step_and_run_args, tuple):
                 skipped_results.append(step_and_run_args[0].skip())
             else:
                 skipped_results.append(step_and_run_args.skip())
@@ -53,7 +54,7 @@ async def run_steps(
         for step in steps_to_run:
             if isinstance(step, Step):
                 tasks.append(task_group.soonify(step.run)())
-            elif isinstance(step, Tuple) and isinstance(step[0], Step) and isinstance(step[1], Tuple):
+            elif isinstance(step, tuple) and isinstance(step[0], Step) and isinstance(step[1], tuple):
                 step, run_args = step
                 tasks.append(task_group.soonify(step.run)(*run_args))
 

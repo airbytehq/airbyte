@@ -5,16 +5,18 @@
 import json
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import requests
 import vcr
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from requests.auth import AuthBase
 from vcr.cassette import Cassette
+
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 
 
 class LinnworksStream(HttpStream, ABC):
@@ -34,7 +36,7 @@ class LinnworksStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -77,7 +79,7 @@ class StockLocations(LinnworksStream):
     use_cache = True
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "/api/Inventory/GetStockLocations"
 
@@ -92,7 +94,7 @@ class StockLocationDetails(HttpSubStream, StockLocations):
         super().__init__(StockLocations(**kwargs), **kwargs)
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "/api/Locations/GetLocation"
 
@@ -110,7 +112,7 @@ class StockItems(LinnworksStream):
     raise_on_http_errors = False
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "/api/Stock/GetStockItemsFull"
 
@@ -136,7 +138,7 @@ class StockItems(LinnworksStream):
         yield from super().parse_response(response, **kwargs)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {
             "entriesPerPage": self.page_size,
@@ -204,7 +206,7 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
                 break
 
     def request_body_data(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         request = {
             "DateField": "processed",
@@ -269,7 +271,7 @@ class ProcessedOrderDetails(HttpSubStream, IncrementalLinnworksStream):
             yield buffer
 
     def request_body_data(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return {
             "pkOrderIds": json.dumps(stream_slice, separators=(",", ":")),

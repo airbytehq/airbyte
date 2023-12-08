@@ -3,7 +3,8 @@
 #
 
 import logging
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 from urllib import parse
 
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator

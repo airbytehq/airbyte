@@ -2,14 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
 from enum import Enum
-from typing import Any, Mapping
+from typing import Any
 
 
 class RequestOptionType(Enum):
-    """
-    Describes where to set a value on a request
+    """Describes where to set a value on a request
     """
 
     request_parameter = "request_parameter"
@@ -20,8 +20,7 @@ class RequestOptionType(Enum):
 
 @dataclass
 class RequestOption:
-    """
-    Describes an option to set on a request
+    """Describes an option to set on a request
 
     Attributes:
         field_name (str): Describes the name of the parameter to inject

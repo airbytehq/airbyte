@@ -14,14 +14,12 @@ class Error(Exception):
 
 
 class SalesforceException(Exception):
-    """
-    Default Salesforce exception.
+    """Default Salesforce exception.
     """
 
 
 class TypeSalesforceException(SalesforceException):
-    """
-    We use this exception for unknown input data types for Salesforce.
+    """We use this exception for unknown input data types for Salesforce.
     """
 
 
@@ -31,5 +29,5 @@ class TmpFileIOError(Error):
 
 
 AUTHENTICATION_ERROR_MESSAGE_MAPPING = {
-    "expired access/refresh token": "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce."
+    "expired access/refresh token": "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce.",
 }

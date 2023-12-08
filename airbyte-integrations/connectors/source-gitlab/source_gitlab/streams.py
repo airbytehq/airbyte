@@ -4,10 +4,12 @@
 
 import datetime
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
@@ -23,7 +25,7 @@ class GitlabStream(HttpStream, ABC):
     flatten_id_keys = []
     flatten_list_keys = []
     per_page = 50
-    non_retriable_codes: List[int] = (403, 404)
+    non_retriable_codes: list[int] = (403, 404)
 
     def __init__(self, api_url: str, **kwargs):
         super().__init__(**kwargs)
@@ -33,7 +35,7 @@ class GitlabStream(HttpStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
@@ -64,17 +66,17 @@ class GitlabStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         # Gitlab API returns a 403 response in case a feature is disabled in a project (pipelines/jobs for instance).
         if response.status_code in self.non_retriable_codes:
-            setattr(self, "raise_on_http_errors", False)
+            self.raise_on_http_errors = False
             self.logger.warning(
                 f"Got {response.status_code} error when accessing URL {response.request.url}."
-                f" Very likely the feature is disabled for this project and/or group. Please double check it, or report a bug otherwise."
+                f" Very likely the feature is disabled for this project and/or group. Please double check it, or report a bug otherwise.",
             )
             return False
         return super().should_retry(response)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if response.status_code in self.non_retriable_codes:
-            return
+            return None
         response_data = response.json()
         if isinstance(response_data, dict):
             return None
@@ -94,7 +96,7 @@ class GitlabStream(HttpStream, ABC):
         else:
             Exception(f"Unsupported type of response data for stream {self.name}")
 
-    def transform(self, record: Dict[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs):
+    def transform(self, record: dict[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs):
         for key in self.flatten_id_keys:
             self._flatten_id(record, key)
 
@@ -103,11 +105,11 @@ class GitlabStream(HttpStream, ABC):
 
         return record
 
-    def _flatten_id(self, record: Dict[str, Any], target: str):
+    def _flatten_id(self, record: dict[str, Any], target: str):
         target_value = record.get(target, None)
         record[target + "_id"] = target_value.get("id") if target_value else None
 
-    def _flatten_list(self, record: Dict[str, Any], target: str):
+    def _flatten_list(self, record: dict[str, Any], target: str):
         record[target] = [target_data.get("id") for target_data in record.get(target, [])]
 
 
@@ -128,7 +130,7 @@ class GitlabChildStream(GitlabStream):
         return "/".join(template + [self.name])
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, any]]]:
         for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
             for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
@@ -137,7 +139,7 @@ class GitlabChildStream(GitlabStream):
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return self.path_template.format(**{path_key: stream_slice[path_key] for path_key in self.path_list})
 
-    def transform(self, record: Dict[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs):
+    def transform(self, record: dict[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs):
         super().transform(record, stream_slice, **kwargs)
         if self.flatten_parent_id:
             record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
@@ -155,8 +157,7 @@ class IncrementalGitlabChildStream(GitlabChildStream):
         self._start_date = start_date
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         project_id = latest_record.get("project_id")
@@ -170,7 +171,7 @@ class IncrementalGitlabChildStream(GitlabChildStream):
         return current_stream_state
 
     @staticmethod
-    def _chunk_date_range(start_point: datetime.datetime) -> Iterable[Tuple[str, str]]:
+    def _chunk_date_range(start_point: datetime.datetime) -> Iterable[tuple[str, str]]:
         end_point = datetime.datetime.now(datetime.timezone.utc)
         if start_point > end_point:
             return []
@@ -182,7 +183,7 @@ class IncrementalGitlabChildStream(GitlabChildStream):
             current_start = current_end + datetime.timedelta(seconds=1)
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
         super_slices = super().stream_slices(sync_mode, cursor_field, stream_state)
@@ -218,7 +219,7 @@ class IncrementalGitlabChildStream(GitlabChildStream):
 class Groups(GitlabStream):
     use_cache = True
 
-    def __init__(self, group_ids: List, **kwargs):
+    def __init__(self, group_ids: list, **kwargs):
         super().__init__(**kwargs)
         self.group_ids = group_ids
 
@@ -255,7 +256,7 @@ class Projects(GitlabStream):
     stream_base_params = {"statistics": 1}
     use_cache = True
 
-    def __init__(self, project_ids: List = None, **kwargs):
+    def __init__(self, project_ids: list = None, **kwargs):
         super().__init__(**kwargs)
         self.project_ids = project_ids
 

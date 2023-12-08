@@ -2,21 +2,22 @@
 
 import contextlib
 import functools
+from collections.abc import Callable
 from types import TracebackType
-from typing import Callable, List, Optional, Union
+from typing import Optional, Union
 
 import requests_mock
+
 from airbyte_cdk.test.http import HttpRequest, HttpRequestMatcher, HttpResponse
 
 
 class HttpMocker(contextlib.ContextDecorator):
-    """
-    WARNING: This implementation only works if the lib used to perform HTTP requests is `requests`
+    """WARNING: This implementation only works if the lib used to perform HTTP requests is `requests`
     """
 
     def __init__(self) -> None:
         self._mocker = requests_mock.Mocker()
-        self._matchers: List[HttpRequestMatcher] = []
+        self._matchers: list[HttpRequestMatcher] = []
 
     def __enter__(self) -> "HttpMocker":
         self._mocker.__enter__()
@@ -30,9 +31,8 @@ class HttpMocker(contextlib.ContextDecorator):
             if not matcher.has_expected_match_count():
                 raise ValueError(f"Invalid number of matches for `{matcher}`")
 
-    def get(self, request: HttpRequest, responses: Union[HttpResponse, List[HttpResponse]]) -> None:
-        """
-        WARNING: Given multiple requests that are not mutually exclusive, the request will match the first one. This can happen in scenarios
+    def get(self, request: HttpRequest, responses: Union[HttpResponse, list[HttpResponse]]) -> None:
+        """WARNING: Given multiple requests that are not mutually exclusive, the request will match the first one. This can happen in scenarios
         where the same request is added twice (in which case there will always be an exception because we will never match the second
         request) or in a case like this:
         ```
@@ -75,7 +75,7 @@ class HttpMocker(contextlib.ContextDecorator):
                 except requests_mock.NoMockAddress as no_mock_exception:
                     matchers_as_string = "\n\t".join(map(lambda matcher: str(matcher.request), self._matchers))
                     raise ValueError(
-                        f"No matcher matches {no_mock_exception.args[0]}. Matchers currently configured are:\n\t{matchers_as_string}"
+                        f"No matcher matches {no_mock_exception.args[0]}. Matchers currently configured are:\n\t{matchers_as_string}",
                     ) from no_mock_exception
                 except AssertionError as test_assertion:
                     assertion_error = test_assertion

@@ -3,14 +3,16 @@
 #
 
 
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from collections.abc import Mapping, MutableMapping
+from typing import Any
 
 import requests
+from requests.auth import HTTPBasicAuth
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from requests.auth import HTTPBasicAuth
 from source_tplcentral.streams import Customers, Inventory, Items, Orders, StockDetails, StockSummaries
 
 
@@ -22,7 +24,7 @@ class TplcentralAuthenticator(Oauth2Authenticator):
         client_secret: str,
         user_login_id: int = None,
         user_login: str = None,
-        scopes: List[str] = None,
+        scopes: list[str] = None,
     ):
         super().__init__(
             token_refresh_endpoint=token_refresh_endpoint,
@@ -56,10 +58,10 @@ class TplcentralAuthenticator(Oauth2Authenticator):
 
         return payload
 
-    def refresh_access_token(self) -> Tuple[str, int]:
+    def refresh_access_token(self) -> tuple[str, int]:
         try:
             response = requests.post(
-                self.token_refresh_endpoint, auth=HTTPBasicAuth(self.client_id, self.client_secret), json=self.get_refresh_request_body()
+                self.token_refresh_endpoint, auth=HTTPBasicAuth(self.client_id, self.client_secret), json=self.get_refresh_request_body(),
             )
             response.raise_for_status()
             response_json = response.json()
@@ -78,7 +80,7 @@ class SourceTplcentral(AbstractSource):
             user_login=config.get("user_login"),
         )
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, any]:
         try:
             self._auth(config).get_auth_header()
         except Exception as e:
@@ -86,7 +88,7 @@ class SourceTplcentral(AbstractSource):
 
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         config["authenticator"] = self._auth(config)
 
         return [

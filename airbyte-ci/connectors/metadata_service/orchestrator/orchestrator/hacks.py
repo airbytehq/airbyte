@@ -24,10 +24,9 @@ def _get_version_specific_registry_entry_file_path(registry_entry, registry_name
 
 def _check_for_invalid_write_path(write_path: str):
     """Check if the write path is valid."""
-
     if "latest" in write_path:
         raise ValueError(
-            "Cannot write to a path that contains 'latest'. That is reserved for the latest metadata file and its direct transformations"
+            "Cannot write to a path that contains 'latest'. That is reserved for the latest metadata file and its direct transformations",
         )
 
 
@@ -35,8 +34,7 @@ def construct_registry_entry_write_path(
     registry_entry: PolymorphicRegistryEntry,
     registry_name: str,
 ) -> str:
-    """
-    Construct a registry entry write path from its parts.
+    """Construct a registry entry write path from its parts.
 
     Underlying issue:
         This is barely a hack.
@@ -53,7 +51,7 @@ def construct_registry_entry_write_path(
 
         *But only in the case that its a versioned path and NOT a latest path.*
 
-        Example:
+    Example:
         If metadata file for source-posgres is at version 2.0.0 but there is a override for the cloud registry
         that changes the docker repository to source-postgres-strict-encrypt and the version to 1.0.0
 

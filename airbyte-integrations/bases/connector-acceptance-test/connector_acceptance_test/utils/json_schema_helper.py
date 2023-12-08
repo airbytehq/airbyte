@@ -3,8 +3,9 @@
 #
 
 
+from collections.abc import Mapping
 from functools import reduce
-from typing import Any, Dict, List, Mapping, Optional, Set, Text, Union
+from typing import Any, Optional, Union
 
 import dpath.util
 import pendulum
@@ -16,17 +17,17 @@ class CatalogField:
     It eases the read of values from records according to schema definition.
     """
 
-    def __init__(self, schema: Mapping[str, Any], path: List[str]):
+    def __init__(self, schema: Mapping[str, Any], path: list[str]):
         self.schema = schema
         self.path = path
         self.formats = self._detect_formats()
 
-    def _detect_formats(self) -> Set[str]:
+    def _detect_formats(self) -> set[str]:
         """Extract set of formats/types for this field"""
         format_ = []
         try:
             format_ = self.schema.get("format", self.schema["type"])
-            if not isinstance(format_, List):
+            if not isinstance(format_, list):
                 format_ = [format_]
         except KeyError:
             pass
@@ -43,7 +44,7 @@ class CatalogField:
             return pendulum.parse(value)
         return value
 
-    def parse(self, record: Mapping[str, Any], path: Optional[List[Union[int, str]]] = None) -> Any:
+    def parse(self, record: Mapping[str, Any], path: Optional[list[Union[int, str]]] = None) -> Any:
         """Extract field value from the record and cast it to native type"""
         path = path or self.path
         value = reduce(lambda data, key: data[key], path, record)
@@ -68,7 +69,7 @@ class JsonSchemaHelper:
             node = node[segment]
         return node
 
-    def get_property(self, path: List[str]) -> Mapping[str, Any]:
+    def get_property(self, path: list[str]) -> Mapping[str, Any]:
         """Get any part of schema according to provided path, resolves $refs if necessary
 
         schema = {
@@ -98,7 +99,7 @@ class JsonSchemaHelper:
             node = node["properties"][segment]
         return node
 
-    def field(self, path: List[str]) -> CatalogField:
+    def field(self, path: list[str]) -> CatalogField:
         """Get schema property and wrap it into CatalogField.
 
         CatalogField is a helper to ease the read of values from records according to schema definition.
@@ -109,12 +110,11 @@ class JsonSchemaHelper:
         """
         return CatalogField(schema=self.get_property(path), path=path)
 
-    def get_node(self, path: List[Union[str, int]]) -> Any:
+    def get_node(self, path: list[Union[str, int]]) -> Any:
         """Return part of schema by specified path
 
         :param path: list of fields in the order of navigation
         """
-
         node = self._schema
         for segment in path:
             if "$ref" in node:
@@ -123,23 +123,21 @@ class JsonSchemaHelper:
         return node
 
     def get_parent_path(self, path: str, separator="/") -> Any:
-        """
-        Returns the parent path of the supplied path
+        """Returns the parent path of the supplied path
         """
         absolute_path = f"{separator}{path}" if not path.startswith(separator) else path
         parent_path, _ = absolute_path.rsplit(sep=separator, maxsplit=1)
         return parent_path
 
     def get_parent(self, path: str, separator="/") -> Any:
-        """
-        Returns the parent dict of a given path within the `obj` dict
+        """Returns the parent dict of a given path within the `obj` dict
         """
         parent_path = self.get_parent_path(path, separator=separator)
         if parent_path == "":
             return self._schema
         return dpath.util.get(self._schema, parent_path, separator=separator)
 
-    def find_nodes(self, keys: List[str]) -> List[List[Union[str, int]]]:
+    def find_nodes(self, keys: list[str]) -> list[list[Union[str, int]]]:
         """Find all paths that lead to nodes with the specified keys.
 
         :param keys: list of keys
@@ -147,7 +145,7 @@ class JsonSchemaHelper:
         """
         variant_paths = []
 
-        def traverse_schema(_schema: Union[Dict[Text, Any], List], path=None):
+        def traverse_schema(_schema: Union[dict[str, Any], list], path=None):
             path = path or []
             if path and path[-1] in keys:
                 variant_paths.append(path)
@@ -162,9 +160,8 @@ class JsonSchemaHelper:
         return variant_paths
 
 
-def get_object_structure(obj: dict) -> List[str]:
-    """
-    Traverse through object structure and compose a list of property keys including nested one.
+def get_object_structure(obj: dict) -> list[str]:
+    """Traverse through object structure and compose a list of property keys including nested one.
     This list reflects object's structure with list of all obj property key
     paths. In case if object is nested inside array we assume that it has same
     structure as first element.
@@ -186,9 +183,8 @@ def get_object_structure(obj: dict) -> List[str]:
     return paths
 
 
-def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -> List[str]:
-    """
-    Traverse through json schema and compose list of property keys that object expected to have.
+def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -> list[str]:
+    """Traverse through json schema and compose list of property keys that object expected to have.
     :param annotate_one_of: Generate one_of index in path
     :param schema: jsonschema to get expected paths
     :returns list of object property keys paths
@@ -231,7 +227,7 @@ def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -
                 # {"type": "object", "additionalProperties": {"type": "string"}}
                 if path:
                     paths.append(path)
-                return
+                return None
             return {k: _scan_schema(v, path + "/" + k) for k, v in props.items()}
         elif "array" in schema_type:
             items = subschema.get("items", {})
@@ -256,9 +252,8 @@ def flatten_tuples(to_flatten):
     return tuple(types)
 
 
-def get_paths_in_connector_config(schema: dict) -> List[str]:
-    """
-    Traverse through the provided schema's values and extract the path_in_connector_config paths
+def get_paths_in_connector_config(schema: dict) -> list[str]:
+    """Traverse through the provided schema's values and extract the path_in_connector_config paths
     :param properties: jsonschema containing values which may have path_in_connector_config attributes
     :returns list of path_in_connector_config paths
     """

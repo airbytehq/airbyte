@@ -2,24 +2,23 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Tuple
 
 import requests
+
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 
 class AsanaOauth2Authenticator(Oauth2Authenticator):
-    """
-    Unlike most Oauth services that accept oauth parameters in form of json
+    """Unlike most Oauth services that accept oauth parameters in form of json
     encoded body, Asana's oauth token endpoint expects oauth parameters to be
     in form-encoded post body.
     https://developers.asana.com/docs/oauth
     """
 
-    def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        Override base refresh_access_token method to send form-encoded oauth
+    def refresh_access_token(self) -> tuple[str, int]:
+        """Override base refresh_access_token method to send form-encoded oauth
         parameters over POST request body.
+
         Returns:
             Tuple of access token and expiration time in seconds
         """

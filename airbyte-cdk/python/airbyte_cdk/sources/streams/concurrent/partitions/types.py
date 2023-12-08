@@ -10,14 +10,12 @@ from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 
 
 class PartitionCompleteSentinel:
-    """
-    A sentinel object indicating all records for a partition were produced.
+    """A sentinel object indicating all records for a partition were produced.
     Includes a pointer to the partition that was processed.
     """
 
     def __init__(self, partition: Partition):
-        """
-        :param partition: The partition that was processed
+        """:param partition: The partition that was processed
         """
         self.partition = partition
 

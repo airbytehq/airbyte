@@ -4,17 +4,19 @@
 
 
 import logging
+from collections.abc import Iterable, Iterator, Mapping, MutableMapping
 from enum import Enum
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
+from typing import Any
 
 import backoff
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v13.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from google.api_core.exceptions import InternalServerError, ServerError, TooManyRequests
 from google.auth import exceptions
 from proto.marshal.collections import Repeated, RepeatedComposite
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 
 API_VERSION = "v13"
 logger = logging.getLogger("airbyte")
@@ -42,7 +44,7 @@ class GoogleAds:
         backoff.expo,
         (InternalServerError, ServerError, TooManyRequests),
         on_backoff=lambda details: logger.info(
-            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...",
         ),
         max_tries=5,
     )
@@ -54,13 +56,11 @@ class GoogleAds:
         search_request.customer_id = customer_id
         return [self.ga_service.search(search_request)]
 
-    def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
-        """
-        Issue Google API request to get detailed information on data type for custom query columns.
+    def get_fields_metadata(self, fields: list[str]) -> Mapping[str, Any]:
+        """Issue Google API request to get detailed information on data type for custom query columns.
         :params fields list of columns for user defined query.
         :return dict of fields type info.
         """
-
         ga_field_service = self.client.get_service("GoogleAdsFieldService")
         request = self.client.get_type("SearchGoogleAdsFieldsRequest")
         request.page_size = len(fields)
@@ -77,7 +77,7 @@ class GoogleAds:
         return {r.name: r for r in response}
 
     @staticmethod
-    def get_fields_from_schema(schema: Mapping[str, Any]) -> List[str]:
+    def get_fields_from_schema(schema: Mapping[str, Any]) -> list[str]:
         properties = schema.get("properties")
         return list(properties.keys())
 
@@ -85,12 +85,11 @@ class GoogleAds:
     def convert_schema_into_query(
         fields: Iterable[str],
         table_name: str,
-        conditions: List[str] = None,
+        conditions: list[str] = None,
         order_field: str = None,
         limit: int = None,
     ) -> str:
-        """
-        Constructs a Google Ads query based on the provided parameters.
+        """Constructs a Google Ads query based on the provided parameters.
 
         Args:
         - fields (Iterable[str]): List of fields to be selected in the query.
@@ -102,7 +101,6 @@ class GoogleAds:
         Returns:
         - str: Constructed Google Ads query.
         """
-
         query_template = f"SELECT {', '.join(fields)} FROM {table_name}"
 
         if conditions:

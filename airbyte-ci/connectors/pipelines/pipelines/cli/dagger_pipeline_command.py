@@ -6,12 +6,12 @@
 from __future__ import annotations
 
 import sys
-from glob import glob
 from pathlib import Path
 from typing import Any
 
 import asyncclick as click
 from dagger import DaggerError
+
 from pipelines import consts, main_logger
 from pipelines.consts import GCS_PUBLIC_DOMAIN, STATIC_REPORT_PREFIX
 from pipelines.helpers import sentry_utils
@@ -23,17 +23,20 @@ class DaggerPipelineCommand(click.Command):
     @sentry_utils.with_command_context
     async def invoke(self, ctx: click.Context) -> Any:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
+
         Args:
             ctx (click.Context): The invocation context.
+
         Raises:
             e: Raise whatever exception that was caught.
+
         Returns:
             Any: The invocation return value.
         """
         command_name = self.name
         main_logger.info(f"Running Dagger Command {command_name}...")
         main_logger.info(
-            "If you're running this command for the first time the Dagger engine image will be pulled, it can take a short minute..."
+            "If you're running this command for the first time the Dagger engine image will be pulled, it can take a short minute...",
         )
         ctx.obj["report_output_prefix"] = self.render_report_output_prefix(ctx)
         dagger_logs_gcs_key = f"{ctx.obj['report_output_prefix']}/dagger-logs.txt"
@@ -61,7 +64,7 @@ class DaggerPipelineCommand(click.Command):
                     main_logger.info(f"Dagger logs saved to {ctx.obj['dagger_logs_path']}")
                 if ctx.obj["is_ci"]:
                     gcs_uri, public_url = upload_to_gcs(
-                        ctx.obj["dagger_logs_path"], ctx.obj["ci_report_bucket_name"], dagger_logs_gcs_key, ctx.obj["ci_gcs_credentials"]
+                        ctx.obj["dagger_logs_path"], ctx.obj["ci_report_bucket_name"], dagger_logs_gcs_key, ctx.obj["ci_gcs_credentials"],
                     )
                     main_logger.info(f"Dagger logs saved to {gcs_uri}. Public URL: {public_url}")
 
@@ -75,7 +78,6 @@ class DaggerPipelineCommand(click.Command):
         Note: We cannot hoist this higher in the command hierarchy because only one level of
         subcommands are available at the time the context is created.
         """
-
         git_branch = ctx.obj["git_branch"]
         git_revision = ctx.obj["git_revision"]
         pipeline_start_timestamp = ctx.obj["pipeline_start_timestamp"]

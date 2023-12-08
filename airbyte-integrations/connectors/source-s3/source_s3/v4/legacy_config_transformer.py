@@ -3,8 +3,9 @@
 #
 
 import json
+from collections.abc import Mapping
 from datetime import datetime
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, Optional, Union
 
 from source_s3.source import SourceS3Spec
 from source_s3.source_files_abstract.formats.avro_spec import AvroFormat
@@ -17,8 +18,7 @@ MICROS_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class LegacyConfigTransformer:
-    """
-    Class that takes in S3 source configs in the legacy format and transforms them into
+    """Class that takes in S3 source configs in the legacy format and transforms them into
     configs that can be used by the new S3 source built with the file-based CDK.
     """
 
@@ -32,7 +32,7 @@ class LegacyConfigTransformer:
                     "globs": cls._create_globs(legacy_config.path_pattern),
                     "legacy_prefix": legacy_config.provider.path_prefix,
                     "validation_policy": "Emit Record",
-                }
+                },
             ],
         }
 
@@ -52,7 +52,7 @@ class LegacyConfigTransformer:
         return transformed_config
 
     @classmethod
-    def _create_globs(cls, path_pattern: str) -> List[str]:
+    def _create_globs(cls, path_pattern: str) -> list[str]:
         if "|" in path_pattern:
             return path_pattern.split("|")
         else:
@@ -136,7 +136,7 @@ class LegacyConfigTransformer:
                     if advanced_options
                     else "" + f"additional_reader_options={additional_reader_options}"
                     if additional_reader_options
-                    else ""
+                    else "",
                 )
 
             return csv_options
@@ -150,7 +150,7 @@ class LegacyConfigTransformer:
             raise ValueError(f"Format filetype {format_options} is not a supported file type")
 
     @classmethod
-    def parse_config_options_str(cls, options_field: str, options_value: Optional[str]) -> Dict[str, Any]:
+    def parse_config_options_str(cls, options_field: str, options_value: Optional[str]) -> dict[str, Any]:
         options_str = options_value or "{}"
         try:
             return json.loads(options_str)
@@ -158,7 +158,7 @@ class LegacyConfigTransformer:
             raise ValueError(f"Malformed {options_field} config json: {error}. Please ensure that it is a valid JSON.")
 
     @staticmethod
-    def _filter_legacy_noops(advanced_options: Dict[str, Any]):
+    def _filter_legacy_noops(advanced_options: dict[str, Any]):
         ignore_all = ("auto_dict_encode", "timestamp_parsers", "block_size")
         ignore_by_value = (("check_utf8", False),)
 

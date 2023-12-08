@@ -4,7 +4,6 @@
 
 
 from http import HTTPStatus
-from typing import List
 
 from .report_streams import ReportInfo, ReportStream
 
@@ -253,8 +252,7 @@ METRICS_TYPE_TO_ID_MAP = {
 
 
 class SponsoredProductsReportStream(ReportStream):
-    """
-    https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports
+    """https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports
     https://advertising.amazon.com/API/docs/en-us/reporting/v3/migration-guide
     https://advertising.amazon.com/API/docs/en-us/reporting/v3/report-types#sponsored-products
     """
@@ -269,9 +267,8 @@ class SponsoredProductsReportStream(ReportStream):
     def report_init_endpoint(self, record_type: str) -> str:
         return f"/{self.API_VERSION}/reports"
 
-    def _download_report(self, report_info: ReportInfo, url: str) -> List[dict]:
-        """
-        Download and parse report result
+    def _download_report(self, report_info: ReportInfo, url: str) -> list[dict]:
+        """Download and parse report result
         """
         return super()._download_report(None, url)
 

@@ -4,8 +4,9 @@
 
 import datetime
 import operator
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping, Optional
+from typing import Any, Optional
 
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
@@ -16,8 +17,7 @@ from airbyte_cdk.sources.declarative.types import StreamSlice
 
 @dataclass
 class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
-    """
-    Extending DatetimeBasedCursor by adding step option to existing start_time/end_time options
+    """Extending DatetimeBasedCursor by adding step option to existing start_time/end_time options
     """
 
     step_option: Optional[RequestOption] = None
@@ -35,8 +35,7 @@ class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
         return options
 
     def _partition_daterange(self, start, end, step: datetime.timedelta):
-        """
-        Puts a step to each stream slice. `step` is a difference between start/end date in days.
+        """Puts a step to each stream slice. `step` is a difference between start/end date in days.
         """
         get_start_time = operator.itemgetter(self.partition_field_start.eval(self.config))
         get_end_time = operator.itemgetter(self.partition_field_end.eval(self.config))

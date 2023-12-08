@@ -3,33 +3,28 @@
 #
 
 
+from collections.abc import Iterable, Iterator, Mapping, MutableMapping
 from datetime import datetime
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, TypedDict, cast
+from typing import Any, Optional, TypedDict, cast
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
-ConvexConfig = TypedDict(
-    "ConvexConfig",
-    {
-        "deployment_url": str,
-        "access_key": str,
-    },
-)
 
-ConvexState = TypedDict(
-    "ConvexState",
-    {
-        "snapshot_cursor": Optional[str],
-        "snapshot_has_more": bool,
-        "delta_cursor": Optional[int],
-    },
-)
+class ConvexConfig(TypedDict):
+    deployment_url: str
+    access_key: str
+
+class ConvexState(TypedDict):
+    snapshot_cursor: Optional[str]
+    snapshot_has_more: bool
+    delta_cursor: Optional[int]
 
 CONVEX_CLIENT_VERSION = "0.3.0"
 
@@ -46,9 +41,8 @@ class SourceConvex(AbstractSource):
         }
         return requests.get(url, headers=headers)
 
-    def check_connection(self, logger: Any, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        """
-        Connection check to validate that the user-provided config can be used to connect to the underlying API
+    def check_connection(self, logger: Any, config: Mapping[str, Any]) -> tuple[bool, Any]:
+        """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
         :param config:  the user-input config object conforming to the connector's spec.yaml
         :param logger:  logger object
@@ -61,9 +55,8 @@ class SourceConvex(AbstractSource):
         else:
             return False, format_http_error("Connection to Convex via json_schemas endpoint failed", resp)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """:param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         config = cast(ConvexConfig, config)
         resp = self._json_schemas(config)
@@ -90,7 +83,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
         access_key: str,
         fmt: str,
         table_name: str,
-        json_schema: Dict[str, Any],
+        json_schema: dict[str, Any],
     ):
         self.deployment_url = deployment_url
         self.fmt = fmt
@@ -185,7 +178,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        params: Dict[str, Any] = {"tableName": self.table_name, "format": self.fmt}
+        params: dict[str, Any] = {"tableName": self.table_name, "format": self.fmt}
         if self._snapshot_has_more:
             if self._snapshot_cursor_value:
                 params["cursor"] = self._snapshot_cursor_value
@@ -201,17 +194,15 @@ class ConvexStream(HttpStream, IncrementalMixin):
         stream_state: Optional[Mapping[str, Any]],
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Dict[str, str]:
-        """
-        Custom headers for each HTTP request, not including Authorization.
+    ) -> dict[str, str]:
+        """Custom headers for each HTTP request, not including Authorization.
         """
         return {
             "Convex-Client": f"airbyte-export-{CONVEX_CLIENT_VERSION}",
         }
 
     def get_updated_state(self, current_stream_state: ConvexState, latest_record: Mapping[str, Any]) -> ConvexState:
-        """
-        This (deprecated) method is still used by AbstractSource to update state between calls to `read_records`.
+        """This (deprecated) method is still used by AbstractSource to update state between calls to `read_records`.
         """
         return cast(ConvexState, self.state)
 

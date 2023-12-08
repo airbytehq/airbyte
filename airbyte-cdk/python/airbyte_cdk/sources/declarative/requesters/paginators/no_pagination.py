@@ -2,18 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping, MutableMapping
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
 @dataclass
 class NoPagination(Paginator):
-    """
-    Pagination implementation that never returns a next page.
+    """Pagination implementation that never returns a next page.
     """
 
     parameters: InitVar[Mapping[str, Any]]
@@ -57,7 +58,7 @@ class NoPagination(Paginator):
     ) -> Mapping[str, Any]:
         return {}
 
-    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Mapping[str, Any]:
+    def next_page_token(self, response: requests.Response, last_records: list[Record]) -> Mapping[str, Any]:
         return {}
 
     def reset(self) -> None:

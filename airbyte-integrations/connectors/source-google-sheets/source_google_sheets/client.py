@@ -3,7 +3,6 @@
 #
 
 import logging
-from typing import Dict, List
 
 import backoff
 from googleapiclient import errors
@@ -30,7 +29,7 @@ class GoogleSheetsClient:
             # Stop retrying if it's not a problem with the rate limit or on the server end
             return not (code == status_codes.TOO_MANY_REQUESTS or 500 <= code < 600)
 
-    def __init__(self, credentials: Dict[str, str], scopes: List[str] = SCOPES):
+    def __init__(self, credentials: dict[str, str], scopes: list[str] = SCOPES):
         self.client = Helpers.get_authenticated_sheets_client(credentials, scopes)
 
     def _create_range(self, sheet, row_cursor):

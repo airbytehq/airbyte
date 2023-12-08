@@ -6,11 +6,13 @@ import copy
 import math
 import os
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterable, Mapping, MutableMapping
 from itertools import chain
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
@@ -36,7 +38,7 @@ class DefaultRecordExtractor(IRecordExtractor):
         self._slice_data_retriever = slice_data_retriever or (lambda record, *_: record)
 
     def extract_records(
-        self, records: Iterable[MutableMapping], stream_slice: Optional[Mapping[str, Any]] = None
+        self, records: Iterable[MutableMapping], stream_slice: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[MutableMapping]:
         yield from filter(self._response_filter, map(lambda x: self._slice_data_retriever(x, stream_slice), records))
 
@@ -47,7 +49,7 @@ class EventRecordExtractor(DefaultRecordExtractor):
         self.cursor_field = cursor_field
 
     def extract_records(
-        self, records: Iterable[MutableMapping], stream_slice: Optional[Mapping[str, Any]] = None
+        self, records: Iterable[MutableMapping], stream_slice: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[MutableMapping]:
         for record in records:
             item = record["data"]["object"]
@@ -71,7 +73,7 @@ class UpdatedCursorIncrementalRecordExtractor(DefaultRecordExtractor):
         self.legacy_cursor_field = legacy_cursor_field
 
     def extract_records(
-        self, records: Iterable[MutableMapping], stream_slice: Optional[Mapping[str, Any]] = None
+        self, records: Iterable[MutableMapping], stream_slice: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[MutableMapping]:
         records = super().extract_records(records, stream_slice)
         for record in records:
@@ -96,7 +98,7 @@ class StripeStream(HttpStream, ABC):
         return StripeAvailabilityStrategy()
 
     @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+    def primary_key(self) -> Optional[Union[str, list[str], list[list[str]]]]:
         return self._primary_key
 
     @property
@@ -115,7 +117,7 @@ class StripeStream(HttpStream, ABC):
         return self._use_cache
 
     @property
-    def expand_items(self) -> Optional[List[str]]:
+    def expand_items(self) -> Optional[list[str]]:
         return self._expand_items
 
     def extra_request_params(self, *args, **kwargs) -> Mapping[str, Any]:
@@ -137,7 +139,7 @@ class StripeStream(HttpStream, ABC):
         name: Optional[str] = None,
         path: Optional[Union[Callable, str]] = None,
         use_cache: bool = False,
-        expand_items: Optional[List[str]] = None,
+        expand_items: Optional[list[str]] = None,
         extra_request_params: Optional[Union[Mapping[str, Any], Callable]] = None,
         response_filter: Optional[Callable] = None,
         slice_data_retriever: Optional[Callable] = None,
@@ -226,8 +228,7 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
         self._cursor_field = cursor_field
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         state_cursor_value = current_stream_state.get(self.cursor_field, 0)
@@ -245,7 +246,7 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
         params = super(CreatedCursorIncrementalStripeStream, self).request_params(stream_state, stream_slice, next_page_token)
         return {"created[gte]": stream_slice["created[gte]"], "created[lte]": stream_slice["created[lte]"], **params}
 
-    def chunk_dates(self, start_date_ts: int) -> Iterable[Tuple[int, int]]:
+    def chunk_dates(self, start_date_ts: int) -> Iterable[tuple[int, int]]:
         now = pendulum.now().int_timestamp
         step = int(pendulum.duration(days=self.slice_range).total_seconds())
         after_ts = start_date_ts
@@ -255,7 +256,7 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
             after_ts = before_ts + 1
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
         start_ts = self.get_start_timestamp(stream_state)
@@ -277,15 +278,14 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
             allowed_start_date = pendulum.now().subtract(days=self.start_date_max_days_from_now).int_timestamp
             if start_point < allowed_start_date:
                 self.logger.info(
-                    f"Applying the restriction of maximum {self.start_date_max_days_from_now} days lookback to stream {self.name}"
+                    f"Applying the restriction of maximum {self.start_date_max_days_from_now} days lookback to stream {self.name}",
                 )
                 start_point = allowed_start_date
         return start_point
 
 
 class Events(CreatedCursorIncrementalStripeStream):
-    """
-    API docs: https://stripe.com/docs/api/events/list
+    """API docs: https://stripe.com/docs/api/events/list
     """
 
     def __init__(self, *args, event_types: Optional[Iterable[str]] = None, **kwargs):
@@ -308,8 +308,7 @@ class Events(CreatedCursorIncrementalStripeStream):
 
 
 class UpdatedCursorIncrementalStripeStream(StripeStream):
-    """
-    `CreatedCursorIncrementalStripeStream` does not provide a way to read updated data since given date because the API does not allow to do this.
+    """`CreatedCursorIncrementalStripeStream` does not provide a way to read updated data since given date because the API does not allow to do this.
     It only returns newly created entities since given date. So to have all the updated data as well we need to make use of the Events API,
     which allows to retrieve updated data since given date for a number of predefined events which are associated with the corresponding
     entities.
@@ -333,7 +332,7 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
         *args,
         cursor_field: str = "updated",
         legacy_cursor_field: Optional[str] = "created",
-        event_types: Optional[List[str]] = None,
+        event_types: Optional[list[str]] = None,
         record_extractor: Optional[IRecordExtractor] = None,
         response_filter: Optional[Callable] = None,
         **kwargs,
@@ -342,7 +341,7 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
         self._cursor_field = cursor_field
         self._legacy_cursor_field = legacy_cursor_field
         record_extractor = record_extractor or UpdatedCursorIncrementalRecordExtractor(
-            self.cursor_field, self.legacy_cursor_field, response_filter
+            self.cursor_field, self.legacy_cursor_field, response_filter,
         )
         super().__init__(*args, record_extractor=record_extractor, **kwargs)
         # `lookback_window_days` is hardcoded as it does not make any sense to re-export events,
@@ -378,27 +377,27 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
         return {self.cursor_field: latest_record_value}
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # When reading from a stream, a `read_records` is called once per slice.
         # We yield a single slice here because we don't want to make duplicate calls for event based incremental syncs.
         yield {}
 
     def read_event_increments(
-        self, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self, cursor_field: Optional[list[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         stream_state = self.update_cursor_field(stream_state or {})
         for event_slice in self.events_stream.stream_slices(
-            sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_state=stream_state
+            sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_state=stream_state,
         ):
             yield from self.events_stream.read_records(
-                SyncMode.incremental, cursor_field=cursor_field, stream_slice=event_slice, stream_state=stream_state
+                SyncMode.incremental, cursor_field=cursor_field, stream_slice=event_slice, stream_state=stream_state,
             )
 
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
+        cursor_field: Optional[list[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
@@ -423,8 +422,7 @@ class IncrementalStripeStreamSelector(IStreamSelector):
 
 
 class IncrementalStripeStream(StripeStream):
-    """
-    This class combines both normal incremental sync and event based sync. It uses common endpoints for sliced data syncs in
+    """This class combines both normal incremental sync and event based sync. It uses common endpoints for sliced data syncs in
     the full refresh sync mode and initial incremental sync. For incremental syncs with a state, event based sync comes into action.
     """
 
@@ -433,7 +431,7 @@ class IncrementalStripeStream(StripeStream):
         *args,
         cursor_field: str = "updated",
         legacy_cursor_field: Optional[str] = "created",
-        event_types: Optional[List[str]] = None,
+        event_types: Optional[list[str]] = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -465,11 +463,11 @@ class IncrementalStripeStream(StripeStream):
         self._parent_stream = stream
 
     @property
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Union[str, list[str]]:
         return self._cursor_field
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.parent_stream = self.stream_selector.get_parent_stream(stream_state)
         yield from self.parent_stream.stream_slices(sync_mode, cursor_field, stream_state)
@@ -480,7 +478,7 @@ class IncrementalStripeStream(StripeStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
+        cursor_field: Optional[list[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
@@ -488,8 +486,7 @@ class IncrementalStripeStream(StripeStream):
 
 
 class CustomerBalanceTransactions(StripeStream):
-    """
-    API docs: https://stripe.com/docs/api/customer_balance_transactions/list
+    """API docs: https://stripe.com/docs/api/customer_balance_transactions/list
     """
 
     def __init__(self, *args, **kwargs):
@@ -512,7 +509,7 @@ class CustomerBalanceTransactions(StripeStream):
         return StripeSubStreamAvailabilityStrategy()
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = self.parent.stream_slices(sync_mode=SyncMode.full_refresh)
         for _slice in slices:
@@ -526,8 +523,7 @@ class CustomerBalanceTransactions(StripeStream):
 
 
 class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
-    """
-    Docs: https://stripe.com/docs/api/setup_attempts/list
+    """Docs: https://stripe.com/docs/api/setup_attempts/list
     """
 
     def __init__(self, **kwargs):
@@ -558,14 +554,14 @@ class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
         return HttpAvailabilityStrategy()
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # this is a unique combination of CreatedCursorIncrementalStripeStream and HttpSubStream,
         # so we need to have all the parent IDs multiplied by all the date slices
         incremental_slices = list(
             CreatedCursorIncrementalStripeStream.stream_slices(
-                self, sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state
-            )
+                self, sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state,
+            ),
         )
         if incremental_slices:
             parent_records = HttpSubStream.stream_slices(self, sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
@@ -586,8 +582,7 @@ class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
 
 
 class Persons(UpdatedCursorIncrementalStripeStream, HttpSubStream):
-    """
-    API docs: https://stripe.com/docs/api/persons/list
+    """API docs: https://stripe.com/docs/api/persons/list
     """
 
     event_types = ["person.created", "person.updated", "person.deleted"]
@@ -604,7 +599,7 @@ class Persons(UpdatedCursorIncrementalStripeStream, HttpSubStream):
         return f"accounts/{stream_slice['parent']['id']}/persons"
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent = HttpSubStream if not stream_state else UpdatedCursorIncrementalStripeStream
         yield from parent.stream_slices(self, sync_mode, cursor_field=cursor_field, stream_state=stream_state)
@@ -617,8 +612,7 @@ class StripeSubStream(StripeStream, HttpSubStream):
 
 
 class StripeLazySubStream(StripeStream, HttpSubStream):
-    """
-    Research shows that records related to SubStream can be extracted from Parent streams which already
+    """Research shows that records related to SubStream can be extracted from Parent streams which already
     contain 1st page of needed items. Thus, it significantly decreases a number of requests needed to get
     all item in parent stream, since parent stream returns 100 items per request.
     Note, in major cases, pagination requests are not performed because sub items are fully reported in parent streams
@@ -660,9 +654,8 @@ class StripeLazySubStream(StripeStream, HttpSubStream):
 
     @property
     def sub_items_attr(self) -> str:
-        """
-        :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
-          If the stream has no primary keys, return None.
+        """:return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+        If the stream has no primary keys, return None.
         """
         return self._sub_items_attr
 
@@ -701,14 +694,14 @@ class StripeLazySubStream(StripeStream, HttpSubStream):
         yield from chain(items, items_next_pages)
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self, sync_mode: SyncMode, cursor_field: Optional[list[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state,
         )
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
             )
             for record in parent_records:
                 self.logger.info(f"Fetching parent stream slices for stream {self.name}.")
@@ -725,8 +718,7 @@ class IncrementalStripeLazySubStreamSelector(IStreamSelector):
 
 
 class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
-    """
-    This stream uses StripeLazySubStream under the hood to run full refresh or initial incremental syncs.
+    """This stream uses StripeLazySubStream under the hood to run full refresh or initial incremental syncs.
     In case of subsequent incremental syncs, it uses the UpdatedCursorIncrementalStripeStream class.
     """
 
@@ -736,7 +728,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         *args,
         cursor_field: str = "updated",
         legacy_cursor_field: Optional[str] = "created",
-        event_types: Optional[List[str]] = None,
+        event_types: Optional[list[str]] = None,
         sub_items_attr: Optional[str] = None,
         response_filter: Optional[Callable] = None,
         **kwargs,
@@ -756,7 +748,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
             parent=parent,
             sub_items_attr=sub_items_attr,
             record_extractor=UpdatedCursorIncrementalRecordExtractor(
-                cursor_field=cursor_field, legacy_cursor_field=legacy_cursor_field, response_filter=response_filter
+                cursor_field=cursor_field, legacy_cursor_field=legacy_cursor_field, response_filter=response_filter,
             ),
             **kwargs,
         )
@@ -764,7 +756,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         self.stream_selector = IncrementalStripeLazySubStreamSelector(self.updated_cursor_incremental_stream, self.lazy_substream)
 
     @property
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Union[str, list[str]]:
         return self._cursor_field
 
     @property
@@ -776,7 +768,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         self._parent_stream = stream
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.parent_stream = self.stream_selector.get_parent_stream(stream_state)
         yield from self.parent_stream.stream_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
@@ -788,18 +780,17 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
+        cursor_field: Optional[list[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         yield from self.parent_stream.read_records(
-            sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
         )
 
 
 class ParentIncrementalStipeSubStream(StripeSubStream):
-    """
-    This stream differs from others in that it runs parent stream in exactly same sync mode it is run itself to generate stream slices.
+    """This stream differs from others in that it runs parent stream in exactly same sync mode it is run itself to generate stream slices.
     It also uses regular /v1 API endpoints to sync data no matter what the sync mode is. This means that the event-based API can only
     be utilized by the parent stream.
     """
@@ -813,7 +804,7 @@ class ParentIncrementalStipeSubStream(StripeSubStream):
         super().__init__(*args, **kwargs)
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self, sync_mode: SyncMode, cursor_field: Optional[list[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
         if stream_state:
@@ -822,7 +813,7 @@ class ParentIncrementalStipeSubStream(StripeSubStream):
         parent_stream_slices = self.parent.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
             )
             for record in parent_records:
                 yield {"parent": record}
@@ -844,7 +835,7 @@ class ParentIncrementalStipeSubStream(StripeSubStream):
             self.logger.warning(
                 "Data was not found for URL: {response.request.url}. "
                 "If this is a path for getting child attributes like /v1/checkout/sessions/<session_id>/line_items when running "
-                "the incremental sync, you may safely ignore this warning."
+                "the incremental sync, you may safely ignore this warning.",
             )
             return []
         response.raise_for_status()

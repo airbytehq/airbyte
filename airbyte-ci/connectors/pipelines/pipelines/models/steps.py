@@ -16,6 +16,7 @@ import anyio
 import asyncer
 import click
 from dagger import Container, DaggerError
+
 from pipelines import main_logger
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.utils import format_duration, get_exec_result
@@ -239,8 +240,8 @@ class Step(ABC):
 
     async def retry(self, step_result, *args, **kwargs) -> StepResult:
         self.retry_count += 1
-        self.logger.warn(
-            f"Failed with error: {step_result.stderr}.\nRetry #{self.retry_count} in {self.retry_delay.total_seconds()} seconds..."
+        self.logger.warning(
+            f"Failed with error: {step_result.stderr}.\nRetry #{self.retry_count} in {self.retry_delay.total_seconds()} seconds...",
         )
         await anyio.sleep(self.retry_delay.total_seconds())
         return await self.run(*args, **kwargs)

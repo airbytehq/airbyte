@@ -3,14 +3,14 @@
 #
 
 import inspect
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 PARAMETERS_STR = "$parameters"
 
 
 def create(func, /, *args, **keywords):
-    """
-    Create a partial on steroids.
+    """Create a partial on steroids.
     Returns a partial object which when called will behave like func called with the arguments supplied.
     Parameters will be interpolated before the creation of the object
     The interpolation will take in kwargs, and config as parameters that can be accessed through interpolating.

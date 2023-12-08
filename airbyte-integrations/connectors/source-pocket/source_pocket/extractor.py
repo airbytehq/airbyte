@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping
+from typing import Any
 
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -14,8 +16,7 @@ from airbyte_cdk.sources.declarative.types import Record
 
 @dataclass
 class PocketExtractor(RecordExtractor):
-    """
-    Record extractor that extracts record of the form:
+    """Record extractor that extracts record of the form:
 
     { "list": { "ID_1": record_1, "ID_2": record_2, ... } }
 
@@ -29,7 +30,7 @@ class PocketExtractor(RecordExtractor):
     decoder: Decoder = JsonDecoder(parameters={})
     field_path: str = "list"
 
-    def extract_records(self, response: requests.Response) -> List[Record]:
+    def extract_records(self, response: requests.Response) -> list[Record]:
         response_body = self.decoder.decode(response)
         if self.field_path not in response_body:
             return []

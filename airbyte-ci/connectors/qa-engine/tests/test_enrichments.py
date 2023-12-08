@@ -10,12 +10,12 @@ import pytest
 from qa_engine import enrichments
 
 
-@pytest.fixture
+@pytest.fixture()
 def enriched_catalog(oss_catalog, cloud_catalog, adoption_metrics_per_connector_version) -> pd.DataFrame:
     return enrichments.get_enriched_catalog(oss_catalog, cloud_catalog, adoption_metrics_per_connector_version)
 
 
-@pytest.fixture
+@pytest.fixture()
 def enriched_catalog_columns(enriched_catalog: pd.DataFrame) -> set:
     return set(enriched_catalog.columns)
 

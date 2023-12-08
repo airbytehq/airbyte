@@ -4,15 +4,16 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import FrozenSet, Set, Union
+from typing import Union
 
 from anyio import Path
+
 from connector_ops.utils import Connector
 from pipelines import main_logger
 from pipelines.helpers.utils import IGNORED_FILE_EXTENSIONS, METADATA_FILE_NAME
 
 
-def get_connector_modified_files(connector: Connector, all_modified_files: Set[Path]) -> FrozenSet[Path]:
+def get_connector_modified_files(connector: Connector, all_modified_files: set[Path]) -> frozenset[Path]:
     connector_modified_files = set()
     for modified_file in all_modified_files:
         modified_file_path = Path(modified_file)
@@ -22,8 +23,8 @@ def get_connector_modified_files(connector: Connector, all_modified_files: Set[P
 
 
 def _find_modified_connectors(
-    file_path: Union[str, Path], all_connectors: Set[Connector], dependency_scanning: bool = True
-) -> Set[Connector]:
+    file_path: Union[str, Path], all_connectors: set[Connector], dependency_scanning: bool = True,
+) -> set[Connector]:
     """Find all connectors impacted by the file change."""
     modified_connectors = set()
 
@@ -46,7 +47,7 @@ def _is_ignored_file(file_path: Union[str, Path]) -> bool:
     return Path(file_path).suffix in IGNORED_FILE_EXTENSIONS
 
 
-def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Connector], dependency_scanning: bool) -> Set[Connector]:
+def get_modified_connectors(modified_files: set[Path], all_connectors: set[Connector], dependency_scanning: bool) -> set[Connector]:
     """Create a mapping of modified connectors (key) and modified files (value).
     If dependency scanning is enabled any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
     It currently works only for Java connectors .
@@ -64,7 +65,7 @@ def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Conne
 
 @dataclass(frozen=True)
 class ConnectorWithModifiedFiles(Connector):
-    modified_files: Set[Path] = field(default_factory=frozenset)
+    modified_files: set[Path] = field(default_factory=frozenset)
 
     @property
     def has_metadata_change(self) -> bool:

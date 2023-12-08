@@ -3,7 +3,8 @@
 #
 import functools
 from abc import ABC, abstractmethod
-from typing import Any, List, Mapping, Optional, Protocol, Tuple
+from collections.abc import Mapping
+from typing import Any, Optional, Protocol
 
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
@@ -12,7 +13,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.state_converter import ConcurrentStreamStateConverter
 
 
-def _extract_value(mapping: Mapping[str, Any], path: List[str]) -> Any:
+def _extract_value(mapping: Mapping[str, Any], path: list[str]) -> Any:
     return functools.reduce(lambda a, b: a[b], path, mapping)
 
 
@@ -38,17 +39,15 @@ class CursorField:
 class Cursor(ABC):
     @abstractmethod
     def observe(self, record: Record) -> None:
+        """Indicate to the cursor that the record has been emitted
         """
-        Indicate to the cursor that the record has been emitted
-        """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def close_partition(self, partition: Partition) -> None:
+        """Indicate to the cursor that the partition has been successfully processed
         """
-        Indicate to the cursor that the partition has been successfully processed
-        """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class NoopCursor(Cursor):
@@ -72,7 +71,7 @@ class ConcurrentCursor(Cursor):
         connector_state_manager: ConnectorStateManager,
         connector_state_converter: ConcurrentStreamStateConverter,
         cursor_field: CursorField,
-        slice_boundary_fields: Optional[Tuple[str, str]],
+        slice_boundary_fields: Optional[tuple[str, str]],
     ) -> None:
         self._stream_name = stream_name
         self._stream_namespace = stream_namespace
@@ -115,26 +114,26 @@ class ConcurrentCursor(Cursor):
                 {
                     "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
                     "end": self._extract_from_slice(partition, self._slice_boundary_fields[self._END_BOUNDARY]),
-                }
+                },
             )
         elif self._most_recent_record:
             if self._has_closed_at_least_one_slice:
                 raise ValueError(
                     "Given that slice_boundary_fields is not defined and that per-partition state is not supported, only one slice is "
-                    "expected."
+                    "expected.",
                 )
 
             self._state["slices"].append(
                 {
                     "start": 0,  # FIXME this only works with int datetime
                     "end": self._extract_cursor_value(self._most_recent_record),
-                }
+                },
             )
 
     def _emit_state_message(self) -> None:
         self._connector_state_manager.update_state_for_stream(self._stream_name, self._stream_namespace, self._state)
         state_message = self._connector_state_manager.create_state_message(
-            self._stream_name, self._stream_namespace, send_per_stream_state=True
+            self._stream_name, self._stream_namespace, send_per_stream_state=True,
         )
         self._message_repository.emit_message(state_message)
 

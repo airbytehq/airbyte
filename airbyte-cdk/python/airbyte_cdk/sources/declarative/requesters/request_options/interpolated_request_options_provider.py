@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping, MutableMapping
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_nested_mapping import NestedMapping
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_nested_request_input_provider import (
@@ -19,8 +20,7 @@ ValidRequestTypes = (str, list)
 
 @dataclass
 class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
-    """
-    Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s
+    """Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s
 
     Attributes:
         config (Config): The user-provided configuration as specified by the source's spec
@@ -51,16 +51,16 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
             raise ValueError("RequestOptionsProvider should only contain either 'request_body_data' or 'request_body_json' not both")
 
         self._parameter_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_parameters, parameters=parameters
+            config=self.config, request_inputs=self.request_parameters, parameters=parameters,
         )
         self._headers_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_headers, parameters=parameters
+            config=self.config, request_inputs=self.request_headers, parameters=parameters,
         )
         self._body_data_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_data, parameters=parameters
+            config=self.config, request_inputs=self.request_body_data, parameters=parameters,
         )
         self._body_json_interpolator = InterpolatedNestedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_json, parameters=parameters
+            config=self.config, request_inputs=self.request_body_json, parameters=parameters,
         )
 
     def get_request_params(
@@ -71,7 +71,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         interpolated_value = self._parameter_interpolator.eval_request_inputs(
-            stream_state, stream_slice, next_page_token, valid_key_types=(str,), valid_value_types=ValidRequestTypes
+            stream_state, stream_slice, next_page_token, valid_key_types=(str,), valid_value_types=ValidRequestTypes,
         )
         if isinstance(interpolated_value, dict):
             return interpolated_value

@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Mapping, Type
+from collections.abc import Mapping
 
 from airbyte_cdk.sources.declarative.checks.check_stream import CheckStream
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
@@ -41,7 +41,7 @@ from airbyte_cdk.sources.streams.core import Stream
 DEFAULT_IMPLEMENTATIONS_REGISTRY contains a mapping of interface -> subclass
 enabling the factory to instantiate a reasonable default class when no type or classname is specified
 """
-DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
+DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[type, type] = {
     ConnectionChecker: CheckStream,
     Decoder: JsonDecoder,
     ErrorHandler: DefaultErrorHandler,

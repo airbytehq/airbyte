@@ -2,11 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Union
+from typing import Any, Union
 
 import dpath.util
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -16,8 +18,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class DpathExtractor(RecordExtractor):
-    """
-    Record extractor that searches a decoded response over a path defined as an array of fields.
+    """Record extractor that searches a decoded response over a path defined as an array of fields.
 
     If the field path points to an array, that array is returned.
     If the field path points to an object, that object is returned wrapped as an array.
@@ -53,7 +54,7 @@ class DpathExtractor(RecordExtractor):
         decoder (Decoder): The decoder responsible to transfom the response in a Mapping
     """
 
-    field_path: List[Union[InterpolatedString, str]]
+    field_path: list[Union[InterpolatedString, str]]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     decoder: Decoder = JsonDecoder(parameters={})
@@ -63,7 +64,7 @@ class DpathExtractor(RecordExtractor):
             if isinstance(self.field_path[path_index], str):
                 self.field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
-    def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
+    def extract_records(self, response: requests.Response) -> list[Mapping[str, Any]]:
         response_body = self.decoder.decode(response)
         if len(self.field_path) == 0:
             extracted = response_body

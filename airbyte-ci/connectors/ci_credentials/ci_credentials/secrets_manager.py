@@ -6,10 +6,11 @@ import base64
 import json
 import os
 import re
+from collections.abc import Mapping
 from glob import glob
 from json.decoder import JSONDecodeError
 from pathlib import Path
-from typing import Any, ClassVar, List, Mapping
+from typing import Any, ClassVar
 
 import requests
 import yaml
@@ -72,10 +73,10 @@ class SecretsManager:
         return self._api
 
     @property
-    def mask_key_patterns(self) -> List[str]:
+    def mask_key_patterns(self) -> list[str]:
         return self._get_spec_mask() + DEFAULT_MASK_KEY_PATTERNS
 
-    def __load_gsm_secrets(self) -> List[RemoteSecret]:
+    def __load_gsm_secrets(self) -> list[RemoteSecret]:
         """Loads needed GSM secrets"""
         secrets = []
         # docs: https://cloud.google.com/secret-manager/docs/filtering#api
@@ -162,7 +163,7 @@ class SecretsManager:
                             line = str(line).strip()
                             # don't output } and such
                             if len(line) > 1:
-                                if not os.getenv("VERSION") in ["dev", "dagger_ci"]:
+                                if os.getenv("VERSION") not in ["dev", "dagger_ci"]:
                                     # has to be at the beginning of line for Github to notice it
                                     print(f"::add-mask::{line}")
                                 if os.getenv("VERSION") == "dagger_ci":
@@ -177,7 +178,7 @@ class SecretsManager:
                 # carry on
                 pass
 
-    def read_from_gsm(self) -> List[RemoteSecret]:
+    def read_from_gsm(self) -> list[RemoteSecret]:
         """Reads all necessary secrets from different sources"""
         secrets = self.__load_gsm_secrets()
         if not len(secrets):
@@ -185,7 +186,7 @@ class SecretsManager:
             return []
         return secrets
 
-    def write_to_storage(self, secrets: List[RemoteSecret]) -> List[Path]:
+    def write_to_storage(self, secrets: list[RemoteSecret]) -> list[Path]:
         """Save target secrets to the airbyte-integrations/connectors|bases/{connector_name}/secrets folder
 
         Args:
@@ -232,24 +233,24 @@ class SecretsManager:
         disable_version_url = f"https://secretmanager.googleapis.com/v1/{version_name}:disable"
         return self.api.post(disable_version_url)
 
-    def _get_updated_secrets(self) -> List[Secret]:
+    def _get_updated_secrets(self) -> list[Secret]:
         """Find locally updated configurations files and return the most recent instance for each configuration file name.
 
         Returns:
             List[Secret]: List of Secret instances parsed from local updated configuration files
         """
         updated_configurations_glob = (
-            f"{str(self.base_folder)}/airbyte-integrations/connectors/{self.connector_name}/secrets/updated_configurations/*.json"
+            f"{self.base_folder!s}/airbyte-integrations/connectors/{self.connector_name}/secrets/updated_configurations/*.json"
         )
         updated_configuration_files_versions = {}
         for updated_configuration_path in glob(updated_configurations_glob):
             updated_configuration_path = Path(updated_configuration_path)
-            with open(updated_configuration_path, "r") as updated_configuration:
+            with open(updated_configuration_path) as updated_configuration:
                 updated_configuration_value = json.load(updated_configuration)
             configuration_original_file_name = f"{updated_configuration_path.stem.split('|')[0]}{updated_configuration_path.suffix}"
             updated_configuration_files_versions.setdefault(configuration_original_file_name, [])
             updated_configuration_files_versions[configuration_original_file_name].append(
-                (updated_configuration_value, os.path.getctime(str(updated_configuration_path)))
+                (updated_configuration_value, os.path.getctime(str(updated_configuration_path))),
             )
 
         for updated_configurations in updated_configuration_files_versions.values():
@@ -263,7 +264,7 @@ class SecretsManager:
             for configuration_file_name, versions_by_creation_time in updated_configuration_files_versions.items()
         ]
 
-    def update_secrets(self, existing_secrets: List[RemoteSecret]) -> List[RemoteSecret]:
+    def update_secrets(self, existing_secrets: list[RemoteSecret]) -> list[RemoteSecret]:
         """Update existing secrets if an updated version was found locally.
 
         Args:
@@ -277,7 +278,7 @@ class SecretsManager:
         new_remote_secrets = []
         for existing_secret_name in existing_secrets:
             if existing_secret_name in updated_secrets and json.loads(updated_secrets[existing_secret_name].value) != json.loads(
-                existing_secrets[existing_secret_name].value
+                existing_secrets[existing_secret_name].value,
             ):
                 new_secret = updated_secrets[existing_secret_name]
                 old_secret = existing_secrets[existing_secret_name]
@@ -286,7 +287,7 @@ class SecretsManager:
                 self.logger.info(f"Updated {new_remote_secret.name} with new value")
         return new_remote_secrets
 
-    def _get_spec_mask(self) -> List[str]:
+    def _get_spec_mask(self) -> list[str]:
         response = requests.get(self.SPEC_MASK_URL, allow_redirects=True)
         if not response.ok:
             self.logger.error(f"Failed to fetch spec mask: {response.content}")

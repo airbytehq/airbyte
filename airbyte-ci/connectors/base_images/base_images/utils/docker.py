@@ -5,15 +5,16 @@
 import getpass
 import os
 import uuid
-from typing import List, Tuple
 
 import dagger
+
 from base_images import console, published_image
 
 
-def get_credentials() -> Tuple[str, str]:
+def get_credentials() -> tuple[str, str]:
     """This function will prompt the user for docker credentials.
     If the user has set the DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables, it will use those instead.
+
     Returns:
         Tuple[str, str]: (username, password)
     """
@@ -34,7 +35,7 @@ class CraneClient:
         "gcr.io/go-containerregistry/crane/debug:v0.15.1@sha256:f6ddf8e2c47df889e06e33c3e83b84251ac19c8728a670ff39f2ca9e90c4f905"
     )
 
-    def __init__(self, dagger_client: dagger.Client, docker_credentials: Tuple[str, str]):
+    def __init__(self, dagger_client: dagger.Client, docker_credentials: tuple[str, str]):
         self.docker_hub_username_secret = dagger_client.set_secret("DOCKER_HUB_USERNAME", docker_credentials[0])
         self.docker_hub_username_password = dagger_client.set_secret("DOCKER_HUB_PASSWORD", docker_credentials[1])
 
@@ -53,7 +54,7 @@ class CraneClient:
             self.bare_container.with_secret_variable("DOCKER_HUB_USERNAME", self.docker_hub_username_secret)
             .with_secret_variable("DOCKER_HUB_PASSWORD", self.docker_hub_username_password)
             .with_exec(
-                ["sh", "-c", "crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"], skip_entrypoint=True
+                ["sh", "-c", "crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"], skip_entrypoint=True,
             )
         )
 
@@ -61,7 +62,7 @@ class CraneClient:
         console.log(f"Fetching digest for {repository_and_tag}...")
         return (await self.authenticated_container.with_exec(["digest", repository_and_tag]).stdout()).strip()
 
-    async def ls(self, registry_name: str, repository_name: str) -> List[str]:
+    async def ls(self, registry_name: str, repository_name: str) -> list[str]:
         repository_address = f"{registry_name}/{repository_name}"
         console.log(f"Fetching published images in {repository_address}...")
         try:
@@ -82,7 +83,7 @@ class RemoteRepository:
         self.registry_name = registry_name
         self.repository_name = repository_name
 
-    async def get_all_images(self) -> List[published_image.PublishedImage]:
+    async def get_all_images(self) -> list[published_image.PublishedImage]:
         repository_address = f"{self.registry_name}/{self.repository_name}"
         all_tags = await self.crane_client.ls(self.registry_name, self.repository_name)
         # CraneClient ls lists the tags available for a repository, but not the digests.

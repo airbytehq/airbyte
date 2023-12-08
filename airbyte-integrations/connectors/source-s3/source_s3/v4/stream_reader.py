@@ -3,20 +3,22 @@
 #
 
 import logging
+from collections.abc import Iterable
 from datetime import datetime
 from io import IOBase
-from typing import Iterable, List, Optional, Set
+from typing import Optional
 
 import boto3.session
 import pytz
 import smart_open
+from botocore.client import BaseClient
+from botocore.client import Config as ClientConfig
+from botocore.exceptions import ClientError
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from botocore.client import BaseClient
-from botocore.client import Config as ClientConfig
-from botocore.exceptions import ClientError
 from source_s3.v4.config import Config
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
 
@@ -32,8 +34,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
     @config.setter
     def config(self, value: Config):
-        """
-        FileBasedSource reads the config from disk and parses it, and once parsed, the source sets the config on its StreamReader.
+        """FileBasedSource reads the config from disk and parses it, and once parsed, the source sets the config on its StreamReader.
 
         Note: FileBasedSource only requires the keys defined in the abstract config, whereas concrete implementations of StreamReader
         will require keys that (for example) allow it to authenticate with the 3rd party.
@@ -60,9 +61,8 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             )
         return self._s3_client
 
-    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
-        """
-        Get all files matching the specified glob patterns.
+    def get_matching_files(self, globs: list[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
+        """Get all files matching the specified glob patterns.
         """
         s3 = self.s3_client
         prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
@@ -79,13 +79,13 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         except ClientError as exc:
             if exc.response["Error"]["Code"] == "NoSuchBucket":
                 raise CustomFileBasedException(
-                    f"The bucket {self.config.bucket} does not exist.", failure_type=FailureType.config_error, exception=exc
+                    f"The bucket {self.config.bucket} does not exist.", failure_type=FailureType.config_error, exception=exc,
                 )
             self._raise_error_listing_files(globs, exc)
         except Exception as exc:
             self._raise_error_listing_files(globs, exc)
 
-    def _raise_error_listing_files(self, globs: List[str], exc: Optional[Exception] = None):
+    def _raise_error_listing_files(self, globs: list[str], exc: Optional[Exception] = None):
         """Helper method to raise the ErrorListingFiles exception."""
         raise ErrorListingFiles(
             FileBasedSourceError.ERROR_LISTING_FILES,
@@ -109,12 +109,12 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 result = ZipContentReader(decompressed_stream, encoding)
             else:
                 result = smart_open.open(
-                    f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value, encoding=encoding
+                    f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value, encoding=encoding,
                 )
         except OSError:
             logger.warning(
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."
-                f"Check whether key {file.uri} exists in `{self.config.bucket}` bucket and/or has proper ACL permissions"
+                f"Check whether key {file.uri} exists in `{self.config.bucket}` bucket and/or has proper ACL permissions",
             )
 
         # we can simply return the result here as it is a context manager itself that will release all resources
@@ -125,10 +125,9 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         return file["Key"].endswith("/")
 
     def _page(
-        self, s3: BaseClient, globs: List[str], bucket: str, prefix: Optional[str], seen: Set[str], logger: logging.Logger
+        self, s3: BaseClient, globs: list[str], bucket: str, prefix: Optional[str], seen: set[str], logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
-        """
-        Page through lists of S3 objects.
+        """Page through lists of S3 objects.
         """
         total_n_keys_for_prefix = 0
         kwargs = {"Bucket": bucket}
@@ -183,8 +182,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
 
 def _get_s3_compatible_client_args(config: Config) -> dict:
-    """
-    Returns map of args used for creating s3 boto3 client.
+    """Returns map of args used for creating s3 boto3 client.
     """
     client_kv_args = {
         "config": ClientConfig(s3={"addressing_style": "auto"}),

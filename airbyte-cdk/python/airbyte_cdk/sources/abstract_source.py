@@ -4,7 +4,8 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from collections.abc import Iterable, Iterator, Mapping, MutableMapping
+from typing import Any, Optional, Union
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -35,15 +36,13 @@ _default_message_repository = InMemoryMessageRepository()
 
 
 class AbstractSource(Source, ABC):
-    """
-    Abstract base class for an Airbyte Source. Consumers should implement any abstract methods
+    """Abstract base class for an Airbyte Source. Consumers should implement any abstract methods
     in this class to create an Airbyte Specification compliant Source.
     """
 
     @abstractmethod
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        """
-        :param logger: source logger
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, Optional[Any]]:
+        """:param logger: source logger
         :param config: The user-provided configuration as specified by the source's spec.
           This usually contains information required to check connection e.g. tokens, secrets and keys etc.
         :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful
@@ -54,15 +53,14 @@ class AbstractSource(Source, ABC):
         """
 
     @abstractmethod
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: The user-provided configuration as specified by the source's spec.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """:param config: The user-provided configuration as specified by the source's spec.
         Any stream construction related operation should happen here.
         :return: A list of the streams in this source connector.
         """
 
     # Stream name to instance map for applying output object transformation
-    _stream_to_instance_map: Dict[str, Stream] = {}
+    _stream_to_instance_map: dict[str, Stream] = {}
     _slice_logger: SliceLogger = DebugSliceLogger()
 
     @property
@@ -91,7 +89,7 @@ class AbstractSource(Source, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+        state: Optional[Union[list[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/."""
         logger.info(f"Starting syncing {self.name}")
@@ -112,7 +110,7 @@ class AbstractSource(Source, ABC):
                         continue
                     raise KeyError(
                         f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
-                        f"Refresh the schema in replication settings and remove this stream from future sync attempts."
+                        f"Refresh the schema in replication settings and remove this stream from future sync attempts.",
                     )
 
                 try:
@@ -269,8 +267,7 @@ class AbstractSource(Source, ABC):
                     return
 
     def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream) -> AirbyteMessage:
-        """
-        Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
+        """Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
         """
         if isinstance(record_data_or_message, AirbyteMessage):
             return record_data_or_message
@@ -283,8 +280,7 @@ class AbstractSource(Source, ABC):
 
     @property
     def continue_sync_on_stream_failure(self) -> bool:
-        """
-        WARNING: This function is in-development which means it is subject to change. Use at your own risk.
+        """WARNING: This function is in-development which means it is subject to change. Use at your own risk.
 
         By default, a source should raise an exception and stop the sync when it encounters an error while syncing a stream. This
         method can be overridden on a per-source basis so that a source will continue syncing streams other streams even if an

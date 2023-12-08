@@ -3,13 +3,13 @@
 #
 
 
-from typing import Dict
 
 import pygsheets
-from airbyte_cdk import AirbyteLogger
 from google.auth.transport.requests import Request
 from google.oauth2 import credentials as client_account
 from pygsheets.client import Client as pygsheets_client
+
+from airbyte_cdk import AirbyteLogger
 
 # the list of required scopes/permissions
 # more info: https://developers.google.com/sheets/api/guides/authorizing#OAuth2Authorizing
@@ -22,7 +22,7 @@ SCOPES = [
 class GoogleSheetsClient:
     logger = AirbyteLogger()
 
-    def __init__(self, config: Dict):
+    def __init__(self, config: dict):
         self.config = config
         self.retries = 100  # max number of backoff retries
 

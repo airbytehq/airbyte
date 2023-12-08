@@ -8,8 +8,7 @@ from facebook_business.api import Cursor
 
 
 class CursorPatch(Cursor):
-    """
-    This is a hack to override FB SDK Cursor's default behaviour. By default, api calls are made using signature
+    """This is a hack to override FB SDK Cursor's default behaviour. By default, api calls are made using signature
     def call(
         self,
         method,
@@ -28,6 +27,7 @@ class CursorPatch(Cursor):
 
     def load_next_page(self):
         """Queries server for more nodes and loads them into the internal queue.
+
         Returns:
             True if successful, else False.
         """

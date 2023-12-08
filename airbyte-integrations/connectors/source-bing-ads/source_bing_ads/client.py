@@ -6,16 +6,14 @@ import socket
 import ssl
 import sys
 import uuid
+from collections.abc import Iterator, Mapping
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
-from typing import Any, Iterator, List, Mapping, Optional, Union
+from typing import Any, Optional, Union
 from urllib.error import URLError
 
 import backoff
 import pendulum
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils import AirbyteTracedException
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
 from bingads.exceptions import OAuthTokenRequestException
 from bingads.service_client import ServiceClient
@@ -24,6 +22,10 @@ from bingads.v13.bulk import BulkServiceManager, DownloadParameters
 from bingads.v13.reporting.exceptions import ReportingDownloadException
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from suds import WebFault, sudsobject
+
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 
 FILE_TYPE = "Csv"
 TIMEOUT_IN_MILLISECONDS = 3_600_000
@@ -112,8 +114,7 @@ class Client:
         return tokens
 
     def is_token_expiring(self) -> bool:
-        """
-        Performs check if access token expiring in less than refresh_token_safe_delta seconds
+        """Performs check if access token expiring in less than refresh_token_safe_delta seconds
         """
         token_total_lifetime: timedelta = datetime.utcnow() - self.oauth.access_token_received_datetime
         token_updated_expires_in: int = self.oauth.access_token_expires_in_seconds - token_total_lifetime.seconds
@@ -122,9 +123,7 @@ class Client:
     def should_give_up(self, error: Union[WebFault, URLError, ReportingDownloadException]) -> bool:
         if isinstance(error, URLError):
             if (
-                isinstance(error.reason, socket.timeout)
-                or isinstance(error.reason, ssl.SSLError)
-                or isinstance(error.reason, socket.gaierror)  # temporary failure in name resolution
+                isinstance(error.reason, socket.gaierror | socket.timeout | ssl.SSLError)  # temporary failure in name resolution
             ):
                 return False
         if isinstance(error, ReportingDownloadException):
@@ -146,7 +145,7 @@ class Client:
     def log_retry_attempt(self, details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
         self.logger.info(
-            f"Caught retryable error: {self._get_error_message(exc)} after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+            f"Caught retryable error: {self._get_error_message(exc)} after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...",
         )
 
     def request(self, **kwargs: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -169,8 +168,7 @@ class Client:
         params: Mapping[str, Any],
         is_report_service: bool = False,
     ) -> Mapping[str, Any]:
-        """
-        Executes appropriate Service Operation on Bing Ads API
+        """Executes appropriate Service Operation on Bing Ads API
         """
         if self.is_token_expiring():
             self.oauth = self._get_access_token()
@@ -211,8 +209,7 @@ class Client:
 
     @classmethod
     def asdict(cls, suds_object: sudsobject.Object) -> Mapping[str, Any]:
-        """
-        Converts nested Suds Object into serializable format.
+        """Converts nested Suds Object into serializable format.
         Input sample:
         {
             obj[] =
@@ -253,14 +250,13 @@ class Client:
 
     def get_bulk_entity(
         self,
-        download_entities: List[str],
-        data_scope: List[str],
+        download_entities: list[str],
+        data_scope: list[str],
         customer_id: Optional[str] = None,
         account_id: Optional[str] = None,
         start_date: Optional[str] = None,
     ) -> str:
-        """
-        Return path with zipped csv archive
+        """Return path with zipped csv archive
         """
         download_parameters = DownloadParameters(
             # campaign_ids=None,

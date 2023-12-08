@@ -6,13 +6,15 @@ import calendar
 import logging
 import re
 from abc import ABC
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import pytz
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -60,13 +62,11 @@ class BaseZendeskSupportStream(HttpStream, ABC):
         return 10
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
-        """
-        The rate limit is 700 requests per minute
+        """The rate limit is 700 requests per minute
         # monitoring-your-request-activity
         See https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/
         The response has a Retry-After header that tells you for how many seconds to wait before retrying.
         """
-
         retry_after = int(to_int(response.headers.get("Retry-After", 0)))
         if retry_after > 0:
             return retry_after
@@ -79,7 +79,7 @@ class BaseZendeskSupportStream(HttpStream, ABC):
 
     @staticmethod
     def str2datetime(str_dt: str) -> datetime:
-        """convert string to datetime object
+        """Convert string to datetime object
         Input example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
         """
         if not str_dt:
@@ -88,14 +88,14 @@ class BaseZendeskSupportStream(HttpStream, ABC):
 
     @staticmethod
     def datetime2str(dt: datetime) -> str:
-        """convert datetime object to string
+        """Convert datetime object to string
         Output example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
         """
         return datetime.strftime(dt.replace(tzinfo=pytz.UTC), DATETIME_FORMAT)
 
     @staticmethod
     def str2unixtime(str_dt: str) -> Optional[int]:
-        """convert string to unixtime number
+        """Convert string to unixtime number
         Input example: '2021-07-22T06:55:55Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
         Output example: 1626936955"
         """
@@ -105,8 +105,7 @@ class BaseZendeskSupportStream(HttpStream, ABC):
         return calendar.timegm(dt.utctimetuple())
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        """try to select relevant data only"""
-
+        """Try to select relevant data only"""
         try:
             records = response.json().get(self.response_list_name or self.name) or []
         except requests.exceptions.JSONDecodeError:
@@ -130,26 +129,26 @@ class BaseZendeskSupportStream(HttpStream, ABC):
                 reason = response.reason
                 error = {"title": f"{reason}", "message": "Received empty JSON response"}
             self.logger.error(
-                f"Skipping stream {self.name}, error message: {error}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+                f"Skipping stream {self.name}, error message: {error}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support.",
             )
-            setattr(self, "raise_on_http_errors", False)
+            self.raise_on_http_errors = False
             return False
         return super().should_retry(response)
 
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
+        cursor_field: Optional[list[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         try:
             yield from super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
             )
         except requests.exceptions.JSONDecodeError:
             self.logger.error(
-                f"Skipping stream {self.name}: Non-JSON response received. Please ensure that you have enough permissions for this stream."
+                f"Skipping stream {self.name}: Non-JSON response received. Please ensure that you have enough permissions for this stream.",
             )
 
 
@@ -206,8 +205,7 @@ class SourceZendeskSupportStream(BaseZendeskSupportStream):
 
 
 class FullRefreshZendeskSupportStream(BaseZendeskSupportStream):
-    """
-    Endpoints don't provide the updated_at/created_at fields
+    """Endpoints don't provide the updated_at/created_at fields
     Thus we can't implement an incremental logic for them
     """
 
@@ -242,8 +240,7 @@ class FullRefreshZendeskSupportStream(BaseZendeskSupportStream):
 
 
 class IncrementalZendeskSupportStream(FullRefreshZendeskSupportStream):
-    """
-    Endpoints provide a cursor pagination and sorting mechanism
+    """Endpoints provide a cursor pagination and sorting mechanism
     """
 
     cursor_field = "updated_at"
@@ -257,8 +254,7 @@ class IncrementalZendeskSupportStream(FullRefreshZendeskSupportStream):
         return {self.cursor_field: max(new_value, old_value)}
 
     def check_stream_state(self, stream_state: Mapping[str, Any] = None) -> int:
-        """
-        Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
+        """Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
         """
         state = stream_state.get(self.cursor_field) or self._start_date if stream_state else self._start_date
         return calendar.timegm(pendulum.parse(state).utctimetuple())
@@ -328,8 +324,7 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
 
     @staticmethod
     def check_start_time_param(requested_start_time: int, value: int = 1) -> int:
-        """
-        Requesting tickets in the future is not allowed, hits 400 - bad request.
+        """Requesting tickets in the future is not allowed, hits 400 - bad request.
         We get current UNIX timestamp minus `value` from now(), default = 1 (minute).
 
         Returns: either close to now UNIX timestamp or previously requested UNIX timestamp.
@@ -341,8 +336,7 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
         return f"incremental/{self.response_list_name}.json"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Returns next_page_token based on `end_of_stream` parameter inside of response
+        """Returns next_page_token based on `end_of_stream` parameter inside of response
         """
         if self._ignore_pagination:
             return None
@@ -384,7 +378,7 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
     cursor_field = "created_at"
     response_list_name: str = "ticket_events"
     response_target_entity: str = "child_events"
-    list_entities_from_event: List[str] = None
+    list_entities_from_event: list[str] = None
     event_type: str = None
 
     def path(
@@ -397,8 +391,7 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
         return f"incremental/{self.response_list_name}.json"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Returns next_page_token based on `end_of_stream` parameter inside of response
+        """Returns next_page_token based on `end_of_stream` parameter inside of response
         """
         response_json = response.json()
         return None if response_json.get(END_OF_STREAM_KEY, True) else {"start_time": response_json.get("end_time")}
@@ -492,22 +485,19 @@ class Tickets(SourceZendeskIncrementalExportStream):
         return {self.cursor_field: max(new_value, old_value)}
 
     def check_stream_state(self, stream_state: Mapping[str, Any] = None) -> int:
-        """
-        Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
+        """Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
         """
         return stream_state.get(self.cursor_field) if stream_state else pendulum.parse(self._start_date).int_timestamp
 
     def check_start_time_param(self, requested_start_time: int, value: int = 1) -> int:
-        """
-        The stream returns 400 Bad Request StartTimeTooRecent when requesting tasks 1 second before now.
+        """The stream returns 400 Bad Request StartTimeTooRecent when requesting tasks 1 second before now.
         Figured out during experiments that the most recent time needed for request to be successful is 3 seconds before now.
         """
         return super().check_start_time_param(requested_start_time, value=3)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
-    """
-    Fetch the TicketComments incrementaly from TicketEvents Export stream
+    """Fetch the TicketComments incrementaly from TicketEvents Export stream
     """
 
     list_entities_from_event = ["via_reference_id", "ticket_id", "timestamp"]
@@ -541,8 +531,7 @@ class GroupMemberships(CursorPaginationZendeskSupportStream):
 
 
 class SatisfactionRatings(CursorPaginationZendeskSupportStream):
-    """
-    SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
+    """SatisfactionRatings stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/satisfaction_ratings/
     """
 
     def request_params(
@@ -578,8 +567,7 @@ class TicketSkips(CursorPaginationZendeskSupportStream):
 
 
 class TicketMetricEvents(CursorPaginationZendeskSupportStream):
-    """
-    TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/
+    """TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/
     """
 
     cursor_field = "time"
@@ -647,8 +635,7 @@ class Tags(FullRefreshZendeskSupportStream):
 
 
 class Topics(CursorPaginationZendeskSupportStream):
-    """
-    Topics stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics
+    """Topics stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics
     """
 
     cursor_field = "updated_at"
@@ -748,7 +735,7 @@ class UserSettingsStream(FullRefreshZendeskSupportStream):
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """returns data from API"""
+        """Returns data from API"""
         settings = response.json().get("settings")
         if settings:
             yield settings

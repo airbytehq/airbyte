@@ -3,6 +3,7 @@
 #
 import pytest
 import requests
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python import common
 
@@ -56,7 +57,7 @@ async def test_with_python_connector_installed_from_setup(context_with_setup, py
     python_container = context_with_setup.dagger_client.container().from_(python_connector_base_image_address)
 
     container = await common.with_python_connector_installed(
-        context_with_setup, python_container, str(context_with_setup.connector.code_directory)
+        context_with_setup, python_container, str(context_with_setup.connector.code_directory),
     )
     # Uninstall and reinstall the latest cdk version
     cdk_install_latest_output = (

@@ -155,48 +155,48 @@ def test_upload(
     )
     commands.upload_metadata_to_gcs.return_value = upload_info
     result = runner.invoke(
-        commands.upload, [metadata_file_path, str(tmp_path), "my-bucket"]
+        commands.upload, [metadata_file_path, str(tmp_path), "my-bucket"],
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
 
     if latest_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The latest metadata file for {metadata_file_path} was uploaded to latest_blob_id.", color="green")]
+            [mocker.call(f"The latest metadata file for {metadata_file_path} was uploaded to latest_blob_id.", color="green")],
         )
         assert result.exit_code == 0
 
     if version_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The versioned metadata file for {metadata_file_path} was uploaded to version_blob_id.", color="green")]
+            [mocker.call(f"The versioned metadata file for {metadata_file_path} was uploaded to version_blob_id.", color="green")],
         )
         assert result.exit_code == 0
 
     if icon_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The icon file for {metadata_file_path} was uploaded to icon_blob_id.", color="green")]
+            [mocker.call(f"The icon file for {metadata_file_path} was uploaded to icon_blob_id.", color="green")],
         )
 
     if doc_version_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The versioned doc file for {metadata_file_path} was uploaded to doc_version_blob_id.", color="green")]
+            [mocker.call(f"The versioned doc file for {metadata_file_path} was uploaded to doc_version_blob_id.", color="green")],
         )
 
     if doc_inapp_version_uploaded:
         commands.click.secho.assert_has_calls(
             [
                 mocker.call(
-                    f"The versioned inapp doc file for {metadata_file_path} was uploaded to doc_inapp_version_blob_id.", color="green"
-                )
-            ]
+                    f"The versioned inapp doc file for {metadata_file_path} was uploaded to doc_inapp_version_blob_id.", color="green",
+                ),
+            ],
         )
 
     if doc_latest_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The latest doc file for {metadata_file_path} was uploaded to doc_latest_blob_id.", color="green")]
+            [mocker.call(f"The latest doc file for {metadata_file_path} was uploaded to doc_latest_blob_id.", color="green")],
         )
 
     if doc_inapp_latest_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The latest inapp doc file for {metadata_file_path} was uploaded to doc_inapp_latest_blob_id.", color="green")]
+            [mocker.call(f"The latest inapp doc file for {metadata_file_path} was uploaded to doc_inapp_latest_blob_id.", color="green")],
         )
 
     if not (latest_uploaded or version_uploaded):
@@ -218,7 +218,7 @@ def test_upload_prerelease(mocker, valid_metadata_yaml_files, tmp_path):
     upload_info = mock_metadata_upload_info(False, True, False, True, False, False, False, metadata_file_path)
     commands.upload_metadata_to_gcs.return_value = upload_info
     result = runner.invoke(
-        commands.upload, [metadata_file_path, str(tmp_path), bucket, "--prerelease", prerelease_tag]
+        commands.upload, [metadata_file_path, str(tmp_path), bucket, "--prerelease", prerelease_tag],
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
 
     commands.upload_metadata_to_gcs.assert_has_calls([mocker.call(bucket, pathlib.Path(metadata_file_path), validator_opts)])
@@ -239,8 +239,8 @@ def test_upload_with_errors(mocker, valid_metadata_yaml_files, tmp_path, error, 
     mocker.patch.object(commands, "upload_metadata_to_gcs")
     commands.upload_metadata_to_gcs.side_effect = error
     result = runner.invoke(
-        commands.upload, [valid_metadata_yaml_files[0], str(tmp_path), "my-bucket"]
+        commands.upload, [valid_metadata_yaml_files[0], str(tmp_path), "my-bucket"],
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
     assert result.exit_code == 1
     if handled:
-        commands.click.secho.assert_called_with(f"The metadata file could not be uploaded: {str(error)}", color="red")
+        commands.click.secho.assert_called_with(f"The metadata file could not be uploaded: {error!s}", color="red")

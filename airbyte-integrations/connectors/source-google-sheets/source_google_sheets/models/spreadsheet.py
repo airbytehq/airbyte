@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Extra
 
@@ -35,21 +35,21 @@ class RowData(BaseModel):
     class Config:
         extra = Extra.allow
 
-    values: Optional[List[CellData]] = None
+    values: Optional[list[CellData]] = None
 
 
 class GridData(BaseModel):
     class Config:
         extra = Extra.allow
 
-    rowData: Optional[List[RowData]] = None
+    rowData: Optional[list[RowData]] = None
 
 
 class Sheet(BaseModel):
     class Config:
         extra = Extra.allow
 
-    data: Optional[List[GridData]] = None
+    data: Optional[list[GridData]] = None
     properties: Optional[SheetProperties] = None
 
 
@@ -58,5 +58,5 @@ class Spreadsheet(BaseModel):
         extra = Extra.allow
 
     spreadsheetId: str
-    sheets: List[Sheet]
+    sheets: list[Sheet]
     properties: Optional[SpreadsheetProperties] = None

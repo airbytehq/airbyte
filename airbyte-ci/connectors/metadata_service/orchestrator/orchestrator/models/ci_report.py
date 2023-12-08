@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Extra
 
@@ -16,9 +16,9 @@ class ConnectorNightlyReport(BaseModel):
     run_timestamp: Optional[str] = None
     run_duration: Optional[float] = None
     success: Optional[bool] = None
-    failed_steps: Optional[List[str]] = None
-    successful_steps: Optional[List[str]] = None
-    skipped_steps: Optional[List[str]] = None
+    failed_steps: Optional[list[str]] = None
+    successful_steps: Optional[list[str]] = None
+    skipped_steps: Optional[list[str]] = None
     gha_workflow_run_url: Optional[str] = None
     pipeline_start_timestamp: Optional[int] = None
     pipeline_end_timestamp: Optional[int] = None
@@ -39,9 +39,9 @@ class ConnectorPipelineReport(BaseModel):
     run_timestamp: Optional[str] = None
     run_duration: Optional[float] = None
     success: Optional[bool] = None
-    failed_steps: Optional[List[str]] = None
-    successful_steps: Optional[List[str]] = None
-    skipped_steps: Optional[List[str]] = None
+    failed_steps: Optional[list[str]] = None
+    successful_steps: Optional[list[str]] = None
+    skipped_steps: Optional[list[str]] = None
     gha_workflow_run_url: Optional[str] = None
     pipeline_start_timestamp: Optional[int] = None
     pipeline_end_timestamp: Optional[int] = None

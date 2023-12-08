@@ -2,16 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 import pendulum
 import requests
+from requests.auth import HTTPBasicAuth
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from requests.auth import HTTPBasicAuth
 from source_zendesk_talk.streams import (
     AccountOverview,
     Addresses,
@@ -45,7 +47,7 @@ class SourceZendeskTalk(AbstractSource):
             else:
                 raise Exception(f"Not implemented authorization method: {auth['auth_type']}")
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         authenticator = self.get_authenticator(config)
         stream = AccountOverview(authenticator=authenticator, subdomain=config["subdomain"])
 
@@ -55,7 +57,7 @@ class SourceZendeskTalk(AbstractSource):
 
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         authenticator = self.get_authenticator(config)
         common_kwargs = {"authenticator": authenticator, "subdomain": config["subdomain"]}
         incremental_kwargs = {**common_kwargs, **{"start_date": pendulum.parse(config["start_date"])}}

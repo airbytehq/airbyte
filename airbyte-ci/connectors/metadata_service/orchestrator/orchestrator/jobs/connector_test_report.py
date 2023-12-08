@@ -9,5 +9,5 @@ generate_nightly_reports = define_asset_job(name="generate_nightly_reports", sel
 
 connector_test_reports_inclusive = AssetSelection.keys("persist_connectors_test_summary_files").upstream()
 generate_connector_test_summary_reports = define_asset_job(
-    name="generate_connector_test_summary_reports", selection=connector_test_reports_inclusive
+    name="generate_connector_test_summary_reports", selection=connector_test_reports_inclusive,
 )

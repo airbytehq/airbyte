@@ -3,7 +3,7 @@
 #
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from .cards import (
     Address,
@@ -22,12 +22,12 @@ from .common import CatalogModel
 
 
 class Customer(CatalogModel):
-    addresses: List[Address]
-    android_pay_cards: Optional[List[AndroidPayCard]]
-    apple_pay_cards: Optional[List[ApplePayCard]]
+    addresses: list[Address]
+    android_pay_cards: Optional[list[AndroidPayCard]]
+    apple_pay_cards: Optional[list[ApplePayCard]]
     company: str
     created_at: datetime
-    credit_cards: Optional[List[CreditCard]]
+    credit_cards: Optional[list[CreditCard]]
     custom_fields: str
     email: str
     fax: str
@@ -35,13 +35,13 @@ class Customer(CatalogModel):
     graphql_id: str
     id: str
     last_name: str
-    masterpass_cards: List[MasterpassCard]
-    payment_methods: List[PaymentMethod]
-    paypal_accounts: List[PayPalAccount]
+    masterpass_cards: list[MasterpassCard]
+    payment_methods: list[PaymentMethod]
+    paypal_accounts: list[PayPalAccount]
     phone: str
-    samsung_pay_cards: List[SamsungPayCard]
+    samsung_pay_cards: list[SamsungPayCard]
     updated_at: datetime
-    us_bank_accounts: List[USBankAccount]
-    venmo_accounts: List[VenmoAccount]
-    visa_checkout_cards: List[VisaCheckoutCard]
+    us_bank_accounts: list[USBankAccount]
+    venmo_accounts: list[VenmoAccount]
+    visa_checkout_cards: list[VisaCheckoutCard]
     website: str

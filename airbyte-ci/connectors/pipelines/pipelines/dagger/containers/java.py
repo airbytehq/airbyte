@@ -3,6 +3,7 @@
 #
 
 from dagger import CacheVolume, Container, File, Platform
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions.connector.hooks import finalize_build
@@ -44,8 +45,8 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
                     f"yum install -y {' '.join(yum_packages_to_install)}",
                     # Remove any dangly bits.
                     "yum clean all",
-                ]
-            )
+                ],
+            ),
         )
         # Add what files we need to the /airbyte directory.
         # Copy base.sh from the airbyte/integration-base image.
@@ -94,8 +95,8 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
                     f"yum install -y {' '.join(yum_packages_to_install)}",
                     "yum clean all",
                     "alternatives --install /usr/bin/python python /usr/bin/python3 60",
-                ]
-            )
+                ],
+            ),
         )
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(
@@ -109,8 +110,8 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
                     f"pip3 install {dbt_adapter_package}",
                     # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.x
                     "pip3 install 'urllib3<2'",
-                ]
-            )
+                ],
+            ),
         )
         .with_directory("airbyte_normalization", with_normalization(context, build_platform).directory("/airbyte"))
         .with_workdir("airbyte_normalization")
@@ -125,7 +126,7 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         .with_file(
             "run_with_normalization.sh",
             context.get_repo_dir("airbyte-integrations/bases/base-java", include=["run_with_normalization.sh"]).file(
-                "run_with_normalization.sh"
+                "run_with_normalization.sh",
             ),
         )
         .with_env_variable("AIRBYTE_NORMALIZATION_INTEGRATION", normalization_integration_name)
@@ -146,8 +147,8 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
                 [
                     f"tar xf {application}.tar --strip-components=1",
                     f"rm -rf {application}.tar",
-                ]
-            )
+                ],
+            ),
         )
     )
 

@@ -2,17 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, List, Mapping
+from collections.abc import Iterable, Mapping
+from typing import Any
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from source_amazon_ads.schemas import Profile
 from source_amazon_ads.streams.common import AmazonAdsStream
 
 
 class Profiles(AmazonAdsStream):
-    """
-    This stream corresponds to Amazon Advertising API - Profiles
+    """This stream corresponds to Amazon Advertising API - Profiles
     https://advertising.amazon.com/API/docs/en-us/reference/2/profiles#/Profiles
     """
 
@@ -38,9 +39,8 @@ class Profiles(AmazonAdsStream):
             # Make API call by the means of basic HttpStream class.
             yield from super().read_records(*args, **kvargs)
 
-    def get_all_profiles(self) -> List[Profile]:
-        """
-        Fetch all profiles and return it as list. We need this to set
+    def get_all_profiles(self) -> list[Profile]:
+        """Fetch all profiles and return it as list. We need this to set
         dependecies for other streams since all of the Amazon Ads API calls
         require profile id to be passed.
         :return List of profile object

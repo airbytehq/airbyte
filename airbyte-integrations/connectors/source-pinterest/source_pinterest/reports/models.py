@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -33,4 +33,4 @@ class ReportInfo(BaseModel):
     report_status: ReportStatus
     token: str
     message: Optional[str]
-    metrics: Optional[List[dict]]
+    metrics: Optional[list[dict]]

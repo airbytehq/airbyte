@@ -4,7 +4,11 @@
 
 
 import uuid
-from typing import List, Optional
+from typing import Optional
+
+from qdrant_client import QdrantClient, models
+from qdrant_client.conversions.common_types import PointsSelector
+from qdrant_client.models import Distance, PayloadSchemaType, VectorParams
 
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
@@ -12,9 +16,6 @@ from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identif
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, Level, Type
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_qdrant.config import QdrantIndexingConfigModel
-from qdrant_client import QdrantClient, models
-from qdrant_client.conversions.common_types import PointsSelector
-from qdrant_client.models import Distance, PayloadSchemaType, VectorParams
 
 DISTANCE_METRIC_MAP = {
     "dot": Distance.DOT,
@@ -78,13 +79,13 @@ class QdrantIndexer(Indexer):
                         should=[
                             models.FieldCondition(key=METADATA_STREAM_FIELD, match=models.MatchValue(value=stream))
                             for stream in streams_to_overwrite
-                        ]
-                    )
-                )
+                        ],
+                    ),
+                ),
             )
         for field in [METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD]:
             self._client.create_payload_index(
-                collection_name=self.config.collection, field_name=field, field_schema=PayloadSchemaType.KEYWORD
+                collection_name=self.config.collection, field_name=field, field_schema=PayloadSchemaType.KEYWORD,
             )
 
     def delete(self, delete_ids, namespace, stream):
@@ -94,9 +95,9 @@ class QdrantIndexer(Indexer):
                     filter=models.Filter(
                         should=[
                             models.FieldCondition(key=METADATA_RECORD_ID_FIELD, match=models.MatchValue(value=_id)) for _id in delete_ids
-                        ]
-                    )
-                )
+                        ],
+                    ),
+                ),
             )
 
     def index(self, document_chunks, namespace, stream):
@@ -111,17 +112,17 @@ class QdrantIndexer(Indexer):
                     id=str(uuid.uuid4()),
                     payload=payload,
                     vector=chunk.embedding,
-                )
+                ),
             )
         self._client.upload_records(collection_name=self.config.collection, records=entities)
 
-    def post_sync(self) -> List[AirbyteMessage]:
+    def post_sync(self) -> list[AirbyteMessage]:
         try:
             self._client.close()
             return [
                 AirbyteMessage(
-                    type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Qdrant Database Client has been closed successfully")
-                )
+                    type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Qdrant Database Client has been closed successfully"),
+                ),
             ]
         except Exception as e:
             return [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=format_exception(e)))]

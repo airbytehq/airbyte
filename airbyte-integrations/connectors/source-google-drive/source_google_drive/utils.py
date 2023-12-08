@@ -4,8 +4,7 @@ from urllib.parse import urlparse
 
 
 def get_folder_id(url_string: str) -> str:
-    """
-    Extract the folder ID from a Google Drive folder URL.
+    """Extract the folder ID from a Google Drive folder URL.
 
     Takes the last path segment of the URL, which is the folder ID (ignoring trailing slashes and query parameters).
     """

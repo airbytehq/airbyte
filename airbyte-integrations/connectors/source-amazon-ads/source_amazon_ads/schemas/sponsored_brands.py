@@ -3,7 +3,7 @@
 #
 
 from decimal import Decimal
-from typing import Dict, List, Optional
+from typing import Optional
 
 from .common import CatalogModel
 
@@ -22,14 +22,14 @@ class Creative(CatalogModel):
     brandName: str
     brandLogoAssetID: str
     brandLogoUrl: str
-    asins: List[str]
+    asins: list[str]
     shouldOptimizeAsins: bool
 
 
 class BrandsCampaign(CatalogModel):
     campaignId: Decimal
     name: str
-    tags: Dict[str, str]
+    tags: dict[str, str]
     budget: Decimal
     budgetType: str
     startDate: str
@@ -41,7 +41,7 @@ class BrandsCampaign(CatalogModel):
     bidOptimization: bool = None
     bidMultiplier: Decimal = None
     adFormat: str
-    bidAdjustments: Optional[List[BidAdjustment]]
+    bidAdjustments: Optional[list[BidAdjustment]]
     creative: Optional[Creative]
     landingPage: Optional[LandingPage]
     supplySource: Optional[str]

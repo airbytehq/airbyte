@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 
 def deep_map(function, collection):
@@ -27,7 +28,7 @@ def normalize(collection):
 def _normalizer(dictionary):
     out = {}
     for key, val in dictionary.items():
-        if not key == "_links":
+        if key != "_links":
             out[key] = val
     return out
 

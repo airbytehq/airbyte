@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, MutableMapping, Optional, Type
+from collections.abc import MutableMapping
+from typing import Any, Optional
 
 import pydantic
 from pydantic import BaseModel
@@ -11,8 +12,7 @@ from pydantic.typing import resolve_annotations
 
 class AllOptional(pydantic.main.ModelMetaclass):
     def __new__(self, name, bases, namespaces, **kwargs):
-        """
-        Iterate through fields and wrap then with typing.Optional type.
+        """Iterate through fields and wrap then with typing.Optional type.
         """
         annotations = resolve_annotations(namespaces.get("__annotations__", {}), namespaces.get("__module__", None))
         for base in bases:
@@ -29,7 +29,7 @@ class BaseSchemaModel(BaseModel, metaclass=AllOptional):
         arbitrary_types_allowed = True
 
         @classmethod
-        def schema_extra(cls, schema: MutableMapping[str, Any], model: Type["BaseModel"]) -> None:
+        def schema_extra(cls, schema: MutableMapping[str, Any], model: type["BaseModel"]) -> None:
             # Remove auto generated "title" and "description" fields, because they do not carry absolutely any payload.
             schema.pop("title", None)
             schema.pop("description", None)
@@ -59,10 +59,10 @@ class Application(BaseSchemaModel):
     company: str
     phone: dict
     email: str
-    links: List[str]
+    links: list[str]
     comments: str
     user: str
-    customQuestions: List[dict]
+    customQuestions: list[dict]
     createdAt: int
     archived: dict
     requisitionForHire: dict
@@ -73,26 +73,26 @@ class Interview(BaseSchemaModel):
     panel: str
     subject: str
     note: str
-    interviewers: List[dict]
+    interviewers: list[dict]
     timezone: str
     createdAt: int
     date: int
     duration: int
     location: str
     feedbackTemplate: str
-    feedbackForms: List[str]
+    feedbackForms: list[str]
     feedbackReminder: str
     user: str
     stage: str
     canceledAt: int
-    postings: List[str]
+    postings: list[str]
     gcalEventUrl: str
 
 
 class Note(BaseSchemaModel):
     id: str
     text: str
-    fields: List[dict]
+    fields: list[dict]
     user: str
     secret: bool
     completedAt: int
@@ -106,7 +106,7 @@ class Offer(BaseSchemaModel):
     createdAt: int
     status: str
     creator: str
-    fields: List[dict]
+    fields: list[dict]
     signatures: dict
     approved: str
     approvedAt: int
@@ -123,18 +123,18 @@ class Opportunity(BaseSchemaModel):
     stage: str
     confidentiality: str
     location: str
-    phones: List[dict]
-    emails: List[str]
-    links: List[str]
+    phones: list[dict]
+    emails: list[str]
+    links: list[str]
     archived: dict
-    tags: List[str]
-    sources: List[str]
-    stageChanges: List[dict]
+    tags: list[str]
+    sources: list[str]
+    stageChanges: list[dict]
     origin: str
     sourcedBy: str
     owner: str
-    followers: List[str]
-    applications: List[str]
+    followers: list[str]
+    applications: list[str]
     createdAt: int
     updatedAt: int
     lastInteractionAt: int
@@ -151,7 +151,7 @@ class Referral(BaseSchemaModel):
     type: str
     text: str
     instructions: str
-    fields: List[dict]
+    fields: list[dict]
     baseTemplateId: str
     user: str
     referrer: str
@@ -170,6 +170,6 @@ class User(BaseSchemaModel):
     createdAt: int
     deactivatedAt: int
     externalDirectoryId: str
-    linkedContactIds: List[str]
+    linkedContactIds: list[str]
     jobTitle: str
     managerId: str

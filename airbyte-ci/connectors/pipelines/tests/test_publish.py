@@ -4,10 +4,10 @@
 
 import json
 import random
-from typing import List
 
 import anyio
 import pytest
+
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
 from pipelines.models.steps import StepStatus
 
@@ -16,7 +16,7 @@ pytestmark = [
 ]
 
 
-@pytest.fixture
+@pytest.fixture()
 def publish_context(mocker, dagger_client, tmpdir):
     return mocker.MagicMock(
         dagger_client=dagger_client,
@@ -29,7 +29,7 @@ def publish_context(mocker, dagger_client, tmpdir):
 
 class TestCheckConnectorImageDoesNotExists:
     @pytest.fixture(scope="class")
-    def three_random_connectors_image_names(self, oss_registry: dict) -> List[str]:
+    def three_random_connectors_image_names(self, oss_registry: dict) -> list[str]:
         connectors = oss_registry["sources"] + oss_registry["destinations"]
         random.shuffle(connectors)
         return [f"{connector['dockerRepository']}:{connector['dockerImageTag']}" for connector in connectors[:3]]
@@ -271,10 +271,10 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
     publish_pipeline.MetadataValidation.return_value.run.return_value = mocker.Mock(
-        name="metadata_validation_result", status=StepStatus.SUCCESS
+        name="metadata_validation_result", status=StepStatus.SUCCESS,
     )
     publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run.return_value = mocker.Mock(
-        name="check_connector_image_does_not_exist_result", status=StepStatus.SUCCESS
+        name="check_connector_image_does_not_exist_result", status=StepStatus.SUCCESS,
     )
 
     # have output_artifact.values return []
@@ -282,22 +282,22 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     built_connector_platform.values.return_value = ["linux/amd64"]
 
     publish_pipeline.steps.run_connector_build.return_value = mocker.Mock(
-        name="build_connector_for_publish_result", status=build_step_status, output_artifact=built_connector_platform
+        name="build_connector_for_publish_result", status=build_step_status, output_artifact=built_connector_platform,
     )
 
     publish_pipeline.PushConnectorImageToRegistry.return_value.run.return_value = mocker.Mock(
-        name="push_connector_image_to_registry_result", status=push_step_status
+        name="push_connector_image_to_registry_result", status=push_step_status,
     )
 
     publish_pipeline.PullConnectorImageFromRegistry.return_value.run.return_value = mocker.Mock(
-        name="pull_connector_image_from_registry_result", status=pull_step_status
+        name="pull_connector_image_from_registry_result", status=pull_step_status,
     )
 
     publish_pipeline.UploadSpecToCache.return_value.run.return_value = mocker.Mock(
-        name="upload_spec_to_cache_result", status=upload_to_spec_cache_step_status
+        name="upload_spec_to_cache_result", status=upload_to_spec_cache_step_status,
     )
     publish_pipeline.MetadataUpload.return_value.run.return_value = mocker.Mock(
-        name="metadata_upload_result", status=metadata_upload_step_status
+        name="metadata_upload_result", status=metadata_upload_step_status,
     )
 
     context = mocker.MagicMock(

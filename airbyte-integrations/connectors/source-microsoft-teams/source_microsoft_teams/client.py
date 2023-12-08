@@ -9,26 +9,26 @@ import json
 import pkgutil
 import sys
 import time
-from functools import lru_cache
-from typing import Dict, List, Optional, Tuple, Union
+from functools import cache
+from typing import Optional, Union
 
 import backoff
 import msal
 import requests
+from msal.exceptions import MsalServiceError
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream
-from msal.exceptions import MsalServiceError
 
 LOGGER = AirbyteLogger()
 
 
 def log_backoff_attempt(details):
-    LOGGER.info(f"Encountered exception when querying the Microsoft API: {str(sys.exc_info()[1])}. Backing off: {details.get('tries')} try")
+    LOGGER.info(f"Encountered exception when querying the Microsoft API: {sys.exc_info()[1]!s}. Backing off: {details.get('tries')} try")
 
 
 class Client:
-    """
-    Microsoft Teams API Reference: https://docs.microsoft.com/en-us/graph/api/resources/teams-api-overview?view=graph-rest-1.0
+    """Microsoft Teams API Reference: https://docs.microsoft.com/en-us/graph/api/resources/teams-api-overview?view=graph-rest-1.0
     """
 
     MICROSOFT_GRAPH_BASE_API_URL: str = "https://graph.microsoft.com/"
@@ -61,11 +61,11 @@ class Client:
         self._group_ids = None
 
     @property
-    @lru_cache(maxsize=None)
+    @cache
     def msal_app(self):
         return msal.ConfidentialClientApplication(
             self.credentials["client_id"],
-            authority=f"https://login.microsoftonline.com/" f"{self.credentials['tenant_id']}",
+            authority=f"https://login.microsoftonline.com/{self.credentials['tenant_id']}",
             client_credential=self.credentials["client_secret"],
         )
 
@@ -91,7 +91,7 @@ class Client:
         max_tries=7,
         on_backoff=log_backoff_attempt,
     )
-    def _make_request(self, api_url: str, params: Optional[Dict] = None) -> Union[Dict, object]:
+    def _make_request(self, api_url: str, params: Optional[dict] = None) -> Union[dict, object]:
         access_token = self._get_access_token()
         headers = {"Authorization": f"Bearer {access_token}"}
         response = requests.get(api_url, headers=headers, params=params)
@@ -109,18 +109,18 @@ class Client:
         return raw_response
 
     @staticmethod
-    def _get_response_value_unsafe(raw_response: Dict) -> List:
+    def _get_response_value_unsafe(raw_response: dict) -> list:
         value = raw_response["value"]
         return value
 
-    def _get_request_params(self, params: Optional[Dict] = None, pagination: bool = True) -> Dict:
+    def _get_request_params(self, params: Optional[dict] = None, pagination: bool = True) -> dict:
         if self.PAGINATION_COUNT and pagination:
             params = params if params else {}
             if "$top" not in params:
                 params["$top"] = self.PAGINATION_COUNT
         return params
 
-    def _fetch_data(self, endpoint: str, params: Optional[Dict] = None, pagination: bool = True):
+    def _fetch_data(self, endpoint: str, params: Optional[dict] = None, pagination: bool = True):
         api_url = self._get_api_url(endpoint)
         params = self._get_request_params(params, pagination)
         while api_url:
@@ -130,7 +130,7 @@ class Client:
             api_url = raw_response.get("@odata.nextLink", "")
             yield value
 
-    def health_check(self) -> Tuple[bool, object]:
+    def health_check(self) -> tuple[bool, object]:
         try:
             self._get_access_token()
             return True, None

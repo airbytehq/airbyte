@@ -5,19 +5,19 @@
 
 import json
 from collections import defaultdict
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
-from airbyte_cdk.logger import AirbyteLogger
 from firebolt.async_db import Connection as AsyncConnection
 from firebolt.async_db import connect as async_connect
 from firebolt.client import DEFAULT_API_URL
 from firebolt.client.auth import UsernamePassword
 from firebolt.db import Connection, connect
 
+from airbyte_cdk.logger import AirbyteLogger
 
-def parse_config(config: json, logger: AirbyteLogger) -> Dict[str, Any]:
-    """
-    Convert dict of config values to firebolt.db.Connection arguments
+
+def parse_config(config: json, logger: AirbyteLogger) -> dict[str, Any]:
+    """Convert dict of config values to firebolt.db.Connection arguments
 
     :param config: json-compatible dict of settings
     :param logger: AirbyteLogger instance to print logs.
@@ -43,8 +43,7 @@ def parse_config(config: json, logger: AirbyteLogger) -> Dict[str, Any]:
 
 
 def establish_connection(config: json, logger: AirbyteLogger) -> Connection:
-    """
-    Creates a connection to Firebolt database using the parameters provided.
+    """Creates a connection to Firebolt database using the parameters provided.
 
     :param config: Json object containing db credentials.
     :param logger: AirbyteLogger instance to print logs.
@@ -58,8 +57,7 @@ def establish_connection(config: json, logger: AirbyteLogger) -> Connection:
 
 
 async def establish_async_connection(config: json, logger: AirbyteLogger) -> AsyncConnection:
-    """
-    Creates an async connection to Firebolt database using the parameters provided.
+    """Creates an async connection to Firebolt database using the parameters provided.
     This connection can be used for parallel operations.
 
     :param config: Json object containing db credentials.
@@ -73,9 +71,8 @@ async def establish_async_connection(config: json, logger: AirbyteLogger) -> Asy
     return connection
 
 
-def get_table_structure(connection: Connection) -> Dict[str, List[Tuple]]:
-    """
-    Get columns and their types for all the tables and views in the database.
+def get_table_structure(connection: Connection) -> dict[str, list[tuple]]:
+    """Get columns and their types for all the tables and views in the database.
 
     :param connection: Connection object connected to a database
 
@@ -85,7 +82,7 @@ def get_table_structure(connection: Connection) -> Dict[str, List[Tuple]]:
     cursor = connection.cursor()
     cursor.execute(
         "SELECT table_name, column_name, data_type, is_nullable FROM information_schema.columns "
-        "WHERE table_name NOT IN (SELECT table_name FROM information_schema.tables WHERE table_type IN ('EXTERNAL', 'CATALOG'))"
+        "WHERE table_name NOT IN (SELECT table_name FROM information_schema.tables WHERE table_type IN ('EXTERNAL', 'CATALOG'))",
     )
     for t_name, c_name, c_type, nullable in cursor.fetchall():
         column_mapping[t_name].append((c_name, c_type, nullable))

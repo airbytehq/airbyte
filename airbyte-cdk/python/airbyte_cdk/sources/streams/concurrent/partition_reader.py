@@ -9,19 +9,16 @@ from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCom
 
 
 class PartitionReader:
-    """
-    Generates records from a partition and puts them in a queue.
+    """Generates records from a partition and puts them in a queue.
     """
 
     def __init__(self, queue: Queue[QueueItem]) -> None:
-        """
-        :param queue: The queue to put the records in.
+        """:param queue: The queue to put the records in.
         """
         self._queue = queue
 
     def process_partition(self, partition: Partition) -> None:
-        """
-        Process a partition and put the records in the output queue.
+        """Process a partition and put the records in the output queue.
         When all the partitions are added to the queue, a sentinel is added to the queue to indicate that all the partitions have been generated.
 
         If an exception is encountered, the exception will be caught and put in the queue.

@@ -4,9 +4,10 @@
 
 import json
 import urllib.parse
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Any, Callable, List, Optional
+from typing import Any, Optional
 
 import pandas as pd
 from jinja2 import Environment, PackageLoader
@@ -59,11 +60,9 @@ class ColumnInfo:
     formatter: Optional[Callable[[Any], str]] = None
 
 
-def dataframe_to_table_html(df: pd.DataFrame, column_mapping: List[ColumnInfo]) -> str:
+def dataframe_to_table_html(df: pd.DataFrame, column_mapping: list[ColumnInfo]) -> str:
+    """Convert a dataframe to an HTML table.
     """
-    Convert a dataframe to an HTML table.
-    """
-
     # convert true and false to checkmarks and x's
     df.replace({True: "✅", False: "❌"}, inplace=True)
 
@@ -209,7 +208,7 @@ def render_connector_nightly_report_md(nightly_report_connector_matrix_df: pd.Da
 def render_connector_test_summary_html(connector_name: str, connector_test_summary_df: pd.DataFrame) -> str:
     env = Environment(loader=PackageLoader("orchestrator", "templates"))
     template = env.get_template("connector_test_summary.html")
-    columns_to_show: List[ColumnInfo] = [
+    columns_to_show: list[ColumnInfo] = [
         {
             "column": "date",
             "title": "Date",

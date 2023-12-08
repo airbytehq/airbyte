@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Mapping
+from collections.abc import Mapping
 
 from pygsheets import Spreadsheet, Worksheet
 from pygsheets.client import Client as pygsheets_client
@@ -16,14 +16,12 @@ class GoogleSheets:
 
     @property
     def spreadsheet(self) -> Spreadsheet:
-        """
-        Returns pygsheets.Spreadsheet with opened target spreadsheet by key.
+        """Returns pygsheets.Spreadsheet with opened target spreadsheet by key.
         """
         return self.client.open_by_key(self.spreadsheet_id)
 
     def open_worksheet(self, stream_name: str) -> Worksheet:
-        """
-        Opens the connection to target worksheet, if exists. Otherwise, creates one.
+        """Opens the connection to target worksheet, if exists. Otherwise, creates one.
         """
         try:
             stream = self.spreadsheet.worksheet_by_title(stream_name)
@@ -32,8 +30,7 @@ class GoogleSheets:
         return stream
 
     def clean_worksheet(self, stream_name: str):
-        """
-        Cleans up the existing records inside the worksheet or creates one, if doesn't exist.
+        """Cleans up the existing records inside the worksheet or creates one, if doesn't exist.
         """
         try:
             stream = self.open_worksheet(stream_name)
@@ -41,17 +38,15 @@ class GoogleSheets:
         except WorksheetNotFound:
             self.spreadsheet.add_worksheet(stream_name)
 
-    def set_headers(self, stream_name: str, headers_list: List[str]):
-        """
-        Sets headers belonging to the input stream
+    def set_headers(self, stream_name: str, headers_list: list[str]):
+        """Sets headers belonging to the input stream
         """
         stream: Worksheet = self.open_worksheet(stream_name)
         if headers_list:
             stream.update_row(1, headers_list)
 
     def index_cols(self, stream: Worksheet) -> Mapping[str, int]:
-        """
-        Helps to find the index of every colums exists in worksheet.
+        """Helps to find the index of every colums exists in worksheet.
         Returns: Mapping with column name and it's index.
             {"id": 1, "name": 2, ..., "other": 99}
         """
@@ -62,8 +57,7 @@ class GoogleSheets:
         return col_index
 
     def find_duplicates(self, stream: Worksheet, primary_key: str):
-        """
-        Finds the duplicated records inside of target worksheet.
+        """Finds the duplicated records inside of target worksheet.
         Returns: List of indexes of rows to remove from target worksheet.
             [1, 4, 5, ..., 99]
         """
@@ -85,8 +79,7 @@ class GoogleSheets:
         return rows_to_delete
 
     def remove_duplicates(self, stream: Worksheet, rows_list: list):
-        """
-        Removes duplicated rows, provided by `rows_list` as list of indexes.
+        """Removes duplicated rows, provided by `rows_list` as list of indexes.
 
         We are working with delete operation in offline mode, to decrease the number of API calls.
         1) Unlink the spreadsheet (make it for offline use)

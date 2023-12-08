@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional
+from typing import Optional
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -19,7 +19,7 @@ def get_stream(catalog: AirbyteCatalog, stream_name: str) -> Optional[AirbyteStr
     return get_first(catalog.streams, lambda s: s.name == stream_name)
 
 
-def get_stream_names(catalog: AirbyteCatalog) -> List[str]:
+def get_stream_names(catalog: AirbyteCatalog) -> list[str]:
     return [stream.name for stream in catalog.streams]
 
 
@@ -27,15 +27,15 @@ def to_configured_stream(
     stream: AirbyteStream,
     sync_mode: SyncMode = SyncMode.full_refresh,
     destination_sync_mode: DestinationSyncMode = DestinationSyncMode.append,
-    cursor_field: Optional[List[str]] = None,
-    primary_key: Optional[List[List[str]]] = None,
+    cursor_field: Optional[list[str]] = None,
+    primary_key: Optional[list[list[str]]] = None,
 ) -> ConfiguredAirbyteStream:
     return ConfiguredAirbyteStream(
-        stream=stream, sync_mode=sync_mode, destination_sync_mode=destination_sync_mode, cursor_field=cursor_field, primary_key=primary_key
+        stream=stream, sync_mode=sync_mode, destination_sync_mode=destination_sync_mode, cursor_field=cursor_field, primary_key=primary_key,
     )
 
 
-def to_configured_catalog(configured_streams: List[ConfiguredAirbyteStream]) -> ConfiguredAirbyteCatalog:
+def to_configured_catalog(configured_streams: list[ConfiguredAirbyteStream]) -> ConfiguredAirbyteCatalog:
     return ConfiguredAirbyteCatalog(streams=configured_streams)
 
 

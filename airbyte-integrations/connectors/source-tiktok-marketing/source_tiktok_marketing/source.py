@@ -2,9 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 import pendulum
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -60,8 +62,7 @@ def get_report_stream(report: BasicReports, granularity: ReportGranularity) -> B
 
 
 class TiktokTokenAuthenticator(TokenAuthenticator):
-    """
-    Docs: https://business-api.tiktok.com/marketing_api/docs?rid=sta6fe2yww&id=1701890922708994
+    """Docs: https://business-api.tiktok.com/marketing_api/docs?rid=sta6fe2yww&id=1701890922708994
     """
 
     def __init__(self, token: str, **kwargs):
@@ -76,7 +77,6 @@ class SourceTiktokMarketing(AbstractSource):
     @staticmethod
     def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Converts an input configure to stream arguments"""
-
         credentials = config.get("credentials")
 
         if credentials:
@@ -112,13 +112,12 @@ class SourceTiktokMarketing(AbstractSource):
         }
 
         if advertiser_id:
-            stream_args.update(**{"advertiser_id": advertiser_id})
+            stream_args.update(advertiser_id=advertiser_id)
 
         return stream_args
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        """
-        Tests if the input configuration can be used to successfully connect to the integration
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, any]:
+        """Tests if the input configuration can be used to successfully connect to the integration
         """
         try:
             advertisers = Advertisers(**self._prepare_stream_args(config))
@@ -128,7 +127,7 @@ class SourceTiktokMarketing(AbstractSource):
             return False, err
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         args = self._prepare_stream_args(config)
 
         is_production = not (args["is_sandbox"])
@@ -169,11 +168,11 @@ class SourceTiktokMarketing(AbstractSource):
                     AdsReports(**report_args),
                     AdGroupsReports(**report_args),
                     CampaignsReports(**report_args),
-                ]
+                ],
             )
 
             # 3. Audience report streams:
-            if not report_granularity == ReportGranularity.LIFETIME:
+            if report_granularity != ReportGranularity.LIFETIME:
                 # https://ads.tiktok.com/marketing_api/docs?id=1707957217727489
                 # Audience report only supports lifetime metrics at the ADVERTISER level.
                 streams.extend(
@@ -181,7 +180,7 @@ class SourceTiktokMarketing(AbstractSource):
                         AdsAudienceReports(**report_args),
                         AdGroupAudienceReports(**report_args),
                         CampaignsAudienceReportsByCountry(**report_args),
-                    ]
+                    ],
                 )
 
             # 4. streams work only in prod env
@@ -190,7 +189,7 @@ class SourceTiktokMarketing(AbstractSource):
                     [
                         AdvertisersReports(**report_args),
                         AdvertisersAudienceReports(**report_args),
-                    ]
+                    ],
                 )
 
         else:
@@ -218,7 +217,7 @@ class SourceTiktokMarketing(AbstractSource):
                         AdvertisersAudienceReports,
                         AdvertisersAudienceReportsByCountry,
                         AdvertisersAudienceReportsByPlatform,
-                    ]
+                    ],
                 )
 
             for Report in reports:

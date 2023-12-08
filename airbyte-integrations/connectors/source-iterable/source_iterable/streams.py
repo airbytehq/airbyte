@@ -6,20 +6,22 @@ import csv
 import json
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, MutableMapping
 from io import StringIO
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
 import pendulum
 import requests
+from pendulum.datetime import DateTime
+from requests import HTTPError, codes
+from requests.exceptions import ChunkedEncodingError
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from pendulum.datetime import DateTime
-from requests import HTTPError, codes
-from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
 from source_iterable.utils import dateutil_parse
 
@@ -52,8 +54,7 @@ class IterableStream(HttpStream, ABC):
     @property
     @abstractmethod
     def data_field(self) -> str:
-        """
-        :return: Default field name to get data from response
+        """:return: Default field name to get data from response
         """
 
     @property
@@ -61,8 +62,7 @@ class IterableStream(HttpStream, ABC):
         return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Iterable API does not support pagination
+        """Iterable API does not support pagination
         """
         return None
 
@@ -72,8 +72,7 @@ class IterableStream(HttpStream, ABC):
             return True
 
     def check_generic_error(self, response: requests.Response) -> bool:
-        """
-        https://github.com/airbytehq/oncall/issues/1592#issuecomment-1499109251
+        """https://github.com/airbytehq/oncall/issues/1592#issuecomment-1499109251
         https://github.com/airbytehq/oncall/issues/1985
         """
         codes = ["Generic Error", "GenericError"]
@@ -84,7 +83,7 @@ class IterableStream(HttpStream, ABC):
             try:
                 response_json = json.loads(response.text)
             except ValueError:
-                return
+                return None
             if response_json.get("code") in codes and msg_pattern in response_json.get("msg", ""):
                 return True
 
@@ -94,8 +93,7 @@ class IterableStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        """
-        https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
+        """https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
         https://github.com/airbytehq/oncall/issues/1985#issuecomment-1559276465
         """
         return {"timeout": (60, 300)}
@@ -117,7 +115,7 @@ class IterableStream(HttpStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -138,8 +136,7 @@ class IterableStream(HttpStream, ABC):
 
 
 class IterableExportStream(IterableStream, ABC):
-    """
-    This stream utilize "export" Iterable api for getting large amount of data.
+    """This stream utilize "export" Iterable api for getting large amount of data.
     It can return data in form of new line separater strings each of each
     representing json object.
     Data could be windowed by date ranges by applying startDateTime and
@@ -176,8 +173,7 @@ class IterableExportStream(IterableStream, ABC):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_benchmark = latest_record[self.cursor_field]
@@ -187,8 +183,8 @@ class IterableExportStream(IterableStream, ABC):
                     max(
                         latest_benchmark,
                         self._field_to_datetime(current_stream_state[self.cursor_field]),
-                    )
-                )
+                    ),
+                ),
             }
         return {self.cursor_field: str(latest_benchmark)}
 
@@ -220,8 +216,7 @@ class IterableExportStream(IterableStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        """
-        https://api.iterable.com/api/docs#export_exportDataJson
+        """https://api.iterable.com/api/docs#export_exportDataJson
         Sending those type of requests could download large piece of json
         objects splitted with newline character.
         Passing stream=True argument to requests.session.send method to avoid
@@ -242,7 +237,7 @@ class IterableExportStream(IterableStream, ABC):
     def stream_slices(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[StreamSlice]]:
         start_datetime = self.get_start_date(stream_state)
@@ -250,8 +245,7 @@ class IterableExportStream(IterableStream, ABC):
 
 
 class IterableExportStreamRanged(IterableExportStream, ABC):
-    """
-    This class use RangeSliceGenerator class to break single request into
+    """This class use RangeSliceGenerator class to break single request into
     ranges with same (or less for final range) number of days. By default it 90
     days.
     """
@@ -259,7 +253,7 @@ class IterableExportStreamRanged(IterableExportStream, ABC):
     def stream_slices(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[StreamSlice]]:
         start_datetime = self.get_start_date(stream_state)
@@ -268,8 +262,7 @@ class IterableExportStreamRanged(IterableExportStream, ABC):
 
 
 class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
-    """
-    For streams that could produce large amount of data in single request so we
+    """For streams that could produce large amount of data in single request so we
     cant just use IterableExportStreamRanged to split it in even ranges. If
     request processing takes a lot of time API server could just close
     connection and connector code would fail with ChunkedEncodingError.
@@ -293,7 +286,7 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
     def stream_slices(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[StreamSlice]]:
         start_datetime = self.get_start_date(stream_state)
@@ -303,7 +296,7 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str],
+        cursor_field: list[str],
         stream_slice: StreamSlice,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -311,7 +304,7 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
         for _ in range(self.CHUNKED_ENCODING_ERROR_RETRIES):
             try:
                 self.logger.info(
-                    f"Processing slice of {(stream_slice.end_date - stream_slice.start_date).total_days()} days for stream {self.name}"
+                    f"Processing slice of {(stream_slice.end_date - stream_slice.start_date).total_days()} days for stream {self.name}",
                 )
                 for record in super().read_records(
                     sync_mode=sync_mode,
@@ -325,7 +318,7 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
                     start_time = now
                 break
             except ChunkedEncodingError:
-                self.logger.warn("ChunkedEncodingError occurred, decrease days range and try again")
+                self.logger.warning("ChunkedEncodingError occurred, decrease days range and try again")
                 stream_slice = self._adjustable_generator.reduce_range()
         else:
             raise Exception(f"ChunkedEncodingError: Reached maximum number of retires: {self.CHUNKED_ENCODING_ERROR_RETRIES}")
@@ -386,8 +379,7 @@ class CampaignsMetrics(IterableStream):
     data_field = None
 
     def __init__(self, start_date: str, end_date: Optional[str] = None, **kwargs):
-        """
-        https://api.iterable.com/api/docs#campaigns_metrics
+        """https://api.iterable.com/api/docs#campaigns_metrics
         """
         super().__init__(**kwargs)
         self.start_date = start_date
@@ -425,9 +417,8 @@ class CampaignsMetrics(IterableStream):
             yield {"data": record}
 
     @staticmethod
-    def _parse_csv_string_to_dict(csv_string: str) -> List[Dict[str, Any]]:
-        """
-        Parse a response with a csv type to dict object
+    def _parse_csv_string_to_dict(csv_string: str) -> list[dict[str, Any]]:
+        """Parse a response with a csv type to dict object
         Example:
             csv_string = "a,b,c,d
                           1,2,,3
@@ -441,7 +432,6 @@ class CampaignsMetrics(IterableStream):
         :return: parsed API response
 
         """
-
         reader = csv.DictReader(StringIO(csv_string), delimiter=",")
         result = []
 
@@ -484,8 +474,7 @@ class Metadata(IterableStream):
 
 
 class Events(IterableStream):
-    """
-    https://api.iterable.com/api/docs#export_exportUserEvents
+    """https://api.iterable.com/api/docs#export_exportUserEvents
     """
 
     primary_key = None
@@ -510,8 +499,7 @@ class Events(IterableStream):
                 yield {"email": list_record["email"]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        Parse jsonl response body.
+        """Parse jsonl response body.
         Put common event fields at the top level.
         Put the rest of the fields in the `data` subobject.
         """

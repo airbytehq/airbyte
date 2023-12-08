@@ -4,22 +4,22 @@
 
 import logging
 import typing
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
 import requests
+from requests import HTTPError
+
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.utils.stream_helper import get_first_record_for_slice, get_first_stream_slice
-from requests import HTTPError
 
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source
 
 
 class HttpAvailabilityStrategy(AvailabilityStrategy):
-    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Tuple[bool, Optional[str]]:
-        """
-        Check stream availability by attempting to read the first record of the
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> tuple[bool, Optional[str]]:
+        """Check stream availability by attempting to read the first record of the
         stream.
 
         :param stream: stream
@@ -59,10 +59,9 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             return is_available, reason
 
     def handle_http_error(
-        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
-    ) -> Tuple[bool, Optional[str]]:
-        """
-        Override this method to define error handling for various `HTTPError`s
+        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError,
+    ) -> tuple[bool, Optional[str]]:
+        """Override this method to define error handling for various `HTTPError`s
         that are raised while attempting to check a stream's availability.
 
         Checks whether an error's status_code is in a list of unavailable_error_codes,
@@ -92,10 +91,9 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         return False, reason
 
     def reasons_for_unavailable_status_codes(
-        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
-    ) -> Dict[int, str]:
-        """
-        Returns a dictionary of HTTP status codes that indicate stream
+        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError,
+    ) -> dict[int, str]:
+        """Returns a dictionary of HTTP status codes that indicate stream
         unavailability and reasons explaining why a given status code may
         have occurred and how the user can resolve that error, if applicable.
 
@@ -106,16 +104,15 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         why 'status code' may have occurred and how the user can resolve that
         error, if applicable.
         """
-        reasons_for_codes: Dict[int, str] = {
+        reasons_for_codes: dict[int, str] = {
             requests.codes.FORBIDDEN: "This is most likely due to insufficient permissions on the credentials in use. "
-            "Try to grant required permissions/scopes or re-authenticate"
+            "Try to grant required permissions/scopes or re-authenticate",
         }
         return reasons_for_codes
 
     @staticmethod
     def _visit_docs_message(logger: logging.Logger, source: Optional["Source"]) -> str:
-        """
-        Creates a message indicating where to look in the documentation for
+        """Creates a message indicating where to look in the documentation for
         more information on a given source by checking the spec of that source
         (if provided) for a 'documentationUrl'.
 

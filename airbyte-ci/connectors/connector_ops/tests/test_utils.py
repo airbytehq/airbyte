@@ -6,6 +6,7 @@ from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 
 import pytest
+
 from connector_ops import utils
 
 
@@ -72,7 +73,7 @@ class TestConnector:
         assert not connector.metadata_query_match("data.ab_internal.ql > 101")
         assert not connector.metadata_query_match("data.ab_internal == whatever")
 
-    @pytest.fixture
+    @pytest.fixture()
     def connector_without_dockerfile(self, mocker, tmp_path):
         mocker.patch.object(utils.Connector, "code_directory", tmp_path)
         connector = utils.Connector("source-faker")
@@ -81,7 +82,7 @@ class TestConnector:
     def test_has_dockerfile_without_dockerfile(self, connector_without_dockerfile):
         assert not connector_without_dockerfile.has_dockerfile
 
-    @pytest.fixture
+    @pytest.fixture()
     def connector_with_dockerfile(self, mocker, tmp_path):
         mocker.patch.object(utils.Connector, "code_directory", tmp_path)
         connector = utils.Connector("source-faker")
@@ -108,7 +109,7 @@ def gradle_file_with_dependencies(tmpdir) -> tuple[Path, list[Path], list[Path]]
         integrationTestJavaImplementation project(':path:to:test:dependency1')
         performanceTestJavaImplementation project(':path:to:test:dependency2')
     }
-    """
+    """,
     )
     expected_dependencies = [Path("path/to/dependency1"), Path("path/to/dependency2")]
     expected_test_dependencies = [Path("path/to/test/dependency"), Path("path/to/test/dependency1"), Path("path/to/test/dependency2")]
@@ -141,7 +142,7 @@ def gradle_file_with_local_cdk_dependencies(tmpdir) -> tuple[Path, list[Path], l
         integrationTestJavaImplementation project(':path:to:test:dependency1')
         performanceTestJavaImplementation project(':path:to:test:dependency2')
     }
-    """
+    """,
     )
     expected_dependencies = [
         Path("path/to/dependency1"),

@@ -4,12 +4,11 @@
 
 import logging
 import sys
-from typing import List
 
 from connector_ops import utils
 
 
-def find_connectors_with_bad_strictness_level() -> List[utils.Connector]:
+def find_connectors_with_bad_strictness_level() -> list[utils.Connector]:
     """Check if changed connectors have the expected connector acceptance test strictness level according to their release stage.
     1. Identify changed connectors
     2. Retrieve their release stage from the catalog
@@ -35,7 +34,7 @@ def check_test_strictness_level():
     connectors_with_bad_strictness_level = find_connectors_with_bad_strictness_level()
     if connectors_with_bad_strictness_level:
         logging.error(
-            f"The following connectors must enable high test strictness level: {connectors_with_bad_strictness_level}. Please check this documentation for details: https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/#strictness-level"
+            f"The following connectors must enable high test strictness level: {connectors_with_bad_strictness_level}. Please check this documentation for details: https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/#strictness-level",
         )
         sys.exit(1)
     else:

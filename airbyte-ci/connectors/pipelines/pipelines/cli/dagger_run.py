@@ -14,6 +14,7 @@ from typing import Optional
 
 import pkg_resources
 import requests
+
 from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME
 
 LOGGER = logging.getLogger(__name__)
@@ -72,10 +73,8 @@ def get_dagger_cli_version(dagger_path: Optional[str]) -> Optional[str]:
 
 
 def check_dagger_cli_install() -> str:
+    """If the dagger CLI is not installed, install it.
     """
-    If the dagger CLI is not installed, install it.
-    """
-
     expected_dagger_cli_version = get_current_dagger_sdk_version()
     dagger_path = get_dagger_path()
     if dagger_path is None:
@@ -86,7 +85,7 @@ def check_dagger_cli_install() -> str:
     cli_version = get_dagger_cli_version(dagger_path)
     if cli_version != expected_dagger_cli_version:
         LOGGER.warning(
-            f"The Dagger CLI version '{cli_version}' does not match the expected version '{expected_dagger_cli_version}'. Installing Dagger CLI '{expected_dagger_cli_version}'..."
+            f"The Dagger CLI version '{cli_version}' does not match the expected version '{expected_dagger_cli_version}'. Installing Dagger CLI '{expected_dagger_cli_version}'...",
         )
         install_dagger_cli(expected_dagger_cli_version)
         return check_dagger_cli_install()
@@ -94,8 +93,7 @@ def check_dagger_cli_install() -> str:
 
 
 def mark_dagger_wrap():
-    """
-    Mark that the dagger wrap has been applied.
+    """Mark that the dagger wrap has been applied.
     """
     os.environ[DAGGER_WRAP_ENV_VAR_NAME] = "true"
 

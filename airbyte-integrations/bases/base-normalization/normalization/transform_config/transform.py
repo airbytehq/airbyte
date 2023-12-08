@@ -9,9 +9,10 @@ import os
 import pkgutil
 import socket
 import subprocess
-from typing import Any, Dict
+from typing import Any
 
 import yaml
+
 from normalization.destination_type import DestinationType
 
 
@@ -30,7 +31,7 @@ class TransformConfig:
         parser = argparse.ArgumentParser(add_help=False)
         parser.add_argument("--config", type=str, required=True, help="path to original config")
         parser.add_argument(
-            "--integration-type", type=DestinationType, choices=list(DestinationType), required=True, help="type of integration"
+            "--integration-type", type=DestinationType, choices=list(DestinationType), required=True, help="type of integration",
         )
         parser.add_argument("--out", type=str, required=True, help="path to output transformed config to")
 
@@ -43,7 +44,7 @@ class TransformConfig:
             "output_path": parsed_args.out,
         }
 
-    def transform(self, integration_type: DestinationType, config: Dict[str, Any]):
+    def transform(self, integration_type: DestinationType, config: dict[str, Any]):
         data = pkgutil.get_data(self.__class__.__module__.split(".")[0], "transform_config/profile_base.yml")
         if not data:
             raise FileExistsError("Failed to load profile_base.yml")
@@ -75,7 +76,7 @@ class TransformConfig:
         return os.path.abspath(f.name)
 
     @staticmethod
-    def is_ssh_tunnelling(config: Dict[str, Any]) -> bool:
+    def is_ssh_tunnelling(config: dict[str, Any]) -> bool:
         tunnel_methods = ["SSH_KEY_AUTH", "SSH_PASSWORD_AUTH"]
         if (
             "tunnel_method" in config.keys()
@@ -100,8 +101,7 @@ class TransformConfig:
 
     @staticmethod
     def pick_a_port() -> int:
-        """
-        This function finds a free port, starting with 50001 and adding 1 until we find an open port.
+        """This function finds a free port, starting with 50001 and adding 1 until we find an open port.
         """
         port_to_check = 50001  # just past start of dynamic port range (49152:65535)
         while not TransformConfig.is_port_free(port_to_check):
@@ -112,9 +112,8 @@ class TransformConfig:
         return port_to_check
 
     @staticmethod
-    def get_ssh_altered_config(config: Dict[str, Any], port_key: str = "port", host_key: str = "host") -> Dict[str, Any]:
-        """
-        This should be called only if ssh tunneling is on.
+    def get_ssh_altered_config(config: dict[str, Any], port_key: str = "port", host_key: str = "host") -> dict[str, Any]:
+        """This should be called only if ssh tunneling is on.
         It will return config with appropriately altered port and host values
         """
         # make a copy of config rather than mutate in place
@@ -124,7 +123,7 @@ class TransformConfig:
         return ssh_ready_config
 
     @staticmethod
-    def transform_bigquery(config: Dict[str, Any]):
+    def transform_bigquery(config: dict[str, Any]):
         print("transform_bigquery")
         # https://docs.getdbt.com/reference/warehouse-profiles/bigquery-profile
 
@@ -138,7 +137,7 @@ class TransformConfig:
             project_id, dataset_id = splits
             if project_id != config["project_id"]:
                 raise ValueError(
-                    f"Project ID in dataset ID did not match explicitly-provided project ID: {project_id} and {config['project_id']}"
+                    f"Project ID in dataset ID did not match explicitly-provided project ID: {project_id} and {config['project_id']}",
                 )
 
         dbt_config = {
@@ -159,7 +158,7 @@ class TransformConfig:
         return dbt_config
 
     @staticmethod
-    def transform_postgres(config: Dict[str, Any]):
+    def transform_postgres(config: dict[str, Any]):
         print("transform_postgres")
 
         if TransformConfig.is_ssh_tunnelling(config):
@@ -194,7 +193,7 @@ class TransformConfig:
         return dbt_config
 
     @staticmethod
-    def transform_redshift(config: Dict[str, Any]):
+    def transform_redshift(config: dict[str, Any]):
         print("transform_redshift")
         # https://docs.getdbt.com/reference/warehouse-profiles/redshift-profile
         dbt_config = {
@@ -210,7 +209,7 @@ class TransformConfig:
         return dbt_config
 
     @staticmethod
-    def transform_snowflake(config: Dict[str, Any]):
+    def transform_snowflake(config: dict[str, Any]):
         print("transform_snowflake")
         # here account is everything before ".snowflakecomputing.com" as it can include account, region & cloud environment information)
         account = config["host"].replace(".snowflakecomputing.com", "").replace("http://", "").replace("https://", "")
@@ -252,7 +251,7 @@ class TransformConfig:
         return dbt_config
 
     @staticmethod
-    def transform_mysql(config: Dict[str, Any]):
+    def transform_mysql(config: dict[str, Any]):
         print("transform_mysql")
 
         if TransformConfig.is_ssh_tunnelling(config):
@@ -274,7 +273,7 @@ class TransformConfig:
         return dbt_config
 
     @staticmethod
-    def transform_oracle(config: Dict[str, Any]):
+    def transform_oracle(config: dict[str, Any]):
         print("transform_oracle")
         # https://github.com/techindicium/dbt-oracle#configure-your-profile
         dbt_config = {
@@ -290,7 +289,7 @@ class TransformConfig:
         return dbt_config
 
     @staticmethod
-    def transform_mssql(config: Dict[str, Any]):
+    def transform_mssql(config: dict[str, Any]):
         print("transform_mssql")
         # https://docs.getdbt.com/reference/warehouse-profiles/mssql-profile
 
@@ -314,7 +313,7 @@ class TransformConfig:
         return dbt_config
 
     @staticmethod
-    def transform_clickhouse(config: Dict[str, Any]):
+    def transform_clickhouse(config: dict[str, Any]):
         print("transform_clickhouse")
         # https://docs.getdbt.com/reference/warehouse-profiles/clickhouse-profile
         dbt_config = {
@@ -336,7 +335,7 @@ class TransformConfig:
         return dbt_config
 
     @staticmethod
-    def transform_tidb(config: Dict[str, Any]):
+    def transform_tidb(config: dict[str, Any]):
         print("transform_tidb")
         # https://github.com/pingcap/dbt-tidb#profile-configuration
         dbt_config = {
@@ -351,7 +350,7 @@ class TransformConfig:
         return dbt_config
 
     @staticmethod
-    def transform_duckdb(config: Dict[str, Any]):
+    def transform_duckdb(config: dict[str, Any]):
         print("transform_duckdb")
         dbt_config = {
             "type": "duckdb",
@@ -362,21 +361,20 @@ class TransformConfig:
 
     @staticmethod
     def read_json_config(input_path: str):
-        with open(input_path, "r") as file:
+        with open(input_path) as file:
             contents = file.read()
         return json.loads(contents)
 
     @staticmethod
-    def write_yaml_config(output_path: str, config: Dict[str, Any], filename: str):
+    def write_yaml_config(output_path: str, config: dict[str, Any], filename: str):
         if not os.path.exists(output_path):
             os.makedirs(output_path)
         with open(os.path.join(output_path, filename), "w") as fh:
             fh.write(yaml.dump(config))
 
     @staticmethod
-    def write_ssh_config(output_path: str, original_config: Dict[str, Any], transformed_config: Dict[str, Any]):
-        """
-        This function writes a json file with config specific to ssh.
+    def write_ssh_config(output_path: str, original_config: dict[str, Any], transformed_config: dict[str, Any]):
+        """This function writes a json file with config specific to ssh.
         We do this because we need these details to open the ssh tunnel for dbt.
         """
         ssh_dict = {

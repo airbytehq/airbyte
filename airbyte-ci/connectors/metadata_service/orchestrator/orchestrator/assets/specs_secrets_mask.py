@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Set
 
 import dpath.util
 import sentry_sdk
@@ -17,7 +16,7 @@ GROUP_NAME = "specs_secrets_mask"
 
 
 @sentry_sdk.trace
-def get_secrets_properties_from_registry_entry(registry_entry: dict) -> List[str]:
+def get_secrets_properties_from_registry_entry(registry_entry: dict) -> list[str]:
     """Traverse a registry entry to spot properties in a spec that have the "airbyte_secret" field set to true.
 
     This function assumes all the properties have a "type" field that we can use to find all the nested properties in a spec.
@@ -52,8 +51,8 @@ def get_secrets_properties_from_registry_entry(registry_entry: dict) -> List[str
 @asset(group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def all_specs_secrets(
-    context: OpExecutionContext, persisted_oss_registry: ConnectorRegistryV0, persisted_cloud_registry: ConnectorRegistryV0
-) -> Set[str]:
+    context: OpExecutionContext, persisted_oss_registry: ConnectorRegistryV0, persisted_cloud_registry: ConnectorRegistryV0,
+) -> set[str]:
     oss_registry_from_metadata_dict = persisted_oss_registry.dict()
     cloud_registry_from_metadata_dict = persisted_cloud_registry.dict()
 
@@ -71,7 +70,7 @@ def all_specs_secrets(
 
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
-def specs_secrets_mask_yaml(context: OpExecutionContext, all_specs_secrets: Set[str]) -> Output:
+def specs_secrets_mask_yaml(context: OpExecutionContext, all_specs_secrets: set[str]) -> Output:
     yaml_string = yaml.dump({"properties": list(all_specs_secrets)})
     registry_directory_manager = context.resources.registry_directory_manager
     file_handle = registry_directory_manager.write_data(yaml_string.encode(), ext="yaml", key="specs_secrets_mask")

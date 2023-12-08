@@ -3,18 +3,20 @@
 #
 
 import json
+from collections.abc import Mapping
 from time import sleep
-from typing import Any, List, Mapping
+from typing import Any
 
 import backoff
 import pendulum
-from airbyte_cdk.entrypoint import logger
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.iguser import IGUser
 from facebook_business.adobjects.page import Page
 from facebook_business.exceptions import FacebookRequestError
+
+from airbyte_cdk.entrypoint import logger
 from source_instagram.common import InstagramAPIException, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5, max_time=600)
@@ -71,10 +73,10 @@ class InstagramAPI:
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
-    def accounts(self) -> List[Mapping[str, Any]]:
+    def accounts(self) -> list[Mapping[str, Any]]:
         return self._find_accounts()
 
-    def _find_accounts(self) -> List[Mapping[str, Any]]:
+    def _find_accounts(self) -> list[Mapping[str, Any]]:
         try:
             instagram_business_accounts = []
             accounts = fb_user.User(fbid="me").get_accounts()
@@ -85,7 +87,7 @@ class InstagramAPI:
                         {
                             "page_id": account.get_id(),
                             "instagram_business_account": IGUser(page.get("instagram_business_account").get("id")),
-                        }
+                        },
                     )
         except FacebookRequestError as exc:
             # 200 - 299, 3 and 10 are permission related error codes
@@ -95,7 +97,7 @@ class InstagramAPI:
                     f"Also make sure that your Access Token has the following permissions: "
                     f"instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, and Instagram Public Content Access"
                     f"See error handling https://developers.facebook.com/docs/graph-api/guides/error-handling/ "
-                    f"and permissions https://developers.facebook.com/docs/permissions/reference for more information."
+                    f"and permissions https://developers.facebook.com/docs/permissions/reference for more information.",
                 ) from exc
 
             raise InstagramAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
@@ -104,7 +106,7 @@ class InstagramAPI:
             raise InstagramAPIException(
                 "Couldn't find an Instagram business account for current Access Token. "
                 "Please ensure you had create a facebook developer application."
-                " See more here https://developers.facebook.com/docs/development/create-an-app/"
+                " See more here https://developers.facebook.com/docs/development/create-an-app/",
             )
 
         return instagram_business_accounts

@@ -3,7 +3,8 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -15,7 +16,7 @@ from .streams import Events, Issues, ProjectDetail, Projects, Releases
 
 # Source
 class SourceSentry(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, Any]:
+    def check_connection(self, logger, config) -> tuple[bool, Any]:
         try:
             stream = ProjectDetail(
                 authenticator=TokenAuthenticator(token=config["auth_token"]),
@@ -28,7 +29,7 @@ class SourceSentry(AbstractSource):
         except Exception as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         stream_args = {
             "authenticator": TokenAuthenticator(token=config["auth_token"]),
             "hostname": config.get("hostname"),

@@ -7,14 +7,16 @@ import csv
 import io
 import json
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import Stream
 
 from .fields import API_REPORT_BUILDER_MAPPING, sanitize
 
@@ -34,8 +36,7 @@ def chunk_date_range(
     end_date: str = None,
     range_days: int = None,
 ) -> Iterable[Mapping[str, any]]:
-    """
-    Passing optional parameter end_date for testing
+    """Passing optional parameter end_date for testing
     Returns a list of the beginning and ending timestamps of each `range_days` between the start date and now.
     The return value is a list of dicts {'date': str} which can be used directly with the Slack API
     """
@@ -52,7 +53,7 @@ def chunk_date_range(
             {
                 "start_date": start_date.to_date_string(),
                 "end_date": end_date.to_date_string(),
-            }
+            },
         )
         start_date = start_date.add(days=range_days)
     return intervals
@@ -67,9 +68,8 @@ class DBM:
         self.partner_id = partner_id
 
     @staticmethod
-    def get_date_params_ms(start_date: str, end_date: str = None) -> Tuple[str, str]:
-        """
-        Returns `start_date` and `end_date` in milliseconds
+    def get_date_params_ms(start_date: str, end_date: str = None) -> tuple[str, str]:
+        """Returns `start_date` and `end_date` in milliseconds
         """
         start_date = pendulum.parse(start_date)
         # if end_date is null, take date until yesterday
@@ -85,9 +85,8 @@ class DBM:
         return start_date_ms, end_date_ms
 
     @staticmethod
-    def get_fields_from_schema(schema: Mapping[str, Any], catalog_fields: List[str]) -> List[str]:
-        """
-        Get list of fields in a given schema
+    def get_fields_from_schema(schema: Mapping[str, Any], catalog_fields: list[str]) -> list[str]:
+        """Get list of fields in a given schema
         :param schema: the list of fields to be converted
         :param catalog_fields: the list of fields to be converted
 
@@ -98,9 +97,8 @@ class DBM:
         return fields
 
     @staticmethod
-    def convert_fields(fields: List[str]) -> List[str]:
-        """
-        Convert a list of fields into the API naming
+    def convert_fields(fields: list[str]) -> list[str]:
+        """Convert a list of fields into the API naming
         :param fields: the list of fields to be converted
 
         :return: A list of converted fields
@@ -108,9 +106,8 @@ class DBM:
         return [API_REPORT_BUILDER_MAPPING[key] for key in fields]
 
     @staticmethod
-    def get_dimensions_from_fields(fields: List[str]) -> List[str]:
-        """
-        Get a list of dimensions from a list of fields. Dimensions start with FILTER_
+    def get_dimensions_from_fields(fields: list[str]) -> list[str]:
+        """Get a list of dimensions from a list of fields. Dimensions start with FILTER_
         :param fields: A list of fields from the stream
 
         :return: A list of dimensions in the naming form of the API
@@ -120,9 +117,8 @@ class DBM:
         return dimensions
 
     @staticmethod
-    def get_metrics_from_fields(fields: List[str]) -> List[str]:
-        """
-        Get a list of metrics from from a list of fields. Metrics start with METRIC_
+    def get_metrics_from_fields(fields: list[str]) -> list[str]:
+        """Get a list of metrics from from a list of fields. Metrics start with METRIC_
         :param fields: A list of fields from the stream
 
         :return: A list of metrics in the naming form of the API
@@ -133,14 +129,13 @@ class DBM:
 
     @staticmethod
     def set_partner_filter(query: Mapping[str, Any], partner_id: str):
-        """
-        set the partner id filter to the partner id in the config
+        """Set the partner id filter to the partner id in the config
         :param query: the query object where the filter is to be set
         """
         filters = query.get("params").get("filters")
         if filters:
             partner_filter_index = next(
-                (index for (index, filter) in enumerate(filters) if filter["type"] == "FILTER_PARTNER"), None
+                (index for (index, filter) in enumerate(filters) if filter["type"] == "FILTER_PARTNER"), None,
             )  # get the index of the partner filter
             if partner_filter_index is not None:
                 query["params"]["filters"][partner_filter_index]["value"] = partner_id  # set filter to the partner id in the config
@@ -148,15 +143,14 @@ class DBM:
     @staticmethod
     def create_query_object(
         report_name: str,
-        dimensions: List[str],
-        metrics: List[str],
+        dimensions: list[str],
+        metrics: list[str],
         partner_id: str,
         start_date: str,
         end_date: str,
-        filters: List[dict] = [],
+        filters: list[dict] = [],
     ) -> Mapping[str, Any]:
-        """
-        Create a query object using the query template and a list of parameter for the query
+        """Create a query object using the query template and a list of parameter for the query
         :param report_name: Name of the report
         :param dimensions: List of dimensions
         :param metrics: list of metrics
@@ -166,7 +160,7 @@ class DBM:
 
         :return the query object created according to the template
         """
-        with open(DBM.QUERY_TEMPLATE_PATH, "r") as template:
+        with open(DBM.QUERY_TEMPLATE_PATH) as template:
             query_body = json.loads(template.read())
 
         # get dates in ms
@@ -186,14 +180,13 @@ class DBM:
         self,
         schema: Mapping[str, Any],
         report_name: str,
-        catalog_fields: List[str],
+        catalog_fields: list[str],
         partner_id: str,
-        filters: List[dict],
+        filters: list[dict],
         start_date: str,
         end_date: str,
     ) -> str:
-        """
-        Create and run a query from the given schema
+        """Create and run a query from the given schema
         :param report_name: Name of the report
         :param catalog_fields: List of fields which names are sanitized
         :param start_date: Start date of the report, in the same form of the date in the config, as specified in the spec
@@ -220,22 +213,20 @@ class DBM:
 
 
 class DBMStream(Stream, ABC):
-    """
-    Base stream class
+    """Base stream class
     """
 
     primary_key = None
 
-    def __init__(self, credentials: Credentials, partner_id: str, filters: List[dict], start_date: str, end_date: str = None):
+    def __init__(self, credentials: Credentials, partner_id: str, filters: list[dict], start_date: str, end_date: str = None):
         self.dbm = DBM(credentials=credentials, partner_id=partner_id)
         self._start_date = start_date
         self._end_date = end_date
         self._partner_id = partner_id
         self._filters = filters
 
-    def get_query(self, catalog_fields: List[str], stream_slice: Mapping[str, Any]) -> Iterable[Mapping]:
-        """
-        Create and run a query from the datastream schema and parameters, and a list of fields provided in the configured catalog
+    def get_query(self, catalog_fields: list[str], stream_slice: Mapping[str, Any]) -> Iterable[Mapping]:
+        """Create and run a query from the datastream schema and parameters, and a list of fields provided in the configured catalog
         :param catalog_fields: A list of fields provided in the configured catalog
 
         :return the created query
@@ -251,9 +242,8 @@ class DBMStream(Stream, ABC):
         )
         return query
 
-    def read_records(self, catalog_fields: List[str], stream_slice: Mapping[str, Any] = None, sync_mode=None):
-        """
-        Get the report from the url specified in the created query. The report is in csv form, with
+    def read_records(self, catalog_fields: list[str], stream_slice: Mapping[str, Any] = None, sync_mode=None):
+        """Get the report from the url specified in the created query. The report is in csv form, with
         additional meta data below the data that need to be remove.
         :param catalog_fields: A list of fields provided in the configured catalog to create the query
 
@@ -275,8 +265,7 @@ class DBMStream(Stream, ABC):
                     yield row
 
     def buffer_reader(self, buffer: io.StringIO):
-        """
-        Yield all lines from a file text buffer until the empty line is reached
+        """Yield all lines from a file text buffer until the empty line is reached
 
         :return a generator of dict rows from the file
         """
@@ -292,12 +281,11 @@ class DBMIncrementalStream(DBMStream, ABC):
     primary_key = None
     range_days = 30  # range of stream slice
 
-    def __init__(self, credentials: Credentials, partner_id: str, filters: List[dict], start_date: str, end_date: str = None):
+    def __init__(self, credentials: Credentials, partner_id: str, filters: list[dict], start_date: str, end_date: str = None):
         super().__init__(credentials, partner_id, filters, start_date, end_date)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Update stream state from latest record
+        """Update stream state from latest record
         """
         current_stream_state = current_stream_state or {}
         record_value = latest_record[self.cursor_field]
@@ -309,8 +297,7 @@ class DBMIncrementalStream(DBMStream, ABC):
         return toreturn
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        Slice the stream by date periods.
+        """Slice the stream by date periods.
         """
         stream_state = stream_state or {}
         start_date = stream_state.get(self.cursor_field) or self._start_date
@@ -326,22 +313,20 @@ class DBMIncrementalStream(DBMStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        catalog_fields: List[str],
-        cursor_field: List[str] = None,
+        catalog_fields: list[str],
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """
-        This method is overridden to update `start_date` key in the `stream_slice` with the latest read record's cursor value.
+        """This method is overridden to update `start_date` key in the `stream_slice` with the latest read record's cursor value.
         """
         records = super().read_records(catalog_fields=catalog_fields, sync_mode=sync_mode, stream_slice=stream_slice)
         for record in records:
             self.state = self.get_updated_state(self.state, record)
             yield record
 
-    def get_query(self, catalog_fields: List[str], stream_slice: Mapping[str, Any]) -> Iterable[Mapping]:
-        """
-        Create and run a query from the datastream schema and parameters, and a list of fields provided in the configured catalog
+    def get_query(self, catalog_fields: list[str], stream_slice: Mapping[str, Any]) -> Iterable[Mapping]:
+        """Create and run a query from the datastream schema and parameters, and a list of fields provided in the configured catalog
         :param catalog_fields: A list of fields provided in the configured catalog
 
         :return the created query
@@ -359,40 +344,35 @@ class DBMIncrementalStream(DBMStream, ABC):
 
 
 class AudienceComposition(DBMIncrementalStream):
-    """
-    Audience Composition stream
+    """Audience Composition stream
     """
 
     primary_key = None
 
 
 class Floodlight(DBMIncrementalStream):
-    """
-    Floodlight stream
+    """Floodlight stream
     """
 
     primary_key = None
 
 
 class Standard(DBMIncrementalStream):
-    """
-    Standard stream
+    """Standard stream
     """
 
     primary_key = None
 
 
 class UniqueReachAudience(DBMIncrementalStream):
-    """
-    Unique Reach Audience stream
+    """Unique Reach Audience stream
     """
 
     primary_key = None
 
 
 class Reach(DBMIncrementalStream):
-    """
-    Reach stream
+    """Reach stream
     """
 
     primary_key = None

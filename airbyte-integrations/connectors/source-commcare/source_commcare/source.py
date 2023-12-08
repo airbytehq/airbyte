@@ -4,17 +4,19 @@
 
 import re
 from abc import ABC
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Optional
 from urllib.parse import parse_qs
 
 import requests
+from flatten_json import flatten
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from flatten_json import flatten
 
 
 # Basic full refresh stream
@@ -54,7 +56,7 @@ class CommcareStream(HttpStream, ABC):
             return ex
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"format": "json"}
         return params
@@ -68,7 +70,7 @@ class Application(CommcareStream):
         self.app_id = app_id
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return f"application/{self.app_id}/"
 
@@ -76,7 +78,7 @@ class Application(CommcareStream):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"format": "json", "extras": "true"}
         return params
@@ -119,7 +121,7 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
             return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"format": "json"}
         if next_page_token:
@@ -133,9 +135,7 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
 
 
 class Case(IncrementalStream):
-
-    """
-    docs: https://www.commcarehq.org/a/[domain]/api/[version]/case/
+    """docs: https://www.commcarehq.org/a/[domain]/api/[version]/case/
     """
 
     cursor_field = "indexed_on"
@@ -157,12 +157,12 @@ class Case(IncrementalStream):
         return "zzz_case"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "case"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # start date is what we saved for forms
         # if self.cursor_field in self.state else (CommcareStream.last_form_date or self.initial_date)
@@ -200,8 +200,7 @@ class Case(IncrementalStream):
 
 
 class Form(IncrementalStream):
-    """
-    docs: https://www.commcarehq.org/a/[domain]/api/[version]/form/
+    """docs: https://www.commcarehq.org/a/[domain]/api/[version]/form/
     """
 
     cursor_field = "indexed_on"
@@ -223,12 +222,12 @@ class Form(IncrementalStream):
         return self.schema
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "form"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # if self.cursor_field in self.state else self.initial_date
         ix = self.state[self.cursor_field]
@@ -265,7 +264,7 @@ class Form(IncrementalStream):
 
 # Source
 class SourceCommcare(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         if "api_key" not in config:
             return False, None
         return True, None
@@ -277,13 +276,13 @@ class SourceCommcare(AbstractSource):
             "properties": {"id": {"type": "string"}, "indexed_on": {"type": "string", "format": "date-time"}},
         }
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         auth = TokenAuthenticator(config["api_key"], auth_method="ApiKey")
         args = {
             "authenticator": auth,
         }
         appdata = Application(**{**args, "app_id": config["app_id"], "project_space": config["project_space"]}).read_records(
-            sync_mode=SyncMode.full_refresh
+            sync_mode=SyncMode.full_refresh,
         )
 
         # Generate streams for forms, one per xmlns and one stream for cases.

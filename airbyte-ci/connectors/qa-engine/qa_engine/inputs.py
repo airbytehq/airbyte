@@ -29,8 +29,7 @@ class BUILD_STATUSES(str, Enum):
 
 
 def get_connector_build_output_url(connector_technical_name: str) -> str:
-    """
-    Get the connector build output url.
+    """Get the connector build output url.
     """
     # remove connectors/ prefix from connector_technical_name
     connector_technical_name = connector_technical_name.replace("connectors/", "")

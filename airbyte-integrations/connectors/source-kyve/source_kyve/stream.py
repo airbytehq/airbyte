@@ -5,9 +5,11 @@ import gzip
 import hashlib
 import json
 import logging
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_kyve.utils import query_endpoint
@@ -75,7 +77,7 @@ class KYVEStream(HttpStream, IncrementalMixin):
         return schema
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return f"/kyve/v1/bundles/{self.pool_id}"
 
@@ -160,7 +162,7 @@ class KYVEStream(HttpStream, IncrementalMixin):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # in case we set a max_pages parameter we need to abort
         if self.max_pages and self._offset >= self.max_pages * self.page_size:
-            return
+            return None
 
         json_response = response.json()
         next_key = json_response.get("pagination", {}).get("next_key")

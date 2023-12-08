@@ -1,15 +1,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import logging
+from collections.abc import Iterable
 from contextlib import contextmanager
 from io import IOBase
-from typing import Iterable, List, Optional
+from typing import Optional
 
 import pytz
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from azure.storage.blob import BlobServiceClient, ContainerClient
 from smart_open import open
+
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 from .config import Config
 
@@ -47,7 +49,7 @@ class SourceAzureBlobStorageStreamReader(AbstractFileBasedStreamReader):
 
     def get_matching_files(
         self,
-        globs: List[str],
+        globs: list[str],
         prefix: Optional[str],
         logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
@@ -71,7 +73,7 @@ class SourceAzureBlobStorageStreamReader(AbstractFileBasedStreamReader):
         except OSError:
             logger.warning(
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."
-                f"Check whether key {file.uri} exists in `{self.config.azure_blob_storage_container_name}` container and/or has proper ACL permissions"
+                f"Check whether key {file.uri} exists in `{self.config.azure_blob_storage_container_name}` container and/or has proper ACL permissions",
             )
         # see https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager for why we do this
         try:

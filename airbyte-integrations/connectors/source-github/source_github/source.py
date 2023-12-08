@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping, MutableMapping
 from os import getenv
-from typing import Any, Dict, List, Mapping, MutableMapping, Tuple
+from typing import Any
 from urllib.parse import urlparse
 
 from airbyte_cdk import AirbyteLogger
@@ -62,9 +63,9 @@ from .utils import read_full_refresh
 
 class SourceGithub(AbstractSource):
     @staticmethod
-    def _get_org_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> Tuple[List[str], List[str]]:
-        """
-        Parse config/repositories and produce two lists: organizations, repositories.
+    def _get_org_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> tuple[list[str], list[str]]:
+        """Parse config/repositories and produce two lists: organizations, repositories.
+
         Args:
             config (dict): Dict representing connector's config
             authenticator(MultipleTokenAuthenticator): authenticator object
@@ -175,8 +176,8 @@ class SourceGithub(AbstractSource):
 
     @staticmethod
     def _get_branches_data(
-        selected_branches: List, full_refresh_args: Dict[str, Any] = None
-    ) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+        selected_branches: list, full_refresh_args: dict[str, Any] = None,
+    ) -> tuple[dict[str, str], dict[str, list[str]]]:
         selected_branches = set(selected_branches)
 
         # Get the default branch for each repository
@@ -187,7 +188,7 @@ class SourceGithub(AbstractSource):
                 {
                     repo_stats["full_name"]: repo_stats["default_branch"]
                     for repo_stats in repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-                }
+                },
             )
 
         all_branches = []
@@ -198,7 +199,7 @@ class SourceGithub(AbstractSource):
 
         # Create mapping of repository to list of branches to pull commits for
         # If no branches are specified for a repo, use its default branch
-        branches_to_pull: Dict[str, List[str]] = {}
+        branches_to_pull: dict[str, list[str]] = {}
         for repo in full_refresh_args["repositories"]:
             repo_branches = []
             for branch in selected_branches:
@@ -229,7 +230,7 @@ class SourceGithub(AbstractSource):
             )
         return user_message
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         config = self._validate_and_transform_config(config)
         try:
             authenticator = self._get_authenticator(config)
@@ -246,7 +247,7 @@ class SourceGithub(AbstractSource):
             user_message = self.user_friendly_error_message(message)
             return False, user_message or message
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         authenticator = self._get_authenticator(config)
         config = self._validate_and_transform_config(config)
         try:
@@ -256,7 +257,7 @@ class SourceGithub(AbstractSource):
             user_message = self.user_friendly_error_message(message)
             if user_message:
                 raise AirbyteTracedException(
-                    internal_message=message, message=user_message, failure_type=FailureType.config_error, exception=e
+                    internal_message=message, message=user_message, failure_type=FailureType.config_error, exception=e,
                 )
             else:
                 raise e

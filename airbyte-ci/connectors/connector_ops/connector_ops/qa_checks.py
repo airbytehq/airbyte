@@ -4,16 +4,17 @@
 
 
 import sys
+from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import Callable, Iterable, Optional, Set, Tuple
+from typing import Optional
+
+from pydash.objects import get
 
 from connector_ops.utils import Connector, ConnectorLanguage
-from pydash.objects import get
 
 
 def check_migration_guide(connector: Connector) -> bool:
     """Check if a migration guide is available for the connector if a breaking change was introduced."""
-
     breaking_changes = get(connector.metadata, "releases.breakingChanges")
     if not breaking_changes:
         return True
@@ -22,7 +23,7 @@ def check_migration_guide(connector: Connector) -> bool:
     migration_guide_exists = migration_guide_file_path is not None and migration_guide_file_path.exists()
     if not migration_guide_exists:
         print(
-            f"Migration guide file is missing for {connector.name}. Please create a migration guide at {connector.migration_guide_file_path}"
+            f"Migration guide file is missing for {connector.name}. Please create a migration guide at {connector.migration_guide_file_path}",
         )
         return False
 
@@ -31,9 +32,9 @@ def check_migration_guide(connector: Connector) -> bool:
     expected_version_header_start = "## Upgrading to "
     with open(migration_guide_file_path) as f:
         first_line = f.readline().strip()
-        if not first_line == expected_title:
+        if first_line != expected_title:
             print(
-                f"Migration guide file for {connector.technical_name} does not start with the correct header. Expected '{expected_title}', got '{first_line}'"
+                f"Migration guide file for {connector.technical_name} does not start with the correct header. Expected '{expected_title}', got '{first_line}'",
             )
             return False
 
@@ -140,8 +141,8 @@ def check_connector_icon_is_available(connector: Connector) -> bool:
 
 
 def read_all_files_in_directory(
-    directory: Path, ignored_directories: Optional[Set[str]] = None, ignored_filename_patterns: Optional[Set[str]] = None
-) -> Iterable[Tuple[str, str]]:
+    directory: Path, ignored_directories: Optional[set[str]] = None, ignored_filename_patterns: Optional[set[str]] = None,
+) -> Iterable[tuple[str, str]]:
     ignored_directories = ignored_directories if ignored_directories is not None else {}
     ignored_filename_patterns = ignored_filename_patterns if ignored_filename_patterns is not None else {}
 
@@ -151,7 +152,7 @@ def read_all_files_in_directory(
         ignore = ignore_directory or ignore_filename
         if path.is_file() and not ignore:
             try:
-                for line in open(path, "r"):
+                for line in open(path):
                     yield path, line
             except UnicodeDecodeError:
                 print(f"{path} could not be decoded as it is not UTF8.")
@@ -215,7 +216,7 @@ def check_connector_https_url_only(connector: Connector) -> bool:
     ignore_comment = "# ignore-https-check"  # Define the ignore comment pattern
 
     for filename, line in read_all_files_in_directory(
-        connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS, IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS
+        connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS, IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS,
     ):
         line = line.lower()
         if is_comment(line, filename):
@@ -271,7 +272,7 @@ DEFAULT_QA_CHECKS = (
 )
 
 
-def get_qa_checks_to_run(connector: Connector) -> Tuple[Callable]:
+def get_qa_checks_to_run(connector: Connector) -> tuple[Callable]:
     if connector.has_dockerfile:
         return DEFAULT_QA_CHECKS + (check_metadata_version_matches_dockerfile_label,)
     return DEFAULT_QA_CHECKS

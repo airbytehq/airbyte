@@ -3,7 +3,8 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple, Union
+from collections.abc import Mapping
+from typing import Any, Union
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -36,7 +37,7 @@ from .streams import (
 
 
 class SourceAsana(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         try:
             workspaces_stream = Workspaces(authenticator=self._get_authenticator(config))
             next(workspaces_stream.read_records(sync_mode=SyncMode.full_refresh))
@@ -61,7 +62,7 @@ class SourceAsana(AbstractSource):
                 refresh_token=creds["refresh_token"],
             )
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         args = {"authenticator": self._get_authenticator(config), "test_mode": config.get("test_mode", False)}
         streams = [
             AttachmentsCompact(**args),

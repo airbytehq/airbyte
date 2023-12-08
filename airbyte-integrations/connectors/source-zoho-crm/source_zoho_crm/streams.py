@@ -6,11 +6,13 @@ import concurrent.futures
 import datetime
 import math
 from abc import ABC
+from collections.abc import Iterable, Mapping, MutableMapping
 from dataclasses import asdict
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .api import ZohoAPI
@@ -35,7 +37,7 @@ class ZohoCrmStream(HttpStream, ABC):
         return {"page": pagination["page"] + 1}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
 
@@ -46,7 +48,7 @@ class ZohoCrmStream(HttpStream, ABC):
     def path(self, *args, **kwargs) -> str:
         return f"/crm/v2/{self.module.api_name}"
 
-    def get_json_schema(self) -> Optional[Dict[Any, Any]]:
+    def get_json_schema(self) -> Optional[dict[Any, Any]]:
         try:
             return asdict(self.module.schema)
         except IncompleteMetaDataException:
@@ -57,7 +59,7 @@ class ZohoCrmStream(HttpStream, ABC):
             # Any of former two can result in 204 and empty body what blocks us
             # from generating stream schema and, therefore, a stream.
             self.logger.warning(
-                f"Could not retrieve fields Metadata for module {self.module.api_name}. " f"This stream will not be available for syncs."
+                f"Could not retrieve fields Metadata for module {self.module.api_name}. This stream will not be available for syncs.",
             )
             return None
         except UnknownDataTypeException as exc:
@@ -93,7 +95,7 @@ class IncrementalZohoCrmStream(ZohoCrmStream):
             yield record
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         last_modified = stream_state.get(self.cursor_field, self._start_datetime)
         # since API filters inclusively, we add 1 sec to prevent duplicate reads
@@ -108,7 +110,7 @@ class ZohoStreamFactory:
         self.api = ZohoAPI(config)
         self._config = config
 
-    def _init_modules_meta(self) -> List[ModuleMeta]:
+    def _init_modules_meta(self) -> list[ModuleMeta]:
         modules_meta_json = self.api.modules_settings()
         modules = [ModuleMeta.from_dict(module) for module in modules_meta_json]
         return list(filter(lambda module: module.api_supported, modules))
@@ -127,7 +129,7 @@ class ZohoStreamFactory:
         module_meta_json = self.api.module_settings(module.api_name)
         module.update_from_dict(next(iter(module_meta_json), None))
 
-    def produce(self) -> List[HttpStream]:
+    def produce(self) -> list[HttpStream]:
         modules = self._init_modules_meta()
         streams = []
 

@@ -4,7 +4,6 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import List
 
 from .common import AddOn, CatalogModel
 from .discount import Discount
@@ -12,7 +11,7 @@ from .transaction import Transaction
 
 
 class Subscription(CatalogModel):
-    add_ons: List[AddOn]
+    add_ons: list[AddOn]
     balance: Decimal
     billing_day_of_month: Decimal
     billing_period_start_date: datetime
@@ -20,7 +19,7 @@ class Subscription(CatalogModel):
     current_billing_cycle: Decimal
     days_past_due: Decimal
     description: str
-    discounts: List[Discount]
+    discounts: list[Discount]
     failure_count: Decimal
     first_billing_date: date
     id: str
@@ -35,7 +34,7 @@ class Subscription(CatalogModel):
     plan_id: str
     price: Decimal
     status: str
-    transactions: List[Transaction]
+    transactions: list[Transaction]
     trial_duration: Decimal
     trial_duration_unit: str
     trial_period: bool

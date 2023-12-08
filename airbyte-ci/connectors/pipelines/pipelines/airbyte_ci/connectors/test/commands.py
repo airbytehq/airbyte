@@ -5,6 +5,7 @@
 import sys
 
 import asyncclick as click
+
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -19,7 +20,7 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 @click.option(
     "--code-tests-only",
     is_flag=True,
-    help=("Only execute code tests. " "Metadata checks, QA, and acceptance tests will be skipped."),
+    help=("Only execute code tests. Metadata checks, QA, and acceptance tests will be skipped."),
     default=False,
     type=bool,
 )

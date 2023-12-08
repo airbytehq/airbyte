@@ -4,11 +4,13 @@
 
 import logging
 import os
+from collections.abc import Mapping, MutableMapping
 from datetime import timedelta
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Optional
 
 import pendulum
 import stripe
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
@@ -99,7 +101,7 @@ class SourceStripe(AbstractSource):
             )
         return config
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         self.validate_and_fill_with_defaults(config)
         stripe.api_key = config["client_secret"]
         try:
@@ -127,7 +129,6 @@ class SourceStripe(AbstractSource):
         :param config:
         :return: True if configured to use a test account, False - otherwise
         """
-
         return str(config["client_secret"]).startswith(STRIPE_TEST_ACCOUNT_PREFIX)
 
     def get_api_call_budget(self, config: Mapping[str, Any]) -> AbstractAPIBudget:
@@ -136,7 +137,6 @@ class SourceStripe(AbstractSource):
         :param config:
         :return:
         """
-
         max_call_rate = 25 if self.is_test_account(config) else 100
         if config.get("call_rate_limit"):
             call_limit = config["call_rate_limit"]
@@ -166,7 +166,7 @@ class SourceStripe(AbstractSource):
 
         return HttpAPIBudget(policies=policies)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         config = self.validate_and_fill_with_defaults(config)
         authenticator = TokenAuthenticator(config["client_secret"])
         args = {
@@ -336,7 +336,7 @@ class SourceStripe(AbstractSource):
                 **args,
             ),
             IncrementalStripeStream(
-                name="coupons", path="coupons", event_types=["coupon.created", "coupon.updated", "coupon.deleted"], **args
+                name="coupons", path="coupons", event_types=["coupon.created", "coupon.updated", "coupon.deleted"], **args,
             ),
             IncrementalStripeStream(
                 name="disputes",
@@ -381,7 +381,7 @@ class SourceStripe(AbstractSource):
             ),
             IncrementalStripeStream(name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], **args),
             IncrementalStripeStream(
-                name="products", path="products", event_types=["product.created", "product.updated", "product.deleted"], **args
+                name="products", path="products", event_types=["product.created", "product.updated", "product.deleted"], **args,
             ),
             IncrementalStripeStream(name="reviews", path="reviews", event_types=["review.closed", "review.opened"], **args),
             subscriptions,
@@ -434,7 +434,7 @@ class SourceStripe(AbstractSource):
                 **args,
             ),
             IncrementalStripeStream(
-                name="cards", path="issuing/cards", event_types=["issuing_card.created", "issuing_card.updated"], **args
+                name="cards", path="issuing/cards", event_types=["issuing_card.created", "issuing_card.updated"], **args,
             ),
             IncrementalStripeStream(
                 name="transactions",

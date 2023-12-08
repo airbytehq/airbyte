@@ -6,8 +6,9 @@
 import json
 import logging
 import traceback
+from collections.abc import Iterable, Iterator, Mapping, MutableMapping
 from datetime import datetime
-from typing import Any, Iterable, Iterator, Mapping, MutableMapping
+from typing import Any
 from urllib.parse import urlparse
 
 from airbyte_cdk import AirbyteLogger
@@ -120,8 +121,7 @@ class SourceFile(Source):
         return spec
 
     def check(self, logger, config: Mapping) -> AirbyteConnectionStatus:
-        """
-        Check involves verifying that the specified file is reachable with
+        """Check involves verifying that the specified file is reachable with
         our credentials.
         """
         config = self._validate_and_transform(config)
@@ -132,16 +132,15 @@ class SourceFile(Source):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except (TypeError, ValueError, AirbyteTracedException) as err:
             reason = f"Failed to load {source_url}. Please check File Format and Reader Options are set correctly."
-            logger.error(f"{reason}\n{repr(err)}")
+            logger.error(f"{reason}\n{err!r}")
             raise AirbyteTracedException(message=reason, internal_message=reason, failure_type=FailureType.config_error)
         except Exception as err:
-            reason = f"Failed to load {source_url}. You could have provided an invalid URL, please verify it: {repr(err)}."
+            reason = f"Failed to load {source_url}. You could have provided an invalid URL, please verify it: {err!r}."
             logger.error(reason)
             return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
 
     def discover(self, logger: AirbyteLogger, config: Mapping) -> AirbyteCatalog:
-        """
-        Returns an AirbyteCatalog representing the available streams and fields in this integration. For example, given valid credentials to a
+        """Returns an AirbyteCatalog representing the available streams and fields in this integration. For example, given valid credentials to a
         Remote CSV File, returns an Airbyte catalog where each csv file is a stream, and each column is a field.
         """
         config = self._validate_and_transform(config)
@@ -152,7 +151,7 @@ class SourceFile(Source):
         try:
             streams = list(client.streams())
         except Exception as err:
-            reason = f"Failed to discover schemas of {name} at {full_url}: {repr(err)}\n{traceback.format_exc()}"
+            reason = f"Failed to discover schemas of {name} at {full_url}: {err!r}\n{traceback.format_exc()}"
             logger.error(reason)
             raise err
         return AirbyteCatalog(streams=streams)
@@ -176,7 +175,7 @@ class SourceFile(Source):
                 record = AirbyteRecordMessage(stream=name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000)
                 yield AirbyteMessage(type=Type.RECORD, record=record)
         except Exception as err:
-            reason = f"Failed to read data of {name} at {client.reader.full_url}: {repr(err)}\n{traceback.format_exc()}"
+            reason = f"Failed to read data of {name} at {client.reader.full_url}: {err!r}\n{traceback.format_exc()}"
             logger.error(reason)
             raise err
 

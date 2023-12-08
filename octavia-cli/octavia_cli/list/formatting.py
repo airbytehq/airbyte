@@ -2,15 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List
 
 
-def compute_columns_width(data: List[List[str]], padding: int = 2) -> List[int]:
+def compute_columns_width(data: list[list[str]], padding: int = 2) -> list[int]:
     """Compute columns width for display purposes:
     Find size for each columns in the data and add padding.
+
     Args:
         data (List[List[str]]): Tabular data containing rows and columns.
         padding (int): Number of character to adds to create space between columns.
+
     Returns:
         columns_width (List[int]): The computed columns widths for each column according to input data.
     """
@@ -35,10 +36,12 @@ def camelcased_to_uppercased_spaced(camelcased: str) -> str:
     return "".join(map(lambda x: x if x.islower() else " " + x, camelcased)).upper()
 
 
-def display_as_table(data: List[List[str]]) -> str:
+def display_as_table(data: list[list[str]]) -> str:
     """Formats tabular input data into a displayable table with columns.
+
     Args:
         data (List[List[str]]): Tabular data containing rows and columns.
+
     Returns:
         table (str): String representation of input tabular data.
     """
@@ -47,7 +50,7 @@ def display_as_table(data: List[List[str]]) -> str:
     return table
 
 
-def format_column_names(camelcased_column_names: List[str]) -> List[str]:
+def format_column_names(camelcased_column_names: list[str]) -> list[str]:
     """Format camel cased column names to uppercased spaced column names
 
     Args:

@@ -7,6 +7,7 @@ import os
 import dagger
 import docker
 import pytest
+
 from pipelines.airbyte_ci.connectors.build_image.steps import common
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.models.steps import StepStatus
@@ -16,7 +17,7 @@ pytestmark = [
 ]
 
 
-@pytest.mark.slow
+@pytest.mark.slow()
 class TestLoadContainerToLocalDockerHost:
     @pytest.fixture(scope="class")
     def faker_connector(self, all_connectors):
@@ -25,7 +26,7 @@ class TestLoadContainerToLocalDockerHost:
                 return connector
         pytest.fail("Could not find the source-faker connector.")
 
-    @pytest.fixture
+    @pytest.fixture()
     def test_context(self, mocker, dagger_client, faker_connector, tmp_path):
         return mocker.Mock(
             secrets_to_mask=[],
@@ -35,7 +36,7 @@ class TestLoadContainerToLocalDockerHost:
             git_revision="test-revision",
         )
 
-    @pytest.fixture
+    @pytest.fixture()
     def bad_docker_host(self):
         original_docker_host = os.environ.get("DOCKER_HOST")
         yield "tcp://localhost:9999"
@@ -88,8 +89,8 @@ class TestLoadContainerToLocalDockerHost:
         """Test that the step fails if the export of the container fails."""
         built_containers = {
             LOCAL_BUILD_PLATFORM: dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(
-                f'{test_context.connector.metadata["dockerRepository"]}:latest'
-            )
+                f'{test_context.connector.metadata["dockerRepository"]}:latest',
+            ),
         }
         step = common.LoadContainerToLocalDockerHost(test_context, built_containers)
 
@@ -102,8 +103,8 @@ class TestLoadContainerToLocalDockerHost:
         """Test that the step fails if the connection to the docker host fails."""
         built_containers = {
             LOCAL_BUILD_PLATFORM: dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(
-                f'{test_context.connector.metadata["dockerRepository"]}:latest'
-            )
+                f'{test_context.connector.metadata["dockerRepository"]}:latest',
+            ),
         }
         step = common.LoadContainerToLocalDockerHost(test_context, built_containers)
         os.environ["DOCKER_HOST"] = bad_docker_host
@@ -115,8 +116,8 @@ class TestLoadContainerToLocalDockerHost:
         """Test that the step fails if the docker import of the tar fails."""
         built_containers = {
             LOCAL_BUILD_PLATFORM: dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(
-                f'{test_context.connector.metadata["dockerRepository"]}:latest'
-            )
+                f'{test_context.connector.metadata["dockerRepository"]}:latest',
+            ),
         }
         step = common.LoadContainerToLocalDockerHost(test_context, built_containers)
         mock_docker_client = mocker.MagicMock()

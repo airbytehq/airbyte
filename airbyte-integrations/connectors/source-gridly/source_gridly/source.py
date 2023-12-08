@@ -6,9 +6,11 @@
 import logging
 import math
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.models import AirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -24,7 +26,7 @@ class GridlyStream(HttpStream, ABC):
     current_page = 1
     limit = 100
 
-    def __init__(self, view_id: str, view_name: str, schema: Dict[str, Any], **kwargs):
+    def __init__(self, view_id: str, view_name: str, schema: dict[str, Any], **kwargs):
         super().__init__(**kwargs)
         self.view_id = view_id
         self.view_name = view_name
@@ -53,7 +55,7 @@ class GridlyStream(HttpStream, ABC):
         return page_token
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         if next_page_token is None:
             return {}
@@ -76,14 +78,14 @@ class GridlyStream(HttpStream, ABC):
             Exception(f"Unsupported type of response data for stream {self.name}")
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return f"views/{self.view_id}/records"
 
 
 # Source
 class SourceGridly(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         api_key = config.get("api_key")
         grid_id = config.get("grid_id")
         auth = TokenAuthenticator(auth_method="ApiKey", token=api_key)
@@ -108,7 +110,7 @@ class SourceGridly(AbstractSource):
 
         return AirbyteCatalog(streams=streams)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         api_key = config.get("api_key")
         grid_id = config.get("grid_id")
         auth = TokenAuthenticator(auth_method="ApiKey", token=api_key)

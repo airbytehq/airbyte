@@ -2,15 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict
+from typing import Any
 
 import requests
+
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
-class Helpers(object):
+class Helpers:
     base_url = "https://api.gridly.com/v1/"
 
     @staticmethod
@@ -26,7 +27,7 @@ class Helpers(object):
         return Helpers.base_url + f"grids/{grid_id}"
 
     @staticmethod
-    def get_views(auth: TokenAuthenticator, grid_id: str) -> Dict[str, Any]:
+    def get_views(auth: TokenAuthenticator, grid_id: str) -> dict[str, Any]:
         url = Helpers.view_list_url(grid_id)
         try:
             response = requests.get(url, headers=auth.get_auth_header())
@@ -42,7 +43,7 @@ class Helpers(object):
         return response.json()
 
     @staticmethod
-    def get_grid(auth: TokenAuthenticator, grid_id: str) -> Dict[str, Any]:
+    def get_grid(auth: TokenAuthenticator, grid_id: str) -> dict[str, Any]:
         url = Helpers.grid_detail_url(grid_id)
         try:
             response = requests.get(url, headers=auth.get_auth_header())
@@ -57,7 +58,7 @@ class Helpers(object):
         return response.json()
 
     @staticmethod
-    def get_view(auth: TokenAuthenticator, view_id: str) -> Dict[str, Any]:
+    def get_view(auth: TokenAuthenticator, view_id: str) -> dict[str, Any]:
         url = Helpers.view_detail_url(view_id)
         try:
             response = requests.get(url, headers=auth.get_auth_header())
@@ -81,7 +82,7 @@ class Helpers(object):
             return "string"
 
     @staticmethod
-    def get_json_schema(view: Dict[str, Any]) -> Dict[str, str]:
+    def get_json_schema(view: dict[str, Any]) -> dict[str, str]:
         columns = view.get("columns", {})
         properties = {}
 
@@ -98,7 +99,7 @@ class Helpers(object):
         return json_schema
 
     @staticmethod
-    def get_airbyte_stream(view: Dict[str, Any]) -> AirbyteStream:
+    def get_airbyte_stream(view: dict[str, Any]) -> AirbyteStream:
         view_name = view.get("name")
         columns = view.get("columns", {})
         properties = {}
@@ -118,7 +119,7 @@ class Helpers(object):
         )
 
     @staticmethod
-    def transform_record(record: Dict[str, Any], schema: Dict[str, Any]) -> Dict[str, Any]:
+    def transform_record(record: dict[str, Any], schema: dict[str, Any]) -> dict[str, Any]:
         schema_properties = schema.get("properties")
         columns = [k for k, v in schema_properties.items()]
 

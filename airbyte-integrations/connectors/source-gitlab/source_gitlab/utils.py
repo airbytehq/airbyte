@@ -2,10 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Tuple
 
 
-def parse_url(url: str) -> Tuple[bool, str, str]:
+def parse_url(url: str) -> tuple[bool, str, str]:
     parts = url.split("://")
     if len(parts) > 1:
         scheme, url = parts

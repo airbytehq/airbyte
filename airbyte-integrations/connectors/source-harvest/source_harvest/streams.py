@@ -3,11 +3,13 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -19,8 +21,7 @@ class HarvestStream(HttpStream, ABC):
 
     @property
     def data_field(self) -> str:
-        """
-        :return: Default field name to get data from response
+        """:return: Default field name to get data from response
         """
         return self.name
 
@@ -54,8 +55,7 @@ class HarvestStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
+        """:return an iterable containing each record in the response
         """
         stream_data = response.json()
 
@@ -80,8 +80,7 @@ class IncrementalHarvestStream(HarvestStream, ABC):
         self._replication_start_date = replication_start_date
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_benchmark = latest_record[self.cursor_field]
@@ -105,15 +104,13 @@ class HarvestSubStream(HarvestStream, ABC):
     @property
     @abstractmethod
     def path_template(self) -> str:
-        """
-        :return: sub stream path template
+        """:return: sub stream path template
         """
 
     @property
     @abstractmethod
     def parent_stream(self) -> IncrementalHarvestStream:
-        """
-        :return: parent stream class
+        """:return: parent stream class
         """
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
@@ -131,20 +128,17 @@ class HarvestSubStream(HarvestStream, ABC):
 
 
 class Contacts(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/clients-api/clients/contacts/
+    """Docs: https://help.getharvest.com/api-v2/clients-api/clients/contacts/
     """
 
 
 class Clients(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/clients-api/clients/clients/
+    """Docs: https://help.getharvest.com/api-v2/clients-api/clients/clients/
     """
 
 
 class Company(HarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/company-api/company/company/
+    """Docs: https://help.getharvest.com/api-v2/company-api/company/company/
     """
 
     primary_key = None
@@ -152,14 +146,12 @@ class Company(HarvestStream):
 
 
 class Invoices(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/invoices-api/invoices/invoices/
+    """Docs: https://help.getharvest.com/api-v2/invoices-api/invoices/invoices/
     """
 
 
 class InvoiceMessages(HarvestSubStream, IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-messages/
+    """Docs: https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-messages/
     """
 
     parent_stream = Invoices
@@ -167,8 +159,7 @@ class InvoiceMessages(HarvestSubStream, IncrementalHarvestStream):
 
 
 class InvoicePayments(HarvestSubStream, IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-payments/
+    """Docs: https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-payments/
     """
 
     parent_stream = Invoices
@@ -176,20 +167,17 @@ class InvoicePayments(HarvestSubStream, IncrementalHarvestStream):
 
 
 class InvoiceItemCategories(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-item-categories/
+    """Docs: https://help.getharvest.com/api-v2/invoices-api/invoices/invoice-item-categories/
     """
 
 
 class Estimates(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/estimates-api/estimates/estimates/
+    """Docs: https://help.getharvest.com/api-v2/estimates-api/estimates/estimates/
     """
 
 
 class EstimateMessages(HarvestSubStream, IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-messages/
+    """Docs: https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-messages/
     """
 
     parent_stream = Estimates
@@ -197,68 +185,57 @@ class EstimateMessages(HarvestSubStream, IncrementalHarvestStream):
 
 
 class EstimateItemCategories(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-item-categories/
+    """Docs: https://help.getharvest.com/api-v2/estimates-api/estimates/estimate-item-categories/
     """
 
 
 class Expenses(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/expenses-api/expenses/expenses/
+    """Docs: https://help.getharvest.com/api-v2/expenses-api/expenses/expenses/
     """
 
 
 class ExpenseCategories(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/expenses-api/expenses/expense-categories/
+    """Docs: https://help.getharvest.com/api-v2/expenses-api/expenses/expense-categories/
     """
 
 
 class Tasks(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/tasks-api/tasks/tasks/
+    """Docs: https://help.getharvest.com/api-v2/tasks-api/tasks/tasks/
     """
 
 
 class TimeEntries(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/timesheets-api/timesheets/time-entries/
+    """Docs: https://help.getharvest.com/api-v2/timesheets-api/timesheets/time-entries/
     """
 
 
 class UserAssignments(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/projects-api/projects/user-assignments/
+    """Docs: https://help.getharvest.com/api-v2/projects-api/projects/user-assignments/
     """
 
 
 class TaskAssignments(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/projects-api/projects/task-assignments/
+    """Docs: https://help.getharvest.com/api-v2/projects-api/projects/task-assignments/
     """
 
 
 class Projects(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/projects-api/projects/projects/
+    """Docs: https://help.getharvest.com/api-v2/projects-api/projects/projects/
     """
 
 
 class Roles(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/roles-api/roles/roles/
+    """Docs: https://help.getharvest.com/api-v2/roles-api/roles/roles/
     """
 
 
 class Users(IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/users-api/users/users/
+    """Docs: https://help.getharvest.com/api-v2/users-api/users/users/
     """
 
 
 class BillableRates(HarvestSubStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/users-api/users/billable-rates/
+    """Docs: https://help.getharvest.com/api-v2/users-api/users/billable-rates/
     """
 
     parent_stream = Users
@@ -266,8 +243,7 @@ class BillableRates(HarvestSubStream):
 
 
 class CostRates(HarvestSubStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/users-api/users/cost-rates/
+    """Docs: https://help.getharvest.com/api-v2/users-api/users/cost-rates/
     """
 
     parent_stream = Users
@@ -275,8 +251,7 @@ class CostRates(HarvestSubStream):
 
 
 class ProjectAssignments(HarvestSubStream, IncrementalHarvestStream):
-    """
-    Docs: https://help.getharvest.com/api-v2/users-api/users/project-assignments/
+    """Docs: https://help.getharvest.com/api-v2/users-api/users/project-assignments/
     """
 
     parent_stream = Users
@@ -291,8 +266,7 @@ class ReportsBase(HarvestStream, ABC):
     @property
     @abstractmethod
     def report_path(self):
-        """
-        :return: report path suffix
+        """:return: report path suffix
         """
 
     def __init__(self, from_date: Optional[pendulum.date] = None, to_date: Optional[pendulum.date] = None, **kwargs):
@@ -322,7 +296,7 @@ class IncrementalReportsBase(ReportsBase, ABC):
                 {
                     "from": params.get("from", self._from_date.strftime(self.date_param_template)),
                     "to": params.get("to", self._to_date.strftime(self.date_param_template)),
-                }
+                },
             )
             yield record
 
@@ -332,8 +306,7 @@ class IncrementalReportsBase(ReportsBase, ABC):
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_benchmark = latest_record[self.cursor_field]
@@ -342,8 +315,7 @@ class IncrementalReportsBase(ReportsBase, ABC):
         return {self.cursor_field: latest_benchmark}
 
     def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
-        """
-        Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
+        """Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
         """
         start_date = self._from_date
         end_date = self._to_date
@@ -364,80 +336,70 @@ class IncrementalReportsBase(ReportsBase, ABC):
 
 
 class ExpensesClients(IncrementalReportsBase):
-    """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#clients-report
+    """Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#clients-report
     """
 
     report_path = "expenses/clients"
 
 
 class ExpensesProjects(IncrementalReportsBase):
-    """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#projects-report
+    """Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#projects-report
     """
 
     report_path = "expenses/projects"
 
 
 class ExpensesCategories(IncrementalReportsBase):
-    """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#expense-categories-report
+    """Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#expense-categories-report
     """
 
     report_path = "expenses/categories"
 
 
 class ExpensesTeam(IncrementalReportsBase):
-    """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#team-report
+    """Docs: https://help.getharvest.com/api-v2/reports-api/reports/expense-reports/#team-report
     """
 
     report_path = "expenses/team"
 
 
 class Uninvoiced(IncrementalReportsBase):
-    """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/
+    """Docs: https://help.getharvest.com/api-v2/reports-api/reports/uninvoiced-report/
     """
 
     report_path = "uninvoiced"
 
 
 class TimeClients(IncrementalReportsBase):
-    """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#clients-report
+    """Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#clients-report
     """
 
     report_path = "time/clients"
 
 
 class TimeProjects(IncrementalReportsBase):
-    """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#projects-report
+    """Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#projects-report
     """
 
     report_path = "time/projects"
 
 
 class TimeTasks(IncrementalReportsBase):
-    """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#tasks-report
+    """Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/#tasks-report
     """
 
     report_path = "time/tasks"
 
 
 class TimeTeam(IncrementalReportsBase):
-    """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/
+    """Docs: https://help.getharvest.com/api-v2/reports-api/reports/time-reports/
     """
 
     report_path = "time/team"
 
 
 class ProjectBudget(ReportsBase):
-    """
-    Docs: https://help.getharvest.com/api-v2/reports-api/reports/project-budget-report/#project-budget-report
+    """Docs: https://help.getharvest.com/api-v2/reports-api/reports/project-budget-report/#project-budget-report
     """
 
     report_path = "project_budget"

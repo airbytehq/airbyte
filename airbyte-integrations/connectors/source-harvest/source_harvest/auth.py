@@ -2,14 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
 
 
 class HarvestMixin:
-    """
-    Mixin class for providing additional HTTP header for specifying account ID
+    """Mixin class for providing additional HTTP header for specifying account ID
     https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/
     """
 
@@ -23,14 +23,12 @@ class HarvestMixin:
 
 
 class HarvestTokenAuthenticator(HarvestMixin, TokenAuthenticator):
-    """
-    Auth class for Personal Access Token
+    """Auth class for Personal Access Token
     https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens
     """
 
 
 class HarvestOauth2Authenticator(HarvestMixin, Oauth2Authenticator):
-    """
-    Auth class for OAuth2
+    """Auth class for OAuth2
     https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#for-server-side-applications
     """

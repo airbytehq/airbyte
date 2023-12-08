@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
@@ -16,8 +18,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class CursorPaginationStrategy(PaginationStrategy):
-    """
-    Pagination strategy that evaluates an interpolated string to define the next page token
+    """Pagination strategy that evaluates an interpolated string to define the next page token
 
     Attributes:
         page_size (Optional[int]): the number of records to request
@@ -44,7 +45,7 @@ class CursorPaginationStrategy(PaginationStrategy):
     def initial_token(self) -> Optional[Any]:
         return None
 
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
+    def next_page_token(self, response: requests.Response, last_records: list[Mapping[str, Any]]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)
 
         # The default way that link is presented in requests.Response is a string of various links (last, next, etc). This

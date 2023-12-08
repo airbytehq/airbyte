@@ -3,7 +3,8 @@
 #
 
 
-from typing import Any, Iterable, Mapping
+from collections.abc import Iterable, Mapping
+from typing import Any
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
@@ -31,7 +32,7 @@ class DestinationWeaviate(Destination):
         self.indexer = WeaviateIndexer(config.indexing)
 
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)

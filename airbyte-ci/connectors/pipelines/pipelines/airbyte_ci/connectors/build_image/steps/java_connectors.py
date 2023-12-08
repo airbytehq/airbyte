@@ -3,6 +3,7 @@
 #
 
 from dagger import Container, Directory, File, Platform, QueryError
+
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.gradle import GradleTask
@@ -11,8 +12,7 @@ from pipelines.models.steps import StepResult, StepStatus
 
 
 class BuildConnectorDistributionTar(GradleTask):
-    """
-    A step to build a Java connector image using the distTar Gradle task.
+    """A step to build a Java connector image using the distTar Gradle task.
     """
 
     title = "Build connector tar"
@@ -20,8 +20,7 @@ class BuildConnectorDistributionTar(GradleTask):
 
 
 class BuildConnectorImages(BuildConnectorImagesBase):
-    """
-    A step to build Java connector images using the distTar Gradle task.
+    """A step to build Java connector images using the distTar Gradle task.
     """
 
     async def _run(self, dist_dir: Directory) -> StepResult:
@@ -48,7 +47,6 @@ class BuildConnectorImages(BuildConnectorImagesBase):
 
 async def run_connector_build(context: ConnectorContext) -> StepResult:
     """Create the java connector distribution tar file and build the connector image."""
-
     if context.use_host_gradle_dist_tar and context.is_local:
         # Special case: use a local dist tar to speed up local development.
         dist_dir = await context.dagger_client.host().directory(dist_tar_directory_path(context), include=["*.tar"])

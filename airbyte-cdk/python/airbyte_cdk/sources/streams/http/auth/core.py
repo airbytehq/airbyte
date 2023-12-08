@@ -4,22 +4,21 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from deprecated import deprecated
 
 
 @deprecated(version="0.1.20", reason="Use requests.auth.AuthBase instead")
 class HttpAuthenticator(ABC):
-    """
-    Base abstract class for various HTTP Authentication strategies. Authentication strategies are generally
+    """Base abstract class for various HTTP Authentication strategies. Authentication strategies are generally
     expected to provide security credentials via HTTP headers.
     """
 
     @abstractmethod
     def get_auth_header(self) -> Mapping[str, Any]:
-        """
-        :return: A dictionary containing all the necessary headers to authenticate.
+        """:return: A dictionary containing all the necessary headers to authenticate.
         """
 
 

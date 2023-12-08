@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -15,7 +15,7 @@ class ParquetFormat(BaseModel):
 
     filetype: str = Field("parquet", const=True)
 
-    columns: Optional[List[str]] = Field(
+    columns: Optional[list[str]] = Field(
         default=None,
         description="If you only want to sync a subset of the columns from the file(s), add the columns you want here as a comma-delimited"
         " list. Leave it empty to sync all columns.",

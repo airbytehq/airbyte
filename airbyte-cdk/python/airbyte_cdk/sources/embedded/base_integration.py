@@ -3,7 +3,8 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Generic, Iterable, Optional, TypeVar
+from collections.abc import Iterable
+from typing import Generic, Optional, TypeVar
 
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.sources.embedded.catalog import create_configured_catalog, get_stream, get_stream_names
@@ -26,10 +27,8 @@ class BaseEmbeddedIntegration(ABC, Generic[TConfig, TOutput]):
 
     @abstractmethod
     def _handle_record(self, record: AirbyteRecordMessage, id: Optional[str]) -> Optional[TOutput]:
+        """Turn an Airbyte record into the appropriate output type for the integration.
         """
-        Turn an Airbyte record into the appropriate output type for the integration.
-        """
-        pass
 
     def _load_data(self, stream_name: str, state: Optional[AirbyteStateMessage] = None) -> Iterable[TOutput]:
         catalog = self.source.discover(self.config)

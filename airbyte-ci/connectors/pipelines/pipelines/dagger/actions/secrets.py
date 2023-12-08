@@ -6,14 +6,17 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from anyio import Path
 from dagger import Secret
+
 from pipelines.helpers.utils import get_file_contents, get_secret_host_variable
 
 if TYPE_CHECKING:
     from dagger import Container
+
     from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 
 
@@ -51,7 +54,7 @@ async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "
     with_downloaded_secrets = (
         ci_credentials.with_exec(["mkdir", "-p", secrets_path])
         .with_env_variable(
-            "CACHEBUSTER", datetime.datetime.now().isoformat()
+            "CACHEBUSTER", datetime.datetime.now().isoformat(),
         )  # Secrets can be updated on GSM anytime, we can't cache this step...
         .with_exec(["ci_credentials", context.connector.technical_name, "write-to-storage"])
     )
@@ -90,7 +93,7 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
     ci_credentials = await with_ci_credentials(context, gsm_secret)
 
     return await ci_credentials.with_directory(secrets_path, context.updated_secrets_dir).with_exec(
-        ["ci_credentials", context.connector.technical_name, "update-secrets"]
+        ["ci_credentials", context.connector.technical_name, "update-secrets"],
     )
 
 

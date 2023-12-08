@@ -2,17 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional
 
-from airbyte_cdk.sources.utils.schema_helpers import expand_refs
 from pydantic import BaseModel, Extra
 from pydantic.main import ModelMetaclass
 from pydantic.typing import resolve_annotations
 
+from airbyte_cdk.sources.utils.schema_helpers import expand_refs
+
 
 class AllOptional(ModelMetaclass):
-    """
-    Metaclass for marking all Pydantic model fields as Optional
+    """Metaclass for marking all Pydantic model fields as Optional
     Here is example of declaring model using this metaclass like:
     '''
             class MyModel(BaseModel, metaclass=AllOptional):
@@ -29,8 +29,7 @@ class AllOptional(ModelMetaclass):
     """
 
     def __new__(mcs, name, bases, namespaces, **kwargs):
-        """
-        Iterate through fields and wrap then with typing.Optional type.
+        """Iterate through fields and wrap then with typing.Optional type.
         """
         annotations = resolve_annotations(namespaces.get("__annotations__", {}), namespaces.get("__module__", None))
         for base in bases:
@@ -43,8 +42,7 @@ class AllOptional(ModelMetaclass):
 
 
 class BaseSchemaModel(BaseModel):
-    """
-    Base class for all schema models. It has some extra schema postprocessing.
+    """Base class for all schema models. It has some extra schema postprocessing.
     Can be used in combination with AllOptional metaclass
     """
 
@@ -52,7 +50,7 @@ class BaseSchemaModel(BaseModel):
         extra = Extra.allow
 
         @classmethod
-        def schema_extra(cls, schema: Dict[str, Any], model: Type[BaseModel]) -> None:
+        def schema_extra(cls, schema: dict[str, Any], model: type[BaseModel]) -> None:
             """Modify generated jsonschema, remove "title", "description" and "required" fields.
 
             Pydantic doesn't treat Union[None, Any] type correctly when generate jsonschema,
@@ -77,7 +75,7 @@ class BaseSchemaModel(BaseModel):
                         prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
 
     @classmethod
-    def schema(cls, *args, **kwargs) -> Dict[str, Any]:
+    def schema(cls, *args, **kwargs) -> dict[str, Any]:
         """We're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema(*args, **kwargs)
         expand_refs(schema)

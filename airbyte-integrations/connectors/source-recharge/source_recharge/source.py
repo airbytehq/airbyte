@@ -3,7 +3,8 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -20,7 +21,7 @@ class RechargeTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceRecharge(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, any]:
         auth = RechargeTokenAuthenticator(token=config["access_token"])
         stream = Shop(config, authenticator=auth)
         try:
@@ -28,9 +29,9 @@ class SourceRecharge(AbstractSource):
             if stream.name in result.keys():
                 return True, None
         except Exception as error:
-            return False, f"Unable to connect to Recharge API with the provided credentials - {repr(error)}"
+            return False, f"Unable to connect to Recharge API with the provided credentials - {error!r}"
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         auth = RechargeTokenAuthenticator(token=config["access_token"])
         return [
             Addresses(config, authenticator=auth),

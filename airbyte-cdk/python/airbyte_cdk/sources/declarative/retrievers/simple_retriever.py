@@ -2,11 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Set, Tuple, Union
+from typing import Any, Optional, Union
 
 import requests
+
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
@@ -25,8 +27,7 @@ from airbyte_cdk.utils.mapping_helpers import combine_mappings
 
 @dataclass
 class SimpleRetriever(Retriever):
-    """
-    Retrieves records by synchronously sending requests to fetch records.
+    """Retrieves records by synchronously sending requests to fetch records.
 
     The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the stream slicer.
 
@@ -53,7 +54,7 @@ class SimpleRetriever(Retriever):
     parameters: InitVar[Mapping[str, Any]]
     name: str
     _name: Union[InterpolatedString, str] = field(init=False, repr=False, default="")
-    primary_key: Optional[Union[str, List[str], List[List[str]]]]
+    primary_key: Optional[Union[str, list[str], list[list[str]]]]
     _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
     stream_slicer: StreamSlicer = SinglePartitionRouter(parameters={})
@@ -62,14 +63,13 @@ class SimpleRetriever(Retriever):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._paginator = self.paginator or NoPagination(parameters=parameters)
         self._last_response: Optional[requests.Response] = None
-        self._records_from_last_response: List[Record] = []
+        self._records_from_last_response: list[Record] = []
         self._parameters = parameters
         self._name = InterpolatedString(self._name, parameters=parameters) if isinstance(self._name, str) else self._name
 
     @property  # type: ignore
     def name(self) -> str:
-        """
-        :return: Stream name
+        """:return: Stream name
         """
         return str(self._name.eval(self.config)) if isinstance(self._name, InterpolatedString) else self._name
 
@@ -79,10 +79,9 @@ class SimpleRetriever(Retriever):
             self._name = value
 
     def _get_mapping(
-        self, method: Callable[..., Optional[Union[Mapping[str, Any], str]]], **kwargs: Any
-    ) -> Tuple[Union[Mapping[str, Any], str], Set[str]]:
-        """
-        Get mapping from the provided method, and get the keys of the mapping.
+        self, method: Callable[..., Optional[Union[Mapping[str, Any], str]]], **kwargs: Any,
+    ) -> tuple[Union[Mapping[str, Any], str], set[str]]:
+        """Get mapping from the provided method, and get the keys of the mapping.
         If the method returns a string, it will return the string and an empty set.
         If the method returns a dict, it will return the dict and its keys.
         """
@@ -98,8 +97,7 @@ class SimpleRetriever(Retriever):
         paginator_method: Callable[..., Optional[Union[Mapping[str, Any], str]]],
         stream_slicer_method: Callable[..., Optional[Union[Mapping[str, Any], str]]],
     ) -> Union[Mapping[str, Any], str]:
-        """
-        Get the request_option from the paginator and the stream slicer.
+        """Get the request_option from the paginator and the stream slicer.
         Raise a ValueError if there's a key collision
         Returned merged mapping otherwise
         """
@@ -108,7 +106,7 @@ class SimpleRetriever(Retriever):
             [
                 paginator_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
                 stream_slicer_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            ]
+            ],
         )
 
     def _request_headers(
@@ -117,8 +115,7 @@ class SimpleRetriever(Retriever):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        """
-        Specifies request headers.
+        """Specifies request headers.
         Authentication headers will overwrite any overlapping headers returned from this method.
         """
         headers = self._get_request_options(
@@ -138,8 +135,7 @@ class SimpleRetriever(Retriever):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        """
-        Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
+        """Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
@@ -160,8 +156,7 @@ class SimpleRetriever(Retriever):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Union[Mapping[str, Any], str]:
-        """
-        Specifies how to populate the body of the request with a non-JSON payload.
+        """Specifies how to populate the body of the request with a non-JSON payload.
 
         If returns a ready text that it will be sent as is.
         If returns a dict that it will be converted to a urlencoded form.
@@ -183,8 +178,7 @@ class SimpleRetriever(Retriever):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
-        """
-        Specifies how to populate the body of the request with a JSON payload.
+        """Specifies how to populate the body of the request with a JSON payload.
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
@@ -202,8 +196,7 @@ class SimpleRetriever(Retriever):
     def _paginator_path(
         self,
     ) -> Optional[str]:
-        """
-        If the paginator points to a path, follow it, else return nothing so the requester is used.
+        """If the paginator points to a path, follow it, else return nothing so the requester is used.
         :param stream_state:
         :param stream_slice:
         :param next_page_token:
@@ -225,13 +218,13 @@ class SimpleRetriever(Retriever):
 
         self._last_response = response
         records = self.record_selector.select_records(
-            response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
         )
         self._records_from_last_response = records
         return records
 
     @property  # type: ignore
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+    def primary_key(self) -> Optional[Union[str, list[str], list[list[str]]]]:
         """The stream's primary key"""
         return self._primary_key
 
@@ -241,8 +234,7 @@ class SimpleRetriever(Retriever):
             self._primary_key = value
 
     def _next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Specifies a pagination strategy.
+        """Specifies a pagination strategy.
 
         The value returned from this method is passed to most other methods in this class. Use it to form a request e.g: set headers or query params.
 
@@ -251,7 +243,7 @@ class SimpleRetriever(Retriever):
         return self._paginator.next_page_token(response, self._records_from_last_response)
 
     def _fetch_next_page(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Optional[Mapping[str, Any]] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[requests.Response]:
         return self.requester.send_request(
             path=self._paginator_path(),
@@ -261,10 +253,10 @@ class SimpleRetriever(Retriever):
             request_headers=self._request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             request_params=self._request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             request_body_data=self._request_body_data(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
             ),
             request_body_json=self._request_body_json(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
             ),
         )
 
@@ -310,7 +302,7 @@ class SimpleRetriever(Retriever):
         return
 
     def _get_most_recent_record(
-        self, current_most_recent: Optional[Record], stream_data: StreamData, stream_slice: StreamSlice
+        self, current_most_recent: Optional[Record], stream_data: StreamData, stream_slice: StreamSlice,
     ) -> Optional[Record]:
         if self.cursor and (record := self._extract_record(stream_data, stream_slice)):
             if not current_most_recent:
@@ -322,8 +314,7 @@ class SimpleRetriever(Retriever):
 
     @staticmethod
     def _extract_record(stream_data: StreamData, stream_slice: StreamSlice) -> Optional[Record]:
-        """
-        As we allow the output of _read_pages to be StreamData, it can be multiple things. Therefore, we need to filter out and normalize
+        """As we allow the output of _read_pages to be StreamData, it can be multiple things. Therefore, we need to filter out and normalize
         to data to streamline the rest of the process.
         """
         if isinstance(stream_data, Record):
@@ -337,8 +328,7 @@ class SimpleRetriever(Retriever):
 
     # stream_slices is defined with arguments on http stream and fixing this has a long tail of dependencies. Will be resolved by the decoupling of http stream and simple retriever
     def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:  # type: ignore
-        """
-        Specifies the slices for this stream. See the stream slicing section of the docs for more information.
+        """Specifies the slices for this stream. See the stream slicing section of the docs for more information.
 
         :param sync_mode:
         :param cursor_field:
@@ -371,8 +361,7 @@ class SimpleRetriever(Retriever):
 
 @dataclass
 class SimpleRetrieverTestReadDecorator(SimpleRetriever):
-    """
-    In some cases, we want to limit the number of requests that are made to the backend source. This class allows for limiting the number of
+    """In some cases, we want to limit the number of requests that are made to the backend source. This class allows for limiting the number of
     slices that are queried throughout a read command.
     """
 
@@ -382,7 +371,7 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
         super().__post_init__(options)
         if self.maximum_number_of_slices and self.maximum_number_of_slices < 1:
             raise ValueError(
-                f"The maximum number of slices on a test read needs to be strictly positive. Got {self.maximum_number_of_slices}"
+                f"The maximum number of slices on a test read needs to be strictly positive. Got {self.maximum_number_of_slices}",
             )
 
     # stream_slices is defined with arguments on http stream and fixing this has a long tail of dependencies. Will be resolved by the decoupling of http stream and simple retriever
@@ -390,7 +379,7 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
         return islice(super().stream_slices(), self.maximum_number_of_slices)
 
     def _fetch_next_page(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Optional[Mapping[str, Any]] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[requests.Response]:
         return self.requester.send_request(
             path=self._paginator_path(),
@@ -400,10 +389,10 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
             request_headers=self._request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             request_params=self._request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             request_body_data=self._request_body_data(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
             ),
             request_body_json=self._request_body_json(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
             ),
             log_formatter=lambda response: format_http_message(
                 response,

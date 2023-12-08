@@ -11,7 +11,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 
-class Helpers(object):
+class Helpers:
     @staticmethod
     def _base64_encode(string: str) -> str:
         return base64.b64encode(string.encode("ascii")).decode("ascii")

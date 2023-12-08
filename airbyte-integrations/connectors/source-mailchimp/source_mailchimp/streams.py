@@ -5,9 +5,11 @@
 import logging
 import math
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -59,18 +61,17 @@ class MailChimpStream(HttpStream, ABC):
     @abstractmethod
     def data_field(self) -> str:
         """The response entry that contains useful data"""
-        pass
 
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
         try:
             yield from super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
             )
         except requests.exceptions.JSONDecodeError:
             logger.error(f"Unknown error while reading stream {self.name}. Response cannot be read properly. ")
@@ -82,11 +83,9 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     @property
     @abstractmethod
     def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        """Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
         and define a cursor field.
         """
-        pass
 
     @property
     def filter_field(self):
@@ -97,8 +96,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         return self.cursor_field
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_state = latest_record.get(self.cursor_field)
@@ -106,7 +104,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         return {self.cursor_field: max(latest_state, current_state)}
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slice_ = {}
         stream_state = stream_state or {}
@@ -125,8 +123,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
 
 
 class MailChimpListSubStream(IncrementalMailChimpStream):
-    """
-    Base class for incremental Mailchimp streams that are children of the Lists stream.
+    """Base class for incremental Mailchimp streams that are children of the Lists stream.
     """
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -207,7 +204,7 @@ class EmailActivity(IncrementalMailChimpStream):
         self.campaign_id = campaign_id
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
         if self.campaign_id:
@@ -227,8 +224,7 @@ class EmailActivity(IncrementalMailChimpStream):
         return f"reports/{campaign_id}/email-activity"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the campaign_id and cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the campaign_id and cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         campaign_id = latest_record.get("campaign_id")
@@ -260,16 +256,14 @@ class EmailActivity(IncrementalMailChimpStream):
 
 
 class InterestCategories(MailChimpStream, HttpSubStream):
-    """
-    Get information about interest categories for a specific list.
+    """Get information about interest categories for a specific list.
     Docs link: https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/
     """
 
     data_field = "categories"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        """
-        Get the list_id from the parent stream slice and use it to construct the path.
+        """Get the list_id from the parent stream slice and use it to construct the path.
         """
         list_id = stream_slice.get("parent").get("id")
         return f"lists/{list_id}/interest-categories"
@@ -282,16 +276,14 @@ class InterestCategories(MailChimpStream, HttpSubStream):
 
 
 class Interests(MailChimpStream, HttpSubStream):
-    """
-    Get a list of interests for a specific interest category.
+    """Get a list of interests for a specific interest category.
     Docs link: https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/
     """
 
     data_field = "interests"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        """
-        Get the list_id from the parent stream slice and use it to construct the path.
+        """Get the list_id from the parent stream slice and use it to construct the path.
         """
         list_id = stream_slice.get("parent").get("list_id")
         category_id = stream_slice.get("parent").get("id")
@@ -305,8 +297,7 @@ class Interests(MailChimpStream, HttpSubStream):
 
 
 class ListMembers(MailChimpListSubStream):
-    """
-    Get information about members in a specific Mailchimp list.
+    """Get information about members in a specific Mailchimp list.
     Docs link: https://mailchimp.com/developer/marketing/api/list-members/list-members-info/
     """
 
@@ -320,8 +311,7 @@ class Reports(IncrementalMailChimpStream):
 
     @staticmethod
     def remove_empty_datetime_fields(record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        In some cases, the 'clicks.last_click' and 'opens.last_open' fields are returned as an empty string,
+        """In some cases, the 'clicks.last_click' and 'opens.last_open' fields are returned as an empty string,
         which causes validation errors on the `date-time` format.
         To avoid this, we remove the fields if they are empty.
         """
@@ -343,8 +333,7 @@ class Reports(IncrementalMailChimpStream):
 
 
 class SegmentMembers(MailChimpListSubStream):
-    """
-    Get information about members in a specific segment.
+    """Get information about members in a specific segment.
     Docs link: https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/
     """
 
@@ -352,13 +341,11 @@ class SegmentMembers(MailChimpListSubStream):
     data_field = "members"
 
     def nullify_empty_string_fields(self, element: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        SegmentMember records may contain multiple fields that are returned as empty strings, which causes validation issues for fields with declared "datetime" formats.
+        """SegmentMember records may contain multiple fields that are returned as empty strings, which causes validation issues for fields with declared "datetime" formats.
         Since all fields are nullable, replacing any string value of "" with None is a safe way to handle these edge cases.
 
         :param element: A SegmentMember record, dictionary or list
         """
-
         if isinstance(element, dict):
             # If the element is a dictionary, apply the method recursively to each value,
             # replacing the empty string value with None.
@@ -370,8 +357,7 @@ class SegmentMembers(MailChimpListSubStream):
         return element
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Each slice consists of a list_id and segment_id pair
+        """Each slice consists of a list_id and segment_id pair
         """
         segments_slices = Segments(authenticator=self.authenticator).stream_slices(sync_mode=SyncMode.full_refresh)
 
@@ -387,8 +373,7 @@ class SegmentMembers(MailChimpListSubStream):
         return f"lists/{list_id}/segments/{segment_id}/members"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice, **kwargs) -> Iterable[Mapping]:
-        """
-        SegmentMembers endpoint does not support sorting, so we need to filter out records that are older than the current state
+        """SegmentMembers endpoint does not support sorting, so we need to filter out records that are older than the current state
         """
         response = super().parse_response(response, **kwargs)
 
@@ -417,8 +402,7 @@ class SegmentMembers(MailChimpListSubStream):
 
 
 class Segments(MailChimpListSubStream):
-    """
-    Get information about all available segments for a specific list.
+    """Get information about all available segments for a specific list.
     Docs link: https://mailchimp.com/developer/marketing/api/list-segments/list-segments/
     """
 
@@ -427,8 +411,7 @@ class Segments(MailChimpListSubStream):
 
 
 class Tags(MailChimpStream, HttpSubStream):
-    """
-    Get information about tags for a specific list.
+    """Get information about tags for a specific list.
     Docs link: https://mailchimp.com/developer/marketing/api/list-tags/list-tags-for-list/
     """
 
@@ -439,8 +422,7 @@ class Tags(MailChimpStream, HttpSubStream):
         return f"lists/{list_id}/tag-search"
 
     def parse_response(self, response: requests.Response, stream_slice, **kwargs) -> Iterable[Mapping]:
-        """
-        Tags do not reference parent_ids, so we need to add the list_id to each record.
+        """Tags do not reference parent_ids, so we need to add the list_id to each record.
         """
         response = super().parse_response(response, **kwargs)
 
@@ -450,8 +432,7 @@ class Tags(MailChimpStream, HttpSubStream):
 
 
 class Unsubscribes(IncrementalMailChimpStream):
-    """
-    List of members who have unsubscribed from a specific campaign.
+    """List of members who have unsubscribed from a specific campaign.
     Docs link: https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/
     """
 
@@ -466,7 +447,7 @@ class Unsubscribes(IncrementalMailChimpStream):
         self.campaign_id = campaign_id
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if self.campaign_id:
             # Similar to EmailActivity stream, this is a workaround to speed up SATs

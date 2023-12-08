@@ -3,8 +3,9 @@
 #
 
 import logging
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping
+from typing import Any
 
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
@@ -13,8 +14,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class DefaultSchemaLoader(SchemaLoader):
-    """
-    Loads a schema from the default location or returns an empty schema for streams that have not defined their schema file yet.
+    """Loads a schema from the default location or returns an empty schema for streams that have not defined their schema file yet.
 
     Attributes:
         config (Config): The user-provided configuration as specified by the source's spec
@@ -29,12 +29,10 @@ class DefaultSchemaLoader(SchemaLoader):
         self.default_loader = JsonFileSchemaLoader(parameters=parameters, config=self.config)
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        Attempts to retrieve a schema from the default filepath location or returns the empty schema if a schema cannot be found.
+        """Attempts to retrieve a schema from the default filepath location or returns the empty schema if a schema cannot be found.
 
         :return: The empty schema
         """
-
         try:
             return self.default_loader.get_json_schema()
         except OSError:

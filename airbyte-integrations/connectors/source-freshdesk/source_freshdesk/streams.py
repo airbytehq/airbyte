@@ -5,17 +5,19 @@
 import logging
 import re
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 from urllib import parse
 
 import pendulum
 import requests
+from requests.auth import AuthBase
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from requests.auth import AuthBase
 from source_freshdesk.availability_strategy import FreshdeskAvailabilityStrategy
 from source_freshdesk.utils import CallCredit
 
@@ -67,11 +69,11 @@ class FreshdeskStream(HttpStream, ABC):
         params = parse.parse_qs(parse.urlparse(next_url).query)
         return self.parse_link_params(link_query_params=params)
 
-    def parse_link_params(self, link_query_params: Mapping[str, List[str]]) -> Mapping[str, Any]:
+    def parse_link_params(self, link_query_params: Mapping[str, list[str]]) -> Mapping[str, Any]:
         return {"per_page": link_query_params["per_page"][0], "page": link_query_params["page"][0]}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"per_page": self.result_return_limit}
         if next_page_token and "page" in next_page_token:
@@ -86,13 +88,13 @@ class FreshdeskStream(HttpStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         self._consume_credit(self.call_credit)
         yield from super().read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
         )
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[MutableMapping]:
@@ -105,7 +107,7 @@ class FreshdeskStream(HttpStream, ABC):
             # Issue: https://github.com/airbytehq/airbyte/issues/26717
             # we should skip the stream if subscription level had changed during sync
             self.forbidden_stream = True
-            setattr(self, "raise_on_http_errors", False)
+            self.raise_on_http_errors = False
             logger.warning(f"Stream `{self.name}` is not available. {response.text}")
         return super().should_retry(response)
 
@@ -131,7 +133,7 @@ class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):
         self._cursor_value = value.get(self.cursor_field, self.start_date)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params[self.cursor_filter] = stream_state.get(self.cursor_field, self.start_date)
@@ -140,12 +142,12 @@ class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
         ):
             yield record
             self._cursor_value = max(record[self.cursor_field], self._cursor_value)
@@ -174,7 +176,7 @@ class CannedResponseFolders(FreshdeskStream):
 class CannedResponses(HttpSubStream, FreshdeskStream):
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator, config=config, parent=CannedResponseFolders(authenticator=authenticator, config=config, **kwargs)
+            authenticator=authenticator, config=config, parent=CannedResponseFolders(authenticator=authenticator, config=config, **kwargs),
         )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -201,7 +203,7 @@ class DiscussionCategories(FreshdeskStream):
 class DiscussionForums(HttpSubStream, FreshdeskStream):
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator, config=config, parent=DiscussionCategories(authenticator=authenticator, config=config, **kwargs)
+            authenticator=authenticator, config=config, parent=DiscussionCategories(authenticator=authenticator, config=config, **kwargs),
         )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -211,7 +213,7 @@ class DiscussionForums(HttpSubStream, FreshdeskStream):
 class DiscussionTopics(HttpSubStream, FreshdeskStream):
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator, config=config, parent=DiscussionForums(authenticator=authenticator, config=config, **kwargs)
+            authenticator=authenticator, config=config, parent=DiscussionForums(authenticator=authenticator, config=config, **kwargs),
         )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -221,7 +223,7 @@ class DiscussionTopics(HttpSubStream, FreshdeskStream):
 class DiscussionComments(HttpSubStream, FreshdeskStream):
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator, config=config, parent=DiscussionTopics(authenticator=authenticator, config=config, **kwargs)
+            authenticator=authenticator, config=config, parent=DiscussionTopics(authenticator=authenticator, config=config, **kwargs),
         )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -286,7 +288,7 @@ class SolutionCategories(FreshdeskStream):
 class SolutionFolders(HttpSubStream, FreshdeskStream):
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator, config=config, parent=SolutionCategories(authenticator=authenticator, config=config, **kwargs)
+            authenticator=authenticator, config=config, parent=SolutionCategories(authenticator=authenticator, config=config, **kwargs),
         )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -303,7 +305,7 @@ class SolutionFolders(HttpSubStream, FreshdeskStream):
 class SolutionArticles(HttpSubStream, FreshdeskStream):
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], **kwargs):
         super().__init__(
-            authenticator=authenticator, config=config, parent=SolutionFolders(authenticator=authenticator, config=config, **kwargs)
+            authenticator=authenticator, config=config, parent=SolutionFolders(authenticator=authenticator, config=config, **kwargs),
         )
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -329,26 +331,25 @@ class Tickets(IncrementalFreshdeskStream):
         return "tickets"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         includes = ["description", "requester", "stats"]
         params.update(
-            {"order_type": "asc", "order_by": self.cursor_field, "include": ",".join(includes)}  # ASC order, to get the old records first
+            {"order_type": "asc", "order_by": self.cursor_field, "include": ",".join(includes)},  # ASC order, to get the old records first
         )
         if next_page_token and self.cursor_filter in next_page_token:
             params[self.cursor_filter] = next_page_token[self.cursor_filter]
         return params
 
-    def parse_link_params(self, link_query_params: Mapping[str, List[str]]) -> Mapping[str, Any]:
+    def parse_link_params(self, link_query_params: Mapping[str, list[str]]) -> Mapping[str, Any]:
         params = super().parse_link_params(link_query_params)
         if self.cursor_filter in link_query_params:
             params[self.cursor_filter] = link_query_params[self.cursor_filter][0]
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        This block extends Incremental stream to overcome '300 page' server error.
+        """This block extends Incremental stream to overcome '300 page' server error.
         Since the Ticket endpoint has a 300 page pagination limit, after 300 pages, update the parameters with
         query using 'updated_since' = last_record, if there is more data remaining.
         """
@@ -375,10 +376,10 @@ class Conversations(FreshdeskStream):
         return f"tickets/{stream_slice['id']}/conversations"
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for ticket in self.tickets_stream.read_records(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice={}, stream_state={}
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice={}, stream_state={},
         ):
             yield {"id": ticket["id"]}
 

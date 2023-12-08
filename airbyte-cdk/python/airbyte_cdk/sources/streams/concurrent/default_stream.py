@@ -2,9 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from functools import lru_cache
+from collections.abc import Iterable, Mapping
+from functools import cache
 from logging import Logger
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Optional
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
@@ -20,7 +21,7 @@ class DefaultStream(AbstractStream):
         name: str,
         json_schema: Mapping[str, Any],
         availability_strategy: AbstractAvailabilityStrategy,
-        primary_key: List[str],
+        primary_key: list[str],
         cursor_field: Optional[str],
         logger: Logger,
         namespace: Optional[str] = None,
@@ -48,7 +49,7 @@ class DefaultStream(AbstractStream):
     def cursor_field(self) -> Optional[str]:
         return self._cursor_field
 
-    @lru_cache(maxsize=None)
+    @cache
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._json_schema
 

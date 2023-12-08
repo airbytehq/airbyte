@@ -4,10 +4,12 @@
 
 
 import json
+from collections.abc import Generator
 from datetime import datetime
-from typing import Dict, Generator
 
 import boto3
+from botocore.exceptions import ClientError
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -20,7 +22,6 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources.source import Source
-from botocore.exceptions import ClientError
 
 
 class SourceAmazonSqs(Source):
@@ -35,7 +36,7 @@ class SourceAmazonSqs(Source):
             message.change_visibility(VisibilityTimeout=visibility_timeout)
         except ClientError:
             raise Exception(
-                "Couldn't change message visibility: %s - does your IAM user have sqs:ChangeMessageVisibility?", message.message_id
+                "Couldn't change message visibility: %s - does your IAM user have sqs:ChangeMessageVisibility?", message.message_id,
             )
 
     def parse_queue_name(self, url: str) -> str:
@@ -73,10 +74,10 @@ class SourceAmazonSqs(Source):
             else:
                 return AirbyteConnectionStatus(status=Status.FAILED, message="Amazon SQS Source Config Check - Could not connect to queue")
         except ClientError as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Amazon SQS Source Config Check - Error in AWS Client: {str(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Amazon SQS Source Config Check - Error in AWS Client: {e!s}")
         except Exception as e:
             return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"Amazon SQS Source Config Check - An exception occurred: {str(e)}"
+                status=Status.FAILED, message=f"Amazon SQS Source Config Check - An exception occurred: {e!s}",
             )
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
@@ -95,7 +96,7 @@ class SourceAmazonSqs(Source):
         return AirbyteCatalog(streams=streams)
 
     def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: dict[str, any],
     ) -> Generator[AirbyteMessage, None, None]:
         stream_name = self.parse_queue_name(config["queue_url"])
         logger.debug("Amazon SQS Source Read - stream is: " + stream_name)
@@ -129,7 +130,7 @@ class SourceAmazonSqs(Source):
             try:
                 logger.debug("Amazon SQS Source Read - Beginning message poll ---")
                 messages = queue.receive_messages(
-                    MessageAttributeNames=attributes_to_return, MaxNumberOfMessages=max_batch_size, WaitTimeSeconds=max_wait_time
+                    MessageAttributeNames=attributes_to_return, MaxNumberOfMessages=max_batch_size, WaitTimeSeconds=max_wait_time,
                 )
 
                 if not messages:

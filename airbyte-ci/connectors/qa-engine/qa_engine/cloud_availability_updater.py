@@ -6,9 +6,10 @@
 import logging
 import shutil
 import tempfile
+from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import Optional
 
 import git
 import requests
@@ -71,7 +72,7 @@ def checkout_new_branch(airbyte_repo: git.Repo, new_branch_name: str) -> git.Hea
 
 
 def enable_in_cloud(connector: ConnectorQAReport, metadata_file_path: Path) -> Optional[Path]:
-    with open(metadata_file_path, "r") as f:
+    with open(metadata_file_path) as f:
         metadata = yaml.load(f)
         connector_already_enabled_in_cloud = get(metadata, "data.registries.cloud.enabled", False)
 
@@ -109,7 +110,7 @@ def pr_already_created_for_branch(head_branch: str) -> bool:
     return len(response.json()) > 0
 
 
-def add_labels_to_pr(pr_number: str, labels_to_add: List) -> requests.Response:
+def add_labels_to_pr(pr_number: str, labels_to_add: list) -> requests.Response:
     url = AIRBYTE_ISSUES_ENDPOINT + f"/{pr_number}/labels"
     response = requests.post(url, headers=GITHUB_API_COMMON_HEADERS, json={"labels": labels_to_add})
     response.raise_for_status()
@@ -117,7 +118,7 @@ def add_labels_to_pr(pr_number: str, labels_to_add: List) -> requests.Response:
     return response
 
 
-def create_pr(pr_title: str, pr_body: str, branch: str, labels: Optional[List]) -> Optional[requests.Response]:
+def create_pr(pr_title: str, pr_body: str, branch: str, labels: Optional[list]) -> Optional[requests.Response]:
     data = {
         "title": pr_title,
         "body": pr_body,
@@ -137,7 +138,7 @@ def create_pr(pr_title: str, pr_body: str, branch: str, labels: Optional[List]) 
         logger.warning(f"A PR already exists for branch {branch}")
 
 
-def get_pr_body(eligible_connectors: List[ConnectorQAReport], excluded_connectors: List[ConnectorQAReport]) -> str:
+def get_pr_body(eligible_connectors: list[ConnectorQAReport], excluded_connectors: list[ConnectorQAReport]) -> str:
     body = (
         f"The Cloud Availability Updater decided that it's the right time to make the following {len(eligible_connectors)} connectors available on Cloud!"
         + "\n\n"
@@ -173,6 +174,7 @@ def add_new_connector_to_cloud_catalog(airbyte_repo_path: Path, airbyte_repo: gi
     Args:
         airbyte_repo (git.Repo): The Airbyte Cloud repo instance.
         connector (ConnectorQAReport): The connector to add to a definitions mask.
+
     Returns:
         bool: Whether the connector was added or not.
     """

@@ -4,10 +4,12 @@
 
 import base64
 import logging
+from collections.abc import Mapping
 from datetime import datetime
-from typing import Any, List, Mapping, Tuple
+from typing import Any
 
 import pendulum
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -61,7 +63,7 @@ class BasicApiTokenAuthenticator(TokenAuthenticator):
     def __init__(self, email: str, password: str):
         # for API token auth we need to add the suffix '/token' in the end of email value
         email_login = email + "/token"
-        token = base64.b64encode(f"{email_login}:{password}".encode("utf-8"))
+        token = base64.b64encode(f"{email_login}:{password}".encode())
         super().__init__(token.decode("utf-8"), auth_method="Basic")
 
 
@@ -72,8 +74,7 @@ class SourceZendeskSupport(AbstractSource):
 
     @classmethod
     def get_default_start_date(cls) -> str:
-        """
-        Gets the default start date for data retrieval.
+        """Gets the default start date for data retrieval.
 
         The default date is set to the current date and time in UTC minus 2 years.
 
@@ -102,7 +103,7 @@ class SourceZendeskSupport(AbstractSource):
             else:
                 raise ZendeskConfigException(message=f"Not implemented authorization method: {config['credentials']}")
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
         :param config:  the user-input config object conforming to the connector's spec.json
@@ -137,7 +138,7 @@ class SourceZendeskSupport(AbstractSource):
             "ignore_pagination": config.get("ignore_pagination", False),
         }
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         """Returns relevant a list of available streams
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
@@ -188,5 +189,5 @@ class SourceZendeskSupport(AbstractSource):
                     streams.extend([ticket_forms_stream, account_attributes, attribute_definitions])
                     break
         except Exception as e:
-            logger.warning(f"An exception occurred while trying to access TicketForms stream: {str(e)}. Skipping this stream.")
+            logger.warning(f"An exception occurred while trying to access TicketForms stream: {e!s}. Skipping this stream.")
         return streams

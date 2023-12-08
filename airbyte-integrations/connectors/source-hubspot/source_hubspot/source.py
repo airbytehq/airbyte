@@ -3,15 +3,17 @@
 #
 
 import logging
+from collections.abc import Mapping
 from http import HTTPStatus
 from itertools import chain
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, Optional
 
 import requests
+from requests import HTTPError
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from requests import HTTPError
 from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
@@ -65,7 +67,7 @@ from source_hubspot.streams import (
 class SourceHubspot(AbstractSource):
     logger = AirbyteLogger()
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, Optional[Any]]:
         """Check connection"""
         common_params = self.get_common_params(config=config)
         alive = True
@@ -107,7 +109,7 @@ class SourceHubspot(AbstractSource):
         api = self.get_api(config=config)
         return dict(api=api, start_date=start_date, credentials=credentials)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         credentials = config.get("credentials", {})
         common_params = self.get_common_params(config=config)
         streams = [
@@ -160,7 +162,7 @@ class SourceHubspot(AbstractSource):
                     GoalsWebAnalytics(**common_params),
                     LineItemsWebAnalytics(**common_params),
                     ProductsWebAnalytics(**common_params),
-                ]
+                ],
             )
 
         api = API(credentials=credentials)
@@ -176,7 +178,7 @@ class SourceHubspot(AbstractSource):
             required_scoped = set(chain(*[x.properties_scopes for x in partially_available_streams]))
             self.logger.info(
                 f"The following streams are partially available: {[s.name for s in partially_available_streams]}, "
-                f"add the following scopes to download all available data: {required_scoped}"
+                f"add the following scopes to download all available data: {required_scoped}",
             )
         else:
             self.logger.info("No scopes to grant when authenticating with API key.")
@@ -204,7 +206,7 @@ class SourceHubspot(AbstractSource):
             )
 
     def get_web_analytics_custom_objects_stream(
-        self, custom_object_stream_instances: List[CustomObject], common_params: Any
+        self, custom_object_stream_instances: list[CustomObject], common_params: Any,
     ) -> WebAnalyticsStream:
         for custom_object_stream_instance in custom_object_stream_instances:
 
@@ -219,7 +221,7 @@ class SourceHubspot(AbstractSource):
                 super(self.__class__, self).__init__(parent=parent, **kwargs)
 
             custom_web_analytics_stream_class = type(
-                f"{custom_object_stream_instance.name.capitalize()}WebAnalytics", (WebAnalyticsStream,), {"__init__": __init__}
+                f"{custom_object_stream_instance.name.capitalize()}WebAnalytics", (WebAnalyticsStream,), {"__init__": __init__},
             )
 
             yield custom_web_analytics_stream_class(**common_params)

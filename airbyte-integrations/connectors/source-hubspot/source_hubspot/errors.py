@@ -6,14 +6,14 @@
 from typing import Any
 
 import requests
+from requests import HTTPError
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from requests import HTTPError
 
 
 class HubspotError(AirbyteTracedException):
-    """
-    Base error class.
+    """Base error class.
     Subclassing HTTPError to avoid breaking existing code that expects only HTTPErrors.
     """
 
@@ -58,5 +58,5 @@ class InvalidStartDateConfigError(Exception):
 
     def __init__(self, actual_value: Any, message: str):
         super().__init__(
-            f"The value for `start_date` entered `{actual_value}` is ivalid and could not be processed.\nPlease use the real date/time value.\nFull message: {message}"
+            f"The value for `start_date` entered `{actual_value}` is ivalid and could not be processed.\nPlease use the real date/time value.\nFull message: {message}",
         )

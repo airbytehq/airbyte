@@ -3,8 +3,9 @@
 #
 
 import pathlib
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import semver
 import yaml
@@ -20,7 +21,7 @@ class ValidatorOptions:
     prerelease_tag: Optional[str] = None
 
 
-ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
+ValidationResult = tuple[bool, Optional[Union[ValidationError, str]]]
 Validator = Callable[[ConnectorMetadataDefinitionV0, ValidatorOptions], ValidationResult]
 
 # TODO: Remove these when each of these connectors ship any new version
@@ -39,7 +40,7 @@ ALREADY_ON_MAJOR_VERSION_EXCEPTIONS = [
 
 
 def validate_metadata_images_in_dockerhub(
-    metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
+    metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions,
 ) -> ValidationResult:
     metadata_definition_dict = metadata_definition.dict()
     base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
@@ -78,7 +79,7 @@ def validate_metadata_images_in_dockerhub(
 
 
 def validate_at_least_one_language_tag(
-    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions,
 ) -> ValidationResult:
     """Ensure that there is at least one tag in the data.tags field that matches language:<LANG>."""
     tags = get(metadata_definition, "data.tags", [])
@@ -89,7 +90,7 @@ def validate_at_least_one_language_tag(
 
 
 def validate_all_tags_are_keyvalue_pairs(
-    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions,
 ) -> ValidationResult:
     """Ensure that all tags are of the form <KEY>:<VALUE>."""
     tags = get(metadata_definition, "data.tags", [])
@@ -107,7 +108,7 @@ def is_major_version(version: str) -> bool:
 
 
 def validate_major_version_bump_has_breaking_change_entry(
-    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions,
 ) -> ValidationResult:
     """Ensure that if the major version is incremented, there is a breaking change entry for that version."""
     metadata_definition_dict = metadata_definition.dict()
@@ -147,7 +148,7 @@ def validate_docs_path_exists(metadata_definition: ConnectorMetadataDefinitionV0
 
 
 def validate_metadata_base_images_in_dockerhub(
-    metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
+    metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions,
 ) -> ValidationResult:
     metadata_definition_dict = metadata_definition.dict()
 
@@ -186,9 +187,9 @@ POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
 
 def validate_and_load(
     file_path: pathlib.Path,
-    validators_to_run: List[Validator],
+    validators_to_run: list[Validator],
     validator_opts: ValidatorOptions,
-) -> Tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
+) -> tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
     """Load a metadata file from a path (runs jsonschema validation) and run optional extra validators.
 
     Returns a tuple of (metadata_model, error_message).

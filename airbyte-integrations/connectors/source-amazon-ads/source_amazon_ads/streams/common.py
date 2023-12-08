@@ -3,14 +3,16 @@
 #
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, MutableMapping
 from http import HTTPStatus
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Optional
 
 import requests
+from pydantic import BaseModel, ValidationError
+
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
-from pydantic import BaseModel, ValidationError
 from source_amazon_ads.constants import URL_MAPPING
 from source_amazon_ads.schemas import CatalogModel
 from source_amazon_ads.schemas.profile import Profile
@@ -71,11 +73,10 @@ class ErrorResponse(BaseModel):
 
 
 class BasicAmazonAdsStream(Stream, ABC):
-    """
-    Base class for all Amazon Ads streams.
+    """Base class for all Amazon Ads streams.
     """
 
-    def __init__(self, config: Mapping[str, Any], profiles: List[Profile] = None):
+    def __init__(self, config: Mapping[str, Any], profiles: list[Profile] = None):
         self._profiles = profiles or []
         self._client_id = config["client_id"]
         self._url = URL_MAPPING[config["region"]]
@@ -83,8 +84,7 @@ class BasicAmazonAdsStream(Stream, ABC):
     @property
     @abstractmethod
     def model(self) -> CatalogModel:
-        """
-        Pydantic model to represent json schema
+        """Pydantic model to represent json schema
         """
 
     def get_json_schema(self):
@@ -95,13 +95,12 @@ class BasicAmazonAdsStream(Stream, ABC):
 
 # Basic full refresh stream
 class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
-    """
-    Class for getting data from streams that based on single http request.
+    """Class for getting data from streams that based on single http request.
     """
 
     data_field = ""
 
-    def __init__(self, config: Mapping[str, Any], *args, profiles: List[Profile] = None, **kwargs):
+    def __init__(self, config: Mapping[str, Any], *args, profiles: list[Profile] = None, **kwargs):
         # Each AmazonAdsStream instance are dependant on list of profiles.
         BasicAmazonAdsStream.__init__(self, config, profiles=profiles)
         HttpStream.__init__(self, *args, **kwargs)
@@ -121,8 +120,7 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
         return {"Amazon-Advertising-API-ClientId": self._client_id}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        :return an object representing single record in the response
+        """:return an object representing single record in the response
         """
         if response.status_code == HTTPStatus.OK:
             if self.data_field:
@@ -160,13 +158,12 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
 
         self.logger.warning(
             f"Unexpected error {resp.code} when processing request {response.request.url} for "
-            f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {resp.details}"
+            f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {resp.details}",
         )
 
 
 class SubProfilesStream(AmazonAdsStream):
-    """
-    Stream for getting resources with pagination support and getting resources based on list of profiles set by source.
+    """Stream for getting resources with pagination support and getting resources based on list of profiles set by source.
     """
 
     page_size = 100
@@ -200,8 +197,7 @@ class SubProfilesStream(AmazonAdsStream):
         }
 
     def read_records(self, *args, **kvargs) -> Iterable[Mapping[str, Any]]:
-        """
-        Iterate through self._profiles list and send read all records for each profile.
+        """Iterate through self._profiles list and send read all records for each profile.
         """
         for profile in self._profiles:
             self._current_profile_id = profile.profileId

@@ -4,9 +4,11 @@
 
 
 import logging
-from typing import Any, List, Mapping, Optional, Tuple
+from collections.abc import Mapping
+from typing import Any, Optional
 
 import pendulum
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
@@ -65,9 +67,8 @@ class SourceAmazonAds(AbstractSource):
         config["report_record_types"] = config.get("report_record_types", [])
         return config
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        """
-        :param config:  the user-input config object conforming to the connector's spec.json
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, Optional[Any]]:
+        """:param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
@@ -86,9 +87,8 @@ class SourceAmazonAds(AbstractSource):
             return False, "No profiles found after filtering by Profile ID and Marketplace ID"
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """:param config: A Mapping of the user input configuration as defined in the connector spec.
         :return list of streams for current source
         """
         config = self._validate_and_transform(config)
@@ -144,7 +144,7 @@ class SourceAmazonAds(AbstractSource):
         )
 
     @staticmethod
-    def _choose_profiles(config: Mapping[str, Any], available_profiles: List[Profile]):
+    def _choose_profiles(config: Mapping[str, Any], available_profiles: list[Profile]):
         requested_profiles = config.get("profiles", [])
         requested_marketplace_ids = config.get("marketplace_ids", [])
         if requested_profiles or requested_marketplace_ids:

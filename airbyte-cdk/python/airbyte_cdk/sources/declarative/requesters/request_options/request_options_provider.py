@@ -3,16 +3,16 @@
 #
 
 from abc import abstractmethod
+from collections.abc import Mapping, MutableMapping
 from dataclasses import dataclass
-from typing import Any, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 @dataclass
 class RequestOptionsProvider:
-    """
-    Defines the request options to set on an outgoing HTTP request
+    """Defines the request options to set on an outgoing HTTP request
 
     Options can be passed by
     - request parameter
@@ -29,12 +29,10 @@ class RequestOptionsProvider:
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
+        """Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
-        pass
 
     @abstractmethod
     def get_request_headers(
@@ -54,8 +52,7 @@ class RequestOptionsProvider:
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Union[Mapping[str, Any], str]]:
-        """
-        Specifies how to populate the body of the request with a non-JSON payload.
+        """Specifies how to populate the body of the request with a non-JSON payload.
 
         If returns a ready text that it will be sent as is.
         If returns a dict that it will be converted to a urlencoded form.
@@ -72,8 +69,7 @@ class RequestOptionsProvider:
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
-        """
-        Specifies how to populate the body of the request with a JSON payload.
+        """Specifies how to populate the body of the request with a JSON payload.
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """

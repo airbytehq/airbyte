@@ -3,7 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Iterable
+from collections.abc import Iterable
 
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 
@@ -11,8 +11,6 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 class PartitionGenerator(ABC):
     @abstractmethod
     def generate(self) -> Iterable[Partition]:
-        """
-        Generates partitions for a given sync mode.
+        """Generates partitions for a given sync mode.
         :return: An iterable of partitions
         """
-        pass

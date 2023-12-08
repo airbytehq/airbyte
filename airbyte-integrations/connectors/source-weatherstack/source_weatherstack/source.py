@@ -3,9 +3,11 @@
 #
 
 
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -26,7 +28,7 @@ class CurrentWeather(HttpStream):
         self.access_key = config["access_key"]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         # The "/current" path gives us the latest current city weather
         return "current"
@@ -74,7 +76,7 @@ class Weatherstack(HttpStream):
         self.access_key = config["access_key"]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         # The "/current" path gives us the latest current city weather
         return "current"
@@ -122,7 +124,7 @@ class IncrementalWeatherstack(HttpStream):
         self.access_key = config["access_key"]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         # The "/current" path gives us the latest current city weather
         return "current"
@@ -170,7 +172,7 @@ class Forecast(HttpStream):
         self.access_key = config["access_key"]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         # The "/current" path gives us the latest current city weather
         return "forecast"
@@ -219,7 +221,7 @@ class Historical(HttpStream):
         self.historical_date = config["historical_date"]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "historical"
 
@@ -266,7 +268,7 @@ class LocationLookup(HttpStream):
         self.access_key = config["access_key"]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "autocomplete"
 
@@ -303,7 +305,7 @@ class LocationLookup(HttpStream):
 
 # Source
 class SourceWeatherstack(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             query = config["query"]
             access_key = config["access_key"]
@@ -318,7 +320,7 @@ class SourceWeatherstack(AbstractSource):
         except requests.exceptions.RequestException as e:
             return False, repr(e)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         auth = NoAuth()
         streams = [
             CurrentWeather(authenticator=auth, config=config),

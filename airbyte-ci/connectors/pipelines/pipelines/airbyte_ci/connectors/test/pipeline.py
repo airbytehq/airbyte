@@ -4,11 +4,11 @@
 """This module groups factory like functions to dispatch tests steps according to the connector under test language."""
 
 import itertools
-from typing import List
 
 import anyio
 import asyncer
-from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
+
+from connector_ops.utils import ConnectorLanguage
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.connectors.test.steps import java_connectors, python_connectors
@@ -21,12 +21,13 @@ LANGUAGE_MAPPING = {
         ConnectorLanguage.PYTHON: python_connectors.run_all_tests,
         ConnectorLanguage.LOW_CODE: python_connectors.run_all_tests,
         ConnectorLanguage.JAVA: java_connectors.run_all_tests,
-    }
+    },
 }
 
 
-async def run_metadata_validation(context: ConnectorContext) -> List[StepResult]:
+async def run_metadata_validation(context: ConnectorContext) -> list[StepResult]:
     """Run the metadata validation on a connector.
+
     Args:
         context (ConnectorContext): The current connector context.
 
@@ -36,7 +37,7 @@ async def run_metadata_validation(context: ConnectorContext) -> List[StepResult]
     return [await MetadataValidation(context).run()]
 
 
-async def run_version_checks(context: ConnectorContext) -> List[StepResult]:
+async def run_version_checks(context: ConnectorContext) -> list[StepResult]:
     """Run the version checks on a connector.
 
     Args:
@@ -48,7 +49,7 @@ async def run_version_checks(context: ConnectorContext) -> List[StepResult]:
     return [await VersionFollowsSemverCheck(context).run(), await VersionIncrementCheck(context).run()]
 
 
-async def run_qa_checks(context: ConnectorContext) -> List[StepResult]:
+async def run_qa_checks(context: ConnectorContext) -> list[StepResult]:
     """Run the QA checks on a connector.
 
     Args:
@@ -60,7 +61,7 @@ async def run_qa_checks(context: ConnectorContext) -> List[StepResult]:
     return [await QaChecks(context).run()]
 
 
-async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
+async def run_all_tests(context: ConnectorContext) -> list[StepResult]:
     """Run all the tests steps according to the connector language.
 
     Args:

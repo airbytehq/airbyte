@@ -3,11 +3,12 @@
 #
 
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import Optional
 
-import airbyte_api_client
 import click
 import yaml
+
+import airbyte_api_client
 
 from .apply.yaml_loaders import EnvVarLoader
 from .init.commands import API_HTTP_HEADERS_TARGET_PATH
@@ -32,7 +33,7 @@ class ApiHttpHeader:
         self.value = self.value.strip()
 
 
-def deserialize_file_based_headers(header_configuration_path: str) -> List[ApiHttpHeader]:
+def deserialize_file_based_headers(header_configuration_path: str) -> list[ApiHttpHeader]:
     """Parse API HTTP headers declared in a YAML file to a list of ApiHttpHeaders
 
     Args:
@@ -50,13 +51,13 @@ def deserialize_file_based_headers(header_configuration_path: str) -> List[ApiHt
             headers = content["headers"]
         except (TypeError, KeyError, yaml.scanner.ScannerError):
             raise InvalidApiHttpHeadersFileError(
-                f"Please provide valid yaml file to declare API HTTP headers. Please check the {API_HTTP_HEADERS_TARGET_PATH} file."
+                f"Please provide valid yaml file to declare API HTTP headers. Please check the {API_HTTP_HEADERS_TARGET_PATH} file.",
             )
 
     return [ApiHttpHeader(name, value) for name, value in headers.items()]
 
 
-def deserialize_option_based_headers(api_http_headers: List[Tuple[str, str]]) -> List[ApiHttpHeader]:
+def deserialize_option_based_headers(api_http_headers: list[tuple[str, str]]) -> list[ApiHttpHeader]:
     """Parse API HTTP headers declared in CLI options to a list of ApiHttpHeaders
 
     Args:
@@ -69,8 +70,8 @@ def deserialize_option_based_headers(api_http_headers: List[Tuple[str, str]]) ->
 
 
 def merge_api_headers(
-    option_based_api_http_headers: Optional[List[Tuple[str, str]]], api_http_headers_file_path: Optional[str]
-) -> List[ApiHttpHeader]:
+    option_based_api_http_headers: Optional[list[tuple[str, str]]], api_http_headers_file_path: Optional[str],
+) -> list[ApiHttpHeader]:
     """Deserialize headers from options and files into ApiHttpHeader and merge options based headers with file based headers.
 
     Args:
@@ -82,7 +83,7 @@ def merge_api_headers(
     """
     if option_based_api_http_headers and api_http_headers_file_path:
         click.echo(
-            "ℹ️  - You passed API HTTP headers in a file and in options at the same time. Option based headers will override file based headers."
+            "ℹ️  - You passed API HTTP headers in a file and in options at the same time. Option based headers will override file based headers.",
         )
     option_based_headers = (
         deserialize_option_based_headers(option_based_api_http_headers) if option_based_api_http_headers is not None else []
@@ -95,7 +96,7 @@ def merge_api_headers(
     return list(merged_headers.values())
 
 
-def set_api_headers_on_api_client(api_client: airbyte_api_client.ApiClient, api_headers: List[ApiHttpHeader]) -> None:
+def set_api_headers_on_api_client(api_client: airbyte_api_client.ApiClient, api_headers: list[ApiHttpHeader]) -> None:
     """Set the API headers on the API client
 
     Args:

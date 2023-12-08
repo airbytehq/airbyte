@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Iterable, Mapping, MutableMapping
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
@@ -16,8 +17,7 @@ from airbyte_cdk.sources.streams.core import Stream
 
 @dataclass
 class DeclarativeStream(Stream):
-    """
-    DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever
+    """DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever
 
     Attributes:
         name (str): stream name
@@ -33,7 +33,7 @@ class DeclarativeStream(Stream):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     name: str
-    primary_key: Optional[Union[str, List[str], List[List[str]]]]
+    primary_key: Optional[Union[str, list[str], list[list[str]]]]
     schema_loader: Optional[SchemaLoader] = None
     _name: str = field(init=False, repr=False, default="")
     _primary_key: str = field(init=False, repr=False, default="")
@@ -48,7 +48,7 @@ class DeclarativeStream(Stream):
         self._schema_loader = self.schema_loader if self.schema_loader else DefaultSchemaLoader(config=self.config, parameters=parameters)
 
     @property  # type: ignore
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+    def primary_key(self) -> Optional[Union[str, list[str], list[list[str]]]]:
         return self._primary_key
 
     @primary_key.setter
@@ -58,8 +58,7 @@ class DeclarativeStream(Stream):
 
     @property  # type: ignore
     def name(self) -> str:
-        """
-        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
+        """:return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
         """
         return self._name
 
@@ -78,14 +77,13 @@ class DeclarativeStream(Stream):
         self.retriever.state = value
 
     def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
         return self.state
 
     @property
-    def cursor_field(self) -> Union[str, List[str]]:
-        """
-        Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
+    def cursor_field(self) -> Union[str, list[str]]:
+        """Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
         cursor = self._stream_cursor_field.eval(self.config)
@@ -94,18 +92,16 @@ class DeclarativeStream(Stream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
+        cursor_field: Optional[list[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """
-        :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
+        """:param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
         """
         yield from self.retriever.read_records(stream_slice)
 
     def get_json_schema(self) -> Mapping[str, Any]:  # type: ignore
-        """
-        :return: A dict of the JSON schema representing this stream.
+        """:return: A dict of the JSON schema representing this stream.
 
         The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
         Override as needed.
@@ -113,10 +109,9 @@ class DeclarativeStream(Stream):
         return self._schema_loader.get_json_schema()
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self, *, sync_mode: SyncMode, cursor_field: Optional[list[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Override to define the slices for this stream. See the stream slicing section of the docs for more information.
+        """Override to define the slices for this stream. See the stream slicing section of the docs for more information.
 
         :param sync_mode:
         :param cursor_field:
@@ -127,8 +122,7 @@ class DeclarativeStream(Stream):
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
-        """
-        We explicitly disable checkpointing here. There are a couple reasons for that and not all are documented here but:
+        """We explicitly disable checkpointing here. There are a couple reasons for that and not all are documented here but:
         * In the case where records are not ordered, the granularity of what is ordered is the slice. Therefore, we will only update the
             cursor value once at the end of every slice.
         * Updating the state once every record would generate issues for data feed stop conditions or semi-incremental syncs where the

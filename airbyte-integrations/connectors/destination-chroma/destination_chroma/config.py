@@ -4,6 +4,8 @@
 
 from typing import Literal, Optional, Union
 
+from pydantic import BaseModel, Field
+
 from airbyte_cdk.destinations.vector_db_based.config import (
     AzureOpenAIEmbeddingConfigModel,
     CohereEmbeddingConfigModel,
@@ -13,7 +15,6 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     OpenAIEmbeddingConfigModel,
     VectorDBConfigModel,
 )
-from pydantic import BaseModel, Field
 
 
 class HttpMode(BaseModel):
@@ -23,7 +24,7 @@ class HttpMode(BaseModel):
     ssl: bool = Field(..., title="SSL", description="Whether to use SSL to connect to the Chroma server", order=2)
     username: Optional[str] = Field(default="", title="Username", description="Username used in server/client mode only", order=3)
     password: Optional[str] = Field(
-        default="", title="Password", description="Password used in server/client mode only", airbyte_secret=True, order=4
+        default="", title="Password", description="Password used in server/client mode only", airbyte_secret=True, order=4,
     )
 
     class Config:
@@ -42,7 +43,7 @@ class PersistentMode(BaseModel):
 
 class ChromaIndexingConfigModel(BaseModel):
     auth_method: Union[PersistentMode, HttpMode] = Field(
-        ..., title="Connection Mode", description="Mode how to connect to Chroma", discriminator="mode", type="object", order=0
+        ..., title="Connection Mode", description="Mode how to connect to Chroma", discriminator="mode", type="object", order=0,
     )
     collection_name: str = Field(..., title="Collection Name", description="The collection to load data into", order=3)
 
@@ -60,7 +61,7 @@ class NoEmbeddingConfigModel(BaseModel):
     class Config:
         title = "Chroma Default Embedding Function"
         schema_extra = {
-            "description": "Do not calculate embeddings. Chromadb uses the sentence transfomer (https://www.sbert.net/index.html) as a default if an embedding function is not defined. Note that depending on your hardware, calculating embeddings locally can be very slow and is mostly suited for prototypes."
+            "description": "Do not calculate embeddings. Chromadb uses the sentence transfomer (https://www.sbert.net/index.html) as a default if an embedding function is not defined. Note that depending on your hardware, calculating embeddings locally can be very slow and is mostly suited for prototypes.",
         }
 
 

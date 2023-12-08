@@ -3,10 +3,12 @@
 #
 
 import json
-from typing import Any, Mapping, MutableMapping, Tuple
+from collections.abc import Mapping, MutableMapping
+from typing import Any
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
 
 from .constants import REQUEST_HEADERS, URL_BASE
@@ -44,7 +46,7 @@ class MyHoursAuthenticator(Oauth2Authenticator):
 
         return payload
 
-    def refresh_access_token(self) -> Tuple[str, int]:
+    def refresh_access_token(self) -> tuple[str, int]:
         try:
             response = requests.request(method="POST", url=self._token_refresh_endpoint, data=self.get_refresh_request_body())
             response.raise_for_status()

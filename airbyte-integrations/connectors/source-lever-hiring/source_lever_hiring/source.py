@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -42,7 +43,7 @@ class SourceLeverHiring(AbstractSource):
         },
     }
 
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger, config: Mapping[str, Any]) -> tuple[bool, any]:
         try:
             authenticator = _auth_from_config(config)
             _ = authenticator.get_auth_header()
@@ -50,7 +51,7 @@ class SourceLeverHiring(AbstractSource):
             return False, str(e)
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         authenticator = _auth_from_config(config)
         full_refresh_params = {
             "authenticator": authenticator,

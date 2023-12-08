@@ -4,9 +4,11 @@
 
 import datetime
 import decimal
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import requests
+
 import source_adjust.model
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource
@@ -16,8 +18,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 
 class AdjustReportStream(HttpStream, IncrementalMixin):
-    """
-    Adjust reports service integration with support for incremental synchronization.
+    """Adjust reports service integration with support for incremental synchronization.
     """
 
     def __init__(self, connector: "SourceAdjust", config: Mapping[str, Any], **kwargs):
@@ -49,7 +50,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
+        cursor_field: Optional[list[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -67,8 +68,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
-        """
-        Report URL path suffix.
+        """Report URL path suffix.
         """
         return "report"
 
@@ -78,8 +78,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        Get query parameter definitions.
+        """Get query parameter definitions.
         """
         required_dimensions = ["day"]
         dimensions = required_dimensions + self.config["dimensions"]
@@ -137,8 +136,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
             date += datetime.timedelta(days=1)
 
     def get_json_schema(self):
-        """
-        Prune the schema to only include selected fields to synchronize.
+        """Prune the schema to only include selected fields to synchronize.
         """
         schema = source_adjust.model.Report.schema()
         properties = schema["properties"]
@@ -157,8 +155,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
 
     @property
     def cursor_field(self) -> str:
-        """
-        Name of the field in the API response body used as cursor.
+        """Name of the field in the API response body used as cursor.
         """
         return "day"
 
@@ -173,9 +170,8 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
 class SourceAdjust(AbstractSource):
     check_endpoint = "https://dash.adjust.com/control-center/reports-service/filters_data"
 
-    def check_connection(self, logger, config) -> Tuple[bool, Any]:
-        """
-        Verify the configuration supplied can be used to connect to the API.
+    def check_connection(self, logger, config) -> tuple[bool, Any]:
+        """Verify the configuration supplied can be used to connect to the API.
 
         :param config:  config object as per definition in spec.yaml
         :param logger:  logger object
@@ -188,9 +184,8 @@ class SourceAdjust(AbstractSource):
         ).raise_for_status()
         return True, None  # Are we coding in go?
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Stream registry.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """Stream registry.
 
         :param config: user input configuration as defined in the connector spec.
         """
@@ -202,8 +197,7 @@ class SourceAdjust(AbstractSource):
         return self._streams
 
     def checkpoint(self):
-        """
-        Checkpoint state.
+        """Checkpoint state.
         """
         state = AirbyteMessage(
             type=Type.STATE,

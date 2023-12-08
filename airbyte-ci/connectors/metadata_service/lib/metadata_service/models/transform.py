@@ -35,7 +35,6 @@ def to_json_sanitized_dict(pydantic_model_obj: BaseModel, **kwargs) -> dict:
     Returns:
         dict: a sanitized dictionary
     """
-
     return json.loads(to_json(pydantic_model_obj, **kwargs))
 
 

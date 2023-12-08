@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""
-Docs: https://developers.facebook.com/docs/graph-api/reference/page
+"""Docs: https://developers.facebook.com/docs/graph-api/reference/page
 
 List of all Facebook nodes: https://github.com/facebook/facebook-business-sdk-codegen
 

@@ -5,14 +5,16 @@
 
 import logging
 import re
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 import pendulum
 import requests
+from pendulum.parsing.exceptions import ParserError
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from pendulum.parsing.exceptions import ParserError
 
 from .streams import Blocks, Comments, Databases, Pages, Users
 
@@ -50,13 +52,12 @@ class SourceNotion(AbstractSource):
         return None
 
     def _extract_error_message(self, response: requests.Response) -> str:
-        """
-        Return a human-readable error message from a Notion API response, for use in connection check.
+        """Return a human-readable error message from a Notion API response, for use in connection check.
         """
         error_json = response.json()
         error_code = error_json.get("code", "unknown_error")
         error_message = error_json.get(
-            "message", "An unspecified error occurred while connecting to Notion. Please check your credentials and try again."
+            "message", "An unspecified error occurred while connecting to Notion. Please check your credentials and try again.",
         )
 
         if error_code == "unauthorized":
@@ -65,7 +66,7 @@ class SourceNotion(AbstractSource):
             return "The provided API access token does not have the correct permissions configured. Please double-check that you have granted all the necessary permissions to your Notion integration."
         return f"Error: {error_message} (Error code: {error_code})"
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, any]:
         # First confirm that if start_date is set by user, it is valid.
         validation_error = self._validate_start_date(config)
         if validation_error:
@@ -87,7 +88,7 @@ class SourceNotion(AbstractSource):
         except requests.exceptions.RequestException as e:
             return False, str(e)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         authenticator = self._get_authenticator(config)
         args = {"authenticator": authenticator, "config": config}
         pages = Pages(**args)

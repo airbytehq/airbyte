@@ -4,9 +4,11 @@
 
 import urllib.parse
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -39,7 +41,7 @@ class GenesysStream(HttpStream, ABC):
             return dict(urllib.parse.parse_qsl(next_query_string))
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"pageSize": self.page_size}
 
@@ -54,8 +56,7 @@ class GenesysStream(HttpStream, ABC):
 
 
 class RoutingOutboundEvents(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/routing/routing/
+    """API Docs: https://developer.genesys.cloud/routing/routing/
     """
 
     primary_key = "id"
@@ -65,8 +66,7 @@ class RoutingOutboundEvents(GenesysStream):
 
 
 class RoutingRoutingAssessments(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/routing/routing/
+    """API Docs: https://developer.genesys.cloud/routing/routing/
     """
 
     page_size = 200
@@ -78,8 +78,7 @@ class RoutingRoutingAssessments(GenesysStream):
 
 
 class RoutingRoutingQueues(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/routing/routing/
+    """API Docs: https://developer.genesys.cloud/routing/routing/
     """
 
     primary_key = "id"
@@ -90,8 +89,7 @@ class RoutingRoutingQueues(GenesysStream):
 
 
 class TelephonyLocations(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/telephony/locations-apis
+    """API Docs: https://developer.genesys.cloud/telephony/locations-apis
     """
 
     primary_key = "id"
@@ -101,8 +99,7 @@ class TelephonyLocations(GenesysStream):
 
 
 class TelephonyProvidersEdges(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/telephony/telephony-apis
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
     """
 
     primary_key = "id"
@@ -113,8 +110,7 @@ class TelephonyProvidersEdges(GenesysStream):
 
 
 class TelephonyProvidersEdgesDids(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/telephony/telephony-apis
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
     """
 
     primary_key = "id"
@@ -125,8 +121,7 @@ class TelephonyProvidersEdgesDids(GenesysStream):
 
 
 class TelephonyProvidersEdgesDidpools(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/telephony/telephony-apis
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
     """
 
     primary_key = "id"
@@ -137,8 +132,7 @@ class TelephonyProvidersEdgesDidpools(GenesysStream):
 
 
 class TelephonyProvidersEdgesExtensions(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/telephony/telephony-apis
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
     """
 
     primary_key = "id"
@@ -149,8 +143,7 @@ class TelephonyProvidersEdgesExtensions(GenesysStream):
 
 
 class TelephonyProvidersEdgesLines(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/telephony/telephony-apis
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
     """
 
     primary_key = "id"
@@ -161,8 +154,7 @@ class TelephonyProvidersEdgesLines(GenesysStream):
 
 
 class TelephonyProvidersEdgesOutboundroutes(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/telephony/telephony-apis
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
     """
 
     primary_key = "id"
@@ -173,8 +165,7 @@ class TelephonyProvidersEdgesOutboundroutes(GenesysStream):
 
 
 class TelephonyProvidersEdgesPhones(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/telephony/telephony-apis
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
     """
 
     primary_key = "id"
@@ -185,8 +176,7 @@ class TelephonyProvidersEdgesPhones(GenesysStream):
 
 
 class TelephonyProvidersEdgesSites(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/telephony/telephony-apis
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
     """
 
     primary_key = "id"
@@ -197,8 +187,7 @@ class TelephonyProvidersEdgesSites(GenesysStream):
 
 
 class TelephonyProvidersEdgesTrunks(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/telephony/telephony-apis
+    """API Docs: https://developer.genesys.cloud/telephony/telephony-apis
     """
 
     primary_key = "id"
@@ -209,8 +198,7 @@ class TelephonyProvidersEdgesTrunks(GenesysStream):
 
 
 class TelephonyStations(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/telephony/stations-apis
+    """API Docs: https://developer.genesys.cloud/telephony/stations-apis
     """
 
     primary_key = "id"
@@ -220,8 +208,7 @@ class TelephonyStations(GenesysStream):
 
 
 class UserUsers(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/useragentman/users/
+    """API Docs: https://developer.genesys.cloud/useragentman/users/
     """
 
     primary_key = "id"
@@ -231,8 +218,7 @@ class UserUsers(GenesysStream):
 
 
 class UserGroups(GenesysStream):
-    """
-    API Docs: https://developer.genesys.cloud/useragentman/groups/
+    """API Docs: https://developer.genesys.cloud/useragentman/groups/
     """
 
     primary_key = "id"
@@ -250,15 +236,14 @@ class SourceGenesys(AbstractSource):
             "client_secret": self.get_client_secret(),
         }
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement true connection checks using an endpoint that is always live
+    def check_connection(self, logger, config) -> tuple[bool, any]:
+        """TODO: Implement true connection checks using an endpoint that is always live
         Testing connection availability for the connector by granting the credentials.
         """
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        GENESYS_REGION_DOMAIN_MAP: Dict[str, str] = {
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        GENESYS_REGION_DOMAIN_MAP: dict[str, str] = {
             "Americas (US East)": "mypurecloud.com",
             "Americas (US East 2)": "use2.us-gov-pure.cloud",
             "Americas (US West)": "usw2.pure.cloud",

@@ -6,9 +6,10 @@ import json
 import logging
 from datetime import date, datetime
 from decimal import Decimal, getcontext
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import pandas as pd
+
 from airbyte_cdk.models import ConfiguredAirbyteStream, DestinationSyncMode
 
 from .aws import AwsHandler
@@ -41,7 +42,7 @@ class StreamWriter:
         self._aws_handler: AwsHandler = aws_handler
         self._config: ConnectorConfig = config
         self._configured_stream: ConfiguredAirbyteStream = configured_stream
-        self._schema: Dict[str, Any] = configured_stream.stream.json_schema["properties"]
+        self._schema: dict[str, Any] = configured_stream.stream.json_schema["properties"]
         self._sync_mode: DestinationSyncMode = configured_stream.destination_sync_mode
 
         self._table_exists: bool = False
@@ -53,7 +54,7 @@ class StreamWriter:
 
         logger.info(f"Creating StreamWriter for {self._database}:{self._table}")
 
-    def _get_date_columns(self) -> List[str]:
+    def _get_date_columns(self) -> list[str]:
         date_columns = []
         for key, val in self._schema.items():
             typ = val.get("type")
@@ -64,7 +65,7 @@ class StreamWriter:
 
         return date_columns
 
-    def _add_partition_column(self, col: str, df: pd.DataFrame) -> Dict[str, str]:
+    def _add_partition_column(self, col: str, df: pd.DataFrame) -> dict[str, str]:
         partitioning = self._config.partitioning
 
         if partitioning == PartitionOptions.NONE:
@@ -98,9 +99,8 @@ class StreamWriter:
 
         return fields
 
-    def _drop_additional_top_level_properties(self, record: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Helper that removes any unexpected top-level properties from the record.
+    def _drop_additional_top_level_properties(self, record: dict[str, Any]) -> dict[str, Any]:
+        """Helper that removes any unexpected top-level properties from the record.
         Since the json schema is used to build the table and cast types correctly,
         we need to remove any unexpected properties that can't be casted accurately.
         """
@@ -159,9 +159,8 @@ class StreamWriter:
 
         return value
 
-    def _json_schema_cast(self, record: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Helper that fixes obvious type violations in a record's top level keys that may
+    def _json_schema_cast(self, record: dict[str, Any]) -> dict[str, Any]:
+        """Helper that fixes obvious type violations in a record's top level keys that may
         cause issues when casting data to pyarrow types. Such as:
         - Objects having empty strings or " " or "-" as value instead of null or {}
         - Arrays having empty strings or " " or "-" as value instead of null or []
@@ -173,13 +172,13 @@ class StreamWriter:
 
         return record
 
-    def _get_non_null_json_schema_types(self, typ: Union[str, List[str]]) -> Union[str, List[str]]:
+    def _get_non_null_json_schema_types(self, typ: Union[str, list[str]]) -> Union[str, list[str]]:
         if isinstance(typ, list):
             return list(filter(lambda x: x != "null", typ))
 
         return typ
 
-    def _json_schema_type_has_mixed_types(self, typ: Union[str, List[str]]) -> bool:
+    def _json_schema_type_has_mixed_types(self, typ: Union[str, list[str]]) -> bool:
         if isinstance(typ, list):
             typ = self._get_non_null_json_schema_types(typ)
             if len(typ) > 1:
@@ -187,7 +186,7 @@ class StreamWriter:
 
         return False
 
-    def _get_json_schema_type(self, types: Union[List[str], str]) -> str:
+    def _get_json_schema_type(self, types: Union[list[str], str]) -> str:
         if isinstance(types, str):
             return types
 
@@ -201,7 +200,7 @@ class StreamWriter:
 
         return types[0]
 
-    def _get_pandas_dtypes_from_json_schema(self, df: pd.DataFrame) -> Dict[str, str]:
+    def _get_pandas_dtypes_from_json_schema(self, df: pd.DataFrame) -> dict[str, str]:
         column_types = {}
 
         typ = "string"
@@ -220,7 +219,7 @@ class StreamWriter:
 
         return column_types
 
-    def _get_json_schema_types(self) -> Dict[str, str]:
+    def _get_json_schema_types(self) -> dict[str, str]:
         types = {}
         for key, val in self._schema.items():
             typ = val.get("type")
@@ -228,9 +227,8 @@ class StreamWriter:
 
         return types
 
-    def _is_invalid_struct_or_array(self, schema: Dict[str, Any]) -> bool:
-        """
-        Helper that detects issues with nested objects/arrays in the json schema.
+    def _is_invalid_struct_or_array(self, schema: dict[str, Any]) -> bool:
+        """Helper that detects issues with nested objects/arrays in the json schema.
         When a complex data type is detected (schema with oneOf) or a nested object without properties
         the columns' dtype will be casted to string to avoid pyarrow conversion issues.
         """
@@ -280,9 +278,8 @@ class StreamWriter:
         check_properties(schema)
         return result
 
-    def _get_glue_dtypes_from_json_schema(self, schema: Dict[str, Any]) -> Tuple[Dict[str, str], List[str]]:
-        """
-        Helper that infers glue dtypes from a json schema.
+    def _get_glue_dtypes_from_json_schema(self, schema: dict[str, Any]) -> tuple[dict[str, str], list[str]]:
+        """Helper that infers glue dtypes from a json schema.
         """
         type_mapper = GLUE_TYPE_MAPPING_DECIMAL if self._config.glue_catalog_float_as_decimal else GLUE_TYPE_MAPPING_DOUBLE
 
@@ -364,10 +361,10 @@ class StreamWriter:
         return column_types, json_columns
 
     @property
-    def _cursor_fields(self) -> Optional[List[str]]:
+    def _cursor_fields(self) -> Optional[list[str]]:
         return self._configured_stream.cursor_field
 
-    def append_message(self, message: Dict[str, Any]):
+    def append_message(self, message: dict[str, Any]):
         clean_message = self._drop_additional_top_level_properties(message)
         clean_message = self._json_schema_cast(clean_message)
         self._messages.append(clean_message)

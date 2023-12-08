@@ -2,14 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from collections import Mapping
+from collections.abc import Mapping
 
 from destination_kvdb.client import KvDbClient
 
 
 class KvDbWriter:
-    """
-    Data is written to KvDB in the following format:
+    """Data is written to KvDB in the following format:
         key: stream_name__ab__<record_extraction_timestamp>
         value: a JSON object representing the record's data
 

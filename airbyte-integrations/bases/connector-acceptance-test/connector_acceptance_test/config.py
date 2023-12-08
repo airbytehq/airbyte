@@ -4,10 +4,11 @@
 
 
 import logging
+from collections.abc import Mapping
 from copy import deepcopy
 from enum import Enum
 from pathlib import Path
-from typing import Generic, List, Mapping, Optional, Set, TypeVar
+from typing import Generic, Optional, TypeVar
 
 from pydantic import BaseModel, Field, root_validator, validator
 from pydantic.generics import GenericModel
@@ -15,7 +16,7 @@ from pydantic.generics import GenericModel
 config_path: str = Field(default="secrets/config.json", description="Path to a JSON object representing a valid connector configuration")
 invalid_config_path: str = Field(description="Path to a JSON object representing an invalid connector configuration")
 spec_path: str = Field(
-    default="secrets/spec.json", description="Path to a JSON object representing the spec expected to be output by this connector"
+    default="secrets/spec.json", description="Path to a JSON object representing the spec expected to be output by this connector",
 )
 configured_catalog_path: Optional[str] = Field(default=None, description="Path to configured catalog")
 timeout_seconds: int = Field(default=None, description="Test execution timeout_seconds", ge=0)
@@ -35,10 +36,10 @@ TestConfigT = TypeVar("TestConfigT")
 
 class BackwardCompatibilityTestsConfig(BaseConfig):
     previous_connector_version: str = Field(
-        regex=SEMVER_REGEX, default="latest", description="Previous connector version to use for backward compatibility tests."
+        regex=SEMVER_REGEX, default="latest", description="Previous connector version to use for backward compatibility tests.",
     )
     disable_for_version: Optional[str] = Field(
-        regex=SEMVER_REGEX, default=None, description="Disable backward compatibility tests for a specific connector version."
+        regex=SEMVER_REGEX, default=None, description="Disable backward compatibility tests for a specific connector version.",
     )
 
 
@@ -48,7 +49,7 @@ class SpecTestConfig(BaseConfig):
     timeout_seconds: int = timeout_seconds
     deployment_mode: Optional[str] = deployment_mode
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
-        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
+        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig(),
     )
 
 
@@ -69,7 +70,7 @@ class DiscoveryTestConfig(BaseConfig):
     timeout_seconds: int = timeout_seconds
     deployment_mode: Optional[str] = deployment_mode
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
-        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
+        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig(),
     )
 
 
@@ -82,7 +83,7 @@ class ExpectedRecordsConfig(BaseModel):
     extra_fields: bool = Field(False, description="Allow records to have other fields")
     exact_order: bool = Field(False, description="Ensure that records produced in exact same order")
     extra_records: bool = Field(
-        True, description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced"
+        True, description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced",
     )
 
     @validator("exact_order", always=True)
@@ -119,8 +120,8 @@ class IgnoredFieldsConfiguration(BaseConfig):
     bypass_reason: Optional[str] = Field(default=None, description="Reason why this field is considered ignored.")
 
 
-ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field(
-    description="For each stream, list of fields path ignoring in sequential reads test"
+ignored_fields: Optional[Mapping[str, list[IgnoredFieldsConfiguration]]] = Field(
+    description="For each stream, list of fields path ignoring in sequential reads test",
 )
 
 
@@ -128,19 +129,19 @@ class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     deployment_mode: Optional[str] = deployment_mode
     configured_catalog_path: Optional[str] = configured_catalog_path
-    empty_streams: Set[EmptyStreamConfiguration] = Field(
-        default_factory=set, description="We validate that all streams has records. These are exceptions"
+    empty_streams: set[EmptyStreamConfiguration] = Field(
+        default_factory=set, description="We validate that all streams has records. These are exceptions",
     )
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
     fail_on_extra_columns: bool = Field(True, description="Fail if extra top-level properties (i.e. columns) are detected in records.")
     # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
     validate_data_points: bool = Field(
-        False, description="Set whether we need to validate that all fields in all streams contained at least one data point"
+        False, description="Set whether we need to validate that all fields in all streams contained at least one data point",
     )
     expect_trace_message_on_failure: bool = Field(True, description="Ensure that a trace message is emitted when the connector crashes")
     timeout_seconds: int = timeout_seconds
-    ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = ignored_fields
+    ignored_fields: Optional[Mapping[str, list[IgnoredFieldsConfiguration]]] = ignored_fields
 
 
 class FullRefreshConfig(BaseConfig):
@@ -154,12 +155,12 @@ class FullRefreshConfig(BaseConfig):
     configured_catalog_path: Optional[str] = configured_catalog_path
     timeout_seconds: int = timeout_seconds
     deployment_mode: Optional[str] = deployment_mode
-    ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = ignored_fields
+    ignored_fields: Optional[Mapping[str, list[IgnoredFieldsConfiguration]]] = ignored_fields
 
 
 class FutureStateConfig(BaseConfig):
     future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
-    missing_streams: List[EmptyStreamConfiguration] = Field(default=[], description="List of missings streams with valid bypass reasons.")
+    missing_streams: list[EmptyStreamConfiguration] = Field(default=[], description="List of missings streams with valid bypass reasons.")
     bypass_reason: Optional[str]
 
 
@@ -170,7 +171,7 @@ class IncrementalConfig(BaseConfig):
     timeout_seconds: int = timeout_seconds
     deployment_mode: Optional[str] = deployment_mode
     skip_comprehensive_incremental_tests: Optional[bool] = Field(
-        description="Determines whether to skip more granular testing for incremental syncs", default=False
+        description="Determines whether to skip more granular testing for incremental syncs", default=False,
     )
 
     class Config:
@@ -179,7 +180,7 @@ class IncrementalConfig(BaseConfig):
 
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):
     bypass_reason: Optional[str]
-    tests: Optional[List[TestConfigT]]
+    tests: Optional[list[TestConfigT]]
 
     @validator("tests", always=True)
     def no_bypass_reason_when_tests_is_set(cls, tests, values):
@@ -210,7 +211,7 @@ class Config(BaseConfig):
         description="Corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run.",
     )
     custom_environment_variables: Optional[Mapping] = Field(
-        default={}, description="Mapping of custom environment variables to pass to the connector under test."
+        default={}, description="Mapping of custom environment variables to pass to the connector under test.",
     )
 
     @staticmethod
@@ -278,7 +279,7 @@ class Config(BaseConfig):
             dict: The migrated configuration if needed.
         """
         if ALLOW_LEGACY_CONFIG and cls.is_legacy(values):
-            logging.warn("The acceptance-test-config.yml file is in a legacy format. Please migrate to the latest format.")
+            logging.warning("The acceptance-test-config.yml file is in a legacy format. Please migrate to the latest format.")
             return cls.migrate_legacy_to_current_config(values)
         else:
             return values

@@ -3,6 +3,7 @@
 #
 
 import asyncclick as click
+
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
@@ -108,7 +109,7 @@ async def publish(
                 use_local_cdk=ctx.obj.get("use_local_cdk"),
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
-        ]
+        ],
     )
 
     main_logger.warn("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.")

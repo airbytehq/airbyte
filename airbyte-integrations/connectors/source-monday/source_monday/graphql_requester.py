@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping, MutableMapping
 from dataclasses import dataclass
 from datetime import datetime
 from functools import partial
-from typing import Any, Mapping, MutableMapping, Optional, Type, Union
+from typing import Any, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
@@ -27,9 +28,8 @@ class MondayGraphqlRequester(HttpRequester):
         self.nested_limit = InterpolatedString.create(self.nested_limit, parameters=parameters)
         self.name = parameters.get("name", "").lower()
 
-    def _ensure_type(self, t: Type, o: Any):
-        """
-        Ensure given object `o` is of type `t`
+    def _ensure_type(self, t: type, o: Any):
+        """Ensure given object `o` is of type `t`
         """
         if not isinstance(o, t):
             raise TypeError(f"{type(o)} {o} is not of type {t}")
@@ -54,13 +54,13 @@ class MondayGraphqlRequester(HttpRequester):
                 f"{argument}:{value}" if argument != "fromt" else f'from:"{value}"'
                 for argument, value in object_arguments.items()
                 if value is not None
-            ]
+            ],
         )
 
     def _build_query(self, object_name: str, field_schema: dict, **object_arguments) -> str:
-        """
-        Recursive function that builds a GraphQL query string by traversing given stream schema properties.
-        Attributes
+        """Recursive function that builds a GraphQL query string by traversing given stream schema properties.
+
+        Attributes:
             object_name (str): the name of root object
             field_schema (dict): configured catalog schema for current stream
             object_arguments (dict): arguments such as limit, page, ids, ... etc to be passed for given object
@@ -82,8 +82,7 @@ class MondayGraphqlRequester(HttpRequester):
         return f"{object_name}{arguments}{{{fields}}}"
 
     def _build_items_query(self, object_name: str, field_schema: dict, sub_page: Optional[int], **object_arguments) -> str:
-        """
-        Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
+        """Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
         See https://developer.monday.com/api-reference/docs/items-queries#items-queries
         """
         nested_limit = self.nested_limit.eval(self.config)
@@ -93,8 +92,7 @@ class MondayGraphqlRequester(HttpRequester):
         return f"boards({arguments}){{{query}}}"
 
     def _build_items_incremental_query(self, object_name: str, field_schema: dict, stream_slice: dict, **object_arguments) -> str:
-        """
-        Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
+        """Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
         See https://developer.monday.com/api-reference/docs/items-queries#items-queries
         """
         nested_limit = self.nested_limit.eval(self.config)
@@ -104,8 +102,7 @@ class MondayGraphqlRequester(HttpRequester):
         return self._build_query("items", field_schema, **object_arguments)
 
     def _build_teams_query(self, object_name: str, field_schema: dict, **object_arguments) -> str:
-        """
-        Special optimization needed for tests to pass successfully because of rate limits.
+        """Special optimization needed for tests to pass successfully because of rate limits.
         It makes a query cost less points, but it is never used in production
         """
         teams_limit = self.config.get("teams_limit")
@@ -117,8 +114,7 @@ class MondayGraphqlRequester(HttpRequester):
         return self._build_query(object_name=object_name, field_schema=field_schema, **object_arguments)
 
     def _build_activity_query(self, object_name: str, field_schema: dict, sub_page: Optional[int], **object_arguments) -> str:
-        """
-        Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
+        """Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
         See https://developer.monday.com/api-reference/docs/items-queries#items-queries
         """
         nested_limit = self.nested_limit.eval(self.config)
@@ -140,8 +136,7 @@ class MondayGraphqlRequester(HttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        Combines queries to a single GraphQL query.
+        """Combines queries to a single GraphQL query.
         """
         limit = self.limit.eval(self.config)
 

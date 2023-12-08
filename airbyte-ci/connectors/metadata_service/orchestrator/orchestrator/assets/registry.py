@@ -3,7 +3,6 @@
 #
 
 import json
-from typing import List
 
 import sentry_sdk
 from dagster import MetadataValue, OpExecutionContext, Output, asset
@@ -20,7 +19,7 @@ GROUP_NAME = "registry"
 
 @sentry_sdk.trace
 def persist_registry_to_json(
-    registry: ConnectorRegistryV0, registry_name: str, registry_directory_manager: GCSFileManager
+    registry: ConnectorRegistryV0, registry_name: str, registry_directory_manager: GCSFileManager,
 ) -> GCSFileHandle:
     """Persist the registry to a json file on GCS bucket
 
@@ -42,7 +41,7 @@ def persist_registry_to_json(
 @sentry_sdk.trace
 def generate_and_persist_registry(
     context: OpExecutionContext,
-    registry_entry_file_blobs: List[storage.Blob],
+    registry_entry_file_blobs: list[storage.Blob],
     registry_directory_manager: GCSFileManager,
     registry_name: str,
 ) -> Output[ConnectorRegistryV0]:
@@ -96,8 +95,7 @@ def generate_and_persist_registry(
 @asset(required_resource_keys={"slack", "registry_directory_manager", "latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
-    """
-    This asset is used to generate the oss registry from the registry entries.
+    """This asset is used to generate the oss registry from the registry entries.
     """
     registry_name = "oss"
     registry_directory_manager = context.resources.registry_directory_manager
@@ -114,8 +112,7 @@ def persisted_oss_registry(context: OpExecutionContext) -> Output[ConnectorRegis
 @asset(required_resource_keys={"slack", "registry_directory_manager", "latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def persisted_cloud_registry(context: OpExecutionContext) -> Output[ConnectorRegistryV0]:
-    """
-    This asset is used to generate the cloud registry from the registry entries.
+    """This asset is used to generate the cloud registry from the registry entries.
     """
     registry_name = "cloud"
     registry_directory_manager = context.resources.registry_directory_manager

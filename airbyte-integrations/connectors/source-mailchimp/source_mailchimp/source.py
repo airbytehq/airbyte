@@ -4,14 +4,16 @@
 
 
 import base64
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 import requests
+from requests.auth import AuthBase
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from requests.auth import AuthBase
 
 from .streams import (
     Automations,
@@ -32,14 +34,13 @@ from .streams import (
 class MailChimpAuthenticator:
     @staticmethod
     def get_oauth_data_center(access_token: str) -> str:
-        """
-        Every Mailchimp API request must be sent to a specific data center.
+        """Every Mailchimp API request must be sent to a specific data center.
         The data center is already embedded in API keys, but not OAuth access tokens.
         This method retrieves the data center for OAuth credentials.
         """
         try:
             response = requests.get(
-                "https://login.mailchimp.com/oauth2/metadata", headers={"Authorization": "OAuth {}".format(access_token)}
+                "https://login.mailchimp.com/oauth2/metadata", headers={"Authorization": f"OAuth {access_token}"},
             )
 
             # Requests to this endpoint will return a 200 status code even if the access token is invalid.
@@ -50,7 +51,7 @@ class MailChimpAuthenticator:
 
         # Handle any other exceptions that may occur.
         except Exception as e:
-            raise Exception(f"An error occured while retrieving the data center for your account. \n {repr(e)}")
+            raise Exception(f"An error occured while retrieving the data center for your account. \n {e!r}")
 
     def get_auth(self, config: Mapping[str, Any]) -> AuthBase:
         authorization = config.get("credentials", {})
@@ -61,7 +62,7 @@ class MailChimpAuthenticator:
             apikey = authorization.get("apikey") or config.get("apikey")
             if not apikey:
                 raise Exception("Please provide a valid API key for authentication.")
-            auth_string = f"anystring:{apikey}".encode("utf8")
+            auth_string = f"anystring:{apikey}".encode()
             b64_encoded = base64.b64encode(auth_string).decode("utf8")
             auth = TokenAuthenticator(token=b64_encoded, auth_method="Basic")
             auth.data_center = apikey.split("-").pop()
@@ -78,11 +79,11 @@ class MailChimpAuthenticator:
 
 
 class SourceMailchimp(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         try:
             authenticator = MailChimpAuthenticator().get_auth(config)
             response = requests.get(
-                f"https://{authenticator.data_center}.api.mailchimp.com/3.0/ping", headers=authenticator.get_auth_header()
+                f"https://{authenticator.data_center}.api.mailchimp.com/3.0/ping", headers=authenticator.get_auth_header(),
             )
 
             # A successful response will return a simple JSON object with a single key: health_status.
@@ -99,7 +100,7 @@ class SourceMailchimp(AbstractSource):
         except Exception as e:
             return False, repr(e)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         authenticator = MailChimpAuthenticator().get_auth(config)
         campaign_id = config.get("campaign_id")
 

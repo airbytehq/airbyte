@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any, Optional
 
 from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.models import ConnectorSpecification
@@ -22,8 +23,7 @@ _V3_DEPRECATION_FIELD_MAPPING = {
 
 class SourceS3(FileBasedSource):
     def read_config(self, config_path: str) -> Mapping[str, Any]:
-        """
-        Used to override the default read_config so that when the new file-based S3 connector processes a config
+        """Used to override the default read_config so that when the new file-based S3 connector processes a config
         in the legacy format, it can be transformed into the new config. This happens in entrypoint before we
         validate the config against the new spec.
         """
@@ -58,7 +58,7 @@ class SourceS3(FileBasedSource):
                     "description": "Endpoint to an S3 compatible service. Leave empty to use AWS. "
                     "The custom endpoint must be secure, but the 'https' prefix is not required.",
                     "pattern": "^(?!http://).*$",  # ignore-https-check
-                }
+                },
             )
 
         return ConnectorSpecification(
@@ -70,9 +70,8 @@ class SourceS3(FileBasedSource):
         return "streams" in config
 
     @staticmethod
-    def _clean_required_fields(v3_field: Dict[str, Any]) -> None:
-        """
-        Not having V3 fields root level as part of the `required` field is not enough as the platform will create empty objects for those.
+    def _clean_required_fields(v3_field: dict[str, Any]) -> None:
+        """Not having V3 fields root level as part of the `required` field is not enough as the platform will create empty objects for those.
         For example, filling all non-hidden fields from the form will create a config like:
         ```
         {

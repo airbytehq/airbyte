@@ -3,29 +3,29 @@
 #
 
 from collections import defaultdict
-from typing import Any, Dict, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any, Optional
 
-from airbyte_cdk.models import AirbyteRecordMessage
 from genson import SchemaBuilder, SchemaNode
 from genson.schema.strategies.object import Object
 from genson.schema.strategies.scalar import Number
 
+from airbyte_cdk.models import AirbyteRecordMessage
+
 
 class NoRequiredObj(Object):
-    """
-    This class has Object behaviour, but it does not generate "required[]" fields
+    """This class has Object behaviour, but it does not generate "required[]" fields
     every time it parses object. So we dont add unnecessary extra field.
     """
 
     def to_schema(self) -> Mapping[str, Any]:
-        schema: Dict[str, Any] = super(NoRequiredObj, self).to_schema()
+        schema: dict[str, Any] = super(NoRequiredObj, self).to_schema()
         schema.pop("required", None)
         return schema
 
 
 class IntegerToNumber(Number):
-    """
-    This class has the regular Number behaviour, but it will never emit an integer type.
+    """This class has the regular Number behaviour, but it will never emit an integer type.
     """
 
     def __init__(self, node_class: SchemaNode):
@@ -38,12 +38,11 @@ class NoRequiredSchemaBuilder(SchemaBuilder):
 
 
 # This type is inferred from the genson lib, but there is no alias provided for it - creating it here for type safety
-InferredSchema = Dict[str, Any]
+InferredSchema = dict[str, Any]
 
 
 class SchemaInferrer:
-    """
-    This class is used to infer a JSON schema which fits all the records passed into it
+    """This class is used to infer a JSON schema which fits all the records passed into it
     throughout its lifecycle via the accumulate method.
 
     Instances of this class are stateful, meaning they build their inferred schemas
@@ -51,7 +50,7 @@ class SchemaInferrer:
 
     """
 
-    stream_to_builder: Dict[str, SchemaBuilder]
+    stream_to_builder: dict[str, SchemaBuilder]
 
     def __init__(self) -> None:
         self.stream_to_builder = defaultdict(NoRequiredSchemaBuilder)
@@ -60,9 +59,8 @@ class SchemaInferrer:
         """Uses the input record to add to the inferred schemas maintained by this object"""
         self.stream_to_builder[record.stream].add_object(record.data)
 
-    def get_inferred_schemas(self) -> Dict[str, InferredSchema]:
-        """
-        Returns the JSON schemas for all encountered streams inferred by inspecting all records
+    def get_inferred_schemas(self) -> dict[str, InferredSchema]:
+        """Returns the JSON schemas for all encountered streams inferred by inspecting all records
         passed via the accumulate method
         """
         schemas = {}
@@ -71,8 +69,7 @@ class SchemaInferrer:
         return schemas
 
     def _clean(self, node: InferredSchema) -> InferredSchema:
-        """
-        Recursively cleans up a produced schema:
+        """Recursively cleans up a produced schema:
         - remove anyOf if one of them is just a null value
         - remove properties of type "null"
         """
@@ -94,7 +91,6 @@ class SchemaInferrer:
         return node
 
     def get_stream_schema(self, stream_name: str) -> Optional[InferredSchema]:
-        """
-        Returns the inferred JSON schema for the specified stream. Might be `None` if there were no records for the given stream name.
+        """Returns the inferred JSON schema for the specified stream. Might be `None` if there were no records for the given stream name.
         """
         return self._clean(self.stream_to_builder[stream_name].to_schema()) if stream_name in self.stream_to_builder else None

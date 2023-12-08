@@ -12,8 +12,7 @@ from faunadb.objects import FaunaTime, Query, Ref, SetRef
 
 
 def fauna_doc_to_airbyte(doc: dict) -> dict:
-    """
-    Converts a full fauna document into the airbyte representation.
+    """Converts a full fauna document into the airbyte representation.
 
     This will mutate and return the input `doc`. If you don't want this behavior, deep copy
     the dict before passing it in.
@@ -24,8 +23,7 @@ def fauna_doc_to_airbyte(doc: dict) -> dict:
 
 
 def _fauna_value_to_airbyte(value: any) -> any:
-    """
-    Converts a fauna document to an airbyte-serializable document. This will simply replace
+    """Converts a fauna document to an airbyte-serializable document. This will simply replace
     all FaunaTime, Ref, dates, and byte arrays with native json objects.
 
     This will mutate `value` (if possible), and return the new `value`.

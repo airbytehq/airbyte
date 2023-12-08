@@ -80,7 +80,7 @@ async def test_check_socat_version(mocker):
 
     # Mock the 'stdout' method and return a "socat version" line but with a version structure not matching the pattern from the socat -V command
     mock_stdout = mocker.AsyncMock(
-        return_value="socat by Gerhard Rieger and contributors - see www.dest-unreach.org\nsocat version 1.1 on 06 Nov 2022 08:15:51"
+        return_value="socat by Gerhard Rieger and contributors - see www.dest-unreach.org\nsocat version 1.1 on 06 Nov 2022 08:15:51",
     )
     mock_container.with_exec.return_value.stdout = mock_stdout
 
@@ -92,7 +92,7 @@ async def test_check_socat_version(mocker):
 
     # Mock the 'stdout' method and return a correct "socat version" line but with a version different from the expected one
     mock_stdout = mocker.AsyncMock(
-        return_value="socat by Gerhard Rieger and contributors - see www.dest-unreach.org\nsocat version 1.7.4.4 on 06 Nov 2022 08:15:51"
+        return_value="socat by Gerhard Rieger and contributors - see www.dest-unreach.org\nsocat version 1.7.4.4 on 06 Nov 2022 08:15:51",
     )
     mock_container.with_exec.return_value.stdout = mock_stdout
 
@@ -104,7 +104,7 @@ async def test_check_socat_version(mocker):
 
     # Mock the 'stdout' method and return a correct "socat version" matching the expected one
     mock_stdout = mocker.AsyncMock(
-        return_value=f"socat by Gerhard Rieger and contributors - see www.dest-unreach.org\nsocat version {expected_version} on 06 Nov 2022 08:15:51"
+        return_value=f"socat by Gerhard Rieger and contributors - see www.dest-unreach.org\nsocat version {expected_version} on 06 Nov 2022 08:15:51",
     )
     mock_container.with_exec.return_value.stdout = mock_stdout
 

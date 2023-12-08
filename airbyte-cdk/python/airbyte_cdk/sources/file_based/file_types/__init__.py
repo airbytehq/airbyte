@@ -1,4 +1,5 @@
-from typing import Any, Mapping, Type
+from collections.abc import Mapping
+from typing import Any, Type
 
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
@@ -13,7 +14,7 @@ from .jsonl_parser import JsonlParser
 from .parquet_parser import ParquetParser
 from .unstructured_parser import UnstructuredParser
 
-default_parsers: Mapping[Type[Any], FileTypeParser] = {
+default_parsers: Mapping[type[Any], FileTypeParser] = {
     AvroFormat: AvroParser(),
     CsvFormat: CsvParser(),
     JsonlFormat: JsonlParser(),

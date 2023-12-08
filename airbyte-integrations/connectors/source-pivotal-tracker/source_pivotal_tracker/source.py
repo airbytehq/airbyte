@@ -4,9 +4,11 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -33,7 +35,7 @@ class PivotalTrackerStream(HttpStream, ABC):
         return {"offset": current_offset + page_size}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params: MutableMapping[str, Any] = {}
         if next_page_token:
@@ -48,7 +50,7 @@ class PivotalTrackerStream(HttpStream, ABC):
 
 class Projects(PivotalTrackerStream):
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "projects"
 
@@ -57,12 +59,11 @@ class ProjectBasedStream(PivotalTrackerStream):
     @property
     @abstractmethod
     def subpath(self) -> str:
-        """
-        Within the project. For example, "stories" producing:
+        """Within the project. For example, "stories" producing:
         https://www.pivotaltracker.com/services/v5/projects/{project_id}/stories
         """
 
-    def __init__(self, project_ids: List[str], **kwargs):
+    def __init__(self, project_ids: list[str], **kwargs):
         super().__init__(**kwargs)
         self.project_ids = project_ids
 
@@ -122,22 +123,20 @@ class SourcePivotalTracker(AbstractSource):
         return PivotalAuthenticator(token)
 
     @staticmethod
-    def _generate_project_ids(auth: HttpAuthenticator) -> List[str]:
-        """
-        Args:
+    def _generate_project_ids(auth: HttpAuthenticator) -> list[str]:
+        """Args:
             config (dict): Dict representing connector's config
         Returns:
             List[str]: List of project ids accessible by the api_token
         """
-
         projects = Projects(authenticator=auth)
         records = projects.read_records(SyncMode.full_refresh)
-        project_ids: List[str] = []
+        project_ids: list[str] = []
         for record in records:
             project_ids.append(record["id"])
         return project_ids
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             auth = SourcePivotalTracker._get_authenticator(config)
             self._generate_project_ids(auth)
@@ -145,7 +144,7 @@ class SourcePivotalTracker(AbstractSource):
         except Exception as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         auth = self._get_authenticator(config)
         project_ids = self._generate_project_ids(auth)
         project_args = {"project_ids": project_ids, "authenticator": auth}

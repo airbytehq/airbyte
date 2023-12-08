@@ -5,7 +5,7 @@
 
 import json
 import re
-from typing import Any, Dict, Union
+from typing import Any, Union
 
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
@@ -62,7 +62,7 @@ class SourceFilesAbstractSpec(BaseModel):
     )
 
     format: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat] = Field(
-        default="csv", title="File Format", description="The format of the files you'd like to replicate", order=20
+        default="csv", title="File Format", description="The format of the files you'd like to replicate", order=20,
     )
 
     user_schema: str = Field(
@@ -89,8 +89,7 @@ class SourceFilesAbstractSpec(BaseModel):
 
     @staticmethod
     def remove_enum_allOf(schema: dict) -> dict:
-        """
-        allOfs are not supported by the UI, but pydantic is automatically writing them for enums.
+        """AllOfs are not supported by the UI, but pydantic is automatically writing them for enums.
         Unpack them into the root
         """
         objects_to_check = schema["properties"]["format"]["oneOf"]
@@ -119,8 +118,8 @@ class SourceFilesAbstractSpec(BaseModel):
         return pyschema
 
     @classmethod
-    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        """we're overriding the schema classmethod to enable some post-processing"""
+    def schema(cls, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        """We're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema(*args, **kwargs)
         cls.check_provider_added(schema)
         schema = cls.change_format_to_oneOf(schema)

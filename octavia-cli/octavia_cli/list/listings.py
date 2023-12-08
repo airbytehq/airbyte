@@ -3,12 +3,11 @@
 #
 
 import abc
-from typing import List
 
 import airbyte_api_client
-import octavia_cli.list.formatting as formatting
 from airbyte_api_client.api import connection_api, destination_api, destination_definition_api, source_api, source_definition_api
 from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
+from octavia_cli.list import formatting
 
 
 class BaseListing(abc.ABC):
@@ -25,7 +24,7 @@ class BaseListing(abc.ABC):
     @abc.abstractmethod
     def fields_to_display(
         self,
-    ) -> List[str]:  # pragma: no cover
+    ) -> list[str]:  # pragma: no cover
         pass
 
     @property
@@ -53,11 +52,11 @@ class BaseListing(abc.ABC):
     def __init__(self, api_client: airbyte_api_client.ApiClient):
         self.api_instance = self.api(api_client)
 
-    def _parse_response(self, api_response) -> List[List[str]]:
+    def _parse_response(self, api_response) -> list[list[str]]:
         items = [[item[field] for field in self.fields_to_display] for item in api_response[self.list_field_in_response]]
         return items
 
-    def get_listing(self) -> List[List[str]]:
+    def get_listing(self) -> list[list[str]]:
         api_response = self._list_fn(self.api_instance, **self.list_function_kwargs, **self.COMMON_LIST_FUNCTION_KWARGS)
         return self._parse_response(api_response)
 

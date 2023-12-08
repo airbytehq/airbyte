@@ -3,13 +3,15 @@
 #
 
 
+from collections.abc import Iterable, Mapping
 from logging import Logger
-from typing import Any, Iterable, Mapping
+from typing import Any
+
+from typesense import Client
 
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_typesense.writer import TypesenseWriter
-from typesense import Client
 
 
 def get_client(config: Mapping[str, Any]) -> Client:
@@ -25,7 +27,7 @@ def get_client(config: Mapping[str, Any]) -> Client:
 
 class DestinationTypesense(Destination):
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         client = get_client(config=config)
 
@@ -58,4 +60,4 @@ class DestinationTypesense(Destination):
             client.collections["_airbyte"].delete()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!r}")

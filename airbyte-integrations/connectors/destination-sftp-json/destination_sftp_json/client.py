@@ -6,7 +6,7 @@
 import contextlib
 import errno
 import json
-from typing import Dict, List, TextIO
+from typing import TextIO
 
 import paramiko
 import smart_open
@@ -47,7 +47,7 @@ class SftpClient:
         self.username = username
         self.password = password
         self.destination_path = destination_path
-        self._files: Dict[str, TextIO] = {}
+        self._files: dict[str, TextIO] = {}
 
     def __enter__(self):
         return self
@@ -70,13 +70,13 @@ class SftpClient:
         for file in self._files.values():
             file.close()
 
-    def write(self, stream: str, record: Dict) -> None:
+    def write(self, stream: str, record: dict) -> None:
         if stream not in self._files:
             self._files[stream] = self._open(stream)
         text = json.dumps(record)
         self._files[stream].write(f"{text}\n")
 
-    def read_data(self, stream: str) -> List[Dict]:
+    def read_data(self, stream: str) -> list[dict]:
         with self._open(stream) as file:
             pos = file.tell()
             file.seek(0)
@@ -90,7 +90,7 @@ class SftpClient:
             try:
                 path = self._get_path(stream)
                 sftp.remove(path)
-            except IOError as err:
+            except OSError as err:
                 # Ignore the case where the file doesn't exist, only raise the
                 # exception if it's something else
                 if err.errno != errno.ENOENT:

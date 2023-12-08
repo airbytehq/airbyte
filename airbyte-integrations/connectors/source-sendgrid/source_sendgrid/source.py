@@ -3,9 +3,11 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 import pendulum
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -32,7 +34,7 @@ from .streams import (
 
 
 class SourceSendgrid(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             start_time = config.get("start_time")
             if start_time and isinstance(start_time, str):
@@ -46,7 +48,7 @@ class SourceSendgrid(AbstractSource):
         except Exception as error:
             return False, f"Unable to connect to Sendgrid API with the provided credentials - {error}"
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         authenticator = TokenAuthenticator(config["apikey"])
         start_time = config.get("start_time")
 

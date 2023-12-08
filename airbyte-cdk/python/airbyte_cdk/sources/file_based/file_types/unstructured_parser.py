@@ -3,12 +3,15 @@
 #
 import logging
 import traceback
+from collections.abc import Iterable, Mapping
 from io import BytesIO, IOBase
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import backoff
 import dpath.util
 import requests
+from unstructured.file_utils.filetype import FILETYPE_TO_MIMETYPE, STR_TO_FILETYPE, FileType, detect_filetype
+
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.unstructured_format import (
     APIParameterConfigModel,
@@ -22,7 +25,6 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
 from airbyte_cdk.utils import is_cloud_environment
-from unstructured.file_utils.filetype import FILETYPE_TO_MIMETYPE, STR_TO_FILETYPE, FileType, detect_filetype
 
 unstructured_partition_pdf = None
 unstructured_partition_docx = None
@@ -51,8 +53,7 @@ def _import_unstructured() -> None:
 
 
 def user_error(e: Exception) -> bool:
-    """
-    Return True if this exception is caused by user error, False otherwise.
+    """Return True if this exception is caused by user error, False otherwise.
     """
     if not isinstance(e, requests.exceptions.RequestException):
         return False
@@ -65,21 +66,18 @@ CLOUD_DEPLOYMENT_MODE = "cloud"
 class UnstructuredParser(FileTypeParser):
     @property
     def parser_max_n_files_for_schema_inference(self) -> Optional[int]:
-        """
-        Just check one file as the schema is static
+        """Just check one file as the schema is static
         """
         return 1
 
     @property
     def parser_max_n_files_for_parsability(self) -> Optional[int]:
-        """
-        Do not check any files for parsability because it might be an expensive operation and doesn't give much confidence whether the sync will succeed.
+        """Do not check any files for parsability because it might be an expensive operation and doesn't give much confidence whether the sync will succeed.
         """
         return 0
 
     def get_parser_defined_primary_key(self, config: FileBasedStreamConfig) -> Optional[str]:
-        """
-        Return the document_key field as the primary key.
+        """Return the document_key field as the primary key.
 
         his will pre-select the document key column as the primary key when setting up a connection, making it easier for the user to configure normalization in the destination.
         """
@@ -118,7 +116,7 @@ class UnstructuredParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
-    ) -> Iterable[Dict[str, Any]]:
+    ) -> Iterable[dict[str, Any]]:
         format = _extract_format(config)
         with stream_reader.open_file(file, self.file_read_mode, None, logger) as file_handle:
             try:
@@ -134,13 +132,13 @@ class UnstructuredParser(FileTypeParser):
                 # otherwise, we raise the error to fail the sync
                 if format.skip_unprocessable_files:
                     exception_str = str(e)
-                    logger.warn(f"File {file.uri} caused an error during parsing: {exception_str}.")
+                    logger.warning(f"File {file.uri} caused an error during parsing: {exception_str}.")
                     yield {
                         "content": None,
                         "document_key": file.uri,
                         "_ab_source_file_parse_error": exception_str,
                     }
-                    logger.warn(f"File {file.uri} cannot be parsed. Skipping it.")
+                    logger.warning(f"File {file.uri} cannot be parsed. Skipping it.")
                 else:
                     raise e
 
@@ -165,8 +163,8 @@ class UnstructuredParser(FileTypeParser):
 
             return result
 
-    def _params_to_dict(self, params: Optional[List[APIParameterConfigModel]], strategy: str) -> Dict[str, Union[str, List[str]]]:
-        result_dict: Dict[str, Union[str, List[str]]] = {"strategy": strategy}
+    def _params_to_dict(self, params: Optional[list[APIParameterConfigModel]], strategy: str) -> dict[str, Union[str, list[str]]]:
+        result_dict: dict[str, Union[str, list[str]]] = {"strategy": strategy}
         if params is None:
             return result_dict
         for item in params:
@@ -185,9 +183,8 @@ class UnstructuredParser(FileTypeParser):
 
         return result_dict
 
-    def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
-        """
-        Perform a connection check for the parser config:
+    def check_config(self, config: FileBasedStreamConfig) -> tuple[bool, Optional[str]]:
+        """Perform a connection check for the parser config:
         - Verify that encryption is enabled if the API is hosted on a cloud instance.
         - Verify that the API can extract text from a file.
 
@@ -211,10 +208,9 @@ class UnstructuredParser(FileTypeParser):
 
     @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=5, giveup=user_error)
     def _read_file_remotely_with_retries(
-        self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str
+        self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str,
     ) -> str:
-        """
-        Read a file remotely, retrying up to 5 times if the error is not caused by user error. This is useful for transient network errors or the API server being overloaded temporarily.
+        """Read a file remotely, retrying up to 5 times if the error is not caused by user error. This is useful for transient network errors or the API server being overloaded temporarily.
         """
         return self._read_file_remotely(file_handle, format, filetype, strategy)
 
@@ -265,8 +261,7 @@ class UnstructuredParser(FileTypeParser):
         return RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=remote_file.uri, message=message)
 
     def _get_filetype(self, file: IOBase, remote_file: RemoteFile) -> Optional[FileType]:
-        """
-        Detect the file type based on the file name and the file content.
+        """Detect the file type based on the file name and the file content.
 
         There are three strategies to determine the file type:
         1. Use the mime type if available (only some sources support it)
@@ -286,7 +281,7 @@ class UnstructuredParser(FileTypeParser):
         file_type = detect_filetype(
             filename=remote_file.uri,
         )
-        if file_type is not None and not file_type == FileType.UNK:
+        if file_type is not None and file_type != FileType.UNK:
             return file_type
 
         type_based_on_content = detect_filetype(file=file)
@@ -296,17 +291,17 @@ class UnstructuredParser(FileTypeParser):
 
         return type_based_on_content
 
-    def _supported_file_types(self) -> List[Any]:
+    def _supported_file_types(self) -> list[Any]:
         return [FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX]
 
     def _get_file_type_error_message(self, file_type: FileType) -> str:
         supported_file_types = ", ".join([str(type) for type in self._supported_file_types()])
         return f"File type {file_type} is not supported. Supported file types are {supported_file_types}"
 
-    def _render_markdown(self, elements: List[Any]) -> str:
-        return "\n\n".join((self._convert_to_markdown(el) for el in elements))
+    def _render_markdown(self, elements: list[Any]) -> str:
+        return "\n\n".join(self._convert_to_markdown(el) for el in elements)
 
-    def _convert_to_markdown(self, el: Dict[str, Any]) -> str:
+    def _convert_to_markdown(self, el: dict[str, Any]) -> str:
         if dpath.util.get(el, "type") == "Title":
             heading_str = "#" * (dpath.util.get(el, "metadata/category_depth", default=1) or 1)
             return f"{heading_str} {dpath.util.get(el, 'text')}"

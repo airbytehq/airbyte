@@ -17,8 +17,7 @@ RELEASE_URL = os.getenv("RELEASE_URL", "https://connectors.airbyte.com/files/air
 
 
 def _get_custom_certificate_path():
-    """
-    Returns the path to the custom certificate file if certifi is installed, otherwise None.
+    """Returns the path to the custom certificate file if certifi is installed, otherwise None.
 
     HACK: This is a workaround for the fact that the pyinstaller binary does not know how or where to
     find the ssl certificates file. This happens because the binary is built on a different system
@@ -41,12 +40,11 @@ def _get_custom_certificate_path():
 
         return certifi.where()
     except ImportError:
-        return
+        return None
 
 
 def get_ssl_context():
-    """
-    Returns an ssl.SSLContext object with the custom certificate file if certifi is installed, otherwise
+    """Returns an ssl.SSLContext object with the custom certificate file if certifi is installed, otherwise
     returns the default ssl.SSLContext object.
     """
     certifi_path = _get_custom_certificate_path()
@@ -57,15 +55,14 @@ def get_ssl_context():
 
 
 def get_airbyte_os_name():
-    """
-    Returns 'ubuntu' if the system is Linux or 'macos' if the system is macOS.
+    """Returns 'ubuntu' if the system is Linux or 'macos' if the system is macOS.
     """
     OS = os.uname().sysname
     if OS == "Linux":
-        print(f"Linux based system detected.")
+        print("Linux based system detected.")
         return "ubuntu"
     elif OS == "Darwin":
-        print(f"macOS based system detected.")
+        print("macOS based system detected.")
         return "macos"
     else:
         return None

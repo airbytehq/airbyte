@@ -2,15 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from os import getenv
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, Optional
 
 import pendulum
+from requests import HTTPError
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from requests import HTTPError
 from source_amazon_seller_partner.auth import AWSAuthenticator
 from source_amazon_seller_partner.constants import get_marketplaces
 from source_amazon_seller_partner.streams import (
@@ -97,9 +99,8 @@ class SourceAmazonSellerPartner(AbstractSource):
         }
         return stream_kwargs
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        """
-        Check connection to Amazon SP API by requesting the Orders endpoint
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
+        """Check connection to Amazon SP API by requesting the Orders endpoint
         This endpoint is not available for vendor-only Seller accounts,
         the Orders endpoint will then return a 403 error
         Therefore made an exception for 403 errors (when vendor-only accounts).
@@ -129,9 +130,8 @@ class SourceAmazonSellerPartner(AbstractSource):
             error_message = e.response.json().get("error_description") if isinstance(e, HTTPError) else e
             return False, error_message
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """:param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         self.validate_stream_report_options(config)
         streams = []
@@ -213,18 +213,18 @@ class SourceAmazonSellerPartner(AbstractSource):
     @staticmethod
     def validate_stream_report_options(config: Mapping[str, Any]) -> None:
         if len([x.get("stream_name") for x in config.get("report_options_list", [])]) != len(
-            set(x.get("stream_name") for x in config.get("report_options_list", []))
+            set(x.get("stream_name") for x in config.get("report_options_list", [])),
         ):
             raise AmazonConfigException(message="Stream name should be unique among all Report options list")
         for stream_report_option in config.get("report_options_list", []):
             if len([x.get("option_name") for x in stream_report_option.get("options_list")]) != len(
-                set(x.get("option_name") for x in stream_report_option.get("options_list"))
+                set(x.get("option_name") for x in stream_report_option.get("options_list")),
             ):
                 raise AmazonConfigException(
-                    message=f"Option names should be unique for `{stream_report_option.get('stream_name')}` report options"
+                    message=f"Option names should be unique for `{stream_report_option.get('stream_name')}` report options",
                 )
 
     @staticmethod
-    def get_stream_report_options_list(report_name: str, config: Mapping[str, Any]) -> Optional[List[Mapping[str, Any]]]:
+    def get_stream_report_options_list(report_name: str, config: Mapping[str, Any]) -> Optional[list[Mapping[str, Any]]]:
         if any(x for x in config.get("report_options_list", []) if x.get("stream_name") == report_name):
             return [x.get("options_list") for x in config.get("report_options_list") if x.get("stream_name") == report_name][0]

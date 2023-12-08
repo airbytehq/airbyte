@@ -2,9 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, List, Mapping, Optional, Tuple
+from collections.abc import Iterable, Mapping
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -53,7 +55,7 @@ class Xkcd(XkcdStream):
 
 # Source
 class SourceXkcd(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             xkcd = Xkcd()
             xkcd_gen = xkcd.read_records(sync_mode=SyncMode.full_refresh)
@@ -62,8 +64,8 @@ class SourceXkcd(AbstractSource):
         except Exception as error:
             return (
                 False,
-                f"Unable to connect to XKCD - {repr(error)}",
+                f"Unable to connect to XKCD - {error!r}",
             )
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         return [Xkcd()]

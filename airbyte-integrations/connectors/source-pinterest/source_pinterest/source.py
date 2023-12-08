@@ -5,10 +5,12 @@
 import copy
 import logging
 from base64 import standard_b64encode
-from typing import Any, List, Mapping, Tuple, Type
+from collections.abc import Mapping
+from typing import Any
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -79,7 +81,7 @@ class SourcePinterest(AbstractSource):
 
         if not start_date or config["start_date"] < latest_date_allowed_by_api:
             logger.info(
-                f"Current start_date: {start_date} does not meet API report requirements. Resetting start_date to: {latest_date_allowed_by_api}"
+                f"Current start_date: {start_date} does not meet API report requirements. Resetting start_date to: {latest_date_allowed_by_api}",
             )
             config["start_date"] = latest_date_allowed_by_api
 
@@ -89,7 +91,7 @@ class SourcePinterest(AbstractSource):
     def get_authenticator(config):
         config = config.get("credentials") or config
         credentials_base64_encoded = standard_b64encode(
-            (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii")
+            (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii"),
         ).decode("ascii")
         auth = f"Basic {credentials_base64_encoded}"
 
@@ -101,7 +103,7 @@ class SourcePinterest(AbstractSource):
             refresh_token=config.get("refresh_token"),
         )
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
         url = f"{PinterestStream.url_base}user_account"
@@ -118,7 +120,7 @@ class SourcePinterest(AbstractSource):
         except requests.exceptions.RequestException as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         config["authenticator"] = self.get_authenticator(config)
         report_config = self._validate_and_transform(config, amount_of_days_allowed_for_lookup=913)
         config = self._validate_and_transform(config)
@@ -165,8 +167,8 @@ class SourcePinterest(AbstractSource):
             ProductItemReport(ad_accounts, config=report_config),
         ] + self.get_custom_report_streams(ad_accounts, config=report_config)
 
-    def get_custom_report_streams(self, parent, config: dict) -> List[Type[Stream]]:
-        """return custom report streams"""
+    def get_custom_report_streams(self, parent, config: dict) -> list[type[Stream]]:
+        """Return custom report streams"""
         custom_streams = []
         for report_config in config.get("custom_reports", []):
             report_config["authenticator"] = config["authenticator"]

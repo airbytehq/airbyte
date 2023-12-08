@@ -6,6 +6,7 @@
 from pathlib import Path
 
 import pytest
+
 from connector_ops import qa_checks, utils
 
 
@@ -196,8 +197,8 @@ def test_check_missing_migration_guide(mocker, tmp_path, capsys):
                 "2.0.0": {
                     "upgradeDeadline": "2021-01-01",
                     "message": "This is a breaking change",
-                }
-            }
+                },
+            },
         },
     }
     mocker.patch.object(qa_checks.Connector, "metadata", mock_metadata_dict)
@@ -239,7 +240,7 @@ def test_check_invalid_migration_guides(mocker, tmp_path, capsys, test_file, exp
     mock_metadata_dict = {"name": "Foobar", "documentationUrl": tmp_path, "releases": {"breakingChanges": mock_breaking_change_dict}}
 
     test_file = Path("airbyte-ci/connectors/connector_ops/tests/test_migration_files") / test_file
-    with open(test_file, "r") as f:
+    with open(test_file) as f:
         contents = f.read()
 
     with open(mock_migration_file, "w") as f:

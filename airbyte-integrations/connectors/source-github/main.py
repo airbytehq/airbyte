@@ -5,9 +5,10 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_github import SourceGithub
 from source_github.config_migrations import MigrateBranch, MigrateRepository
+
+from airbyte_cdk.entrypoint import launch
 
 if __name__ == "__main__":
     source = SourceGithub()

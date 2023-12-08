@@ -3,8 +3,9 @@
 #
 
 import logging
+from collections.abc import MutableMapping
 from datetime import datetime, timedelta
-from typing import Any, MutableMapping
+from typing import Any
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -45,16 +46,15 @@ class Cursor(DefaultFileBasedCursor):
                 **state,
                 **{
                     Cursor._V3_MIN_SYNC_DATE_FIELD: datetime.strftime(
-                        self._v3_migration_start_datetime, DefaultFileBasedCursor.DATE_TIME_FORMAT
-                    )
+                        self._v3_migration_start_datetime, DefaultFileBasedCursor.DATE_TIME_FORMAT,
+                    ),
                 },
             }
         else:
             return state
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
-        """
-        Never sync files earlier than the v3 migration start date. V3 purged the history from the state, so we assume all files were already synced
+        """Never sync files earlier than the v3 migration start date. V3 purged the history from the state, so we assume all files were already synced
         Else if the currenty sync is migrating from v3 to v4, sync all files that were modified within one hour of the last sync
         Else sync according to the default logic
         """
@@ -87,8 +87,7 @@ class Cursor(DefaultFileBasedCursor):
 
     @staticmethod
     def _convert_legacy_state(legacy_state: StreamState) -> MutableMapping[str, Any]:
-        """
-        Transform the history from the old state message format to the new.
+        """Transform the history from the old state message format to the new.
 
         e.g.
         {

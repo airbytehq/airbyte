@@ -7,14 +7,17 @@ import logging
 import sys
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import timedelta
-from functools import cached_property, lru_cache, reduce
+from functools import cached_property, lru_cache
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from typing import Any, Optional, Union
 
 import backoff
 import pendulum as pendulum
 import requests
+from requests import HTTPError, codes
+
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.models.airbyte_protocol import SyncMode
@@ -28,7 +31,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
-from requests import HTTPError, codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
@@ -67,7 +69,6 @@ CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items(
 
 def retry_token_expired_handler(**kwargs):
     """Retry helper when token expired"""
-
     return backoff.on_exception(
         backoff.expo,
         HubspotInvalidAuth,
@@ -76,12 +77,11 @@ def retry_token_expired_handler(**kwargs):
 
 
 class RecordUnnester:
-    def __init__(self, fields: Optional[List[str]] = None):
+    def __init__(self, fields: Optional[list[str]] = None):
         self.fields = fields or []
 
     def unnest(self, records: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
-        """
-        In order to not make the users query their destinations for complicated json fields, duplicate some nested data as top level fields.
+        """In order to not make the users query their destinations for complicated json fields, duplicate some nested data as top level fields.
         For instance:
         {"id": 1, "updatedAt": "2020-01-01", "properties": {"hs_note_body": "World's best boss", "hs_created_by": "Michael Scott"}}
         becomes
@@ -93,7 +93,6 @@ class RecordUnnester:
             "properties_hs_created_by": "Michael Scott"
         }
         """
-
         for record in records:
             fields_to_unnest = self.fields + ["properties"]
             data_to_unnest = {field: record.get(field, {}) for field in fields_to_unnest}
@@ -153,7 +152,7 @@ def retry_after_handler(fixed_retry_after=None, **kwargs):
 
 
 class HubspotAvailabilityStrategy(HttpAvailabilityStrategy):
-    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> tuple[bool, Optional[str]]:
         """Catch HTTPError thrown from parent stream which is called by get_first_stream_slice"""
         try:
             return super().check_availability(stream, logger, source)
@@ -209,7 +208,7 @@ class API:
         }
 
     @staticmethod
-    def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]]:
+    def _parse_and_handle_errors(response) -> Union[MutableMapping[str, Any], list[MutableMapping[str, Any]]]:
         """Handle response"""
         message = "Unknown error"
         if response.headers.get("content-type") == "application/json;charset=utf-8" and response.status_code != HTTPStatus.OK:
@@ -243,21 +242,21 @@ class API:
     @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(max_tries=3)
     def get(
-        self, url: str, params: MutableMapping[str, Any] = None
-    ) -> Tuple[Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]], requests.Response]:
+        self, url: str, params: MutableMapping[str, Any] = None,
+    ) -> tuple[Union[MutableMapping[str, Any], list[MutableMapping[str, Any]]], requests.Response]:
         response = self._session.get(self.BASE_URL + url, params=params)
         return self._parse_and_handle_errors(response), response
 
     def post(
-        self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
-    ) -> Tuple[Union[Mapping[str, Any], List[Mapping[str, Any]]], requests.Response]:
+        self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None,
+    ) -> tuple[Union[Mapping[str, Any], list[Mapping[str, Any]]], requests.Response]:
         response = self._session.post(self.BASE_URL + url, params=params, json=data)
         return self._parse_and_handle_errors(response), response
 
-    def get_custom_objects_metadata(self) -> Iterable[Tuple[str, str, Mapping[str, Any]]]:
+    def get_custom_objects_metadata(self) -> Iterable[tuple[str, str, Mapping[str, Any]]]:
         data, response = self.get("/crm/v3/schemas", {})
         if not response.ok or "results" not in data:
-            self.logger.warn(self._parse_and_handle_errors(response))
+            self.logger.warning(self._parse_and_handle_errors(response))
             return ()
         for metadata in data["results"]:
             properties = self.get_properties(raw_schema=metadata)
@@ -285,7 +284,7 @@ class API:
 
         return schema
 
-    def _field_to_property_schema(self, field: Dict[str, Any]) -> Mapping[str, Any]:
+    def _field_to_property_schema(self, field: dict[str, Any]) -> Mapping[str, Any]:
         field_type = field["type"]
         property_schema = {}
         if field_type == "enumeration" or field_type == "string":
@@ -297,7 +296,7 @@ class API:
         elif field_type == "boolean" or field_type == "bool":
             property_schema = {"type": ["null", "boolean"]}
         else:
-            self.logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
+            self.logger.warning(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
             property_schema = {"type": ["null", "string"]}
 
         return property_schema
@@ -321,9 +320,9 @@ class Stream(HttpStream, ABC):
     primary_key = None
     filter_old_records: bool = True
     denormalize_records: bool = False  # one record from API response can result in multiple records emitted
-    granted_scopes: Set = None
-    properties_scopes: Set = None
-    unnest_fields: Optional[List[str]] = None
+    granted_scopes: set = None
+    properties_scopes: set = None
+    unnest_fields: Optional[list[str]] = None
 
     @cached_property
     def record_unnester(self):
@@ -331,10 +330,10 @@ class Stream(HttpStream, ABC):
 
     @property
     @abstractmethod
-    def scopes(self) -> Set[str]:
+    def scopes(self) -> set[str]:
         """Set of required scopes. Users need to grant at least one of the scopes for the stream to be avaialble to them"""
 
-    def scope_is_granted(self, granted_scopes: Set[str]) -> bool:
+    def scope_is_granted(self, granted_scopes: set[str]) -> bool:
         self.granted_scopes = set(granted_scopes)
         if not self.scopes:
             return True
@@ -392,7 +391,7 @@ class Stream(HttpStream, ABC):
             return float(response.headers.get("Retry-After", 3))
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         return {
             "Content-Type": "application/json",
@@ -450,7 +449,7 @@ class Stream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> Tuple[List, Any]:
+    ) -> tuple[list, Any]:
         #  TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams
         #  (issues #3977 and #5835). We will need to fix this code when the HubSpot developers add the ability to use a special parameter
         #  to get all properties for an entity. According to HubSpot Community
@@ -464,7 +463,7 @@ class Stream(HttpStream, ABC):
         properties = self._property_wrapper
         for chunk in properties.split():
             response = self.handle_request(
-                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, properties=chunk
+                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, properties=chunk,
             )
             for record in self._transform(self.parse_response(response, stream_state=stream_state)):
                 post_processor.add_record(record)
@@ -474,7 +473,7 @@ class Stream(HttpStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -540,8 +539,7 @@ class Stream(HttpStream, ABC):
 
     @classmethod
     def _cast_datetime(cls, field_name: str, field_value: Any, declared_format: str = None) -> Any:
-        """
-        If format is date/date-time, but actual value is timestamp, convert timestamp to date/date-time string.
+        """If format is date/date-time, but actual value is timestamp, convert timestamp to date/date-time string.
         """
         if not field_value:
             return field_value
@@ -551,7 +549,7 @@ class Stream(HttpStream, ABC):
             return cls._convert_datetime_to_string(dt, declared_format=declared_format)
         except (ValueError, TypeError) as ex:
             logger.warning(
-                f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: {ex}"
+                f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: {ex}",
             )
 
         try:
@@ -563,16 +561,14 @@ class Stream(HttpStream, ABC):
         return field_value
 
     @classmethod
-    def _cast_value(cls, declared_field_types: List, field_name: str, field_value: Any, declared_format: str = None) -> Any:
-        """
-        Convert record's received value according to its declared catalog json schema type / format / attribute name.
+    def _cast_value(cls, declared_field_types: list, field_name: str, field_value: Any, declared_format: str = None) -> Any:
+        """Convert record's received value according to its declared catalog json schema type / format / attribute name.
         :param declared_field_types type from catalog schema
         :param field_name value's attribute name
         :param field_value actual value to cast
         :param declared_format format field value from catalog schema
         :return Converted value for record
         """
-
         if "null" in declared_field_types:
             if field_value is None:
                 return field_value
@@ -626,8 +622,8 @@ class Stream(HttpStream, ABC):
             if field_name not in properties:
                 self.logger.info(
                     "Property discarded: not maching with properties schema: record id:{}, property_value: {}".format(
-                        record.get("id"), field_name
-                    )
+                        record.get("id"), field_name,
+                    ),
                 )
                 continue
             declared_field_types = properties[field_name].get("type", [])
@@ -635,7 +631,7 @@ class Stream(HttpStream, ABC):
                 declared_field_types = [declared_field_types]
             format = properties[field_name].get("format")
             record["properties"][field_name] = self._cast_value(
-                declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format
+                declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format,
             )
 
         return record
@@ -713,7 +709,7 @@ class Stream(HttpStream, ABC):
                 """
                 When the response doen't have the stream's data, raise an exception.
                 """
-                raise RuntimeError("Unexpected API response: {} not in {}".format(self.data_field, response.keys()))
+                raise RuntimeError(f"Unexpected API response: {self.data_field} not in {response.keys()}")
 
             yield from response[self.data_field]
 
@@ -731,7 +727,7 @@ class Stream(HttpStream, ABC):
             else:
                 if self.more_key:
                     if not response.get(self.more_key, False):
-                        return
+                        return None
                     if self.page_field in response:
                         return {self.page_filter: response[self.page_field]}
                 if self.page_field in response and response[self.page_filter] + self.limit < response.get("total"):
@@ -742,7 +738,7 @@ class Stream(HttpStream, ABC):
                 return {self.page_filter: self.offset}
 
     @staticmethod
-    def _get_field_props(field_type: str) -> Mapping[str, List[str]]:
+    def _get_field_props(field_type: str) -> Mapping[str, list[str]]:
         if field_type in VALID_JSON_SCHEMA_TYPES:
             return {
                 "type": ["null", field_type],
@@ -764,7 +760,7 @@ class Stream(HttpStream, ABC):
         return field_props
 
     @property
-    @lru_cache()
+    @lru_cache
     def properties(self) -> Mapping[str, Any]:
         """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
         props = {}
@@ -773,7 +769,7 @@ class Stream(HttpStream, ABC):
         if not self.properties_scope_is_granted():
             logger.warning(
                 f"Check your API key has the following permissions granted: {self.properties_scopes}, "
-                f"to be able to fetch all properties available."
+                f"to be able to fetch all properties available.",
             )
             return props
         data, response = self._api.get(f"/properties/v2/{self.entity}/properties")
@@ -814,7 +810,7 @@ class ClientSideIncrementalStream(Stream, IncrementalMixin):
     _cursor_value = ""
 
     @property
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Union[str, list[str]]:
         return self.updated_at_field
 
     @property
@@ -836,8 +832,7 @@ class ClientSideIncrementalStream(Stream, IncrementalMixin):
         self._cursor_value = value[self.cursor_field]
 
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
-        """
-        Filter out old records that come from source in unsorted order.
+        """Filter out old records that come from source in unsorted order.
         Hubspot API uses 2 date-time formats for different endpoints:
         1. "YYYY-MM-DDTHH:mm:ss.SSSSSSZ" - date-time in ISO format
         2. "x" - date-time in timestamp in milliseconds
@@ -868,7 +863,7 @@ class ClientSideIncrementalStream(Stream, IncrementalMixin):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
@@ -878,8 +873,7 @@ class ClientSideIncrementalStream(Stream, IncrementalMixin):
 
 
 class AssociationsStream(Stream):
-    """
-    Designed to read associations of CRM objects during incremental syncs, since Search API does not support
+    """Designed to read associations of CRM objects during incremental syncs, since Search API does not support
     retrieving associations.
     """
 
@@ -893,8 +887,7 @@ class AssociationsStream(Stream):
 
     @property
     def url(self):
-        """
-        although it is not used, it needs to be implemented because it is an abstract property
+        """Although it is not used, it needs to be implemented because it is an abstract property
         """
         return ""
 
@@ -907,10 +900,10 @@ class AssociationsStream(Stream):
     ) -> str:
         return f"/crm/v4/associations/{self.parent_stream.entity}/{stream_slice}/batch/read"
 
-    def scopes(self) -> Set[str]:
+    def scopes(self) -> set[str]:
         return self.parent_stream.scopes
 
-    def stream_slices(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[str]:
+    def stream_slices(self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[str]:
         return self.parent_stream.associations
 
     def request_body_json(
@@ -934,7 +927,7 @@ class IncrementalStream(Stream, ABC):
     last_slice = None
 
     @property
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Union[str, list[str]]:
         return self.updated_at_field
 
     @property
@@ -945,7 +938,7 @@ class IncrementalStream(Stream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -993,8 +986,7 @@ class IncrementalStream(Stream, ABC):
         self._init_sync = pendulum.now("utc")
 
     def _update_state(self, latest_cursor, is_last_record=False):
-        """
-        The first run uses an endpoint that is not sorted by updated_at but is
+        """The first run uses an endpoint that is not sorted by updated_at but is
         sorted by id because of this instead of updating the state by reading
         the latest cursor the state will set it at the end with the time the synch
         started. With the proposed `state strategy`, it would capture all possible
@@ -1010,7 +1002,7 @@ class IncrementalStream(Stream, ABC):
             self._state = self._init_sync
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.set_sync(sync_mode)
         chunk_size = pendulum.duration(days=30)
@@ -1027,7 +1019,7 @@ class IncrementalStream(Stream, ABC):
                 {
                     "startTimestamp": ts,
                     "endTimestamp": end_ts,
-                }
+                },
             )
         # Save the last slice to ensure we save the lastest state as the initial sync date
         if len(slices) > 0:
@@ -1052,7 +1044,7 @@ class CRMSearchStream(IncrementalStream, ABC):
     state_pk = "updatedAt"
     updated_at_field = "updatedAt"
     last_modified_field: str = None
-    associations: List[str] = None
+    associations: list[str] = None
     fully_qualified_name: str = None
 
     @property
@@ -1072,8 +1064,8 @@ class CRMSearchStream(IncrementalStream, ABC):
     @retry_connection_handler(max_tries=5, factor=5)
     @retry_after_handler(fixed_retry_after=1, max_tries=3)
     def search(
-        self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None
-    ) -> Tuple[Union[Mapping[str, Any], List[Mapping[str, Any]]], requests.Response]:
+        self, url: str, data: Mapping[str, Any], params: MutableMapping[str, Any] = None,
+    ) -> tuple[Union[Mapping[str, Any], list[Mapping[str, Any]]], requests.Response]:
         # We can safely retry this POST call, because it's a search operation.
         # Given Hubspot does not return any Retry-After header (https://developers.hubspot.com/docs/api/crm/search)
         # from the search endpoint, it waits one second after trying again.
@@ -1085,7 +1077,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> Tuple[List, requests.Response]:
+    ) -> tuple[list, requests.Response]:
         stream_records = {}
         properties_list = list(self.properties.keys())
         payload = (
@@ -1111,7 +1103,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         records_by_pk = {record[self.primary_key]: record for record in records}
         identifiers = list(map(lambda x: x[self.primary_key], records))
         associations_stream = AssociationsStream(
-            api=self._api, start_date=self._start_date, credentials=self._credentials, parent_stream=self, identifiers=identifiers
+            api=self._api, start_date=self._start_date, credentials=self._credentials, parent_stream=self, identifiers=identifiers,
         )
         slices = associations_stream.stream_slices(sync_mode=SyncMode.full_refresh)
 
@@ -1128,7 +1120,7 @@ class CRMSearchStream(IncrementalStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -1200,7 +1192,7 @@ class CRMSearchStream(IncrementalStream, ABC):
             return {"params": params, "payload": payload}
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.set_sync(sync_mode, stream_state)
         return [None]
@@ -1225,7 +1217,7 @@ class CRMObjectStream(Stream):
     """
 
     entity: Optional[str] = None
-    associations: List[str] = []
+    associations: list[str] = []
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
 
@@ -1257,20 +1249,20 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = IncrementalStream.request_params(
-            self, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            self, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
         )
         params.update(
             {
                 "archived": str(self._include_archived_only).lower(),
                 "associations": self.associations,
-            }
+            },
         )
         return params
 
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -1303,7 +1295,7 @@ class Campaigns(ClientSideIncrementalStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -1530,7 +1522,7 @@ class EngagementsRecent(EngagementsABC):
         if self._start_date < pendulum.now() - timedelta(days=self.last_days_limit):
             raise EngagementsRecentError(
                 '"Recent engagements" API returns records updated in the last 30 days only. '
-                f'Start date {self._start_date} is older so "All engagements" API should be used'
+                f'Start date {self._start_date} is older so "All engagements" API should be used',
             )
 
     def request_params(
@@ -1544,7 +1536,7 @@ class EngagementsRecent(EngagementsABC):
             {
                 "since": int(self._start_date.timestamp() * 1000),
                 "count": 100,
-            }
+            },
         )
         return params
 
@@ -1564,7 +1556,7 @@ class EngagementsRecent(EngagementsABC):
                 yield from []
                 raise EngagementsRecentError(
                     '"Recent engagements" API returns only 10k most recently updated records. '
-                    'API response indicates that there are more records so "All engagements" API should be used'
+                    'API response indicates that there are more records so "All engagements" API should be used',
                 )
         yield from super().parse_response(response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
@@ -1582,7 +1574,7 @@ class Engagements(EngagementsABC, IncrementalStream):
         return "/engagements/v1/engagements/paged"
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.set_sync(sync_mode)
         return [None]
@@ -1597,7 +1589,7 @@ class Engagements(EngagementsABC, IncrementalStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -1688,7 +1680,7 @@ class FormSubmissions(ClientSideIncrementalStream):
             yield record
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         seen = set()
@@ -1703,7 +1695,7 @@ class FormSubmissions(ClientSideIncrementalStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -1804,7 +1796,7 @@ class PropertyHistory(ClientSideIncrementalStream):
         for record in records:
             properties = record.get("properties")
             primary_key = record.get(self.primary_key)
-            value_dict: Dict
+            value_dict: dict
             for property_name, value_dict in properties.items():
                 versions = value_dict.get("versions")
                 if property_name == "lastmodifieddate":
@@ -1875,7 +1867,7 @@ class ContactsMergedAudit(Stream):
         self.config = kwargs
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None, **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         slices = []
 
@@ -1902,7 +1894,7 @@ class ContactsMergedAudit(Stream):
         return slices
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return {"vid": stream_slice["vid"]}
 
@@ -2037,8 +2029,7 @@ class EmailSubscriptions(Stream):
 
 
 class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
-    """
-    A base class for Web Analytics API
+    """A base class for Web Analytics API
     Docs: https://developers.hubspot.com/docs/api/events/web-analytics
     """
 
@@ -2056,8 +2047,8 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
         self._state: MutableMapping[str, Any] = {}
 
     @property
-    def scopes(self) -> Set[str]:
-        return getattr(self.parent, "scopes") | {"oauth"}
+    def scopes(self) -> set[str]:
+        return self.parent.scopes | {"oauth"}
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -2076,19 +2067,17 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
         return ResourceSchemaLoader("source_hubspot")._resolve_schema_references(raw_schema=raw_schema)
 
     def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
-        """
-        Returns current state. At the moment when this method is called by sources we already have updated state stored in self._state,
+        """Returns current state. At the moment when this method is called by sources we already have updated state stored in self._state,
         because it is calculated each time we produce new record
         """
         return self.state
 
     def get_latest_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
-        """
-        State is a composite object that keeps latest datetime of an event for each parent object:
+        """State is a composite object that keeps latest datetime of an event for each parent object:
         {
             "100": {"occurredAt": "2023-11-24T23:23:23.000Z"},
             "200": {"occurredAt": "2023-11-24T23:23:23.000Z"},
@@ -2115,7 +2104,7 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
             yield record
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self, sync_mode: SyncMode, cursor_field: Optional[list[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         now = pendulum.now(tz="UTC")
         for parent_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
@@ -2149,29 +2138,26 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
 
     @property
     def object_type(self) -> str:
-        """
-        The name of the CRM Object for which Web Analytics is requested
+        """The name of the CRM Object for which Web Analytics is requested
         List of available CRM objects: https://developers.hubspot.com/docs/api/crm/understanding-the-crm
         """
-        return getattr(self.parent, "entity")
+        return self.parent.entity
 
     @property
     def object_id_field(self) -> str:
-        """
-        The ID field name of the CRM Object for which Web Analytics is requested
+        """The ID field name of the CRM Object for which Web Analytics is requested
         List of available CRM objects: https://developers.hubspot.com/docs/api/crm/understanding-the-crm
         """
-        return getattr(self.parent, "primary_key")
+        return self.parent.primary_key
 
     @property
     def url(self) -> str:
         return "/events/v3/events"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        Preparing the request params dictionary for the following query string:
+        """Preparing the request params dictionary for the following query string:
         <url>?objectType=<parent-type>
              &objectId=<parent-id>
              &occurredAfter=<event-datetime-iso8601>
@@ -2183,7 +2169,7 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:

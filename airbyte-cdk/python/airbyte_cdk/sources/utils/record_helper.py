@@ -3,7 +3,8 @@
 #
 
 import datetime
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, AirbyteTraceMessage
 from airbyte_cdk.models import Type as MessageType

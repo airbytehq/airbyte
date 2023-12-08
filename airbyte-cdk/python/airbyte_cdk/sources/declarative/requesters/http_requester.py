@@ -5,14 +5,17 @@
 import logging
 import os
 import urllib
+from collections.abc import Callable, Mapping, MutableMapping
 from dataclasses import InitVar, dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 from urllib.parse import urljoin
 
 import requests
 import requests_cache
+from requests.auth import AuthBase
+
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
@@ -33,13 +36,11 @@ from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler, user_defined_backoff_handler
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
-from requests.auth import AuthBase
 
 
 @dataclass
 class HttpRequester(Requester):
-    """
-    Default implementation of a Requester
+    """Default implementation of a Requester
 
     Attributes:
         name (str): Name of the stream. Only used for request/response caching
@@ -86,7 +87,7 @@ class HttpRequester(Requester):
         self.decoder = JsonDecoder(parameters={})
         self._session = self.request_cache()
         self._session.mount(
-            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
+            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE),
         )
 
         if isinstance(self._authenticator, AuthBase):
@@ -100,8 +101,7 @@ class HttpRequester(Requester):
 
     @property
     def cache_filename(self) -> str:
-        """
-        Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
+        """Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
         """
         return f"{self.name}.sqlite"
 
@@ -119,8 +119,7 @@ class HttpRequester(Requester):
             return requests.Session()
 
     def clear_cache(self) -> None:
-        """
-        Clear cached requests for current session, can be called any time
+        """Clear cached requests for current session, can be called any time
         """
         if isinstance(self._session, requests_cache.CachedSession):
             self._session.cache.clear()  # type: ignore # cache.clear is not typed
@@ -132,7 +131,7 @@ class HttpRequester(Requester):
         return os.path.join(self._url_base.eval(self.config), "")
 
     def get_path(
-        self, *, stream_state: Optional[StreamState], stream_slice: Optional[StreamSlice], next_page_token: Optional[Mapping[str, Any]]
+        self, *, stream_state: Optional[StreamState], stream_slice: Optional[StreamSlice], next_page_token: Optional[Mapping[str, Any]],
     ) -> str:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         path = str(self._path.eval(self.config, **kwargs))
@@ -160,7 +159,7 @@ class HttpRequester(Requester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return self._request_options_provider.get_request_params(
-            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
         )
 
     def get_request_headers(
@@ -171,7 +170,7 @@ class HttpRequester(Requester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._request_options_provider.get_request_headers(
-            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
         )
 
     # fixing request options provider types has a lot of dependencies
@@ -184,7 +183,7 @@ class HttpRequester(Requester):
     ) -> Union[Mapping[str, Any], str]:
         return (
             self._request_options_provider.get_request_body_data(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
             )
             or {}
         )
@@ -198,7 +197,7 @@ class HttpRequester(Requester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
         return self._request_options_provider.get_request_body_json(
-            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
         )
 
     @property
@@ -211,8 +210,7 @@ class HttpRequester(Requester):
 
     @property
     def max_time(self) -> Union[int, None]:
-        """
-        Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
+        """Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
         """
         if self.error_handler is None:
             return self._DEFAULT_MAX_TIME
@@ -223,8 +221,7 @@ class HttpRequester(Requester):
         return logging.getLogger(f"airbyte.HttpRequester.{self.name}")
 
     def _should_retry(self, response: requests.Response) -> bool:
-        """
-        Specifies conditions for backoff based on the response from the server.
+        """Specifies conditions for backoff based on the response from the server.
 
         By default, back off on the following HTTP response statuses:
          - 429 (Too Many Requests) indicating rate limiting
@@ -246,14 +243,13 @@ class HttpRequester(Requester):
         return bool(interpret_response_status(response).action == ResponseAction.RETRY)
 
     def _backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Specifies backoff time.
+        """Specifies backoff time.
 
-         This method is called only if should_backoff() returns True for the input request.
+        This method is called only if should_backoff() returns True for the input request.
 
-         :param response:
-         :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
-         to the default backoff behavior (e.g using an exponential algorithm).
+        :param response:
+        :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
+        to the default backoff behavior (e.g using an exponential algorithm).
         """
         if self.error_handler is None:
             return None
@@ -264,8 +260,7 @@ class HttpRequester(Requester):
         return should_retry.retry_in
 
     def _error_message(self, response: requests.Response) -> str:
-        """
-        Constructs an error message which can incorporate the HTTP response received from the partner API.
+        """Constructs an error message which can incorporate the HTTP response received from the partner API.
 
         :param response: The incoming HTTP response from the partner API
         :return The error message string to be emitted
@@ -281,8 +276,7 @@ class HttpRequester(Requester):
         auth_options_method: Callable[..., Optional[Union[Mapping[str, Any], str]]],
         extra_options: Optional[Union[Mapping[str, Any], str]] = None,
     ) -> Union[Mapping[str, Any], str]:
-        """
-        Get the request_option from the requester, the authenticator and extra_options passed in.
+        """Get the request_option from the requester, the authenticator and extra_options passed in.
         Raise a ValueError if there's a key collision
         Returned merged mapping otherwise
         """
@@ -291,7 +285,7 @@ class HttpRequester(Requester):
                 requester_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
                 auth_options_method(),
                 extra_options,
-            ]
+            ],
         )
 
     def _request_headers(
@@ -301,8 +295,7 @@ class HttpRequester(Requester):
         next_page_token: Optional[Mapping[str, Any]] = None,
         extra_headers: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        """
-        Specifies request headers.
+        """Specifies request headers.
         Authentication headers will overwrite any overlapping headers returned from this method.
         """
         headers = self._get_request_options(
@@ -324,13 +317,12 @@ class HttpRequester(Requester):
         next_page_token: Optional[Mapping[str, Any]],
         extra_params: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        """
-        Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
+        """Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
         options = self._get_request_options(
-            stream_state, stream_slice, next_page_token, self.get_request_params, self.get_authenticator().get_request_params, extra_params
+            stream_state, stream_slice, next_page_token, self.get_request_params, self.get_authenticator().get_request_params, extra_params,
         )
         if isinstance(options, str):
             raise ValueError("Request params cannot be a string")
@@ -343,8 +335,7 @@ class HttpRequester(Requester):
         next_page_token: Optional[Mapping[str, Any]],
         extra_body_data: Optional[Union[Mapping[str, Any], str]] = None,
     ) -> Optional[Union[Mapping[str, Any], str]]:
-        """
-        Specifies how to populate the body of the request with a non-JSON payload.
+        """Specifies how to populate the body of the request with a non-JSON payload.
 
         If returns a ready text that it will be sent as is.
         If returns a dict that it will be converted to a urlencoded form.
@@ -369,8 +360,7 @@ class HttpRequester(Requester):
         next_page_token: Optional[Mapping[str, Any]],
         extra_body_json: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
-        """
-        Specifies how to populate the body of the request with a JSON payload.
+        """Specifies how to populate the body of the request with a JSON payload.
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
@@ -388,8 +378,7 @@ class HttpRequester(Requester):
         return options
 
     def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
-        """
-        Remove query parameters from params mapping if they are already encoded in the URL.
+        """Remove query parameters from params mapping if they are already encoded in the URL.
         :param url: URL with
         :param params:
         :return:
@@ -421,7 +410,7 @@ class HttpRequester(Requester):
         if http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
-                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
+                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data",
                 )
             elif json:
                 args["json"] = json
@@ -460,10 +449,8 @@ class HttpRequester(Requester):
         request: requests.PreparedRequest,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> requests.Response:
+        """Creates backoff wrappers which are responsible for retry logic
         """
-        Creates backoff wrappers which are responsible for retry logic
-        """
-
         """
         Backoff package has max_tries parameter that means total number of
         tries before giving up, so if this number is 0 no calls expected to be done.
@@ -505,8 +492,7 @@ class HttpRequester(Requester):
         request: requests.PreparedRequest,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> requests.Response:
-        """
-        Wraps sending the request in rate limit and error handlers.
+        """Wraps sending the request in rate limit and error handlers.
         Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False
 
         This method handles two types of exceptions:
@@ -524,7 +510,7 @@ class HttpRequester(Requester):
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
         self.logger.debug(
-            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
+            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body},
         )
         response: requests.Response = self._session.send(request)
         self.logger.debug("Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text})
@@ -561,15 +547,14 @@ class HttpRequester(Requester):
             raise ReadException(error_message)
         elif response_status.action == ResponseAction.IGNORE:
             self.logger.info(
-                f"Ignoring response for failed request with error message {HttpRequester.parse_response_error_message(response)}"
+                f"Ignoring response for failed request with error message {HttpRequester.parse_response_error_message(response)}",
             )
 
         return response
 
     @classmethod
     def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
-        """
-        Parses the raw response object from a failed request into a user-friendly error message.
+        """Parses the raw response object from a failed request into a user-friendly error message.
         By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
 
         :param response:

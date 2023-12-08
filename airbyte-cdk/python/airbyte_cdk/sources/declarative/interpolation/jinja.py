@@ -3,20 +3,20 @@
 #
 
 import ast
-from typing import Any, Optional, Tuple, Type
+from typing import Any, Optional
+
+from jinja2 import meta
+from jinja2.exceptions import UndefinedError
+from jinja2.sandbox import Environment
 
 from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
 from airbyte_cdk.sources.declarative.types import Config
-from jinja2 import meta
-from jinja2.exceptions import UndefinedError
-from jinja2.sandbox import Environment
 
 
 class JinjaInterpolation(Interpolation):
-    """
-    Interpolation strategy using the Jinja2 template engine.
+    """Interpolation strategy using the Jinja2 template engine.
 
     If the input string is a raw string, the interpolated string will be the same.
     `eval("hello world") -> "hello world"`
@@ -63,7 +63,7 @@ class JinjaInterpolation(Interpolation):
         input_str: str,
         config: Config,
         default: Optional[str] = None,
-        valid_types: Optional[Tuple[Type[Any]]] = None,
+        valid_types: Optional[tuple[type[Any]]] = None,
         **additional_parameters,
     ):
         context = {"config": config, **additional_parameters}
@@ -72,7 +72,7 @@ class JinjaInterpolation(Interpolation):
             if alias in context:
                 # This is unexpected. We could ignore or log a warning, but failing loudly should result in fewer surprises
                 raise ValueError(
-                    f"Found reserved keyword {alias} in interpolation context. This is unexpected and indicative of a bug in the CDK."
+                    f"Found reserved keyword {alias} in interpolation context. This is unexpected and indicative of a bug in the CDK.",
                 )
             elif equivalent in context:
                 context[alias] = context[equivalent]
@@ -90,7 +90,7 @@ class JinjaInterpolation(Interpolation):
         # If result is empty or resulted in an undefined error, evaluate and return the default string
         return self._literal_eval(self._eval(default, context), valid_types)
 
-    def _literal_eval(self, result, valid_types: Optional[Tuple[Type[Any]]]):
+    def _literal_eval(self, result, valid_types: Optional[tuple[type[Any]]]):
         try:
             evaluated = ast.literal_eval(result)
         except (ValueError, SyntaxError):

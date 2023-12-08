@@ -2,11 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 import requests
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from requests.auth import HTTPBasicAuth
+
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
 class OutbrainAmplifyAuthenticator(TokenAuthenticator):
@@ -30,10 +32,10 @@ class OutbrainAmplifyAuthenticator(TokenAuthenticator):
     def get_auth_header(self) -> Mapping[dict, Any]:
         if self.config.get("credentials").get("type") == "access_token":
             self.token = self.config.get("credentials").get("access_token")
-            return {"OB-TOKEN-V1": "{}".format(self.token)}
+            return {"OB-TOKEN-V1": f"{self.token}"}
         else:
             if self.token:
-                return {"OB-TOKEN-V1": "{}".format(self.token)}
+                return {"OB-TOKEN-V1": f"{self.token}"}
             else:
                 self.generate_cache_token()
-                return {"OB-TOKEN-V1": "{}".format(self.token)}
+                return {"OB-TOKEN-V1": f"{self.token}"}

@@ -7,18 +7,20 @@ import codecs
 import hashlib
 import hmac
 import urllib.parse
+from collections.abc import Mapping
 from enum import Enum
 from functools import wraps
-from typing import Any, List, Mapping, Tuple
+from typing import Any
 
 import pendulum
 import requests
+from pendulum.parsing.exceptions import ParserError
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
-from pendulum.parsing.exceptions import ParserError
 
 from .streams import Addresses, CustomersCart, OrderItems, OrderPayments, Orders, OrderStatuses, Products
 
@@ -52,8 +54,7 @@ class CentralAPIHeaderAuthenticator(HttpAuthenticator):
         self.site_id = site_id
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        """
-        This method is not implemented here because for the Central API Router
+        """This method is not implemented here because for the Central API Router
         needs to build the header for each request based
         on path + parameters (next token, pagination, page size)
         To solve this the logic was moved to `request_headers` in CartStream class.
@@ -67,8 +68,7 @@ class CentralAPIHeaderAuthenticator(HttpAuthenticator):
         return self.generate_auth_signature(stream, params)
 
     def generate_auth_signature(self, stream, params) -> Mapping[str, Any]:
-        """
-        How to build signature:
+        """How to build signature:
         1. build a string concatenated with:
             request method (uppercase) & request path and query & provisioning user name
                 example: GET&/api/v1/customers&myUser
@@ -99,7 +99,7 @@ class SourceCart(AbstractSource):
                         if end_date:
                             pendulum.parse(end_date)
                     except ParserError as e:
-                        raise Exception(f"{str(e)}. Example: 2021-01-01T00:00:00Z")
+                        raise Exception(f"{e!s}. Example: 2021-01-01T00:00:00Z")
                     break
 
             return func(self_, *args, **kwargs)
@@ -112,7 +112,7 @@ class SourceCart(AbstractSource):
 
         if auth_method == AuthMethod.CENTRAL_API_ROUTER.name:
             authenticator = CentralAPIHeaderAuthenticator(
-                user_name=credentials["user_name"], user_secret=credentials["user_secret"], site_id=credentials["site_id"]
+                user_name=credentials["user_name"], user_secret=credentials["user_secret"], site_id=credentials["site_id"],
             )
         elif auth_method == AuthMethod.SINGLE_STORE_ACCESS_TOKEN.name:
             authenticator = CustomHeaderAuthenticator(access_token=credentials["access_token"], store_name=credentials["store_name"])
@@ -122,7 +122,7 @@ class SourceCart(AbstractSource):
         return authenticator
 
     @validate_config_values
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         try:
             authenticator = self.get_auth(config)
             stream = Products(authenticator=authenticator, start_date=config["start_date"])
@@ -131,14 +131,14 @@ class SourceCart(AbstractSource):
             return True, None
         except Exception as e:
             if isinstance(e, requests.exceptions.HTTPError) and e.response.status_code == 401:
-                return False, f"Please check your access token. Error: {repr(e)}"
+                return False, f"Please check your access token. Error: {e!r}"
             if isinstance(e, requests.exceptions.ConnectionError):
-                err_message = f"Please check your `store_name` or internet connection. Error: {repr(e)}"
+                err_message = f"Please check your `store_name` or internet connection. Error: {e!r}"
                 return False, err_message
             return False, repr(e)
 
     @validate_config_values
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         authenticator = self.get_auth(config)
         args = {
             "authenticator": authenticator,

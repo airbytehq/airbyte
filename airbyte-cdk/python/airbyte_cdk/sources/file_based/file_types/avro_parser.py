@@ -3,9 +3,11 @@
 #
 
 import logging
-from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
+from collections.abc import Iterable, Mapping
+from typing import Any, Optional
 
 import fastavro
+
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
@@ -41,9 +43,8 @@ AVRO_LOGICAL_TYPE_TO_JSON = {
 class AvroParser(FileTypeParser):
     ENCODING = None
 
-    def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
-        """
-        AvroParser does not require config checks, implicit pydantic validation is enough.
+    def check_config(self, config: FileBasedStreamConfig) -> tuple[bool, Optional[str]]:
+        """AvroParser does not require config checks, implicit pydantic validation is enough.
         """
         return True, None
 
@@ -61,7 +62,7 @@ class AvroParser(FileTypeParser):
         with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             avro_reader = fastavro.reader(fp)
             avro_schema = avro_reader.writer_schema
-        if not avro_schema["type"] == "record":
+        if avro_schema["type"] != "record":
             unsupported_type = avro_schema["type"]
             raise ValueError(f"Only record based avro files are supported. Found {unsupported_type}")
         json_schema = {
@@ -139,7 +140,7 @@ class AvroParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
-    ) -> Iterable[Dict[str, Any]]:
+    ) -> Iterable[dict[str, Any]]:
         avro_format = config.format or AvroFormat(filetype="avro")
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")

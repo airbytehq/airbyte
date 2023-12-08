@@ -5,13 +5,15 @@
 
 import logging
 from collections import Counter
+from collections.abc import Mapping
 from json import JSONDecodeError
-from typing import Any, List, Mapping, Tuple, Union
+from typing import Any, Union
 
 import requests
+from requests_oauthlib import OAuth1
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from requests_oauthlib import OAuth1
 from source_netsuite.constraints import CUSTOM_INCREMENTAL_CURSOR, INCREMENTAL_CURSOR, META_PATH, RECORD_PATH, SCHEMA_HEADERS
 from source_netsuite.streams import CustomIncrementalNetsuiteStream, IncrementalNetsuiteStream, NetsuiteStream
 
@@ -41,7 +43,7 @@ class SourceNetsuite(AbstractSource):
         session.auth = auth
         return session
 
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         auth = self.auth(config)
         object_types = config.get("object_types")
         base_url = self.base_url(config)
@@ -71,9 +73,8 @@ class SourceNetsuite(AbstractSource):
             except requests.exceptions.HTTPError as e:
                 return False, e
 
-    def get_schemas(self, object_names: Union[List[str], str], session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
-        """
-        Handles multivariance of object_names type input and fetches the schema for each object type provided.
+    def get_schemas(self, object_names: Union[list[str], str], session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
+        """Handles multivariance of object_names type input and fetches the schema for each object type provided.
         """
         try:
             if isinstance(object_names, list):
@@ -85,14 +86,13 @@ class SourceNetsuite(AbstractSource):
                 return self.fetch_schema(object_names, session, metadata_url)
             else:
                 raise NotImplementedError(
-                    f"Object Types has unknown structure, should be either `dict` or `str`, actual input: {object_names}"
+                    f"Object Types has unknown structure, should be either `dict` or `str`, actual input: {object_names}",
                 )
         except JSONDecodeError as e:
             self.logger.error(f"Unexpected output while fetching the object schema. Full error: {e.__repr__()}")
 
     def fetch_schema(self, object_name: str, session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
-        """
-        Calls the API for specific object type and returns schema as a dict.
+        """Calls the API for specific object type and returns schema as a dict.
         """
         return {object_name.lower(): session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json()}
 
@@ -129,18 +129,18 @@ class SourceNetsuite(AbstractSource):
         else:
             retry_attempt = 1
             while retry_attempt <= max_retry:
-                self.logger.warn(f"Object `{object_name}` schema has missing `properties` key. Retry attempt: {retry_attempt}/{max_retry}")
+                self.logger.warning(f"Object `{object_name}` schema has missing `properties` key. Retry attempt: {retry_attempt}/{max_retry}")
                 # somethimes object metadata returns data with missing `properties` key,
                 # we should try to fetch metadata again to that object
                 schemas = self.get_schemas(object_name, session, metadata_url)
                 if schemas[object_name].get("properties"):
-                    input_args.update(**{"session": session, "metadata_url": metadata_url, "schemas": schemas})
+                    input_args.update(session=session, metadata_url=metadata_url, schemas=schemas)
                     return self.generate_stream(**input_args)
                 retry_attempt += 1
-            self.logger.warn(f"Object `{object_name}` schema is not available. Skipping this stream.")
+            self.logger.warning(f"Object `{object_name}` schema is not available. Skipping this stream.")
             return None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         auth = self.auth(config)
         session = self.get_session(auth)
         base_url = self.base_url(config)
@@ -155,13 +155,7 @@ class SourceNetsuite(AbstractSource):
         input_args = {"session": session, "metadata_url": metadata_url}
         schemas = self.get_schemas(object_names, **input_args)
         input_args.update(
-            **{
-                "auth": auth,
-                "base_url": base_url,
-                "start_datetime": config["start_datetime"],
-                "window_in_days": config["window_in_days"],
-                "schemas": schemas,
-            }
+            auth=auth, base_url=base_url, start_datetime=config["start_datetime"], window_in_days=config["window_in_days"], schemas=schemas,
         )
         # build streams
         streams: list = []

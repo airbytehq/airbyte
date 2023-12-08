@@ -5,7 +5,7 @@
 import copy
 import json
 import os
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import orchestrator.hacks as HACKS
 import pandas as pd
@@ -22,13 +22,12 @@ from orchestrator.config import MAX_METADATA_PARTITION_RUN_REQUEST, VALID_REGIST
 from orchestrator.logging import sentry
 from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
 from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
-from orchestrator.utils.dagster_helpers import OutputDataFrame
 from orchestrator.utils.object_helpers import deep_copy_params
 from pydantic import ValidationError
 from pydash.objects import get
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
-TaggedRegistryEntry = Tuple[str, PolymorphicRegistryEntry]
+TaggedRegistryEntry = tuple[str, PolymorphicRegistryEntry]
 
 GROUP_NAME = "registry_entry"
 
@@ -47,7 +46,7 @@ class MissingCachedSpecError(Exception):
 @sentry_sdk.trace
 def apply_spec_to_registry_entry(registry_entry: dict, spec_cache: SpecCache, registry_name: str) -> dict:
     cached_spec = spec_cache.find_spec_cache_with_fallback(
-        registry_entry["dockerRepository"], registry_entry["dockerImageTag"], registry_name
+        registry_entry["dockerRepository"], registry_entry["dockerImageTag"], registry_name,
     )
     if cached_spec is None:
         raise MissingCachedSpecError(f"No cached spec found for {registry_entry['dockerRepository']}:{registry_entry['dockerImageTag']}")
@@ -66,7 +65,6 @@ def calculate_migration_documentation_url(releases_or_breaking_change: dict, doc
     Returns:
         str: The migration documentation url.
     """
-
     base_url = f"{documentation_url}-migrations"
     default_migration_documentation_url = f"{base_url}#{version}" if version is not None else base_url
 
@@ -89,7 +87,7 @@ def apply_connector_release_defaults(metadata: dict) -> Optional[pd.DataFrame]:
     if breaking_changes is not None:
         for version, breaking_change in breaking_changes.items():
             breaking_change["migrationDocumentationUrl"] = calculate_migration_documentation_url(
-                breaking_change, documentation_url, version
+                breaking_change, documentation_url, version,
             )
 
     return metadata_releases
@@ -224,7 +222,7 @@ def _get_latest_entry_write_path(metadata_path: Optional[str], registry_name: st
 
 
 def get_registry_entry_write_path(
-    registry_entry: Optional[PolymorphicRegistryEntry], metadata_entry: LatestMetadataEntry, registry_name: str
+    registry_entry: Optional[PolymorphicRegistryEntry], metadata_entry: LatestMetadataEntry, registry_name: str,
 ) -> str:
     """Get the write path for the registry entry."""
     if metadata_entry.is_latest_version_path:
@@ -293,7 +291,7 @@ def generate_and_persist_registry_entry(
     return file_handle.public_url
 
 
-def get_registry_status_lists(registry_entry: LatestMetadataEntry) -> Tuple[List[str], List[str]]:
+def get_registry_status_lists(registry_entry: LatestMetadataEntry) -> tuple[list[str], list[str]]:
     """Get the enabled registries for the given metadata entry.
 
     Args:
@@ -333,8 +331,7 @@ def delete_registry_entry(registry_name, metadata_entry: LatestMetadataEntry, me
 
 @sentry_sdk.trace
 def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[MetadataDefinition]:
-    """
-    Safely parse the metadata definition from the given metadata entry.
+    """Safely parse the metadata definition from the given metadata entry.
     Handles the case where the metadata definition is invalid for in old versions of the metadata.
     """
     yaml_string = metadata_blob.download_as_string().decode("utf-8")
@@ -435,8 +432,7 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
 )
 @sentry.instrument_asset_op
 def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry]) -> Output[Optional[dict]]:
-    """
-    Generate the registry entry files from the given metadata file, and persist it to GCS.
+    """Generate the registry entry files from the given metadata file, and persist it to GCS.
     """
     if not metadata_entry:
         # if the metadata entry is invalid, return an empty dict

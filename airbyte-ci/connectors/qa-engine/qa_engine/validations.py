@@ -4,7 +4,6 @@
 
 import logging
 from datetime import datetime
-from typing import List
 
 import pandas as pd
 import requests
@@ -59,6 +58,7 @@ def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd
         Get the number of users using this connector version from our datawarehouse.
       - sync_success_rate:
         Get the sync success rate of the connections with this connector version from our datawarehouse.
+
     Args:
         enriched_catalog (pd.DataFrame): The enriched catalog.
         oss_catalog_length (pd.DataFrame): The length of the OSS catalog, for sanity check.
@@ -82,12 +82,12 @@ def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd
     QAReport(connectors_qa_report=qa_report.to_dict(orient="records"))
     if len(qa_report) != oss_catalog_length:
         raise QAReportGenerationError(
-            f"The QA report ({len(qa_report)}) does not contain all the connectors defined in the OSS catalog ({oss_catalog_length})."
+            f"The QA report ({len(qa_report)}) does not contain all the connectors defined in the OSS catalog ({oss_catalog_length}).",
         )
     return qa_report
 
 
-def get_connectors_eligible_for_cloud(qa_report: pd.DataFrame) -> List[ConnectorQAReport]:
+def get_connectors_eligible_for_cloud(qa_report: pd.DataFrame) -> list[ConnectorQAReport]:
     eligible_connectors = [ConnectorQAReport(**row) for _, row in qa_report[qa_report["is_eligible_for_promotion_to_cloud"]].iterrows()]
     logger.info(f"{len(eligible_connectors)} connectors are eligible for Cloud.")
     return eligible_connectors

@@ -3,9 +3,11 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 import pendulum
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -66,21 +68,20 @@ class SourceHarvest(AbstractSource):
             raise Exception("Config validation error: 'api_token' is a required property")
         return HarvestTokenAuthenticator(token=api_token, account_id=config["account_id"])
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         try:
             auth = self.get_authenticator(config)
             replication_start_date = pendulum.parse(config["replication_start_date"])
             users_gen = Users(authenticator=auth, replication_start_date=replication_start_date).read_records(
-                sync_mode=SyncMode.full_refresh
+                sync_mode=SyncMode.full_refresh,
             )
             next(users_gen)
             return True, None
         except Exception as error:
-            return False, f"Unable to connect to Harvest API with the provided credentials - {repr(error)}"
+            return False, f"Unable to connect to Harvest API with the provided credentials - {error!r}"
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """:param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         auth = self.get_authenticator(config)
         replication_start_date = pendulum.parse(config["replication_start_date"])

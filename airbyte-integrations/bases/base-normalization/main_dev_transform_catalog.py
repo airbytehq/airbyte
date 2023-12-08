@@ -5,9 +5,10 @@
 
 import logging
 
+from normalization.transform_catalog.transform import main
+
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from normalization.transform_catalog.transform import main
 
 if __name__ == "__main__":
     init_uncaught_exception_handler(logging.getLogger("airbyte"))

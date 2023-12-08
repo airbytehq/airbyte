@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, Optional, Tuple, Type, Union
+from typing import Any, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -12,8 +13,7 @@ from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamSta
 
 @dataclass
 class InterpolatedRequestInputProvider:
-    """
-    Helper class that generically performs string interpolation on the provided dictionary or string input
+    """Helper class that generically performs string interpolation on the provided dictionary or string input
     """
 
     parameters: InitVar[Mapping[str, Any]]
@@ -34,11 +34,10 @@ class InterpolatedRequestInputProvider:
         stream_state: StreamState,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Mapping[str, Any] = None,
-        valid_key_types: Tuple[Type[Any]] = None,
-        valid_value_types: Tuple[Type[Any]] = None,
+        valid_key_types: tuple[type[Any]] = None,
+        valid_value_types: tuple[type[Any]] = None,
     ) -> Mapping[str, Any]:
-        """
-        Returns the request inputs to set on an outgoing HTTP request
+        """Returns the request inputs to set on an outgoing HTTP request
 
         :param stream_state: The stream state
         :param stream_slice: The stream slice
@@ -49,7 +48,7 @@ class InterpolatedRequestInputProvider:
         """
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         interpolated_value = self._interpolator.eval(
-            self.config, valid_key_types=valid_key_types, valid_value_types=valid_value_types, **kwargs
+            self.config, valid_key_types=valid_key_types, valid_value_types=valid_value_types, **kwargs,
         )
 
         if isinstance(interpolated_value, dict):

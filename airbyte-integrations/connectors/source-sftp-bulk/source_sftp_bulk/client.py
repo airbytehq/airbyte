@@ -9,8 +9,9 @@ import os
 import re
 import socket
 import stat
+from collections.abc import Mapping
 from datetime import datetime
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any
 
 import backoff
 import numpy as np
@@ -23,7 +24,7 @@ REQUEST_TIMEOUT = 300
 
 logger = logging.getLogger("airbyte")
 
-File = Dict[str, Any]
+File = dict[str, Any]
 
 
 class SFTPClient:
@@ -89,14 +90,14 @@ class SFTPClient:
                     raise
 
     @staticmethod
-    def get_files_matching_pattern(files, pattern) -> List[File]:
+    def get_files_matching_pattern(files, pattern) -> list[File]:
         """Takes a file dict {"filepath": "...", "last_modified": "..."} and a regex pattern string, and returns files matching that pattern."""
         matcher = re.compile(pattern)
         return [f for f in files if matcher.search(f["filepath"])]
 
     # backoff for 60 seconds as there is possibility the request will backoff again in 'discover.get_schema'
     @backoff.on_exception(backoff.constant, (socket.timeout), max_time=60, interval=10, jitter=None)
-    def get_files_by_prefix(self, prefix: str) -> List[File]:
+    def get_files_by_prefix(self, prefix: str) -> list[File]:
         def is_empty(a):
             return a.st_size == 0
 
@@ -111,7 +112,7 @@ class SFTPClient:
         try:
             result = self._connection.listdir_attr(prefix)
         except FileNotFoundError as e:
-            raise Exception("Directory '{}' does not exist".format(prefix)) from e
+            raise Exception(f"Directory '{prefix}' does not exist") from e
 
         for file_attr in result:
             # NB: This only looks at the immediate level beneath the prefix directory
@@ -125,7 +126,7 @@ class SFTPClient:
                 last_modified = file_attr.st_mtime
                 if last_modified is None:
                     logger.warning(
-                        "Cannot read m_time for file %s, defaulting to current epoch time", os.path.join(prefix, file_attr.filename)
+                        "Cannot read m_time for file %s, defaulting to current epoch time", os.path.join(prefix, file_attr.filename),
                     )
                     last_modified = datetime.utcnow().timestamp()
 
@@ -133,12 +134,12 @@ class SFTPClient:
                     {
                         "filepath": prefix + "/" + file_attr.filename,
                         "last_modified": datetime.utcfromtimestamp(last_modified).replace(tzinfo=None),
-                    }
+                    },
                 )
 
         return files
 
-    def get_files(self, prefix, search_pattern=None, modified_since=None, most_recent_only=False) -> List[File]:
+    def get_files(self, prefix, search_pattern=None, modified_since=None, most_recent_only=False) -> list[File]:
         files = self.get_files_by_prefix(prefix)
 
         if files:
@@ -207,7 +208,7 @@ class SFTPClient:
 
             raise Exception("Unable to read file: %s" % e) from e
 
-    def fetch_files(self, files, separator, file_type="csv") -> Tuple[datetime, Dict[str, Any]]:
+    def fetch_files(self, files, separator, file_type="csv") -> tuple[datetime, dict[str, Any]]:
         logger.info("Fetching %s files", len(files))
         for fn in files:
             records = self.fetch_file(fn=fn, separator=separator, file_type=file_type)

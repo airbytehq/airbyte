@@ -3,12 +3,13 @@
 #
 
 
-from typing import Any, Dict, Literal, Union
+from typing import Any, Literal, Union
 
 import dpath.util
+from pydantic import BaseModel, Field
+
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
-from pydantic import BaseModel, Field
 
 
 class OAuthCredentials(BaseModel):
@@ -60,7 +61,7 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
     )
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
-        title="Authentication", description="Credentials for connecting to the Google Drive API", discriminator="auth_type", type="object"
+        title="Authentication", description="Credentials for connecting to the Google Drive API", discriminator="auth_type", type="object",
     )
 
     @classmethod
@@ -69,13 +70,12 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
 
     @staticmethod
     def remove_discriminator(schema: dict) -> None:
-        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
+        """Pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
         dpath.util.delete(schema, "properties/*/discriminator")
 
     @classmethod
-    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        """
-        Generates the mapping comprised of the config fields
+    def schema(cls, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        """Generates the mapping comprised of the config fields
         """
         schema = super().schema(*args, **kwargs)
 

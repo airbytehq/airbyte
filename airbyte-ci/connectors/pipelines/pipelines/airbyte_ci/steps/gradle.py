@@ -3,10 +3,11 @@
 #
 
 from abc import ABC
-from typing import ClassVar, List
+from typing import ClassVar
+
+from dagger import CacheSharingMode, CacheVolume
 
 import pipelines.dagger.actions.system.docker
-from dagger import CacheSharingMode, CacheVolume
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.utils import sh_dash_c
@@ -15,8 +16,7 @@ from pipelines.models.steps import Step, StepResult
 
 
 class GradleTask(Step, ABC):
-    """
-    A step to run a Gradle task.
+    """A step to run a Gradle task.
 
     Attributes:
         title (str): The step title.
@@ -43,7 +43,7 @@ class GradleTask(Step, ABC):
         return self.context.dagger_client.cache_volume("gradle-dependency-cache")
 
     @property
-    def build_include(self) -> List[str]:
+    def build_include(self) -> list[str]:
         """Retrieve the list of source code directory required to run a Java connector Gradle task.
 
         The list is different according to the connector type.
@@ -110,8 +110,8 @@ class GradleTask(Step, ABC):
                         # This is a defensive choice to enforce the expectation that, as a general rule, gradle tasks do not rely on docker.
                         "yum remove -y --noautoremove docker",  # remove docker package but not its dependencies
                         "yum install -y --downloadonly docker",  # have docker package in place for quick install
-                    ]
-                )
+                    ],
+                ),
             )
             # Set RUN_IN_AIRBYTE_CI to tell gradle how to configure its build cache.
             # This is consumed by settings.gradle in the repo root.
@@ -125,11 +125,11 @@ class GradleTask(Step, ABC):
         # Augment the base container with S3 build cache secrets when available.
         if self.context.s3_build_cache_access_key_id:
             gradle_container_base = gradle_container_base.with_secret_variable(
-                "S3_BUILD_CACHE_ACCESS_KEY_ID", self.context.s3_build_cache_access_key_id_secret
+                "S3_BUILD_CACHE_ACCESS_KEY_ID", self.context.s3_build_cache_access_key_id_secret,
             )
             if self.context.s3_build_cache_secret_key:
                 gradle_container_base = gradle_container_base.with_secret_variable(
-                    "S3_BUILD_CACHE_SECRET_KEY", self.context.s3_build_cache_secret_key_secret
+                    "S3_BUILD_CACHE_SECRET_KEY", self.context.s3_build_cache_secret_key_secret,
                 )
 
         # Running a gradle task like "help" with these arguments will trigger updating all dependencies.
@@ -158,8 +158,8 @@ class GradleTask(Step, ABC):
                         self._get_gradle_command(":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"),
                         # Store to the cache volume.
                         f"(rsync -a --stats {self.GRADLE_HOME_PATH}/ {self.GRADLE_DEP_CACHE_PATH} || true)",
-                    ]
-                )
+                    ],
+                ),
             )
         )
 
@@ -193,7 +193,7 @@ class GradleTask(Step, ABC):
                     f"(rsync -a --stats --mkpath {self.GRADLE_DEP_CACHE_PATH}/ {self.GRADLE_HOME_PATH} || true)",
                     # Run the gradle task.
                     self._get_gradle_command(connector_task, f"-Ds3BuildCachePrefix={self.context.connector.technical_name}"),
-                ]
-            )
+                ],
+            ),
         )
         return await self.get_step_result(gradle_container)

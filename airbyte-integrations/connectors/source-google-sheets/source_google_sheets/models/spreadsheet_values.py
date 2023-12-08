@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Extra
 
@@ -14,7 +14,7 @@ class ValueRange(BaseModel):
     class Config:
         extra = Extra.allow
 
-    values: Optional[List[List[str]]] = None
+    values: Optional[list[list[str]]] = None
 
 
 class SpreadsheetValues(BaseModel):
@@ -22,4 +22,4 @@ class SpreadsheetValues(BaseModel):
         extra = Extra.allow
 
     spreadsheetId: str
-    valueRanges: List[ValueRange]
+    valueRanges: list[ValueRange]

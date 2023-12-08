@@ -4,13 +4,13 @@
 
 from typing import Optional
 
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from pydantic import AnyUrl, Field
+
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 
 
 class Config(AbstractFileBasedSpec):
-    """
-    NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes
+    """NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes
     because it is responsible for converting legacy Azure Blob Storage v0 configs into v1 configs using the File-Based CDK.
     """
 

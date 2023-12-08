@@ -4,11 +4,12 @@
 
 from __future__ import annotations
 
-from typing import Any, List, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any, Optional
 
 # A FieldPointer designates a path to a field inside a mapping. For example, retrieving ["k1", "k1.2"] in the object {"k1" :{"k1.2":
 # "hello"}] returns "hello"
-FieldPointer = List[str]
+FieldPointer = list[str]
 Config = Mapping[str, Any]
 ConnectionDefinition = Mapping[str, Any]
 StreamSlice = Mapping[str, Any]

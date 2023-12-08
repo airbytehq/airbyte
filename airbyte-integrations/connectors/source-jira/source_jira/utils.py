@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, MutableMapping
+from collections.abc import MutableMapping
+from typing import Any
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream

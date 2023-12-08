@@ -17,5 +17,5 @@ async def pre_connector_install(base_image_container: Container) -> Container:
     Disclaimer: I have no idea if these env vars are actually needed.
     """
     return base_image_container.with_env_variable("AIRBYTE_IMPL_MODULE", "source_zendesk_chat").with_env_variable(
-        "AIRBYTE_IMPL_PATH", "SourceZendeskChat"
+        "AIRBYTE_IMPL_PATH", "SourceZendeskChat",
     )

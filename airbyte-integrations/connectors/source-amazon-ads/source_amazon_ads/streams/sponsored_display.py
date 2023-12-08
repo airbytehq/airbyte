@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from source_amazon_ads.schemas import (
     DisplayAdGroup,
@@ -16,8 +17,7 @@ from source_amazon_ads.streams.common import SubProfilesStream
 
 
 class SponsoredDisplayCampaigns(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Displays Campaigns
+    """This stream corresponds to Amazon Advertising API - Sponsored Displays Campaigns
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns
     """
 
@@ -40,8 +40,7 @@ class SponsoredDisplayCampaigns(SubProfilesStream):
 
 
 class SponsoredDisplayAdGroups(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Displays Ad groups
+    """This stream corresponds to Amazon Advertising API - Sponsored Displays Ad groups
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Ad%20groups
     """
 
@@ -53,8 +52,7 @@ class SponsoredDisplayAdGroups(SubProfilesStream):
 
 
 class SponsoredDisplayProductAds(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Displays Product Ads
+    """This stream corresponds to Amazon Advertising API - Sponsored Displays Product Ads
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Product%20ads
     """
 
@@ -66,8 +64,7 @@ class SponsoredDisplayProductAds(SubProfilesStream):
 
 
 class SponsoredDisplayTargetings(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Displays Targetings
+    """This stream corresponds to Amazon Advertising API - Sponsored Displays Targetings
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Targeting
     """
 
@@ -79,8 +76,7 @@ class SponsoredDisplayTargetings(SubProfilesStream):
 
 
 class SponsoredDisplayCreatives(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Displays Creatives
+    """This stream corresponds to Amazon Advertising API - Sponsored Displays Creatives
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Creatives/listCreatives
     """
 
@@ -92,8 +88,7 @@ class SponsoredDisplayCreatives(SubProfilesStream):
 
 
 class SponsoredDisplayBudgetRules(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Displays BudgetRules
+    """This stream corresponds to Amazon Advertising API - Sponsored Displays BudgetRules
     https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi/prod#/BudgetRules/GetSDBudgetRulesForAdvertiser
 
     Important: API docs contains incorrect endpoint path:

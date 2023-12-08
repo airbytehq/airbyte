@@ -4,10 +4,12 @@
 
 import json
 from abc import abstractmethod
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -98,7 +100,7 @@ class ReadReportStream(HttpStream):
                 logger.error("stream_state is in unhandled date-time format. Required format: %Y-%m-%dT%H:%M:%S")
 
         generate_report = GenerateReportStream(
-            base_path=self.base_path, start_date=latest_state, timezone=self.timezone, authenticator=self.authenticator
+            base_path=self.base_path, start_date=latest_state, timezone=self.timezone, authenticator=self.authenticator,
         )
         report_id = next(generate_report.read_records(SyncMode.full_refresh))
 
@@ -108,8 +110,7 @@ class ReadReportStream(HttpStream):
         return None
 
     def should_retry(self, response: requests.Response) -> bool:
-        """
-        Retry conditions:
+        """Retry conditions:
         1. By default, back off on the following HTTP response statuses:
          - 429 (Too Many Requests) indicating rate limiting
          - 500s to handle transient server errors
@@ -148,13 +149,12 @@ class ReadReportStream(HttpStream):
         try:
             yield from response_json["entries"]
         except KeyError:
-            logger.warn("No entries found in requested report. Setting it to null.")
+            logger.warning("No entries found in requested report. Setting it to null.")
             yield from []
 
 
 class IncrementalReadReportStream(ReadReportStream):
-    """
-    Incremental append for the ReadReportStream. This class introduces the 'cursor_field'
+    """Incremental append for the ReadReportStream. This class introduces the 'cursor_field'
     and 'get_updated_state' methods.
 
     """
@@ -162,15 +162,12 @@ class IncrementalReadReportStream(ReadReportStream):
     @property
     @abstractmethod
     def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        """Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
         and define a cursor field.
         """
-        pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_state = latest_record.get(self.cursor_field)

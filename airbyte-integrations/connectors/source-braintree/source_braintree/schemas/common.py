@@ -3,17 +3,17 @@
 #
 
 from decimal import Decimal
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional
 
 import pydantic
-from airbyte_cdk.sources.utils.schema_helpers import expand_refs
 from pydantic import BaseModel
 from pydantic.typing import resolve_annotations
 
+from airbyte_cdk.sources.utils.schema_helpers import expand_refs
+
 
 class AllOptional(pydantic.main.ModelMetaclass):
-    """
-    Metaclass for marking all Pydantic model fields as Optional
+    """Metaclass for marking all Pydantic model fields as Optional
     Here is exmaple of declaring model using this metaclasslike:
     '''
             class MyModel(BaseModel, metaclass=AllOptional):
@@ -30,8 +30,7 @@ class AllOptional(pydantic.main.ModelMetaclass):
     """
 
     def __new__(self, name, bases, namespaces, **kwargs):
-        """
-        Iterate through fields and wrap then with typing.Optional type.
+        """Iterate through fields and wrap then with typing.Optional type.
         """
         annotations = resolve_annotations(namespaces.get("__annotations__", {}), namespaces.get("__module__", None))
         for base in bases:
@@ -48,7 +47,7 @@ class CatalogModel(BaseModel, metaclass=AllOptional):
         arbitrary_types_allowed = True
 
         @classmethod
-        def schema_extra(cls, schema: Dict[str, Any], model: Type["BaseModel"]) -> None:
+        def schema_extra(cls, schema: dict[str, Any], model: type["BaseModel"]) -> None:
             schema.pop("title", None)
             schema.pop("description", None)
             for name, prop in schema.get("properties", {}).items():
@@ -63,7 +62,7 @@ class CatalogModel(BaseModel, metaclass=AllOptional):
                         prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
 
     @classmethod
-    def schema(cls, **kwargs) -> Dict[str, Any]:
+    def schema(cls, **kwargs) -> dict[str, Any]:
         schema = super().schema(**kwargs)
         expand_refs(schema)
         return schema

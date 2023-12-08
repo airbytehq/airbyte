@@ -2,12 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict
+from typing import Any
 
 
 class OneOfOptionConfig:
-    """
-    Base class to configure a Pydantic model that's used as a oneOf option in a parent model in a way that's compatible with all Airbyte consumers.
+    """Base class to configure a Pydantic model that's used as a oneOf option in a parent model in a way that's compatible with all Airbyte consumers.
 
     Inherit from this class in the nested Config class in a model and set title and description (these show up in the UI) and discriminator (this is making sure it's marked as required in the schema).
 
@@ -26,7 +25,7 @@ class OneOfOptionConfig:
     """
 
     @staticmethod
-    def schema_extra(schema: Dict[str, Any], model: Any) -> None:
+    def schema_extra(schema: dict[str, Any], model: Any) -> None:
         if hasattr(model.Config, "description"):
             schema["description"] = model.Config.description
         if hasattr(model.Config, "discriminator"):

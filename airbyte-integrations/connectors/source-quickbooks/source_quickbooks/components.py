@@ -8,13 +8,14 @@ from collections import abc
 from dataclasses import dataclass
 
 import dpath.util
+
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 
 
 class LastRecordDictProxy(abc.MutableMapping):
-    """
-    Patch a dict object to be able to get/set/delete/etc... values by path.
+    """Patch a dict object to be able to get/set/delete/etc... values by path.
+
     Example:
         >>> record = LastRecordDictProxy({"root": {"nested": "value"}})
         >>> record["root/nested"]
@@ -53,8 +54,7 @@ class LastRecordDictProxy(abc.MutableMapping):
 
 @dataclass
 class CustomDatetimeBasedCursor(DatetimeBasedCursor):
-    """
-    This class is used to override the default DatetimeBasedCursor behavior in the way the cursor values from the `last_record` are
+    """This class is used to override the default DatetimeBasedCursor behavior in the way the cursor values from the `last_record` are
     retrieved, specifically the nested values. In case the last_record looks like follows, there is no way we can get the nested cursor
     value for now by means of the base class.
     {
@@ -79,8 +79,7 @@ class CustomDatetimeBasedCursor(DatetimeBasedCursor):
         return datetime.datetime.strptime(date, self.datetime_format).astimezone(self._timezone)
 
     def should_be_synced(self, record: Record) -> bool:
-        """
-        As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
+        """As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
         implementation is irrelevant for quickbooks
         """
         return True

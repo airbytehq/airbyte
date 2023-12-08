@@ -4,8 +4,9 @@
 
 
 import logging
+from collections.abc import Iterable, Mapping
 from functools import wraps
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Optional
 
 import requests
 from requests.exceptions import JSONDecodeError
@@ -130,7 +131,7 @@ class GoogleAnalyticsApiQuotaBase:
             if remaining_percent <= self.treshold:
                 self.logger.warning(f"The `{quota_name}` quota is running out of tokens. Available {remaining} out of {total_available}.")
                 self._set_retry_attrs_for_quota(quota_name)
-                return None
+                return
             elif self.error_message:
                 self.logger.warning(self.error_message)
 
@@ -143,13 +144,12 @@ class GoogleAnalyticsApiQuotaBase:
                 quota_name = self._get_quota_name_from_error_message(error.get("message"))
                 if quota_name:
                     self._set_retry_attrs_for_quota(quota_name)
-                    self.logger.warn(f"The `{quota_name}` quota is exceeded!")
-                    return None
+                    self.logger.warning(f"The `{quota_name}` quota is exceeded!")
+                    return
         except (AttributeError, JSONDecodeError) as attr_e:
             self.logger.warning(
-                f"`GoogleAnalyticsApiQuota._check_for_errors`: Received non JSON response from the API. Full error: {attr_e}. Bypassing."
+                f"`GoogleAnalyticsApiQuota._check_for_errors`: Received non JSON response from the API. Full error: {attr_e}. Bypassing.",
             )
-            pass
         except Exception as e:
             self.logger.fatal(f"Other `GoogleAnalyticsApiQuota` error: {e}")
             raise
@@ -161,8 +161,8 @@ class GoogleAnalyticsApiQuota(GoogleAnalyticsApiQuotaBase):
         try:
             parsed_response = response.json()
         except (AttributeError, JSONDecodeError) as e:
-            self.logger.warn(
-                f"`GoogleAnalyticsApiQuota._check_quota`: Received non JSON response from the API. Full error: {e}. Bypassing."
+            self.logger.warning(
+                f"`GoogleAnalyticsApiQuota._check_quota`: Received non JSON response from the API. Full error: {e}. Bypassing.",
             )
             parsed_response = {}
         # get current quota
@@ -182,8 +182,7 @@ class GoogleAnalyticsApiQuota(GoogleAnalyticsApiQuotaBase):
             self._check_for_errors(response)
 
     def handle_quota(self) -> None:
-        """
-        The function decorator is used to integrate with the `should_retry` method,
+        """The function decorator is used to integrate with the `should_retry` method,
         or any other method that provides early access to the `response` object.
         """
 

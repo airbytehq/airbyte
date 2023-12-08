@@ -10,22 +10,24 @@ import time
 import urllib.parse
 import uuid
 from abc import ABC
+from collections.abc import Callable, Iterable, Mapping, MutableMapping
 from contextlib import closing
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
+from typing import Any, Optional, Union
 
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
+from numpy import nan
+from pendulum import DateTime  # type: ignore[attr-defined]
+from requests import codes, exceptions
+from requests.models import PreparedRequest
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
-from numpy import nan
-from pendulum import DateTime  # type: ignore[attr-defined]
-from requests import codes, exceptions
-from requests.models import PreparedRequest
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
@@ -45,7 +47,7 @@ class SalesforceStream(HttpStream, ABC):
     encoding = DEFAULT_ENCODING
 
     def __init__(
-        self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs
+        self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs,
     ):
         super().__init__(**kwargs)
         self.sf_api = sf_api
@@ -63,7 +65,7 @@ class SalesforceStream(HttpStream, ABC):
         return self.stream_name
 
     @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+    def primary_key(self) -> Optional[Union[str, list[str], list[list[str]]]]:
         return self.pk
 
     @property
@@ -95,8 +97,7 @@ class SalesforceStream(HttpStream, ABC):
 
 
 class PropertyChunk:
-    """
-    Object that is used to keep track of the current state of a chunk of properties for the stream of records being synced.
+    """Object that is used to keep track of the current state of a chunk of properties for the stream of records being synced.
     """
 
     properties: Mapping[str, Any]
@@ -137,8 +138,7 @@ class RestSalesforceStream(SalesforceStream):
         next_page_token: Mapping[str, Any] = None,
         property_chunk: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
+        """Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
         """
         if next_page_token:
             """
@@ -177,8 +177,7 @@ class RestSalesforceStream(SalesforceStream):
 
     @staticmethod
     def _next_chunk_id(property_chunks: Mapping[int, PropertyChunk]) -> Optional[int]:
-        """
-        Figure out which chunk is going to be read next.
+        """Figure out which chunk is going to be read next.
         It should be the one with the least number of records read by the moment.
         """
         non_exhausted_chunks = {
@@ -194,7 +193,7 @@ class RestSalesforceStream(SalesforceStream):
     def _read_pages(
         self,
         records_generator_fn: Callable[
-            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData],
         ],
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
@@ -212,7 +211,7 @@ class RestSalesforceStream(SalesforceStream):
 
             property_chunk = property_chunks[chunk_id]
             request, response = self._fetch_next_page_for_chunk(
-                stream_slice, stream_state, property_chunk.next_page, property_chunk.properties
+                stream_slice, stream_state, property_chunk.next_page, property_chunk.properties,
             )
 
             # When this is the first time we're getting a chunk's records, we set this to False to be used when deciding the next chunk
@@ -266,13 +265,13 @@ class RestSalesforceStream(SalesforceStream):
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
         property_chunk: Mapping[str, Any] = None,
-    ) -> Tuple[requests.PreparedRequest, requests.Response]:
+    ) -> tuple[requests.PreparedRequest, requests.Response]:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request = self._create_prepared_request(
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
             params=self.request_params(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, property_chunk=property_chunk
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, property_chunk=property_chunk,
             ),
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
@@ -302,8 +301,7 @@ class BulkSalesforceStream(SalesforceStream):
         return response
 
     def create_stream_job(self, query: str, url: str) -> Optional[str]:
-        """
-        docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.html
+        """docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.html
         """
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         try:
@@ -332,22 +330,22 @@ class BulkSalesforceStream(SalesforceStream):
                 ):
                     self.logger.error(
                         f"Cannot receive data for stream '{self.name}' using BULK API, "
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
+                        f"sobject options: {self.sobject_options}, error message: '{error_message}'",
                     )
                 elif error.response.status_code == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
                     self.logger.error(
                         f"Cannot receive data for stream '{self.name}' ,"
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
+                        f"sobject options: {self.sobject_options}, error message: '{error_message}'",
                     )
                 elif error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
                     self.logger.error(
                         f"Cannot receive data for stream '{self.name}' ,"
-                        f"sobject options: {self.sobject_options}, Error message: '{error_data.get('message')}'"
+                        f"sobject options: {self.sobject_options}, Error message: '{error_data.get('message')}'",
                     )
                 elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
                     self.logger.error(
                         f"The stream '{self.name}' is not queryable, "
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
+                        f"sobject options: {self.sobject_options}, error message: '{error_message}'",
                     )
                 elif (
                     error.response.status_code == codes.BAD_REQUEST
@@ -408,15 +406,15 @@ class BulkSalesforceStream(SalesforceStream):
             time.sleep(delay_timeout)
             job_id = job_info["id"]
             self.logger.info(
-                f"Sleeping {delay_timeout} seconds while waiting for Job: {self.name}/{job_id} to complete. Current state: {job_status}"
+                f"Sleeping {delay_timeout} seconds while waiting for Job: {self.name}/{job_id} to complete. Current state: {job_status}",
             )
 
         self.logger.warning(f"Not wait the {self.name} data for {self.DEFAULT_WAIT_TIMEOUT_SECONDS} seconds, data: {job_info}!!")
         return job_status
 
-    def execute_job(self, query: str, url: str) -> Tuple[Optional[str], Optional[str]]:
+    def execute_job(self, query: str, url: str) -> tuple[Optional[str], Optional[str]]:
         job_status = "Failed"
-        for i in range(0, self.MAX_RETRY_NUMBER):
+        for i in range(self.MAX_RETRY_NUMBER):
             job_id = self.create_stream_job(query=query, url=url)
             if not job_id:
                 return None, job_status
@@ -434,8 +432,7 @@ class BulkSalesforceStream(SalesforceStream):
         return job_full_url, job_status
 
     def filter_null_bytes(self, b: bytes):
-        """
-        https://github.com/airbytehq/airbyte/issues/8300
+        """https://github.com/airbytehq/airbyte/issues/8300
         """
         res = b.replace(b"\x00", b"")
         if len(res) < len(b):
@@ -448,7 +445,6 @@ class BulkSalesforceStream(SalesforceStream):
         :param headers: dictionary to extract encoding from.
         :rtype: str
         """
-
         content_type = headers.get("content-type")
 
         if not content_type:
@@ -462,8 +458,7 @@ class BulkSalesforceStream(SalesforceStream):
         return self.encoding
 
     def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str, dict]:
-        """
-        Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
+        """Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
         @ url: string - the url of the `executed_job`
         @ chunk_size: int - the buffer size for each chunk to fetch from stream, in bytes, default: 1024 bytes
         Return the tuple containing string with file path of downloaded binary data (Saved temporarily) and file encoding.
@@ -471,7 +466,7 @@ class BulkSalesforceStream(SalesforceStream):
         # set filepath for binary data from response
         tmp_file = str(uuid.uuid4())
         with closing(self._send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
-            tmp_file, "wb"
+            tmp_file, "wb",
         ) as data_file:
             response_headers = response.headers
             response_encoding = self.get_response_encoding(response_headers)
@@ -483,15 +478,14 @@ class BulkSalesforceStream(SalesforceStream):
         else:
             raise TmpFileIOError(f"The IO/Error occured while verifying binary data. Stream: {self.name}, file {tmp_file} doesn't exist.")
 
-    def read_with_chunks(self, path: str, file_encoding: str, chunk_size: int = 100) -> Iterable[Tuple[int, Mapping[str, Any]]]:
-        """
-        Reads the downloaded binary data, using lines chunks, set by `chunk_size`.
+    def read_with_chunks(self, path: str, file_encoding: str, chunk_size: int = 100) -> Iterable[tuple[int, Mapping[str, Any]]]:
+        """Reads the downloaded binary data, using lines chunks, set by `chunk_size`.
         @ path: string - the path to the downloaded temporarily binary data.
         @ file_encoding: string - encoding for binary data file according to Standard Encodings from codecs module
         @ chunk_size: int - the number of lines to read at a time, default: 100 lines / time.
         """
         try:
-            with open(path, "r", encoding=file_encoding) as data:
+            with open(path, encoding=file_encoding) as data:
                 chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix", dtype=object)
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
@@ -500,7 +494,7 @@ class BulkSalesforceStream(SalesforceStream):
         except pd.errors.EmptyDataError as e:
             self.logger.info(f"Empty data received. {e}")
             yield from []
-        except IOError as ioe:
+        except OSError as ioe:
             raise TmpFileIOError(f"The IO/Error occured while reading tmp data. Called: {path}. Stream: {self.name}", ioe)
         finally:
             # remove binary tmp file, after data is read
@@ -527,16 +521,14 @@ class BulkSalesforceStream(SalesforceStream):
                 key: value
                 for key, value in self.get_json_schema().get("properties", {}).items()
                 if value.get("format") != "base64" and "object" not in value["type"]
-            }
+            },
         )
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
+        """Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
         """
-        Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
-        """
-
         select_fields = self.get_query_select_fields()
         query = f"SELECT {select_fields} FROM {self.name}"
         if next_page_token:
@@ -547,7 +539,7 @@ class BulkSalesforceStream(SalesforceStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -570,7 +562,7 @@ class BulkSalesforceStream(SalesforceStream):
                     self.logger.warning(f"Skipped syncing stream '{standard_instance.name}' because it was unavailable. Error: {error}")
                     return
                 yield from standard_instance.read_records(
-                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
                 )
                 return
             raise SalesforceException(f"Job for {self.name} stream using BULK API was failed.")
@@ -597,7 +589,7 @@ class BulkSalesforceStream(SalesforceStream):
             sobject_options=self.sobject_options,
             authenticator=self.authenticator,
         )
-        new_cls: Type[SalesforceStream] = RestSalesforceStream
+        new_cls: type[SalesforceStream] = RestSalesforceStream
         if isinstance(self, BulkIncrementalSalesforceStream):
             stream_kwargs.update({"replication_key": self.replication_key, "start_date": self.start_date})
             new_cls = IncrementalRestSalesforceStream
@@ -607,8 +599,7 @@ class BulkSalesforceStream(SalesforceStream):
 
 @BulkSalesforceStream.transformer.registerCustomTransform
 def transform_empty_string_to_none(instance: Any, schema: Any):
-    """
-    BULK API returns a `csv` file, where all values are initially as string type.
+    """BULK API returns a `csv` file, where all values are initially as string type.
     This custom transformer replaces empty lines with `None` value.
     """
     if isinstance(instance, str) and not instance.strip():
@@ -635,14 +626,14 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         return None
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start, end = (None, None)
         now = pendulum.now(tz="UTC")
         initial_date = pendulum.parse((stream_state or {}).get(self.cursor_field, self.start_date), tz="UTC")
 
         slice_number = 1
-        while not end == now:
+        while end != now:
             start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
             end = min(now, initial_date.add(days=slice_number * self.STREAM_SLICE_STEP))
             self._slice = {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
@@ -690,8 +681,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         return self.replication_key
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object. Check if latest record is IN stream slice interval => ignore if not
         """
         latest_record_value: pendulum.DateTime = pendulum.parse(latest_record[self.cursor_field])
@@ -708,7 +698,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
     state_checkpoint_interval = None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         start_date = stream_slice["start_date"]
         end_date = stream_slice["end_date"]
@@ -723,8 +713,7 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
 
 
 class Describe(Stream):
-    """
-    Stream of sObjects' (Salesforce Objects) describe:
+    """Stream of sObjects' (Salesforce Objects) describe:
     https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_describe.htm
     """
 
@@ -738,8 +727,7 @@ class Describe(Stream):
             self.sobjects_to_describe = [s.stream.name for s in catalog.streams if s.stream.name != self.name]
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        """
-        Yield describe response of SObjects defined in catalog as streams only.
+        """Yield describe response of SObjects defined in catalog as streams only.
         """
         for sobject in self.sobjects_to_describe:
             yield self.sf_api.describe(sobject=sobject)

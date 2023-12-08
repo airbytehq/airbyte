@@ -4,7 +4,8 @@
 
 import logging
 import time
-from typing import TYPE_CHECKING, Iterator, List
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 from source_facebook_marketing.streams.common import JobException
 
@@ -17,8 +18,7 @@ logger = logging.getLogger("airbyte")
 
 
 class InsightAsyncJobManager:
-    """
-    Class for managing Ads Insights async jobs. Before running next job it
+    """Class for managing Ads Insights async jobs. Before running next job it
     checks current insight throttle value and if it greater than THROTTLE_LIMIT variable, no new jobs added.
     To consume completed jobs use completed_job generator, jobs will be returned in the order they finished.
     """
@@ -44,7 +44,6 @@ class InsightAsyncJobManager:
 
     def _start_jobs(self):
         """Enqueue new jobs."""
-
         self._update_api_throttle_limit()
         self._wait_throttle_limit_down()
         prev_jobs_count = len(self._running_jobs)
@@ -59,7 +58,7 @@ class InsightAsyncJobManager:
         logger.info(
             f"Added: {len(self._running_jobs) - prev_jobs_count} jobs. "
             f"Current throttle limit is {self._api.api.ads_insights_throttle}, "
-            f"{len(self._running_jobs)}/{self.MAX_JOBS_IN_QUEUE} job(s) in queue"
+            f"{len(self._running_jobs)}/{self.MAX_JOBS_IN_QUEUE} job(s) in queue",
         )
 
     def completed_jobs(self) -> Iterator[AsyncJob]:
@@ -81,7 +80,7 @@ class InsightAsyncJobManager:
             yield from completed_jobs
             self._start_jobs()
 
-    def _check_jobs_status_and_restart(self) -> List[AsyncJob]:
+    def _check_jobs_status_and_restart(self) -> list[AsyncJob]:
         """Checks jobs status in advance and restart if some failed.
 
         :return: list of completed jobs
@@ -130,8 +129,7 @@ class InsightAsyncJobManager:
             self._update_api_throttle_limit()
 
     def _get_current_throttle_value(self) -> float:
-        """
-        Get current ads insights throttle value based on app id and account id.
+        """Get current ads insights throttle value based on app id and account id.
         It evaluated as minimum of those numbers cause when account id throttle
         hit 100 it cool down very slowly (i.e. it still says 100 despite no jobs
         running and it capable serve new requests). Because of this behaviour
@@ -142,8 +140,7 @@ class InsightAsyncJobManager:
         return min(throttle.per_account, throttle.per_application)
 
     def _update_api_throttle_limit(self):
-        """
-        Sends <ACCOUNT_ID>/insights GET request with no parameters so it would
+        """Sends <ACCOUNT_ID>/insights GET request with no parameters so it would
         respond with empty list of data so api use "x-fb-ads-insights-throttle"
         header to update current insights throttle limit.
         """

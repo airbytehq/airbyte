@@ -2,20 +2,21 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, Optional
 
 import pendulum
+from pendulum.parsing.exceptions import ParserError
+
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from pendulum.parsing.exceptions import ParserError
 
 
 @dataclass
 class CustomFieldTransformation(RecordTransformation):
-    """
-    Remove all "empty" (e.g. '0000-00-00', '0000-00-00 00:00:00') 'date' and 'date-time' fields from record
+    """Remove all "empty" (e.g. '0000-00-00', '0000-00-00 00:00:00') 'date' and 'date-time' fields from record
     """
 
     config: Config
@@ -31,9 +32,8 @@ class CustomFieldTransformation(RecordTransformation):
         schema = schema_loader.get_json_schema()
         return schema["properties"]
 
-    def _get_fields_with_property_formats_from_schema(self, property_formats: Tuple[str, ...]) -> List[str]:
-        """
-        Get all properties from schema within property_formats
+    def _get_fields_with_property_formats_from_schema(self, property_formats: tuple[str, ...]) -> list[str]:
+        """Get all properties from schema within property_formats
         """
         return [k for k, v in self._schema.items() if v.get("format") in property_formats]
 

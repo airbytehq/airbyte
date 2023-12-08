@@ -12,6 +12,7 @@ from collections import defaultdict
 from typing import Optional
 
 import weaviate
+
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, format_exception
@@ -49,7 +50,7 @@ class WeaviateIndexer(Indexer):
 
         # disable dynamic batching because it's handled asynchroniously in the client
         self.client.batch.configure(
-            batch_size=None, dynamic=False, weaviate_error_retries=weaviate.WeaviateErrorRetryConf(number_retries=5)
+            batch_size=None, dynamic=False, weaviate_error_retries=weaviate.WeaviateErrorRetryConf(number_retries=5),
         )
 
     def check(self) -> Optional[str]:
@@ -63,7 +64,7 @@ class WeaviateIndexer(Indexer):
         return None
 
     def _uses_safe_config(self) -> bool:
-        return self.config.host.startswith("https://") and not self.config.auth.mode == "no_auth"
+        return self.config.host.startswith("https://") and self.config.auth.mode != "no_auth"
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
@@ -91,9 +92,9 @@ class WeaviateIndexer(Indexer):
                                 "indexFilterable": True,
                                 "indexSearchable": False,
                                 "tokenization": "field",
-                            }
+                            },
                         ],
-                    }
+                    },
                 )
                 logging.info(f"Created class {class_name}")
             else:

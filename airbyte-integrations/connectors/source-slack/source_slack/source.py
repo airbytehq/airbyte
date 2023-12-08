@@ -4,17 +4,19 @@
 
 import copy
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import pendulum
 import requests
+from pendulum import DateTime, Period
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from pendulum import DateTime, Period
 
 
 class SlackStream(HttpStream, ABC):
@@ -30,8 +32,8 @@ class SlackStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Slack uses a cursor-based pagination strategy.
         Extract the cursor from the response if it exists and return it in a format
-        that can be used to update request parameters"""
-
+        that can be used to update request parameters
+        """
         json_response = response.json()
         next_cursor = json_response.get("response_metadata", {}).get("next_cursor")
         if next_cursor:
@@ -63,8 +65,8 @@ class SlackStream(HttpStream, ABC):
         Slack puts the retry time in the `Retry-After` response header so we
         we return that value. If the response is anything other than a 429 (e.g: 5XX)
         fall back on default retry behavior.
-        Rate Limits Docs: https://api.slack.com/docs/rate-limits#web"""
-
+        Rate Limits Docs: https://api.slack.com/docs/rate-limits#web
+        """
         if "Retry-After" in response.headers:
             return int(response.headers["Retry-After"])
         else:
@@ -83,7 +85,7 @@ class SlackStream(HttpStream, ABC):
 class ChanneledStream(SlackStream, ABC):
     """Slack stream with channel filter"""
 
-    def __init__(self, channel_filter: List[str] = [], **kwargs):
+    def __init__(self, channel_filter: list[str] = [], **kwargs):
         self.channel_filter = channel_filter
         super().__init__(**kwargs)
 
@@ -149,11 +151,9 @@ class Users(SlackStream):
 
 # Incremental Streams
 def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1), end_date: Optional[DateTime] = None) -> Iterable[Period]:
-    """
-    Yields a list of the beginning and ending timestamps of each day between the start date and now.
+    """Yields a list of the beginning and ending timestamps of each day between the start date and now.
     The return value is a pendulum.period
     """
-
     end_date = end_date or pendulum.now()
     # Each stream_slice contains the beginning and ending timestamp for a 24 hour period
     chunk_start_date = start_date
@@ -196,7 +196,7 @@ class IncrementalMessageStream(ChanneledStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
         current_stream_state[self.cursor_field] = max(
-            latest_record[self.cursor_field], current_stream_state.get(self.cursor_field, self._start_ts)
+            latest_record[self.cursor_field], current_stream_state.get(self.cursor_field, self._start_ts),
         )
 
         return current_stream_state
@@ -204,7 +204,7 @@ class IncrementalMessageStream(ChanneledStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -247,8 +247,7 @@ class Threads(IncrementalMessageStream):
         return "conversations.replies"
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        The logic for incrementally syncing threads is not very obvious, so buckle up.
+        """The logic for incrementally syncing threads is not very obvious, so buckle up.
 
         To get all messages in a thread, one must specify the channel and timestamp of the parent (first) message of that thread,
         basically its ID.
@@ -264,7 +263,6 @@ class Threads(IncrementalMessageStream):
 
         Good luck.
         """
-
         stream_state = stream_state or {}
         channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
 
@@ -297,11 +295,9 @@ class Threads(IncrementalMessageStream):
             yield {}
 
     def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        """
-        Filtering already read records for incremental sync. Copied state value to X after the last sync
+        """Filtering already read records for incremental sync. Copied state value to X after the last sync
         to really 100% make sure no one can edit the state during the run.
         """
-
         initial_state = copy.deepcopy(stream_state) or {}
 
         for record in super().read_records(stream_state=stream_state, **kwargs):
@@ -310,8 +306,7 @@ class Threads(IncrementalMessageStream):
 
 
 class JoinChannelsStream(HttpStream):
-    """
-    This class is a special stream which joins channels because the Slack API only returns messages from channels this bot is in.
+    """This class is a special stream which joins channels because the Slack API only returns messages from channels this bot is in.
     Its responses should only be logged for debugging reasons, not read as records.
     """
 
@@ -319,7 +314,7 @@ class JoinChannelsStream(HttpStream):
     http_method = "POST"
     primary_key = "id"
 
-    def __init__(self, channel_filter: List[str] = None, **kwargs):
+    def __init__(self, channel_filter: list[str] = None, **kwargs):
         self.channel_filter = channel_filter or []
         super().__init__(**kwargs)
 
@@ -356,7 +351,7 @@ class SourceSlack(AbstractSource):
         else:
             raise Exception(f"No supported option_title: {credentials_title} specified. See spec.json for references")
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Optional[Any]]:
         try:
             authenticator = self._get_authenticator(config)
             users_stream = Users(authenticator=authenticator)
@@ -369,7 +364,7 @@ class SourceSlack(AbstractSource):
                 f"Most probably, there are no users in the given Slack instance or your token is incorrect",
             )
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         authenticator = self._get_authenticator(config)
         default_start_date = pendulum.parse(config["start_date"])
         # this field is not exposed to spec, used only for testing purposes

@@ -5,24 +5,24 @@
 
 import argparse
 import os
-from typing import Any, Dict
+from typing import Any
 
 import yaml
+
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor
 
 
 class TransformCatalog:
-    """
-To run this transformation:
-```
-python3 main_dev_transform_catalog.py \
+    """To run this transformation:
+    ```
+    python3 main_dev_transform_catalog.py \
   --integration-type <postgres|bigquery|redshift|snowflake>
-  --profile-config-dir . \
+    --profile-config-dir . \
   --catalog integration_tests/catalog.json \
   --out dir \
   --json-column json_blob
-```
+    ```
     """
 
     config: dict = {}
@@ -64,7 +64,7 @@ python3 main_dev_transform_catalog.py \
             processor.process(catalog_file=catalog_file, json_column_name=json_col, default_schema=schema)
         self.update_dbt_project_vars(json_column=self.config["json_column"], models_to_source=processor.models_to_source)
 
-    def update_dbt_project_vars(self, **vars_config: Dict[str, Any]):
+    def update_dbt_project_vars(self, **vars_config: dict[str, Any]):
         filename = os.path.join(self.config["profile_config_dir"], self.DBT_PROJECT)
         config = read_yaml_config(filename)
         config["vars"] = {**config.get("vars", {}), **vars_config}
@@ -72,26 +72,26 @@ python3 main_dev_transform_catalog.py \
 
 
 def read_profiles_yml(profile_dir: str) -> Any:
-    with open(os.path.join(profile_dir, "profiles.yml"), "r") as file:
+    with open(os.path.join(profile_dir, "profiles.yml")) as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
         obj = config["normalize"]["outputs"]["prod"]
         return obj
 
 
-def read_yaml_config(filename: str) -> Dict[str, Any]:
-    with open(filename, "r") as fp:
+def read_yaml_config(filename: str) -> dict[str, Any]:
+    with open(filename) as fp:
         config = yaml.safe_load(fp)
     if not isinstance(config, dict):
-        raise RuntimeError("{} does not parse to a dictionary".format(os.path.basename(filename)))
+        raise RuntimeError(f"{os.path.basename(filename)} does not parse to a dictionary")
     return config
 
 
-def write_yaml_config(config: Dict[str, Any], filename: str):
+def write_yaml_config(config: dict[str, Any], filename: str):
     with open(filename, "w") as fp:
         fp.write(yaml.dump(config, sort_keys=False))
 
 
-def extract_schema(profiles_yml: Dict) -> str:
+def extract_schema(profiles_yml: dict) -> str:
     if "dataset" in profiles_yml:
         return str(profiles_yml["dataset"])
     elif "schema" in profiles_yml:
@@ -100,7 +100,7 @@ def extract_schema(profiles_yml: Dict) -> str:
         raise KeyError("No Dataset/Schema defined in profiles.yml")
 
 
-def extract_path(profiles_yml: Dict) -> str:
+def extract_path(profiles_yml: dict) -> str:
     if "path" in profiles_yml:
         return str(profiles_yml["path"])
     else:

@@ -7,14 +7,16 @@ import io
 import logging
 import sys
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping
+from collections.abc import Iterable, Mapping
+from typing import Any
+
+from pydantic import ValidationError
 
 from airbyte_cdk.connector import Connector
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from pydantic import ValidationError
 
 logger = logging.getLogger("airbyte")
 
@@ -24,7 +26,7 @@ class Destination(Connector, ABC):
 
     @abstractmethod
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         """Implement to define how the connector writes data to the destination"""
 
@@ -41,7 +43,7 @@ class Destination(Connector, ABC):
                 logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")
 
     def _run_write(
-        self, config: Mapping[str, Any], configured_catalog_path: str, input_stream: io.TextIOWrapper
+        self, config: Mapping[str, Any], configured_catalog_path: str, input_stream: io.TextIOWrapper,
     ) -> Iterable[AirbyteMessage]:
         catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
         input_messages = self._parse_input_stream(input_stream)
@@ -49,12 +51,10 @@ class Destination(Connector, ABC):
         yield from self.write(config=config, configured_catalog=catalog, input_messages=input_messages)
         logger.info("Writing complete.")
 
-    def parse_args(self, args: List[str]) -> argparse.Namespace:
-        """
-        :param args: commandline arguments
+    def parse_args(self, args: list[str]) -> argparse.Namespace:
+        """:param args: commandline arguments
         :return:
         """
-
         parent_parser = argparse.ArgumentParser(add_help=False)
         main_parser = argparse.ArgumentParser()
         subparsers = main_parser.add_subparsers(title="commands", dest="command")
@@ -111,7 +111,7 @@ class Destination(Connector, ABC):
             wrapped_stdin = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8")
             yield from self._run_write(config=config, configured_catalog_path=parsed_args.catalog, input_stream=wrapped_stdin)
 
-    def run(self, args: List[str]):
+    def run(self, args: list[str]):
         init_uncaught_exception_handler(logger)
         parsed_args = self.parse_args(args)
         output_messages = self.run_cmd(parsed_args)

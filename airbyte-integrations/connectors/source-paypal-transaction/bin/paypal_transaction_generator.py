@@ -80,7 +80,7 @@ PAYMENT_DATA = {
                     "state": "CA",
                 },
             },
-        }
+        },
     ],
     "note_to_payer": "Contact us for any questions on your order.",
     "redirect_urls": {"return_url": "https://example.com", "cancel_url": "https://example.com"},
@@ -88,7 +88,7 @@ PAYMENT_DATA = {
 
 
 def read_json(filepath):
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         return json.loads(f.read())
 
 
@@ -118,7 +118,7 @@ def make_payment():
     PAYMENT_DATA["transactions"][0]["invoice_number"] = random_digits(11)
 
     response = requests.request(
-        method="POST", url="https://api-m.sandbox.paypal.com/v1/payments/payment", headers=headers, data=json.dumps(PAYMENT_DATA)
+        method="POST", url="https://api-m.sandbox.paypal.com/v1/payments/payment", headers=headers, data=json.dumps(PAYMENT_DATA),
     )
     response_json = response.json()
     # pprint(response_json)

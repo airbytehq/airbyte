@@ -14,16 +14,17 @@ from typing import List
 
 import anyio
 from anyio import Path
-from connector_ops.utils import console
-from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT
-from pipelines.dagger.actions import remote_storage
-from pipelines.helpers.utils import format_duration
-from pipelines.models.steps import StepResult, StepStatus
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 from rich.text import Text
+
+from connector_ops.utils import console
+from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT
+from pipelines.dagger.actions import remote_storage
+from pipelines.helpers.utils import format_duration
+from pipelines.models.steps import StepResult, StepStatus
 
 if typing.TYPE_CHECKING:
     from pipelines.models.steps import PipelineContext
@@ -33,8 +34,8 @@ if typing.TYPE_CHECKING:
 class Report:
     """A dataclass to build reports to share pipelines executions results with the user."""
 
-    pipeline_context: "PipelineContext"
-    steps_results: List[StepResult]
+    pipeline_context: PipelineContext
+    steps_results: list[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
     name: str = "REPORT"
     filename: str = "output"
@@ -137,7 +138,7 @@ class Report:
                 "ci_context": self.pipeline_context.ci_context,
                 "pull_request_url": self.pipeline_context.pull_request.html_url if self.pipeline_context.pull_request else None,
                 "dagger_cloud_url": self.pipeline_context.dagger_cloud_url,
-            }
+            },
         )
 
     def print(self):
@@ -160,7 +161,7 @@ class Report:
             if step_result.status is StepStatus.SKIPPED:
                 step_results_table.add_row(step, result, "N/A")
             else:
-                run_time = format_duration((step_result.created_at - step_result.step.started_at))
+                run_time = format_duration(step_result.created_at - step_result.step.started_at)
                 step_results_table.add_row(step, result, run_time)
 
         to_render = [step_results_table]

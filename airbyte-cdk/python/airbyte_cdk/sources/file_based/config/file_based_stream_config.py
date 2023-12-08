@@ -2,8 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from enum import Enum
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, Optional, Union
+
+from pydantic import BaseModel, Field, validator
 
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
@@ -12,9 +15,8 @@ from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
-from pydantic import BaseModel, Field, validator
 
-PrimaryKeyType = Optional[Union[str, List[str]]]
+PrimaryKeyType = Optional[Union[str, list[str]]]
 
 
 class ValidationPolicy(Enum):
@@ -25,7 +27,7 @@ class ValidationPolicy(Enum):
 
 class FileBasedStreamConfig(BaseModel):
     name: str = Field(title="Name", description="The name of the stream.")
-    globs: Optional[List[str]] = Field(
+    globs: Optional[list[str]] = Field(
         default=["**"],
         title="Globs",
         description='The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href="https://en.wikipedia.org/wiki/Glob_(programming)">here</a>.',
@@ -75,8 +77,7 @@ class FileBasedStreamConfig(BaseModel):
         return None
 
     def get_input_schema(self) -> Optional[Mapping[str, Any]]:
-        """
-        User defined input_schema is defined as a string in the config. This method takes the string representation
+        """User defined input_schema is defined as a string in the config. This method takes the string representation
         and converts it into a Mapping[str, Any] which is used by file-based CDK components.
         """
         if self.input_schema:

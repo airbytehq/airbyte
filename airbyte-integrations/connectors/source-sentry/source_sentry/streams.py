@@ -4,10 +4,12 @@
 
 
 from abc import ABC
-from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -41,8 +43,7 @@ class SentryStream(HttpStream, ABC):
 
 class SentryStreamPagination(SentryStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Expect the link header field to always contain the values ​​for `rel`, `results`, and `cursor`.
+        """Expect the link header field to always contain the values \u200b\u200bfor `rel`, `results`, and `cursor`.
         If there is actually the next page, rel="next"; results="true"; cursor="<next-page-token>".
         """
         if response.links["next"]["results"] == "true":
@@ -80,8 +81,7 @@ class SentryIncremental(SentryStreamPagination, IncrementalMixin):
         return pendulum.parse(state_value)
 
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
-        """
-        Endpoint does not provide query filtering params, but they provide us
+        """Endpoint does not provide query filtering params, but they provide us
         cursor field in most cases, so we used that as incremental filtering
         during the parsing.
         """
@@ -105,8 +105,7 @@ class SentryIncremental(SentryStreamPagination, IncrementalMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        """
-        Define state as a max between given value and current state
+        """Define state as a max between given value and current state
         """
         if not self._cursor_value:
             self._cursor_value = value.get(self.cursor_field)
@@ -117,8 +116,7 @@ class SentryIncremental(SentryStreamPagination, IncrementalMixin):
 
 
 class Events(SentryIncremental):
-    """
-    Docs: https://docs.sentry.io/api/events/list-a-projects-events/
+    """Docs: https://docs.sentry.io/api/events/list-a-projects-events/
     """
 
     primary_key = "id"
@@ -150,8 +148,7 @@ class Events(SentryIncremental):
 
 
 class Issues(SentryIncremental):
-    """
-    Docs: https://docs.sentry.io/api/events/list-a-projects-issues/
+    """Docs: https://docs.sentry.io/api/events/list-a-projects-issues/
     """
 
     primary_key = "id"
@@ -185,7 +182,7 @@ class Issues(SentryIncremental):
         """Retrieve the filter date from the stream state or use the start_date."""
         return stream_state.get(self.cursor_field) or self.start_date if stream_state else self.start_date
 
-    def _build_query_params(self, filter_date: str) -> Dict[str, str]:
+    def _build_query_params(self, filter_date: str) -> dict[str, str]:
         """Generate query parameters for the request."""
         filter_date_iso = pendulum.parse(filter_date).to_iso8601_string()
         return {"statsPeriod": "", "query": f"lastSeen:>{filter_date_iso}"}
@@ -198,7 +195,7 @@ class Issues(SentryIncremental):
             self.state = {self.cursor_field: cursor_value}
             yield record
 
-    def _get_cursor_value(self, record: Dict[str, Any], stream_state: Mapping[str, Any]) -> pendulum.datetime:
+    def _get_cursor_value(self, record: dict[str, Any], stream_state: Mapping[str, Any]) -> pendulum.datetime:
         """Compute the maximum cursor value based on the record and stream state."""
         record_time = record[self.cursor_field]
         state_time = str(self.get_state_value(stream_state))
@@ -206,8 +203,7 @@ class Issues(SentryIncremental):
 
 
 class Projects(SentryIncremental):
-    """
-    Docs: https://docs.sentry.io/api/projects/list-your-projects/
+    """Docs: https://docs.sentry.io/api/projects/list-your-projects/
     """
 
     primary_key = "id"
@@ -223,8 +219,7 @@ class Projects(SentryIncremental):
 
 
 class ProjectDetail(SentryStream):
-    """
-    Docs: https://docs.sentry.io/api/projects/retrieve-a-project/
+    """Docs: https://docs.sentry.io/api/projects/retrieve-a-project/
     """
 
     def __init__(self, organization: str, project: str, **kwargs):
@@ -245,8 +240,7 @@ class ProjectDetail(SentryStream):
 
 
 class Releases(SentryIncremental):
-    """
-    Docs: https://docs.sentry.io/api/releases/list-an-organizations-releases/
+    """Docs: https://docs.sentry.io/api/releases/list-an-organizations-releases/
     """
 
     primary_key = "id"

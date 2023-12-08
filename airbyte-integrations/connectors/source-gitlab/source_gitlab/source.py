@@ -4,9 +4,13 @@
 
 
 import os
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
+from collections.abc import Mapping, MutableMapping
+from typing import Any, Optional, Union
 
 import pendulum
+from requests.auth import AuthBase
+from requests.exceptions import HTTPError
+
 from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -14,8 +18,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
-from requests.auth import AuthBase
-from requests.exceptions import HTTPError
 
 from .streams import (
     Branches,
@@ -71,7 +73,7 @@ class SingleUseRefreshTokenGitlabOAuth2Authenticator(SingleUseRefreshTokenOauth2
     def get_new_token_expiry_date(access_token_expires_in: int, access_token_created_at: int) -> pendulum.DateTime:
         return pendulum.from_timestamp(access_token_created_at + access_token_expires_in)
 
-    def refresh_access_token(self) -> Tuple[str, int, int, str]:
+    def refresh_access_token(self) -> tuple[str, int, int, str]:
         response_json = self._get_refresh_access_token_response()
         return (
             response_json[self.get_access_token_name()],
@@ -129,7 +131,7 @@ class SourceGitlab(AbstractSource):
             self.__auth_params = dict(authenticator=auth, api_url=config["api_url"])
         return self.__auth_params
 
-    def _get_group_list(self, config: MutableMapping[str, Any]) -> List[str]:
+    def _get_group_list(self, config: MutableMapping[str, Any]) -> list[str]:
         group_ids = config.get("groups_list")
         # Gitlab exposes different APIs to get a list of groups.
         # We use https://docs.gitlab.com/ee/api/groups.html#list-groups in case there's no group IDs in the input config.
@@ -150,8 +152,7 @@ class SourceGitlab(AbstractSource):
         return os.environ.get("DEPLOYMENT_MODE", "").upper() != "CLOUD"
 
     def _try_refresh_access_token(self, logger, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        This method attempts to refresh the expired `access_token`, while `refresh_token` is still valid.
+        """This method attempts to refresh the expired `access_token`, while `refresh_token` is still valid.
         In order to obtain the new `refresh_token`, the Customer should `re-auth` in the source settings.
         """
         # get current authenticator
@@ -172,13 +173,13 @@ class SourceGitlab(AbstractSource):
             except Exception as e:
                 raise Exception(f"Unknown error occurred while refreshing the `access_token`, details: {e}")
 
-    def _handle_expired_access_token_error(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def _handle_expired_access_token_error(self, logger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         try:
             return self.check_connection(logger, self._try_refresh_access_token(logger, config))
         except HTTPError as http_error:
             return False, f"Unable to refresh the `access_token`, please re-authenticate in Sources > Settings. Details: {http_error}"
 
-    def check_connection(self, logger, config) -> Tuple[bool, Any]:
+    def check_connection(self, logger, config) -> tuple[bool, Any]:
         config = self._ensure_default_values(config)
         is_valid, scheme, _ = parse_url(config["api_url"])
         if not is_valid:
@@ -200,13 +201,13 @@ class SourceGitlab(AbstractSource):
                 if http_error.response.status_code == 401:
                     return self._handle_expired_access_token_error(logger, config)
                 elif http_error.response.status_code == 500:
-                    return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(http_error)}"
+                    return False, f"Unable to connect to Gitlab API with the provided credentials - {http_error!r}"
             else:
-                return False, f"Unable to connect to Gitlab API with the provided Private Access Token - {repr(http_error)}"
+                return False, f"Unable to connect to Gitlab API with the provided Private Access Token - {http_error!r}"
         except Exception as error:
-            return False, f"Unknown error occurred while checking the connection - {repr(error)}"
+            return False, f"Unknown error occurred while checking the connection - {error!r}"
 
-    def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
+    def streams(self, config: MutableMapping[str, Any]) -> list[Stream]:
         config = self._ensure_default_values(config)
         auth_params = self._auth_params(config)
         start_date = config.get("start_date")

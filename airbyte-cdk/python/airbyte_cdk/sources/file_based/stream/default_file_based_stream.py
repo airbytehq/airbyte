@@ -5,9 +5,10 @@
 import asyncio
 import itertools
 import traceback
+from collections.abc import Iterable, Mapping, MutableMapping
 from copy import deepcopy
 from functools import cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
+from typing import Any, Optional, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level
 from airbyte_cdk.models import Type as MessageType
@@ -33,9 +34,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
-
-    """
-    The default file-based stream.
+    """The default file-based stream.
     """
 
     DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -69,8 +68,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         return slices
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:
-        """
-        Yield all records from all remote files in `list_files_for_this_sync`.
+        """Yield all records from all remote files in `list_files_for_this_sync`.
 
         If an error is encountered reading records from a file, log a message and do not attempt
         to sync the rest of the file.
@@ -142,9 +140,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     )
 
     @property
-    def cursor_field(self) -> Union[str, List[str]]:
-        """
-        Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
+    def cursor_field(self) -> Union[str, list[str]]:
+        """Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
         return self.ab_last_mod_col
@@ -159,7 +156,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             schema = self._get_raw_json_schema()
         except (InvalidSchemaError, NoFilesMatchingError) as config_exception:
             raise AirbyteTracedException(
-                message=FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value, exception=config_exception, failure_type=FailureType.config_error
+                message=FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value, exception=config_exception, failure_type=FailureType.config_error,
             ) from config_exception
         except Exception as exc:
             raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, stream=self.name) from exc
@@ -182,8 +179,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             if total_n_files > max_n_files_for_schema_inference:
                 # Use the most recent files for schema inference, so we pick up schema changes during discovery.
                 files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
-                self.logger.warn(
-                    msg=f"Refusing to infer schema for all {total_n_files} files; using {max_n_files_for_schema_inference} files."
+                self.logger.warning(
+                    msg=f"Refusing to infer schema for all {total_n_files} files; using {max_n_files_for_schema_inference} files.",
                 )
 
             inferred_schema = self.infer_schema(files)
@@ -200,12 +197,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         return schema
 
     def get_files(self) -> Iterable[RemoteFile]:
-        """
-        Return all files that belong to the stream as defined by the stream's globs.
+        """Return all files that belong to the stream as defined by the stream's globs.
         """
         return self.stream_reader.get_matching_files(self.config.globs or [], self.config.legacy_prefix, self.logger)
 
-    def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
+    def infer_schema(self, files: list[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
         schema = loop.run_until_complete(self._infer_schema(files))
         # as infer schema returns a Mapping that is assumed to be immutable, we need to create a deepcopy to avoid modifying the reference
@@ -228,15 +224,14 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 DefaultFileBasedStream._fill_nulls(item)
         return schema
 
-    async def _infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
-        """
-        Infer the schema for a stream.
+    async def _infer_schema(self, files: list[RemoteFile]) -> Mapping[str, Any]:
+        """Infer the schema for a stream.
 
         Each file type has a corresponding `infer_schema` handler.
         Dispatch on file type.
         """
         base_schema: SchemaType = {}
-        pending_tasks: Set[asyncio.tasks.Task[SchemaType]] = set()
+        pending_tasks: set[asyncio.tasks.Task[SchemaType]] = set()
 
         n_started, n_files = 0, len(files)
         files_iterator = iter(files)

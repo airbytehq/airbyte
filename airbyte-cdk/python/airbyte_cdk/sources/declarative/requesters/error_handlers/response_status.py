@@ -8,13 +8,11 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action i
 
 
 class ResponseStatus:
-    """
-    ResponseAction amended with backoff time if an action is RETRY
+    """ResponseAction amended with backoff time if an action is RETRY
     """
 
     def __init__(self, response_action: Union[ResponseAction, str], retry_in: Optional[float] = None, error_message: str = ""):
-        """
-        :param response_action: response action to execute
+        """:param response_action: response action to execute
         :param retry_in: backoff time (if action is RETRY)
         :param error_message: the error to be displayed back to the customer
         """
@@ -43,8 +41,7 @@ class ResponseStatus:
 
     @classmethod
     def retry(cls, retry_in: Optional[float]) -> "ResponseStatus":
-        """
-        Returns a ResponseStatus defining how long to backoff before retrying
+        """Returns a ResponseStatus defining how long to backoff before retrying
 
         :param retry_in: how long to backoff before retrying. None if no wait required
         :return: A response status defining how long to backoff before retrying

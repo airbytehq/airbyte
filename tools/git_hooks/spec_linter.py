@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""
-This script is responsible for connectors spec.json file validation.
+"""This script is responsible for connectors spec.json file validation.
 
 Input:
 List of spec files
@@ -22,7 +21,8 @@ How spec file validation works:
 import json
 import logging
 import sys
-from typing import Any, List, Mapping, Optional, Tuple
+from collections.abc import Mapping
+from typing import Any, Optional
 
 # required fields for each property field in spec
 FIELDS_TO_CHECK = {"title", "description"}
@@ -31,11 +31,10 @@ logging.basicConfig(format="%(message)s")
 
 
 def read_spec_file(spec_path: str) -> bool:
-    """
-    Parses spec file and applies validation rules.
+    """Parses spec file and applies validation rules.
     Returns True if spec is valid else False
     """
-    errors: List[Tuple[str, Optional[str]]] = []
+    errors: list[tuple[str, Optional[str]]] = []
     with open(spec_path) as json_file:
         try:
             root_schema = json.load(json_file)["connectionSpecification"]["properties"]
@@ -53,8 +52,7 @@ def read_spec_file(spec_path: str) -> bool:
 
 
 def print_error(spec_path: str, error_message: str, failed_field: Optional[str] = None) -> None:
-    """
-    Logs error in following format: <BOLD>SPEC PATH</BOLD> ERROR MSG <RED>FIELD NAME</RED>
+    """Logs error in following format: <BOLD>SPEC PATH</BOLD> ERROR MSG <RED>FIELD NAME</RED>
     """
     error = f"\033[1m{spec_path}\033[0m: {error_message}"
     if failed_field:
@@ -66,12 +64,11 @@ def print_error(spec_path: str, error_message: str, failed_field: Optional[str] 
 def validate_schema(
     spec_path: str,
     schema: Mapping[str, Any],
-    parent_fields: Optional[List[str]] = None,
-) -> List[Tuple[str, str]]:
+    parent_fields: Optional[list[str]] = None,
+) -> list[tuple[str, str]]:
+    """Validates given spec dictionary object. Returns list of errors
     """
-    Validates given spec dictionary object. Returns list of errors
-    """
-    errors: List[Tuple[str, str]] = []
+    errors: list[tuple[str, str]] = []
     parent_fields = parent_fields if parent_fields else []
     for field_name, field_schema in schema.items():
         field_errors = validate_field(field_name, field_schema, parent_fields)
@@ -85,15 +82,14 @@ def validate_schema(
                     spec_path,
                     oneof_schema["properties"],
                     parent_fields + [field_name, str(index)],
-                )
+                ),
             )
 
     return errors
 
 
-def fetch_oneof_schemas(schema: Mapping[str, Any]) -> List[Mapping[str, Any]]:
-    """
-    Finds subschemas in oneOf field
+def fetch_oneof_schemas(schema: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    """Finds subschemas in oneOf field
     """
     return [spec for spec in schema.get("oneOf", []) if spec.get("properties")]
 
@@ -101,16 +97,15 @@ def fetch_oneof_schemas(schema: Mapping[str, Any]) -> List[Mapping[str, Any]]:
 def validate_field(
     field_name: str,
     schema: Mapping[str, Any],
-    parent_fields: Optional[List[str]] = None,
-) -> List[Tuple[str, str]]:
-    """
-    Validates single field objects and return errors if they exist
+    parent_fields: Optional[list[str]] = None,
+) -> list[tuple[str, str]]:
+    """Validates single field objects and return errors if they exist
     """
     if "const" in schema.keys():
         # Field with "const" value is metainfo and not expected to contain title
         # and description.
         return []
-    errors: List[Tuple[str, str]] = []
+    errors: list[tuple[str, str]] = []
     full_field_name = get_full_field_name(field_name, parent_fields)
 
     if not FIELDS_TO_CHECK.issubset(schema.keys()):
@@ -122,9 +117,8 @@ def validate_field(
     return errors
 
 
-def get_full_field_name(field_name: str, parent_fields: Optional[List[str]] = None) -> str:
-    """
-    Returns full path to a field.
+def get_full_field_name(field_name: str, parent_fields: Optional[list[str]] = None) -> str:
+    """Returns full path to a field.
     e.g. root.middle.child, root.oneof.1.attr
     """
     return ".".join(parent_fields + [field_name]) if parent_fields else field_name

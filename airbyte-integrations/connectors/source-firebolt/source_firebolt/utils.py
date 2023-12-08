@@ -4,14 +4,13 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type
 
 
-def convert_type(fb_type: str, nullable: bool) -> Dict[str, Union[str, Dict]]:
-    """
-    Convert from Firebolt type to Airbyte. If type is not defined in
+def convert_type(fb_type: str, nullable: bool) -> dict[str, Union[str, dict]]:
+    """Convert from Firebolt type to Airbyte. If type is not defined in
     Firebolt then it will be set to string, as per Airbyte reccommendation.
     More on Firebolt types can be found in docs:
     https://docs.firebolt.io/general-reference/data-types.html
@@ -73,9 +72,8 @@ def convert_type(fb_type: str, nullable: bool) -> Dict[str, Union[str, Dict]]:
     return result
 
 
-def format_fetch_result(data: List[Any]) -> List[List[Any]]:
-    """
-    Format data from a firebolt query to be compatible with Airbyte,
+def format_fetch_result(data: list[Any]) -> list[list[Any]]:
+    """Format data from a firebolt query to be compatible with Airbyte,
     convert Firebolt timestamp string to Airbyte.
     Firebolt stores dates in YYYY-MM-DD HH:mm:SS format.
     Airbyte requires YYYY-MM-DDTHH:mm:SS.
@@ -86,7 +84,6 @@ def format_fetch_result(data: List[Any]) -> List[List[Any]]:
     :return: List of the same data as passed that's been converted to compatible types.
         https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types
     """
-
     for idx, item in enumerate(data):
         if type(item) == datetime:
             data[idx] = item.isoformat()
@@ -99,9 +96,8 @@ def format_fetch_result(data: List[Any]) -> List[List[Any]]:
     return data
 
 
-def airbyte_message_from_data(raw_data: List[Any], columns: List[str], table_name: str) -> Optional[AirbyteMessage]:
-    """
-    Wrap data into an AirbyteMessage.
+def airbyte_message_from_data(raw_data: list[Any], columns: list[str], table_name: str) -> Optional[AirbyteMessage]:
+    """Wrap data into an AirbyteMessage.
 
     :param raw_data: Raw data row returned from a fetch query. Each item in the list
         represents a row of data.

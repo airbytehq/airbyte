@@ -3,13 +3,15 @@
 #
 
 import logging
-from typing import Any, Mapping, Optional, Tuple
+from collections.abc import Mapping
+from typing import Any, Optional
+
+from requests import HTTPError
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from requests import HTTPError
 
 from .stream_helpers import get_first_record_for_slice, get_first_stream_slice
 
@@ -30,7 +32,7 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
         logger: logging.Logger,
         source: Optional["Source"],
         stream_state: Optional[Mapping[str, Any]],
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, Optional[str]]:
         try:
             # Some streams need a stream slice to read records (e.g. if they have a SubstreamPartitionRouter)
             # Streams that don't need a stream slice will return `None` as their first stream slice.
@@ -59,9 +61,8 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
                 reason = f"Unable to read {stream.name} stream. {reason}"
             return is_available, reason
 
-    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Tuple[bool, Optional[str]]:
-        """
-        Check stream availability by attempting to read the first record of the
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> tuple[bool, Optional[str]]:
+        """Check stream availability by attempting to read the first record of the
         stream.
 
         :param stream: stream
@@ -78,8 +79,8 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
         return self._check_availability_for_sync_mode(stream, SyncMode.incremental, logger, source, {stream.cursor_field: 0})
 
     def handle_http_error(
-        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
-    ) -> Tuple[bool, Optional[str]]:
+        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError,
+    ) -> tuple[bool, Optional[str]]:
         status_code = error.response.status_code
         if status_code not in [400, 403]:
             raise error
@@ -97,14 +98,14 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
 
 
 class StripeSubStreamAvailabilityStrategy(StripeAvailabilityStrategy):
-    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> tuple[bool, Optional[str]]:
         """Traverse through all the parents of a given stream and run availability strategy on each of them"""
         try:
-            current_stream, parent_stream = stream, getattr(stream, "parent")
+            current_stream, parent_stream = stream, stream.parent
         except AttributeError:
             return super().check_availability(stream, logger, source)
         if parent_stream:
-            parent_stream_instance = getattr(current_stream, "parent")
+            parent_stream_instance = current_stream.parent
             # Accessing the `availability_strategy` property will instantiate AvailabilityStrategy under the hood
             availability_strategy = parent_stream_instance.availability_strategy
             if availability_strategy:

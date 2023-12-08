@@ -7,10 +7,11 @@ import json
 import os
 import selectors
 import subprocess
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from io import TextIOWrapper
-from typing import Any, DefaultDict, Dict, Iterator, List, Mapping, Optional, Tuple
+from typing import Any, DefaultDict, Optional
 
 from airbyte_cdk.logger import log_by_prefix
 from airbyte_cdk.models import (
@@ -47,7 +48,7 @@ def configured_for_incremental(configured_stream: ConfiguredAirbyteStream):
     return configured_stream.sync_mode and configured_stream.sync_mode == SyncMode.incremental
 
 
-def get_stream_level_metadata(metadatas: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+def get_stream_level_metadata(metadatas: list[dict[str, Any]]) -> Optional[dict[str, Any]]:
     for metadata in metadatas:
         if not is_field_metadata(metadata) and "metadata" in metadata:
             return metadata.get("metadata")
@@ -62,12 +63,12 @@ class Catalogs:
 
 @dataclass
 class SyncModeInfo:
-    supported_sync_modes: Optional[List[SyncMode]] = None
+    supported_sync_modes: Optional[list[SyncMode]] = None
     source_defined_cursor: Optional[bool] = None
-    default_cursor_field: Optional[List[str]] = None
+    default_cursor_field: Optional[list[str]] = None
 
 
-def set_sync_modes_from_metadata(airbyte_stream: AirbyteStream, metadatas: List[Dict[str, Any]]):
+def set_sync_modes_from_metadata(airbyte_stream: AirbyteStream, metadatas: list[dict[str, Any]]):
     stream_metadata = get_stream_level_metadata(metadatas)
     if stream_metadata:
         # A stream is incremental if it declares replication keys or if forced-replication-method is set to incremental
@@ -109,10 +110,9 @@ class SingerHelper:
 
     @staticmethod
     def singer_catalog_to_airbyte_catalog(
-        singer_catalog: Dict[str, Any], sync_mode_overrides: Dict[str, SyncModeInfo], primary_key_overrides: Dict[str, List[str]]
+        singer_catalog: dict[str, Any], sync_mode_overrides: dict[str, SyncModeInfo], primary_key_overrides: dict[str, list[str]],
     ) -> AirbyteCatalog:
-        """
-        :param singer_catalog:
+        """:param singer_catalog:
         :param sync_mode_overrides: A dict from stream name to the sync modes it should use. Each stream in this dict must exist in the Singer catalog,
           but not every stream in the catalog should exist in this
         :param primary_key_overrides: A dict of stream name -> list of fields to be used as PKs.
@@ -143,7 +143,7 @@ class SingerHelper:
     @staticmethod
     def _read_singer_catalog(logger, shell_command: str) -> Mapping[str, Any]:
         completed_process = subprocess.run(
-            shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+            shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
         )
         for line in completed_process.stderr.splitlines():
             logger.log(*log_by_prefix(line, "ERROR"))
@@ -154,9 +154,9 @@ class SingerHelper:
     def get_catalogs(
         logger,
         shell_command: str,
-        sync_mode_overrides: Dict[str, SyncModeInfo],
-        primary_key_overrides: Dict[str, List[str]],
-        excluded_streams: List,
+        sync_mode_overrides: dict[str, SyncModeInfo],
+        primary_key_overrides: dict[str, list[str]],
+        excluded_streams: list,
     ) -> Catalogs:
         singer_catalog = SingerHelper._read_singer_catalog(logger, shell_command)
         streams = singer_catalog.get("streams", [])
@@ -190,7 +190,7 @@ class SingerHelper:
                     logger.log(*log_by_prefix(line, "ERROR"))
 
     @staticmethod
-    def _read_lines(process: subprocess.Popen) -> Iterator[Tuple[str, TextIOWrapper]]:
+    def _read_lines(process: subprocess.Popen) -> Iterator[tuple[str, TextIOWrapper]]:
         sel = selectors.DefaultSelector()
         # according to issue CDK: typing errors #9500, mypy raises error on this two lines
         # 'Argument 1 to "register" of "DefaultSelector" has incompatible type "Optional[IO[Any]]"; expected "Union[int, HasFileno]"'

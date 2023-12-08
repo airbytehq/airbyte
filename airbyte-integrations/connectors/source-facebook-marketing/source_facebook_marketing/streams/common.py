@@ -9,9 +9,10 @@ from typing import Any
 
 import backoff
 import pendulum
+from facebook_business.exceptions import FacebookRequestError
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from facebook_business.exceptions import FacebookRequestError
 
 # The Facebook API error codes indicating rate-limiting are listed at
 # https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
@@ -60,8 +61,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             details.get("args")[0].request_record_limit_is_reduced = True
 
     def revert_request_record_limit(details):
-        """
-        This method is triggered `on_success` after successfull retry,
+        """This method is triggered `on_success` after successfull retry,
         sets the internal class flags to provide the logic to restore the previously reduced
         `limit` param.
         """
@@ -88,7 +88,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
                     connection_reset_error,
                     temporary_oauth_error,
                     server_error,
-                )
+                ),
             )
         return True
 

@@ -7,17 +7,19 @@ import json
 import logging
 import os
 import uuid
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, Optional, Union
 
 import dagger
 import docker
 import pytest
+from anyio import Path as AnyioPath
+from pydantic import ValidationError
+
 from airbyte_protocol.models import AirbyteMessage, ConfiguredAirbyteCatalog, OrchestratorType
 from airbyte_protocol.models import Type as AirbyteMessageType
-from anyio import Path as AnyioPath
 from connector_acceptance_test.utils import SecretDict
-from pydantic import ValidationError
 
 
 async def get_container_from_id(dagger_client: dagger.Client, container_id: str) -> dagger.Container:
@@ -155,17 +157,17 @@ class ConnectorRunner:
             container = container.with_env_variable(k, str(v))
         return container
 
-    async def call_spec(self, raise_container_error=False) -> List[AirbyteMessage]:
+    async def call_spec(self, raise_container_error=False) -> list[AirbyteMessage]:
         return await self._run(["spec"], raise_container_error)
 
-    async def call_check(self, config: SecretDict, raise_container_error: bool = False) -> List[AirbyteMessage]:
+    async def call_check(self, config: SecretDict, raise_container_error: bool = False) -> list[AirbyteMessage]:
         return await self._run(
             ["check", "--config", self.IN_CONTAINER_CONFIG_PATH],
             raise_container_error,
             config=config,
         )
 
-    async def call_discover(self, config: SecretDict, raise_container_error: bool = False) -> List[AirbyteMessage]:
+    async def call_discover(self, config: SecretDict, raise_container_error: bool = False) -> list[AirbyteMessage]:
         return await self._run(
             ["discover", "--config", self.IN_CONTAINER_CONFIG_PATH],
             raise_container_error,
@@ -173,8 +175,8 @@ class ConnectorRunner:
         )
 
     async def call_read(
-        self, config: SecretDict, catalog: ConfiguredAirbyteCatalog, raise_container_error: bool = False, enable_caching: bool = True
-    ) -> List[AirbyteMessage]:
+        self, config: SecretDict, catalog: ConfiguredAirbyteCatalog, raise_container_error: bool = False, enable_caching: bool = True,
+    ) -> list[AirbyteMessage]:
         return await self._run(
             ["read", "--config", self.IN_CONTAINER_CONFIG_PATH, "--catalog", self.IN_CONTAINER_CATALOG_PATH],
             raise_container_error,
@@ -190,7 +192,7 @@ class ConnectorRunner:
         state: dict,
         raise_container_error: bool = False,
         enable_caching: bool = True,
-    ) -> List[AirbyteMessage]:
+    ) -> list[AirbyteMessage]:
         return await self._run(
             [
                 "read",
@@ -220,13 +222,13 @@ class ConnectorRunner:
 
     async def _run(
         self,
-        airbyte_command: List[str],
+        airbyte_command: list[str],
         raise_container_error: bool,
         config: SecretDict = None,
         catalog: dict = None,
         state: Union[dict, list] = None,
         enable_caching=True,
-    ) -> List[AirbyteMessage]:
+    ) -> list[AirbyteMessage]:
         """Run a command in the connector container and return the list of AirbyteMessages emitted by the connector.
 
         Args:
@@ -268,7 +270,7 @@ class ConnectorRunner:
         return await container.with_exec(airbyte_command).stdout()
 
     async def _read_output_from_file(self, airbyte_command: list, container: dagger.Container) -> str:
-        local_output_file_path = f"/tmp/{str(uuid.uuid4())}"
+        local_output_file_path = f"/tmp/{uuid.uuid4()!s}"
         entrypoint = await container.entrypoint()
         airbyte_command = entrypoint + airbyte_command
         container = container.with_exec(
@@ -280,7 +282,7 @@ class ConnectorRunner:
         await AnyioPath(local_output_file_path).unlink()
         return output
 
-    def parse_airbyte_messages_from_command_output(self, command_output: str) -> List[AirbyteMessage]:
+    def parse_airbyte_messages_from_command_output(self, command_output: str) -> list[AirbyteMessage]:
         airbyte_messages = []
         for line in command_output.splitlines():
             try:
@@ -295,6 +297,7 @@ class ConnectorRunner:
     def _persist_new_configuration(self, new_configuration: dict, configuration_emitted_at: int) -> Optional[Path]:
         """Store new configuration values to an updated_configurations subdir under the original configuration path.
         N.B. The new configuration will not be stored if no configuration path was passed to the ConnectorRunner.
+
         Args:
             new_configuration (dict): The updated configuration
             configuration_emitted_at (int): Timestamp at which the configuration was emitted (ms)
@@ -314,11 +317,11 @@ class ConnectorRunner:
             if "/updated_configurations/" not in str(self._connector_configuration_path):
                 Path(self._connector_configuration_path.parent / "updated_configurations").mkdir(exist_ok=True)
                 new_configuration_file_path = Path(
-                    f"{self._connector_configuration_path.parent}/updated_configurations/{file_prefix}|{configuration_emitted_at}{self._connector_configuration_path.suffix}"
+                    f"{self._connector_configuration_path.parent}/updated_configurations/{file_prefix}|{configuration_emitted_at}{self._connector_configuration_path.suffix}",
                 )
             else:
                 new_configuration_file_path = Path(
-                    f"{self._connector_configuration_path.parent}/{file_prefix}|{configuration_emitted_at}{self._connector_configuration_path.suffix}"
+                    f"{self._connector_configuration_path.parent}/{file_prefix}|{configuration_emitted_at}{self._connector_configuration_path.suffix}",
                 )
 
             with open(new_configuration_file_path, "w") as new_configuration_file:

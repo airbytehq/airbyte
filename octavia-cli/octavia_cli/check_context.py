@@ -4,11 +4,12 @@
 
 import os
 
-import airbyte_api_client
 import click
+from urllib3.exceptions import MaxRetryError
+
+import airbyte_api_client
 from airbyte_api_client.api import health_api, workspace_api
 from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
-from urllib3.exceptions import MaxRetryError
 
 from .init.commands import DIRECTORIES_TO_CREATE as REQUIRED_PROJECT_DIRECTORIES
 
@@ -44,11 +45,11 @@ def check_api_health(api_client: airbyte_api_client.ApiClient) -> None:
         api_response = api_instance.get_health_check()
         if not api_response.available:
             raise UnhealthyApiError(
-                "Your Airbyte instance is not ready to receive requests: the health endpoint returned 'available: False.'"
+                "Your Airbyte instance is not ready to receive requests: the health endpoint returned 'available: False.'",
             )
     except (airbyte_api_client.ApiException, MaxRetryError) as e:
         raise UnreachableAirbyteInstanceError(
-            f"Could not reach your Airbyte instance, make sure the instance is up and running and network reachable: {e}"
+            f"Could not reach your Airbyte instance, make sure the instance is up and running and network reachable: {e}",
         )
 
 
@@ -86,7 +87,7 @@ def requires_init(f):
     def wrapper(ctx, **kwargs):
         if not ctx.obj["PROJECT_IS_INITIALIZED"]:
             raise ProjectNotInitializedError(
-                "Your octavia project is not initialized, please run 'octavia init' before running this command."
+                "Your octavia project is not initialized, please run 'octavia init' before running this command.",
             )
         f(ctx, **kwargs)
 

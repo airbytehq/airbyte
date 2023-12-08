@@ -3,21 +3,22 @@
 #
 
 import sys
-from typing import Any, Callable, Optional, TextIO
+from collections.abc import Callable
+from typing import Any, Optional, TextIO
 
 import anyio
 import dagger
 from asyncclick import Context, get_current_context
 from dagger.api.gen import Client, Container
-from pipelines.cli.click_decorators import LazyPassDecorator
 from pydantic import BaseModel, Field, PrivateAttr
+
+from pipelines.cli.click_decorators import LazyPassDecorator
 
 from ..singleton import Singleton
 
 
 class ClickPipelineContext(BaseModel, Singleton):
-    """
-    A replacement class for the Click context object passed to click functions.
+    """A replacement class for the Click context object passed to click functions.
 
     This class is meant to serve as a singleton object that initializes and holds onto a single instance of the
     Dagger client, which is used to create containers for running pipelines.
@@ -30,8 +31,7 @@ class ClickPipelineContext(BaseModel, Singleton):
 
     @property
     def params(self):
-        """
-        Returns a combination of the click context object and the click context params.
+        """Returns a combination of the click context object and the click context params.
 
         This means that any arguments or options defined in the parent command will be available to the child command.
         """
@@ -46,7 +46,7 @@ class ClickPipelineContext(BaseModel, Singleton):
             for key in intersection:
                 if click_obj[key] != click_params[key]:
                     raise ValueError(
-                        f"Your command '{command_name}' has defined options/arguments with the same key as its parent, but with different values: {intersection}"
+                        f"Your command '{command_name}' has defined options/arguments with the same key as its parent, but with different values: {intersection}",
                     )
 
         return {**click_obj, **click_params}
@@ -55,8 +55,7 @@ class ClickPipelineContext(BaseModel, Singleton):
         arbitrary_types_allowed = True
 
     def __init__(self, **data: dict[str, Any]):
-        """
-        Initialize the ClickPipelineContext instance.
+        """Initialize the ClickPipelineContext instance.
 
         This method checks the _initialized flag for the ClickPipelineContext class in the Singleton base class.
         If the flag is False, the initialization logic is executed and the flag is set to True.
@@ -77,8 +76,7 @@ class ClickPipelineContext(BaseModel, Singleton):
     _dagger_client_lock: anyio.Lock = PrivateAttr(default_factory=anyio.Lock)
 
     async def get_dagger_client(self, pipeline_name: Optional[str] = None, log_output: Optional[TextIO] = sys.stdout) -> Client:
-        """
-        Get (or initialize) the Dagger Client instance.
+        """Get (or initialize) the Dagger Client instance.
         """
         if not self._dagger_client:
             async with self._dagger_client_lock:

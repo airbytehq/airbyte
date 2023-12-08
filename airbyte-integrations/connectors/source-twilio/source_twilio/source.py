@@ -3,9 +3,11 @@
 #
 
 import datetime
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 import pendulum
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -52,7 +54,7 @@ RETENTION_WINDOW_LIMIT = 400
 
 
 class SourceTwilio(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         try:
             auth = HttpBasicAuthenticator(
                 (
@@ -64,11 +66,10 @@ class SourceTwilio(AbstractSource):
             next(accounts_gen)
             return True, None
         except Exception as error:
-            return False, f"Unable to connect to Twilio API with the provided credentials - {repr(error)}"
+            return False, f"Unable to connect to Twilio API with the provided credentials - {error!r}"
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """:param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         auth = HttpBasicAuthenticator(
             (

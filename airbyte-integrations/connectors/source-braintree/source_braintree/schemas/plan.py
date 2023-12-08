@@ -4,20 +4,20 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional
+from typing import Optional
 
 from .common import AddOn, CatalogModel
 from .discount import Discount
 
 
 class Plan(CatalogModel):
-    add_ons: List[AddOn]
+    add_ons: list[AddOn]
     billing_day_of_month: Optional[Decimal]
     billing_frequency: Decimal
     created_at: datetime
     currency_iso_code: str
     description: str
-    discounts: List[Discount]
+    discounts: list[Discount]
     id: str
     name: str
     number_of_billing_cycles: Optional[Decimal]

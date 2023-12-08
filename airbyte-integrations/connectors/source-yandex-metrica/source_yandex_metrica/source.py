@@ -3,9 +3,11 @@
 #
 
 import logging
-from typing import Any, List, Mapping, Optional, Tuple
+from collections.abc import Mapping
+from typing import Any, Optional
 
 import pendulum
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
@@ -15,7 +17,7 @@ logger = logging.getLogger("airbyte")
 
 
 class SourceYandexMetrica(AbstractSource):
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, Optional[Any]]:
         authenticator = TokenAuthenticator(token=config.get("auth_token"))
         config["end_date"] = self.get_end_date(config=config)
         session = Sessions(authenticator=authenticator, config=config)
@@ -41,7 +43,7 @@ class SourceYandexMetrica(AbstractSource):
             end_date = pendulum.yesterday().date()
         return str(end_date)
 
-    def streams(self, config: Mapping[str, Any]) -> List[YandexMetricaStream]:
+    def streams(self, config: Mapping[str, Any]) -> list[YandexMetricaStream]:
         authenticator = TokenAuthenticator(token=config.get("auth_token"))
         config["end_date"] = self.get_end_date(config=config)
         return [Sessions(authenticator=authenticator, config=config), Views(authenticator=authenticator, config=config)]

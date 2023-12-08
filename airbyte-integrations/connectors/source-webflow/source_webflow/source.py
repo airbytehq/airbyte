@@ -5,9 +5,11 @@
 
 import logging
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -34,8 +36,7 @@ WEBFLOW_ACCEPT_VERSION = "1.0.0"
 
 # Basic full refresh stream
 class WebflowStream(HttpStream, ABC):
-    """
-    This class represents a stream output by the connector.
+    """This class represents a stream output by the connector.
     This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL,
     pagination strategy, parsing responses etc..
 
@@ -51,17 +52,15 @@ class WebflowStream(HttpStream, ABC):
         return self._session.auth
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        Common params e.g. pagination size etc.
+        """Common params e.g. pagination size etc.
         """
         return {}
 
 
 class CollectionSchema(WebflowStream):
-    """
-    Gets the schema of the current collection - see: https://developers.webflow.com/#get-collection-with-full-schema, and
+    """Gets the schema of the current collection - see: https://developers.webflow.com/#get-collection-with-full-schema, and
     then converts that schema to a json-schema.org-compatible schema that uses supported Airbyte types.
 
     More info about Webflow schema: https://developers.webflow.com/#get-collection-with-full-schema
@@ -76,22 +75,18 @@ class CollectionSchema(WebflowStream):
         super().__init__(**kwargs)
 
     def path(self, **kwargs) -> str:
-        """
-        See: https://developers.webflow.com/#list-collections
+        """See: https://developers.webflow.com/#list-collections
         Returns a list which contains high-level information about each collection.
         """
-
         path = f"collections/{self.collection_id}"
         return path
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        Converts the webflow schema into an Airbyte-compatible schema
+        """Converts the webflow schema into an Airbyte-compatible schema
 
         Webflow schema API returns an array of fields contained in the "fields" field.
         Get field name and field type from this array, and then map it to an airbyte-supported type
         """
-
         response_json = response.json()
         for field in response_json["fields"]:
             try:
@@ -113,8 +108,7 @@ Is "{field_type}" defined in the mapping between Webflow and json schma ? """
 
 
 class CollectionsList(WebflowStream):
-    """
-    The data that we are generally interested in pulling from Webflow is stored in "Collections".
+    """The data that we are generally interested in pulling from Webflow is stored in "Collections".
     Example Collections that may be of interest are: "Blog Posts", "Blog Authors", etc.
 
     This class provides the functionality for getting a list containing metadata about available collections
@@ -129,17 +123,14 @@ class CollectionsList(WebflowStream):
         super().__init__(**kwargs)
 
     def path(self, **kwargs) -> str:
-        """
-        See: https://developers.webflow.com/#list-collections
+        """See: https://developers.webflow.com/#list-collections
         Returns a list which contains high-level information about each collection.
         """
-
         path = f"sites/{self.site_id}/collections"
         return path
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        This API returns a list containing json objects. So we can just yield each element from the list
+        """This API returns a list containing json objects. So we can just yield each element from the list
         """
         response_json = response.json()
         yield from response_json
@@ -150,8 +141,7 @@ class CollectionsList(WebflowStream):
 
 
 class CollectionContents(WebflowStream):
-    """
-    This stream is used for pulling "items" out of a given Webflow collection. Because there is not a fixed number of collections with
+    """This stream is used for pulling "items" out of a given Webflow collection. Because there is not a fixed number of collections with
     pre-defined names, each stream is an object that uses the passed-in collection name for the stream name.
 
      Note that because the Webflow API works with collection ids rather than collection names, the collection id is
@@ -166,7 +156,7 @@ class CollectionContents(WebflowStream):
     # only want to create the name to id lookup table once
 
     def __init__(self, site_id: str = None, collection_id: str = None, collection_name: str = None, **kwargs):
-        """override __init__ to add collection-related variables"""
+        """Override __init__ to add collection-related variables"""
         self.site_id = site_id
         super().__init__(**kwargs)
         self.collection_name = collection_name
@@ -177,8 +167,7 @@ class CollectionContents(WebflowStream):
         return self.collection_name
 
     def path(self, **kwargs) -> str:
-        """
-        The path to get the "items" in the requested collection uses the "_id" of the collection in the URL.
+        """The path to get the "items" in the requested collection uses the "_id" of the collection in the URL.
         See: https://developers.webflow.com/#items
 
         return collections/<collection_id>/items
@@ -212,21 +201,17 @@ class CollectionContents(WebflowStream):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """Webflow items API returns an array of items contained in the "items" field.
         """
-        Webflow items API returns an array of items contained in the "items" field.
-        """
-
         response_json = response.json()
         # The items API returns records inside a container list called "items"
         for item in response_json["items"]:
             yield item
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        Webflow has an API,but it is not consistent with json-schema.org schemas. We use the CollectionSchema stream
+        """Webflow has an API,but it is not consistent with json-schema.org schemas. We use the CollectionSchema stream
         to get these schemas and to also map them to json-schema format.
         """
-
         collection_id = self.collection_id
         schema_stream = CollectionSchema(authenticator=self.authenticator, collection_id=collection_id)
         schema_records = schema_stream.read_records(sync_mode="full_refresh")
@@ -254,16 +239,13 @@ class CollectionContents(WebflowStream):
 
 
 class SourceWebflow(AbstractSource):
-
     """This is the main class that defines the methods that will be called by Airbyte infrastructure"""
 
     @staticmethod
     def _get_collection_name_to_id_dict(authenticator: str = None, site_id: str = None) -> Mapping[str, str]:
-        """
-        Most of the Webflow APIs require the collection id, but the streams that we are generating use the collection name.
+        """Most of the Webflow APIs require the collection id, but the streams that we are generating use the collection name.
         This function will return a dictionary containing collection_name: collection_id entries.
         """
-
         collection_name_to_id_dict = {}
 
         collections_stream = CollectionsList(authenticator=authenticator, site_id=site_id)
@@ -277,8 +259,7 @@ class SourceWebflow(AbstractSource):
 
     @staticmethod
     def get_authenticator(config):
-        """
-        Verifies that the information for setting the header has been set, and returns a class
+        """Verifies that the information for setting the header has been set, and returns a class
         which overloads that standard authentication to include additional headers that are required by Webflow.
         """
         api_key = config.get("api_key", None)
@@ -289,15 +270,13 @@ class SourceWebflow(AbstractSource):
         auth = WebflowTokenAuthenticator(token=api_key, accept_version=accept_version)
         return auth
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        """
-        A check to validate that the user-provided config can be used to connect to the underlying API
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, any]:
+        """A check to validate that the user-provided config can be used to connect to the underlying API
 
         :param config:  the user-input config object conforming to the connector's spec.yaml
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-
         try:
             # Check that authenticator can be retrieved
             auth = self.get_authenticator(config)
@@ -310,9 +289,8 @@ class SourceWebflow(AbstractSource):
         except Exception as e:
             return False, e
 
-    def generate_streams(self, authenticator: WebflowTokenAuthenticator, site_id: str) -> List[Stream]:
+    def generate_streams(self, authenticator: WebflowTokenAuthenticator, site_id: str) -> list[Stream]:
         """Generates a list of stream by their names."""
-
         collection_name_to_id_dict = self._get_collection_name_to_id_dict(authenticator=authenticator, site_id=site_id)
 
         for collection_name, collection_id in collection_name_to_id_dict.items():
@@ -323,12 +301,10 @@ class SourceWebflow(AbstractSource):
                 collection_name=collection_name,
             )
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """:param config: A Mapping of the user input configuration as defined in the connector spec.
         :return List[Stream]: A list/generator of the streams that Airbyte can pull data from.
         """
-
         auth = self.get_authenticator(config)
         site_id = config.get("site_id")
 

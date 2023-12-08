@@ -6,7 +6,10 @@ import logging
 import traceback
 from abc import ABC
 from collections import Counter
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
+from collections.abc import Iterator, Mapping, MutableMapping
+from typing import Any, Optional, Union
+
+from pydantic.error_wrappers import ValidationError
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
@@ -24,20 +27,19 @@ from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils.analytics_message import create_analytics_message
-from pydantic.error_wrappers import ValidationError
 
 
 class FileBasedSource(AbstractSource, ABC):
     def __init__(
         self,
         stream_reader: AbstractFileBasedStreamReader,
-        spec_class: Type[AbstractFileBasedSpec],
+        spec_class: type[AbstractFileBasedSpec],
         catalog_path: Optional[str] = None,
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
-        parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
+        parsers: Mapping[type[Any], FileTypeParser] = default_parsers,
         validation_policies: Mapping[ValidationPolicy, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
-        cursor_cls: Type[AbstractFileBasedCursor] = DefaultFileBasedCursor,
+        cursor_cls: type[AbstractFileBasedCursor] = DefaultFileBasedCursor,
     ):
         self.stream_reader = stream_reader
         self.spec_class = spec_class
@@ -50,9 +52,8 @@ class FileBasedSource(AbstractSource, ABC):
         self.cursor_cls = cursor_cls
         self.logger = logging.getLogger(f"airbyte.{self.name}")
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        """
-        Check that the source can be accessed using the user-provided configuration.
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, Optional[Any]]:
+        """Check that the source can be accessed using the user-provided configuration.
 
         For each stream, verify that we can list and read files.
 
@@ -86,14 +87,13 @@ class FileBasedSource(AbstractSource, ABC):
 
         return not bool(errors), (errors or None)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Return a list of this source's streams.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """Return a list of this source's streams.
         """
         try:
             parsed_config = self._get_parsed_config(config)
             self.stream_reader.config = parsed_config
-            streams: List[Stream] = []
+            streams: list[Stream] = []
             for stream_config in parsed_config.streams:
                 self._validate_input_schema(stream_config)
                 streams.append(
@@ -106,7 +106,7 @@ class FileBasedSource(AbstractSource, ABC):
                         parsers=self.parsers,
                         validation_policy=self._validate_and_get_validation_policy(stream_config),
                         cursor=self.cursor_cls(stream_config),
-                    )
+                    ),
                 )
             return streams
 
@@ -118,7 +118,7 @@ class FileBasedSource(AbstractSource, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+        state: Optional[Union[list[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         yield from super().read(logger, config, catalog, state)
         # count streams using a certain parser
@@ -127,10 +127,8 @@ class FileBasedSource(AbstractSource, ABC):
             yield create_analytics_message(f"file-cdk-{parser}-stream-count", count)
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
+        """Returns the specification describing what fields can be configured by a user when setting up a file-based source.
         """
-        Returns the specification describing what fields can be configured by a user when setting up a file-based source.
-        """
-
         return ConnectorSpecification(
             documentationUrl=self.spec_class.documentation_url(),
             connectionSpecification=self.spec_class.schema(),
@@ -143,7 +141,7 @@ class FileBasedSource(AbstractSource, ABC):
         if stream_config.validation_policy not in self.validation_policies:
             # This should never happen because we validate the config against the schema's validation_policy enum
             raise ValidationError(
-                f"`validation_policy` must be one of {list(self.validation_policies.keys())}", model=FileBasedStreamConfig
+                f"`validation_policy` must be one of {list(self.validation_policies.keys())}", model=FileBasedStreamConfig,
             )
         return self.validation_policies[stream_config.validation_policy]
 

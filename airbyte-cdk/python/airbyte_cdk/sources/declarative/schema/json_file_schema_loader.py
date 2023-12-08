@@ -5,8 +5,9 @@
 import json
 import pkgutil
 import sys
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, Union
+from typing import Any, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
@@ -31,8 +32,7 @@ def _default_file_path() -> str:
 
 @dataclass
 class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
-    """
-    Loads the schema from a json file
+    """Loads the schema from a json file
 
     Attributes:
         file_path (Union[InterpolatedString, str]): The path to the json file describing the schema
@@ -58,7 +58,7 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
         raw_json_file = pkgutil.get_data(resource, schema_path)
 
         if not raw_json_file:
-            raise IOError(f"Cannot find file {json_schema_path}")
+            raise OSError(f"Cannot find file {json_schema_path}")
         try:
             raw_schema = json.loads(raw_json_file)
         except ValueError as err:
@@ -71,8 +71,7 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
 
     @staticmethod
     def extract_resource_and_schema_path(json_schema_path: str) -> (str, str):
-        """
-        When the connector is running on a docker container, package_data is accessible from the resource (source_<name>), so we extract
+        """When the connector is running on a docker container, package_data is accessible from the resource (source_<name>), so we extract
         the resource from the first part of the schema path and the remaining path is used to find the schema file. This is a slight
         hack to identify the source name while we are in the airbyte_cdk module.
         :param json_schema_path: The path to the schema JSON file

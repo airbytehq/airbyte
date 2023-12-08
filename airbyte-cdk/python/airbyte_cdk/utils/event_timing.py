@@ -25,18 +25,15 @@ class EventTimer:
         self.stack = []
 
     def start_event(self, name):
-        """
-        Start a new event and push it to the stack.
+        """Start a new event and push it to the stack.
         """
         self.events[name] = Event(name=name)
         self.count += 1
         self.stack.insert(0, self.events[name])
 
     def finish_event(self):
+        """Finish the current event and pop it from the stack.
         """
-        Finish the current event and pop it from the stack.
-        """
-
         if self.stack:
             event = self.stack.pop(0)
             event.finish()
@@ -44,8 +41,7 @@ class EventTimer:
             logger.warning(f"{self.name} finish_event called without start_event")
 
     def report(self, order_by="name"):
-        """
-        :param order_by: 'name' or 'duration'
+        """:param order_by: 'name' or 'duration'
         """
         if order_by == "name":
             events = sorted(self.events.values(), key=lambda event: event.name)
@@ -78,8 +74,7 @@ class Event:
 
 @contextmanager
 def create_timer(name):
-    """
-    Creates a new EventTimer as a context manager to improve code readability.
+    """Creates a new EventTimer as a context manager to improve code readability.
     """
     a_timer = EventTimer(name)
     yield a_timer

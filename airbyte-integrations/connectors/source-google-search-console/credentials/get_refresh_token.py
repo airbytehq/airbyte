@@ -10,7 +10,7 @@ import requests
 
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 
-with open("credentials.json", "r") as f:
+with open("credentials.json") as f:
     credentials = json.load(f)
 
 CLIENT_ID = credentials.get("client_id")

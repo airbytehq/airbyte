@@ -2,12 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping, MutableMapping
+from collections.abc import Mapping, MutableMapping
+from typing import Any
 
 
 class LegacyConfigTransformer:
-    """
-    Class that takes in Azure Blob Storage source configs in the legacy format and transforms them into
+    """Class that takes in Azure Blob Storage source configs in the legacy format and transforms them into
     configs that can be used by the new Azure Blob Storage source built with the file-based CDK.
     """
 
@@ -26,6 +26,6 @@ class LegacyConfigTransformer:
                     "legacy_prefix": azure_blob_storage_blobs_prefix,
                     "validation_policy": "Emit Record",
                     "format": {"filetype": "jsonl"},
-                }
+                },
             ],
         }

@@ -4,7 +4,8 @@
 
 
 import logging
-from typing import Any, List, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
@@ -15,8 +16,7 @@ logger = logging.getLogger("airbyte")
 
 
 class MigrateIssueExpandProperties:
-    """
-    This class stands for migrating the config at runtime,
+    """This class stands for migrating the config at runtime,
     while providing the backward compatibility when falling back to the previous source version.
 
     Specifically, starting from `0.6.1`, the `issues_stream_expand` property should be like :
@@ -37,9 +37,9 @@ class MigrateIssueExpandProperties:
 
     @classmethod
     def should_migrate(cls, config: Mapping[str, Any]) -> bool:
-        """
-        This method determines whether the config should be migrated to have the new structure for the `issues_stream_expand_with`,
+        """This method determines whether the config should be migrated to have the new structure for the `issues_stream_expand_with`,
         based on the source spec.
+
         Returns:
             > True, if the transformation is necessary
             > False, otherwise.
@@ -84,9 +84,8 @@ class MigrateIssueExpandProperties:
             print(message.json(exclude_unset=True))
 
     @classmethod
-    def migrate(cls, args: List[str], source: Source) -> None:
-        """
-        This method checks the input args, should the config be migrated,
+    def migrate(cls, args: list[str], source: Source) -> None:
+        """This method checks the input args, should the config be migrated,
         transform if necessary and emit the CONTROL message.
         """
         # get config path

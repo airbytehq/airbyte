@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Optional, Set, Union
+from typing import Any, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
@@ -16,8 +18,7 @@ from airbyte_cdk.sources.streams.http.http import HttpStream
 
 @dataclass
 class HttpResponseFilter:
-    """
-    Filter to select HttpResponses
+    """Filter to select HttpResponses
 
     Attributes:
         action (Union[ResponseAction, str]): action to execute if a request matches
@@ -33,7 +34,7 @@ class HttpResponseFilter:
     action: Union[ResponseAction, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    http_codes: Set[int] = None
+    http_codes: set[int] = None
     error_message_contains: str = None
     predicate: Union[InterpolatedBoolean, str] = ""
     error_message: Union[InterpolatedString, str] = ""
@@ -61,8 +62,7 @@ class HttpResponseFilter:
         return None
 
     def _matches_filter(self, response: requests.Response) -> Optional[ResponseAction]:
-        """
-        Apply the filter on the response and return the action to execute if it matches
+        """Apply the filter on the response and return the action to execute if it matches
         :param response: The HTTP response to evaluate
         :return: The action to execute. None if the response does not match the filter
         """
@@ -83,8 +83,7 @@ class HttpResponseFilter:
             return {}
 
     def _create_error_message(self, response: requests.Response) -> str:
-        """
-        Construct an error message based on the specified message template of the filter.
+        """Construct an error message based on the specified message template of the filter.
         :param response: The HTTP response which can be used during interpolation
         :return: The evaluated error message string to be emitted
         """

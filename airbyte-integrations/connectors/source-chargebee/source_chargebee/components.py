@@ -11,8 +11,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 
 @dataclass
 class CustomFieldTransformation(RecordTransformation):
-    """
-    Add custom field based on condition. Jinja interpolation does not support list comprehension.
+    """Add custom field based on condition. Jinja interpolation does not support list comprehension.
     https://github.com/airbytehq/airbyte/issues/23134
     """
 
@@ -23,8 +22,8 @@ class CustomFieldTransformation(RecordTransformation):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> Record:
-        """
-        Method to detect custom fields that start with 'cf_' from chargbee models.
+        """Method to detect custom fields that start with 'cf_' from chargbee models.
+
         Args:
             record:
             {

@@ -7,17 +7,18 @@ import webbrowser
 from dataclasses import dataclass
 
 from anyio import Path
-from connector_ops.utils import console
 from jinja2 import Environment, PackageLoader, select_autoescape
-from pipelines.consts import GCS_PUBLIC_DOMAIN
-from pipelines.helpers.utils import format_duration
-from pipelines.models.reports import Report
-from pipelines.models.steps import StepStatus
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 from rich.text import Text
+
+from connector_ops.utils import console
+from pipelines.consts import GCS_PUBLIC_DOMAIN
+from pipelines.helpers.utils import format_duration
+from pipelines.models.reports import Report
+from pipelines.models.steps import StepStatus
 
 
 @dataclass(frozen=True)
@@ -66,7 +67,7 @@ class ConnectorReport(Report):
                 "cdk_version": self.pipeline_context.cdk_version,
                 "html_report_url": self.html_report_url,
                 "dagger_cloud_url": self.pipeline_context.dagger_cloud_url,
-            }
+            },
         )
 
     async def to_html(self) -> str:

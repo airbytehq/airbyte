@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_ip2whois import SourceIp2whois
+
+from airbyte_cdk.entrypoint import launch
 
 if __name__ == "__main__":
     source = SourceIp2whois()

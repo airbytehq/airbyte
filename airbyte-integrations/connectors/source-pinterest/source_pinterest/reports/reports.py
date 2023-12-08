@@ -4,15 +4,17 @@
 
 import json
 from abc import abstractmethod
-from functools import lru_cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from collections.abc import Iterable, Mapping, MutableMapping
+from functools import cache
+from typing import Any, Optional
 from urllib.parse import urljoin
 
-import airbyte_cdk.sources.utils.casing as casing
 import backoff
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from source_pinterest.streams import PinterestAnalyticsStream
 from source_pinterest.utils import get_analytics_columns
@@ -23,7 +25,8 @@ from .models import ReportInfo, ReportStatus, ReportStatusDetails
 
 class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
     """Class defining the stream of Pinterest Analytics Report
-    Details - https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report"""
+    Details - https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report
+    """
 
     http_method = "POST"
     report_wait_timeout = 60 * 10
@@ -62,7 +65,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         return self._construct_request_body(stream_slice["start_date"], stream_slice["end_date"], self.granularity, get_analytics_columns())
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         """Return the request parameters."""
         return {}
@@ -70,7 +73,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
             return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout, interval=10)(func)(
-                self, *args, **kwargs
+                self, *args, **kwargs,
             )
 
         return wrapped
@@ -78,7 +81,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
     def backoff_max_tries(func):
         def wrapped(self, *args, **kwargs):
             return backoff.on_exception(
-                backoff.expo, ReportGenerationFailure, max_tries=self.report_generation_maximum_retries, max_time=self.report_wait_timeout
+                backoff.expo, ReportGenerationFailure, max_tries=self.report_generation_maximum_retries, max_time=self.report_wait_timeout,
             )(func)(self, *args, **kwargs)
 
         return wrapped
@@ -86,7 +89,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -131,7 +134,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         yield response.json()
 
     @backoff_max_tries
-    def _init_reports(self, init_reports) -> List[ReportInfo]:
+    def _init_reports(self, init_reports) -> list[ReportInfo]:
         """Initialize the reports and return them as a list."""
         report_infos = []
         for init_report in init_reports:
@@ -141,7 +144,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
                     token=status.token,
                     report_status=ReportStatus.IN_PROGRESS,
                     metrics=[],
-                )
+                ),
             )
         self.logger.info("Initiated successfully.")
         return report_infos
@@ -156,7 +159,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         """Verify the report status and return it along with the report URL."""
         api_path = self._build_api_path(stream_slice["parent"]["id"])
         response_data = self._http_get(
-            urljoin(self.url_base, api_path), params={"token": report.token}, headers=self.authenticator.get_auth_header()
+            urljoin(self.url_base, api_path), params={"token": report.token}, headers=self.authenticator.get_auth_header(),
         )
         try:
             report_status = ReportStatusDetails.parse_raw(json.dumps(response_data))
@@ -168,14 +171,12 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         """Fetch the report data from the given URL."""
         return self._http_get(url)
 
-    @lru_cache(maxsize=None)
+    @cache
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        :return: A dict of the JSON schema representing this stream.
+        """:return: A dict of the JSON schema representing this stream.
 
         Schema is the same for all *Report and *TargetingReport streams
         """
-
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("reports")
 
 

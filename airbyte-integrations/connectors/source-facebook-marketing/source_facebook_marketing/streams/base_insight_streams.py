@@ -3,16 +3,18 @@
 #
 
 import logging
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
+from collections.abc import Iterable, Iterator, Mapping, MutableMapping
+from typing import Any, Optional, Union
 
-import airbyte_cdk.sources.utils.casing as casing
 import pendulum
-from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
+
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils import casing
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.utils import AirbyteTracedException
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 from source_facebook_marketing.streams.common import traced_exception
@@ -56,9 +58,9 @@ class AdsInsights(FBMarketingIncrementalStream):
     def __init__(
         self,
         name: str = None,
-        fields: List[str] = None,
-        breakdowns: List[str] = None,
-        action_breakdowns: List[str] = None,
+        fields: list[str] = None,
+        breakdowns: list[str] = None,
+        action_breakdowns: list[str] = None,
         action_breakdowns_allow_empty: bool = False,
         action_report_time: str = "mixed",
         time_increment: Optional[int] = None,
@@ -96,14 +98,13 @@ class AdsInsights(FBMarketingIncrementalStream):
         return casing.camel_to_snake(name)
 
     @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+    def primary_key(self) -> Optional[Union[str, list[str], list[list[str]]]]:
         """Build complex PK based on slices and breakdowns"""
         return ["date_start", "account_id", "ad_id"] + self.breakdowns
 
     @property
     def insights_lookback_period(self):
-        """
-        Facebook freezes insight data 28 days after it was generated, which means that all data
+        """Facebook freezes insight data 28 days after it was generated, which means that all data
         from the past 28 days may have changed since we last emitted it, so we retrieve it again.
         But in some cases users my have define their own lookback window, thats
         why the value for `insights_lookback_window` is set throught config.
@@ -116,7 +117,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -202,7 +203,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         :param params:
         :return:
         """
-
         self._next_cursor_value = self._get_start_date()
         for ts_start in self._date_intervals():
             if ts_start in self._completed_slices:
@@ -212,8 +212,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
 
     def check_breakdowns(self):
-        """
-        Making call to check "action_breakdowns" and "breakdowns" combinations
+        """Making call to check "action_breakdowns" and "breakdowns" combinations
         https://developers.facebook.com/docs/marketing-api/insights/breakdowns#combiningbreakdowns
         """
         params = {
@@ -224,13 +223,12 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._api.account.get_insights(params=params, is_async=False)
 
     def _response_data_is_valid(self, data: Iterable[Mapping[str, Any]]) -> bool:
-        """
-        Ensure data contains all the fields specified in self.breakdowns
+        """Ensure data contains all the fields specified in self.breakdowns
         """
         return all([breakdown in data for breakdown in self.breakdowns])
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
         This solution for Async was chosen because:
@@ -273,7 +271,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             start_date = self._cursor_value + pendulum.duration(days=self.time_increment)
             if start_date > refresh_date:
                 logger.info(
-                    f"The cursor value within refresh period ({self.insights_lookback_period}), start sync from {refresh_date} instead."
+                    f"The cursor value within refresh period ({self.insights_lookback_period}), start sync from {refresh_date} instead.",
                 )
             start_date = min(start_date, refresh_date)
 
@@ -317,7 +315,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         return schema
 
     @cached_property
-    def fields(self) -> List[str]:
+    def fields(self) -> list[str]:
         """List of fields that we want to query, for now just all properties from stream's schema"""
         if self._fields:
             return self._fields

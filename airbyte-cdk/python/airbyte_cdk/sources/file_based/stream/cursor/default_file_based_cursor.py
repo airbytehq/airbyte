@@ -3,8 +3,9 @@
 #
 
 import logging
+from collections.abc import Iterable, MutableMapping
 from datetime import datetime, timedelta
-from typing import Any, Iterable, MutableMapping, Optional
+from typing import Any, Optional
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -22,7 +23,7 @@ class DefaultFileBasedCursor(AbstractFileBasedCursor):
         super().__init__(stream_config)
         self._file_to_datetime_history: MutableMapping[str, str] = {}
         self._time_window_if_history_is_full = timedelta(
-            days=stream_config.days_to_sync_if_history_is_full or self.DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL
+            days=stream_config.days_to_sync_if_history_is_full or self.DEFAULT_DAYS_TO_SYNC_IF_HISTORY_IS_FULL,
         )
 
         if self._time_window_if_history_is_full <= timedelta():
@@ -45,7 +46,7 @@ class DefaultFileBasedCursor(AbstractFileBasedCursor):
                 del self._file_to_datetime_history[oldest_file.uri]
             else:
                 raise Exception(
-                    "The history is full but there is no files in the history. This should never happen and might be indicative of a bug in the CDK."
+                    "The history is full but there is no files in the history. This should never happen and might be indicative of a bug in the CDK.",
                 )
 
     def get_state(self) -> StreamState:
@@ -53,8 +54,7 @@ class DefaultFileBasedCursor(AbstractFileBasedCursor):
         return state
 
     def _get_cursor(self) -> Optional[str]:
-        """
-        Returns the cursor value.
+        """Returns the cursor value.
 
         Files are synced in order of last-modified with secondary sort on filename, so the cursor value is
         a string joining the last-modified timestamp of the last synced file and the name of the file.
@@ -65,8 +65,7 @@ class DefaultFileBasedCursor(AbstractFileBasedCursor):
         return None
 
     def _is_history_full(self) -> bool:
-        """
-        Returns true if the state's history is full, meaning new entries will start to replace old entries.
+        """Returns true if the state's history is full, meaning new entries will start to replace old entries.
         """
         return len(self._file_to_datetime_history) >= self.DEFAULT_MAX_HISTORY_SIZE
 
@@ -76,7 +75,7 @@ class DefaultFileBasedCursor(AbstractFileBasedCursor):
             updated_at_from_history = datetime.strptime(self._file_to_datetime_history[file.uri], self.DATE_TIME_FORMAT)
             if file.last_modified < updated_at_from_history:
                 logger.warning(
-                    f"The file {file.uri}'s last modified date is older than the last time it was synced. This is unexpected. Skipping the file."
+                    f"The file {file.uri}'s last modified date is older than the last time it was synced. This is unexpected. Skipping the file.",
                 )
             else:
                 return file.last_modified > updated_at_from_history
@@ -104,7 +103,7 @@ class DefaultFileBasedCursor(AbstractFileBasedCursor):
             logger.warning(
                 f"The state history is full. "
                 f"This sync and future syncs won't be able to use the history to filter out duplicate files. "
-                f"It will instead use the time window of {self._time_window_if_history_is_full} to filter out files."
+                f"It will instead use the time window of {self._time_window_if_history_is_full} to filter out files.",
             )
         for f in all_files:
             if self._should_sync_file(f, logger):

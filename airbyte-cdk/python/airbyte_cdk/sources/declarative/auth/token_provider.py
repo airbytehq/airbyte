@@ -5,11 +5,15 @@
 
 import datetime
 from abc import abstractmethod
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, Optional, Union
 
 import dpath.util
 import pendulum
+from isodate import Duration
+from pendulum import DateTime
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.exceptions import ReadException
@@ -18,8 +22,6 @@ from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
-from isodate import Duration
-from pendulum import DateTime
 
 
 class TokenProvider:
@@ -31,7 +33,7 @@ class TokenProvider:
 @dataclass
 class SessionTokenProvider(TokenProvider):
     login_requester: Requester
-    session_token_path: List[str]
+    session_token_path: list[str]
     expiration_duration: Optional[Union[datetime.timedelta, Duration]]
     parameters: InitVar[Mapping[str, Any]]
     message_repository: MessageRepository = NoopMessageRepository()

@@ -4,14 +4,16 @@
 
 import concurrent.futures
 import logging
-from typing import Any, List, Mapping, Optional, Tuple
+from collections.abc import Mapping
+from typing import Any, Optional
 
 import requests  # type: ignore[import]
+from requests import adapters as request_adapters
+from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
-from requests import adapters as request_adapters
-from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
 
 from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING, TypeSalesforceException
 from .rate_limiting import default_backoff_handler
@@ -241,9 +243,9 @@ class Salesforce:
         self.start_date = start_date
 
     def _get_standard_headers(self) -> Mapping[str, str]:
-        return {"Authorization": "Bearer {}".format(self.access_token)}
+        return {"Authorization": f"Bearer {self.access_token}"}
 
-    def get_streams_black_list(self) -> List[str]:
+    def get_streams_black_list(self) -> list[str]:
         return QUERY_RESTRICTED_SALESFORCE_OBJECTS + QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS
 
     def filter_streams(self, stream_name: str) -> bool:
@@ -280,7 +282,7 @@ class Salesforce:
             filtered_stream_list = []
             for stream_criteria in config["streams_criteria"]:
                 filtered_stream_list += filter_streams_by_criteria(
-                    streams_list=stream_names, search_word=stream_criteria["value"], search_criteria=stream_criteria["criteria"]
+                    streams_list=stream_names, search_word=stream_criteria["value"], search_criteria=stream_criteria["criteria"],
                 )
             stream_names = list(set(filtered_stream_list))
 
@@ -289,7 +291,7 @@ class Salesforce:
 
     @default_backoff_handler(max_tries=5, factor=5)
     def _make_request(
-        self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
+        self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None,
     ) -> requests.models.Response:
         try:
             if http_method == "GET":
@@ -342,7 +344,7 @@ class Salesforce:
         return schema
 
     def generate_schemas(self, stream_objects: Mapping[str, Any]) -> Mapping[str, Any]:
-        def load_schema(name: str, stream_options: Mapping[str, Any]) -> Tuple[str, Optional[Mapping[str, Any]], Optional[str]]:
+        def load_schema(name: str, stream_options: Mapping[str, Any]) -> tuple[str, Optional[Mapping[str, Any]], Optional[str]]:
             try:
                 result = self.generate_schema(stream_name=name, stream_options=stream_options)
             except RequestException as e:
@@ -356,7 +358,7 @@ class Salesforce:
             chunk_stream_names = stream_names[i : i + self.parallel_tasks_size]
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 for stream_name, schema, err in executor.map(
-                    lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names]
+                    lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names],
                 ):
                     if err:
                         self.logger.error(f"Loading error of the {stream_name} schema: {err}")
@@ -365,7 +367,7 @@ class Salesforce:
         return stream_schemas
 
     @staticmethod
-    def get_pk_and_replication_key(json_schema: Mapping[str, Any]) -> Tuple[Optional[str], Optional[str]]:
+    def get_pk_and_replication_key(json_schema: Mapping[str, Any]) -> tuple[Optional[str], Optional[str]]:
         fields_list = json_schema.get("properties", {}).keys()
 
         pk = "Id" if "Id" in fields_list else None
@@ -430,6 +432,6 @@ class Salesforce:
                 },
             }
         else:
-            raise TypeSalesforceException("Found unsupported type: {}".format(sf_type))
+            raise TypeSalesforceException(f"Found unsupported type: {sf_type}")
 
         return property_schema

@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
@@ -11,8 +12,7 @@ from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamSta
 
 @dataclass
 class RecordFilter:
-    """
-    Filter applied on a list of Records
+    """Filter applied on a list of Records
 
     config (Config): The user-provided configuration as specified by the source's spec
     condition (str): The string representing the predicate to filter a record. Records will be removed if evaluated to False
@@ -27,10 +27,10 @@ class RecordFilter:
 
     def filter_records(
         self,
-        records: List[Mapping[str, Any]],
+        records: list[Mapping[str, Any]],
         stream_state: StreamState,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> List[Mapping[str, Any]]:
+    ) -> list[Mapping[str, Any]]:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         return [record for record in records if self._filter_interpolator.eval(self.config, record=record, **kwargs)]

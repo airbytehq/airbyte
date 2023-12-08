@@ -3,6 +3,7 @@
 #
 
 from dagger import Container, Platform
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
@@ -71,5 +72,5 @@ DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
 
 def with_normalization(context: ConnectorContext, build_platform: Platform) -> Container:
     return context.dagger_client.container(platform=build_platform).from_(
-        DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["normalization_image"]
+        DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["normalization_image"],
     )

@@ -5,8 +5,9 @@
 
 import copy
 import logging
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime
-from typing import Any, Iterable, Mapping, MutableMapping, Type
+from typing import Any
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -28,7 +29,7 @@ from .client import BaseClient
 class BaseSource(Source):
     """Base source that designed to work with clients derived from BaseClient"""
 
-    client_class: Type[BaseClient]
+    client_class: type[BaseClient]
 
     @property
     def name(self) -> str:
@@ -55,7 +56,7 @@ class BaseSource(Source):
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
     def read(
-        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None,
     ) -> Iterable[AirbyteMessage]:
         state = state or {}
         client = self._get_client(config)
@@ -73,7 +74,7 @@ class BaseSource(Source):
         logger.info(f"Finished syncing {self.name}")
 
     def _read_stream(
-        self, logger: logging.Logger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: MutableMapping[str, Any]
+        self, logger: logging.Logger, client: BaseClient, configured_stream: ConfiguredAirbyteStream, state: MutableMapping[str, Any],
     ):
         stream_name = configured_stream.stream.name
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and client.stream_has_state(stream_name)

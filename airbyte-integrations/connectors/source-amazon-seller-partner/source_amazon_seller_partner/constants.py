@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""
-Country	marketplaceId	Country code
+"""Country	marketplaceId	Country code
 Canada	A2EUQ1WTGCTBG2	CA
 United States of America	ATVPDKIKX0DER	US
 Mexico	A1AM78C64UM0Y8	MX
@@ -31,7 +30,6 @@ Australia	A39IBJ37TRP1C6	AU
 Japan	A1VC38T7YXB528	JP
 """
 from enum import Enum
-from typing import Dict, Tuple
 
 
 class AWSEnvironment(str, Enum):
@@ -70,7 +68,7 @@ def get_aws_base_url(aws_env: AWSEnvironment) -> str:
     return "https://sandbox.sellingpartnerapi"
 
 
-def get_marketplaces(aws_env: AWSEnvironment) -> Dict[AWSRegion, Tuple[str, str, str]]:
+def get_marketplaces(aws_env: AWSEnvironment) -> dict[AWSRegion, tuple[str, str, str]]:
     base_url = get_aws_base_url(aws_env)
 
     marketplaces = {

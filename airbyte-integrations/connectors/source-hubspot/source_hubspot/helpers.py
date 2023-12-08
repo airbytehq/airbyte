@@ -4,12 +4,11 @@
 
 import abc
 import urllib.parse
-from typing import Iterator, List, MutableMapping
+from collections.abc import Iterator, MutableMapping
 
 
 class IRecordPostProcessor(abc.ABC):
-    """
-    The interface is designed to post process records (like group them by ID and update) after the API response is parsed and
+    """The interface is designed to post process records (like group them by ID and update) after the API response is parsed and
     before they are emitted up the stack.
     """
 
@@ -59,7 +58,7 @@ class IURLPropertyRepresentation(abc.ABC):
     # so it was decided to limit the length of the `properties` parameter to 15000 characters.
     PROPERTIES_PARAM_MAX_LENGTH = 15000
 
-    def __init__(self, properties: List[str]):
+    def __init__(self, properties: list[str]):
         self.properties = properties
 
     def __bool__(self):

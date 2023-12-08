@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Optional, Tuple
+from collections.abc import Mapping
+from typing import Any, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -45,14 +47,13 @@ class CustomTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceLooker(AbstractSource):
-    """
-    Source Intercom fetch data from messaging platform.
+    """Source Intercom fetch data from messaging platform.
     """
 
     def get_authenticator(self, config: Mapping[str, Any]) -> CustomTokenAuthenticator:
         return CustomTokenAuthenticator(domain=config["domain"], client_id=config["client_id"], client_secret=config["client_secret"])
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         authenticator = self.get_authenticator(config)
         err = authenticator.update_access_token()
         if err:
@@ -60,7 +61,7 @@ class SourceLooker(AbstractSource):
             return False, err
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         base_args = {
             "authenticator": self.get_authenticator(config),
             "domain": config["domain"],

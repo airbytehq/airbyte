@@ -3,11 +3,13 @@
 #
 
 from abc import ABC
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Optional
 from urllib import parse
 
 import requests
+
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -36,12 +38,10 @@ class MicrosoftDataverseStream(HttpStream, ABC):
         return self.schema
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        :param response: the most recent response from the API
+        """:param response: the most recent response from the API
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
-
         response_json = response.json()
 
         if "@odata.nextLink" in response_json:
@@ -52,10 +52,9 @@ class MicrosoftDataverseStream(HttpStream, ABC):
             return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        :return a dict containing the parameters to be used in the request
+        """:return a dict containing the parameters to be used in the request
         """
         request_params = super().request_params(stream_state)
         # If there is not a nextLink(contains "next_page_token") in the response, means it is the last page.
@@ -68,14 +67,13 @@ class MicrosoftDataverseStream(HttpStream, ABC):
             return request_params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
+        """:return an iterable containing each record in the response
         """
         for result in response.json()["value"]:
             yield result
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         return {
             "Cache-Control": "no-cache",
@@ -118,14 +116,13 @@ class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalM
         self._cursor_value = value[self.delta_token_field]
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        """
-        Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
+        """Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
         """
         request_headers = super().request_headers(stream_state=stream_state)
         request_headers.update(
-            {"Prefer": "odata.track-changes," + request_headers["Prefer"]}
+            {"Prefer": "odata.track-changes," + request_headers["Prefer"]},
         )  # odata.track-changes -> Header that enables change tracking
         return request_headers
 

@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, Optional, Union
 
 import pendulum
+
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -16,8 +18,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUs
 
 @dataclass
 class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAuthenticator):
-    """
-    Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials based on
+    """Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials based on
     a declarative connector configuration file. Credentials can be defined explicitly or via interpolation
     at runtime. The generated access token is attached to each request via the Authorization header.
 
@@ -44,7 +45,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     config: Mapping[str, Any]
     parameters: InitVar[Mapping[str, Any]]
     refresh_token: Optional[Union[InterpolatedString, str]] = None
-    scopes: Optional[List[str]] = None
+    scopes: Optional[list[str]] = None
     token_expiry_date: Optional[Union[InterpolatedString, str]] = None
     _token_expiry_date: pendulum.DateTime = field(init=False, repr=False, default=None)
     token_expiry_date_format: str = None
@@ -118,16 +119,14 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
 
     @property
     def _message_repository(self) -> MessageRepository:
-        """
-        Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs
+        """Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs
         """
         return self.message_repository
 
 
 @dataclass
 class DeclarativeSingleUseRefreshTokenOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator, DeclarativeAuthenticator):
-    """
-    Declarative version of SingleUseRefreshTokenOauth2Authenticator which can be used in declarative connectors.
+    """Declarative version of SingleUseRefreshTokenOauth2Authenticator which can be used in declarative connectors.
     """
 
     def __init__(self, *args, **kwargs):

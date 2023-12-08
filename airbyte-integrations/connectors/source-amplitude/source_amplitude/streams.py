@@ -8,10 +8,12 @@ import io
 import json
 import logging
 import zipfile
-from typing import IO, Any, Iterable, List, Mapping, MutableMapping, Optional
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import IO, Any, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -81,8 +83,7 @@ class Events(HttpStream):
         return {self.cursor_field: max(latest_state, current_stream_state.get(self.cursor_field, ""))}
 
     def _get_date_time_items_from_schema(self):
-        """
-        Get all properties from schema with format: 'date-time'
+        """Get all properties from schema with format: 'date-time'
         """
         result = []
         schema = self.get_json_schema()
@@ -92,8 +93,7 @@ class Events(HttpStream):
         return result
 
     def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        Transform 'date-time' items to RFC3339 format
+        """Transform 'date-time' items to RFC3339 format
         """
         for item in record:
             if item in self.date_time_fields and record[item]:
@@ -101,8 +101,7 @@ class Events(HttpStream):
         return record
 
     def get_most_recent_cursor(self, stream_state: Mapping[str, Any] = None) -> datetime.datetime:
-        """
-        Use `start_time` instead of `cursor` in the case of more recent.
+        """Use `start_time` instead of `cursor` in the case of more recent.
         This can happen whenever a user simply finds that they are syncing to much data and would like to change `start_time` to be more recent.
         See: https://github.com/airbytehq/airbyte/issues/25367 for more details
         """
@@ -121,7 +120,7 @@ class Events(HttpStream):
             self.logger.exception(e)
             self.logger.error(
                 f"Received an invalid zip file in response to URL: {response.request.url}."
-                f"The size of the response body is: {len(response.content)}"
+                f"The size of the response body is: {len(response.content)}",
             )
             return []
 
@@ -149,7 +148,7 @@ class Events(HttpStream):
                 {
                     "start": start.strftime(self.date_template),
                     "end": start.add(**self.time_interval).subtract(hours=1).strftime(self.date_template),
-                }
+                },
             )
             start = start.add(**self.time_interval)
 
@@ -158,7 +157,7 @@ class Events(HttpStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:

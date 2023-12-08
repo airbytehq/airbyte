@@ -5,8 +5,9 @@
 import json
 import logging
 from collections import UserDict
+from collections.abc import Iterable, MutableMapping
 from pathlib import Path
-from typing import Iterable, List, MutableMapping, Set, Union
+from typing import Union
 
 import pytest
 from yaml import load
@@ -33,7 +34,7 @@ def load_config(path: str) -> Config:
     if not path.exists():
         pytest.fail(f"config file {path.absolute()} does not exist")
 
-    with open(str(path), "r") as file:
+    with open(str(path)) as file:
         data = load(file, Loader=Loader)
         return Config.parse_obj(data)
 
@@ -62,7 +63,7 @@ def incremental_only_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> Co
     return configured_catalog
 
 
-def filter_output(records: Iterable[AirbyteMessage], type_) -> List[AirbyteMessage]:
+def filter_output(records: Iterable[AirbyteMessage], type_) -> list[AirbyteMessage]:
     """Filter messages to match specific type"""
     return list(filter(lambda x: x.type == type_, records))
 
@@ -97,7 +98,7 @@ def find_keyword_schema(schema: Union[dict, list, str], key: str) -> bool:
 
 
 def load_yaml_or_json_path(path: Path):
-    with open(str(path), "r") as file:
+    with open(str(path)) as file:
         file_data = file.read()
         file_ext = path.suffix
         if file_ext == ".json":
@@ -117,12 +118,12 @@ def find_all_values_for_key_in_schema(schema: dict, searched_key: str):
         for key, value in schema.items():
             if key == searched_key:
                 yield value
-            if isinstance(value, dict) or isinstance(value, list):
+            if isinstance(value, dict | list):
                 yield from find_all_values_for_key_in_schema(value, searched_key)
 
 
 def build_configured_catalog_from_discovered_catalog_and_empty_streams(
-    discovered_catalog: MutableMapping[str, AirbyteStream], empty_streams: Set[EmptyStreamConfiguration]
+    discovered_catalog: MutableMapping[str, AirbyteStream], empty_streams: set[EmptyStreamConfiguration],
 ):
     """Build a configured catalog from the discovered catalog with empty streams removed.
 
@@ -147,7 +148,7 @@ def build_configured_catalog_from_discovered_catalog_and_empty_streams(
     ]
     if empty_stream_names:
         logging.warning(
-            f"The configured catalog was built with the discovered catalog from which the following empty streams were removed: {', '.join(empty_stream_names)}."
+            f"The configured catalog was built with the discovered catalog from which the following empty streams were removed: {', '.join(empty_stream_names)}.",
         )
     else:
         logging.info("The configured catalog is built from a fully discovered catalog.")
@@ -170,7 +171,7 @@ def build_configured_catalog_from_custom_catalog(configured_catalog_path: str, d
             configured_stream.stream = discovered_catalog[configured_stream.stream.name]
         except KeyError:
             pytest.fail(
-                f"The {configured_stream.stream.name} stream you have set in {configured_catalog_path} is not part of the discovered_catalog"
+                f"The {configured_stream.stream.name} stream you have set in {configured_catalog_path} is not part of the discovered_catalog",
             )
     logging.info("The configured catalog is built from a custom configured catalog.")
     return catalog

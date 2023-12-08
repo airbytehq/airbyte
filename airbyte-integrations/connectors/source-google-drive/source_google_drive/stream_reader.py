@@ -5,17 +5,18 @@
 import io
 import json
 import logging
-import re
+from collections.abc import Iterable
 from datetime import datetime
 from io import IOBase
-from typing import Iterable, List, Optional, Set
+from typing import Optional
+
+from google.oauth2 import credentials, service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
 
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
-from google.oauth2 import credentials, service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload
 from source_google_drive.utils import get_folder_id
 
 from .spec import SourceGoogleDriveSpec
@@ -47,8 +48,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
     @config.setter
     def config(self, value: SourceGoogleDriveSpec):
-        """
-        FileBasedSource reads the config from disk and parses it, and once parsed, the source sets the config on its StreamReader.
+        """FileBasedSource reads the config from disk and parses it, and once parsed, the source sets the config on its StreamReader.
 
         Note: FileBasedSource only requires the keys defined in the abstract config, whereas concrete implementations of StreamReader
         will require keys that (for example) allow it to authenticate with the 3rd party.
@@ -82,9 +82,8 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
         return self._drive_service
 
-    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
-        """
-        Get all files matching the specified glob patterns.
+    def get_matching_files(self, globs: list[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
+        """Get all files matching the specified glob patterns.
         """
         service = self.google_drive_service
         root_folder_id = get_folder_id(self.config.folder_url)
@@ -92,7 +91,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         prefixes = self.get_prefixes_from_globs(globs)
 
         folder_id_queue = [("", root_folder_id)]
-        seen: Set[str] = set()
+        seen: set[str] = set()
         while len(folder_id_queue) > 0:
             (path, folder_id) = folder_id_queue.pop()
             # fetch all files in this folder (1000 is the max page size)
@@ -143,8 +142,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                     break
 
     def _is_exportable_document(self, mime_type: str):
-        """
-        Returns true if the given file is a Google App document that can be exported.
+        """Returns true if the given file is a Google App document that can be exported.
         """
         return mime_type in EXPORTABLE_DOCUMENTS_MIME_TYPES
 
@@ -152,7 +150,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         if self._is_exportable_document(file.original_mime_type):
             if mode == FileReadMode.READ:
                 raise ValueError(
-                    "Google Docs/Drawings/Presentations can only be processed using the document file type format. Please set the format accordingly or adjust the glob pattern."
+                    "Google Docs/Drawings/Presentations can only be processed using the document file type format. Please set the format accordingly or adjust the glob pattern.",
                 )
             request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=file.mime_type)
         else:
@@ -174,8 +172,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             return text_handle
 
     def _get_export_mime_type(self, original_mime_type: str):
-        """
-        Returns the mime type to export Google App documents as.
+        """Returns the mime type to export Google App documents as.
 
         Google Docs are exported as Docx to preserve as much formatting as possible, everything else goes through PDF.
         """

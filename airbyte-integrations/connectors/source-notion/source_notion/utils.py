@@ -3,12 +3,12 @@
 #
 
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 
 def transform_properties(record: Mapping[str, Any], dict_key: str = "properties") -> Mapping[str, Any]:
-    """
-    Transform nested `properties` object.
+    """Transform nested `properties` object.
     Move unique named entities into `name`, `value` to handle normalization.
     EXAMPLE INPUT:
     {

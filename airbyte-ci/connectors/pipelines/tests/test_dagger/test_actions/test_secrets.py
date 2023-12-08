@@ -4,6 +4,7 @@
 import json
 
 import pytest
+
 from pipelines.dagger.actions import secrets
 
 pytestmark = [

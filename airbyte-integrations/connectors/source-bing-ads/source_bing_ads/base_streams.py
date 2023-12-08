@@ -4,19 +4,21 @@
 import ssl
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional, Union
 from urllib.error import URLError
+
+from bingads.service_client import ServiceClient
+from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
+from suds import sudsobject
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from bingads.service_client import ServiceClient
-from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from source_bing_ads.client import Client
-from suds import sudsobject
 
 
 class BingAdsBaseStream(Stream, ABC):
-    primary_key: Optional[Union[str, List[str], List[List[str]]]] = None
+    primary_key: Optional[Union[str, list[str], list[list[str]]]] = None
 
     def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
         super().__init__()
@@ -28,21 +30,18 @@ class BingAdsStream(BingAdsBaseStream, ABC):
     @property
     @abstractmethod
     def operation_name(self) -> str:
-        """
-        Specifies operation name to use for a current stream
+        """Specifies operation name to use for a current stream
         """
 
     @property
     @abstractmethod
     def service_name(self) -> str:
-        """
-        Specifies bing ads service name for a current stream
+        """Specifies bing ads service name for a current stream
         """
 
     @property
     def parent_key_to_foreign_key_map(self) -> MutableMapping[str, str]:
-        """
-        Specifies dict with field in record as kay and slice key as value to be inserted in record in transform method.
+        """Specifies dict with field in record as kay and slice key as value to be inserted in record in transform method.
         """
         return {}
 
@@ -73,8 +72,7 @@ class BingAdsStream(BingAdsBaseStream, ABC):
                     raise error
 
     def next_page_token(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
-        """
-        Default method for streams that don't support pagination
+        """Default method for streams that don't support pagination
         """
         return None
 
@@ -127,15 +125,13 @@ class BingAdsCampaignManagementStream(BingAdsStream, ABC):
     @property
     @abstractmethod
     def data_field(self) -> str:
-        """
-        Specifies root object name in a stream response
+        """Specifies root object name in a stream response
         """
 
     @property
     @abstractmethod
     def additional_fields(self) -> Optional[str]:
-        """
-        Specifies which additional fields to fetch for a current stream.
+        """Specifies which additional fields to fetch for a current stream.
         Expected format: field names separated by space
         """
 
@@ -145,8 +141,7 @@ class BingAdsCampaignManagementStream(BingAdsStream, ABC):
 
 
 class Accounts(BingAdsStream):
-    """
-    Searches for accounts that the current authenticated user can access.
+    """Searches for accounts that the current authenticated user can access.
     API doc: https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13
     Account schema: https://docs.microsoft.com/en-us/advertising/customer-management-service/advertiseraccount?view=bingads-13
     Stream caches incoming responses to be able to reuse this data in Campaigns stream
@@ -180,8 +175,8 @@ class Accounts(BingAdsStream):
                     "Field": "UserId",
                     "Operator": "Equals",
                     "Value": self._user_id,
-                }
-            ]
+                },
+            ],
         }
 
         paging = self._service.factory.create("ns5:Paging")
@@ -195,8 +190,7 @@ class Accounts(BingAdsStream):
 
 
 class Campaigns(BingAdsCampaignManagementStream):
-    """
-    Gets the campaigns for all provided accounts.
+    """Gets the campaigns for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13
     Campaign schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/campaign?view=bingads-13
     Stream caches incoming responses to be able to reuse this data in AdGroups stream
@@ -246,8 +240,7 @@ class Campaigns(BingAdsCampaignManagementStream):
 
 
 class AdGroups(BingAdsCampaignManagementStream):
-    """
-    Gets the ad groups for all provided accounts.
+    """Gets the ad groups for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13
     AdGroup schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/adgroup?view=bingads-13
     Stream caches incoming responses to be able to reuse this data in Ads stream
@@ -276,14 +269,13 @@ class AdGroups(BingAdsCampaignManagementStream):
         campaigns = Campaigns(self.client, self.config)
         for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
             for campaign in campaigns.read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+                sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]},
             ):
                 yield {"campaign_id": campaign["Id"], "account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
 
 class Ads(BingAdsCampaignManagementStream):
-    """
-    Retrieves the ads for all provided accounts.
+    """Retrieves the ads for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13
     Ad schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/ad?view=bingads-13
     """

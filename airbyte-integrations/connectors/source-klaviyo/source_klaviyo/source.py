@@ -3,18 +3,20 @@
 #
 
 import re
+from collections.abc import Mapping
 from http import HTTPStatus
-from typing import Any, List, Mapping, Tuple
+from typing import Any
+
+from requests.exceptions import HTTPError
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from requests.exceptions import HTTPError
 from source_klaviyo.streams import Campaigns, EmailTemplates, Events, Flows, GlobalExclusions, Lists, Metrics, Profiles
 
 
 class SourceKlaviyo(AbstractSource):
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
@@ -41,9 +43,8 @@ class SourceKlaviyo(AbstractSource):
             return False, error_message
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Discovery method, returns available streams
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """Discovery method, returns available streams
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         api_key = config["api_key"]

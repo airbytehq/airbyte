@@ -5,11 +5,13 @@
 import tempfile
 import urllib.parse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import pendulum
 import requests
 import vcr
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -23,7 +25,7 @@ class SurveymonkeyStream(HttpStream, ABC):
     data_field = "data"
     default_backoff_time: int = 60  # secs
 
-    def __init__(self, start_date: pendulum.datetime, survey_ids: List[str], **kwargs):
+    def __init__(self, start_date: pendulum.datetime, survey_ids: list[str], **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date
         self._survey_ids = survey_ids
@@ -41,7 +43,7 @@ class SurveymonkeyStream(HttpStream, ABC):
             return params
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
 
@@ -51,19 +53,18 @@ class SurveymonkeyStream(HttpStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """
-        We need to cache all requests to all endpoints during iteration.
+        """We need to cache all requests to all endpoints during iteration.
         This API is very very rate limited, we need to reuse everything possible.
         We use the "new_episodes" record mode to save and reuse all requests in slices, details, etc..
         """
         with vcr.use_cassette(cache_file.name, record_mode="new_episodes", serializer="json", decode_compressed_response=True):
             try:
                 yield from super().read_records(
-                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                    sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
                 )
             except requests.exceptions.HTTPError as e:
                 if e.response.status_code == 404:
@@ -72,8 +73,7 @@ class SurveymonkeyStream(HttpStream, ABC):
                     raise e
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        https://developer.surveymonkey.com/api/v3/#headers
+        """https://developer.surveymonkey.com/api/v3/#headers
         X-Ratelimit-App-Global-Minute-Remaining - Number of remaining requests app has before hitting per minute limit
         X-Ratelimit-App-Global-Minute-Reset     - Number of seconds until the rate limit remaining resets
 
@@ -91,8 +91,7 @@ class SurveymonkeyStream(HttpStream, ABC):
             return self.default_backoff_time
 
     def raise_error_from_response(self, response_json):
-        """
-        this method use in all parse responses
+        """This method use in all parse responses
         including those who does not inherit / super() due to
         necessity use raw response instead of accessing `data_field`
         """
@@ -118,8 +117,7 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
         pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         state_value = max(current_stream_state.get(self.cursor_field, ""), latest_record.get(self.cursor_field, ""))
@@ -158,8 +156,7 @@ class SurveyIDSliceMixin:
 
 
 class Surveys(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
-    """
-    Docs: https://developer.surveymonkey.com/api/v3/#surveys
+    """Docs: https://developer.surveymonkey.com/api/v3/#surveys
     A source for stream slices. It does not contain useful info itself.
 
     The `surveys/id/details` endpoint contains full data about pages and questions. This data is already collected and
@@ -216,8 +213,7 @@ class SurveyQuestions(SurveyIDSliceMixin, SurveymonkeyStream):
 
 
 class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
-    """
-    Docs: https://developer.surveymonkey.com/api/v3/#api-endpoints-survey-responses
+    """Docs: https://developer.surveymonkey.com/api/v3/#api-endpoints-survey-responses
     """
 
     cursor_field = "date_modified"
@@ -226,8 +222,7 @@ class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
         return f"surveys/{stream_slice['survey_id']}/responses/bulk"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the survey_id and cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the survey_id and cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         survey_id = latest_record.get("survey_id")
@@ -248,7 +243,7 @@ class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
         return current_stream_state
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         if next_page_token:
             return next_page_token
@@ -273,8 +268,7 @@ class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
 
 
 class SurveyCollectors(SurveyIDSliceMixin, SurveymonkeyStream):
-    """
-    API Docs: https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-surveys-id-collectors
+    """API Docs: https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-surveys-id-collectors
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -288,8 +282,7 @@ class SurveyCollectors(SurveyIDSliceMixin, SurveymonkeyStream):
 
 
 class Collectors(SurveymonkeyStream):
-    """
-    API Docs: https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-collectors-id-
+    """API Docs: https://www.surveymonkey.com/developer/api/v3/#api-endpoints-get-collectors-id-
     """
 
     data_field = None

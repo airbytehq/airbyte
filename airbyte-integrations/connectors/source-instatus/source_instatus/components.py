@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Iterable, Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Optional
 
 import dpath.util
+
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.transformations import AddFields
@@ -14,8 +16,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 
 @dataclass
 class ListAddFields(AddFields):
-    """
-    ListAddFields uses to transform record by adding an ids from list object field to one list.
+    """ListAddFields uses to transform record by adding an ids from list object field to one list.
 
     input:
     {
@@ -65,15 +66,14 @@ class ListAddFields(AddFields):
 
 @dataclass
 class UpdatesSubstreamPartitionRouter(SubstreamPartitionRouter):
-    """
-    UpdatesSubstreamPartitionRouter iterates over the list of id to create a correct stream slices.
+    """UpdatesSubstreamPartitionRouter iterates over the list of id to create a correct stream slices.
 
     In case we need to make request from parent stream with list of object by their ids we need to use
     a ListAddFields transformer class -> put oll object ids in custom list field -> UpdatesSubstreamPartitionRouter puts every
     id from that list to slices.
     """
 
-    parent_stream_configs: List[ParentStreamConfig]
+    parent_stream_configs: list[ParentStreamConfig]
     parameters: InitVar[Mapping[str, Any]]
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
@@ -89,7 +89,7 @@ class UpdatesSubstreamPartitionRouter(SubstreamPartitionRouter):
                     parent_slice = parent_stream_slice
 
                     for parent_record in parent_stream.read_records(
-                        sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
+                        sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None,
                     ):
                         # Skip non-records (eg AirbyteLogMessage)
                         if isinstance(parent_record, AirbyteMessage):

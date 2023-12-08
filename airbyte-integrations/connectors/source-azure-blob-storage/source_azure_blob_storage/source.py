@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
@@ -12,8 +13,7 @@ from .legacy_config_transformer import LegacyConfigTransformer
 
 class SourceAzureBlobStorage(FileBasedSource):
     def read_config(self, config_path: str) -> Mapping[str, Any]:
-        """
-        Used to override the default read_config so that when the new file-based Azure Blob Storage connector processes a config
+        """Used to override the default read_config so that when the new file-based Azure Blob Storage connector processes a config
         in the legacy format, it can be transformed into the new config. This happens in entrypoint before we
         validate the config against the new spec.
         """

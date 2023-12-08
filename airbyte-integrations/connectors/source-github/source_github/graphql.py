@@ -174,8 +174,7 @@ class QueryReactions:
     AVERAGE_REACTIONS = 2
 
     def get_query_root_repository(self, owner: str, name: str, first: int, after: Optional[str] = None):
-        """
-        Get GraphQL query which allows fetching reactions starting from the repository:
+        """Get GraphQL query which allows fetching reactions starting from the repository:
         query {
           repository {
             pull_requests(first: page_size) {
@@ -208,8 +207,7 @@ class QueryReactions:
         return str(op)
 
     def get_query_root_pull_request(self, node_id: str, first: int, after: str):
-        """
-        Get GraphQL query which allows fetching reactions starting from the pull_request:
+        """Get GraphQL query which allows fetching reactions starting from the pull_request:
         query {
           pull_request {
             reviews(first: AVERAGE_REVIEWS) {
@@ -233,8 +231,7 @@ class QueryReactions:
         return str(op)
 
     def get_query_root_review(self, node_id: str, first: int, after: str):
-        """
-        Get GraphQL query which allows fetching reactions starting from the review:
+        """Get GraphQL query which allows fetching reactions starting from the review:
         query {
           review {
             comments(first: AVERAGE_COMMENTS) {
@@ -255,8 +252,7 @@ class QueryReactions:
         return str(op)
 
     def get_query_root_comment(self, node_id: str, first: int, after: str):
-        """
-        Get GraphQL query which allows fetching reactions starting from the comment:
+        """Get GraphQL query which allows fetching reactions starting from the comment:
         query {
           comment {
             reactions(first: AVERAGE_REACTIONS) {

@@ -6,10 +6,12 @@ import base64
 import json
 import logging
 import os
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Mapping, MutableMapping
+from typing import Any, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
@@ -102,9 +104,8 @@ class SourceMixpanel(AbstractSource):
 
         return config
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        """
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, any]:
+        """See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
 
         :param config:  the user-input config object conforming to the connector's spec.json
@@ -136,9 +137,8 @@ class SourceMixpanel(AbstractSource):
         return False, reason
 
     @adapt_streams_if_testing
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """:param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         config = self._validate_and_transform(config)
         logger = logging.getLogger("airbyte")

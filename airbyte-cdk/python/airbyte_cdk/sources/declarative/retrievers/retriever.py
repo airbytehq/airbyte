@@ -3,8 +3,9 @@
 #
 
 from abc import abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Optional
 
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
@@ -12,8 +13,7 @@ from airbyte_cdk.sources.streams.core import StreamData
 
 @dataclass
 class Retriever:
-    """
-    Responsible for fetching a stream's records from an HTTP API source.
+    """Responsible for fetching a stream's records from an HTTP API source.
     """
 
     @abstractmethod
@@ -21,8 +21,7 @@ class Retriever:
         self,
         stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
-        """
-        Fetch a stream's records from an HTTP API source
+        """Fetch a stream's records from an HTTP API source
 
         :param sync_mode: Unused but currently necessary for integrating with HttpStream
         :param cursor_field: Unused but currently necessary for integrating with HttpStream

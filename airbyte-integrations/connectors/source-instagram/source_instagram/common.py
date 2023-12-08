@@ -7,9 +7,10 @@ import sys
 import urllib.parse as urlparse
 
 import backoff
-from airbyte_cdk.logger import AirbyteLogger
 from facebook_business.exceptions import FacebookRequestError
 from requests.status_codes import codes as status_codes
+
+from airbyte_cdk.logger import AirbyteLogger
 
 logger = AirbyteLogger()
 
@@ -90,5 +91,5 @@ def remove_params_from_url(url, params):
     query = urlparse.parse_qs(parsed.query, keep_blank_values=True)
     filtered = dict((k, v) for k, v in query.items() if k not in params)
     return urlparse.urlunparse(
-        [parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlparse.urlencode(filtered, doseq=True), parsed.fragment]
+        [parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlparse.urlencode(filtered, doseq=True), parsed.fragment],
     )

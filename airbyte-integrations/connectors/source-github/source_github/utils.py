@@ -6,7 +6,6 @@ import logging
 import time
 from itertools import cycle
 from types import SimpleNamespace
-from typing import List
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -33,8 +32,7 @@ def read_full_refresh(stream_instance: Stream):
 
 
 class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
-    """
-    Each token in the cycle is checked against the rate limiter.
+    """Each token in the cycle is checked against the rate limiter.
     If a token exceeds the capacity limit, the system switches to another token.
     If all tokens are exhausted, the system will enter a sleep state until
     the first token becomes available again.
@@ -42,7 +40,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
 
     DURATION = 3600  # seconds
 
-    def __init__(self, tokens: List[str], requests_per_hour: int, auth_method: str = "Bearer", auth_header: str = "Authorization"):
+    def __init__(self, tokens: list[str], requests_per_hour: int, auth_method: str = "Bearer", auth_header: str = "Authorization"):
         self._auth_method = auth_method
         self._auth_header = auth_header
         now = time.time()
@@ -62,7 +60,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
                 return f"{self._auth_method} {token}"
 
     def _check_token(self, token: str):
-        """check that token is not limited"""
+        """Check that token is not limited"""
         self._refill()
         if self._sleep():
             self._refill()
@@ -71,7 +69,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
             return True
 
     def _refill(self):
-        """refill all needed tokens"""
+        """Refill all needed tokens"""
         now = time.time()
         for token, ns in self._tokens.items():
             if now - ns.update_at >= self.DURATION:
@@ -79,7 +77,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
                 ns.count = self._requests_per_hour
 
     def _sleep(self):
-        """sleep only if all tokens is exhausted"""
+        """Sleep only if all tokens is exhausted"""
         now = time.time()
         if sum([ns.count for ns in self._tokens.values()]) == 0:
             sleep_time = self.DURATION - (now - min([ns.update_at for ns in self._tokens.values()]))

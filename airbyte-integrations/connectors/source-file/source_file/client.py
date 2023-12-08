@@ -9,8 +9,8 @@ import sys
 import tempfile
 import traceback
 import urllib
+from collections.abc import Iterable
 from os import environ
-from typing import Iterable
 from urllib.parse import urlparse
 from zipfile import BadZipFile
 
@@ -22,9 +22,6 @@ import numpy as np
 import pandas as pd
 import smart_open
 import smart_open.ssh
-from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
-from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
 from azure.storage.blob import BlobServiceClient
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
@@ -35,6 +32,10 @@ from pandas.errors import ParserError
 from paramiko import SSHException
 from urllib3.exceptions import ProtocolError
 from yaml import safe_load
+
+from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
+from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
 
 from .utils import LOCAL_STORAGE_NAME, backoff_handler
 
@@ -201,7 +202,7 @@ class URLFile:
             try:
                 credentials = json.loads(self._provider["service_account_json"])
             except json.decoder.JSONDecodeError as err:
-                error_msg = f"Failed to parse gcs service account json: {repr(err)}"
+                error_msg = f"Failed to parse gcs service account json: {err!r}"
                 logger.error(f"{error_msg}\n{traceback.format_exc()}")
                 raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
 
@@ -311,7 +312,7 @@ class Client:
             return pd.DataFrame(safe_load(fp))
 
     def load_dataframes(self, fp, skip_data=False, read_sample_chunk: bool = False) -> Iterable:
-        """load and return the appropriate pandas dataframe.
+        """Load and return the appropriate pandas dataframe.
 
         :param fp: file-like object to read from
         :param skip_data: limit reading data
@@ -372,7 +373,7 @@ class Client:
         except UnicodeDecodeError as err:
             error_msg = (
                 f"File {fp} can't be parsed with reader of chosen type ({self._reader_format}). "
-                f"Please check provided Format and Reader Options. {repr(err)}."
+                f"Please check provided Format and Reader Options. {err!r}."
             )
             logger.error(f"{error_msg}\n{traceback.format_exc()}")
             raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
@@ -435,7 +436,7 @@ class Client:
                 raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
 
     def _cache_stream(self, fp):
-        """cache stream to file"""
+        """Cache stream to file"""
         fp_tmp = tempfile.TemporaryFile(mode="w+b")
         fp_tmp.write(fp.read())
         fp_tmp.seek(0)
@@ -443,8 +444,7 @@ class Client:
         return fp_tmp
 
     def _stream_properties(self, fp, empty_schema: bool = False, read_sample_chunk: bool = False):
-        """
-        empty_schema param is used to check connectivity, i.e. we only read a header and do not produce stream properties
+        """empty_schema param is used to check connectivity, i.e. we only read a header and do not produce stream properties
         read_sample_chunk is used to determine if just one chunk should be read to generate schema
         """
         if self._reader_format == "yaml":

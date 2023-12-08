@@ -2,15 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, Mapping, MutableMapping
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any
 
 from source_amazon_ads.schemas import Portfolio
 from source_amazon_ads.streams.common import AmazonAdsStream
 
 
 class Portfolios(AmazonAdsStream):
-    """
-    This stream corresponds to Amazon Advertising API - Portfolios
+    """This stream corresponds to Amazon Advertising API - Portfolios
     https://advertising.amazon.com/API/docs/en-us/reference/2/portfolios
     """
 
@@ -21,8 +21,7 @@ class Portfolios(AmazonAdsStream):
         return "v2/portfolios/extended"
 
     def read_records(self, *args, **kvargs) -> Iterable[Mapping[str, Any]]:
-        """
-        Iterate through self._profiles list and send read all records for each profile.
+        """Iterate through self._profiles list and send read all records for each profile.
         """
         for profile in self._profiles:
             self._current_profile_id = profile.profileId

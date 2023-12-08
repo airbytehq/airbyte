@@ -3,8 +3,9 @@
 #
 
 import datetime as dt
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, Union
+from typing import Any, Union
 
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -12,8 +13,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 
 @dataclass
 class MinMaxDatetime:
-    """
-    Compares the provided date against optional minimum or maximum times. If date is earlier than
+    """Compares the provided date against optional minimum or maximum times. If date is earlier than
     min_date, then min_date is returned. If date is greater than max_date, then max_date is returned.
     If neither, the input date is returned.
 
@@ -44,8 +44,7 @@ class MinMaxDatetime:
         self.max_datetime = InterpolatedString.create(self.max_datetime, parameters=parameters) if self.max_datetime else None
 
     def get_datetime(self, config, **additional_parameters) -> dt.datetime:
-        """
-        Evaluates and returns the datetime
+        """Evaluates and returns the datetime
         :param config: The user-provided configuration as specified by the source's spec
         :param additional_parameters: Additional arguments to be passed to the strings for interpolation
         :return: The evaluated datetime

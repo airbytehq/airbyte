@@ -3,6 +3,7 @@
 #
 
 import asyncclick as click
+
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import run_connector_version_bump_pipeline
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -21,7 +22,6 @@ async def bump_version(
     changelog_entry: str,
 ) -> bool:
     """Bump a connector version: update metadata.yaml and changelog."""
-
     connectors_contexts = [
         ConnectorContext(
             pipeline_name=f"Upgrade base image versions of connector {connector.technical_name}",

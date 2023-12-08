@@ -3,6 +3,7 @@
 #
 
 import requests
+
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 
 
@@ -47,7 +48,7 @@ class Pardot:
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _make_request(
-        self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
+        self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None,
     ) -> requests.models.Response:
         if http_method == "GET":
             resp = self.session.get(url, headers=headers, stream=stream, params=params)

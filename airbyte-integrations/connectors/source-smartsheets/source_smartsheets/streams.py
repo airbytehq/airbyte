@@ -3,7 +3,8 @@
 #
 
 import datetime
-from typing import Any, Dict, Iterable, List, Mapping
+from collections.abc import Iterable, Mapping
+from typing import Any
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -23,7 +24,7 @@ class SmartsheetStream(Stream):
     def primary_key(self) -> str:
         return self.smartsheet.primary_key
 
-    def get_json_schema(self) -> Dict[str, Any]:
+    def get_json_schema(self) -> dict[str, Any]:
         return self.smartsheet.json_schema
 
     @property
@@ -43,7 +44,7 @@ class SmartsheetStream(Stream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:

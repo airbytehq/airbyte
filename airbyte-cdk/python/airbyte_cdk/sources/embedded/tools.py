@@ -2,9 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Callable, Dict, Iterable, Optional
+from collections.abc import Callable, Iterable
+from typing import Any, Optional
 
 import dpath
+
 from airbyte_cdk.models import AirbyteStream
 
 
@@ -12,7 +14,7 @@ def get_first(iterable: Iterable[Any], predicate: Callable[[Any], bool] = lambda
     return next(filter(predicate, iterable), None)
 
 
-def get_defined_id(stream: AirbyteStream, data: Dict[str, Any]) -> Optional[str]:
+def get_defined_id(stream: AirbyteStream, data: dict[str, Any]) -> Optional[str]:
     if not stream.source_defined_primary_key:
         return None
     primary_key = []

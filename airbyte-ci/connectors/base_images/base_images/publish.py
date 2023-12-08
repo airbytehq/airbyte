@@ -4,6 +4,7 @@
 
 
 import dagger
+
 from base_images import bases, consts, published_image
 
 
@@ -21,7 +22,6 @@ async def publish_to_remote_registry(base_image_version: bases.AirbyteConnectorB
     Returns:
         models.PublishedImage: The published image as a PublishedImage instance.
     """
-
     address = f"{consts.REMOTE_REGISTRY}/{base_image_version.repository}:{base_image_version.version}"
     variants_to_publish = []
     for platform in consts.PLATFORMS_WE_PUBLISH_FOR:
@@ -29,6 +29,6 @@ async def publish_to_remote_registry(base_image_version: bases.AirbyteConnectorB
         variants_to_publish.append(base_image_version.get_container(platform))
     # Publish with forced compression to ensure backward compatibility with older versions of docker
     published_address = await variants_to_publish[0].publish(
-        address, platform_variants=variants_to_publish[1:], forced_compression=dagger.ImageLayerCompression.Gzip
+        address, platform_variants=variants_to_publish[1:], forced_compression=dagger.ImageLayerCompression.Gzip,
     )
     return published_image.PublishedImage.from_address(published_address)

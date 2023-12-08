@@ -3,10 +3,12 @@
 #
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -17,8 +19,7 @@ ORB_API_BASE_URL = "https://api.billwithorb.com/v1/"
 
 
 class OrbStream(HttpStream, ABC):
-    """
-    Implementation of a full-refresh stream. Note that this still has pagination so that
+    """Implementation of a full-refresh stream. Note that this still has pagination so that
     a given run of the Stream can fetch data in a paginated manner. However, it does not have
     stream 'state', so all data is read in every run.
     """
@@ -32,8 +33,7 @@ class OrbStream(HttpStream, ABC):
         self.start_date = start_date
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Constructs the parameter in order to fetch the next page of results from the current response.
+        """Constructs the parameter in order to fetch the next page of results from the current response.
         Note that we should not make any assumptions about the semantic meaning of `next_cursor` as per
         Orb's API docs.
         """
@@ -44,7 +44,7 @@ class OrbStream(HttpStream, ABC):
             return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {
             "limit": self.page_size,
@@ -63,8 +63,7 @@ class OrbStream(HttpStream, ABC):
         return params
 
     def transform_record(self, single_record):
-        """
-        Used to transform the record. In this connector, we use this to
+        """Used to transform the record. In this connector, we use this to
         take IDs out of nested objects, so that they are easier to work with for destinations.
         """
         return single_record
@@ -78,8 +77,7 @@ class OrbStream(HttpStream, ABC):
 
 
 class IncrementalOrbStream(OrbStream, ABC):
-    """
-    An incremental stream is able to internally keep track of state such that each run of the connector
+    """An incremental stream is able to internally keep track of state such that each run of the connector
     will only query for new records, and output new records.
 
     Orb incremental streams are implemented with `created_at` as the field that determines record ordering,
@@ -98,16 +96,14 @@ class IncrementalOrbStream(OrbStream, ABC):
 
     @property
     def cursor_field(self) -> str:
-        """
-        Incremental streams should use the `created_at` field to update their state. This
+        """Incremental streams should use the `created_at` field to update their state. This
         can be different than what's actually present in the pagination *response* of a given
         request, as long as more recent records have a lower `created_at`.
         """
         return "created_at"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        In order to update the state of the stream, take the max of the current `created_at` time and what might already be in the state.
+        """In order to update the state of the stream, take the max of the current `created_at` time and what might already be in the state.
         """
         latest_record_state_dt = pendulum.parse(latest_record.get(self.cursor_field))
         current_state_isoformat = current_stream_state.get(self.cursor_field)
@@ -116,8 +112,7 @@ class IncrementalOrbStream(OrbStream, ABC):
         return {self.cursor_field: updated_state.isoformat()}
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        """
-        These request params take care of both state and pagination.
+        """These request params take care of both state and pagination.
         Previous stream state is accounted for by using the `created_at[gte]`, so we
         only fetch new records since the last run.
 
@@ -147,8 +142,7 @@ class IncrementalOrbStream(OrbStream, ABC):
 
 
 class Customers(IncrementalOrbStream):
-    """
-    API Docs: https://docs.withorb.com/reference/list-customers
+    """API Docs: https://docs.withorb.com/reference/list-customers
     """
 
     def path(self, **kwargs) -> str:
@@ -156,8 +150,7 @@ class Customers(IncrementalOrbStream):
 
 
 class Subscriptions(IncrementalOrbStream):
-    """
-    API Docs: https://docs.withorb.com/reference/list-subscriptions
+    """API Docs: https://docs.withorb.com/reference/list-subscriptions
     """
 
     def path(self, **kwargs) -> str:
@@ -203,8 +196,7 @@ def to_utc_isoformat(time) -> Optional[str]:
 
 
 def chunk_date_range(start_date: pendulum.DateTime, end_date: Optional[pendulum.DateTime] = None) -> Iterable[pendulum.Period]:
-    """
-    Yields a list of the beginning and ending timestamps of each day between the start date and now.
+    """Yields a list of the beginning and ending timestamps of each day between the start date and now.
     The return value is a pendulum.period
     """
     one_day = pendulum.duration(days=1)
@@ -221,8 +213,7 @@ def chunk_date_range(start_date: pendulum.DateTime, end_date: Optional[pendulum.
 
 
 class SubscriptionUsage(IncrementalOrbStream):
-    """
-    API Docs: https://docs.withorb.com/docs/orb-docs/api-reference/operations/get-a-subscription-usage
+    """API Docs: https://docs.withorb.com/docs/orb-docs/api-reference/operations/get-a-subscription-usage
     """
 
     cursor_field = "timeframe_start"
@@ -305,8 +296,7 @@ class SubscriptionUsage(IncrementalOrbStream):
         yield from []
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, **kwargs) -> MutableMapping[str, Any]:
-        """
-        This is a non-paginated API that operates on specified timeframe_start/timeframe_end
+        """This is a non-paginated API that operates on specified timeframe_start/timeframe_end
         windows.
 
         Request params are based on the specific slice (i.e. subscription_id) we are requesting for,
@@ -320,7 +310,6 @@ class SubscriptionUsage(IncrementalOrbStream):
         the API requires a specific `billable_metric_id` to be set when using a
         `group_by` key.
         """
-
         params = {
             "granularity": "day",
             "timeframe_start": to_utc_isoformat(stream_slice["timeframe_start"]),
@@ -349,8 +338,7 @@ class SubscriptionUsage(IncrementalOrbStream):
         return {**current_stream_state, current_subscription_id: current_subscription_state}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        """
-        Orb does not support querying for all subscription usage in an unscoped
+        """Orb does not support querying for all subscription usage in an unscoped
         way, so the path here is dependent on the stream_slice, which determines
         the `subscription_id`.
         """
@@ -372,8 +360,7 @@ class SubscriptionUsage(IncrementalOrbStream):
         return metric_ids_by_plan_id
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        This schema differs from `subscription_usage.json` based on the configuration
+        """This schema differs from `subscription_usage.json` based on the configuration
         of the Stream. If a group_by key is specified, the stream will output
         records that contain the group_key name and value.
         """
@@ -384,8 +371,7 @@ class SubscriptionUsage(IncrementalOrbStream):
         return schema
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        This stream is sliced per `subscription_id` and day, as well as `billable_metric_id`
+        """This stream is sliced per `subscription_id` and day, as well as `billable_metric_id`
         if a grouping key is provided. This is because the API only supports a
         single billable_metric_id per API call when using a group_by param.
 
@@ -440,8 +426,7 @@ class SubscriptionUsage(IncrementalOrbStream):
 
 
 class Plans(IncrementalOrbStream):
-    """
-    API Docs: https://docs.withorb.com/reference/list-plans
+    """API Docs: https://docs.withorb.com/reference/list-plans
     """
 
     def path(self, **kwargs) -> str:
@@ -449,15 +434,13 @@ class Plans(IncrementalOrbStream):
 
 
 class Invoices(IncrementalOrbStream):
-    """
-    Fetches non-draft invoices, including those that are paid, issued, void, or synced.
+    """Fetches non-draft invoices, including those that are paid, issued, void, or synced.
     API Docs: https://docs.withorb.com/docs/orb-docs/api-reference/operations/list-invoices
     """
 
     @property
     def cursor_field(self) -> str:
-        """
-        Invoices created in the past may be newly issued, so we store state on
+        """Invoices created in the past may be newly issued, so we store state on
         `invoice_date` instead.
         """
         return "invoice_date"
@@ -481,15 +464,14 @@ class CreditsLedgerEntries(IncrementalOrbStream):
     """
 
     def __init__(
-        self, string_event_properties_keys: Optional[List[str]] = None, numeric_event_properties_keys: Optional[List[str]] = None, **kwargs
+        self, string_event_properties_keys: Optional[list[str]] = None, numeric_event_properties_keys: Optional[list[str]] = None, **kwargs,
     ):
         super().__init__(**kwargs)
         self.string_event_properties_keys = string_event_properties_keys
         self.numeric_event_properties_keys = numeric_event_properties_keys
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        The state for this stream is *per customer* (i.e. slice), and is a map from
+        """The state for this stream is *per customer* (i.e. slice), and is a map from
         customer_id -> "created_at" -> isoformat created_at date boundary
 
         In order to update state, figure out the slice corresponding to the latest_record,
@@ -508,7 +490,7 @@ class CreditsLedgerEntries(IncrementalOrbStream):
             current_customer_existing_created_at_dt = pendulum.parse(current_customer_existing_created_at)
 
         current_customer_updated_state = {
-            self.cursor_field: max(latest_record_created_at_dt, current_customer_existing_created_at_dt).isoformat()
+            self.cursor_field: max(latest_record_created_at_dt, current_customer_existing_created_at_dt).isoformat(),
         }
 
         return {
@@ -519,8 +501,7 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         }
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, **kwargs) -> MutableMapping[str, Any]:
-        """
-        Request params are based on the specific slice (i.e. customer_id) we are requesting for,
+        """Request params are based on the specific slice (i.e. customer_id) we are requesting for,
         and so we need to pull out relevant slice state from the stream state.
 
         Ledger entries can either be `pending` or `committed`.
@@ -537,16 +518,14 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         return params
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        """
-        Orb does not support querying for all ledger entries in an unscoped way, so the path
+        """Orb does not support querying for all ledger entries in an unscoped way, so the path
         here is dependent on the stream_slice, which determines the `customer_id`.
         """
         customer_id = stream_slice["customer_id"]
         return f"customers/{customer_id}/credits/ledger"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        This stream is sliced per `customer_id`. This has two implications:
+        """This stream is sliced per `customer_id`. This has two implications:
         (1) State can be checkpointed after processing each slice
         (2) The other parameters (e.g. request_params, path) can be dependent on this slice.
 
@@ -575,16 +554,14 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         return ledger_entry_record
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        Once we parse the response from the ledger entries stream, enrich the resulting entries
+        """Once we parse the response from the ledger entries stream, enrich the resulting entries
         with event metadata.
         """
         ledger_entries = list(super().parse_response(response, **kwargs))
         return self.enrich_ledger_entries_with_event_data(ledger_entries)
 
     def enrich_ledger_entries_with_event_data(self, ledger_entries):
-        """
-        Enriches a list of ledger entries with event metadata (applies only to decrements that
+        """Enriches a list of ledger entries with event metadata (applies only to decrements that
         have an event_id property set, i.e. automated decrements to the ledger applied by Orb).
         """
         # Build up a list of the subset of ledger entries we are expected
@@ -601,8 +578,7 @@ class CreditsLedgerEntries(IncrementalOrbStream):
             return ledger_entries
 
         def modify_ledger_entry_schema(ledger_entry):
-            """
-            Takes a ledger entry with an `event_id` and instead turn it into
+            """Takes a ledger entry with an `event_id` and instead turn it into
             an entry with an `event` dictionary, `event_id` nested.
             """
             event_id = ledger_entry["event_id"]
@@ -662,8 +638,7 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         return ledger_entries
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        This schema differs from `credit_ledger_entries.json` based on the configuration
+        """This schema differs from `credit_ledger_entries.json` based on the configuration
         of the Stream. The configuration specifies a list of properties that each event
         is expected to have (and this connector returns). As of now, these properties
         are assumed to have String type.
@@ -691,9 +666,8 @@ class CreditsLedgerEntries(IncrementalOrbStream):
 
 # Source
 class SourceOrb(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Makes a request to the /ping endpoint, which validates that the authentication credentials are appropriate.
+    def check_connection(self, logger, config) -> tuple[bool, any]:
+        """Makes a request to the /ping endpoint, which validates that the authentication credentials are appropriate.
         API Docs: https://docs.withorb.com/reference/ping
         """
         auth_header = TokenAuthenticator(token=config["api_key"]).get_auth_header()
@@ -706,14 +680,14 @@ class SourceOrb(AbstractSource):
             return False, e
 
     def input_keys_mutually_exclusive(
-        self, string_event_properties_keys: Optional[List[str]] = None, numeric_event_properties_keys: Optional[List[str]] = None
+        self, string_event_properties_keys: Optional[list[str]] = None, numeric_event_properties_keys: Optional[list[str]] = None,
     ):
         if string_event_properties_keys is None or numeric_event_properties_keys is None:
             return True
         else:
             return len(set(string_event_properties_keys) & set(numeric_event_properties_keys)) == 0
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         authenticator = TokenAuthenticator(token=config["api_key"])
         lookback_window = config.get("lookback_window_days")
         string_event_properties_keys = config.get("string_event_properties_keys")

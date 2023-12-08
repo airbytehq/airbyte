@@ -5,10 +5,12 @@
 
 import json
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 from urllib.parse import parse_qs, urlparse
 
 import requests
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -37,7 +39,8 @@ class PrimetricStream(HttpStream, ABC):
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """This method is called if we run into the rate limit.
-        Rate Limits Docs: https://developer.primetric.com/#rate-limits"""
+        Rate Limits Docs: https://developer.primetric.com/#rate-limits
+        """
         return 31
 
 
@@ -180,7 +183,7 @@ class SourcePrimetric(AbstractSource):
 
         return response
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, any]:
         try:
             if not config["client_secret"] or not config["client_id"]:
                 raise Exception("Empty config values! Check your configuration file!")
@@ -192,7 +195,7 @@ class SourcePrimetric(AbstractSource):
         except Exception as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         response = self.get_connection_response(config)
         response.raise_for_status()
 

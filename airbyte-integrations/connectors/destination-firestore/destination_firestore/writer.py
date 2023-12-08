@@ -3,7 +3,7 @@
 #
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from google.cloud import firestore
 from google.oauth2 import service_account
@@ -28,7 +28,7 @@ class FirestoreWriter:
     def check(self) -> bool:
         return bool(list(self.client.collections()))
 
-    def write(self, stream: str, data: Dict[str, Any]) -> None:
+    def write(self, stream: str, data: dict[str, Any]) -> None:
         self.client.collection(stream).add(data)
 
     def purge(self, stream: str) -> None:

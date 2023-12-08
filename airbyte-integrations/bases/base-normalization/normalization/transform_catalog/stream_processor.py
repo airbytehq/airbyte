@@ -6,10 +6,11 @@
 import os
 import re
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
+
+from jinja2 import Template
 
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode  # type: ignore
-from jinja2 import Template
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog import dbt_macro
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer, transform_json_naming
@@ -41,8 +42,7 @@ MAXIMUM_COLUMNS_TO_USE_EPHEMERAL = 450
 
 
 class PartitionScheme(Enum):
-    """
-    When possible, normalization will try to output partitioned/indexed/sorted tables (depending on the destination support)
+    """When possible, normalization will try to output partitioned/indexed/sorted tables (depending on the destination support)
     This enum specifies which column to use when doing so (which affects how fast the table can be read using that column as predicate)
     """
 
@@ -53,8 +53,7 @@ class PartitionScheme(Enum):
 
 
 class TableMaterializationType(Enum):
-    """
-    Defines the folders and dbt materialization mode of models (as configured in dbt_project.yml file)
+    """Defines the folders and dbt materialization mode of models (as configured in dbt_project.yml file)
     """
 
     CTE = "airbyte_ctes"
@@ -63,9 +62,8 @@ class TableMaterializationType(Enum):
     INCREMENTAL = "airbyte_incremental"
 
 
-class StreamProcessor(object):
-    """
-    Takes as input an Airbyte Stream as described in the (configured) Airbyte Catalog's Json Schema.
+class StreamProcessor:
+    """Takes as input an Airbyte Stream as described in the (configured) Airbyte Catalog's Json Schema.
     Associated input raw data is expected to be stored in a staging area table.
 
     This processor generates SQL models to transform such a stream into a final table in the destination schema.
@@ -93,15 +91,14 @@ class StreamProcessor(object):
         schema: str,
         source_sync_mode: SyncMode,
         destination_sync_mode: DestinationSyncMode,
-        cursor_field: List[str],
-        primary_key: List[List[str]],
+        cursor_field: list[str],
+        primary_key: list[list[str]],
         json_column_name: str,
-        properties: Dict,
+        properties: dict,
         tables_registry: TableNameRegistry,
         from_table: Union[str, dbt_macro.Macro],
     ):
-        """
-        See StreamProcessor.create()
+        """See StreamProcessor.create()
         """
         self.stream_name: str = stream_name
         self.destination_type: DestinationType = destination_type
@@ -109,17 +106,17 @@ class StreamProcessor(object):
         self.schema: str = schema
         self.source_sync_mode: SyncMode = source_sync_mode
         self.destination_sync_mode: DestinationSyncMode = destination_sync_mode
-        self.cursor_field: List[str] = cursor_field
-        self.primary_key: List[List[str]] = primary_key
+        self.cursor_field: list[str] = cursor_field
+        self.primary_key: list[list[str]] = primary_key
         self.json_column_name: str = json_column_name
-        self.properties: Dict = properties
+        self.properties: dict = properties
         self.tables_registry: TableNameRegistry = tables_registry
         self.from_table: Union[str, dbt_macro.Macro] = from_table
 
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
-        self.json_path: List[str] = [stream_name]
+        self.json_path: list[str] = [stream_name]
         self.final_table_name: str = ""
-        self.sql_outputs: Dict[str, str] = {}
+        self.sql_outputs: dict[str, str] = {}
         self.parent: Optional["StreamProcessor"] = None
         self.is_nested_array: bool = False
         self.default_schema: str = default_schema
@@ -127,14 +124,13 @@ class StreamProcessor(object):
         self.airbyte_emitted_at = "_airbyte_emitted_at"
         self.airbyte_normalized_at = "_airbyte_normalized_at"
         self.airbyte_unique_key = "_airbyte_unique_key"
-        self.models_to_source: Dict[str, str] = {}
+        self.models_to_source: dict[str, str] = {}
 
     @staticmethod
     def create_from_parent(
-        parent, child_name: str, json_column_name: str, properties: Dict, is_nested_array: bool, from_table: str
+        parent, child_name: str, json_column_name: str, properties: dict, is_nested_array: bool, from_table: str,
     ) -> "StreamProcessor":
-        """
-        @param parent is the Stream Processor that originally created this instance to handle a nested column from that parent table.
+        """@param parent is the Stream Processor that originally created this instance to handle a nested column from that parent table.
 
         @param json_column_name is the name of the column in the parent data table containing the json column to transform
         @param properties is the json schema description of this nested stream
@@ -179,15 +175,14 @@ class StreamProcessor(object):
         schema: str,
         source_sync_mode: SyncMode,
         destination_sync_mode: DestinationSyncMode,
-        cursor_field: List[str],
-        primary_key: List[List[str]],
+        cursor_field: list[str],
+        primary_key: list[list[str]],
         json_column_name: str,
-        properties: Dict,
+        properties: dict,
         tables_registry: TableNameRegistry,
         from_table: Union[str, dbt_macro.Macro],
     ) -> "StreamProcessor":
-        """
-        @param stream_name of the stream being processed
+        """@param stream_name of the stream being processed
 
         @param destination_type is the destination type of warehouse
         @param raw_schema is the name of the staging intermediate schema where to create internal tables/views
@@ -234,9 +229,8 @@ class StreamProcessor(object):
             cur = cur.parent
         return cur.from_table.source_name + "." + cur.from_table.table_name
 
-    def process(self) -> List["StreamProcessor"]:
-        """
-        See description of StreamProcessor class.
+    def process(self) -> list["StreamProcessor"]:
+        """See description of StreamProcessor class.
         @return List of StreamProcessor to handle recursively nested columns from this stream
         """
         # Check properties
@@ -314,9 +308,8 @@ class StreamProcessor(object):
             )
         return self.find_children_streams(from_table, column_names)
 
-    def extract_column_names(self) -> Dict[str, Tuple[str, str]]:
-        """
-        Generate a mapping of JSON properties to normalized SQL Column names, handling collisions and avoid duplicate names
+    def extract_column_names(self) -> dict[str, tuple[str, str]]:
+        """Generate a mapping of JSON properties to normalized SQL Column names, handling collisions and avoid duplicate names
 
         The mapped value to a field property is a tuple where:
          - the first value is the normalized "raw" column name
@@ -344,13 +337,12 @@ class StreamProcessor(object):
             result[field] = (field_name, jinja_name)
         return result
 
-    def find_children_streams(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> List["StreamProcessor"]:
-        """
-        For each complex type properties, generate a new child StreamProcessor that produce separate child pipelines.
+    def find_children_streams(self, from_table: str, column_names: dict[str, tuple[str, str]]) -> list["StreamProcessor"]:
+        """For each complex type properties, generate a new child StreamProcessor that produce separate child pipelines.
         The current stream/table is used as the parent from which to extract data from.
         """
         properties = self.properties
-        children: List[StreamProcessor] = []
+        children: list[StreamProcessor] = []
         for field in properties.keys():
             children_properties = None
             is_nested_array = False
@@ -383,7 +375,7 @@ class StreamProcessor(object):
                     children.append(stream_processor)
         return children
 
-    def generate_json_parsing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
+    def generate_json_parsing_model(self, from_table: str, column_names: dict[str, tuple[str, str]]) -> Any:
         if self.destination_type == DestinationType.ORACLE:
             table_alias = ""
         else:
@@ -408,7 +400,7 @@ from {{ from_table }} {{ table_alias }}
 {{ unnesting_from }}
 where 1 = 1
 {{ unnesting_where }}
-"""
+""",
         )
         sql = template.render(
             col_ab_id=self.get_ab_id(),
@@ -439,14 +431,14 @@ where 1 = 1
     def get_unique_key(self, in_jinja: bool = False):
         return self.name_transformer.normalize_column_name(self.airbyte_unique_key, in_jinja, False)
 
-    def extract_json_columns(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+    def extract_json_columns(self, column_names: dict[str, tuple[str, str]]) -> list[str]:
         return [
             self.extract_json_column(field, self.json_column_name, self.properties[field], column_names[field][0], "table_alias")
             for field in column_names
         ]
 
     @staticmethod
-    def extract_json_column(property_name: str, json_column_name: str, definition: Dict, column_name: str, table_alias: str) -> str:
+    def extract_json_column(property_name: str, json_column_name: str, definition: dict, column_name: str, table_alias: str) -> str:
         json_path = [property_name]
         # In some cases, some destination aren't able to parse the JSON blob using the original property name
         # we make their life easier by using a pre-populated and sanitized column name instead...
@@ -468,7 +460,7 @@ where 1 = 1
 
         return f"{json_extract} as {column_name}"
 
-    def generate_column_typing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
+    def generate_column_typing_model(self, from_table: str, column_names: dict[str, tuple[str, str]]) -> Any:
         template = Template(
             """
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
@@ -486,7 +478,7 @@ select
 from {{ from_table }}
 {{ sql_table_comment }}
 where 1 = 1
-    """
+    """,
         )
         sql = template.render(
             col_ab_id=self.get_ab_id(),
@@ -499,7 +491,7 @@ where 1 = 1
         )
         return sql
 
-    def cast_property_types(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+    def cast_property_types(self, column_names: dict[str, tuple[str, str]]) -> list[str]:
         return [self.cast_property_type(field, column_names[field][0], column_names[field][1]) for field in column_names]
 
     def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> Any:  # noqa: C901
@@ -607,7 +599,7 @@ where 1 = 1
         case when {{column_name}} = '' then NULL
         else cast({{column_name}} as date)
         end as {{column_name}}
-        """
+        """,
         )
         return template.render(column_name=column_name)
 
@@ -619,14 +611,13 @@ where 1 = 1
         case when {{column_name}} regexp '{{regexp}}' THEN STR_TO_DATE(SUBSTR({{column_name}}, 1, 19), '%Y-%m-%dT%H:%i:%S')
         else cast(if({{column_name}} = '', NULL, {{column_name}}) as datetime)
         end as {{column_name}}
-        """
+        """,
         )
         return template.render(column_name=column_name, regexp=regexp)
 
     @staticmethod
     def generate_snowflake_timestamp_tz_statement(column_name: str) -> Any:
-        """
-        Generates snowflake DB specific timestamp case when statement
+        """Generates snowflake DB specific timestamp case when statement
         """
         formats = [
             {"regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{4}", "format": "YYYY-MM-DDTHH24:MI:SSTZHTZM"},
@@ -646,14 +637,13 @@ where 1 = 1
         when {{column_name}} = '' then NULL
     else to_timestamp_tz({{column_name}})
     end as {{column_name}}
-    """
+    """,
         )
         return template.render(formats=formats, column_name=column_name)
 
     @staticmethod
     def generate_snowflake_timestamp_statement(column_name: str) -> Any:
-        """
-        Generates snowflake DB specific timestamp case when statement
+        """Generates snowflake DB specific timestamp case when statement
         """
         formats = [
             {"regex": r"\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}", "format": "YYYY-MM-DDTHH24:MI:SS"},
@@ -668,11 +658,11 @@ where 1 = 1
         when {{column_name}} = '' then NULL
     else to_timestamp({{column_name}})
     end as {{column_name}}
-    """
+    """,
         )
         return template.render(formats=formats, column_name=column_name)
 
-    def generate_id_hashing_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
+    def generate_id_hashing_model(self, from_table: str, column_names: dict[str, tuple[str, str]]) -> Any:
         template = Template(
             """
 -- SQL model to build a hash column based on the values of this record
@@ -690,7 +680,7 @@ select
 from {{ from_table }} tmp
 {{ sql_table_comment }}
 where 1 = 1
-    """
+    """,
         )
 
         sql = template.render(
@@ -702,16 +692,15 @@ where 1 = 1
         )
         return sql
 
-    def safe_cast_to_strings(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+    def safe_cast_to_strings(self, column_names: dict[str, tuple[str, str]]) -> list[str]:
         return [
             StreamProcessor.safe_cast_to_string(self.properties[field], column_names[field][1], self.destination_type)
             for field in column_names
         ]
 
     @staticmethod
-    def safe_cast_to_string(definition: Dict, column_name: str, destination_type: DestinationType) -> str:
-        """
-        Note that the result from this static method should always be used within a
+    def safe_cast_to_string(definition: dict, column_name: str, destination_type: DestinationType) -> str:
+        """Note that the result from this static method should always be used within a
         jinja context (for example, from jinja macro surrogate_key call)
 
         The jinja_remove function is necessary because of Oracle database, some columns
@@ -719,7 +708,6 @@ where 1 = 1
         operation. Because the quote is injected inside a jinja macro we need to remove
         the curly brackets.
         """
-
         if "type" not in definition:
             col = column_name
         elif is_boolean(definition["type"], definition):
@@ -737,9 +725,8 @@ where 1 = 1
 
         return col
 
-    def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
-        """
-        This model pulls data from the ID-hashing model and appends it to a log of record updates. When inserting an update to a record, it also
+    def generate_scd_type_2_model(self, from_table: str, column_names: dict[str, tuple[str, str]]) -> Any:
+        """This model pulls data from the ID-hashing model and appends it to a log of record updates. When inserting an update to a record, it also
         checks whether that record had a previously-existing row in the SCD model; if it does, then that previous row's end_at column is set to
         the new update's start_at.
 
@@ -871,7 +858,7 @@ input_data_with_active_row_num as (
             {{ col_emitted_at }} desc
       ) as _airbyte_active_row_num
     from input_data
-),"""
+),""",
             ).render(jinja_variables)
             jinja_variables["clickhouse_active_row_sql"] = clickhouse_active_row_sql
             scd_columns_sql = Template(
@@ -882,7 +869,7 @@ input_data_with_active_row_num as (
         order by
             {{ cursor_field }} {{ order_null }},{{ cdc_updated_at_order }}
             {{ col_emitted_at }} desc
-      {{ lag_end }}) as {{ airbyte_end_at }}"""
+      {{ lag_end }}) as {{ airbyte_end_at }}""",
             ).render(jinja_variables)
             jinja_variables["scd_columns_sql"] = scd_columns_sql
         else:
@@ -899,7 +886,7 @@ input_data_with_active_row_num as (
         order by
             {{ cursor_field }} {{ order_null }},{{ cdc_updated_at_order }}
             {{ col_emitted_at }} desc
-      ) = 1{{ cdc_active_row }} then 1 else 0 end as {{ active_row }}"""
+      ) = 1{{ cdc_active_row }} then 1 else 0 end as {{ active_row }}""",
             ).render(jinja_variables)
             jinja_variables["scd_columns_sql"] = scd_columns_sql
         sql = Template(
@@ -1011,11 +998,11 @@ select
     {{ '{{ current_timestamp() }}' }} as {{ col_normalized_at }},
     {{ hash_id }}
 from dedup_data where {{ airbyte_row_num }} = 1
-"""
+""",
         ).render(jinja_variables)
         return sql
 
-    def get_cursor_field_property_name(self, column_names: Dict[str, Tuple[str, str]]) -> str:
+    def get_cursor_field_property_name(self, column_names: dict[str, tuple[str, str]]) -> str:
         if not self.cursor_field:
             if "_ab_cdc_updated_at" in column_names.keys():
                 return "_ab_cdc_updated_at"
@@ -1030,7 +1017,7 @@ from dedup_data where {{ airbyte_row_num }} = 1
         else:
             raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
 
-    def get_cursor_field(self, column_names: Dict[str, Tuple[str, str]], in_jinja: bool = False) -> str:
+    def get_cursor_field(self, column_names: dict[str, tuple[str, str]], in_jinja: bool = False) -> str:
         if not self.cursor_field:
             cursor = self.name_transformer.normalize_column_name(self.get_cursor_field_property_name(column_names), in_jinja)
         elif len(self.cursor_field) == 1:
@@ -1043,7 +1030,7 @@ from dedup_data where {{ airbyte_row_num }} = 1
             raise ValueError(f"Unsupported nested cursor field {'.'.join(self.cursor_field)} for stream {self.stream_name}")
         return cursor
 
-    def list_primary_keys(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+    def list_primary_keys(self, column_names: dict[str, tuple[str, str]]) -> list[str]:
         primary_keys = []
         for key_path in self.primary_key:
             if len(key_path) == 1:
@@ -1052,13 +1039,13 @@ from dedup_data where {{ airbyte_row_num }} = 1
                 raise ValueError(f"Unsupported nested path {'.'.join(key_path)} for stream {self.stream_name}")
         return primary_keys
 
-    def get_primary_key_partition(self, column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+    def get_primary_key_partition(self, column_names: dict[str, tuple[str, str]]) -> list[str]:
         if self.primary_key and len(self.primary_key) > 0:
             return [self.get_primary_key_from_path(column_names, path) for path in self.primary_key]
         else:
             raise ValueError(f"No primary key specified for stream {self.stream_name}")
 
-    def get_primary_key_from_path(self, column_names: Dict[str, Tuple[str, str]], path: List[str]) -> str:
+    def get_primary_key_from_path(self, column_names: dict[str, tuple[str, str]], path: list[str]) -> str:
         if path and len(path) == 1:
             field = path[0]
             if not is_airbyte_column(field):
@@ -1080,9 +1067,8 @@ from dedup_data where {{ airbyte_row_num }} = 1
             else:
                 raise ValueError(f"No path specified for stream {self.stream_name}")
 
-    def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]], unique_key: str = "") -> Any:
-        """
-        This is the table that the user actually wants. In addition to the columns that the source outputs, it has some additional metadata columns;
+    def generate_final_model(self, from_table: str, column_names: dict[str, tuple[str, str]], unique_key: str = "") -> Any:
+        """This is the table that the user actually wants. In addition to the columns that the source outputs, it has some additional metadata columns;
         see the basic normalization docs for an explanation: https://docs.airbyte.com/understanding-airbyte/basic-normalization#normalization-metadata-columns
         """
         template = Template(
@@ -1106,7 +1092,7 @@ select
 from {{ from_table }}
 {{ sql_table_comment }}
 where 1 = 1
-    """
+    """,
         )
         sql = template.render(
             col_ab_id=self.get_ab_id(),
@@ -1130,7 +1116,7 @@ where 1 = 1
             """
 {{ sql_query }}
 {{ incremental_clause }}
-    """
+    """,
         )
         sql = template.render(sql_query=sql_query, incremental_clause=self.get_incremental_clause("this"))
         return sql
@@ -1142,7 +1128,7 @@ where 1 = 1
         return "{{ incremental_clause(" + column + ", " + tablename + ") }}"
 
     @staticmethod
-    def list_fields(column_names: Dict[str, Tuple[str, str]]) -> List[str]:
+    def list_fields(column_names: dict[str, tuple[str, str]]) -> list[str]:
         return [column_names[field][0] for field in column_names]
 
     def add_to_outputs(
@@ -1256,7 +1242,7 @@ where 1 = 1
                     -- We have to have a non-empty query, so just do a noop delete
                     {{ noop_delete_statement }}
                     {{ '{% endif %}' }}
-                    """
+                    """,
                 ).render(
                     delete_statement=delete_statement,
                     noop_delete_statement=noop_delete_statement,
@@ -1310,8 +1296,8 @@ where 1 = 1
                             do adapter.drop_relation(scd_table_relation)
                     {{ '%}' }}
                     {{ '{% endif %}' }}
-                        """
-                    ).render(scd_table_name=scd_table_name)
+                        """,
+                    ).render(scd_table_name=scd_table_name),
                 ]
                 config["post_hook"] = "[" + ",".join(map(wrap_in_quotes, hooks)) + "]"
         template = Template(
@@ -1323,7 +1309,7 @@ where 1 = 1
     tags = [ {{ tags }} ]
 ) {{ '}}' }}
 {{ sql }}
-    """
+    """,
         )
 
         self.sql_outputs[output] = template.render(config=config, sql=sql, tags=self.get_model_tags(is_intermediate))
@@ -1346,9 +1332,8 @@ where 1 = 1
             else:
                 return TableMaterializationType.TABLE
 
-    def get_model_partition_config(self, partition_by: PartitionScheme, unique_key: str) -> Dict:
-        """
-        Defines partition, clustering and unique key parameters for each destination.
+    def get_model_partition_config(self, partition_by: PartitionScheme, unique_key: str) -> dict:
+        """Defines partition, clustering and unique key parameters for each destination.
         The goal of these are to make read more performant.
 
         In general, we need to do lookups on the last emitted_at column to know if a record is freshly produced and need to be
@@ -1367,7 +1352,7 @@ where 1 = 1
                 config["cluster_by"] = f'"{self.airbyte_emitted_at}"'
             if partition_by == PartitionScheme.ACTIVE_ROW:
                 config["partition_by"] = (
-                    '{"field": "_airbyte_active_row", "data_type": "int64", ' '"range": {"start": 0, "end": 1, "interval": 1}}'
+                    '{"field": "_airbyte_active_row", "data_type": "int64", "range": {"start": 0, "end": 1, "interval": 1}}'
                 )
             elif partition_by == PartitionScheme.NOTHING:
                 pass
@@ -1436,8 +1421,7 @@ where 1 = 1
         return "/".join(self.json_path)
 
     def normalized_stream_name(self) -> str:
-        """
-        This is the normalized name of this stream to be used as a table (different as referring it as a column).
+        """This is the normalized name of this stream to be used as a table (different as referring it as a column).
         Note that it might not be the actual table name in case of collisions with other streams (see actual_table_name)...
         """
         return self.name_transformer.normalize_table_name(self.stream_name)
@@ -1492,9 +1476,8 @@ where 1 = 1
 # Static Functions
 
 
-def find_properties_object(path: List[str], field: str, properties) -> Dict[str, Dict]:
-    """
-    This function is trying to look for a nested "properties" node under the current JSON node to
+def find_properties_object(path: list[str], field: str, properties) -> dict[str, dict]:
+    """This function is trying to look for a nested "properties" node under the current JSON node to
     identify all nested objects.
 
     @param path JSON path traversed so far to arrive to this node
@@ -1504,7 +1487,7 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
     result = {}
     current_path = path + [field]
     current = "_".join(current_path)
-    if isinstance(properties, str) or isinstance(properties, int):
+    if isinstance(properties, int | str):
         return {}
     else:
         if "items" in properties:

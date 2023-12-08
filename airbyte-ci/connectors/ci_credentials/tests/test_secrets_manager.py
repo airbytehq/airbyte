@@ -13,7 +13,7 @@ from ci_credentials import SecretsManager
 from ci_credentials.models import RemoteSecret, Secret
 
 
-@pytest.fixture
+@pytest.fixture()
 def matchers():
     return {
         "secrets": re.compile("https://secretmanager.googleapis.com/v1/projects/.+/secrets"),
@@ -67,7 +67,7 @@ def test_read(matchers, connector_name, gsm_secrets, expected_secrets):
                 },
             }
             for i, k in enumerate(gsm_secrets)
-        ]
+        ],
     }
 
     versions_response_list = [
@@ -77,9 +77,9 @@ def test_read(matchers, connector_name, gsm_secrets, expected_secrets):
                     {
                         "name": f"projects/<fake_id>/secrets/SECRET_{connector_name.upper()}_{i}_CREDS/versions/1",
                         "state": "ENABLED",
-                    }
-                ]
-            }
+                    },
+                ],
+            },
         }
         for i in range(len(gsm_secrets))
     ]
@@ -142,7 +142,7 @@ def test_write(tmp_path, connector_name, secrets, expected_files):
         has = False
         for secret in secrets:
             if target_file.name == secret.configuration_file_name:
-                with open(target_file, "r") as f:
+                with open(target_file) as f:
                     assert f.read() == secret.value
                 has = True
                 break

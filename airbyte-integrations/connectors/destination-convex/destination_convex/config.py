@@ -4,10 +4,7 @@
 
 from typing import TypedDict
 
-ConvexConfig = TypedDict(
-    "ConvexConfig",
-    {
-        "deployment_url": str,
-        "access_key": str,
-    },
-)
+
+class ConvexConfig(TypedDict):
+    deployment_url: str
+    access_key: str

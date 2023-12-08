@@ -112,8 +112,7 @@ DIMENSIONS = typing.Literal[
 
 
 class Spec(pydantic.BaseModel):
-    """
-    Adjust reporting API connector.
+    """Adjust reporting API connector.
     """
 
     api_token: str = pydantic.Field(
@@ -131,7 +130,7 @@ class Spec(pydantic.BaseModel):
         order=1,
     )
 
-    metrics: typing.Set[BASE_METRICS] = pydantic.Field(
+    metrics: set[BASE_METRICS] = pydantic.Field(
         ...,
         title="Metrics to ingest",
         description="Select at least one metric to query.",
@@ -139,14 +138,14 @@ class Spec(pydantic.BaseModel):
         order=2,
     )
 
-    additional_metrics: typing.List[str] = pydantic.Field(
+    additional_metrics: list[str] = pydantic.Field(
         None,
         title="Additional metrics for ingestion",
         description="Metrics names that are not pre-defined, such as cohort metrics or app specific metrics.",
         order=3,
     )
 
-    dimensions: typing.Set[DIMENSIONS] = pydantic.Field(
+    dimensions: set[DIMENSIONS] = pydantic.Field(
         ...,
         description=(
             "Dimensions allow a user to break down metrics into "
@@ -169,7 +168,7 @@ class Spec(pydantic.BaseModel):
         title = "Adjust Spec"
 
         @staticmethod
-        def schema_extra(schema: typing.Dict[str, typing.Any]):
+        def schema_extra(schema: dict[str, typing.Any]):
             spec = {"$schema": "http://json-schema.org/draft-07/schema#"}
             for key in list(schema.keys()):
                 spec[key] = schema.pop(key)
@@ -548,7 +547,7 @@ class Report(pydantic.BaseModel):
 
     campaign: typing.Optional[str] = pydantic.Field(
         None,
-        description=("Tracker sub-level 1. String value usually " "contains campaign name and id."),
+        description=("Tracker sub-level 1. String value usually contains campaign name and id."),
     )
 
     campaign_network: typing.Optional[str] = pydantic.Field(
@@ -563,7 +562,7 @@ class Report(pydantic.BaseModel):
 
     adgroup: typing.Optional[str] = pydantic.Field(
         None,
-        description=("Tracker sub-level 2. String value usually " "contains adgroup name and id."),
+        description=("Tracker sub-level 2. String value usually contains adgroup name and id."),
     )
 
     adgroup_network: typing.Optional[str] = pydantic.Field(
@@ -578,7 +577,7 @@ class Report(pydantic.BaseModel):
 
     source_network: typing.Optional[str] = pydantic.Field(
         None,
-        description=("Optional value dependent on the network. " "Usually the same as adgroup_network."),
+        description=("Optional value dependent on the network. Usually the same as adgroup_network."),
     )
 
     source_id_network: typing.Optional[str] = pydantic.Field(
@@ -588,7 +587,7 @@ class Report(pydantic.BaseModel):
 
     creative: typing.Optional[str] = pydantic.Field(
         None,
-        description=("Tracker sub-level 3. String value usually " "contains creative name and id."),
+        description=("Tracker sub-level 3. String value usually contains creative name and id."),
     )
 
     creative_network: typing.Optional[str] = pydantic.Field(
@@ -628,5 +627,5 @@ class Report(pydantic.BaseModel):
 
     class Config:
         @staticmethod
-        def schema_extra(schema: typing.Dict[str, typing.Any]):
+        def schema_extra(schema: dict[str, typing.Any]):
             schema["$schema"] = "http://json-schema.org/draft-07/schema#"

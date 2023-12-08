@@ -7,16 +7,16 @@ import dataclasses
 import datetime
 import logging
 import time
+from collections.abc import Mapping
 from datetime import timedelta
 from threading import RLock
-from typing import TYPE_CHECKING, Any, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from urllib import parse
 
 import requests
 import requests_cache
-from pyrate_limiter import InMemoryBucket, Limiter
+from pyrate_limiter import InMemoryBucket, Limiter, RateItem, TimeClock
 from pyrate_limiter import Rate as PyRateRate
-from pyrate_limiter import RateItem, TimeClock
 from pyrate_limiter.exceptions import BucketFullException
 
 # prevents mypy from complaining about missing session attributes in LimiterMixin
@@ -89,9 +89,7 @@ class RequestMatcher(abc.ABC):
 
     @abc.abstractmethod
     def __call__(self, request: Any) -> bool:
-        """
-
-        :param request:
+        """:param request:
         :return: True if matches the provided request object, False - otherwise
         """
 
@@ -129,9 +127,7 @@ class HttpRequestMatcher(RequestMatcher):
         return pattern.items() <= obj.items()
 
     def __call__(self, request: Any) -> bool:
-        """
-
-        :param request:
+        """:param request:
         :return: True if matches the provided request object, False - otherwise
         """
         if isinstance(request, requests.Request):
@@ -169,19 +165,16 @@ class BaseCallRatePolicy(AbstractCallRatePolicy, abc.ABC):
         :param request:
         :return: True if policy should apply to this request, False - otherwise
         """
-
         if not self._matchers:
             return True
         return any(matcher(request) for matcher in self._matchers)
 
 
 class UnlimitedCallRatePolicy(BaseCallRatePolicy):
-    """
-    This policy is for explicit unlimited call rates.
+    """This policy is for explicit unlimited call rates.
     It can be used when we want to match a specific group of requests and don't apply any limits.
 
     Example:
-
     APICallBudget(
         [
             UnlimitedCallRatePolicy(
@@ -215,7 +208,6 @@ class FixedWindowCallRatePolicy(BaseCallRatePolicy):
         :param call_limit:
         :param matchers:
         """
-
         self._next_reset_ts = next_reset_ts
         self._offset = period
         self._call_limit = call_limit
@@ -235,7 +227,7 @@ class FixedWindowCallRatePolicy(BaseCallRatePolicy):
             if self._calls_num + weight > self._call_limit:
                 reset_in = self._next_reset_ts - datetime.datetime.now()
                 error_message = (
-                    f"reached maximum number of allowed calls {self._call_limit} " f"per {self._offset} interval, next reset in {reset_in}."
+                    f"reached maximum number of allowed calls {self._call_limit} per {self._offset} interval, next reset in {reset_in}."
                 )
                 raise CallRateLimitHit(
                     error=error_message,
@@ -260,7 +252,7 @@ class FixedWindowCallRatePolicy(BaseCallRatePolicy):
 
             if available_calls is not None and current_available_calls > available_calls:
                 logger.debug(
-                    "got rate limit update from api, adjusting available calls from %s to %s", current_available_calls, available_calls
+                    "got rate limit update from api, adjusting available calls from %s to %s", current_available_calls, available_calls,
                 )
                 self._calls_num = self._call_limit - available_calls
 
@@ -277,8 +269,7 @@ class FixedWindowCallRatePolicy(BaseCallRatePolicy):
 
 
 class MovingWindowCallRatePolicy(BaseCallRatePolicy):
-    """
-    Policy to control requests rate implemented on top of PyRateLimiter lib.
+    """Policy to control requests rate implemented on top of PyRateLimiter lib.
     The main difference between this policy and FixedWindowCallRatePolicy is that the rate-limiting window
     is moving along requests that we made, and there is no moment when we reset an available number of calls.
     This strategy requires saving of timestamps of all requests within a window.
@@ -382,7 +373,6 @@ class APIBudget(AbstractAPIBudget):
         :param maximum_attempts_to_acquire: number of attempts before throwing hit ratelimit exception, we put some big number here
          to avoid situations when many threads compete with each other for a few lots over a significant amount of time
         """
-
         self._policies = policies
         self._maximum_attempts_to_acquire = maximum_attempts_to_acquire
 
@@ -402,7 +392,6 @@ class APIBudget(AbstractAPIBudget):
         :param timeout: if provided will limit maximum time in block, otherwise will wait until credit is available
         :raises: CallRateLimitHit - when no calls left and if timeout was set the waiting time exceed the timeout
         """
-
         policy = self.get_matching_policy(request)
         if policy:
             self._do_acquire(request=request, policy=policy, block=block, timeout=timeout)
@@ -415,7 +404,6 @@ class APIBudget(AbstractAPIBudget):
         :param request: the initial request that triggered this response
         :param response: response from the API
         """
-        pass
 
     def _do_acquire(self, request: Any, policy: AbstractCallRatePolicy, block: bool, timeout: Optional[float]) -> None:
         """Internal method to try to acquire a call credit

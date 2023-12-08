@@ -4,13 +4,15 @@
 
 
 from abc import ABC
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import date, datetime, timedelta
 from json import JSONDecodeError
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
 import requests
-from airbyte_cdk.sources.streams.http import HttpStream
 from requests_oauthlib import OAuth1
+
+from airbyte_cdk.sources.streams.http import HttpStream
 from source_netsuite.constraints import (
     CUSTOM_INCREMENTAL_CURSOR,
     INCREMENTAL_CURSOR,
@@ -175,14 +177,14 @@ class NetsuiteStream(HttpStream, ABC):
                 known_error = NETSUITE_ERRORS_MAPPING.get(response.status_code)
 
                 if error_code in known_error.keys():
-                    setattr(self, "raise_on_http_errors", False)
+                    self.raise_on_http_errors = False
 
                     # handle data-format error
                     if "INVALID_PARAMETER" in error_code and "failed with date format" in detail_message:
-                        self.logger.warn(f"Stream `{self.name}`: cannot read using date format `{self.default_datetime_format}")
+                        self.logger.warning(f"Stream `{self.name}`: cannot read using date format `{self.default_datetime_format}")
                         self.index_datetime_format += 1
                         if self.index_datetime_format < len(NETSUITE_INPUT_DATE_FORMATS):
-                            self.logger.warn(f"Stream `{self.name}`: retry using next date format `{self.default_datetime_format}")
+                            self.logger.warning(f"Stream `{self.name}`: retry using next date format `{self.default_datetime_format}")
                             raise DateFormatExeption
                         else:
                             self.logger.error(f"DATE FORMAT exception. Cannot read using known formats {NETSUITE_INPUT_DATE_FORMATS}")
@@ -195,7 +197,7 @@ class NetsuiteStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def read_records(
-        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
+        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         try:
             yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
@@ -222,8 +224,7 @@ class IncrementalNetsuiteStream(NetsuiteStream):
             yield from records
 
     def get_state_value(self, stream_state: Mapping[str, Any] = None) -> str:
-        """
-        Sometimes the object has no `cursor_field` value assigned, and the ` "" ` emmited as state value,
+        """Sometimes the object has no `cursor_field` value assigned, and the ` "" ` emmited as state value,
         this causes conflicts with datetime lib to parse the `time component`,
         to avoid the errors we falling back to default start_date from input config.
         """
@@ -254,12 +255,12 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         return {self.cursor_field: max(latest_cursor, current_cursor)}
 
     def request_params(
-        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = {**(next_page_token or {})}
         if stream_slice:
             params.update(
-                **{"q": f'{self.cursor_field} AFTER "{stream_slice["start"]}" AND {self.cursor_field} BEFORE "{stream_slice["end"]}"'}
+                q=f'{self.cursor_field} AFTER "{stream_slice["start"]}" AND {self.cursor_field} BEFORE "{stream_slice["end"]}"',
             )
         return params
 

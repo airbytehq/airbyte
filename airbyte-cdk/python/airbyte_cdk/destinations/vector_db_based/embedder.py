@@ -4,7 +4,12 @@
 
 import os
 from abc import ABC, abstractmethod
-from typing import List, Optional, Union, cast
+from typing import Optional, Union, cast
+
+from langchain.embeddings.cohere import CohereEmbeddings
+from langchain.embeddings.fake import FakeEmbeddings
+from langchain.embeddings.localai import LocalAIEmbeddings
+from langchain.embeddings.openai import OpenAIEmbeddings
 
 from airbyte_cdk.destinations.vector_db_based.config import (
     AzureOpenAIEmbeddingConfigModel,
@@ -18,15 +23,10 @@ from airbyte_cdk.destinations.vector_db_based.config import (
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
 from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, format_exception
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
-from langchain.embeddings.cohere import CohereEmbeddings
-from langchain.embeddings.fake import FakeEmbeddings
-from langchain.embeddings.localai import LocalAIEmbeddings
-from langchain.embeddings.openai import OpenAIEmbeddings
 
 
 class Embedder(ABC):
-    """
-    Embedder is an abstract class that defines the interface for embedding text.
+    """Embedder is an abstract class that defines the interface for embedding text.
 
     The Indexer class uses the Embedder class to internally embed text - each indexer is responsible to pass the text of all documents to the embedder and store the resulting embeddings in the destination.
     The destination connector is responsible to create an embedder instance and pass it to the writer.
@@ -41,12 +41,10 @@ class Embedder(ABC):
         pass
 
     @abstractmethod
-    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
-        """
-        Embed the text of each chunk and return the resulting embedding vectors.
+    def embed_chunks(self, chunks: list[Chunk]) -> list[Optional[list[float]]]:
+        """Embed the text of each chunk and return the resulting embedding vectors.
         If a chunk cannot be embedded or is configured to not be embedded, return None for that chunk.
         """
-        pass
 
     @property
     @abstractmethod
@@ -72,9 +70,8 @@ class BaseOpenAIEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
-        """
-        Embed the text of each chunk and return the resulting embedding vectors.
+    def embed_chunks(self, chunks: list[Chunk]) -> list[Optional[list[float]]]:
+        """Embed the text of each chunk and return the resulting embedding vectors.
 
         As the OpenAI API will fail if more than the per-minute limit worth of tokens is sent at once, we split the request into batches and embed each batch separately.
         It's still possible to run into the rate limit between each embed call because the available token budget hasn't recovered between the calls,
@@ -83,7 +80,7 @@ class BaseOpenAIEmbedder(Embedder):
         # Each chunk can hold at most self.chunk_size tokens, so tokens-per-minute by maximum tokens per chunk is the number of chunks that can be embedded at once without exhausting the limit in a single request
         embedding_batch_size = OPEN_AI_TOKEN_LIMIT // self.chunk_size
         batches = create_chunks(chunks, batch_size=embedding_batch_size)
-        embeddings: List[Optional[List[float]]] = []
+        embeddings: list[Optional[list[float]]] = []
         for batch in batches:
             embeddings.extend(self.embeddings.embed_documents([chunk.page_content for chunk in batch]))
         return embeddings
@@ -133,8 +130,8 @@ class CohereEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
-        return cast(List[Optional[List[float]]], self.embeddings.embed_documents([chunk.page_content or "" for chunk in chunks]))
+    def embed_chunks(self, chunks: list[Chunk]) -> list[Optional[list[float]]]:
+        return cast(list[Optional[list[float]]], self.embeddings.embed_documents([chunk.page_content or "" for chunk in chunks]))
 
     @property
     def embedding_dimensions(self) -> int:
@@ -154,8 +151,8 @@ class FakeEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
-        return cast(List[Optional[List[float]]], self.embeddings.embed_documents([chunk.page_content or "" for chunk in chunks]))
+    def embed_chunks(self, chunks: list[Chunk]) -> list[Optional[list[float]]]:
+        return cast(list[Optional[list[float]]], self.embeddings.embed_documents([chunk.page_content or "" for chunk in chunks]))
 
     @property
     def embedding_dimensions(self) -> int:
@@ -191,8 +188,8 @@ class OpenAICompatibleEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
-        return cast(List[Optional[List[float]]], self.embeddings.embed_documents([chunk.page_content or "" for chunk in chunks]))
+    def embed_chunks(self, chunks: list[Chunk]) -> list[Optional[list[float]]]:
+        return cast(list[Optional[list[float]]], self.embeddings.embed_documents([chunk.page_content or "" for chunk in chunks]))
 
     @property
     def embedding_dimensions(self) -> int:
@@ -208,12 +205,11 @@ class FromFieldEmbedder(Embedder):
     def check(self) -> Optional[str]:
         return None
 
-    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
-        """
-        From each chunk, pull the embedding from the field specified in the config.
+    def embed_chunks(self, chunks: list[Chunk]) -> list[Optional[list[float]]]:
+        """From each chunk, pull the embedding from the field specified in the config.
         Check that the field exists, is a list of numbers and is the correct size. If not, raise an AirbyteTracedException explaining the problem.
         """
-        embeddings: List[Optional[List[float]]] = []
+        embeddings: list[Optional[list[float]]] = []
         for chunk in chunks:
             data = chunk.record.data
             if self.config.field_name not in data:

@@ -3,10 +3,12 @@
 #
 
 from base64 import b64encode
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, List, Mapping
+from typing import Any
 
 import requests
+
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 
@@ -23,7 +25,7 @@ class CustomAuthenticator(BasicHttpAuthenticator):
 
 
 class CustomExtractor(RecordExtractor):
-    def extract_records(self, response: requests.Response, **kwargs) -> List[Mapping[str, Any]]:
+    def extract_records(self, response: requests.Response, **kwargs) -> list[Mapping[str, Any]]:
         extracted = []
         for record in response.json():
             if "answered_questions" in record:

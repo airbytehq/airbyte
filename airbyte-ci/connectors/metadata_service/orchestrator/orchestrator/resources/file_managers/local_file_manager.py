@@ -6,19 +6,17 @@ import io
 import os
 import shutil
 import uuid
-from typing import BinaryIO, Optional, TextIO, Union
+from typing import BinaryIO, Optional, TextIO, TypeAlias, Union
 
 import dagster._check as check
 from dagster._core.storage.file_manager import LocalFileHandle, LocalFileManager, check_file_like_obj
 from dagster._utils import mkdir_p
-from typing_extensions import TypeAlias
 
 IOStream: TypeAlias = Union[TextIO, BinaryIO]
 
 
 class SimpleLocalFileManager(LocalFileManager):
-    """
-    HACK WARNING: This is a hack to get around the fact that the LocalFileManager in dagster does not
+    """HACK WARNING: This is a hack to get around the fact that the LocalFileManager in dagster does not
     expose the key parameter and does not handle nested directories.
 
     Much of this code is borrowed from the LocalFileManager in dagster and modified slightly.

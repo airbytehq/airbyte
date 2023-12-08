@@ -10,8 +10,7 @@ import requests
 
 
 def get_numeric_value_from_header(response: requests.Response, header: str, regex: Optional[Pattern]) -> Optional[float]:
-    """
-    Extract a header value from the response as a float
+    """Extract a header value from the response as a float
     :param response: response the extract header value from
     :param header: Header to extract
     :param regex: optional regex to apply on the header to obtain the value

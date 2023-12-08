@@ -15,7 +15,7 @@ def log_metadata_upload_info(metadata_upload_info: MetadataUploadInfo):
     for file in metadata_upload_info.uploaded_files:
         if file.uploaded:
             click.secho(
-                f"The {file.description} file for {metadata_upload_info.metadata_file_path} was uploaded to {file.blob_id}.", color="green"
+                f"The {file.description} file for {metadata_upload_info.metadata_file_path} was uploaded to {file.blob_id}.", color="green",
             )
 
 
@@ -53,7 +53,7 @@ def upload(metadata_file_path: pathlib.Path, docs_path: pathlib.Path, bucket_nam
         upload_info = upload_metadata_to_gcs(bucket_name, metadata_file_path, validator_opts)
         log_metadata_upload_info(upload_info)
     except (ValidationError, FileNotFoundError) as e:
-        click.secho(f"The metadata file could not be uploaded: {str(e)}", color="red")
+        click.secho(f"The metadata file could not be uploaded: {e!s}", color="red")
         exit(1)
     if upload_info.metadata_uploaded:
         exit(0)

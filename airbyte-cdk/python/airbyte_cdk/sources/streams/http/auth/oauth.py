@@ -4,7 +4,8 @@
 
 
 import logging
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Mapping, MutableMapping
+from typing import Any, Optional
 
 import backoff
 import pendulum
@@ -19,8 +20,7 @@ logger = logging.getLogger("airbyte")
 
 @deprecated(version="0.1.20", reason="Use airbyte_cdk.sources.streams.http.requests_native_auth.Oauth2Authenticator instead")
 class Oauth2Authenticator(HttpAuthenticator):
-    """
-    Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials.
+    """Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials.
     The generated access token is attached to each request via the Authorization header.
     """
 
@@ -30,7 +30,7 @@ class Oauth2Authenticator(HttpAuthenticator):
         client_id: str,
         client_secret: str,
         refresh_token: str,
-        scopes: List[str] = None,
+        scopes: list[str] = None,
         refresh_access_token_headers: Optional[Mapping[str, Any]] = None,
         refresh_access_token_authenticator: Optional[HttpAuthenticator] = None,
     ):
@@ -78,13 +78,12 @@ class Oauth2Authenticator(HttpAuthenticator):
         backoff.expo,
         DefaultBackoffException,
         on_backoff=lambda details: logger.info(
-            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...",
         ),
         max_time=300,
     )
-    def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        returns a tuple of (access_token, token_lifespan_in_seconds)
+    def refresh_access_token(self) -> tuple[str, int]:
+        """Returns a tuple of (access_token, token_lifespan_in_seconds)
         """
         try:
             response = requests.request(

@@ -3,8 +3,9 @@
 #
 
 from abc import abstractmethod
-from functools import cache, cached_property, lru_cache
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Type
+from collections.abc import Iterable, Mapping
+from functools import cache, cached_property
+from typing import Any, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
@@ -20,8 +21,7 @@ from airbyte_cdk.sources.streams import Stream
 
 
 class AbstractFileBasedStream(Stream):
-    """
-    A file-based stream in an Airbyte source.
+    """A file-based stream in an Airbyte source.
 
     In addition to the base Stream attributes, a file-based stream has
     - A config object (derived from the corresponding stream section in source config).
@@ -42,7 +42,7 @@ class AbstractFileBasedStream(Stream):
         stream_reader: AbstractFileBasedStreamReader,
         availability_strategy: AbstractFileBasedAvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy,
-        parsers: Dict[Type[Any], FileTypeParser],
+        parsers: dict[type[Any], FileTypeParser],
         validation_policy: AbstractSchemaValidationPolicy,
     ):
         super().__init__()
@@ -60,9 +60,8 @@ class AbstractFileBasedStream(Stream):
         ...
 
     @cache
-    def list_files(self) -> List[RemoteFile]:
-        """
-        List all files that belong to the stream.
+    def list_files(self) -> list[RemoteFile]:
+        """List all files that belong to the stream.
 
         The output of this method is cached so we don't need to list the files more than once.
         This means we won't pick up changes to the files during a sync. This meethod uses the
@@ -72,20 +71,18 @@ class AbstractFileBasedStream(Stream):
 
     @abstractmethod
     def get_files(self) -> Iterable[RemoteFile]:
-        """
-        List all files that belong to the stream as defined by the stream's globs.
+        """List all files that belong to the stream as defined by the stream's globs.
         """
         ...
 
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
+        cursor_field: Optional[list[str]] = None,
         stream_slice: Optional[StreamSlice] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """
-        Yield all records from all remote files in `list_files_for_this_sync`.
+        """Yield all records from all remote files in `list_files_for_this_sync`.
         This method acts as an adapter between the generic Stream interface and the file-based's
         stream since file-based streams manage their own states.
         """
@@ -95,40 +92,35 @@ class AbstractFileBasedStream(Stream):
 
     @abstractmethod
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
-        """
-        Yield all records from all remote files in `list_files_for_this_sync`.
+        """Yield all records from all remote files in `list_files_for_this_sync`.
         """
         ...
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self, *, sync_mode: SyncMode, cursor_field: Optional[list[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        This method acts as an adapter between the generic Stream interface and the file-based's
+        """This method acts as an adapter between the generic Stream interface and the file-based's
         stream since file-based streams manage their own states.
         """
         return self.compute_slices()
 
     @abstractmethod
     def compute_slices(self) -> Iterable[Optional[StreamSlice]]:
-        """
-        Return a list of slices that will be used to read files in the current sync.
+        """Return a list of slices that will be used to read files in the current sync.
         :return: The slices to use for the current sync.
         """
         ...
 
     @abstractmethod
-    @lru_cache(maxsize=None)
+    @cache
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        Return the JSON Schema for a stream.
+        """Return the JSON Schema for a stream.
         """
         ...
 
     @abstractmethod
-    def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
-        """
-        Infer the schema for files in the stream.
+    def infer_schema(self, files: list[RemoteFile]) -> Mapping[str, Any]:
+        """Infer the schema for files in the stream.
         """
         ...
 
@@ -143,7 +135,7 @@ class AbstractFileBasedStream(Stream):
             return self.validation_policy.record_passes_validation_policy(record=record, schema=self.catalog_schema)
         else:
             raise RecordParseError(
-                FileBasedSourceError.UNDEFINED_VALIDATION_POLICY, stream=self.name, validation_policy=self.config.validation_policy
+                FileBasedSourceError.UNDEFINED_VALIDATION_POLICY, stream=self.name, validation_policy=self.config.validation_policy,
             )
 
     @cached_property

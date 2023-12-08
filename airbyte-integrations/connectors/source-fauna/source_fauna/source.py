@@ -5,8 +5,15 @@
 
 import json
 import time
+from collections.abc import Generator
 from datetime import datetime
-from typing import Dict, Generator, Optional
+from typing import Optional
+
+from faunadb import _json
+from faunadb import query as q
+from faunadb.client import FaunaClient
+from faunadb.errors import FaunaError, Unauthorized
+from faunadb.objects import Ref
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -23,11 +30,6 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
-from faunadb import _json
-from faunadb import query as q
-from faunadb.client import FaunaClient
-from faunadb.errors import FaunaError, Unauthorized
-from faunadb.objects import Ref
 from source_fauna.serialize import fauna_doc_to_airbyte
 
 
@@ -61,8 +63,7 @@ class DeletionsConfig:
 
 
 def expand_column_query(conf: CollectionConfig, value):
-    """
-    Returns a query on Fauna document producing an object according to the user's configuraiton.
+    """Returns a query on Fauna document producing an object according to the user's configuraiton.
 
     Using the given CollectionConfig, this will add every additional column that is listed into
     the resulting object. This will also add ref and ts, and data if conf.data_column is
@@ -95,8 +96,7 @@ class SourceFauna(Source):
         )
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
-        """
-        Tests if the input configuration can be used to successfully connect to Fauna.
+        """Tests if the input configuration can be used to successfully connect to Fauna.
 
         :param logger: Logging object to display debug/info/error to the logs
             (logs will not be accessible via airbyte UI if they are not passed to this logger)
@@ -105,7 +105,6 @@ class SourceFauna(Source):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
-
         config = Config(config)
 
         def fail(message: str) -> AirbyteConnectionStatus:
@@ -168,8 +167,7 @@ class SourceFauna(Source):
         return None
 
     def find_index_for_stream(self, collection: str) -> str:
-        """
-        Finds the index for the given collection name. This will iterate over all indexes, and find
+        """Finds the index for the given collection name. This will iterate over all indexes, and find
         one that has the correct source, values, and terms.
 
         :param collection: The name of the collection to search for.
@@ -203,8 +201,7 @@ class SourceFauna(Source):
         raise ValueError(f"Could not find index for stream '{collection}'")
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
-        """
-        Returns an AirbyteCatalog representing the available streams and fields in the user's connection to Fauna.
+        """Returns an AirbyteCatalog representing the available streams and fields in the user's connection to Fauna.
 
         :param logger: Logging object to display debug/info/error to the logs
             (logs will not be accessible via airbyte UI if they are not passed to this logger)
@@ -217,7 +214,6 @@ class SourceFauna(Source):
             - json_schema providing the specifications of expected schema for this stream (a list of fields described
             by their names and types)
         """
-
         config = Config(config)
         streams = []
 
@@ -284,7 +280,7 @@ class SourceFauna(Source):
                             supported_sync_modes=supported_sync_modes,
                             source_defined_cursor=True,
                             default_cursor_field=["ts"],
-                        )
+                        ),
                     )
                 if "after" in page:
                     page = self.client.query(q.paginate(q.collections(), after=page["after"]))
@@ -306,10 +302,9 @@ class SourceFauna(Source):
         return int(time.time() * 1000)
 
     def read_removes(
-        self, logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig, state: dict[str, any], deletion_column: str
+        self, logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig, state: dict[str, any], deletion_column: str,
     ) -> Generator[any, None, None]:
-        """
-        This handles all additions and deletions, not updates.
+        """This handles all additions and deletions, not updates.
 
         :param logger: The Airbyte logger.
         :param stream: The configured airbyte stream, which is only used in logging.
@@ -318,7 +313,6 @@ class SourceFauna(Source):
         :param deletion_column: The column to put the 'deleted_at' field in.
         :return: A generator which will produce a number data fields for an AirbyteRecordMessage.
         """
-
         stream_name = stream.stream.name
         logger.info(f"reading add/removes for stream {stream_name}")
 
@@ -412,10 +406,9 @@ class SourceFauna(Source):
                 break
 
     def read_updates(
-        self, logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig, state: Dict[str, any], index: str, page_size: int
+        self, logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig, state: dict[str, any], index: str, page_size: int,
     ) -> Generator[any, None, None]:
-        """
-        This handles all document creations/updates. It does not handle document deletions.
+        """This handles all document creations/updates. It does not handle document deletions.
 
         The state has 3 optional fields:
         `ts`:
@@ -461,8 +454,8 @@ class SourceFauna(Source):
                     ),
                     size=page_size,
                     after=after,
-                )
-            )
+                ),
+            ),
         )
         # These are the new state values. It will be written to the state after we are done emitting
         # documents.
@@ -493,8 +486,8 @@ class SourceFauna(Source):
                             ),
                             size=page_size,
                             after=modified_documents["after"],
-                        )
-                    )
+                        ),
+                    ),
                 )
             else:
                 # Completed successfully, so we remove the after token, and update the ts.
@@ -507,8 +500,7 @@ class SourceFauna(Source):
                 break
 
     def read_all(self, logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig, state: dict) -> Generator[any, None, None]:
-        """
-        Reads all documents. The `state` must have a field of 'full_sync_cursor', which is a dict
+        """Reads all documents. The `state` must have a field of 'full_sync_cursor', which is a dict
         containing elements: `ts` and `ref`.
 
         The `ts` field must always be present. It is the value use in `At` for the whole query.
@@ -545,8 +537,8 @@ class SourceFauna(Source):
                     q.documents(q.collection(stream_name)),
                     size=conf.page_size,
                     after=after,
-                )
-            )
+                ),
+            ),
         )
         while True:
             yield from all_documents["data"]
@@ -563,17 +555,16 @@ class SourceFauna(Source):
                             q.documents(q.collection(stream_name)),
                             size=conf.page_size,
                             after=all_documents["after"],
-                        )
-                    )
+                        ),
+                    ),
                 )
             else:
                 break
 
     def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: dict[str, any],
     ) -> Generator[AirbyteMessage, None, None]:
-        """
-        Returns a generator of the AirbyteMessages generated by reading the source with the given configuration,
+        """Returns a generator of the AirbyteMessages generated by reading the source with the given configuration,
         catalog, and state.
 
         :param logger: Logging object to display debug/info/error to the logs
@@ -591,7 +582,6 @@ class SourceFauna(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-
         config = Config(config)
         logger.info(f"state: {state}")
 

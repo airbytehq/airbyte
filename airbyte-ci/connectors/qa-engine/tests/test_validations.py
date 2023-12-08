@@ -3,26 +3,26 @@
 #
 
 
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
 import requests
-from qa_engine import enrichments, inputs, models, validations
+from qa_engine import enrichments, models, validations
 
 
-@pytest.fixture
+@pytest.fixture()
 def enriched_catalog(oss_catalog, cloud_catalog, adoption_metrics_per_connector_version) -> pd.DataFrame:
     return enrichments.get_enriched_catalog(oss_catalog, cloud_catalog, adoption_metrics_per_connector_version)
 
 
-@pytest.fixture
+@pytest.fixture()
 def qa_report(enriched_catalog, mocker) -> pd.DataFrame:
     mocker.patch.object(validations, "url_is_reachable", mocker.Mock(return_value=True))
     return validations.get_qa_report(enriched_catalog, len(enriched_catalog))
 
 
-@pytest.fixture
+@pytest.fixture()
 def qa_report_columns(qa_report: pd.DataFrame) -> set:
     return set(qa_report.columns)
 
@@ -52,7 +52,7 @@ def test_report_generation_error(enriched_catalog, mocker):
                     "documentation_is_available": True,
                     "is_appropriate_for_cloud_use": True,
                     "latest_build_is_successful": True,
-                }
+                },
             ),
             True,
         ),
@@ -63,7 +63,7 @@ def test_report_generation_error(enriched_catalog, mocker):
                     "documentation_is_available": True,
                     "is_appropriate_for_cloud_use": True,
                     "latest_build_is_successful": True,
-                }
+                },
             ),
             False,
         ),
@@ -74,7 +74,7 @@ def test_report_generation_error(enriched_catalog, mocker):
                     "documentation_is_available": False,
                     "is_appropriate_for_cloud_use": False,
                     "latest_build_is_successful": False,
-                }
+                },
             ),
             False,
         ),
@@ -85,7 +85,7 @@ def test_report_generation_error(enriched_catalog, mocker):
                     "documentation_is_available": False,
                     "is_appropriate_for_cloud_use": True,
                     "latest_build_is_successful": True,
-                }
+                },
             ),
             False,
         ),
@@ -96,7 +96,7 @@ def test_report_generation_error(enriched_catalog, mocker):
                     "documentation_is_available": True,
                     "is_appropriate_for_cloud_use": False,
                     "latest_build_is_successful": True,
-                }
+                },
             ),
             False,
         ),
@@ -107,7 +107,7 @@ def test_report_generation_error(enriched_catalog, mocker):
                     "documentation_is_available": True,
                     "is_appropriate_for_cloud_use": True,
                     "latest_build_is_successful": False,
-                }
+                },
             ),
             False,
         ),
@@ -136,7 +136,7 @@ def test_get_connectors_eligible_for_cloud(qa_report: pd.DataFrame):
                 {
                     "connector_version": "0.1.0",
                     "connector_technical_name": "connectors/source-pokeapi",
-                }
+                },
             ),
             [
                 {
@@ -145,7 +145,7 @@ def test_get_connectors_eligible_for_cloud(qa_report: pd.DataFrame):
                     "docker_version": "0.1.5",
                     "date": "2021-10-01T00:00:00Z",
                     "connector": "connectors/source-pokeapi",
-                }
+                },
             ],
             200,
             True,
@@ -155,7 +155,7 @@ def test_get_connectors_eligible_for_cloud(qa_report: pd.DataFrame):
                 {
                     "connector_version": "0.1.0",
                     "connector_technical_name": "connectors/source-pokeapi",
-                }
+                },
             ),
             [
                 {
@@ -164,7 +164,7 @@ def test_get_connectors_eligible_for_cloud(qa_report: pd.DataFrame):
                     "docker_version": "0.1.5",
                     "date": "2021-10-01T00:00:00Z",
                     "connector": "connectors/source-pokeapi",
-                }
+                },
             ],
             200,
             False,
@@ -174,7 +174,7 @@ def test_get_connectors_eligible_for_cloud(qa_report: pd.DataFrame):
                 {
                     "connector_version": "0.1.0",
                     "connector_technical_name": "connectors/source-pokeapi",
-                }
+                },
             ),
             None,
             404,
@@ -183,7 +183,7 @@ def test_get_connectors_eligible_for_cloud(qa_report: pd.DataFrame):
     ],
 )
 def test_latest_build_is_successful(
-    mocker, connector_qa_data: pd.Series, build_file_payload: object, build_file_status: int, expected_is_successful: bool
+    mocker, connector_qa_data: pd.Series, build_file_payload: object, build_file_status: int, expected_is_successful: bool,
 ):
     # Mock the api call to get the latest build status for a connector version
     mock_response = MagicMock()

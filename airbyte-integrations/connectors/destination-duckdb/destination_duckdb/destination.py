@@ -8,10 +8,12 @@ import os
 import re
 import uuid
 from collections import defaultdict
+from collections.abc import Iterable, Mapping
 from logging import getLogger
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 import duckdb
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
@@ -35,8 +37,7 @@ def validated_sql_name(sql_name: Any) -> str:
 class DestinationDuckdb(Destination):
     @staticmethod
     def _get_destination_path(destination_path: str) -> str:
-        """
-        Get a normalized version of the destination path.
+        """Get a normalized version of the destination path.
         Automatically append /local/ to the start of the path
         """
         if destination_path.startswith("md:") or destination_path.startswith("motherduck:"):
@@ -48,7 +49,7 @@ class DestinationDuckdb(Destination):
         destination_path = os.path.normpath(destination_path)
         if not destination_path.startswith("/local"):
             raise ValueError(
-                f"destination_path={destination_path} is not a valid path." "A valid path shall start with /local or no / prefix"
+                f"destination_path={destination_path} is not a valid path." "A valid path shall start with /local or no / prefix",
             )
 
         return destination_path
@@ -59,8 +60,7 @@ class DestinationDuckdb(Destination):
         configured_catalog: ConfiguredAirbyteCatalog,
         input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
-        """
-        Reads the input stream of messages, config, and catalog to write data to the destination.
+        """Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
         in the input message stream. Outputting a state message means that every AirbyteRecordMessage which came before it has been
@@ -139,7 +139,7 @@ class DestinationDuckdb(Destination):
                         str(uuid.uuid4()),
                         datetime.datetime.now().isoformat(),
                         json.dumps(data),
-                    )
+                    ),
                 )
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")
@@ -156,8 +156,7 @@ class DestinationDuckdb(Destination):
             con.commit()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
+        """Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
 
         :param logger: Logging object to display debug/info/error to the logs
@@ -184,4 +183,4 @@ class DestinationDuckdb(Destination):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!r}")

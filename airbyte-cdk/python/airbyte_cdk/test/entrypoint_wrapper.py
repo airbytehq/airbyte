@@ -1,7 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-"""
-The AirbyteEntrypoint is important because it is a service layer that orchestrate how we execute commands from the
+"""The AirbyteEntrypoint is important because it is a service layer that orchestrate how we execute commands from the
 [common interface](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#common-interface) through the source Python
 implementation. There is some logic about which message we send to the platform and when which is relevant for integration testing. Other
 than that, there are integrations point that are annoying to integrate with using Python code:
@@ -17,19 +16,21 @@ than that, there are integrations point that are annoying to integrate with usin
 import json
 import logging
 import tempfile
+from collections.abc import Mapping
 from io import StringIO
 from pathlib import Path
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, Optional, Union
+
+from pydantic.error_wrappers import ValidationError
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.sources import Source
 from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, Level, TraceType, Type
-from pydantic.error_wrappers import ValidationError
 
 
 class EntrypointOutput:
-    def __init__(self, messages: List[str]):
+    def __init__(self, messages: list[str]):
         try:
             self._messages = [self._parse_message(message) for message in messages]
         except ValidationError as exception:
@@ -44,36 +45,35 @@ class EntrypointOutput:
             return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message))
 
     @property
-    def records_and_state_messages(self) -> List[AirbyteMessage]:
+    def records_and_state_messages(self) -> list[AirbyteMessage]:
         return self._get_message_by_types([Type.RECORD, Type.STATE])
 
     @property
-    def records(self) -> List[AirbyteMessage]:
+    def records(self) -> list[AirbyteMessage]:
         return self._get_message_by_types([Type.RECORD])
 
     @property
-    def state_messages(self) -> List[AirbyteMessage]:
+    def state_messages(self) -> list[AirbyteMessage]:
         return self._get_message_by_types([Type.STATE])
 
     @property
-    def logs(self) -> List[AirbyteMessage]:
+    def logs(self) -> list[AirbyteMessage]:
         return self._get_message_by_types([Type.LOG])
 
     @property
-    def trace_messages(self) -> List[AirbyteMessage]:
+    def trace_messages(self) -> list[AirbyteMessage]:
         return self._get_message_by_types([Type.TRACE])
 
     @property
-    def analytics_messages(self) -> List[AirbyteMessage]:
+    def analytics_messages(self) -> list[AirbyteMessage]:
         return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == TraceType.ANALYTICS]
 
-    def _get_message_by_types(self, message_types: List[Type]) -> List[AirbyteMessage]:
+    def _get_message_by_types(self, message_types: list[Type]) -> list[AirbyteMessage]:
         return [message for message in self._messages if message.type in message_types]
 
 
 def read(source: Source, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: Optional[Any] = None) -> EntrypointOutput:
-    """
-    config and state must be json serializable
+    """Config and state must be json serializable
     """
     log_capture_buffer = StringIO()
     stream_handler = logging.StreamHandler(log_capture_buffer)
@@ -96,7 +96,7 @@ def read(source: Source, config: Mapping[str, Any], catalog: ConfiguredAirbyteCa
                 [
                     "--state",
                     make_file(tmp_directory_path / "state.json", state),
-                ]
+                ],
             )
         source_entrypoint = AirbyteEntrypoint(source)
         parsed_args = source_entrypoint.parse_args(args)
@@ -108,7 +108,7 @@ def read(source: Source, config: Mapping[str, Any], catalog: ConfiguredAirbyteCa
         return EntrypointOutput(messages + captured_logs)
 
 
-def make_file(path: Path, file_contents: Optional[Union[str, Mapping[str, Any], List[Mapping[str, Any]]]]) -> str:
+def make_file(path: Path, file_contents: Optional[Union[str, Mapping[str, Any], list[Mapping[str, Any]]]]) -> str:
     if isinstance(file_contents, str):
         path.write_text(file_contents)
     else:

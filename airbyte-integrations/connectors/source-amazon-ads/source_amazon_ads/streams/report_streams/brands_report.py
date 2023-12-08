@@ -110,8 +110,7 @@ METRICS_TYPE_TO_ID_MAP = {
 
 
 class SponsoredBrandsReportStream(ReportStream):
-    """
-    https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports
+    """https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports
     """
 
     def report_init_endpoint(self, record_type: str) -> str:
@@ -146,7 +145,7 @@ METRICS_MAP_V3 = {
         "newToBrandSalesPercentage14d",
         "newToBrandPurchasesPercentage14d",
         "newToBrandUnitsSoldPercentage14d",
-    ]
+    ],
 }
 
 METRICS_TYPE_TO_ID_MAP_V3 = {
@@ -155,8 +154,7 @@ METRICS_TYPE_TO_ID_MAP_V3 = {
 
 
 class SponsoredBrandsV3ReportStream(SponsoredProductsReportStream):
-    """
-    https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types#purchased-product-reports
+    """https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types#purchased-product-reports
     """
 
     API_VERSION = "reporting"  # v3

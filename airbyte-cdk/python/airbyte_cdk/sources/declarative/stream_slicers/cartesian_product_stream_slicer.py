@@ -4,8 +4,9 @@
 
 import itertools
 from collections import ChainMap
+from collections.abc import Iterable, Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Optional
 
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
@@ -13,8 +14,7 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 @dataclass
 class CartesianProductStreamSlicer(StreamSlicer):
-    """
-    Stream slicers that iterates over the cartesian product of input stream slicers
+    """Stream slicers that iterates over the cartesian product of input stream slicers
     Given 2 stream slicers with the following slices:
     A: [{"i": 0}, {"i": 1}, {"i": 2}]
     B: [{"s": "hello"}, {"s": "world"}]
@@ -32,7 +32,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
         stream_slicers (List[StreamSlicer]): Underlying stream slicers. The RequestOptions (e.g: Request headers, parameters, etc..) returned by this slicer are the combination of the RequestOptions of its input slicers. If there are conflicts e.g: two slicers define the same header or request param, the conflict is resolved by taking the value from the first slicer, where ordering is determined by the order in which slicers were input to this composite slicer.
     """
 
-    stream_slicers: List[StreamSlicer]
+    stream_slicers: list[StreamSlicer]
     parameters: InitVar[Mapping[str, Any]]
 
     def get_request_params(
@@ -47,8 +47,8 @@ class CartesianProductStreamSlicer(StreamSlicer):
                 *[
                     s.get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
                     for s in self.stream_slicers
-                ]
-            )
+                ],
+            ),
         )
 
     def get_request_headers(
@@ -63,8 +63,8 @@ class CartesianProductStreamSlicer(StreamSlicer):
                 *[
                     s.get_request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
                     for s in self.stream_slicers
-                ]
-            )
+                ],
+            ),
         )
 
     def get_request_body_data(
@@ -79,8 +79,8 @@ class CartesianProductStreamSlicer(StreamSlicer):
                 *[
                     s.get_request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
                     for s in self.stream_slicers
-                ]
-            )
+                ],
+            ),
         )
 
     def get_request_body_json(
@@ -95,8 +95,8 @@ class CartesianProductStreamSlicer(StreamSlicer):
                 *[
                     s.get_request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
                     for s in self.stream_slicers
-                ]
-            )
+                ],
+            ),
         )
 
     def stream_slices(self) -> Iterable[StreamSlice]:

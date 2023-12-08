@@ -4,10 +4,11 @@
 
 import importlib.resources as pkg_resources
 import os
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, Tuple
 
 import click
+
 from octavia_cli.base_commands import OctaviaCommand
 
 from . import example_files
@@ -25,7 +26,7 @@ def create_api_headers_configuration_file() -> bool:
     return False
 
 
-def create_directories(directories_to_create: Iterable[str]) -> Tuple[Iterable[str], Iterable[str]]:
+def create_directories(directories_to_create: Iterable[str]) -> tuple[Iterable[str], Iterable[str]]:
     created_directories = []
     not_created_directories = []
     for directory in directories_to_create:

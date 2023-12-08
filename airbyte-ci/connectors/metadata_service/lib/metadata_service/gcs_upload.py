@@ -9,7 +9,7 @@ import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import yaml
 from google.cloud import storage
@@ -17,7 +17,6 @@ from google.oauth2 import service_account
 from metadata_service.constants import (
     DOC_FILE_NAME,
     DOC_INAPP_FILE_NAME,
-    DOCS_FOLDER_PATH,
     ICON_FILE_NAME,
     METADATA_FILE_NAME,
     METADATA_FOLDER,
@@ -40,7 +39,7 @@ class UploadedFile:
 class MetadataUploadInfo:
     metadata_uploaded: bool
     metadata_file_path: str
-    uploaded_files: List[UploadedFile]
+    uploaded_files: list[UploadedFile]
 
 
 def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
@@ -49,6 +48,7 @@ def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
     Args:
         dockerRepository (str): Name of the connector docker image.
         version (str): Version of the connector.
+
     Returns:
         str: Path to the metadata file.
     """
@@ -61,6 +61,7 @@ def get_icon_remote_file_path(dockerRepository: str, version: str) -> str:
     Args:
         dockerRepository (str): Name of the connector docker image.
         version (str): Version of the connector.
+
     Returns:
         str: Path to the icon file.
     """
@@ -73,6 +74,7 @@ def get_doc_remote_file_path(dockerRepository: str, version: str, inapp: bool) -
     Args:
         dockerRepository (str): Name of the connector docker image.
         version (str): Version of the connector.
+
     Returns:
         str: Path to the icon file.
     """
@@ -113,8 +115,8 @@ def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_c
 
 
 def upload_file_if_changed(
-    local_file_path: Path, bucket: storage.bucket.Bucket, blob_path: str, disable_cache: bool = False
-) -> Tuple[bool, str]:
+    local_file_path: Path, bucket: storage.bucket.Bucket, blob_path: str, disable_cache: bool = False,
+) -> tuple[bool, str]:
     local_file_md5_hash = compute_gcs_md5(local_file_path)
     remote_blob = bucket.blob(blob_path)
 
@@ -134,17 +136,17 @@ def upload_file_if_changed(
     return False, remote_blob.id
 
 
-def _latest_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
+def _latest_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> tuple[bool, str]:
     latest_path = get_metadata_remote_file_path(metadata.data.dockerRepository, "latest")
     return upload_file_if_changed(metadata_file_path, bucket, latest_path, disable_cache=True)
 
 
-def _version_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
+def _version_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> tuple[bool, str]:
     version_path = get_metadata_remote_file_path(metadata.data.dockerRepository, metadata.data.dockerImageTag)
     return upload_file_if_changed(metadata_file_path, bucket, version_path, disable_cache=True)
 
 
-def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
+def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> tuple[bool, str]:
     local_icon_path = metadata_file_path.parent / ICON_FILE_NAME
     latest_icon_path = get_icon_remote_file_path(metadata.data.dockerRepository, "latest")
     if not local_icon_path.exists():
@@ -153,11 +155,11 @@ def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket
 
 
 def _doc_upload(
-    metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, docs_path: Path, latest: bool, inapp: bool
-) -> Tuple[bool, str]:
+    metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, docs_path: Path, latest: bool, inapp: bool,
+) -> tuple[bool, str]:
     local_doc_path = get_doc_local_file_path(metadata, docs_path, inapp)
     if not local_doc_path:
-        return False, f"Metadata does not contain a valid Airbyte documentation url, skipping doc upload."
+        return False, "Metadata does not contain a valid Airbyte documentation url, skipping doc upload."
 
     remote_doc_path = get_doc_remote_file_path(metadata.data.dockerRepository, "latest" if latest else metadata.data.dockerImageTag, inapp)
 
@@ -206,6 +208,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         metadata_file_path (Path): Path to the metadata file.
         service_account_file_path (Path): Path to the JSON file with the service account allowed to read and write on the bucket.
         prerelease_tag (Optional[str]): Whether the connector is a prerelease_tag or not.
+
     Returns:
         Tuple[bool, str]: Whether the metadata file was uploaded and its blob id.
     """

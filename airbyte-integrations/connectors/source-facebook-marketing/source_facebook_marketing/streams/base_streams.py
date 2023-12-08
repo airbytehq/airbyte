@@ -4,17 +4,19 @@
 
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 import pendulum
+from cached_property import cached_property
+from facebook_business.adobjects.abstractobject import AbstractObject
+from facebook_business.exceptions import FacebookRequestError
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from cached_property import cached_property
-from facebook_business.adobjects.abstractobject import AbstractObject
-from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.common import traced_exception
 
 from .common import deep_merge
@@ -50,7 +52,7 @@ class FBMarketingStream(Stream, ABC):
         self._include_deleted = include_deleted if self.enable_deleted else False
 
     @cached_property
-    def fields(self) -> List[str]:
+    def fields(self) -> list[str]:
         """List of fields that we want to query, for now just all properties from stream's schema"""
         return list(self.get_json_schema().get("properties", {}).keys())
 
@@ -81,7 +83,7 @@ class FBMarketingStream(Stream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -170,7 +172,6 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
-
         state_value = stream_state.get(self.cursor_field)
         if stream_state:
             filter_value = pendulum.parse(state_value)
@@ -240,7 +241,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:

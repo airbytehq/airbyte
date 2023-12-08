@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.declarative.types import Config
@@ -13,8 +15,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class ConstantBackoffStrategy(BackoffStrategy):
-    """
-    Backoff strategy with a constant backoff interval
+    """Backoff strategy with a constant backoff interval
 
     Attributes:
         backoff_time_in_seconds (float): time to backoff before retrying a retryable request.

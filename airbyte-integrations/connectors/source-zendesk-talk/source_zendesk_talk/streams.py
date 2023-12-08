@@ -4,12 +4,14 @@
 
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Optional
 from urllib.parse import parse_qs, urlparse
 
 import pendulum as pendulum
 import requests
+
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -39,8 +41,7 @@ class ZendeskTalkStream(HttpStream, ABC):
         return None
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
+        """Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
 
         This method is called only if should_backoff() returns True for the input request.
 
@@ -53,8 +54,7 @@ class ZendeskTalkStream(HttpStream, ABC):
         return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
+        """This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
         to most other methods in this class to help you form headers, request bodies, query params, etc..
 
         :param response: the most recent response from the API
@@ -106,8 +106,7 @@ class ZendeskTalkIncrementalStream(ZendeskTalkStream, ABC):
         self._start_date = pendulum.instance(start_date)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
+        """Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         latest_state = current_stream_state.get(self.cursor_field, current_stream_state.get(self.legacy_cursor_field))
@@ -128,8 +127,7 @@ class ZendeskTalkIncrementalStream(ZendeskTalkStream, ABC):
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
+        """This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
         to most other methods in this class to help you form headers, request bodies, query params, etc..
 
         :param response: the most recent response from the API

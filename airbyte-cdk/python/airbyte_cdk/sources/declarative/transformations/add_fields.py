@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, Optional, Type, Union
+from typing import Any, Optional, Union
 
 import dpath.util
+
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, FieldPointer, Record, StreamSlice, StreamState
@@ -17,7 +19,7 @@ class AddedFieldDefinition:
 
     path: FieldPointer
     value: Union[InterpolatedString, str]
-    value_type: Optional[Type[Any]]
+    value_type: Optional[type[Any]]
     parameters: InitVar[Mapping[str, Any]]
 
 
@@ -27,14 +29,13 @@ class ParsedAddFieldDefinition:
 
     path: FieldPointer
     value: InterpolatedString
-    value_type: Optional[Type[Any]]
+    value_type: Optional[type[Any]]
     parameters: InitVar[Mapping[str, Any]]
 
 
 @dataclass
 class AddFields(RecordTransformation):
-    """
-    Transformation which adds field to an output record. The path of the added field can be nested. Adding nested fields will create all
+    """Transformation which adds field to an output record. The path of the added field can be nested. Adding nested fields will create all
     necessary parent objects (like mkdir -p). Adding fields to an array will extend the array to that index (filling intermediate
     indices with null values). So if you add a field at index 5 to the array ["value"], it will become ["value", null, null, null, null,
     "new_value"].
@@ -83,9 +84,9 @@ class AddFields(RecordTransformation):
         fields (List[AddedFieldDefinition]): A list of transformations (path and corresponding value) that will be added to the record
     """
 
-    fields: List[AddedFieldDefinition]
+    fields: list[AddedFieldDefinition]
     parameters: InitVar[Mapping[str, Any]]
-    _parsed_fields: List[ParsedAddFieldDefinition] = field(init=False, repr=False, default_factory=list)
+    _parsed_fields: list[ParsedAddFieldDefinition] = field(init=False, repr=False, default_factory=list)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         for add_field in self.fields:
@@ -102,11 +103,11 @@ class AddFields(RecordTransformation):
                             InterpolatedString.create(add_field.value, parameters=parameters),
                             value_type=add_field.value_type,
                             parameters=parameters,
-                        )
+                        ),
                     )
             else:
                 self._parsed_fields.append(
-                    ParsedAddFieldDefinition(add_field.path, add_field.value, value_type=add_field.value_type, parameters={})
+                    ParsedAddFieldDefinition(add_field.path, add_field.value, value_type=add_field.value_type, parameters={}),
                 )
 
     def transform(

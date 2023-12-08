@@ -4,7 +4,7 @@
 
 import logging
 from copy import deepcopy
-from typing import Any, Dict
+from typing import Any
 
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
@@ -13,26 +13,26 @@ logger: logging.Logger = logging.getLogger("airbyte")
 
 
 class SchemaTypes:
-    string: Dict = {"type": ["null", "string"]}
+    string: dict = {"type": ["null", "string"]}
 
-    number: Dict = {"type": ["null", "number"]}
+    number: dict = {"type": ["null", "number"]}
 
-    boolean: Dict = {"type": ["null", "boolean"]}
+    boolean: dict = {"type": ["null", "boolean"]}
 
-    date: Dict = {"type": ["null", "string"], "format": "date"}
+    date: dict = {"type": ["null", "string"], "format": "date"}
 
-    datetime: Dict = {"type": ["null", "string"], "format": "date-time"}
+    datetime: dict = {"type": ["null", "string"], "format": "date-time"}
 
-    array_with_strings: Dict = {"type": ["null", "array"], "items": {"type": ["null", "string"]}}
+    array_with_strings: dict = {"type": ["null", "array"], "items": {"type": ["null", "string"]}}
 
     # array items should be automatically determined
     # based on field complexity
-    array_with_any: Dict = {"type": ["null", "array"], "items": {}}
+    array_with_any: dict = {"type": ["null", "array"], "items": {}}
 
 
 # More info about internal Airtable Data Types
 # https://airtable.com/developers/web/api/field-model
-SIMPLE_AIRTABLE_TYPES: Dict = {
+SIMPLE_AIRTABLE_TYPES: dict = {
     "multipleAttachments": SchemaTypes.string,
     "autoNumber": SchemaTypes.number,
     "barcode": SchemaTypes.string,
@@ -68,7 +68,7 @@ SIMPLE_AIRTABLE_TYPES: Dict = {
 
 # returns the `array of Any` where Any is based on Simple Types.
 # the final array is fulled with some simple type.
-COMPLEX_AIRTABLE_TYPES: Dict = {
+COMPLEX_AIRTABLE_TYPES: dict = {
     "formula": SchemaTypes.array_with_any,
     "lookup": SchemaTypes.array_with_any,
     "multipleLookupValues": SchemaTypes.array_with_any,
@@ -84,19 +84,19 @@ class SchemaHelpers:
         return name_str.replace(" ", "_").lower().strip()
 
     @staticmethod
-    def get_json_schema(table: Dict[str, Any]) -> Dict[str, str]:
-        properties: Dict = {
+    def get_json_schema(table: dict[str, Any]) -> dict[str, str]:
+        properties: dict = {
             "_airtable_id": SchemaTypes.string,
             "_airtable_created_time": SchemaTypes.string,
             "_airtable_table_name": SchemaTypes.string,
         }
 
-        fields: Dict = table.get("fields", {})
+        fields: dict = table.get("fields", {})
         for field in fields:
             name: str = SchemaHelpers.clean_name(field.get("name"))
             original_type: str = field.get("type")
-            options: Dict = field.get("options", {})
-            options_result: Dict = options.get("result", {})
+            options: dict = field.get("options", {})
+            options_result: dict = options.get("result", {})
             exec_type: str = options_result.get("type") if options_result else None
 
             # choose the JsonSchema Type for known Airtable Types
@@ -110,7 +110,7 @@ class SchemaHelpers:
                 if complex_type == SchemaTypes.array_with_any:
                     if original_type == "formula" and field_type in ("number", "currency", "percent", "duration"):
                         complex_type = SchemaTypes.number
-                    elif original_type == "formula" and not any((options.get("formula").startswith(x) for x in ARRAY_FORMULAS)):
+                    elif original_type == "formula" and not any(options.get("formula").startswith(x) for x in ARRAY_FORMULAS):
                         complex_type = SchemaTypes.string
                     elif field_type in SIMPLE_AIRTABLE_TYPES:
                         complex_type["items"] = deepcopy(SIMPLE_AIRTABLE_TYPES.get(field_type))
@@ -125,7 +125,7 @@ class SchemaHelpers:
                 # Airtable may add more field types in the future and don't consider it a breaking change
                 properties.update(**{name: SchemaTypes.string})
 
-        json_schema: Dict = {
+        json_schema: dict = {
             "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "additionalProperties": True,
@@ -135,7 +135,7 @@ class SchemaHelpers:
         return json_schema
 
     @staticmethod
-    def get_airbyte_stream(stream_name: str, json_schema: Dict[str, Any]) -> AirbyteStream:
+    def get_airbyte_stream(stream_name: str, json_schema: dict[str, Any]) -> AirbyteStream:
         return AirbyteStream(
             name=stream_name,
             json_schema=json_schema,

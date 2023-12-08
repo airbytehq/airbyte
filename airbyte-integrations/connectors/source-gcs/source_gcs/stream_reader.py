@@ -5,18 +5,20 @@
 import itertools
 import json
 import logging
+from collections.abc import Iterable
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from io import IOBase
-from typing import Iterable, List, Optional
+from typing import Optional
 
 import pytz
 import smart_open
+from google.cloud import storage
+from google.oauth2 import service_account
+
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from google.cloud import storage
-from google.oauth2 import service_account
 from source_gcs.config import Config
 
 ERROR_MESSAGE_ACCESS = (
@@ -27,8 +29,7 @@ FILE_FORMAT = "csv"  # TODO: Change if other file formats are implemented
 
 
 class SourceGCSStreamReader(AbstractFileBasedStreamReader):
-    """
-    Stream reader for Google Cloud Storage (GCS).
+    """Stream reader for Google Cloud Storage (GCS).
     """
 
     def __init__(self):
@@ -60,9 +61,8 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     def gcs_client(self) -> storage.Client:
         return self._initialize_gcs_client()
 
-    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
-        """
-        Retrieve all files matching the specified glob patterns in GCS.
+    def get_matching_files(self, globs: list[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
+        """Retrieve all files matching the specified glob patterns in GCS.
         """
         try:
             start_date = (
@@ -86,7 +86,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             self._handle_file_listing_error(exc, prefix, logger)
 
     def _handle_file_listing_error(self, exc: Exception, prefix: str, logger: logging.Logger):
-        logger.error(f"Error while listing files: {str(exc)}")
+        logger.error(f"Error while listing files: {exc!s}")
         raise ErrorListingFiles(
             FileBasedSourceError.ERROR_LISTING_FILES,
             source="gcs",
@@ -96,8 +96,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
 
     @contextmanager
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
-        """
-        Open and yield a remote file from GCS for reading.
+        """Open and yield a remote file from GCS for reading.
         """
         logger.debug(f"Trying to open {file.uri}")
         try:

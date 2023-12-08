@@ -1,8 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from collections.abc import Mapping
 from itertools import product
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, Optional
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType, SyncMode
@@ -68,11 +69,10 @@ from source_bing_ads.report_streams import (  # noqa: F401
 
 
 class SourceBingAds(AbstractSource):
-    """
-    Source implementation of Bing Ads API. Fetches advertising data from accounts
+    """Source implementation of Bing Ads API. Fetches advertising data from accounts
     """
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         try:
             client = Client(**config)
             account_ids = {str(account["Id"]) for account in Accounts(client, config).read_records(SyncMode.full_refresh)}
@@ -105,7 +105,7 @@ class SourceBingAds(AbstractSource):
             return report_object.replace("Request", "")
         return report_object
 
-    def get_custom_reports(self, config: Mapping[str, Any], client: Client) -> List[Optional[Stream]]:
+    def get_custom_reports(self, config: Mapping[str, Any], client: Client) -> list[Optional[Stream]]:
         return [
             type(
                 report["name"],
@@ -119,7 +119,7 @@ class SourceBingAds(AbstractSource):
             for report in config.get("custom_reports", [])
         ]
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         client = Client(**config)
         streams = [
             Accounts(client, config),

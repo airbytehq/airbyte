@@ -7,7 +7,7 @@ import pandas as pd
 
 
 def get_enriched_catalog(
-    oss_catalog: pd.DataFrame, cloud_catalog: pd.DataFrame, adoption_metrics_per_connector_version: pd.DataFrame
+    oss_catalog: pd.DataFrame, cloud_catalog: pd.DataFrame, adoption_metrics_per_connector_version: pd.DataFrame,
 ) -> pd.DataFrame:
     """Merge OSS and Cloud catalog in a single dataframe on their definition id.
     Transformations:
@@ -19,6 +19,7 @@ def get_enriched_catalog(
       - is_on_cloud: determined by the merge operation results.
       - connector_technical_name: built from the docker repository field. airbyte/source-pokeapi -> source-pokeapi.
       - Adoptions metrics: add the columns from the adoption_metrics_per_connector_version dataframe.
+
     Args:
         oss_catalog (pd.DataFrame): The open source catalog dataframe.
         cloud_catalog (pd.DataFrame): The cloud catalog dataframe.
@@ -37,7 +38,7 @@ def get_enriched_catalog(
     )
 
     enriched_catalog.columns = enriched_catalog.columns.str.replace(
-        "(?<=[a-z])(?=[A-Z])", "_", regex=True
+        "(?<=[a-z])(?=[A-Z])", "_", regex=True,
     ).str.lower()  # column names to snake case
     enriched_catalog = enriched_catalog[[c for c in enriched_catalog.columns if "_cloud" not in c]]
     enriched_catalog["is_on_cloud"] = enriched_catalog["_merge"] == "both"
@@ -47,7 +48,7 @@ def get_enriched_catalog(
     enriched_catalog["connector_version"] = enriched_catalog["docker_image_tag"]
     enriched_catalog["support_level"] = enriched_catalog["support_level"].fillna("unknown")
     enriched_catalog = enriched_catalog.merge(
-        adoption_metrics_per_connector_version, how="left", on=["connector_definition_id", "connector_version"]
+        adoption_metrics_per_connector_version, how="left", on=["connector_definition_id", "connector_version"],
     )
     enriched_catalog = enriched_catalog.drop_duplicates(subset=["connector_definition_id", "connector_version"])
     enriched_catalog[adoption_metrics_per_connector_version.columns] = enriched_catalog[

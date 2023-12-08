@@ -3,8 +3,8 @@
 #
 
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice
@@ -15,9 +15,7 @@ class ZenloopPartitionRouter(SubstreamPartitionRouter):
     config: Config
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        """
-
-        config_parent_field : parent field name in config
+        """config_parent_field : parent field name in config
 
         Use parent id's as stream state value if it specified in config or
         create stream_slices according SubstreamSlicer logic.

@@ -3,37 +3,37 @@
 #
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 
 @dataclass
 class HttpResponse:
     status: int
     body: Optional[str] = None
-    headers: Optional[Dict[str, Any]] = None
+    headers: Optional[dict[str, Any]] = None
 
 
 @dataclass
 class HttpRequest:
     url: str
-    parameters: Optional[Dict[str, Any]]
-    headers: Optional[Dict[str, Any]]
+    parameters: Optional[dict[str, Any]]
+    headers: Optional[dict[str, Any]]
     http_method: str
     body: Optional[str] = None
 
 
 @dataclass
 class StreamReadPages:
-    records: List[object]
+    records: list[object]
     request: Optional[HttpRequest] = None
     response: Optional[HttpResponse] = None
 
 
 @dataclass
 class StreamReadSlices:
-    pages: List[StreamReadPages]
-    slice_descriptor: Optional[Dict[str, Any]]
-    state: Optional[Dict[str, Any]] = None
+    pages: list[StreamReadPages]
+    slice_descriptor: Optional[dict[str, Any]]
+    state: Optional[dict[str, Any]] = None
 
 
 @dataclass
@@ -51,20 +51,20 @@ class AuxiliaryRequest:
 
 
 @dataclass
-class StreamRead(object):
-    logs: List[LogMessage]
-    slices: List[StreamReadSlices]
+class StreamRead:
+    logs: list[LogMessage]
+    slices: list[StreamReadSlices]
     test_read_limit_reached: bool
-    auxiliary_requests: List[AuxiliaryRequest]
-    inferred_schema: Optional[Dict[str, Any]]
-    inferred_datetime_formats: Optional[Dict[str, str]]
-    latest_config_update: Optional[Dict[str, Any]]
+    auxiliary_requests: list[AuxiliaryRequest]
+    inferred_schema: Optional[dict[str, Any]]
+    inferred_datetime_formats: Optional[dict[str, str]]
+    latest_config_update: Optional[dict[str, Any]]
 
 
 @dataclass
 class StreamReadRequestBody:
-    manifest: Dict[str, Any]
+    manifest: dict[str, Any]
     stream: str
-    config: Dict[str, Any]
-    state: Optional[Dict[str, Any]]
+    config: dict[str, Any]
+    state: Optional[dict[str, Any]]
     record_limit: Optional[int]

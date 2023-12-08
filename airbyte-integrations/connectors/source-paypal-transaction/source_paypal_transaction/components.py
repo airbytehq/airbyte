@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 import backoff
 import requests
+
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
@@ -43,14 +44,14 @@ class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
         backoff.expo,
         DefaultBackoffException,
         on_backoff=lambda details: logger.info(
-            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...",
         ),
         max_time=300,
     )
     def _get_refresh_access_token_response(self):
         try:
             response = requests.request(
-                method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body(), headers=self.get_headers()
+                method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body(), headers=self.get_headers(),
             )
             self._log_response(response)
             response.raise_for_status()

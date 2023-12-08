@@ -5,9 +5,11 @@
 
 import base64
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
@@ -40,7 +42,7 @@ class SurveyStream(HttpStream, ABC):
         return base64.b64encode(string.encode("ascii")).decode("ascii")
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -72,13 +74,13 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
         return self.schema
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         ix = self.state[self.cursor_field]
         return {"date": ix}
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         return {"Authorization": "Basic " + self.auth_token}
 
@@ -110,7 +112,7 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
 
 # Source
 class SourceSurveycto(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, Any]:
+    def check_connection(self, logger, config) -> tuple[bool, Any]:
         form_ids = config["form_id"]
 
         try:
@@ -126,7 +128,7 @@ class SourceSurveycto(AbstractSource):
         except Exception as error:
             return False, f"Unable to connect - {(error)}"
 
-    def generate_streams(self, config: str) -> List[Stream]:
+    def generate_streams(self, config: str) -> list[Stream]:
         forms = config.get("form_id", [])
         streams = []
 
@@ -138,6 +140,6 @@ class SourceSurveycto(AbstractSource):
             streams.append(stream)
         return streams
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         streams = self.generate_streams(config=config)
         return streams

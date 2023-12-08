@@ -4,17 +4,19 @@
 
 import logging
 from abc import abstractmethod
+from collections.abc import Mapping, MutableMapping
 from json import JSONDecodeError
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import backoff
 import pendulum
 import requests
+from requests.auth import AuthBase
+
 from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.utils import AirbyteTracedException
-from requests.auth import AuthBase
 
 from ..exceptions import DefaultBackoffException
 
@@ -23,8 +25,7 @@ _NOOP_MESSAGE_REPOSITORY = NoopMessageRepository()
 
 
 class AbstractOauth2Authenticator(AuthBase):
-    """
-    Abstract class for an OAuth authenticators that implements the OAuth token refresh flow. The authenticator
+    """Abstract class for an OAuth authenticators that implements the OAuth token refresh flow. The authenticator
     is designed to generically perform the refresh flow without regard to how config fields are get/set by
     delegating that behavior to the classes implementing the interface.
     """
@@ -33,12 +34,11 @@ class AbstractOauth2Authenticator(AuthBase):
 
     def __init__(
         self,
-        refresh_token_error_status_codes: Tuple[int, ...] = (),
+        refresh_token_error_status_codes: tuple[int, ...] = (),
         refresh_token_error_key: str = "",
-        refresh_token_error_values: Tuple[str, ...] = (),
+        refresh_token_error_values: tuple[str, ...] = (),
     ) -> None:
-        """
-        If all of refresh_token_error_status_codes, refresh_token_error_key, and refresh_token_error_values are set,
+        """If all of refresh_token_error_status_codes, refresh_token_error_key, and refresh_token_error_values are set,
         then http errors with such params will be wrapped in AirbyteTracedException.
         """
         self._refresh_token_error_status_codes = refresh_token_error_status_codes
@@ -68,8 +68,7 @@ class AbstractOauth2Authenticator(AuthBase):
         return pendulum.now() > self.get_token_expiry_date()
 
     def build_refresh_request_body(self) -> Mapping[str, Any]:
-        """
-        Returns the request body to set on the refresh request
+        """Returns the request body to set on the refresh request
 
         Override to define additional parameters
         """
@@ -105,7 +104,7 @@ class AbstractOauth2Authenticator(AuthBase):
         backoff.expo,
         DefaultBackoffException,
         on_backoff=lambda details: logger.info(
-            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...",
         ),
         max_time=300,
     )
@@ -125,9 +124,8 @@ class AbstractOauth2Authenticator(AuthBase):
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
 
-    def refresh_access_token(self) -> Tuple[str, Union[str, int]]:
-        """
-        Returns the refresh token and its expiration datetime
+    def refresh_access_token(self) -> tuple[str, Union[str, int]]:
+        """Returns the refresh token and its expiration datetime
 
         :return: a tuple of (access_token, token_lifespan)
         """
@@ -136,16 +134,14 @@ class AbstractOauth2Authenticator(AuthBase):
         return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
 
     def _parse_token_expiration_date(self, value: Union[str, int]) -> pendulum.DateTime:
-        """
-        Return the expiration datetime of the refresh token
+        """Return the expiration datetime of the refresh token
 
         :return: expiration datetime
         """
-
         if self.token_expiry_is_time_of_expiration:
             if not self.token_expiry_date_format:
                 raise ValueError(
-                    f"Invalid token expiry date format {self.token_expiry_date_format}; a string representing the format is required."
+                    f"Invalid token expiry date format {self.token_expiry_date_format}; a string representing the format is required.",
                 )
             return pendulum.from_format(value, self.token_expiry_date_format)
         else:
@@ -153,18 +149,14 @@ class AbstractOauth2Authenticator(AuthBase):
 
     @property
     def token_expiry_is_time_of_expiration(self) -> bool:
+        """Indicates that the Token Expiry returns the date until which the token will be valid, not the amount of time it will be valid.
         """
-        Indicates that the Token Expiry returns the date until which the token will be valid, not the amount of time it will be valid.
-        """
-
         return False
 
     @property
     def token_expiry_date_format(self) -> Optional[str]:
+        """Format of the datetime; exists it if expires_in is returned as the expiration datetime instead of seconds until it expires
         """
-        Format of the datetime; exists it if expires_in is returned as the expiration datetime instead of seconds until it expires
-        """
-
         return None
 
     @abstractmethod
@@ -184,7 +176,7 @@ class AbstractOauth2Authenticator(AuthBase):
         """The token used to refresh the access token when it expires"""
 
     @abstractmethod
-    def get_scopes(self) -> List[str]:
+    def get_scopes(self) -> list[str]:
         """List of requested scopes"""
 
     @abstractmethod
@@ -223,8 +215,7 @@ class AbstractOauth2Authenticator(AuthBase):
 
     @property
     def _message_repository(self) -> Optional[MessageRepository]:
-        """
-        The implementation can define a message_repository if it wants debugging logs for HTTP requests
+        """The implementation can define a message_repository if it wants debugging logs for HTTP requests
         """
         return _NOOP_MESSAGE_REPOSITORY
 

@@ -8,8 +8,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 
 
 class AbstractDiscoveryPolicy(ABC):
-    """
-    Used during discovery; allows the developer to configure the number of concurrent
+    """Used during discovery; allows the developer to configure the number of concurrent
     requests to send to the source, and the number of files to use for schema discovery.
     """
 

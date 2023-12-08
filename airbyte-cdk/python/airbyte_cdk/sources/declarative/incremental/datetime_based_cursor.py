@@ -3,8 +3,11 @@
 #
 
 import datetime
+from collections.abc import Iterable, Mapping
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Optional, Union
+
+from isodate import Duration, parse_duration
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
@@ -15,13 +18,11 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.message import MessageRepository
-from isodate import Duration, parse_duration
 
 
 @dataclass
 class DatetimeBasedCursor(Cursor):
-    """
-    Slices the stream over a datetime range and create a state with format {<cursor_field>: <datetime> }
+    """Slices the stream over a datetime range and create a state with format {<cursor_field>: <datetime> }
 
     Given a start time, end time, a step function, and an optional lookback window,
     the stream slicer will partition the date range from start time - lookback window to end time.
@@ -62,13 +63,13 @@ class DatetimeBasedCursor(Cursor):
     partition_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
     message_repository: Optional[MessageRepository] = None
-    cursor_datetime_formats: List[str] = field(default_factory=lambda: [])
+    cursor_datetime_formats: list[str] = field(default_factory=list)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if (self.step and not self.cursor_granularity) or (not self.step and self.cursor_granularity):
             raise ValueError(
                 f"If step is defined, cursor_granularity should be as well and vice-versa. "
-                f"Right now, step is `{self.step}` and cursor_granularity is `{self.cursor_granularity}`"
+                f"Right now, step is `{self.step}` and cursor_granularity is `{self.cursor_granularity}`",
             )
         if not isinstance(self.start_datetime, MinMaxDatetime):
             self.start_datetime = MinMaxDatetime(self.start_datetime, parameters)
@@ -103,8 +104,7 @@ class DatetimeBasedCursor(Cursor):
         return {self.cursor_field.eval(self.config): self._cursor} if self._cursor else {}
 
     def set_initial_state(self, stream_state: StreamState) -> None:
-        """
-        Cursors are not initialized with their state. As state is needed in order to function properly, this method should be called
+        """Cursors are not initialized with their state. As state is needed in order to function properly, this method should be called
         before calling anything else
 
         :param stream_state: The state of the stream as returned by get_stream_state
@@ -120,7 +120,7 @@ class DatetimeBasedCursor(Cursor):
                 # 2023-01-04T17:30:19.000Z' <= '2023-01-04T17:30:19.000000Z'
                 lambda datetime_str: (self.parse_date(datetime_str), datetime_str),
                 filter(lambda item: item, [self._cursor, last_record_cursor_value, stream_slice_value_end]),
-            )
+            ),
         )
         self._cursor = (
             cursor_value_str_by_cursor_value_datetime[max(cursor_value_str_by_cursor_value_datetime.keys())]
@@ -129,8 +129,7 @@ class DatetimeBasedCursor(Cursor):
         )
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        """
-        Partition the daterange into slices of size = step.
+        """Partition the daterange into slices of size = step.
 
         The start of the window is the minimum datetime between start_datetime - lookback_window and the stream_state's datetime
         The end of the window is the minimum datetime between the start of the window and end_datetime.
@@ -173,8 +172,7 @@ class DatetimeBasedCursor(Cursor):
         return dates
 
     def _evaluate_next_start_date_safely(self, start, step):
-        """
-        Given that we set the default step at datetime.timedelta.max, we will generate an OverflowError when evaluating the next start_date
+        """Given that we set the default step at datetime.timedelta.max, we will generate an OverflowError when evaluating the next start_date
         This method assumes that users would never enter a step that would generate an overflow. Given that would be the case, the code
         would have broken anyway.
         """
@@ -197,8 +195,7 @@ class DatetimeBasedCursor(Cursor):
 
     @classmethod
     def _parse_timedelta(cls, time_str) -> Union[datetime.timedelta, Duration]:
-        """
-        :return Parses an ISO 8601 durations into datetime.timedelta or Duration objects.
+        """:return Parses an ISO 8601 durations into datetime.timedelta or Duration objects.
         """
         if not time_str:
             return datetime.timedelta(0)
@@ -272,7 +269,7 @@ class DatetimeBasedCursor(Cursor):
                 AirbyteMessage(
                     type=Type.LOG,
                     log=AirbyteLogMessage(level=level, message=message),
-                )
+                ),
             )
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:

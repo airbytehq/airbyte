@@ -3,11 +3,13 @@
 #
 
 from abc import ABC
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import date
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -39,7 +41,7 @@ class RDStationMarketingStream(HttpStream, ABC):
             return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"page_size": self.page_size_limit, "page": self.page}
         if next_page_token:
@@ -72,7 +74,7 @@ class IncrementalRDStationMarketingStream(RDStationMarketingStream):
             {
                 "start_date": start_date.strftime("%Y-%m-%d"),
                 "end_date": date.today().strftime("%Y-%m-%d"),
-            }
+            },
         )
 
         params.update(self.extra_params)
@@ -86,8 +88,7 @@ class IncrementalRDStationMarketingStream(RDStationMarketingStream):
 
 
 class AnalyticsConversions(IncrementalRDStationMarketingStream):
-    """
-    API docs: https://developers.rdstation.com/reference/get_platform-analytics-conversions
+    """API docs: https://developers.rdstation.com/reference/get_platform-analytics-conversions
     """
 
     data_field = "conversions"
@@ -96,8 +97,7 @@ class AnalyticsConversions(IncrementalRDStationMarketingStream):
 
 
 class AnalyticsEmails(IncrementalRDStationMarketingStream):
-    """
-    API docs: https://developers.rdstation.com/reference/get_platform-analytics-emails
+    """API docs: https://developers.rdstation.com/reference/get_platform-analytics-emails
     """
 
     data_field = "emails"
@@ -106,8 +106,7 @@ class AnalyticsEmails(IncrementalRDStationMarketingStream):
 
 
 class AnalyticsFunnel(IncrementalRDStationMarketingStream):
-    """
-    API docs: https://developers.rdstation.com/reference/get_platform-analytics-funnel
+    """API docs: https://developers.rdstation.com/reference/get_platform-analytics-funnel
     """
 
     data_field = "funnel"
@@ -116,8 +115,7 @@ class AnalyticsFunnel(IncrementalRDStationMarketingStream):
 
 
 class AnalyticsWorkflowEmailsStatistics(IncrementalRDStationMarketingStream):
-    """
-    API docs: https://developers.rdstation.com/reference/get_platform-analytics-workflow-emails
+    """API docs: https://developers.rdstation.com/reference/get_platform-analytics-workflow-emails
     """
 
     data_field = "workflow_email_statistics"
@@ -129,8 +127,7 @@ class AnalyticsWorkflowEmailsStatistics(IncrementalRDStationMarketingStream):
 
 
 class Emails(RDStationMarketingStream):
-    """
-    API docs: https://developers.rdstation.com/reference/get_platform-emails
+    """API docs: https://developers.rdstation.com/reference/get_platform-emails
     """
 
     data_field = "items"
@@ -138,16 +135,14 @@ class Emails(RDStationMarketingStream):
 
 
 class Embeddables(RDStationMarketingStream):
-    """
-    API docs: https://developers.rdstation.com/reference/get_platform-embeddables
+    """API docs: https://developers.rdstation.com/reference/get_platform-embeddables
     """
 
     primary_key = "id"
 
 
 class Fields(RDStationMarketingStream):
-    """
-    API docs: https://developers.rdstation.com/reference/get_platform-contacts-fields
+    """API docs: https://developers.rdstation.com/reference/get_platform-contacts-fields
     """
 
     data_field = "fields"
@@ -161,8 +156,7 @@ class Fields(RDStationMarketingStream):
 
 
 class LandingPages(RDStationMarketingStream):
-    """
-    API docs: https://developers.rdstation.com/reference/get_platform-landing-pages
+    """API docs: https://developers.rdstation.com/reference/get_platform-landing-pages
     """
 
     primary_key = "id"
@@ -172,16 +166,14 @@ class LandingPages(RDStationMarketingStream):
 
 
 class Popups(RDStationMarketingStream):
-    """
-    API docs: https://developers.rdstation.com/reference/get_platform-popups
+    """API docs: https://developers.rdstation.com/reference/get_platform-popups
     """
 
     primary_key = "id"
 
 
 class Segmentations(RDStationMarketingStream):
-    """
-    API docs: https://developers.rdstation.com/reference/get_platform-segmentations
+    """API docs: https://developers.rdstation.com/reference/get_platform-segmentations
     """
 
     data_field = "segmentations"
@@ -189,8 +181,7 @@ class Segmentations(RDStationMarketingStream):
 
 
 class Workflows(RDStationMarketingStream):
-    """
-    API docs: https://developers.rdstation.com/reference/get_platform-workflows
+    """API docs: https://developers.rdstation.com/reference/get_platform-workflows
     """
 
     data_field = "workflows"

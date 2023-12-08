@@ -4,24 +4,25 @@
 
 import time
 from abc import ABC
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
 import pendulum
 import requests
+from pendulum import Date
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
-from pendulum import Date
 from source_mixpanel.utils import fix_date_time
 
 
 class MixpanelStream(HttpStream, ABC):
-    """
-    Formatted API Rate Limit  (https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-API-Endpoints):
-      A maximum of 5 concurrent queries
-      60 queries per hour.
+    """Formatted API Rate Limit  (https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-API-Endpoints):
+    A maximum of 5 concurrent queries
+    60 queries per hour.
     """
 
     DEFAULT_REQS_PER_HOUR_LIMIT = 60
@@ -78,7 +79,7 @@ class MixpanelStream(HttpStream, ABC):
         return None
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
 
@@ -116,10 +117,8 @@ class MixpanelStream(HttpStream, ABC):
         return 3
 
     def backoff_time(self, response: requests.Response) -> float:
+        """Some API endpoints do not return "Retry-After" header.
         """
-        Some API endpoints do not return "Retry-After" header.
-        """
-
         retry_after = response.headers.get("Retry-After")
         if retry_after:
             self.logger.debug(f"API responded with `Retry-After` header: {retry_after}")
@@ -141,8 +140,7 @@ class MixpanelStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def get_stream_params(self) -> Mapping[str, Any]:
-        """
-        Fetch required parameters in a given stream. Used to create sub-streams
+        """Fetch required parameters in a given stream. Used to create sub-streams
         """
         params = {
             "authenticator": self.authenticator,
@@ -174,9 +172,9 @@ class DateSlicesMixin:
                 self._timezone_mismatch = True
                 self.logger.warning(
                     "Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings. "
-                    "Stopping current stream sync."
+                    "Stopping current stream sync.",
                 )
-                setattr(self, "raise_on_http_errors", False)
+                self.raise_on_http_errors = False
                 return False
         return super().should_retry(response)
 
@@ -190,7 +188,7 @@ class DateSlicesMixin:
         yield from super().parse_response(*args, **kwargs)
 
     def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # use the latest date between self.start_date and stream_state
         start_date = self.start_date
@@ -224,7 +222,7 @@ class DateSlicesMixin:
             start_date = current_end_date + timedelta(days=1)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         return {

@@ -3,10 +3,12 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -78,8 +80,7 @@ class IncrementalLeverHiringStream(LeverHiringStream, ABC):
 
 
 class Opportunities(IncrementalLeverHiringStream):
-    """
-    Opportunities stream: https://hire.lever.co/developer/documentation#list-all-opportunities
+    """Opportunities stream: https://hire.lever.co/developer/documentation#list-all-opportunities
     """
 
     schema = Opportunity
@@ -87,8 +88,7 @@ class Opportunities(IncrementalLeverHiringStream):
 
 
 class Users(LeverHiringStream):
-    """
-    Users stream: https://hire.lever.co/developer/documentation#list-all-users
+    """Users stream: https://hire.lever.co/developer/documentation#list-all-users
     """
 
     schema = User
@@ -111,40 +111,35 @@ class OpportynityChildStream(LeverHiringStream, ABC):
 
 
 class Applications(OpportynityChildStream):
-    """
-    Applications stream: https://hire.lever.co/developer/documentation#list-all-applications
+    """Applications stream: https://hire.lever.co/developer/documentation#list-all-applications
     """
 
     schema = Application
 
 
 class Interviews(OpportynityChildStream):
-    """
-    Interviews stream: https://hire.lever.co/developer/documentation#list-all-interviews
+    """Interviews stream: https://hire.lever.co/developer/documentation#list-all-interviews
     """
 
     schema = Interview
 
 
 class Notes(OpportynityChildStream):
-    """
-    Notes stream: https://hire.lever.co/developer/documentation#list-all-notes
+    """Notes stream: https://hire.lever.co/developer/documentation#list-all-notes
     """
 
     schema = Note
 
 
 class Offers(OpportynityChildStream):
-    """
-    Offers stream: https://hire.lever.co/developer/documentation#list-all-offers
+    """Offers stream: https://hire.lever.co/developer/documentation#list-all-offers
     """
 
     schema = Offer
 
 
 class Referrals(OpportynityChildStream):
-    """
-    Referrals stream: https://hire.lever.co/developer/documentation#list-all-referrals
+    """Referrals stream: https://hire.lever.co/developer/documentation#list-all-referrals
     """
 
     schema = Referral

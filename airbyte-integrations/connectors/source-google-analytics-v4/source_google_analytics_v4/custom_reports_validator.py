@@ -4,7 +4,7 @@
 
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Union
+from typing import Optional, Union
 
 from pydantic import BaseModel, Field, ValidationError, validator
 from pydantic.class_validators import root_validator
@@ -24,8 +24,7 @@ class Model(BaseModel):
 
     @validator("dimensions", "metrics")
     def check_field_reference_forrmat(cls, value):
-        """
-        Defines rules for nested strings, for fields: dimensions, metrics.
+        """Defines rules for nested strings, for fields: dimensions, metrics.
         General rule: the `ga:` prefix is defined for each field
         """
         for v in value:
@@ -43,8 +42,7 @@ class Model(BaseModel):
 
 
 class Explainer:
-    """
-    ERRORS_MAPPING holds an external `Pydantic.ValidationError` types and their placeholders.
+    """ERRORS_MAPPING holds an external `Pydantic.ValidationError` types and their placeholders.
     {
         key: str = <Pydantic.ValidationError Type>,
         value: tuple(str, list) = (<explainable message>, <list as placeholder>
@@ -59,7 +57,7 @@ class Explainer:
         "value_error": ("incorrect field reference, expected format `ga:MY_FIELD_NAME`, but got", []),
     }
 
-    def parse(self, errors: List[Dict]) -> str:
+    def parse(self, errors: list[dict]) -> str:
         for error in errors:
             field_name, error_type, error_msg = error.get("loc")[0], error.get("type"), error.get("msg")
 
@@ -76,9 +74,8 @@ class Explainer:
                 error_type, _type = error_type.split(".")
                 self.errors_mapping.get(error_type)[1].append((field_name, f"{_type} is required"))
 
-    def explain(self, errors: List[Dict]):
-        """
-        General Errors are explained first.
+    def explain(self, errors: list[dict]):
+        """General Errors are explained first.
         Such as:
             - missing required field
             - presence of non-permitted fields
@@ -88,7 +85,6 @@ class Explainer:
             - str is required,
             - ...
         """
-
         self.parse(errors)
 
         for error_type in self.errors_mapping:
@@ -99,7 +95,7 @@ class Explainer:
 
 @dataclass
 class CustomReportsValidator:
-    custom_reports: Union[List[Dict], Dict] = Field(default_factory=list)
+    custom_reports: Union[list[dict], dict] = Field(default_factory=list)
 
     def __post_init__(self):
         self.reports: list = [self.custom_reports] if not isinstance(self.custom_reports, list) else self.custom_reports

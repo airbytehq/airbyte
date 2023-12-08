@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -41,7 +43,7 @@ class SourceXero(AbstractSource):
         pendulum.parse(config["start_date"])
         return config
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             config = self._validate_and_transform(config)
             stream = Organisations(authenticator=self.get_authenticator(config), tenant_id=config["tenant_id"])
@@ -59,7 +61,7 @@ class SourceXero(AbstractSource):
         except Exception as e:
             return False, str(e)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         stream_kwargs = {
             "authenticator": self.get_authenticator(config),
             "tenant_id": config["tenant_id"],

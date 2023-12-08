@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -12,9 +13,8 @@ from source_paystack.streams import Customers, Disputes, Invoices, Refunds, Sett
 
 
 class SourcePaystack(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Check connection by fetching customers
+    def check_connection(self, logger, config) -> tuple[bool, any]:
+        """Check connection by fetching customers
 
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
@@ -34,9 +34,8 @@ class SourcePaystack(AbstractSource):
         except Exception as e:
             return False, repr(e)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Returns list of streams output by the Paystack source connector
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """Returns list of streams output by the Paystack source connector
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """

@@ -24,7 +24,7 @@ class Cursor(DefaultFileBasedCursor):
                 del self._file_to_datetime_history[oldest_file.uri]
             else:
                 raise Exception(
-                    "The history is full but there is no files in the history. This should never happen and might be indicative of a bug in the CDK."
+                    "The history is full but there is no files in the history. This should never happen and might be indicative of a bug in the CDK.",
                 )
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
@@ -34,7 +34,7 @@ class Cursor(DefaultFileBasedCursor):
             updated_at_from_history = datetime.strptime(self._file_to_datetime_history[uri], self.DATE_TIME_FORMAT)
             if file.last_modified < updated_at_from_history:
                 logger.warning(
-                    f"The file {uri}'s last modified date is older than the last time it was synced. This is unexpected. Skipping the file."
+                    f"The file {uri}'s last modified date is older than the last time it was synced. This is unexpected. Skipping the file.",
                 )
             else:
                 return file.last_modified > updated_at_from_history

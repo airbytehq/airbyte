@@ -3,10 +3,11 @@
 #
 
 from glob import glob
-from typing import List, Optional, Tuple
+from typing import Optional
+
+import click
 
 import airbyte_api_client
-import click
 from octavia_cli.base_commands import OctaviaCommand
 from octavia_cli.check_context import REQUIRED_PROJECT_DIRECTORIES, requires_init
 
@@ -20,7 +21,7 @@ from .resources import factory as resource_factory
 @click.option("--force", is_flag=True, default=False, help="Does not display the diff and updates without user prompt.")
 @click.pass_context
 @requires_init
-def apply(ctx: click.Context, configurations_files: List[click.Path], force: bool):
+def apply(ctx: click.Context, configurations_files: list[click.Path], force: bool):
     if not configurations_files:
         configurations_files = find_local_configuration_files()
 
@@ -30,8 +31,8 @@ def apply(ctx: click.Context, configurations_files: List[click.Path], force: boo
 
 
 def get_resources_to_apply(
-    configuration_files: List[str], api_client: airbyte_api_client.ApiClient, workspace_id: str
-) -> List[BaseResource]:
+    configuration_files: list[str], api_client: airbyte_api_client.ApiClient, workspace_id: str,
+) -> list[BaseResource]:
     """Create resource objects with factory and sort according to apply priority.
 
     Args:
@@ -58,7 +59,7 @@ def apply_single_resource(resource: BaseResource, force: bool) -> None:
             click.style(
                 f"🐙 - {resource.resource_name} exists on your Airbyte instance according to your state file, let's check if we need to update it!",
                 fg="yellow",
-            )
+            ),
         )
         messages = update_resource(resource, force)
     else:
@@ -67,7 +68,7 @@ def apply_single_resource(resource: BaseResource, force: bool) -> None:
     click.echo("\n".join(messages))
 
 
-def should_update_resource(force: bool, user_validation: Optional[bool], local_file_changed: bool) -> Tuple[bool, str]:
+def should_update_resource(force: bool, user_validation: Optional[bool], local_file_changed: bool) -> tuple[bool, str]:
     """Function to decide if the resource needs an update or not.
 
     Args:
@@ -106,7 +107,7 @@ def prompt_for_diff_validation(resource_name: str, diff: str) -> bool:
     """
     if diff:
         click.echo(
-            click.style("👀 - Here's the computed diff (🚨 remind that diff on secret fields are not displayed):", fg="magenta", bold=True)
+            click.style("👀 - Here's the computed diff (🚨 remind that diff on secret fields are not displayed):", fg="magenta", bold=True),
         )
         for line in diff.split("\n"):
             display_diff_line(line)
@@ -115,7 +116,7 @@ def prompt_for_diff_validation(resource_name: str, diff: str) -> bool:
         return False
 
 
-def create_resource(resource: BaseResource) -> List[str]:
+def create_resource(resource: BaseResource) -> list[str]:
     """Run a resource creation.
 
     Args:
@@ -131,7 +132,7 @@ def create_resource(resource: BaseResource) -> List[str]:
     ]
 
 
-def update_resource(resource: BaseResource, force: bool) -> List[str]:
+def update_resource(resource: BaseResource, force: bool) -> list[str]:
     """Run a resource update. Check if update is required and prompt for user diff validation if needed.
 
     Args:
@@ -152,13 +153,13 @@ def update_resource(resource: BaseResource, force: bool) -> List[str]:
     if should_update:
         updated_resource, state = resource.update()
         output_messages.append(
-            click.style(f"🎉 - Successfully updated {updated_resource.name} on your Airbyte instance!", fg="green", bold=True)
+            click.style(f"🎉 - Successfully updated {updated_resource.name} on your Airbyte instance!", fg="green", bold=True),
         )
         output_messages.append(click.style(f"💾 - New state for {updated_resource.name} stored at {state.path}.", fg="yellow"))
     return output_messages
 
 
-def find_local_configuration_files() -> List[str]:
+def find_local_configuration_files() -> list[str]:
     """Discover local configuration files.
 
     Returns:

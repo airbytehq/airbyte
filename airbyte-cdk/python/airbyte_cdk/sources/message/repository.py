@@ -6,7 +6,8 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from collections import deque
-from typing import Callable, Deque, Iterable, List, Optional
+from collections.abc import Callable, Iterable
+from typing import Deque, Optional
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.utils.types import JsonType
@@ -33,7 +34,7 @@ def _is_severe_enough(threshold: Level, level: Level) -> bool:
 
     if level not in _SEVERITY_BY_LOG_LEVEL:
         _LOGGER.warning(
-            f"Log level {level} is not supported. This is probably a source bug. Please contact the owner of the source or Airbyte."
+            f"Log level {level} is not supported. This is probably a source bug. Please contact the owner of the source or Airbyte.",
         )
         return True
 
@@ -43,19 +44,18 @@ def _is_severe_enough(threshold: Level, level: Level) -> bool:
 class MessageRepository(ABC):
     @abstractmethod
     def emit_message(self, message: AirbyteMessage) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def log_message(self, level: Level, message_provider: Callable[[], LogMessage]) -> None:
-        """
-        Computing messages can be resource consuming. This method is specialized for logging because we want to allow for lazy evaluation if
+        """Computing messages can be resource consuming. This method is specialized for logging because we want to allow for lazy evaluation if
         the log level is less severe than what is configured
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def consume_queue(self) -> Iterable[AirbyteMessage]:
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class NoopMessageRepository(MessageRepository):
@@ -80,7 +80,7 @@ class InMemoryMessageRepository(MessageRepository):
     def log_message(self, level: Level, message_provider: Callable[[], LogMessage]) -> None:
         if _is_severe_enough(self._log_level, level):
             self.emit_message(
-                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=level, message=filter_secrets(json.dumps(message_provider()))))
+                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=level, message=filter_secrets(json.dumps(message_provider())))),
             )
 
     def consume_queue(self) -> Iterable[AirbyteMessage]:
@@ -106,7 +106,7 @@ class LogAppenderMessageRepositoryDecorator(MessageRepository):
     def consume_queue(self) -> Iterable[AirbyteMessage]:
         return self._decorated.consume_queue()
 
-    def _append_second_to_first(self, first: LogMessage, second: LogMessage, path: Optional[List[str]] = None) -> LogMessage:
+    def _append_second_to_first(self, first: LogMessage, second: LogMessage, path: Optional[list[str]] = None) -> LogMessage:
         if path is None:
             path = []
 

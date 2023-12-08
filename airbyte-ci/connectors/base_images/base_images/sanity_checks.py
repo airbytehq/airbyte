@@ -6,11 +6,12 @@ import re
 from typing import Optional
 
 import dagger
+
 from base_images import errors
 
 
 async def check_env_var_with_printenv(
-    container: dagger.Container, expected_env_var_name: str, expected_env_var_value: Optional[str] = None
+    container: dagger.Container, expected_env_var_name: str, expected_env_var_value: Optional[str] = None,
 ):
     """This checks if an environment variable is correctly defined by calling the printenv command in a container.
 
@@ -31,7 +32,7 @@ async def check_env_var_with_printenv(
         raise errors.SanityCheckError(f"the {expected_env_var_name} environment variable is not defined.")
     if expected_env_var_value is not None and env_vars[expected_env_var_name] != expected_env_var_value:
         raise errors.SanityCheckError(
-            f"the {expected_env_var_name} environment variable is defined but has an unexpected value: {env_vars[expected_env_var_name]}."
+            f"the {expected_env_var_name} environment variable is defined but has an unexpected value: {env_vars[expected_env_var_name]}.",
         )
 
 

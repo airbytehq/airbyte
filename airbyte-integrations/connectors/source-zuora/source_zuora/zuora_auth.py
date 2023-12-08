@@ -3,7 +3,8 @@
 #
 
 
-from typing import Any, Dict, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
 
@@ -22,7 +23,7 @@ class OAuth(Oauth2Authenticator):
 
 
 class ZuoraAuthenticator:
-    def __init__(self, config: Dict):
+    def __init__(self, config: dict):
         self.config = config
 
     @property

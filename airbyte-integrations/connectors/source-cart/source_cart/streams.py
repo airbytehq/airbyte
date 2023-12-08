@@ -5,10 +5,12 @@
 
 import urllib.parse
 from abc import ABC
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 
@@ -34,8 +36,7 @@ class CartStream(HttpStream, ABC):
 
     @property
     def data_field(self) -> str:
-        """
-        Field of the response containing data.
+        """Field of the response containing data.
         By default the value self.name will be used if this property is empty or None
         """
         return None
@@ -48,8 +49,7 @@ class CartStream(HttpStream, ABC):
         return 3
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        We dont need to check the response.status_code == 429 since this header exists only in this case.
+        """We dont need to check the response.status_code == 429 since this header exists only in this case.
         Some endpoints or sometimes Cart.com API returns a datetie instead of the float value to wait to next request.
         Also after calculating the float when Cart.com return a datetime using the value directly
         causes Server Error after a few attempts. Because of this was created the `server_backoff` variable to give time
@@ -84,7 +84,7 @@ class CartStream(HttpStream, ABC):
         yield from result
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"count": 1000}
         if next_page_token:
@@ -97,8 +97,7 @@ class IncrementalCartStream(CartStream, ABC):
     cursor_field = "updated_at"
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        """
-        Generates a query for incremental logic
+        """Generates a query for incremental logic
 
         Docs: https://developers.cart.com/docs/rest-api/docs/query_syntax.md
         """
@@ -117,8 +116,7 @@ class IncrementalCartStream(CartStream, ABC):
         return ordered_params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_state = latest_record.get(self.cursor_field)
@@ -129,8 +127,7 @@ class IncrementalCartStream(CartStream, ABC):
 
 
 class CustomersCart(IncrementalCartStream):
-    """
-    Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1customers/get
+    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1customers/get
     """
 
     data_field = "customers"
@@ -140,42 +137,36 @@ class CustomersCart(IncrementalCartStream):
 
 
 class Orders(IncrementalCartStream):
-    """
-    Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1orders/get
+    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1orders/get
     """
 
 
 class OrderPayments(IncrementalCartStream):
-    """
-    Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_payments/get
+    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_payments/get
     """
 
     data_field = "payments"
 
 
 class OrderItems(IncrementalCartStream):
-    """
-    Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_items/get
+    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1order_items/get
     """
 
     data_field = "items"
 
 
 class OrderStatuses(CartStream):
-    """
-    Docs: https://developers.cart.com/docs/rest-api/ff5ada86bc8a0-get-order-statuses
+    """Docs: https://developers.cart.com/docs/rest-api/ff5ada86bc8a0-get-order-statuses
     """
 
     data_field = "order_statuses"
 
 
 class Products(IncrementalCartStream):
-    """
-    Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get
+    """Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get
     """
 
 
 class Addresses(IncrementalCartStream):
-    """
-    Docs: https://developers.cart.com/docs/rest-api/b3A6MjMzMTc3Njc-get-addresses
+    """Docs: https://developers.cart.com/docs/rest-api/b3A6MjMzMTc3Njc-get-addresses
     """

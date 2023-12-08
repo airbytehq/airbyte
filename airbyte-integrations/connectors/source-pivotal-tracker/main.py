@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_pivotal_tracker import SourcePivotalTracker
+
+from airbyte_cdk.entrypoint import launch
 
 if __name__ == "__main__":
     source = SourcePivotalTracker()

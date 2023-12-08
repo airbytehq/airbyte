@@ -8,13 +8,14 @@ import datetime
 import os
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import ClassVar, List, Optional
+from typing import ClassVar, Optional
 
 import requests
 import semver
 import yaml
-from connector_ops.utils import Connector
 from dagger import Container, Directory
+
+from connector_ops.utils import Connector
 from pipelines import hacks
 from pipelines.consts import CIContext
 from pipelines.dagger.actions import secrets
@@ -66,7 +67,7 @@ class VersionCheck(Step, ABC):
 
     @abstractmethod
     def validate(self) -> StepResult:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def _run(self) -> StepResult:
         if not self.should_run:
@@ -143,6 +144,7 @@ class QaChecks(Step):
 
         Args:
             context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
+
         Returns:
             StepResult: Failure or success of the QA checks with stdout and stderr.
         """
@@ -187,7 +189,7 @@ class AcceptanceTests(Step):
     skipped_exit_code = 5
 
     @property
-    def base_cat_command(self) -> List[str]:
+    def base_cat_command(self) -> list[str]:
         command = [
             "python",
             "-m",
@@ -214,9 +216,8 @@ class AcceptanceTests(Step):
         super().__init__(context)
         self.concurrent_test_run = concurrent_test_run
 
-    async def get_cat_command(self, connector_dir: Directory) -> List[str]:
-        """
-        Connectors can optionally setup or teardown resources before and after the acceptance tests are run.
+    async def get_cat_command(self, connector_dir: Directory) -> list[str]:
+        """Connectors can optionally setup or teardown resources before and after the acceptance tests are run.
         This is done via the acceptance.py file in their integration_tests directory.
         We append this module as a plugin the acceptance will use.
         """
@@ -235,7 +236,6 @@ class AcceptanceTests(Step):
         Returns:
             StepResult: Failure or success of the acceptances tests with stdout and stderr.
         """
-
         if not self.context.connector.acceptance_test_config:
             return StepResult(self, StepStatus.SKIPPED)
         connector_dir = await self.context.get_connector_dir()
@@ -253,8 +253,7 @@ class AcceptanceTests(Step):
         return step_result
 
     async def get_cache_buster(self) -> str:
-        """
-        This bursts the CAT cached results everyday and on new version or image size change.
+        """This bursts the CAT cached results everyday and on new version or image size change.
         It's cool because in case of a partially failing nightly build the connectors that already ran CAT won't re-run CAT.
         We keep the guarantee that a CAT runs everyday.
 
@@ -269,10 +268,10 @@ class AcceptanceTests(Step):
         Args:
             connector_under_test_container (Container): The container holding the connector under test image.
             test_input (Directory): The connector under test directory.
+
         Returns:
             Container: A container with connector acceptance tests installed.
         """
-
         if self.context.connector_acceptance_test_image.endswith(":dev"):
             cat_container = self.context.connector_acceptance_test_source_dir.docker_build()
         else:
@@ -292,9 +291,9 @@ class AcceptanceTests(Step):
         if "_EXPERIMENTAL_DAGGER_RUNNER_HOST" in os.environ:
             self.context.logger.info("Using experimental dagger runner host to run CAT with dagger-in-dagger")
             cat_container = cat_container.with_env_variable(
-                "_EXPERIMENTAL_DAGGER_RUNNER_HOST", "unix:///var/run/buildkit/buildkitd.sock"
+                "_EXPERIMENTAL_DAGGER_RUNNER_HOST", "unix:///var/run/buildkit/buildkitd.sock",
             ).with_unix_socket(
-                "/var/run/buildkit/buildkitd.sock", self.context.dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock")
+                "/var/run/buildkit/buildkitd.sock", self.context.dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock"),
             )
 
         return cat_container.with_unix_socket("/var/run/docker.sock", self.context.dagger_client.host().unix_socket("/var/run/docker.sock"))

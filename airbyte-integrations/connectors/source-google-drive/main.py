@@ -5,9 +5,10 @@
 
 import sys
 
+from source_google_drive import SourceGoogleDrive
+
 from airbyte_cdk import AirbyteEntrypoint
 from airbyte_cdk.entrypoint import launch
-from source_google_drive import SourceGoogleDrive
 
 if __name__ == "__main__":
     args = sys.argv[1:]

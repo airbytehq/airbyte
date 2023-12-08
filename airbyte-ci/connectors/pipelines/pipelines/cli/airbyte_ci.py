@@ -15,6 +15,7 @@ import asyncclick as click
 import docker
 import git
 from github import PullRequest
+
 from pipelines import main_logger
 from pipelines.cli.auto_update import __installed_version__, check_for_upgrade, pre_confirm_auto_update_flag
 from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
@@ -117,7 +118,7 @@ def check_local_docker_configuration():
     local_cpus_count = multiprocessing.cpu_count()
     if docker_cpus_count < local_cpus_count:
         logging.warning(
-            f"Your docker daemon is configured with less CPUs than your local machine ({docker_cpus_count} vs. {local_cpus_count}). This may slow down the airbyte-ci execution. Please consider increasing the number of CPUs allocated to your docker daemon in the Resource Allocation settings of Docker."
+            f"Your docker daemon is configured with less CPUs than your local machine ({docker_cpus_count} vs. {local_cpus_count}). This may slow down the airbyte-ci execution. Please consider increasing the number of CPUs allocated to your docker daemon in the Resource Allocation settings of Docker.",
         )
 
 
@@ -137,16 +138,14 @@ def is_dagger_run_enabled_by_default() -> bool:
 
 
 def check_dagger_wrap():
-    """
-    Check if the command is already wrapped by dagger run.
+    """Check if the command is already wrapped by dagger run.
     This is useful to avoid infinite recursion when calling dagger run from dagger run.
     """
     return os.getenv(DAGGER_WRAP_ENV_VAR_NAME) == "true"
 
 
 def is_current_process_wrapped_by_dagger_run() -> bool:
-    """
-    Check if the current process is wrapped by dagger run.
+    """Check if the current process is wrapped by dagger run.
     """
     called_with_dagger_run = check_dagger_wrap()
     main_logger.info(f"Called with dagger run: {called_with_dagger_run}")

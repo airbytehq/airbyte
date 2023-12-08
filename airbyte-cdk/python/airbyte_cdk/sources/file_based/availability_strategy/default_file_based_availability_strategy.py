@@ -4,7 +4,7 @@
 
 import logging
 import traceback
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Optional
 
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
@@ -22,10 +22,9 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         self.stream_reader = stream_reader
 
     def check_availability(
-        self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source]
-    ) -> Tuple[bool, Optional[str]]:  # type: ignore[override]
-        """
-        Perform a connection check for the stream (verify that we can list files from the stream).
+        self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source],
+    ) -> tuple[bool, Optional[str]]:  # type: ignore[override]
+        """Perform a connection check for the stream (verify that we can list files from the stream).
 
         Returns (True, None) if successful, otherwise (False, <error message>).
         """
@@ -37,10 +36,9 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         return True, None
 
     def check_availability_and_parsability(
-        self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source]
-    ) -> Tuple[bool, Optional[str]]:
-        """
-        Perform a connection check for the stream.
+        self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source],
+    ) -> tuple[bool, Optional[str]]:
+        """Perform a connection check for the stream.
 
         Returns (True, None) if successful, otherwise (False, <error message>).
 
@@ -62,7 +60,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
             return False, config_check_error_message
         try:
             file = self._check_list_files(stream)
-            if not parser.parser_max_n_files_for_parsability == 0:
+            if parser.parser_max_n_files_for_parsability != 0:
                 self._check_parse_record(stream, file, logger)
             else:
                 # If the parser is set to not check parsability, we still want to check that we can open the file.
@@ -74,8 +72,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         return True, None
 
     def _check_list_files(self, stream: "AbstractFileBasedStream") -> RemoteFile:
-        """
-        Check that we can list files from the stream.
+        """Check that we can list files from the stream.
 
         Returns the first file if successful, otherwise raises a CheckAvailabilityError.
         """
@@ -112,4 +109,4 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
                     file=file.uri,
                 )
 
-        return None
+        return

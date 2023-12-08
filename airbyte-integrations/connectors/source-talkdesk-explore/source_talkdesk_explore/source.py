@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
@@ -14,7 +15,7 @@ from .talkdesk_auth import TalkdeskAuth
 
 
 class SourceTalkdeskExplore(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         talkdesk_auth = TalkdeskAuth(config)
         token_request = talkdesk_auth.request_bearer_token()
 
@@ -29,7 +30,7 @@ class SourceTalkdeskExplore(AbstractSource):
         else:
             return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         talkdesk_auth = TalkdeskAuth(config)
         token_request = talkdesk_auth.request_bearer_token()
         talkdesk_auth_token = token_request.get("access_token", None)

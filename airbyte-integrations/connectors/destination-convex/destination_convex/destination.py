@@ -3,10 +3,12 @@
 #
 
 
+from collections.abc import Iterable, Mapping
 from logging import Logger
-from typing import Any, Iterable, List, Mapping, Optional, cast
+from typing import Any, Optional, cast
 
 import requests
+
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -29,8 +31,7 @@ class DestinationConvex(Destination):
         configured_catalog: ConfiguredAirbyteCatalog,
         input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
-        """
-        Reads the input stream of messages, config, and catalog to write data to the destination.
+        """Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
         in the input message stream. Outputting a state message means that every AirbyteRecordMessage which came before it has been
@@ -90,7 +91,7 @@ class DestinationConvex(Destination):
 
     def table_metadata(
         self,
-        streams: List[ConfiguredAirbyteStream],
+        streams: list[ConfiguredAirbyteStream],
     ) -> Mapping[str, Any]:
         table_metadata = {}
         for s in streams:
@@ -109,8 +110,7 @@ class DestinationConvex(Destination):
         return table_metadata
 
     def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
+        """Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
 
         :param logger: Logging object to display debug/info/error to the logs
@@ -129,4 +129,4 @@ class DestinationConvex(Destination):
         if resp.status_code == 200:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         else:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(resp)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {resp!r}")

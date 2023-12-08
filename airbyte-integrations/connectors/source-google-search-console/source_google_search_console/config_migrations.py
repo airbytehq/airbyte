@@ -4,7 +4,8 @@
 
 
 import logging
-from typing import Any, List, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
@@ -15,8 +16,7 @@ logger = logging.getLogger("airbyte_logger")
 
 
 class MigrateCustomReports:
-    """
-    This class stands for migrating the config at runtime,
+    """This class stands for migrating the config at runtime,
     while providing the backward compatibility when falling back to the previous source version.
 
     Specifically, starting from `1.3.3`, the `custom_reports` property should be like :
@@ -31,9 +31,9 @@ class MigrateCustomReports:
 
     @classmethod
     def should_migrate(cls, config: Mapping[str, Any]) -> bool:
-        """
-        This method determines whether the config should be migrated to have the new structure for the `custom_reports`,
+        """This method determines whether the config should be migrated to have the new structure for the `custom_reports`,
         based on the source spec.
+
         Returns:
             > True, if the transformation is necessary
             > False, otherwise.
@@ -79,9 +79,8 @@ class MigrateCustomReports:
             print(message.json(exclude_unset=True))
 
     @classmethod
-    def migrate(cls, args: List[str], source: Source) -> None:
-        """
-        This method checks the input args, should the config be migrated,
+    def migrate(cls, args: list[str], source: Source) -> None:
+        """This method checks the input args, should the config be migrated,
         transform if neccessary and emit the CONTROL message.
         """
         # get config path

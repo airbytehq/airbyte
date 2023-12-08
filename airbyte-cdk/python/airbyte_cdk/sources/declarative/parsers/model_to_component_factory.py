@@ -7,7 +7,11 @@ from __future__ import annotations
 import importlib
 import inspect
 import re
-from typing import Any, Callable, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
+from collections.abc import Callable, Mapping
+from typing import Any, Optional, Union, get_args, get_origin, get_type_hints
+
+from isodate import parse_duration
+from pydantic import BaseModel
 
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
@@ -113,8 +117,6 @@ from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTra
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
-from isodate import parse_duration
-from pydantic import BaseModel
 
 ComponentDefinition = Mapping[str, Any]
 
@@ -137,11 +139,11 @@ class ModelToComponentFactory:
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._disable_retries = disable_retries
         self._message_repository = message_repository or InMemoryMessageRepository(  # type: ignore
-            self._evaluate_log_level(emit_connector_builder_messages)
+            self._evaluate_log_level(emit_connector_builder_messages),
         )
 
     def _init_mappings(self) -> None:
-        self.PYDANTIC_MODEL_TO_CONSTRUCTOR: Mapping[Type[BaseModel], Callable[..., Any]] = {
+        self.PYDANTIC_MODEL_TO_CONSTRUCTOR: Mapping[type[BaseModel], Callable[..., Any]] = {
             AddedFieldDefinitionModel: self.create_added_field_definition,
             AddFieldsModel: self.create_add_fields,
             ApiKeyAuthenticatorModel: self.create_api_key_authenticator,
@@ -198,10 +200,9 @@ class ModelToComponentFactory:
         self.TYPE_NAME_TO_MODEL = {cls.__name__: cls for cls in self.PYDANTIC_MODEL_TO_CONSTRUCTOR}
 
     def create_component(
-        self, model_type: Type[BaseModel], component_definition: ComponentDefinition, config: Config, **kwargs: Any
+        self, model_type: type[BaseModel], component_definition: ComponentDefinition, config: Config, **kwargs: Any,
     ) -> Any:
-        """
-        Takes a given Pydantic model type and Mapping representing a component definition and creates a declarative component and
+        """Takes a given Pydantic model type and Mapping representing a component definition and creates a declarative component and
         subcomponents which will be used at runtime. This is done by first parsing the mapping into a Pydantic model and then creating
         creating declarative components from that model.
 
@@ -210,7 +211,6 @@ class ModelToComponentFactory:
         :param config: The connector config that is provided by the customer
         :return: The declarative component to be used at runtime
         """
-
         component_type = component_definition.get("type")
         if component_definition.get("type") != model_type.__name__:
             raise ValueError(f"Expected manifest component of type {model_type.__name__}, but received {component_type} instead")
@@ -252,7 +252,7 @@ class ModelToComponentFactory:
         return AddFields(fields=added_field_definitions, parameters=model.parameters or {})
 
     @staticmethod
-    def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[Type[Any]]:
+    def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[type[Any]]:
         if not value_type:
             return None
         names_to_types = {
@@ -265,7 +265,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_api_key_authenticator(
-        model: ApiKeyAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
+        model: ApiKeyAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any,
     ) -> ApiKeyAuthenticator:
         if model.inject_into is None and model.header is None:
             raise ValueError("Expected either inject_into or header to be set for ApiKeyAuthenticator")
@@ -299,7 +299,7 @@ class ModelToComponentFactory:
         )
 
     def create_session_token_authenticator(
-        self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
+        self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any,
     ) -> Union[ApiKeyAuthenticator, BearerAuthenticator]:
         login_requester = self._create_component_from_model(model=model.login_requester, config=config, name=f"{name}_login_requester")
         token_provider = SessionTokenProvider(
@@ -325,12 +325,12 @@ class ModelToComponentFactory:
     @staticmethod
     def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs: Any) -> BasicHttpAuthenticator:
         return BasicHttpAuthenticator(
-            password=model.password or "", username=model.username, config=config, parameters=model.parameters or {}
+            password=model.password or "", username=model.username, config=config, parameters=model.parameters or {},
         )
 
     @staticmethod
     def create_bearer_authenticator(
-        model: BearerAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
+        model: BearerAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any,
     ) -> BearerAuthenticator:
         if token_provider is not None and model.api_token != "":
             raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
@@ -376,14 +376,12 @@ class ModelToComponentFactory:
         )
 
     def create_custom_component(self, model: Any, config: Config, **kwargs: Any) -> Any:
-        """
-        Generically creates a custom component based on the model type and a class_name reference to the custom Python class being
+        """Generically creates a custom component based on the model type and a class_name reference to the custom Python class being
         instantiated. Only the model's additional properties that match the custom class definition are passed to the constructor
         :param model: The Pydantic model of the custom component being created
         :param config: The custom defined connector config
         :return: The declarative component built from the Pydantic model to be used at runtime
         """
-
         custom_component_class = self._get_class_from_fully_qualified_class_name(model.class_name)
         component_fields = get_type_hints(custom_component_class)
         model_args = model.dict()
@@ -447,13 +445,13 @@ class ModelToComponentFactory:
         return None
 
     @staticmethod
-    def is_builtin_type(cls: Optional[Type[Any]]) -> bool:
+    def is_builtin_type(cls: Optional[type[Any]]) -> bool:
         if not cls:
             return False
         return cls.__module__ == "builtins"
 
     @staticmethod
-    def _extract_missing_parameters(error: TypeError) -> List[str]:
+    def _extract_missing_parameters(error: TypeError) -> list[str]:
         parameter_search = re.search(r"keyword-only.*:\s(.*)", str(error))
         if parameter_search:
             return re.findall(r"\'(.+?)\'", parameter_search.group(1))
@@ -486,12 +484,12 @@ class ModelToComponentFactory:
                 if missing_parameters:
                     raise ValueError(
                         f"Error creating component '{type_name}' with parent custom component {model.class_name}: Please provide "
-                        + ", ".join((f"{type_name}.$parameters.{parameter}" for parameter in missing_parameters))
+                        + ", ".join(f"{type_name}.$parameters.{parameter}" for parameter in missing_parameters),
                     )
                 raise TypeError(f"Error creating component '{type_name}' with parent custom component {model.class_name}: {error}")
         else:
             raise ValueError(
-                f"Error creating custom component {model.class_name}. Subcomponent creation has not been implemented for '{type_name}'"
+                f"Error creating custom component {model.class_name}. Subcomponent creation has not been implemented for '{type_name}'",
             )
 
     @staticmethod
@@ -597,7 +595,7 @@ class ModelToComponentFactory:
             stream_slicer_model = model.retriever.partition_router
             if isinstance(stream_slicer_model, list):
                 stream_slicer = CartesianProductStreamSlicer(
-                    [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
+                    [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={},
                 )
             else:
                 stream_slicer = self._create_component_from_model(model=stream_slicer_model, config=config)
@@ -636,7 +634,7 @@ class ModelToComponentFactory:
                     http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS,
                     config=config,
                     parameters=model.parameters or {},
-                )
+                ),
             )
             response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, config=config, parameters=model.parameters or {}))
 
@@ -649,7 +647,7 @@ class ModelToComponentFactory:
         )
 
     def create_default_paginator(
-        self, model: DefaultPaginatorModel, config: Config, *, url_base: str, cursor_used_for_stop_condition: Optional[Cursor] = None
+        self, model: DefaultPaginatorModel, config: Config, *, url_base: str, cursor_used_for_stop_condition: Optional[Cursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         page_size_option = (
@@ -661,7 +659,7 @@ class ModelToComponentFactory:
         pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config)
         if cursor_used_for_stop_condition:
             pagination_strategy = StopConditionPaginationStrategyDecorator(
-                pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition)
+                pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition),
             )
 
         paginator = DefaultPaginator(
@@ -679,7 +677,7 @@ class ModelToComponentFactory:
 
     def create_dpath_extractor(self, model: DpathExtractorModel, config: Config, **kwargs: Any) -> DpathExtractor:
         decoder = self._create_component_from_model(model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
-        model_field_path: List[Union[InterpolatedString, str]] = [x for x in model.field_path]
+        model_field_path: list[Union[InterpolatedString, str]] = [x for x in model.field_path]
         return DpathExtractor(decoder=decoder, field_path=model_field_path, config=config, parameters=model.parameters or {})
 
     @staticmethod
@@ -799,11 +797,11 @@ class ModelToComponentFactory:
                 config,
                 InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters or {}).eval(config),
                 access_token_name=InterpolatedString.create(
-                    model.access_token_name or "access_token", parameters=model.parameters or {}
+                    model.access_token_name or "access_token", parameters=model.parameters or {},
                 ).eval(config),
                 refresh_token_name=model.refresh_token_updater.refresh_token_name,
                 expires_in_name=InterpolatedString.create(model.expires_in_name or "expires_in", parameters=model.parameters or {}).eval(
-                    config
+                    config,
                 ),
                 client_id=InterpolatedString.create(model.client_id, parameters=model.parameters or {}).eval(config),
                 client_secret=InterpolatedString.create(model.client_secret, parameters=model.parameters or {}).eval(config),
@@ -879,7 +877,7 @@ class ModelToComponentFactory:
         return RequestOption(field_name=model.field_name, inject_into=inject_into, parameters={})
 
     def create_record_selector(
-        self, model: RecordSelectorModel, config: Config, *, transformations: List[RecordTransformation], **kwargs: Any
+        self, model: RecordSelectorModel, config: Config, *, transformations: list[RecordTransformation], **kwargs: Any,
     ) -> RecordSelector:
         extractor = self._create_component_from_model(model=model.extractor, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
@@ -898,7 +896,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_legacy_session_token_authenticator(
-        model: LegacySessionTokenAuthenticatorModel, config: Config, *, url_base: str, **kwargs: Any
+        model: LegacySessionTokenAuthenticatorModel, config: Config, *, url_base: str, **kwargs: Any,
     ) -> LegacySessionTokenAuthenticator:
         return LegacySessionTokenAuthenticator(
             api_url=url_base,
@@ -919,10 +917,10 @@ class ModelToComponentFactory:
         config: Config,
         *,
         name: str,
-        primary_key: Optional[Union[str, List[str], List[List[str]]]],
+        primary_key: Optional[Union[str, list[str], list[list[str]]]],
         stream_slicer: Optional[StreamSlicer],
         stop_condition_on_cursor: bool = False,
-        transformations: List[RecordTransformation],
+        transformations: list[RecordTransformation],
     ) -> SimpleRetriever:
         requester = self._create_component_from_model(model=model.requester, config=config, name=name)
         record_selector = self._create_component_from_model(model=model.record_selector, config=config, transformations=transformations)
@@ -933,7 +931,7 @@ class ModelToComponentFactory:
         cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None
         paginator = (
             self._create_component_from_model(
-                model=model.paginator, config=config, url_base=url_base, cursor_used_for_stop_condition=cursor_used_for_stop_condition
+                model=model.paginator, config=config, url_base=url_base, cursor_used_for_stop_condition=cursor_used_for_stop_condition,
             )
             if model.paginator
             else NoPagination(parameters={})
@@ -974,7 +972,7 @@ class ModelToComponentFactory:
         )
 
     def create_substream_partition_router(
-        self, model: SubstreamPartitionRouterModel, config: Config, **kwargs: Any
+        self, model: SubstreamPartitionRouterModel, config: Config, **kwargs: Any,
     ) -> SubstreamPartitionRouter:
         parent_stream_configs = []
         if model.parent_stream_configs:
@@ -982,7 +980,7 @@ class ModelToComponentFactory:
                 [
                     self._create_message_repository_substream_wrapper(model=parent_stream_config, config=config)
                     for parent_stream_config in model.parent_stream_configs
-                ]
+                ],
             )
 
         return SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters=model.parameters or {}, config=config)
@@ -1007,10 +1005,10 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_wait_until_time_from_header(
-        model: WaitUntilTimeFromHeaderModel, config: Config, **kwargs: Any
+        model: WaitUntilTimeFromHeaderModel, config: Config, **kwargs: Any,
     ) -> WaitUntilTimeFromHeaderBackoffStrategy:
         return WaitUntilTimeFromHeaderBackoffStrategy(
-            header=model.header, parameters=model.parameters or {}, config=config, min_wait=model.min_wait, regex=model.regex
+            header=model.header, parameters=model.parameters or {}, config=config, min_wait=model.min_wait, regex=model.regex,
         )
 
     def get_message_repository(self) -> MessageRepository:

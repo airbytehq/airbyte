@@ -4,8 +4,7 @@
 
 
 class CircularReferenceException(Exception):
-    """
-    Raised when a circular reference is detected in a manifest.
+    """Raised when a circular reference is detected in a manifest.
     """
 
     def __init__(self, reference):
@@ -13,8 +12,7 @@ class CircularReferenceException(Exception):
 
 
 class UndefinedReferenceException(Exception):
-    """
-    Raised when refering to an undefined reference.
+    """Raised when refering to an undefined reference.
     """
 
     def __init__(self, path, reference):

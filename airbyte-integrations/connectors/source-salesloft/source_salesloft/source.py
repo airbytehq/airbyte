@@ -4,17 +4,19 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import pendulum
 import requests
+from requests.auth import AuthBase
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
-from requests.auth import AuthBase
 
 
 # Basic full refresh stream
@@ -41,7 +43,7 @@ class SalesloftStream(HttpStream, ABC):
             raise KeyError(f"error parsing next_page token: {e}")
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"per_page": 100, "page": 1}
         if self.created_at_field:
@@ -74,7 +76,7 @@ class IncrementalSalesloftStream(SalesloftStream, ABC):
         return {self.cursor_field: cursor_value.strftime(self.datetime_format)}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
@@ -275,7 +277,7 @@ class SourceSalesloft(AbstractSource):
             token_refresh_endpoint="https://accounts.salesloft.com/oauth/token",
         )
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             auth = self._create_authenticator(config)
             response = requests.get("https://api.salesloft.com/v2/me.json", headers=auth.get_auth_header())
@@ -284,7 +286,7 @@ class SourceSalesloft(AbstractSource):
         except Exception as e:
             return False, str(e)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         auth = self._create_authenticator(config)
         args = (auth, config["start_date"])
         return [

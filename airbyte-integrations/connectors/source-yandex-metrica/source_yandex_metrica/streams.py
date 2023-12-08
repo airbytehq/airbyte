@@ -8,15 +8,17 @@ import logging
 import re
 import time
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, Optional, Tuple
+from collections.abc import Iterable, Mapping
+from typing import Any, Optional
 
 import pendulum
 import requests
+from pendulum import DateTime
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams.core import IncrementalMixin, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
-from pendulum import DateTime
 
 logger = logging.getLogger("airbyte")
 
@@ -31,7 +33,7 @@ class YandexMetricaStream(HttpStream, ABC):
         self.params = {}
         self.config = config
 
-    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> tuple[bool, Optional[str]]:
         return True, None
 
     def get_json_schema(
@@ -50,7 +52,7 @@ class YandexMetricaStream(HttpStream, ABC):
     ) -> str:
         pass
 
-    def get_request_fields(self) -> List[str]:
+    def get_request_fields(self) -> list[str]:
         return list(super().get_json_schema().get("properties"))
 
     @property
@@ -58,7 +60,7 @@ class YandexMetricaStream(HttpStream, ABC):
         return False
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         return {"Content-Type": "application/x-ymetrika+json"}
 
@@ -66,8 +68,7 @@ class YandexMetricaStream(HttpStream, ABC):
         return None
 
     def evaluate_logrequest(self):
-        """
-        Clean logs of the processed request prepared for downloading.
+        """Clean logs of the processed request prepared for downloading.
 
         See: https://yandex.com/dev/metrika/doc/api2/logs/queries/clean.html
         """
@@ -89,8 +90,7 @@ class YandexMetricaStream(HttpStream, ABC):
         return response.json().get("log_request_evaluation", {}).get("possible") if response.status_code == 200 else False
 
     def create_logrequest(self):
-        """
-        Creates logs request.
+        """Creates logs request.
 
         See: https://yandex.com/dev/metrika/doc/api2/logs/queries/createlogrequest.html
         """
@@ -111,9 +111,8 @@ class YandexMetricaStream(HttpStream, ABC):
         response = self._send_request(prepared_request, {})
         return response.json().get("log_request", {}).get("request_id")
 
-    def wait_for_job(self, logrequest_id: str) -> Tuple[str, int]:
-        """
-        Returns information about logs request.
+    def wait_for_job(self, logrequest_id: str) -> tuple[str, int]:
+        """Returns information about logs request.
 
         See: https://yandex.com/dev/metrika/doc/api2/logs/queries/getlogrequest.html
         """
@@ -159,8 +158,7 @@ class YandexMetricaStream(HttpStream, ABC):
             yield row
 
     def clean_logrequest(self, logrequest_id: str):
-        """
-        Clean logs of the processed request prepared for downloading.
+        """Clean logs of the processed request prepared for downloading.
 
         See: https://yandex.com/dev/metrika/doc/api2/logs/queries/clean.html
         """
@@ -218,7 +216,7 @@ class IncrementalYandexMetricaStream(YandexMetricaStream, IncrementalMixin):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:

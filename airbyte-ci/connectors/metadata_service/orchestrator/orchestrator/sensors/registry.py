@@ -7,8 +7,7 @@ from orchestrator.utils.dagster_helpers import string_array_to_hash
 
 
 def registry_updated_sensor(job, resources_def) -> SensorDefinition:
-    """
-    This sensor is responsible for polling the registry folder in GCS for updates to our oss and cloud registries.
+    """This sensor is responsible for polling the registry folder in GCS for updates to our oss and cloud registries.
     If it has, it will trigger the given job.
     """
 
@@ -27,7 +26,7 @@ def registry_updated_sensor(job, resources_def) -> SensorDefinition:
             context.log.info(f"Old etag cursor: {context.cursor}")
 
             new_etags_cursor = string_array_to_hash(
-                [resources.latest_oss_registry_gcs_blob.etag, resources.latest_cloud_registry_gcs_blob.etag]
+                [resources.latest_oss_registry_gcs_blob.etag, resources.latest_cloud_registry_gcs_blob.etag],
             )
 
             context.log.info(f"New etag cursor: {new_etags_cursor}")

@@ -41,8 +41,7 @@ class PublishConnectorLifecycleStage(str, Enum):
 
 
 class PublishConnectorLifecycle:
-    """
-    This class is used to log the lifecycle of a publishing a connector to the registries.
+    """This class is used to log the lifecycle of a publishing a connector to the registries.
 
     It is used to log to the logger and slack (if enabled).
 

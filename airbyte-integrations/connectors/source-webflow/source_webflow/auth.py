@@ -2,14 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class WebflowAuthMixin:
-    """
-    Mixin class for providing additional HTTP header for specifying the "accept-version"
+    """Mixin class for providing additional HTTP header for specifying the "accept-version"
     """
 
     def __init__(self, *, accept_version_header: str = "accept-version", accept_version: str, **kwargs):
@@ -22,7 +22,6 @@ class WebflowAuthMixin:
 
 
 class WebflowTokenAuthenticator(WebflowAuthMixin, TokenAuthenticator):
-    """
-    Auth class for Personal Access Token
+    """Auth class for Personal Access Token
     https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens
     """

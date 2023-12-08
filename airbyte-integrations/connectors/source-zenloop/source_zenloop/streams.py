@@ -5,10 +5,12 @@
 
 import math
 from abc import ABC
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime, timedelta
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -69,7 +71,7 @@ class ChildStreamMixin:
         # return nothing otherwise
         if not public_hash_id:
             for item in self.parent_stream_class(
-                api_token=self.api_token, date_from=self.date_from, survey_id=self.survey_id, survey_group_id=self.survey_group_id
+                api_token=self.api_token, date_from=self.date_from, survey_id=self.survey_id, survey_group_id=self.survey_group_id,
             ).read_records(sync_mode=sync_mode):
                 # set date_from to most current cursor_field or date_from if not incremental
                 if stream_state:
@@ -92,14 +94,14 @@ class IncrementalZenloopStream(ZenloopStream, ABC):
             # add 1 second to not pull latest_record again
             latest_record_date = (
                 datetime.strptime(latest_record[self.cursor_field], "%Y-%m-%dT%H:%M:%S.%fZ") + timedelta(seconds=1)
-            ).isoformat() + str("Z")
+            ).isoformat() + "Z"
         else:
             latest_record_date = ""
         max_record = max(latest_record_date, current_stream_state.get(self.cursor_field, ""))
         return {self.cursor_field: max_record}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         if stream_state:
@@ -120,7 +122,7 @@ class Surveys(ZenloopStream):
     use_cache = True
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "surveys"
 
@@ -143,7 +145,7 @@ class Answers(ChildStreamMixin, IncrementalZenloopStream):
     }
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         # take optional survey_id if entered
         if self.survey_id:
@@ -166,7 +168,7 @@ class Properties(ChildStreamMixin, ZenloopStream):
     parent_stream_class = Surveys
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         # take optional survey_id if entered
         if self.survey_id:
@@ -189,7 +191,7 @@ class SurveyGroups(ZenloopStream):
     use_cache = True
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "survey_groups"
 
@@ -212,7 +214,7 @@ class AnswersSurveyGroup(ChildStreamMixin, IncrementalZenloopStream):
     }
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         # take optional survey_group_id if entered
         if self.survey_group_id:

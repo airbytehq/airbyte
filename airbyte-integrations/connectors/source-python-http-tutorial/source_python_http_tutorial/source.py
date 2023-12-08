@@ -3,10 +3,12 @@
 #
 
 
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime, timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -30,12 +32,12 @@ class ExchangeRates(HttpStream):
         return None
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return stream_slice["date"]
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         # The api requires that we include apikey as a header so we do that in this method
         return {"apikey": self.apikey}
@@ -70,9 +72,8 @@ class ExchangeRates(HttpStream):
         else:
             return {"date": self.start_date.strftime("%Y-%m-%d")}
 
-    def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
-        """
-        Returns a list of each day between the start date and now.
+    def _chunk_date_range(self, start_date: datetime) -> list[Mapping[str, any]]:
+        """Returns a list of each day between the start date and now.
         The return value is a list of dicts {'date': date_string}.
         """
         dates = []
@@ -84,14 +85,14 @@ class ExchangeRates(HttpStream):
         return dates
 
     def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, any]]]:
         start_date = datetime.strptime(stream_state["date"], "%Y-%m-%d") if stream_state and "date" in stream_state else self.start_date
         return self._chunk_date_range(start_date)
 
 
 class SourcePythonHttpTutorial(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         accepted_currencies = {
             "USD",
             "JPY",
@@ -105,7 +106,7 @@ class SourcePythonHttpTutorial(AbstractSource):
         else:
             return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         # NoAuth just means there is no authentication required for this API. It's only included for completeness
         # of the example, but if you don't need authentication, you don't need to pass an authenticator at all.
         # Other authenticators are available for API token-based auth and Oauth2.

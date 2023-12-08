@@ -3,15 +3,15 @@
 #
 
 
-"""
-This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
+"""This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
 source connector.
 
 WARNING: Do not modify this file.
 """
 
 import logging
-from typing import Any, Iterator, List, Mapping, MutableMapping, Union
+from collections.abc import Iterator, Mapping, MutableMapping
+from typing import Any, Union
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -31,7 +31,7 @@ class ConfigException(Exception):
 # Declarative Source
 class SourcePrestashop(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+        super().__init__(path_to_yaml="manifest.yaml")
 
     def _validate_and_transform(self, config: Mapping[str, Any]):
         if not config.get("_allow_http"):
@@ -55,7 +55,7 @@ class SourcePrestashop(YamlDeclarativeSource):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Union[list[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
         config = self._validate_and_transform(config)
         return super().read(logger, config, catalog, state)

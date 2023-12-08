@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Iterable, Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -13,8 +14,7 @@ from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamSta
 
 @dataclass
 class ListPartitionRouter(StreamSlicer):
-    """
-    Partition router that iterates over the values of a list
+    """Partition router that iterates over the values of a list
     If values is a string, then evaluate it as literal and assert the resulting literal is a list
 
     Attributes:
@@ -24,7 +24,7 @@ class ListPartitionRouter(StreamSlicer):
         request_option (Optional[RequestOption]): The request option to configure the HTTP request
     """
 
-    values: Union[str, List[str]]
+    values: Union[str, list[str]]
     cursor_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]

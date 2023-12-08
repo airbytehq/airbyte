@@ -3,14 +3,14 @@
 #
 
 import json
-from typing import Any, Dict, Iterable, List, Mapping
+from collections.abc import Iterable, Mapping
+from typing import Any
 
 import pendulum as pdm
 
 
-def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
-    """
-    Outputs the Dict with key:value slices for the stream.
+def get_parent_stream_values(record: dict, key_value_map: dict) -> dict:
+    """Outputs the Dict with key:value slices for the stream.
     :: EXAMPLE:
         Input:
             records = [{dict}, {dict}, ...],
@@ -30,10 +30,9 @@ def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
 
 
 def transform_change_audit_stamps(
-    record: Dict, dict_key: str = "changeAuditStamps", props: List = ["created", "lastModified"], fields: List = ["time"]
+    record: dict, dict_key: str = "changeAuditStamps", props: list = ["created", "lastModified"], fields: list = ["time"],
 ) -> Mapping[str, Any]:
-    """
-    :: EXAMPLE `changeAuditStamps` input structure:
+    """:: EXAMPLE `changeAuditStamps` input structure:
         {
             "changeAuditStamps": {
                 "created": {"time": 1629581275000},
@@ -47,8 +46,7 @@ def transform_change_audit_stamps(
             "lastModified": "2021-08-22 20:35:44"
         }
     """
-
-    target_dict: Dict = record.get(dict_key)
+    target_dict: dict = record.get(dict_key)
     for prop in props:
         # Update dict with flatten key:value
         for field in fields:
@@ -58,11 +56,10 @@ def transform_change_audit_stamps(
     return record
 
 
-def date_str_from_date_range(record: Dict, prefix: str) -> str:
-    """
-    Makes the ISO8601 format date string from the input <prefix>.<part of the date>
+def date_str_from_date_range(record: dict, prefix: str) -> str:
+    """Makes the ISO8601 format date string from the input <prefix>.<part of the date>
 
-    EXAMPLE:
+    Example:
         Input: record
         {
             "start.year": 2021, "start.month": 8, "start.day": 1,
@@ -76,7 +73,6 @@ def date_str_from_date_range(record: Dict, prefix: str) -> str:
         With `prefix` = "end"
             str: "2021-09-31",
     """
-
     year = record.get(f"{prefix}.year")
     month = record.get(f"{prefix}.month")
     day = record.get(f"{prefix}.day")
@@ -84,13 +80,12 @@ def date_str_from_date_range(record: Dict, prefix: str) -> str:
 
 
 def transform_date_range(
-    record: Dict,
+    record: dict,
     dict_key: str = "dateRange",
-    props: List = ["start", "end"],
-    fields: List = ["year", "month", "day"],
+    props: list = ["start", "end"],
+    fields: list = ["year", "month", "day"],
 ) -> Mapping[str, Any]:
-    """
-    :: EXAMPLE `dateRange` input structure in Analytics streams:
+    """:: EXAMPLE `dateRange` input structure in Analytics streams:
         {
             "dateRange": {
                 "start": {"month": 8, "day": 13, "year": 2021},
@@ -106,13 +101,13 @@ def transform_date_range(
     # define list of tmp keys for cleanup.
     keys_to_remove = [dict_key, "start.day", "start.month", "start.year", "end.day", "end.month", "end.year", "start", "end"]
 
-    target_dict: Dict = record.get(dict_key)
+    target_dict: dict = record.get(dict_key)
     for prop in props:
         # Update dict with flatten key:value
         for field in fields:
             record.update(**{f"{prop}.{field}": target_dict.get(prop).get(field)})
     # We build `start_date` & `end_date` fields from nested structure.
-    record.update(**{"start_date": date_str_from_date_range(record, "start"), "end_date": date_str_from_date_range(record, "end")})
+    record.update(start_date=date_str_from_date_range(record, "start"), end_date=date_str_from_date_range(record, "end"))
     # Cleanup tmp fields & nested used parts
     for key in keys_to_remove:
         if key in record:
@@ -121,11 +116,10 @@ def transform_date_range(
 
 
 def transform_targeting_criteria(
-    record: Dict,
+    record: dict,
     dict_key: str = "targetingCriteria",
 ) -> Mapping[str, Any]:
-    """
-    :: EXAMPLE `targetingCriteria` input structure:
+    """:: EXAMPLE `targetingCriteria` input structure:
         {
             "targetingCriteria": {
                 "include": {
@@ -204,9 +198,8 @@ def transform_targeting_criteria(
 
     """
 
-    def unnest_dict(nested_dict: Dict) -> Iterable[Dict]:
-        """
-        Unnest the nested dict to simplify the normalization
+    def unnest_dict(nested_dict: dict) -> Iterable[dict]:
+        """Unnest the nested dict to simplify the normalization
 
         EXAMPLE OUTPUT:
             [
@@ -215,17 +208,16 @@ def transform_targeting_criteria(
                 {"type": "some_other_key", "values": "some_other_values"}
             ]
         """
-
         for key, value in nested_dict.items():
             values = []
-            if isinstance(value, List):
+            if isinstance(value, list):
                 if len(value) > 0:
                     if isinstance(value[0], str):
                         values = value
-                    elif isinstance(value[0], Dict):
+                    elif isinstance(value[0], dict):
                         for v in value:
                             values.append(v)
-            elif isinstance(value, Dict):
+            elif isinstance(value, dict):
                 values.append(value)
             yield {"type": key, "values": values}
 
@@ -256,11 +248,10 @@ def transform_targeting_criteria(
 
 
 def transform_variables(
-    record: Dict,
+    record: dict,
     dict_key: str = "variables",
 ) -> Mapping[str, Any]:
-    """
-    :: EXAMPLE `variables` input:
+    """:: EXAMPLE `variables` input:
     {
         "variables": {
             "data": {
@@ -285,7 +276,6 @@ def transform_variables(
         }
     }
     """
-
     variables = record.get(dict_key).get("data")
     for key, params in variables.items():
         record["variables"]["type"] = key
@@ -298,9 +288,8 @@ def transform_variables(
     return record
 
 
-def transform_data(records: List) -> Iterable[Mapping]:
-    """
-    We need to transform the nested complex data structures into simple key:value pair,
+def transform_data(records: list) -> Iterable[Mapping]:
+    """We need to transform the nested complex data structures into simple key:value pair,
     to be properly normalised in the destination.
     """
     for record in records:

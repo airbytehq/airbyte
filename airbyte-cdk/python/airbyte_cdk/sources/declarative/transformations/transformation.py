@@ -3,16 +3,16 @@
 #
 
 from abc import abstractmethod
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping, Optional
+from typing import Any, Optional
 
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 
 
 @dataclass
 class RecordTransformation:
-    """
-    Implementations of this class define transformations that can be applied to records of a stream.
+    """Implementations of this class define transformations that can be applied to records of a stream.
     """
 
     @abstractmethod
@@ -23,8 +23,7 @@ class RecordTransformation:
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> Mapping[str, Any]:
-        """
-        Transform a record by adding, deleting, or mutating fields.
+        """Transform a record by adding, deleting, or mutating fields.
 
         :param record: The input record to be transformed
         :param config: The user-provided configuration as specified by the source's spec

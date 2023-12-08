@@ -2,9 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Dict, List, Set, Tuple, Union
+from typing import Union
 
 import yaml
+
 from connector_ops import utils
 
 BACKWARD_COMPATIBILITY_REVIEWERS = {"connector-operations", "connector-extensibility"}
@@ -16,12 +17,12 @@ REVIEW_REQUIREMENTS_FILE_PATH = ".github/connector_org_review_requirements.yaml"
 
 
 def find_changed_strategic_connectors(
-    languages: Tuple[utils.ConnectorLanguage] = (
+    languages: tuple[utils.ConnectorLanguage] = (
         utils.ConnectorLanguage.JAVA,
         utils.ConnectorLanguage.LOW_CODE,
         utils.ConnectorLanguage.PYTHON,
     ),
-) -> Set[utils.Connector]:
+) -> set[utils.Connector]:
     """Find important connectors modified on the current branch.
 
     Returns:
@@ -31,7 +32,7 @@ def find_changed_strategic_connectors(
     return {connector for connector in changed_connectors if connector.is_strategic_connector and connector.language in languages}
 
 
-def get_bypass_reason_changes() -> Set[utils.Connector]:
+def get_bypass_reason_changes() -> set[utils.Connector]:
     """Find connectors that have modified bypass_reasons.
 
     Returns:
@@ -41,7 +42,7 @@ def get_bypass_reason_changes() -> Set[utils.Connector]:
     return bypass_reason_changes.intersection(find_changed_strategic_connectors())
 
 
-def find_mandatory_reviewers() -> List[Dict[str, Union[str, Dict[str, List]]]]:
+def find_mandatory_reviewers() -> list[dict[str, Union[str, dict[str, list]]]]:
     requirements = [
         {
             "name": "Backwards compatibility test skip",

@@ -3,7 +3,6 @@
 #
 
 import argparse
-import json
 import os
 import re
 import subprocess
@@ -21,14 +20,14 @@ SLACK_CHANNEL_FOR_NOTIFICATIONS = "infra-alerts"
 
 This script is intended to be run in conjuction with cleanup-workflow-runs.py to keep GH actions clean.
 
-The basic workflow is 
+The basic workflow is
 
-identify-dormant-workflows.py notifies of dormant workflows (workflows that have no runs newer than DAYS_TO_KEEP_ORPHANED_JOBS days) daily -> 
+identify-dormant-workflows.py notifies of dormant workflows (workflows that have no runs newer than DAYS_TO_KEEP_ORPHANED_JOBS days) daily ->
 manually notifies infra team via slack ->
 infra team checks with stakeholders to ensure dormant jobs can be deleted and then cleans up workflow runs manually ->
 cleanup-workflows.py deletes old workflow runs (again older than DAYS_TO_KEEP_ORPHANED_JOBS) that have no associated workflow
 
-We need to clean up the runs because even if a workflow is deleted, the runs linger in the UI. 
+We need to clean up the runs because even if a workflow is deleted, the runs linger in the UI.
 We don't want to delete workflow runs newer than 90 days on GH actions, even if the workflow doesn't exist.
 it's possible that people might test things off the master branch and we don't want to delete their recent runs
 

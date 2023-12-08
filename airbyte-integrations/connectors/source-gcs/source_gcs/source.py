@@ -3,7 +3,8 @@
 #
 
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
@@ -13,8 +14,7 @@ from source_gcs.spec import SourceGCSSpec
 
 class SourceGCS(FileBasedSource):
     def read_config(self, config_path: str) -> Mapping[str, Any]:
-        """
-        Override the default read_config to transform the legacy config format
+        """Override the default read_config to transform the legacy config format
         into the new one before validating it against the new spec.
         """
         config = super().read_config(config_path)

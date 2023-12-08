@@ -13,8 +13,7 @@ DEFAULT_SEPARATOR = "_"
 
 
 def name_conversion(text):
-    """
-    convert name using a set of rules, for example: '1MyName' -> '_1_my_name'
+    """Convert name using a set of rules, for example: '1MyName' -> '_1_my_name'
     """
     text = unidecode.unidecode(text)
 

@@ -7,10 +7,11 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Type
+from typing import Optional
 
 import dagger
 import semver
+
 from base_images import consts, published_image
 from base_images.bases import AirbyteConnectorBaseImage
 from base_images.python.bases import AirbytePythonConnectorBaseImage
@@ -34,7 +35,7 @@ class ChangelogEntry:
         }
 
     @staticmethod
-    def from_dict(entry_dict: Dict):
+    def from_dict(entry_dict: dict):
         return ChangelogEntry(
             version=semver.VersionInfo.parse(entry_dict["version"]),
             changelog_entry=entry_dict["changelog_entry"],
@@ -56,14 +57,14 @@ class VersionRegistryEntry:
 class VersionRegistry:
     def __init__(
         self,
-        ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage],
-        entries: List[VersionRegistryEntry],
+        ConnectorBaseImageClass: type[AirbyteConnectorBaseImage],
+        entries: list[VersionRegistryEntry],
     ) -> None:
-        self.ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage] = ConnectorBaseImageClass
-        self._entries: List[VersionRegistryEntry] = entries
+        self.ConnectorBaseImageClass: type[AirbyteConnectorBaseImage] = ConnectorBaseImageClass
+        self._entries: list[VersionRegistryEntry] = entries
 
     @staticmethod
-    def get_changelog_dump_path(ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage]) -> Path:
+    def get_changelog_dump_path(ConnectorBaseImageClass: type[AirbyteConnectorBaseImage]) -> Path:
         """Returns the path where the changelog is dumped to disk.
 
         Args:
@@ -86,7 +87,7 @@ class VersionRegistry:
         return self.get_changelog_dump_path(self.ConnectorBaseImageClass)
 
     @staticmethod
-    def get_changelog_entries(ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage]) -> List[ChangelogEntry]:
+    def get_changelog_entries(ConnectorBaseImageClass: type[AirbyteConnectorBaseImage]) -> list[ChangelogEntry]:
         """Returns the changelog entries for a given base image version class.
         The changelog entries are loaded from the checked in changelog dump JSON file.
 
@@ -105,8 +106,8 @@ class VersionRegistry:
 
     @staticmethod
     async def get_all_published_base_images(
-        dagger_client: dagger.Client, docker_credentials: Tuple[str, str], ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage]
-    ) -> List[published_image.PublishedImage]:
+        dagger_client: dagger.Client, docker_credentials: tuple[str, str], ConnectorBaseImageClass: type[AirbyteConnectorBaseImage],
+    ) -> list[published_image.PublishedImage]:
         """Returns all the published base images for a given base image version class.
 
         Args:
@@ -123,7 +124,7 @@ class VersionRegistry:
 
     @staticmethod
     async def load(
-        ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage], dagger_client: dagger.Client, docker_credentials: Tuple[str, str]
+        ConnectorBaseImageClass: type[AirbyteConnectorBaseImage], dagger_client: dagger.Client, docker_credentials: tuple[str, str],
     ) -> VersionRegistry:
         """Instantiates a registry by fetching available versions from the remote registry and loading the changelog from disk.
 
@@ -141,7 +142,7 @@ class VersionRegistry:
 
         # Instantiate a crane client and a remote registry to fetch published images from DockerHub
         published_docker_images = await VersionRegistry.get_all_published_base_images(
-            dagger_client, docker_credentials, ConnectorBaseImageClass
+            dagger_client, docker_credentials, ConnectorBaseImageClass,
         )
 
         # Build a dict of published images by version number for easier lookup
@@ -166,7 +167,7 @@ class VersionRegistry:
         as_json = json.dumps([entry.changelog_entry.to_serializable_dict() for entry in self.entries if entry.changelog_entry])
         self.changelog_dump_path.write_text(as_json)
 
-    def add_entry(self, new_entry: VersionRegistryEntry) -> List[VersionRegistryEntry]:
+    def add_entry(self, new_entry: VersionRegistryEntry) -> list[VersionRegistryEntry]:
         """Registers a new entry in the registry and saves the changelog locally.
 
         Args:
@@ -180,7 +181,7 @@ class VersionRegistry:
         return self.entries
 
     @property
-    def entries(self) -> List[VersionRegistryEntry]:
+    def entries(self) -> list[VersionRegistryEntry]:
         """Returns all the base image versions sorted by version number in descending order.
 
         Returns:
@@ -193,6 +194,7 @@ class VersionRegistry:
         """Returns the latest entry this registry.
         The latest entry is the one with the highest version number.
         If no entry is available, returns None.
+
         Returns:
             Optional[VersionRegistryEntry]: The latest registry entry, or None if no entry is available.
         """
@@ -206,6 +208,7 @@ class VersionRegistry:
         """Returns the latest published entry this registry.
         The latest published entry is the one with the highest version number among the published entries.
         If no entry is available, returns None.
+
         Returns:
             Optional[VersionRegistryEntry]: The latest published registry entry, or None if no entry is available.
         """
@@ -217,6 +220,7 @@ class VersionRegistry:
     def get_entry_for_version(self, version: semver.VersionInfo) -> Optional[VersionRegistryEntry]:
         """Returns the entry for a given version.
         If no entry is available, returns None.
+
         Returns:
             Optional[VersionRegistryEntry]: The registry entry for the given version, or None if no entry is available.
         """
@@ -230,6 +234,7 @@ class VersionRegistry:
         """Returns the latest entry with a not pre-released version in this registry which is published.
         If no entry is available, returns None.
         It is meant to be used externally to get the latest published version.
+
         Returns:
             Optional[VersionRegistryEntry]: The latest registry entry with a not pre-released version, or None if no entry is available.
         """
@@ -240,12 +245,12 @@ class VersionRegistry:
             return None
 
 
-async def get_python_registry(dagger_client: dagger.Client, docker_credentials: Tuple[str, str]) -> VersionRegistry:
+async def get_python_registry(dagger_client: dagger.Client, docker_credentials: tuple[str, str]) -> VersionRegistry:
     return await VersionRegistry.load(AirbytePythonConnectorBaseImage, dagger_client, docker_credentials)
 
 
 async def get_registry_for_language(
-    dagger_client: dagger.Client, language: ConnectorLanguage, docker_credentials: Tuple[str, str]
+    dagger_client: dagger.Client, language: ConnectorLanguage, docker_credentials: tuple[str, str],
 ) -> VersionRegistry:
     """Returns the registry for a given language.
     It is meant to be used externally to get the registry for a given connector language.
@@ -267,7 +272,7 @@ async def get_registry_for_language(
         raise NotImplementedError(f"Registry for language {language} is not implemented yet.")
 
 
-async def get_all_registries(dagger_client: dagger.Client, docker_credentials: Tuple[str, str]) -> List[VersionRegistry]:
+async def get_all_registries(dagger_client: dagger.Client, docker_credentials: tuple[str, str]) -> list[VersionRegistry]:
     return [
         await get_python_registry(dagger_client, docker_credentials),
         # await get_java_registry(dagger_client),

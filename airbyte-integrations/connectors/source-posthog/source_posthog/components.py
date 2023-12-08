@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Iterable, Mapping, MutableMapping
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Optional
 
 from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
@@ -41,7 +42,6 @@ class EventsSimpleRetriever(SimpleRetriever):
         So if next_page_token is set (contains 'after'/'before' params),
         then stream_slice params ('after'/'before') should be ignored.
         """
-
         if next_page_token:
             stream_slice = {}
 
@@ -96,7 +96,6 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
         """Since each project has its own state, then we need to have a separate
         datetime slices for each project
         """
-
         slices = []
 
         project_slicer, datetime_slicer = self.stream_slicers
@@ -129,15 +128,13 @@ class EventsCartesianProductStreamSlicer(Cursor, CartesianProductStreamSlicer):
         return slices
 
     def should_be_synced(self, record: Record) -> bool:
-        """
-        As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
+        """As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
         implementation is irrelevant for posthog
         """
         return True
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
-        """
-        Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
+        """Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
         """
         first_cursor_value = first.get("timestamp")
         second_cursor_value = second.get("timestamp")

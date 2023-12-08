@@ -4,12 +4,14 @@
 
 import json
 import logging
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass, field
 from datetime import datetime
-from typing import Any, List, Mapping, Union
+from typing import Any, Union
 
 import dpath.util
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -21,8 +23,7 @@ logger = logging.getLogger("airbyte")
 
 @dataclass
 class MondayActivityExtractor(RecordExtractor):
-    """
-    Record extractor that extracts record of the form from activity logs stream:
+    """Record extractor that extracts record of the form from activity logs stream:
 
     { "list": { "ID_1": record_1, "ID_2": record_2, ... } }
 
@@ -34,7 +35,7 @@ class MondayActivityExtractor(RecordExtractor):
     parameters: InitVar[Mapping[str, Any]]
     decoder: Decoder = JsonDecoder(parameters={})
 
-    def extract_records(self, response: requests.Response) -> List[Record]:
+    def extract_records(self, response: requests.Response) -> list[Record]:
         response_body = self.decoder.decode(response)
         result = []
         if not response_body["data"]["boards"]:
@@ -65,14 +66,13 @@ class MondayActivityExtractor(RecordExtractor):
 
 @dataclass
 class MondayIncrementalItemsExtractor(RecordExtractor):
-    """
-    Record extractor that searches a decoded response over a path defined as an array of fields.
+    """Record extractor that searches a decoded response over a path defined as an array of fields.
     """
 
-    field_path: List[Union[InterpolatedString, str]]
+    field_path: list[Union[InterpolatedString, str]]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    additional_field_path: List[Union[InterpolatedString, str]] = field(default_factory=list)
+    additional_field_path: list[Union[InterpolatedString, str]] = field(default_factory=list)
     decoder: Decoder = JsonDecoder(parameters={})
 
     def __post_init__(self, parameters: Mapping[str, Any]):
@@ -81,7 +81,7 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
                 if isinstance(field_list[path_index], str):
                     field_list[path_index] = InterpolatedString.create(field_list[path_index], parameters=parameters)
 
-    def try_extract_records(self, response: requests.Response, field_path: List[Union[InterpolatedString, str]]) -> List[Record]:
+    def try_extract_records(self, response: requests.Response, field_path: list[Union[InterpolatedString, str]]) -> list[Record]:
         response_body = self.decoder.decode(response)
 
         path = [path.eval(self.config) for path in field_path]
@@ -98,7 +98,7 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
             return extracted if isinstance(extracted, list) else [extracted]
         return []
 
-    def extract_records(self, response: requests.Response) -> List[Record]:
+    def extract_records(self, response: requests.Response) -> list[Record]:
         result = self.try_extract_records(response, field_path=self.field_path)
         if not result and self.additional_field_path:
             result = self.try_extract_records(response, self.additional_field_path)
@@ -106,6 +106,6 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
         for item_index in range(len(result)):
             if "updated_at" in result[item_index]:
                 result[item_index]["updated_at_int"] = int(
-                    datetime.strptime(result[item_index]["updated_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp()
+                    datetime.strptime(result[item_index]["updated_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp(),
                 )
         return result

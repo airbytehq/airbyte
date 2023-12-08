@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional
+from typing import Optional
 
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
 from airbyte_cdk.destinations.vector_db_based.embedder import Embedder
@@ -16,7 +16,7 @@ class NoEmbedder(Embedder):
     def check(self) -> Optional[str]:
         return None
 
-    def embed_chunks(self, chunks: List[Chunk]) -> List[None]:
+    def embed_chunks(self, chunks: list[Chunk]) -> list[None]:
         return [None for _ in chunks]
 
     @property

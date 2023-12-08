@@ -5,23 +5,25 @@
 import re
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Optional, Union
 from urllib.parse import urlparse
 
 import _csv
 import pendulum
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_protocol.models import SyncMode
 from bingads import ServiceClient
 from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
 from bingads.v13.reporting import ReportingDownloadParameters
+from suds import WebFault, sudsobject
+
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_protocol.models import SyncMode
 from source_bing_ads.base_streams import Accounts, BingAdsStream
 from source_bing_ads.utils import transform_date_format_to_rfc_3339, transform_report_hourly_datetime_format_to_rfc_3339
-from suds import WebFault, sudsobject
 
 
 class HourlyReportTransformerMixin:
@@ -45,7 +47,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
     report_file_format: str = "Csv"
 
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key: List[str] = ["TimePeriod", "Network", "DeviceType"]
+    primary_key: list[str] = ["TimePeriod", "Network", "DeviceType"]
 
     cursor_field = "TimePeriod"
     service_name: str = "ReportingService"
@@ -57,23 +59,20 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
     @property
     @abstractmethod
     def report_name(self) -> str:
-        """
-        Specifies bing ads report naming
+        """Specifies bing ads report naming
         """
 
     @property
     @abstractmethod
     def report_aggregation(self) -> Optional[str]:
-        """
-        Specifies bing ads report aggregation type
+        """Specifies bing ads report aggregation type
         Supported types: Hourly, Daily, Weekly, Monthly
         """
 
     @property
     @abstractmethod
     def report_schema_name(self) -> str:
-        """
-        Specifies file name with schema
+        """Specifies file name with schema
         """
 
     @property
@@ -94,8 +93,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
                 self.logger.warning(f"CSV report file for stream `{self.name}` is broken or cannot be read correctly: {e}, skipping ...")
 
     def get_column_value(self, row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
-        """
-        Reads field value from row and transforms:
+        """Reads field value from row and transforms:
         1. empty values to logical None
         2. Percent values to numeric string e.g. "12.25%" -> "12.25"
         """
@@ -109,8 +107,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         return value
 
     def get_request_date(self, reporting_service: ServiceClient, date: datetime) -> sudsobject.Object:
-        """
-        Creates XML Date object based on datetime.
+        """Creates XML Date object based on datetime.
         https://docs.microsoft.com/en-us/advertising/reporting-service/date?view=bingads-13
         The [suds.client.Factory-class.html factory] namespace provides a factory that may be used
         to create instances of objects and types defined in the WSDL.
@@ -122,7 +119,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         return request_date
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, account_id: str = None, **kwargs: Mapping[str, Any]
+        self, stream_state: Mapping[str, Any] = None, account_id: str = None, **kwargs: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         stream_slice = kwargs["stream_slice"]
         start_date = self.get_start_date(stream_state, account_id)
@@ -217,8 +214,7 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         return report_request
 
     def get_report_record_timestamp(self, datestring: str) -> str:
-        """
-        Parse report date field based on aggregation type
+        """Parse report date field based on aggregation type
         """
         return (
             self.transformer._custom_normalizer(datestring, self.get_json_schema()["properties"][self.cursor_field])
@@ -303,8 +299,7 @@ class CampaignPerformanceReportMonthly(CampaignPerformanceReport):
 
 
 class CampaignImpressionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    """
-    https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13
+    """https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13
     Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
     see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
     """
@@ -412,8 +407,7 @@ class AdGroupPerformanceReportMonthly(AdGroupPerformanceReport):
 
 
 class AdGroupImpressionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    """
-    https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13
+    """https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13
     Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
     see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
     """
@@ -540,8 +534,7 @@ class AccountPerformanceReportMonthly(AccountPerformanceReport):
 
 
 class AccountImpressionPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-    """
-    Report source: https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13
+    """Report source: https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13
     Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
     see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
     """
@@ -669,7 +662,7 @@ class CustomReport(BingAdsReportingServicePerformanceStream, ABC):
     primary_key = None
 
     @property
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Union[str, list[str]]:
         # Summary aggregation doesn't include TimePeriod field
         if self.report_aggregation not in ("Summary", "DayOfWeek", "HourOfDay"):
             return "TimePeriod"
@@ -693,7 +686,7 @@ class CustomReport(BingAdsReportingServicePerformanceStream, ABC):
         }
         return schema
 
-    def validate_report_configuration(self) -> Tuple[bool, str]:
+    def validate_report_configuration(self) -> tuple[bool, str]:
         # gets /bingads/v13/proxies/production/reporting_service.xml
         reporting_service_file = self.client.get_service(self.service_name)._get_service_info_dict(self.client.api_version)[
             ("reporting", self.client.environment)
@@ -715,7 +708,7 @@ class CustomReport(BingAdsReportingServicePerformanceStream, ABC):
     def _clear_namespace(self, type: str) -> str:
         return re.sub(r"^[a-z]+:", "", type)
 
-    def _get_object_columns(self, request_el: ET.Element, tree: ET.ElementTree) -> List[str]:
+    def _get_object_columns(self, request_el: ET.Element, tree: ET.ElementTree) -> list[str]:
         column_el = request_el.find(".//{*}element[@name='Columns']")
         array_of_columns_name = self._clear_namespace(column_el.get("type"))
 
@@ -729,8 +722,7 @@ class CustomReport(BingAdsReportingServicePerformanceStream, ABC):
         return column_enum_items_values
 
     def get_report_record_timestamp(self, datestring: str) -> str:
-        """
-        Parse report date field based on aggregation type
+        """Parse report date field based on aggregation type
         """
         if not self.report_aggregation or self.report_aggregation == "Summary":
             datestring = transform_date_format_to_rfc_3339(datestring)
@@ -744,5 +736,5 @@ class CustomReport(BingAdsReportingServicePerformanceStream, ABC):
         except WebFault as e:
             self.logger.error(
                 f"Could not sync custom report {self.name}: Please validate your column and aggregation configuration. "
-                f"Error form server: [{e.fault.faultstring}]"
+                f"Error form server: [{e.fault.faultstring}]",
             )

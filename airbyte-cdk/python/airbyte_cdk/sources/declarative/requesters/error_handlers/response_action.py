@@ -6,8 +6,7 @@ from enum import Enum
 
 
 class ResponseAction(Enum):
-    """
-    Response statuses for non retriable responses
+    """Response statuses for non retriable responses
     """
 
     SUCCESS = "SUCCESS"  # "Request was successful"

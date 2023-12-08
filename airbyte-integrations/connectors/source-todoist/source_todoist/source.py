@@ -2,9 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -13,8 +15,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 # Basic full refresh stream
 class TodoistStream(HttpStream):
-    """
-    Stream for Todoist REST API : https://developer.todoist.com/rest/v2/#overview
+    """Stream for Todoist REST API : https://developer.todoist.com/rest/v2/#overview
     """
 
     @property
@@ -25,7 +26,7 @@ class TodoistStream(HttpStream):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -33,7 +34,7 @@ class TodoistStream(HttpStream):
         yield from response.json()
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return self.name.title().lower()
 
@@ -48,7 +49,7 @@ class Projects(TodoistStream):
 
 # Source
 class SourceTodoist(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             token = config["token"]
             authenticator = TokenAuthenticator(token=token)
@@ -59,7 +60,7 @@ class SourceTodoist(AbstractSource):
         except Exception as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         token = config["token"]
         auth = TokenAuthenticator(token=token)  # Oauth2Authenticator is also available if you need oauth support
         return [Tasks(authenticator=auth), Projects(authenticator=auth)]

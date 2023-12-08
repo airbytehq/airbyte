@@ -10,11 +10,14 @@ import os.path
 import socket
 import sys
 import tempfile
+from collections.abc import Iterable, Mapping, MutableMapping
 from functools import wraps
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 from urllib.parse import urlparse
 
 import requests
+from requests import PreparedRequest, Response, Session
+
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
@@ -26,7 +29,6 @@ from airbyte_cdk.utils import is_cloud_environment
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from requests import PreparedRequest, Response, Session
 
 logger = init_logger("airbyte")
 
@@ -34,7 +36,7 @@ VALID_URL_SCHEMES = ["https"]
 CLOUD_DEPLOYMENT_MODE = "cloud"
 
 
-class AirbyteEntrypoint(object):
+class AirbyteEntrypoint:
     def __init__(self, source: Source):
         init_uncaught_exception_handler(logger)
 
@@ -46,7 +48,7 @@ class AirbyteEntrypoint(object):
         self.logger = logging.getLogger(f"airbyte.{getattr(source, 'name', '')}")
 
     @staticmethod
-    def parse_args(args: List[str]) -> argparse.Namespace:
+    def parse_args(args: list[str]) -> argparse.Namespace:
         # set up parent parsers
         parent_parser = argparse.ArgumentParser(add_help=False)
         parent_parser.add_argument("--debug", action="store_true", help="enables detailed debug logs related to the sync")
@@ -63,7 +65,7 @@ class AirbyteEntrypoint(object):
 
         # discover
         discover_parser = subparsers.add_parser(
-            "discover", help="outputs a catalog describing the source's schema", parents=[parent_parser]
+            "discover", help="outputs a catalog describing the source's schema", parents=[parent_parser],
         )
         required_discover_parser = discover_parser.add_argument_group("required named arguments")
         required_discover_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
@@ -75,7 +77,7 @@ class AirbyteEntrypoint(object):
         required_read_parser = read_parser.add_argument_group("required named arguments")
         required_read_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
         required_read_parser.add_argument(
-            "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
+            "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read",
         )
 
         return main_parser.parse_args(args)
@@ -153,7 +155,7 @@ class AirbyteEntrypoint(object):
         yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
 
     def read(
-        self, source_spec: ConnectorSpecification, config: TConfig, catalog: Any, state: Union[list[Any], MutableMapping[str, Any]]
+        self, source_spec: ConnectorSpecification, config: TConfig, catalog: Any, state: Union[list[Any], MutableMapping[str, Any]],
     ) -> Iterable[AirbyteMessage]:
         self.set_up_secret_filter(config, source_spec.connectionSpecification)
         if self.source.check_config_against_spec:
@@ -181,21 +183,21 @@ class AirbyteEntrypoint(object):
         return airbyte_message.json(exclude_unset=True)
 
     @classmethod
-    def extract_state(cls, args: List[str]) -> Optional[Any]:
+    def extract_state(cls, args: list[str]) -> Optional[Any]:
         parsed_args = cls.parse_args(args)
         if hasattr(parsed_args, "state"):
             return parsed_args.state
         return None
 
     @classmethod
-    def extract_catalog(cls, args: List[str]) -> Optional[Any]:
+    def extract_catalog(cls, args: list[str]) -> Optional[Any]:
         parsed_args = cls.parse_args(args)
         if hasattr(parsed_args, "catalog"):
             return parsed_args.catalog
         return None
 
     @classmethod
-    def extract_config(cls, args: List[str]) -> Optional[Any]:
+    def extract_config(cls, args: list[str]) -> Optional[Any]:
         parsed_args = cls.parse_args(args)
         if hasattr(parsed_args, "config"):
             return parsed_args.config
@@ -207,7 +209,7 @@ class AirbyteEntrypoint(object):
         return
 
 
-def launch(source: Source, args: List[str]) -> None:
+def launch(source: Source, args: list[str]) -> None:
     source_entrypoint = AirbyteEntrypoint(source)
     parsed_args = source_entrypoint.parse_args(args)
     for message in source_entrypoint.run(parsed_args):
@@ -215,8 +217,7 @@ def launch(source: Source, args: List[str]) -> None:
 
 
 def _init_internal_request_filter() -> None:
-    """
-    Wraps the Python requests library to prevent sending requests to internal URL endpoints.
+    """Wraps the Python requests library to prevent sending requests to internal URL endpoints.
     """
     wrapped_fn = Session.send
 
@@ -227,7 +228,7 @@ def _init_internal_request_filter() -> None:
         if parsed_url.scheme not in VALID_URL_SCHEMES:
             raise requests.exceptions.InvalidSchema(
                 "Invalid Protocol Scheme: The endpoint that data is being requested from is using an invalid or insecure "
-                + f"protocol {parsed_url.scheme!r}. Valid protocol schemes: {','.join(VALID_URL_SCHEMES)}"
+                + f"protocol {parsed_url.scheme!r}. Valid protocol schemes: {','.join(VALID_URL_SCHEMES)}",
             )
 
         if not parsed_url.hostname:
@@ -238,7 +239,7 @@ def _init_internal_request_filter() -> None:
             if is_private:
                 raise ValueError(
                     "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source "
-                    + "connectors only support requesting data from public API endpoints."
+                    + "connectors only support requesting data from public API endpoints.",
                 )
         except socket.gaierror as exception:
             # This is a special case where the developer specifies an IP address string that is not formatted correctly like trailing
@@ -252,8 +253,7 @@ def _init_internal_request_filter() -> None:
 
 
 def _is_private_url(hostname: str, port: int) -> bool:
-    """
-    Helper method that checks if any of the IP addresses associated with a hostname belong to a private network.
+    """Helper method that checks if any of the IP addresses associated with a hostname belong to a private network.
     """
     address_info_entries = socket.getaddrinfo(hostname, port)
     for entry in address_info_entries:

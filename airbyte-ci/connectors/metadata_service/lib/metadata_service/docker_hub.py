@@ -36,10 +36,10 @@ def is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] 
         digest (str, optional): The digest of the image to check. Defaults to None.
         retries (int, optional): The number of times to retry the request. Defaults to 0.
         wait_sec (int, optional): The number of seconds to wait between retries. Defaults to 30.
+
     Returns:
         bool: True if the image and version exists on Docker Hub, False otherwise.
     """
-
     token = get_docker_hub_auth_token()
     headers = {"Authorization": f"JWT {token}"}
     tag_url = f"https://registry.hub.docker.com/v2/repositories/{image_name}/tags/{version}"

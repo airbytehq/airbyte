@@ -4,7 +4,7 @@
 
 
 from collections import defaultdict
-from typing import Dict, Iterable, List, Tuple
+from collections.abc import Iterable
 
 from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk, DocumentProcessor
@@ -14,8 +14,7 @@ from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 
 
 class Writer:
-    """
-    The Writer class is orchestrating the document processor, the embedder and the indexer:
+    """The Writer class is orchestrating the document processor, the embedder and the indexer:
     * Incoming records are passed through the document processor to generate documents
     * One the configured batch size is reached, the documents are passed to the embedder to generate embeddings
     * The embedder embeds the documents
@@ -27,7 +26,7 @@ class Writer:
     """
 
     def __init__(
-        self, processing_config: ProcessingConfigModel, indexer: Indexer, embedder: Embedder, batch_size: int, omit_raw_text: bool
+        self, processing_config: ProcessingConfigModel, indexer: Indexer, embedder: Embedder, batch_size: int, omit_raw_text: bool,
     ) -> None:
         self.processing_config = processing_config
         self.indexer = indexer
@@ -37,8 +36,8 @@ class Writer:
         self._init_batch()
 
     def _init_batch(self) -> None:
-        self.documents: Dict[Tuple[str, str], List[Chunk]] = defaultdict(list)
-        self.ids_to_delete: Dict[Tuple[str, str], List[str]] = defaultdict(list)
+        self.documents: dict[tuple[str, str], list[Chunk]] = defaultdict(list)
+        self.ids_to_delete: dict[tuple[str, str], list[str]] = defaultdict(list)
         self.number_of_documents = 0
 
     def _process_batch(self) -> None:

@@ -5,22 +5,21 @@
 
 import json
 from datetime import date, timedelta
-from typing import Dict
+
+from appstoreconnect import Api
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import Status, SyncMode
 from airbyte_cdk.models.airbyte_protocol import AirbyteConnectionStatus
 from airbyte_cdk.sources.singer.singer_helpers import SyncModeInfo
 from airbyte_cdk.sources.singer.source import SingerSource
-from appstoreconnect import Api
 
 
 class SourceAppstoreSinger(SingerSource):
     TAP_CMD = "tap-appstore"
 
     def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
-        """
-        Tests if the input configuration can be used to successfully connect to the integration
+        """Tests if the input configuration can be used to successfully connect to the integration
             e.g: if a provided Stripe API token can be used to connect to the Stripe API.
 
         :param logger: Logging object to display debug/info/error to the logs
@@ -58,9 +57,9 @@ class SourceAppstoreSinger(SingerSource):
                 try:
                     rep_tsv = api.download_sales_and_trends_reports(filters=report_filters)
                     if isinstance(rep_tsv, dict):
-                        raise Exception(f"An exception occurred: Received a JSON response instead of" f" the report: {str(rep_tsv)}")
+                        raise Exception(f"An exception occurred: Received a JSON response instead of the report: {rep_tsv!s}")
                 except Exception as e:
-                    logger.warn(f"Unable to download {stream}: {e}")
+                    logger.warning(f"Unable to download {stream}: {e}")
                     stream_to_error[stream] = e
 
             # All streams have failed
@@ -70,18 +69,16 @@ class SourceAppstoreSinger(SingerSource):
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            logger.warn(e)
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+            logger.warning(e)
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!s}")
 
     def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
-        """
-        Return the string commands to invoke the tap with the --discover flag and the right configuration options
+        """Return the string commands to invoke the tap with the --discover flag and the right configuration options
         """
         return f"{self.TAP_CMD} -c {config_path} --discover"
 
     def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
-        """
-        Return the string commands to invoke the tap with the right configuration options to read data from the source
+        """Return the string commands to invoke the tap with the right configuration options to read data from the source
         """
         config_option = f"--config {config_path}"
         properties_option = f"--properties {catalog_path}"
@@ -89,8 +86,7 @@ class SourceAppstoreSinger(SingerSource):
         return f"{self.TAP_CMD} {config_option} {properties_option} {state_option}"
 
     def transform_config(self, raw_config: json) -> json:
-        """
-        Return the string commands to invoke the tap with the right configuration options to read data from the source
+        """Return the string commands to invoke the tap with the right configuration options to read data from the source
         """
         # path where we will write the private key.
         keyfile_path = "/tmp/keyfile.p8"
@@ -108,6 +104,6 @@ class SourceAppstoreSinger(SingerSource):
 
         return raw_config
 
-    def get_sync_mode_overrides(self) -> Dict[str, SyncModeInfo]:
+    def get_sync_mode_overrides(self) -> dict[str, SyncModeInfo]:
         streams = ["sales_report", "subscriber_report", "subscription_report", "subscription_event_report"]
         return {s: SyncModeInfo(supported_sync_modes=[SyncMode.incremental], source_defined_cursor=True) for s in streams}

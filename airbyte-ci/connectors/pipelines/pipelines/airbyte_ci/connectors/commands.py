@@ -4,9 +4,10 @@
 
 import os
 from pathlib import Path
-from typing import List, Optional, Set, Tuple
+from typing import Optional
 
 import asyncclick as click
+
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
@@ -19,7 +20,7 @@ from pipelines.helpers.utils import transform_strs_to_paths
 ALL_CONNECTORS = get_all_connectors_in_repo()
 
 
-def log_selected_connectors(selected_connectors_with_modified_files: List[ConnectorWithModifiedFiles]) -> None:
+def log_selected_connectors(selected_connectors_with_modified_files: list[ConnectorWithModifiedFiles]) -> None:
     if selected_connectors_with_modified_files:
         selected_connectors_names = [c.technical_name for c in selected_connectors_with_modified_files]
         main_logger.info(f"Will run on the following {len(selected_connectors_names)} connectors: {', '.join(selected_connectors_names)}.")
@@ -28,15 +29,15 @@ def log_selected_connectors(selected_connectors_with_modified_files: List[Connec
 
 
 def get_selected_connectors_with_modified_files(
-    selected_names: Tuple[str],
-    selected_support_levels: Tuple[str],
-    selected_languages: Tuple[str],
+    selected_names: tuple[str],
+    selected_support_levels: tuple[str],
+    selected_languages: tuple[str],
     modified: bool,
     metadata_changes_only: bool,
     metadata_query: str,
-    modified_files: Set[Path],
+    modified_files: set[Path],
     enable_dependency_scanning: bool = False,
-) -> List[ConnectorWithModifiedFiles]:
+) -> list[ConnectorWithModifiedFiles]:
     """Get the connectors that match the selected criteria.
 
     Args:
@@ -47,10 +48,10 @@ def get_selected_connectors_with_modified_files(
         metadata_changes_only (bool): Whether to select only the connectors with metadata changes.
         modified_files (Set[Path]): The modified files.
         enable_dependency_scanning (bool): Whether to enable the dependency scanning.
+
     Returns:
         List[ConnectorWithModifiedFiles]: The connectors that match the selected criteria.
     """
-
     if metadata_changes_only and not modified:
         main_logger.info("--metadata-changes-only overrides --modified")
         modified = True
@@ -204,7 +205,7 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
 @click.option(
     "--use-local-cdk",
     is_flag=True,
-    help=("Build with the airbyte-cdk from the local repository. " "This is useful for testing changes to the CDK."),
+    help=("Build with the airbyte-cdk from the local repository. This is useful for testing changes to the CDK."),
     default=False,
     type=bool,
 )
@@ -248,7 +249,7 @@ async def connectors(
                 ctx.obj["diffed_branch"],
                 ctx.obj["is_local"],
                 ctx.obj["ci_context"],
-            )
+            ),
         )
 
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
@@ -264,7 +265,7 @@ async def connectors(
     log_selected_connectors(ctx.obj["selected_connectors_with_modified_files"])
 
 
-async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext) -> Set[str]:
+async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext) -> set[str]:
     """Get the list of modified files in the current git branch.
     If the current branch is master, it will return the list of modified files in the head commit.
     The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.

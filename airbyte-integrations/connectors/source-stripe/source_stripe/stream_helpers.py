@@ -2,15 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 
 
 def get_first_stream_slice(stream, sync_mode, stream_state) -> Optional[Mapping[str, Any]]:
-    """
-    Gets the first stream_slice from a given stream's stream_slices.
+    """Gets the first stream_slice from a given stream's stream_slices.
     :param stream: stream
     :param sync_mode: sync_mode
     :param stream_state: stream_state
@@ -24,10 +24,9 @@ def get_first_stream_slice(stream, sync_mode, stream_state) -> Optional[Mapping[
 
 
 def get_first_record_for_slice(
-    stream: Stream, sync_mode: SyncMode, stream_slice: Optional[Mapping[str, Any]], stream_state: Optional[Mapping[str, Any]]
+    stream: Stream, sync_mode: SyncMode, stream_slice: Optional[Mapping[str, Any]], stream_state: Optional[Mapping[str, Any]],
 ) -> StreamData:
-    """
-    Gets the first record for a stream_slice of a stream.
+    """Gets the first record for a stream_slice of a stream.
     :param stream: stream
     :param sync_mode: sync_mode
     :param stream_slice: stream_slice

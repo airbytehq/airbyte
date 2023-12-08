@@ -4,14 +4,15 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Dict
+from typing import Any
 
 import jsonschema
-from airbyte_protocol.models import ConnectorSpecification
-from connector_acceptance_test.utils import SecretDict
 from deepdiff import DeepDiff
 from hypothesis import HealthCheck, Verbosity, given, settings
 from hypothesis_jsonschema import from_schema
+
+from airbyte_protocol.models import ConnectorSpecification
+from connector_acceptance_test.utils import SecretDict
 
 
 class BackwardIncompatibilityContext(Enum):
@@ -52,8 +53,7 @@ class BaseDiffChecker(ABC):
         pass
 
     def check_if_value_of_a_field_changed(self, diff: DeepDiff, field: str):
-        """
-        Check if a type / airbyte_type / format was changed on a property.
+        """Check if a type / airbyte_type / format was changed on a property.
         Detect field value change: "str" -> "int" / "date-time" -> "date" / "timestamp_without_timezone" -> "timestamp_with_timezone"
         """
         diffs = diff.get("values_changed", set()) | diff.get("dictionary_item_added", set()) | diff.get("dictionary_item_removed", set())
@@ -73,8 +73,7 @@ class BaseDiffChecker(ABC):
             self._raise_error("A new value was added to a 'type' field")
 
     def check_if_type_of_type_field_changed(self, diff: DeepDiff, allow_type_widening: bool = False):
-        """
-        Detect the change of type of a type field on a property
+        """Detect the change of type of a type field on a property
         e.g:
         - "str" -> ["str"] VALID
         - "str" -> ["str", "null"] VALID
@@ -184,9 +183,8 @@ class SpecDiffChecker(BaseDiffChecker):
             self._raise_error("An 'enum' field was declared on an existing property", diff)
 
 
-def remove_date_time_pattern_format(schema: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    This function traverses a JSON schema and removes the 'format' field for properties
+def remove_date_time_pattern_format(schema: dict[str, Any]) -> dict[str, Any]:
+    """This function traverses a JSON schema and removes the 'format' field for properties
     that are of 'date-time' format and have a 'pattern' field.
 
     The 'pattern' is often more restrictive than the 'date-time' format, and Hypothesis can't natively generate
@@ -215,11 +213,12 @@ def remove_date_time_pattern_format(schema: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def validate_previous_configs(
-    previous_connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification, number_of_configs_to_generate=100
+    previous_connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification, number_of_configs_to_generate=100,
 ):
     """Use hypothesis and hypothesis-jsonschema to run property based testing:
     1. Generate fake previous config with the previous connector specification json schema.
-    2. Validate a fake previous config against the actual connector specification json schema."""
+    2. Validate a fake previous config against the actual connector specification json schema.
+    """
     prev_con_spec = previous_connector_spec.dict()["connectionSpecification"]
 
     @given(from_schema(remove_date_time_pattern_format(prev_con_spec)))

@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from enum import Enum
 from glob import glob
 from pathlib import Path
-from typing import List, Optional, Set, Tuple, Union
+from typing import Optional, Union
 
 import git
 import requests
@@ -80,7 +80,7 @@ def get_connector_name_from_path(path):
     return path.split("/")[2]
 
 
-def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[str]:
+def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> set[str]:
     """Retrieve the set of connectors for which the acceptance_test_config file was changed in the current branch (compared to master).
 
     Args:
@@ -92,7 +92,7 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
     return get_changed_file(ACCEPTANCE_TEST_CONFIG_FILE_NAME, diff_regex)
 
 
-def get_changed_metadata(diff_regex: Optional[str] = None) -> Set[str]:
+def get_changed_metadata(diff_regex: Optional[str] = None) -> set[str]:
     """Retrieve the set of connectors for which the metadata file was changed in the current branch (compared to master).
 
     Args:
@@ -104,7 +104,7 @@ def get_changed_metadata(diff_regex: Optional[str] = None) -> Set[str]:
     return get_changed_file(METADATA_FILE_NAME, diff_regex)
 
 
-def get_changed_file(file_name: str, diff_regex: Optional[str] = None) -> Set[str]:
+def get_changed_file(file_name: str, diff_regex: Optional[str] = None) -> set[str]:
     """Retrieve the set of connectors for which the given file was changed in the current branch (compared to master).
 
     Args:
@@ -142,7 +142,7 @@ def has_local_cdk_ref(build_file: Path) -> bool:
             # Return contents without inline code comments
             line.split("//")[0]
             for line in build_file.read_text().split("\n")
-        ]
+        ],
     )
     contents = contents.replace(" ", "")
     return "useLocalCdk=true" in contents
@@ -174,7 +174,7 @@ def get_gradle_dependencies_block(build_file: Path) -> str:
     return dependencies_block
 
 
-def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]:
+def parse_gradle_dependencies(build_file: Path) -> tuple[list[Path], list[Path]]:
     """Parse the dependencies block of a Gradle file and return the list of project dependencies and test dependencies.
 
     Args:
@@ -183,11 +183,10 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
     Returns:
         Tuple[List[Tuple[str, Path]], List[Tuple[str, Path]]]: _description_
     """
-
     dependencies_block = get_gradle_dependencies_block(build_file)
 
-    project_dependencies: List[Path] = []
-    test_dependencies: List[Path] = []
+    project_dependencies: list[Path] = []
+    test_dependencies: list[Path] = []
 
     # Find all matches for test dependencies and regular dependencies
     matches = re.findall(
@@ -213,7 +212,7 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
     return project_dependencies, test_dependencies
 
 
-def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> List[Path]:
+def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> list[Path]:
     """Recursively retrieve all transitive dependencies of a Gradle project.
 
     Args:
@@ -223,7 +222,7 @@ def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> List[Path
         List[Path]: All dependencies of the project.
     """
     base_path = Path("airbyte-cdk/java/airbyte-cdk")
-    found: List[Path] = [base_path]
+    found: list[Path] = [base_path]
     for submodule in ["core", "db-sources", "db-destinations"]:
         found.append(base_path / submodule)
         project_dependencies, test_dependencies = parse_gradle_dependencies(base_path / Path(submodule) / Path("build.gradle"))
@@ -234,8 +233,8 @@ def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> List[Path
 
 
 def get_all_gradle_dependencies(
-    build_file: Path, with_test_dependencies: bool = True, found_dependencies: Optional[List[Path]] = None
-) -> List[Path]:
+    build_file: Path, with_test_dependencies: bool = True, found_dependencies: Optional[list[Path]] = None,
+) -> list[Path]:
     """Recursively retrieve all transitive dependencies of a Gradle project.
 
     Args:
@@ -281,7 +280,7 @@ class Connector:
     # e.g source-google-sheets or third-party/farosai/airbyte-pagerduty-source
     relative_connector_path: str
 
-    def _get_type_and_name_from_technical_name(self) -> Tuple[str, str]:
+    def _get_type_and_name_from_technical_name(self) -> tuple[str, str]:
         if "-" not in self.technical_name:
             raise ConnectorInvalidNameError(f"Connector type and name could not be inferred from {self.technical_name}")
         _type = self.technical_name.split("-")[0]
@@ -290,8 +289,7 @@ class Connector:
 
     @property
     def technical_name(self) -> str:
-        """
-        Return the technical name of the connector from the given relative_connector_path
+        """Return the technical name of the connector from the given relative_connector_path
         e.g. source-google-sheets -> source-google-sheets or third-party/farosai/airbyte-pagerduty-source -> airbyte-pagerduty-source
         """
         return self.relative_connector_path.split("/")[-1]
@@ -401,7 +399,7 @@ class Connector:
             """
             Could not find the connector version from its Dockerfile.
             The io.airbyte.version tag is missing.
-            """
+            """,
         )
 
     @property
@@ -418,7 +416,7 @@ class Connector:
         Based on the simpleeval library:
         https://github.com/danthedeckie/simpleeval
 
-        Examples
+        Examples:
         --------
         >>> connector.metadata_query_match("'s3' in data.name")
         True
@@ -457,7 +455,7 @@ class Connector:
 
         if sl_value is None:
             logging.warning(
-                f"Connector {self.technical_name} does not have a `ab_internal.sl` defined in metadata.yaml. Defaulting to {default_value}"
+                f"Connector {self.technical_name} does not have a `ab_internal.sl` defined in metadata.yaml. Defaulting to {default_value}",
             )
             return default_value
 
@@ -477,7 +475,7 @@ class Connector:
 
         if ql_value is None:
             logging.warning(
-                f"Connector {self.technical_name} does not have a `ab_internal.ql` defined in metadata.yaml. Defaulting to {default_value}"
+                f"Connector {self.technical_name} does not have a `ab_internal.ql` defined in metadata.yaml. Defaulting to {default_value}",
             )
             return default_value
 
@@ -517,11 +515,11 @@ class Connector:
         return self.ab_internal_ql >= ALLOWED_HOST_THRESHOLD["ql"]
 
     @property
-    def allowed_hosts(self) -> Optional[List[str]]:
+    def allowed_hosts(self) -> Optional[list[str]]:
         return self.metadata.get("allowedHosts") if self.metadata else None
 
     @property
-    def suggested_streams(self) -> Optional[List[str]]:
+    def suggested_streams(self) -> Optional[list[str]]:
         return self.metadata.get("suggestedStreams") if self.metadata else None
 
     @property
@@ -562,18 +560,18 @@ class Connector:
         return self.technical_name
 
     @functools.lru_cache(maxsize=2)
-    def get_local_dependency_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
+    def get_local_dependency_paths(self, with_test_dependencies: bool = True) -> set[Path]:
         dependencies_paths = []
         if self.language == ConnectorLanguage.JAVA:
             dependencies_paths += get_all_gradle_dependencies(
-                self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
+                self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies,
             )
         return sorted(list(set(dependencies_paths)))
 
 
 def get_changed_connectors(
-    modified_files: Optional[Set[Union[str, Path]]] = None, source: bool = True, destination: bool = True, third_party: bool = True
-) -> Set[Connector]:
+    modified_files: Optional[set[Union[str, Path]]] = None, source: bool = True, destination: bool = True, third_party: bool = True,
+) -> set[Connector]:
     """Retrieve a set of Connectors that were changed in the current branch (compared to master)."""
     if modified_files is None:
         airbyte_repo = git.Repo(search_parent_directories=True)
@@ -615,7 +613,7 @@ def _get_relative_connector_folder_name_from_metadata_path(metadata_file_path: s
     return metadata_file_path
 
 
-def get_all_connectors_in_repo() -> Set[Connector]:
+def get_all_connectors_in_repo() -> set[Connector]:
     """Retrieve a set of all Connectors in the repo.
     We globe the connectors folder for metadata.yaml files and construct Connectors from the directory name.
 

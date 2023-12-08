@@ -4,7 +4,8 @@
 
 
 import sys
-from typing import Any, List, Mapping, Optional, Tuple
+from collections.abc import Mapping
+from typing import Any, Optional
 
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.connector_builder.connector_builder_handler import TestReadLimits, create_source, get_limits, read_stream, resolve_manifest
@@ -14,7 +15,7 @@ from airbyte_cdk.sources.declarative.manifest_declarative_source import Manifest
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
-def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str, Any], Optional[ConfiguredAirbyteCatalog]]:
+def get_config_and_catalog_from_args(args: list[str]) -> tuple[str, Mapping[str, Any], Optional[ConfiguredAirbyteCatalog]]:
     # TODO: Add functionality for the `debug` logger.
     #  Currently, no one `debug` level log will be displayed during `read` a stream for a connector created through `connector-builder`.
     parsed_args = AirbyteEntrypoint.parse_args(args)
@@ -26,7 +27,7 @@ def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str,
 
     if "__command" not in config:
         raise ValueError(
-            f"Invalid config: `__command` should be provided at the root of the config but config only has keys {list(config.keys())}"
+            f"Invalid config: `__command` should be provided at the root of the config but config only has keys {list(config.keys())}",
         )
 
     command = config["__command"]
@@ -37,7 +38,7 @@ def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str,
 
     if "__injected_declarative_manifest" not in config:
         raise ValueError(
-            f"Invalid config: `__injected_declarative_manifest` should be provided at the root of the config but config only has keys {list(config.keys())}"
+            f"Invalid config: `__injected_declarative_manifest` should be provided at the root of the config but config only has keys {list(config.keys())}",
         )
 
     return command, config, catalog
@@ -59,7 +60,7 @@ def handle_connector_builder_request(
         raise ValueError(f"Unrecognized command {command}.")
 
 
-def handle_request(args: List[str]) -> AirbyteMessage:
+def handle_request(args: list[str]) -> AirbyteMessage:
     command, config, catalog = get_config_and_catalog_from_args(args)
     limits = get_limits(config)
     source = create_source(config, limits)
@@ -70,6 +71,6 @@ if __name__ == "__main__":
     try:
         print(handle_request(sys.argv[1:]))
     except Exception as exc:
-        error = AirbyteTracedException.from_exception(exc, message=f"Error handling request: {str(exc)}")
+        error = AirbyteTracedException.from_exception(exc, message=f"Error handling request: {exc!s}")
         m = error.as_airbyte_message()
         print(error.as_airbyte_message().json(exclude_unset=True))

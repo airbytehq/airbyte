@@ -3,8 +3,9 @@
 #
 
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, ClassVar, List, Mapping
+from typing import Any, ClassVar
 
 import jwt
 import requests
@@ -16,14 +17,13 @@ TOKEN_TTL = 3600
 
 @dataclass
 class GoogleApi:
-    """
-    Simple Google API client
+    """Simple Google API client
     """
 
     logger: ClassVar[Logger] = Logger()
 
     config: Mapping[str, Any]
-    scopes: List[str]
+    scopes: list[str]
     _access_token: str = None
 
     def get(self, url: str, params: Mapping = None) -> Mapping[str, Any]:
@@ -71,7 +71,6 @@ class GoogleApi:
 
     def get_access_token(self) -> str:
         """Generates an access token by a service account json file and scopes"""
-
         if self._access_token is None:
             self._access_token = self.__get_access_token()
 

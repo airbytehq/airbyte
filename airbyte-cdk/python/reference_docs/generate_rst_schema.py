@@ -4,7 +4,7 @@
 
 import sys
 from os import path
-from typing import Any, Dict
+from typing import Any
 
 from sphinx.cmd.quickstart import QuickstartRenderer
 from sphinx.ext.apidoc import get_parser, main, recurse_tree, write_file
@@ -12,7 +12,7 @@ from sphinx.locale import __
 from sphinx.util import ensuredir
 
 
-def write_master_file(templatedir: str, master_name: str, values: Dict, opts: Any):
+def write_master_file(templatedir: str, master_name: str, values: dict, opts: Any):
     template = QuickstartRenderer(templatedir=templatedir)
     opts.destdir = opts.destdir[: opts.destdir.rfind("/")]
     write_file(master_name, template.render(f"{templatedir}/master_doc.rst_t", values), opts)

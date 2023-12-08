@@ -4,20 +4,22 @@
 
 import copy
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, MutableMapping
 from functools import cached_property
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import requests
+from pendulum.datetime import DateTime
+from requests.auth import AuthBase
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from pendulum.datetime import DateTime
-from requests.auth import AuthBase
 
 TWILIO_CHAT_BASE = "https://chat.twilio.com/v2/"
 TWILIO_CONVERSATION_BASE = "https://conversations.twilio.com/v1/"
@@ -42,8 +44,7 @@ class TwilioStream(HttpStream, ABC):
 
     @property
     def changeable_fields(self):
-        """
-        :return list of changeable fields that should be removed from the records
+        """:return list of changeable fields that should be removed from the records
         """
         return []
 
@@ -63,8 +64,7 @@ class TwilioStream(HttpStream, ABC):
             return next_page_params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
+        """:return an iterable containing each record in the response
         """
         records = response.json().get(self.data_field, [])
         if self.changeable_fields:
@@ -80,8 +80,8 @@ class TwilioStream(HttpStream, ABC):
         Twilio puts the retry time in the `Retry-After` response header so we
         we return that value. If the response is anything other than a 429 (e.g: 5XX)
         fall back on default retry behavior.
-        Rate Limits Docs: https://support.twilio.com/hc/en-us/articles/360032845014-Verify-V2-Rate-Limiting"""
-
+        Rate Limits Docs: https://support.twilio.com/hc/en-us/articles/360032845014-Verify-V2-Rate-Limiting
+        """
         backoff_time = response.headers.get("Retry-After")
         if backoff_time is not None:
             return float(backoff_time)
@@ -109,7 +109,6 @@ class TwilioStream(HttpStream, ABC):
                   - ISO8601, like "2020-12-11T04:29:09Z".
                 If `ValueError` exception was raised this means that datetime was already in ISO8601 format and there
                 is no need in transforming anything."""
-                pass
         return original_value
 
 
@@ -143,15 +142,13 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     @property
     @abstractmethod
     def lower_boundary_filter_field(self) -> str:
-        """
-        return: date filter query parameter name
+        """return: date filter query parameter name
         """
 
     @property
     @abstractmethod
     def upper_boundary_filter_field(self) -> str:
-        """
-        return: date filter query parameter name
+        """return: date filter query parameter name
         """
 
     @property
@@ -196,7 +193,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
             current_start = current_end + self.slice_granularity
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for super_slice in super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
             for dt_range in self.generate_date_ranges():
@@ -222,7 +219,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -238,8 +235,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
 
 
 class TwilioNestedStream(TwilioStream):
-    """
-    Basic class for the streams that are dependant on the results of another stream output (parent-child relations).
+    """Basic class for the streams that are dependant on the results of another stream output (parent-child relations).
     Parent class read is always full refresh, even if it supports incremental read.
     """
 
@@ -256,8 +252,7 @@ class TwilioNestedStream(TwilioStream):
     @property
     @abstractmethod
     def parent_stream(self) -> TwilioStream:
-        """
-        :return: parent stream class
+        """:return: parent stream class
         """
 
     @cached_property
@@ -272,7 +267,7 @@ class TwilioNestedStream(TwilioStream):
         stream_slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=stream_instance.cursor_field)
         for stream_slice in stream_slices:
             for item in stream_instance.read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field
+                sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, cursor_field=stream_instance.cursor_field,
             ):
                 if not self.uri_from_subresource:
                     yield self.parent_record_to_stream_slice(item)
@@ -319,8 +314,7 @@ class Applications(TwilioNestedStream):
 
 
 class AvailablePhoneNumberCountries(TwilioNestedStream):
-    """
-    https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-resource#read-a-list-of-countries
+    """https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-resource#read-a-list-of-countries
 
     List of available phone number countries, as well as local, mobile and toll free numbers
     may be different on each request, so could not pass the full refresh tests.
@@ -394,8 +388,7 @@ class Conferences(IncrementalTwilioStream, TwilioNestedStream):
 
 
 class ConferenceParticipants(TwilioNestedStream):
-    """
-    https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources
+    """https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources
 
     This streams has records only if there are active conference participants (participants,
     which are on conference call at the moment request is made).
@@ -407,8 +400,7 @@ class ConferenceParticipants(TwilioNestedStream):
 
 
 class Flows(TwilioStream):
-    """
-    https://www.twilio.com/docs/studio/rest-api/flow#read-a-list-of-flows
+    """https://www.twilio.com/docs/studio/rest-api/flow#read-a-list-of-flows
     """
 
     url_base = TWILIO_STUDIO_API_BASE
@@ -418,8 +410,7 @@ class Flows(TwilioStream):
 
 
 class Executions(TwilioNestedStream):
-    """
-    https://www.twilio.com/docs/studio/rest-api/execution#read-a-list-of-executions
+    """https://www.twilio.com/docs/studio/rest-api/execution#read-a-list-of-executions
     """
 
     parent_stream = Flows
@@ -434,8 +425,7 @@ class Executions(TwilioNestedStream):
 
 
 class Step(TwilioNestedStream):
-    """
-    https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources
+    """https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources
     """
 
     parent_stream = Executions
@@ -466,8 +456,7 @@ class Recordings(IncrementalTwilioStream, TwilioNestedStream):
 
 
 class Services(TwilioStream):
-    """
-    https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
+    """https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
     """
 
     url_base = TWILIO_CHAT_BASE
@@ -477,8 +466,7 @@ class Services(TwilioStream):
 
 
 class VerifyServices(TwilioStream):
-    """
-    https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
+    """https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
     """
 
     # Unlike other endpoints, this one won't accept requests where pageSize >100
@@ -491,8 +479,7 @@ class VerifyServices(TwilioStream):
 
 
 class Roles(TwilioNestedStream):
-    """
-    https://www.twilio.com/docs/chat/rest/role-resource#read-multiple-role-resources
+    """https://www.twilio.com/docs/chat/rest/role-resource#read-multiple-role-resources
     """
 
     parent_stream = Services
@@ -513,8 +500,7 @@ class Transcriptions(TwilioNestedStream):
 
 
 class Trunks(TwilioStream):
-    """
-    https://www.twilio.com/docs/sip-trunking/api/trunk-resource#trunk-properties
+    """https://www.twilio.com/docs/sip-trunking/api/trunk-resource#trunk-properties
     """
 
     url_base = TWILIO_TRUNKING_URL_BASE
@@ -562,8 +548,7 @@ class UsageNestedStream(TwilioNestedStream):
     @property
     @abstractmethod
     def path_name(self) -> str:
-        """
-        return: name of the end of the usage paths
+        """return: name of the end of the usage paths
         """
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs):

@@ -3,8 +3,9 @@
 #
 
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.types import Config
@@ -15,8 +16,7 @@ NestedMapping = Union[dict[str, NestedMappingEntry], str]
 
 @dataclass
 class InterpolatedNestedMapping:
-    """
-    Wrapper around a nested dict which can contain lists and primitive values where both the keys and values are interpolated recursively.
+    """Wrapper around a nested dict which can contain lists and primitive values where both the keys and values are interpolated recursively.
 
     Attributes:
         mapping (NestedMapping): to be evaluated

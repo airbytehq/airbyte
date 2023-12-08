@@ -3,18 +3,19 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, Optional
+from collections.abc import Iterable, Mapping
+from typing import Any, Optional
+
+from deprecated.classic import deprecated
 
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
-from deprecated.classic import deprecated
 
 
 @deprecated("This class is experimental. Use at your own risk.")
 class AbstractStream(ABC):
-    """
-    AbstractStream is an experimental interface for streams developed as part of the Concurrent CDK.
+    """AbstractStream is an experimental interface for streams developed as part of the Concurrent CDK.
     This interface is not yet stable and may change in the future. Use at your own risk.
 
     Why create a new interface instead of adding concurrency capabilities the existing Stream?
@@ -38,46 +39,39 @@ class AbstractStream(ABC):
 
     @abstractmethod
     def generate_partitions(self) -> Iterable[Partition]:
-        """
-        Generates the partitions that will be read by this stream.
+        """Generates the partitions that will be read by this stream.
         :return: An iterable of partitions.
         """
 
     @property
     @abstractmethod
     def name(self) -> str:
-        """
-        :return: The stream name
+        """:return: The stream name
         """
 
     @property
     @abstractmethod
     def cursor_field(self) -> Optional[str]:
-        """
-        Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
+        """Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
         :return: The name of the field used as a cursor. Nested cursor fields are not supported.
         """
 
     @abstractmethod
     def check_availability(self) -> StreamAvailability:
-        """
-        :return: The stream's availability
+        """:return: The stream's availability
         """
 
     @abstractmethod
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        :return: A dict of the JSON schema representing this stream.
+        """:return: A dict of the JSON schema representing this stream.
         """
 
     @abstractmethod
     def as_airbyte_stream(self) -> AirbyteStream:
-        """
-        :return: A dict of the JSON schema representing this stream.
+        """:return: A dict of the JSON schema representing this stream.
         """
 
     @abstractmethod
     def log_stream_sync_configuration(self) -> None:
-        """
-        Logs the stream's configuration for debugging purposes.
+        """Logs the stream's configuration for debugging purposes.
         """

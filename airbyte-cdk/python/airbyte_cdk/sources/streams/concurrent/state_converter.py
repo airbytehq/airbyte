@@ -3,8 +3,9 @@
 #
 
 from abc import ABC, abstractmethod
+from collections.abc import MutableMapping
 from enum import Enum
-from typing import Any, List, MutableMapping, Optional
+from typing import Any, Optional
 
 
 class ConcurrencyCompatibleStateType(Enum):
@@ -26,8 +27,7 @@ class ConcurrentStreamStateConverter(ABC):
 
     @abstractmethod
     def convert_from_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        Convert the state message to the format required by the ThreadBasedConcurrentStream.
+        """Convert the state message to the format required by the ThreadBasedConcurrentStream.
 
         e.g.
         {
@@ -41,17 +41,15 @@ class ConcurrentStreamStateConverter(ABC):
 
     @abstractmethod
     def convert_to_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        Convert the state message from the concurrency-compatible format to the stream's original format.
+        """Convert the state message from the concurrency-compatible format to the stream's original format.
 
         e.g.
         { "created": 1617030403 }
         """
         ...
 
-    def _get_latest_complete_time(self, slices: List[MutableMapping[str, Any]]) -> Optional[Any]:
-        """
-        Get the latest time before which all records have been processed.
+    def _get_latest_complete_time(self, slices: list[MutableMapping[str, Any]]) -> Optional[Any]:
+        """Get the latest time before which all records have been processed.
         """
         if slices:
             first_interval = self.merge_intervals(slices)[0][self.END_KEY]
@@ -62,13 +60,12 @@ class ConcurrentStreamStateConverter(ABC):
     @staticmethod
     @abstractmethod
     def increment(timestamp: Any) -> Any:
-        """
-        Increment a timestamp by a single unit.
+        """Increment a timestamp by a single unit.
         """
         ...
 
     @classmethod
-    def merge_intervals(cls, intervals: List[MutableMapping[str, Any]]) -> List[MutableMapping[str, Any]]:
+    def merge_intervals(cls, intervals: list[MutableMapping[str, Any]]) -> list[MutableMapping[str, Any]]:
         sorted_intervals = sorted(intervals, key=lambda x: (x[cls.START_KEY], x[cls.END_KEY]))
         if len(sorted_intervals) > 0:
             merged_intervals = [sorted_intervals[0]]
@@ -88,8 +85,7 @@ class EpochValueConcurrentStreamStateConverter(ConcurrentStreamStateConverter):
         self._cursor_field = cursor_field
 
     def convert_from_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        e.g.
+        """e.g.
         { "created": 1617030403 }
         =>
         {
@@ -118,8 +114,7 @@ class EpochValueConcurrentStreamStateConverter(ConcurrentStreamStateConverter):
         }
 
     def convert_to_sequential_state(self, stream_state: MutableMapping[str, Any]) -> Any:
-        """
-        e.g.
+        """e.g.
         {
             "state_type": "date-range",
             "metadata": { … },

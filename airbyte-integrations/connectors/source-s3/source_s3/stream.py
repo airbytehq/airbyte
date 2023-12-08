@@ -2,16 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Iterator, Mapping
 from datetime import timedelta
-from typing import Any, Iterator, Mapping
+from typing import Any
 
 import pendulum
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils import AirbyteTracedException
 from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.config import Config
 from botocore.exceptions import ClientError
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from source_s3.s3_utils import make_s3_client
 
 from .s3file import S3File
@@ -25,8 +27,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         return S3File
 
     def filepath_iterator(self, stream_state: Mapping[str, Any] = None) -> Iterator[FileInfo]:
-        """
-        :yield: url filepath to use in S3File()
+        """:yield: url filepath to use in S3File()
         """
         stream_state = self._get_converted_stream_state(stream_state)
         prefix = self._provider.get("path_prefix")
@@ -40,7 +41,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         client_config = None
         if S3File.use_aws_account(provider):
             session = boto3session.Session(
-                aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"]
+                aws_access_key_id=provider["aws_access_key_id"], aws_secret_access_key=provider["aws_secret_access_key"],
             )
         else:
             session = boto3session.Session()
@@ -86,7 +87,7 @@ class IncrementalFileStreamS3(IncrementalFileStream):
         )
 
         file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value = file.get("LastModified") + timedelta(
-            days=self.buffer_days
+            days=self.buffer_days,
         ) < self._get_datetime_from_stream_state(stream_state) and not self.file_in_history(file["Key"], stream_state.get("history", {}))
 
         return (

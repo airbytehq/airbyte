@@ -21,21 +21,21 @@ class TestChangelogEntry:
 
 
 class TestVersionRegistry:
-    @pytest.fixture
+    @pytest.fixture()
     def fake_entries(self, mocker):
         # Please keep this list ordered by version
         return [
             version_registry.VersionRegistryEntry(
-                published_docker_image=mocker.Mock(), changelog_entry="first version", version=semver.VersionInfo.parse("1.0.0")
+                published_docker_image=mocker.Mock(), changelog_entry="first version", version=semver.VersionInfo.parse("1.0.0"),
             ),
             version_registry.VersionRegistryEntry(
-                published_docker_image=mocker.Mock(), changelog_entry="second version", version=semver.VersionInfo.parse("2.0.0")
+                published_docker_image=mocker.Mock(), changelog_entry="second version", version=semver.VersionInfo.parse("2.0.0"),
             ),
             version_registry.VersionRegistryEntry(
-                published_docker_image=mocker.Mock(), changelog_entry="pre-release", version=semver.VersionInfo.parse("3.0.0-rc.1")
+                published_docker_image=mocker.Mock(), changelog_entry="pre-release", version=semver.VersionInfo.parse("3.0.0-rc.1"),
             ),
             version_registry.VersionRegistryEntry(
-                published_docker_image=None, changelog_entry="third version", version=semver.VersionInfo.parse("3.0.0")
+                published_docker_image=None, changelog_entry="third version", version=semver.VersionInfo.parse("3.0.0"),
             ),
         ]
 
@@ -43,7 +43,7 @@ class TestVersionRegistry:
         entries = version_registry.VersionRegistry(AirbytePythonConnectorBaseImage, fake_entries).entries
         versions = [entry.version for entry in entries]
         assert set(versions) == set(
-            [entry.version for entry in fake_entries]
+            [entry.version for entry in fake_entries],
         ), "The entries should be unique by version and contain all the entries passed as argument"
         assert versions == sorted(versions, reverse=True), "The entries should be sorted by version in descending order"
 
@@ -97,27 +97,27 @@ class TestVersionRegistry:
         changelog_entries = version_registry.VersionRegistry.get_changelog_entries(mock_connector_class)
         assert len(changelog_entries) == 0
 
-    @pytest.fixture
+    @pytest.fixture()
     def mock_dagger_client(self, mocker):
         return mocker.Mock()
 
-    @pytest.fixture
+    @pytest.fixture()
     def fake_docker_credentials(self):
         return ("username", "password")
 
-    @pytest.fixture
+    @pytest.fixture()
     def fake_changelog_entries(self):
         return [
             version_registry.ChangelogEntry(semver.VersionInfo.parse("1.0.0"), "first version", ""),
             version_registry.ChangelogEntry(semver.VersionInfo.parse("2.0.0"), "second unpublished version", ""),
         ]
 
-    @pytest.fixture
+    @pytest.fixture()
     def fake_published_images(self, mocker):
         # Mock the published images to include only one version (2.0.0)
         return [mocker.Mock(version=semver.VersionInfo.parse("1.0.0"))]
 
-    @pytest.mark.anyio
+    @pytest.mark.anyio()
     async def test_get_all_published_base_images(self, mocker, mock_dagger_client, fake_docker_credentials):
         mock_crane_client = mocker.Mock()
         mocker.patch.object(version_registry.docker, "CraneClient", return_value=mock_crane_client)
@@ -129,14 +129,14 @@ class TestVersionRegistry:
         mock_remote_registry.get_all_images.return_value = sample_published_images
 
         published_images = await version_registry.VersionRegistry.get_all_published_base_images(
-            mock_dagger_client, fake_docker_credentials, mocker.Mock()
+            mock_dagger_client, fake_docker_credentials, mocker.Mock(),
         )
 
         assert published_images == sample_published_images
 
-    @pytest.mark.anyio
+    @pytest.mark.anyio()
     async def test_load_with_mocks(
-        self, mocker, mock_dagger_client, fake_docker_credentials, fake_changelog_entries, fake_published_images
+        self, mocker, mock_dagger_client, fake_docker_credentials, fake_changelog_entries, fake_published_images,
     ):
         mocker.patch.object(version_registry.VersionRegistry, "get_changelog_entries", return_value=fake_changelog_entries)
         mocker.patch.object(version_registry.VersionRegistry, "get_all_published_base_images", return_value=fake_published_images)

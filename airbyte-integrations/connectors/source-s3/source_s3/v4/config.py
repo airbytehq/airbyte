@@ -4,14 +4,14 @@
 
 from typing import Optional
 
+from pydantic import AnyUrl, Field, ValidationError, root_validator
+
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.utils import is_cloud_environment
-from pydantic import AnyUrl, Field, ValidationError, root_validator
 
 
 class Config(AbstractFileBasedSpec):
-    """
-    NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes
+    """NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes
     because it is responsible for converting legacy S3 v3 configs into v4 configs using the File-Based CDK.
     """
 
@@ -53,7 +53,7 @@ class Config(AbstractFileBasedSpec):
         aws_secret_access_key = values.get("aws_secret_access_key")
         if (aws_access_key_id or aws_secret_access_key) and not (aws_access_key_id and aws_secret_access_key):
             raise ValidationError(
-                "`aws_access_key_id` and `aws_secret_access_key` are both required to authenticate with AWS.", model=Config
+                "`aws_access_key_id` and `aws_secret_access_key` are both required to authenticate with AWS.", model=Config,
             )
 
         if is_cloud_environment():

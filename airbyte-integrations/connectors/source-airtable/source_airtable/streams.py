@@ -4,9 +4,11 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -27,8 +29,7 @@ class AirtableBases(HttpStream):
     raise_on_http_errors = True
 
     def path(self, **kwargs) -> str:
-        """
-        Documentation: https://airtable.com/developers/web/api/list-bases
+        """Documentation: https://airtable.com/developers/web/api/list-bases
         """
         return "meta/bases"
 
@@ -44,13 +45,12 @@ class AirtableBases(HttpStream):
             raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
         if response.status_code == 403 or response.status_code == 422:
             self.logger.error(f"Stream {self.name}: permission denied or entity is unprocessable. Skipping.")
-            setattr(self, "raise_on_http_errors", False)
+            self.raise_on_http_errors = False
             return False
         return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Based on official docs: https://airtable.com/developers/web/api/rate-limits
+        """Based on official docs: https://airtable.com/developers/web/api/rate-limits
         when 429 is received, we should wait at least 30 sec.
         """
         if response.status_code == 429:
@@ -58,8 +58,7 @@ class AirtableBases(HttpStream):
             return 30.0
 
     def next_page_token(self, response: requests.Response, **kwargs) -> str:
-        """
-        The bases list could be more than 100 records, therefore the pagination is required to fetch all of them.
+        """The bases list could be more than 100 records, therefore the pagination is required to fetch all of them.
         """
         next_page = response.json().get("offset")
         if next_page:
@@ -73,14 +72,13 @@ class AirtableBases(HttpStream):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Mapping[str, Any]:
-        """
-        Example output:
-            {
-                'bases': [
-                    {'id': '_some_id_', 'name': 'users', 'permissionLevel': 'create'},
-                    {'id': '_some_id_', 'name': 'Test Base', 'permissionLevel': 'create'},
-                ]
-            }
+        """Example output:
+        {
+            'bases': [
+                {'id': '_some_id_', 'name': 'users', 'permissionLevel': 'create'},
+                {'id': '_some_id_', 'name': 'Test Base', 'permissionLevel': 'create'},
+            ]
+        }
         """
         records = response.json().get(self.name)
         for base in records:
@@ -90,7 +88,7 @@ class AirtableBases(HttpStream):
                 else:
                     additional_message = "reauthenticate and add this base to the Access list, see Airtable docs for more info: https://support.airtable.com/docs/third-party-integrations-via-oauth-overview#granting-access-to-airtable-workspaces-bases"
                 self.logger.warning(
-                    f"Skipping base `{base.get('name')}` with id `{base.get('id')}`: Not enough permissions, {additional_message}"
+                    f"Skipping base `{base.get('name')}` with id `{base.get('id')}`: Not enough permissions, {additional_message}",
                 )
             else:
                 yield base
@@ -104,8 +102,7 @@ class AirtableTables(AirtableBases):
     name = "tables"
 
     def path(self, **kwargs) -> str:
-        """
-        Documentation: https://airtable.com/developers/web/api/list-bases
+        """Documentation: https://airtable.com/developers/web/api/list-bases
         """
         return f"{super().path()}/{self.base_id}/tables"
 
@@ -130,13 +127,12 @@ class AirtableStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 403 or response.status_code == 422:
             self.logger.error(f"Stream {self.name}: permission denied or entity is unprocessable. Skipping.")
-            setattr(self, "raise_on_http_errors", False)
+            self.raise_on_http_errors = False
             return False
         return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Based on official docs: https://airtable.com/developers/web/api/rate-limits
+        """Based on official docs: https://airtable.com/developers/web/api/rate-limits
         when 429 is received, we should wait at least 30 sec.
         """
         if response.status_code == 429:
@@ -154,8 +150,7 @@ class AirtableStream(HttpStream, ABC):
         return None
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        """
-        All available params: https://airtable.com/developers/web/api/list-records#query
+        """All available params: https://airtable.com/developers/web/api/list-records#query
         """
         params = {}
         if next_page_token:

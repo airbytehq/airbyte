@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Iterable, Mapping, MutableMapping
 from decimal import Decimal
-from typing import Any, Iterable, List, Mapping, MutableMapping
+from typing import Any
 
 
 class DataTypeEnforcer:
-    """
-    Transform class was implemented according to issue #4841
+    """Transform class was implemented according to issue #4841
     Shopify API returns price fields as a string and it should be converted to the number
     Some records fields contain objects and arrays, which contain price fields.
     Those price fields should be transformed too.
@@ -16,7 +16,7 @@ class DataTypeEnforcer:
     Correct types placed in schemes
     Transformer iterates over records, compare values type with schema type and transform if it's needed
 
-    Methods
+    Methods:
     -------
     _transform_array(self, array: List[Any], item_properties: Mapping[str, Any])
         Some fields type is array. Items inside array contain price fields, which should be transformed
@@ -30,7 +30,7 @@ class DataTypeEnforcer:
         self._schema = schema
 
     @staticmethod
-    def _get_json_types(value_type: Any) -> List[str]:
+    def _get_json_types(value_type: Any) -> list[str]:
         json_types = {
             str: ["string"],
             int: ["integer", "number"],
@@ -54,7 +54,7 @@ class DataTypeEnforcer:
         return schema_types
 
     @staticmethod
-    def _first_non_null_type(schema_types: List[str]) -> str:
+    def _first_non_null_type(schema_types: list[str]) -> str:
         not_null_types = schema_types.copy()
         if "null" in not_null_types:
             not_null_types.remove("null")
@@ -68,7 +68,7 @@ class DataTypeEnforcer:
     def _transform_string(value: Any):
         return str(value)
 
-    def _transform_array(self, array: List[Any], item_properties: Mapping[str, Any]):
+    def _transform_array(self, array: list[Any], item_properties: Mapping[str, Any]):
         # iterate over items in array, compare schema types and convert if necessary.
         for index, record in enumerate(array):
             array[index] = self.transform(record, item_properties)

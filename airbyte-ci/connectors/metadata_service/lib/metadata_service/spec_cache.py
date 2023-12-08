@@ -5,7 +5,6 @@
 import json
 from dataclasses import dataclass
 from enum import Enum
-from typing import List
 
 from google.cloud import storage
 
@@ -57,7 +56,6 @@ def get_registry_from_spec_cache_path(spec_cache_path: str) -> Registries:
 
 def get_docker_info_from_spec_cache_path(spec_cache_path: str) -> CachedSpec:
     """Returns the docker repository and tag from the spec cache path."""
-
     registry = get_registry_from_spec_cache_path(spec_cache_path)
     registry_file_name = get_spec_file_name(registry)
 
@@ -71,7 +69,7 @@ def get_docker_info_from_spec_cache_path(spec_cache_path: str) -> CachedSpec:
     docker_repository = without_file.replace(f"/{docker_image_tag}", "")
 
     return CachedSpec(
-        docker_repository=docker_repository, docker_image_tag=docker_image_tag, spec_cache_path=spec_cache_path, registry=registry
+        docker_repository=docker_repository, docker_image_tag=docker_image_tag, spec_cache_path=spec_cache_path, registry=registry,
     )
 
 
@@ -81,16 +79,14 @@ class SpecCache:
         self.bucket = self.client.bucket(bucket_name)
         self.cached_specs = self.get_all_cached_specs()
 
-    def get_all_cached_specs(self) -> List[CachedSpec]:
+    def get_all_cached_specs(self) -> list[CachedSpec]:
         """Returns a list of all the specs in the spec cache bucket."""
-
         blobs = self.bucket.list_blobs(prefix=CACHE_FOLDER)
 
         return [get_docker_info_from_spec_cache_path(blob.name) for blob in blobs if blob.name.endswith(".json")]
 
     def _find_spec_cache(self, docker_repository: str, docker_image_tag: str, registry: Registries) -> CachedSpec:
         """Returns the spec cache path for a given docker repository and tag."""
-
         # find the spec cache path for the given docker repository and tag
         for cached_spec in self.cached_specs:
             if (

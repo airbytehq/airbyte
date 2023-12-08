@@ -4,8 +4,9 @@
 
 from pathlib import Path
 
-import pipelines.helpers.connectors.modifed
 import pytest
+
+import pipelines.helpers.connectors.modifed
 from pipelines.airbyte_ci.steps import gradle
 from pipelines.models import steps
 
@@ -21,13 +22,13 @@ class TestGradleTask:
         async def _run(self) -> steps.StepResult:
             return steps.StepResult(self, steps.StepStatus.SUCCESS)
 
-    @pytest.fixture
+    @pytest.fixture()
     def test_context(self, mocker, dagger_client):
         return mocker.Mock(
             secrets_to_mask=[],
             dagger_client=dagger_client,
             connector=pipelines.helpers.connectors.modifed.ConnectorWithModifiedFiles(
-                "source-postgres", frozenset({Path("airbyte-integrations/connectors/source-postgres/metadata.yaml")})
+                "source-postgres", frozenset({Path("airbyte-integrations/connectors/source-postgres/metadata.yaml")}),
             ),
         )
 

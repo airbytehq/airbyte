@@ -4,7 +4,8 @@
 
 
 import logging
-from typing import Any, List, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
@@ -16,8 +17,7 @@ logger = logging.getLogger("airbyte_logger")
 
 
 class MigratePropertyID:
-    """
-    This class stands for migrating the config at runtime,
+    """This class stands for migrating the config at runtime,
     while providing the backward compatibility when falling back to the previous source version.
 
     Specifically, starting from `1.3.0`, the `property_id` property should be like :
@@ -32,8 +32,8 @@ class MigratePropertyID:
 
     @classmethod
     def _should_migrate(cls, config: Mapping[str, Any]) -> bool:
-        """
-        This method determines whether config require migration.
+        """This method determines whether config require migration.
+
         Returns:
             > True, if the transformation is neccessary
             > False, otherwise.
@@ -69,9 +69,8 @@ class MigratePropertyID:
             print(message.json(exclude_unset=True))
 
     @classmethod
-    def migrate(cls, args: List[str], source: SourceGoogleAnalyticsDataApi) -> None:
-        """
-        This method checks the input args, should the config be migrated,
+    def migrate(cls, args: list[str], source: SourceGoogleAnalyticsDataApi) -> None:
+        """This method checks the input args, should the config be migrated,
         transform if neccessary and emit the CONTROL message.
         """
         # get config path
@@ -88,8 +87,7 @@ class MigratePropertyID:
 
 
 class MigrateCustomReports:
-    """
-    This class stands for migrating the config at runtime,
+    """This class stands for migrating the config at runtime,
     while providing the backward compatibility when falling back to the previous source version.
     Specifically, starting from `1.3.3`, the `custom_reports` property should be like :
         > List([{name: my_report}, {dimensions: [a,b,c]}], [], ...)
@@ -103,15 +101,14 @@ class MigrateCustomReports:
 
     @classmethod
     def _should_migrate(cls, config: Mapping[str, Any]) -> bool:
-        """
-        This method determines whether or not the config should be migrated to have the new structure for the `custom_reports`,
+        """This method determines whether or not the config should be migrated to have the new structure for the `custom_reports`,
         based on the source spec.
+
         Returns:
             > True, if the transformation is necessary
             > False, otherwise.
             > Raises the Exception if the structure could not be migrated.
         """
-
         # If the config has been migrated and has entries, no need to migrate again.
         if config.get(cls.migrate_to_key, []):
             return False
@@ -147,9 +144,8 @@ class MigrateCustomReports:
             print(message.json(exclude_unset=True))
 
     @classmethod
-    def migrate(cls, args: List[str], source: SourceGoogleAnalyticsDataApi) -> None:
-        """
-        This method checks the input args, should the config be migrated,
+    def migrate(cls, args: list[str], source: SourceGoogleAnalyticsDataApi) -> None:
+        """This method checks the input args, should the config be migrated,
         transform if neccessary and emit the CONTROL message.
         """
         # get config path

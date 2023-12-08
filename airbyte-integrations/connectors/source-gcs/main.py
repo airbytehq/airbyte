@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from source_gcs import Config, Cursor, SourceGCS, SourceGCSStreamReader
+
+from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 
 if __name__ == "__main__":
     _args = sys.argv[1:]

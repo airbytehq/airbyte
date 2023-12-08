@@ -5,18 +5,20 @@
 
 import math
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Optional
 
 import boto3
 import botocore
 import botocore.exceptions
 import pendulum
+from botocore.config import Config
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from botocore.config import Config
 
 
 class Client:
@@ -32,7 +34,7 @@ class Client:
         )
 
         self.session: botocore.client.CloudTrail = boto3.client(
-            "cloudtrail", aws_access_key_id=aws_key_id, aws_secret_access_key=aws_secret_key, region_name=aws_region_name, config=config
+            "cloudtrail", aws_access_key_id=aws_key_id, aws_secret_access_key=aws_secret_key, region_name=aws_region_name, config=config,
         )
 
 
@@ -54,7 +56,7 @@ class AwsCloudtrailStream(Stream, ABC):
         return response.get("NextToken")
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"MaxResults": self.limit}
 
@@ -70,10 +72,8 @@ class AwsCloudtrailStream(Stream, ABC):
 
     @abstractmethod
     def send_request(self, **kwargs) -> Mapping[str, Any]:
+        """This method should be overridden by subclasses to send proper request with appropriate parameters to CloudTrail
         """
-        This method should be overridden by subclasses to send proper request with appropriate parameters to CloudTrail
-        """
-        pass
 
     def is_read_limit_reached(self) -> bool:
         if self.records_left <= 0:
@@ -84,7 +84,7 @@ class AwsCloudtrailStream(Stream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -138,7 +138,7 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
         return self.client.session.lookup_events(**kwargs)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
@@ -159,10 +159,9 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
             yield event
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Slices whole time range to more granular slices (24h slices). Latest time slice should be the first to avoid data loss
+        """Slices whole time range to more granular slices (24h slices). Latest time slice should be the first to avoid data loss
         """
         cursor_data = stream_state.get(self.cursor_field) if stream_state else 0
         end_time = pendulum.now()
@@ -178,7 +177,7 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
                     "StartTime": last_start_time.int_timestamp,
                     # decrement second as API include records with specified StartTime and EndTime
                     "EndTime": last_start_time.add(days=1).int_timestamp - 1,
-                }
+                },
             )
             last_start_time = last_start_time.add(days=1)
 
@@ -186,7 +185,7 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
 
 
 class SourceAwsCloudtrail(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, any]:
         client = Client(config["aws_key_id"], config["aws_secret_key"], config["aws_region_name"])
         try:
             client.session.lookup_events(MaxResults=1)
@@ -195,5 +194,5 @@ class SourceAwsCloudtrail(AbstractSource):
 
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         return [ManagementEvents(**config)]

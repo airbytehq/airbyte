@@ -4,7 +4,7 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Dict, List, Optional
+from typing import Optional
 
 from .cards import (
     Address,
@@ -61,13 +61,13 @@ class Transaction(BaseModel):
     created_at: datetime
     credit_card_details: CreditCard
     currency_iso_code: str
-    custom_fields: Dict[str, str]
+    custom_fields: dict[str, str]
     customer_details: Customer
     cvv_response_code: str
     disbursement_details: DisbursementDetails
     discount_amount: Decimal
-    discounts: List[Discount]
-    disputes: List[Dispute]
+    discounts: list[Discount]
+    disputes: list[Dispute]
     escrow_status: str
     gateway_rejection_reason: str
     global_id: str
@@ -96,8 +96,8 @@ class Transaction(BaseModel):
     purchase_order_number: str
     paypal_details: PayPalAccount
     recurring: bool
-    refund_ids: List[str]
-    refund_global_ids: List[str]
+    refund_ids: list[str]
+    refund_global_ids: list[str]
     refunded_transaction_id: str
     response_emv_data: str
     retrieval_reference_number: str
@@ -109,7 +109,7 @@ class Transaction(BaseModel):
     shipping_details: Address
     ships_from_postal_code: str
     status: str
-    status_history: List[StatusHistoryDetails]
+    status_history: list[StatusHistoryDetails]
     subscription_details: SubscriptionDetails
     subscription_id: str
     tax_amount: Decimal

@@ -3,10 +3,10 @@
 #
 
 import functools
-from typing import Set
 
 import git
 from dagger import Connection
+
 from pipelines.dagger.containers.git import checked_out_git_container
 from pipelines.helpers.utils import DAGGER_CONFIG, DIFF_FILTER
 
@@ -20,18 +20,18 @@ def get_current_git_branch() -> str:  # noqa D103
 
 
 async def get_modified_files_in_branch_remote(
-    current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master"
-) -> Set[str]:
+    current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master",
+) -> set[str]:
     """Use git diff to spot the modified files on the remote branch."""
     async with Connection(DAGGER_CONFIG) as dagger_client:
         container = await checked_out_git_container(dagger_client, current_git_branch, current_git_revision, diffed_branch)
         modified_files = await container.with_exec(
-            ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_branch}"]
+            ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_branch}"],
         ).stdout()
     return set(modified_files.split("\n"))
 
 
-def get_modified_files_local(current_git_revision: str, diffed: str = "master") -> Set[str]:
+def get_modified_files_local(current_git_revision: str, diffed: str = "master") -> set[str]:
     """Use git diff and git status to spot the modified files in the local repo."""
     airbyte_repo = git.Repo()
     modified_files = airbyte_repo.git.diff(f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed}...{current_git_revision}").split("\n")
@@ -44,8 +44,8 @@ def get_modified_files_local(current_git_revision: str, diffed: str = "master") 
 
 
 async def get_modified_files_in_branch(
-    current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True
-) -> Set[str]:
+    current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True,
+) -> set[str]:
     """Retrieve the list of modified files on the branch."""
     if is_local:
         return get_modified_files_local(current_git_revision, diffed_branch)
@@ -53,20 +53,20 @@ async def get_modified_files_in_branch(
         return await get_modified_files_in_branch_remote(current_git_branch, current_git_revision, diffed_branch)
 
 
-async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str) -> Set[str]:
+async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str) -> set[str]:
     async with Connection(DAGGER_CONFIG) as dagger_client:
         container = await checked_out_git_container(dagger_client, current_git_branch, current_git_revision)
         modified_files = await container.with_exec(["diff-tree", "--no-commit-id", "--name-only", current_git_revision, "-r"]).stdout()
     return set(modified_files.split("\n"))
 
 
-def get_modified_files_in_commit_local(current_git_revision: str) -> Set[str]:
+def get_modified_files_in_commit_local(current_git_revision: str) -> set[str]:
     airbyte_repo = git.Repo()
     modified_files = airbyte_repo.git.diff_tree("--no-commit-id", "--name-only", current_git_revision, "-r").split("\n")
     return set(modified_files)
 
 
-async def get_modified_files_in_commit(current_git_branch: str, current_git_revision: str, is_local: bool = True) -> Set[str]:
+async def get_modified_files_in_commit(current_git_branch: str, current_git_revision: str, is_local: bool = True) -> set[str]:
     if is_local:
         return get_modified_files_in_commit_local(current_git_revision)
     else:

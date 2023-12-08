@@ -3,7 +3,8 @@
 #
 
 
-from typing import Any, Generator, Mapping, Tuple
+from collections.abc import Generator, Mapping
+from typing import Any
 
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.sources.deprecated.client import BaseClient
@@ -29,7 +30,7 @@ class Client(BaseClient):
     def _enumerate_methods(self) -> Mapping[str, callable]:
         return {name: api.list for name, api in self._apis.items()}
 
-    def health_check(self) -> Tuple[bool, str]:
+    def health_check(self) -> tuple[bool, str]:
         alive = True
         error_msg = None
 

@@ -20,8 +20,7 @@ GROUP_NAME = "github"
 
 
 def _get_md5_of_github_file(context: OpExecutionContext, github_connector_repo: Repository, path: str) -> str:
-    """
-    Return the md5 hash of a file in the github repo.
+    """Return the md5 hash of a file in the github repo.
     """
     context.log.debug(f"retrieving contents of {path}")
     file_contents = github_connector_repo.get_contents(path)
@@ -37,8 +36,7 @@ def _get_md5_of_github_file(context: OpExecutionContext, github_connector_repo: 
 @asset(required_resource_keys={"github_connectors_directory"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def github_connector_folders(context):
-    """
-    Return a list of all the folders in the github connectors directory.
+    """Return a list of all the folders in the github connectors directory.
     """
     github_connectors_directory = context.resources.github_connectors_directory
 
@@ -48,8 +46,7 @@ def github_connector_folders(context):
 
 @asset(required_resource_keys={"github_connector_repo", "github_connectors_metadata_files"}, group_name=GROUP_NAME)
 def github_metadata_file_md5s(context):
-    """
-    Return a list of all the folders in the github connectors directory.
+    """Return a list of all the folders in the github connectors directory.
     """
     github_connector_repo = context.resources.github_connector_repo
     github_connectors_metadata_files = context.resources.github_connectors_metadata_files
@@ -66,8 +63,7 @@ def github_metadata_file_md5s(context):
 
 
 def _should_publish_have_ran(datetime_string: str) -> bool:
-    """
-    Return true if the datetime is 2 hours old.
+    """Return true if the datetime is 2 hours old.
 
     """
     dt = dateutil.parser.parse(datetime_string)
@@ -77,16 +73,14 @@ def _should_publish_have_ran(datetime_string: str) -> bool:
 
 
 def _to_time_ago(datetime_string: str) -> str:
-    """
-    Return a string of how long ago the datetime is human readable format. 10 min
+    """Return a string of how long ago the datetime is human readable format. 10 min
     """
     dt = dateutil.parser.parse(datetime_string)
     return humanize.naturaltime(dt)
 
 
 def _is_stale(github_file_info: dict, latest_gcs_metadata_md5s: dict) -> bool:
-    """
-    Return true if the github info is stale.
+    """Return true if the github info is stale.
     """
     not_in_gcs = latest_gcs_metadata_md5s.get(github_file_info["md5"]) is None
     return not_in_gcs and _should_publish_have_ran(github_file_info["last_modified"])
@@ -94,8 +88,7 @@ def _is_stale(github_file_info: dict, latest_gcs_metadata_md5s: dict) -> bool:
 
 @asset(required_resource_keys={"slack", "latest_metadata_file_blobs"}, group_name=GROUP_NAME)
 def stale_gcs_latest_metadata_file(context, github_metadata_file_md5s: dict) -> OutputDataFrame:
-    """
-    Return a list of all metadata files in the github repo and denote whether they are stale or not.
+    """Return a list of all metadata files in the github repo and denote whether they are stale or not.
 
     Stale means that the file in the github repo is not in the latest metadata file blobs.
     """
@@ -139,8 +132,7 @@ def stale_gcs_latest_metadata_file(context, github_metadata_file_md5s: dict) -> 
 @asset(required_resource_keys={"github_connector_nightly_workflow_successes"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def github_connector_nightly_workflow_successes(context: OpExecutionContext) -> OutputDataFrame:
-    """
-    Return a list of all the latest nightly workflow runs for the connectors repo.
+    """Return a list of all the latest nightly workflow runs for the connectors repo.
     """
     github_connector_nightly_workflow_successes = context.resources.github_connector_nightly_workflow_successes
 

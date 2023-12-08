@@ -2,17 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Optional, Tuple
+from collections.abc import Mapping
+from typing import Any, Optional
 
 import pendulum
 import requests
+from pydantic.error_wrappers import ValidationError
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from pydantic.error_wrappers import ValidationError
 
 from .streams import (
     ApplicationRoles,
@@ -88,7 +90,7 @@ class SourceJira(AbstractSource):
     def get_authenticator(config: Mapping[str, Any]):
         return BasicHttpAuthenticator(config["email"], config["api_token"])
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Optional[Any]]:
         try:
             config = self._validate_and_transform(config)
             authenticator = self.get_authenticator(config)
@@ -127,7 +129,7 @@ class SourceJira(AbstractSource):
             # we don't know what this is, rethrow it
             raise request_error
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
@@ -137,7 +139,7 @@ class SourceJira(AbstractSource):
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
             experimental_streams.append(
-                PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
+                PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args),
             )
         return [
             ApplicationRoles(**args),

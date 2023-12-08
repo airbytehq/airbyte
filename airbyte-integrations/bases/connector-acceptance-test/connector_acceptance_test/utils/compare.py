@@ -3,7 +3,8 @@
 #
 
 import functools
-from typing import List, Mapping, Optional
+from collections.abc import Mapping
+from typing import Optional
 
 import dpath.exceptions
 import dpath.util
@@ -17,7 +18,7 @@ GUTTER = 3
 MARGINS = MARGIN_LEFT + GUTTER + 1
 
 
-def diff_dicts(left, right, use_markup) -> Optional[List[str]]:
+def diff_dicts(left, right, use_markup) -> Optional[list[str]]:
     half_cols = MAX_COLS / 2 - MARGINS
 
     pretty_left = pformat(left, indent=1, width=half_cols).splitlines()
@@ -57,7 +58,7 @@ class HashMixin:
     def get_hash(obj):
         if isinstance(obj, Mapping):
             return hash(str({k: (HashMixin.get_hash(v)) for k, v in sorted(obj.items())}))
-        if isinstance(obj, List):
+        if isinstance(obj, list):
             return hash(str(sorted([HashMixin.get_hash(v) for v in obj])))
         return hash(obj)
 
@@ -79,7 +80,7 @@ class ListWithHashMixin(HashMixin, list):
     pass
 
 
-def delete_fields(obj: Mapping, path_list: List[str]) -> None:
+def delete_fields(obj: Mapping, path_list: list[str]) -> None:
     for path in path_list:
         try:
             dpath.util.delete(obj, path)
@@ -87,9 +88,8 @@ def delete_fields(obj: Mapping, path_list: List[str]) -> None:
             pass
 
 
-def make_hashable(obj, exclude_fields: List[str] = None) -> str:
-    """
-    Simplify comparison of nested dicts/lists
+def make_hashable(obj, exclude_fields: list[str] = None) -> str:
+    """Simplify comparison of nested dicts/lists
     :param obj value for comparison
     :param exclude_fields if value is Mapping, some fields can be excluded
     """
@@ -98,6 +98,6 @@ def make_hashable(obj, exclude_fields: List[str] = None) -> str:
         if exclude_fields:
             delete_fields(obj, exclude_fields)
         return DictWithHashMixin(obj)
-    if isinstance(obj, List):
+    if isinstance(obj, list):
         return ListWithHashMixin(obj)
     return obj

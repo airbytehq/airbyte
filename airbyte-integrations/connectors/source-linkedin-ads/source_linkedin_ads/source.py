@@ -4,7 +4,8 @@
 
 
 import logging
-from typing import Any, List, Mapping, Optional, Tuple, Union
+from collections.abc import Mapping
+from typing import Any, Optional, Union
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -35,16 +36,14 @@ logger = logging.getLogger("airbyte")
 
 
 class SourceLinkedinAds(AbstractSource):
-    """
-    Abstract Source inheritance, provides:
+    """Abstract Source inheritance, provides:
     - implementation for `check` connector's connectivity
     - implementation to call each stream with it's input parameters.
     """
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> Union[TokenAuthenticator, Oauth2Authenticator]:
-        """
-        Validate input parameters and generate a necessary Authentication object
+        """Validate input parameters and generate a necessary Authentication object
         This connectors support 2 auth methods:
         1) direct access token with TTL = 2 months
         2) refresh token (TTL = 1 year) which can be converted to access tokens,
@@ -64,9 +63,8 @@ class SourceLinkedinAds(AbstractSource):
             )
         raise Exception("incorrect input parameters")
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        """
-        Testing connection availability for the connector.
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, Optional[Any]]:
+        """Testing connection availability for the connector.
         :: for this check method the Customer must have the "r_liteprofile" scope enabled.
         :: more info: https://docs.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin
         """
@@ -78,9 +76,8 @@ class SourceLinkedinAds(AbstractSource):
         except Exception as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Mapping a input config of the user input configuration as defined in the connector spec.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """Mapping a input config of the user input configuration as defined in the connector spec.
         Passing config to the streams.
         """
         self._validate_ad_analytics_reports(config)
@@ -107,7 +104,7 @@ class SourceLinkedinAds(AbstractSource):
 
         return streams + self.get_custom_ad_analytics_reports(config)
 
-    def get_custom_ad_analytics_reports(self, config: Mapping[str, Any]) -> List[Stream]:
+    def get_custom_ad_analytics_reports(self, config: Mapping[str, Any]) -> list[Stream]:
         streams = []
 
         for ad_report in config.get("ad_analytics_reports", []):

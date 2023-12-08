@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_amazon_sqs import SourceAmazonSqs
+
+from airbyte_cdk.entrypoint import launch
 
 if __name__ == "__main__":
     source = SourceAmazonSqs()

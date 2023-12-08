@@ -3,7 +3,8 @@
 #
 
 import re
-from typing import Any, Mapping, Set, Tuple, Union
+from collections.abc import Mapping
+from typing import Any, Union
 
 from airbyte_cdk.sources.declarative.parsers.custom_exceptions import CircularReferenceException, UndefinedReferenceException
 
@@ -11,8 +12,7 @@ REF_TAG = "$ref"
 
 
 class ManifestReferenceResolver:
-    """
-    An incoming manifest can contain references to values previously defined.
+    """An incoming manifest can contain references to values previously defined.
     This parser will dereference these values to produce a complete ConnectionDefinition.
 
     References can be defined using a #/<arg> string.
@@ -97,13 +97,12 @@ class ManifestReferenceResolver:
     """
 
     def preprocess_manifest(self, manifest: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        :param manifest: incoming manifest that could have references to previously defined components
+        """:param manifest: incoming manifest that could have references to previously defined components
         :return:
         """
         return self._evaluate_node(manifest, manifest, set())
 
-    def _evaluate_node(self, node: Any, manifest: Mapping[str, Any], visited: Set) -> Any:
+    def _evaluate_node(self, node: Any, manifest: Mapping[str, Any], visited: set) -> Any:
         if isinstance(node, dict):
             evaluated_dict = {k: self._evaluate_node(v, manifest, visited) for k, v in node.items() if not self._is_ref_key(k)}
             if REF_TAG in node:
@@ -147,8 +146,7 @@ class ManifestReferenceResolver:
 
     @staticmethod
     def _read_ref_value(ref: str, manifest_node: Mapping[str, Any]) -> Any:
-        """
-        Read the value at the referenced location of the manifest.
+        """Read the value at the referenced location of the manifest.
 
         References are ambiguous because one could define a key containing `/`
         In this example, we want to refer to the `limit` key in the `dict` object:
@@ -177,9 +175,8 @@ class ManifestReferenceResolver:
         return manifest_node
 
 
-def _parse_path(ref: str) -> Tuple[Union[str, int], str]:
-    """
-    Return the next path component, together with the rest of the path.
+def _parse_path(ref: str) -> tuple[Union[str, int], str]:
+    """Return the next path component, together with the rest of the path.
 
     A path component may be a string key, or an int index.
 

@@ -4,8 +4,9 @@
 
 import logging
 import traceback
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Tuple
+from typing import Any
 
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.source import Source
@@ -14,20 +15,19 @@ from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabil
 
 @dataclass
 class CheckStream(ConnectionChecker):
-    """
-    Checks the connections by checking availability of one or many streams selected by the developer
+    """Checks the connections by checking availability of one or many streams selected by the developer
 
     Attributes:
         stream_name (List[str]): names of streams to check
     """
 
-    stream_names: List[str]
+    stream_names: list[str]
     parameters: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self._parameters = parameters
 
-    def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, any]:
         streams = source.streams(config)
         stream_name_to_stream = {s.name: s for s in streams}
         if len(streams) == 0:

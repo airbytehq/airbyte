@@ -11,6 +11,7 @@ import sys
 
 import asyncclick as click
 import requests
+
 from pipelines import main_logger
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH
@@ -26,15 +27,13 @@ AUTO_UPDATE_AGREE_KEY = "yes_auto_update"
 def pre_confirm_auto_update_flag(f):
     """Decorator to add a --yes-auto-update flag to a command."""
     return click.option(
-        "--yes-auto-update", AUTO_UPDATE_AGREE_KEY, is_flag=True, default=False, help="Skip prompts and automatically upgrade pipelines"
+        "--yes-auto-update", AUTO_UPDATE_AGREE_KEY, is_flag=True, default=False, help="Skip prompts and automatically upgrade pipelines",
     )(f)
 
 
 def _is_version_available(version: str, is_dev: bool) -> bool:
+    """Check if an given version is available.
     """
-    Check if an given version is available.
-    """
-
     # Given that they can install from source, we don't need to check for upgrades
     if is_dev:
         return True
@@ -47,12 +46,11 @@ def _is_version_available(version: str, is_dev: bool) -> bool:
 
 
 def _get_latest_version() -> str:
-    """
-    Get the version of the latest release, which is just in the pyproject.toml file of the pipelines package
+    """Get the version of the latest release, which is just in the pyproject.toml file of the pipelines package
     as this is an internal tool, we don't need to check for the latest version on PyPI
     """
     path_to_pyproject_toml = LOCAL_PIPELINE_PACKAGE_PATH + "pyproject.toml"
-    with open(path_to_pyproject_toml, "r") as f:
+    with open(path_to_pyproject_toml) as f:
         for line in f.readlines():
             if "version" in line:
                 return line.split("=")[1].strip().replace('"', "")
@@ -60,8 +58,7 @@ def _get_latest_version() -> str:
 
 
 def is_dev_command() -> bool:
-    """
-    Check if the current command is the dev version of the command
+    """Check if the current command is the dev version of the command
     """
     current_command = " ".join(sys.argv)
     return DEV_COMMAND in current_command
@@ -83,7 +80,7 @@ def check_for_upgrade(
     upgrade_available = _is_version_available(latest_version, is_dev_version)
     if not upgrade_available:
         main_logger.warning(
-            f"airbyte-ci is out of date, but no upgrade is available yet. This likely means that a release is still being built. Installed version: {__installed_version__}. Latest version: {latest_version}"
+            f"airbyte-ci is out of date, but no upgrade is available yet. This likely means that a release is still being built. Installed version: {__installed_version__}. Latest version: {latest_version}",
         )
         return
 
@@ -114,7 +111,7 @@ def check_for_upgrade(
 
     # Ask the user if they want to upgrade
     if enable_auto_update and confirm(
-        "Do you want to automatically upgrade?", default=True, additional_pre_confirm_key=AUTO_UPDATE_AGREE_KEY
+        "Do you want to automatically upgrade?", default=True, additional_pre_confirm_key=AUTO_UPDATE_AGREE_KEY,
     ):
         # if the current command contains `airbyte-ci-dev` is the dev version of the command
         logging.info(f"[{'DEV' if is_dev_version else 'BINARY'}] Upgrading pipelines...")

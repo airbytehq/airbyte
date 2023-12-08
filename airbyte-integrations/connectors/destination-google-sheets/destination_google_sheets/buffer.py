@@ -3,7 +3,8 @@
 #
 
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream
@@ -24,15 +25,13 @@ class WriteBufferMixin:
 
     @property
     def default_missing(self) -> str:
-        """
-        Default value for missing keys in record stream, compared to configured_stream catalog.
+        """Default value for missing keys in record stream, compared to configured_stream catalog.
         Overwrite if needed.
         """
         return ""
 
     def init_buffer_stream(self, configured_stream: AirbyteStream):
-        """
-        Saves important stream's information for later use.
+        """Saves important stream's information for later use.
 
         Particulary, creates the data structure for `records_stream`.
         Populates `stream_info` placeholder with stream metadata information.
@@ -45,27 +44,23 @@ class WriteBufferMixin:
         }
 
     def add_to_buffer(self, stream_name: str, record: Mapping):
-        """
-        Populates input records to `records_buffer`.
+        """Populates input records to `records_buffer`.
 
         1) normalizes input record
         2) coerces normalized record to str
         3) gets values as list of record values from record mapping.
         """
-
         norm_record = self._normalize_record(stream_name, record)
         norm_values = list(map(str, norm_record.values()))
         self.records_buffer[stream_name].append(norm_values)
 
     def clear_buffer(self, stream_name: str):
-        """
-        Cleans up the `records_buffer` values, belonging to input stream.
+        """Cleans up the `records_buffer` values, belonging to input stream.
         """
         self.records_buffer[stream_name].clear()
 
     def _normalize_record(self, stream_name: str, record: Mapping) -> Mapping[str, Any]:
-        """
-        Updates the record keys up to the input configured_stream catalog keys.
+        """Updates the record keys up to the input configured_stream catalog keys.
 
         Handles two scenarios:
         1) when record has less keys than catalog declares (undersetting)
@@ -73,7 +68,7 @@ class WriteBufferMixin:
 
         Returns: alphabetically sorted, catalog-normalized Mapping[str, Any].
 
-        EXAMPLE:
+        Example:
         - UnderSetting:
             * Catalog:
                 - has 3 entities:

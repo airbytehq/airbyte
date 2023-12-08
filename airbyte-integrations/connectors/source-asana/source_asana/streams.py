@@ -4,14 +4,16 @@
 
 
 from abc import ABC
+from collections.abc import Iterable, Mapping, MutableMapping
 from itertools import islice
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Type, Union
+from typing import Any, Optional, Union
 
 import requests
+from requests.auth import AuthBase
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
-from requests.auth import AuthBase
 
 ASANA_ERRORS_MAPPING = {
     402: "This stream is available to premium organizations and workspaces only",
@@ -29,7 +31,7 @@ class AsanaStream(HttpStream, ABC):
     raise_on_http_errors = True
 
     @property
-    def AsanaStreamType(self) -> Type:
+    def AsanaStreamType(self) -> type:
         return self.__class__
 
     def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None, test_mode: bool = False):
@@ -39,9 +41,9 @@ class AsanaStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code in ASANA_ERRORS_MAPPING.keys():
             self.logger.error(
-                f"Skipping stream {self.name}. {ASANA_ERRORS_MAPPING.get(response.status_code)}. Full error message: {response.text}"
+                f"Skipping stream {self.name}. {ASANA_ERRORS_MAPPING.get(response.status_code)}. Full error message: {response.text}",
             )
-            setattr(self, "raise_on_http_errors", False)
+            self.raise_on_http_errors = False
             return False
         return super().should_retry(response)
 
@@ -64,8 +66,7 @@ class AsanaStream(HttpStream, ABC):
         return params
 
     def get_opt_fields(self) -> MutableMapping[str, str]:
-        """
-        For "GET all" request for almost each stream Asana API by default returns 3 fields for each
+        """For "GET all" request for almost each stream Asana API by default returns 3 fields for each
         record: `gid`, `name`, `resource_type`. Since we want to get all fields we need to specify those fields in each
         request. For each stream set of fields will be different and we get those fields from stream's schema.
         Also each nested object, like `workspace`, or list of nested objects, like `followers`, also by default returns
@@ -102,8 +103,7 @@ class AsanaStream(HttpStream, ABC):
         yield from response_json.get("data", [])
 
     def read_slices_from_records(self, stream_class: AsanaStreamType, slice_field: str) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        General function for getting parent stream (which should be passed through `stream_class`) slice.
+        """General function for getting parent stream (which should be passed through `stream_class`) slice.
         Generates dicts with `gid` of parent streams.
         """
         stream = stream_class(authenticator=self.authenticator)
@@ -115,8 +115,7 @@ class AsanaStream(HttpStream, ABC):
 
 
 class WorkspaceRelatedStream(AsanaStream, ABC):
-    """
-    Few streams (CustomFields, Projects, Tags, Teams and Users) require passing `workspace` either as request argument
+    """Few streams (CustomFields, Projects, Tags, Teams and Users) require passing `workspace` either as request argument
     or as part of a path. The point of this class is to get `workspace_gid`. Child classes then either will insert it
     into the path or will pass it as a request parameter.
     """
@@ -128,8 +127,7 @@ class WorkspaceRelatedStream(AsanaStream, ABC):
 
 
 class WorkspaceRequestParamsRelatedStream(WorkspaceRelatedStream, ABC):
-    """
-    Few streams (Projects, Tags and Users) require passing `workspace` as request argument.
+    """Few streams (Projects, Tags and Users) require passing `workspace` as request argument.
     So this is basically the whole point of this class - to pass `workspace` as request argument.
     """
 
@@ -140,8 +138,7 @@ class WorkspaceRequestParamsRelatedStream(WorkspaceRelatedStream, ABC):
 
 
 class ProjectRelatedStream(AsanaStream, ABC):
-    """
-    Few streams (SectionsCompact and Tasks) depends on `project gid`: SectionsCompact as a part of url and Tasks as `projects`
+    """Few streams (SectionsCompact and Tasks) depends on `project gid`: SectionsCompact as a part of url and Tasks as `projects`
     argument in request.
     """
 

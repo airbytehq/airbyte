@@ -2,17 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, Optional
 
 import requests
+
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 
 
 @dataclass
 class PageIncrement(PaginationStrategy):
-    """
-    Pagination strategy that returns the number of pages reads so far and returns it as the next page token
+    """Pagination strategy that returns the number of pages reads so far and returns it as the next page token
 
     Attributes:
         page_size (int): the number of records to request
@@ -33,7 +34,7 @@ class PageIncrement(PaginationStrategy):
             return self._page
         return None
 
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
+    def next_page_token(self, response: requests.Response, last_records: list[Mapping[str, Any]]) -> Optional[Any]:
         # Stop paginating when there are fewer records than the page size or the current page has no records
         if (self.page_size and len(last_records) < self.page_size) or len(last_records) == 0:
             return None

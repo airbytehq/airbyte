@@ -4,17 +4,17 @@
 
 import copy
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import dpath.util
+from pydantic import AnyUrl, BaseModel, Field
+
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
-from pydantic import AnyUrl, BaseModel, Field
 
 
 class AbstractFileBasedSpec(BaseModel):
-    """
-    Used during spec; allows the developer to configure the cloud provider specific options
+    """Used during spec; allows the developer to configure the cloud provider specific options
     that are needed when users configure a file-based source.
     """
 
@@ -28,7 +28,7 @@ class AbstractFileBasedSpec(BaseModel):
         order=1,
     )
 
-    streams: List[FileBasedStreamConfig] = Field(
+    streams: list[FileBasedStreamConfig] = Field(
         title="The list of streams to sync",
         description='Each instance of this configuration defines a <a href="https://docs.airbyte.com/cloud/core-concepts#stream">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.',
         order=10,
@@ -37,17 +37,15 @@ class AbstractFileBasedSpec(BaseModel):
     @classmethod
     @abstractmethod
     def documentation_url(cls) -> AnyUrl:
-        """
-        :return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
+        """:return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
         """
 
     @classmethod
-    def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        """
-        Generates the mapping comprised of the config fields
+    def schema(cls, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        """Generates the mapping comprised of the config fields
         """
         schema = super().schema(*args, **kwargs)
-        transformed_schema: Dict[str, Any] = copy.deepcopy(schema)
+        transformed_schema: dict[str, Any] = copy.deepcopy(schema)
         schema_helpers.expand_refs(transformed_schema)
         cls.replace_enum_allOf_and_anyOf(transformed_schema)
         cls.remove_discriminator(transformed_schema)
@@ -55,14 +53,13 @@ class AbstractFileBasedSpec(BaseModel):
         return transformed_schema
 
     @staticmethod
-    def remove_discriminator(schema: Dict[str, Any]) -> None:
-        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
+    def remove_discriminator(schema: dict[str, Any]) -> None:
+        """Pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
         dpath.util.delete(schema, "properties/**/discriminator")
 
     @staticmethod
-    def replace_enum_allOf_and_anyOf(schema: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        allOfs are not supported by the UI, but pydantic is automatically writing them for enums.
+    def replace_enum_allOf_and_anyOf(schema: dict[str, Any]) -> dict[str, Any]:
+        """AllOfs are not supported by the UI, but pydantic is automatically writing them for enums.
         Unpacks the enums under allOf and moves them up a level under the enum key
         anyOfs are also not supported by the UI, so we replace them with the similar oneOf, with the
         additional validation that an incoming config only matches exactly one of a field's types.
@@ -87,18 +84,18 @@ class AbstractFileBasedSpec(BaseModel):
             filter(
                 lambda format: format["properties"]["filetype"]["default"] == "csv",
                 schema["properties"]["streams"]["items"]["properties"]["format"]["oneOf"],
-            )
+            ),
         )
         if len(csv_format_schemas) != 1:
             raise ValueError(f"Expecting only one CSV format but got {csv_format_schemas}")
         csv_format_schemas[0]["properties"]["header_definition"]["oneOf"] = csv_format_schemas[0]["properties"]["header_definition"].pop(
-            "anyOf", []
+            "anyOf", [],
         )
         csv_format_schemas[0]["properties"]["header_definition"]["type"] = "object"
         return schema
 
     @staticmethod
-    def move_enum_to_root(object_property: Dict[str, Any]) -> None:
+    def move_enum_to_root(object_property: dict[str, Any]) -> None:
         if "allOf" in object_property and "enum" in object_property["allOf"][0]:
             object_property["enum"] = object_property["allOf"][0]["enum"]
             object_property.pop("allOf")

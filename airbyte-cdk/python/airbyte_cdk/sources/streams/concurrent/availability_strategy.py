@@ -12,14 +12,12 @@ from deprecated.classic import deprecated
 class StreamAvailability(ABC):
     @abstractmethod
     def is_available(self) -> bool:
-        """
-        :return: True if the stream is available. False if the stream is not
+        """:return: True if the stream is available. False if the stream is not
         """
 
     @abstractmethod
     def message(self) -> Optional[str]:
-        """
-        :return: A message describing why the stream is not available. If the stream is available, this should return None.
+        """:return: A message describing why the stream is not available. If the stream is available, this should return None.
         """
 
 
@@ -48,8 +46,7 @@ STREAM_AVAILABLE = StreamAvailable()
 
 @deprecated("This class is experimental. Use at your own risk.")
 class AbstractAvailabilityStrategy(ABC):
-    """
-    AbstractAvailabilityStrategy is an experimental interface developed as part of the Concurrent CDK.
+    """AbstractAvailabilityStrategy is an experimental interface developed as part of the Concurrent CDK.
     This interface is not yet stable and may change in the future. Use at your own risk.
 
     Why create a new interface instead of using the existing AvailabilityStrategy?
@@ -58,8 +55,7 @@ class AbstractAvailabilityStrategy(ABC):
 
     @abstractmethod
     def check_availability(self, logger: logging.Logger) -> StreamAvailability:
-        """
-        Checks stream availability.
+        """Checks stream availability.
 
         :param logger: logger object to use
         :return: A StreamAvailability object describing the stream's availability

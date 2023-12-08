@@ -7,6 +7,7 @@ from unittest import mock
 
 import dagger
 import pytest
+
 from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines import consts
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
@@ -135,7 +136,7 @@ def test_get_modified_connectors_with_dependency_scanning(all_connectors, enable
 
     not_modified_java_connector = pick_a_random_connector(language=ConnectorLanguage.JAVA)
     modified_java_connector = pick_a_random_connector(
-        language=ConnectorLanguage.JAVA, other_picked_connectors=[not_modified_java_connector]
+        language=ConnectorLanguage.JAVA, other_picked_connectors=[not_modified_java_connector],
     )
     modified_files.append(modified_java_connector.code_directory / "foo.bar")
 
@@ -172,7 +173,7 @@ def test_no_modified_files_in_connector_directory():
     assert result == frozenset()
 
 
-@pytest.mark.anyio
+@pytest.mark.anyio()
 async def test_check_path_in_workdir(dagger_client):
     connector = Connector("source-openweather")
     container = (
@@ -193,7 +194,7 @@ def test_sh_dash_c():
     assert utils.sh_dash_c([]) == ["sh", "-c", "set -o xtrace"]
 
 
-@pytest.mark.anyio
+@pytest.mark.anyio()
 @pytest.mark.parametrize("tar_file_name", [None, "custom_tar_name.tar"])
 async def test_export_container_to_tarball(mocker, dagger_client, tmp_path, tar_file_name):
     context = mocker.Mock(
@@ -209,13 +210,13 @@ async def test_export_container_to_tarball(mocker, dagger_client, tmp_path, tar_
         tmp_path / f"my_connector_my_git_revision_{platform.replace('/', '_')}.tar" if tar_file_name is None else tmp_path / tar_file_name
     )
     exported_tar_file, exported_tar_file_path = await utils.export_container_to_tarball(
-        context, container, platform, tar_file_name=tar_file_name
+        context, container, platform, tar_file_name=tar_file_name,
     )
     assert exported_tar_file_path == expected_tar_file_path
     assert await exported_tar_file.size() == expected_tar_file_path.stat().st_size
 
 
-@pytest.mark.anyio
+@pytest.mark.anyio()
 async def test_export_container_to_tarball_failure(mocker, tmp_path):
     context = mocker.Mock(
         connector=mocker.Mock(technical_name="my_connector"),

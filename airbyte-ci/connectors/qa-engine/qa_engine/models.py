@@ -4,10 +4,10 @@
 
 
 from datetime import datetime
-from typing import List
+
+from pydantic import BaseModel, Field
 
 from connector_ops.utils import ConnectorTypeEnum, SupportLevelEnum
-from pydantic import BaseModel, Field
 
 PUBLIC_FIELD = Field(..., is_public=True)
 PRIVATE_FIELD = Field(..., is_public=False)
@@ -35,4 +35,4 @@ class ConnectorQAReport(BaseModel):
 
 
 class QAReport(BaseModel):
-    connectors_qa_report: List[ConnectorQAReport]
+    connectors_qa_report: list[ConnectorQAReport]

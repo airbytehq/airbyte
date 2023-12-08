@@ -6,18 +6,20 @@ import copy
 import logging
 import re
 from collections import defaultdict
-from typing import Any, Dict, List, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 import dpath.util
 import pendulum
-from airbyte_protocol.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from jsonschema import Draft7Validator, FormatChecker, FormatError, ValidationError, validators
 
+from airbyte_protocol.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
+
 # fmt: off
-timestamp_regex = re.compile((r"^\d{4}-\d?\d-\d?\d"  # date
+timestamp_regex = re.compile(r"^\d{4}-\d?\d-\d?\d"  # date
                               r"(\s|T)"  # separator
                               r"\d?\d:\d?\d:\d?\d(.\d+)?"  # time
-                              r".*$"))  # timezone
+                              r".*$")  # timezone
 # fmt: on
 
 # In Json schema, numbers with a zero fractional part are considered integers. E.G. 1.0 is considered a valid integer
@@ -46,7 +48,7 @@ class CustomFormatChecker(FormatChecker):
             return super().check(instance, format)
 
 
-def _enforce_no_additional_top_level_properties(json_schema: Dict[str, Any]):
+def _enforce_no_additional_top_level_properties(json_schema: dict[str, Any]):
     """Create a copy of the schema in which `additionalProperties` is set to False for the dict of top-level properties.
 
     This method will override the value of `additionalProperties` if it is set,
@@ -58,7 +60,7 @@ def _enforce_no_additional_top_level_properties(json_schema: Dict[str, Any]):
 
 
 def verify_records_schema(
-    records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: bool
+    records: list[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: bool,
 ) -> Mapping[str, Mapping[str, ValidationError]]:
     """Check records against their schemas from the catalog, yield error messages.
     Only first record with error will be yielded for each stream.
@@ -69,7 +71,7 @@ def verify_records_schema(
         if fail_on_extra_columns:
             schema_to_validate_against = _enforce_no_additional_top_level_properties(schema_to_validate_against)
         stream_validators[stream.stream.name] = Draft7ValidatorWithStrictInteger(
-            schema_to_validate_against, format_checker=CustomFormatChecker()
+            schema_to_validate_against, format_checker=CustomFormatChecker(),
         )
     stream_errors = defaultdict(dict)
     for record in records:

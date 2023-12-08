@@ -3,7 +3,7 @@
 #
 
 
-from typing import Set, Union
+from typing import Union
 
 from normalization.transform_catalog import dbt_macro
 
@@ -114,5 +114,5 @@ def is_simple_property(definition: dict) -> bool:
     )
 
 
-def is_combining_node(properties: dict) -> Set[str]:
+def is_combining_node(properties: dict) -> set[str]:
     return set(properties).intersection({"anyOf", "oneOf", "allOf"})

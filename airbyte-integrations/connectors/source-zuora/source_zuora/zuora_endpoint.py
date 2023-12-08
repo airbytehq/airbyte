@@ -3,9 +3,8 @@
 #
 
 
-from typing import Dict
 
-ZUORA_TENANT_ENDPOINT_MAP: Dict = {
+ZUORA_TENANT_ENDPOINT_MAP: dict = {
     # Production
     "US Production": "https://rest.zuora.com",
     "US Cloud Production": "https://rest.na.zuora.com",

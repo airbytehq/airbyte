@@ -4,10 +4,12 @@
 
 import hashlib
 import logging
+from collections.abc import Iterable, Mapping
 from functools import cached_property
-from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
+from typing import Any, Optional
 
 import smartsheet
+
 from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator
 
 
@@ -30,7 +32,7 @@ class SmartSheetAPIWrapper:
         credentials = config.get("credentials")
         if config.get("credentials", {}).get("auth_type") == "oauth2.0":
             authenticator = SingleUseRefreshTokenOauth2Authenticator(
-                config, token_refresh_endpoint="https://api.smartsheet.com/2.0/token", refresh_request_body=self.get_token_hash(config)
+                config, token_refresh_endpoint="https://api.smartsheet.com/2.0/token", refresh_request_body=self.get_token_hash(config),
             )
             return authenticator.get_access_token()
 
@@ -45,7 +47,7 @@ class SmartSheetAPIWrapper:
         self._data = self._get_sheet(self._spreadsheet_id, include=["rowPermalink", "writerInfo"], **kwargs)
 
     @staticmethod
-    def _column_to_property(column_type: str) -> Dict[str, any]:
+    def _column_to_property(column_type: str) -> dict[str, any]:
         type_mapping = {
             "TEXT_NUMBER": {"type": "string"},
             "DATE": {"type": "string", "format": "date"},
@@ -53,7 +55,7 @@ class SmartSheetAPIWrapper:
         }
         return type_mapping.get(column_type, {"type": "string"})
 
-    def _construct_record(self, row: smartsheet.models.Row) -> Dict[str, str]:
+    def _construct_record(self, row: smartsheet.models.Row) -> dict[str, str]:
         values_column_map = {cell.column_id: str(cell.value or "") for cell in row.cells}
         record = {column.title: values_column_map[column.id] for column in self.data.columns}
         record["modifiedAt"] = row.modified_at.isoformat()
@@ -105,7 +107,7 @@ class SmartSheetAPIWrapper:
                 return column.title
 
     @cached_property
-    def json_schema(self) -> Dict[str, Any]:
+    def json_schema(self) -> dict[str, Any]:
         column_info = {column.title: self._column_to_property(column.type.value) for column in self.data.columns}
         column_info["modifiedAt"] = {"type": "string", "format": "date-time"}  # add cursor field explicitly
 
@@ -120,12 +122,12 @@ class SmartSheetAPIWrapper:
         }
         return json_schema
 
-    def read_records(self, from_dt: str) -> Iterable[Dict[str, str]]:
+    def read_records(self, from_dt: str) -> Iterable[dict[str, str]]:
         self._fetch_sheet(from_dt)
         for row in self.data.rows:
             yield self._construct_record(row)
 
-    def check_connection(self, logger: logging.Logger) -> Tuple[bool, Optional[str]]:
+    def check_connection(self, logger: logging.Logger) -> tuple[bool, Optional[str]]:
         try:
             _ = self.data
         except smartsheet.exceptions.ApiError as e:

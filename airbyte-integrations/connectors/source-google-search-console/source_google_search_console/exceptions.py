@@ -3,11 +3,11 @@
 #
 
 
-from typing import Any, List, Set, Union
+from typing import Any, Union
 
 
 class InvalidSiteURLValidationError(Exception):
-    def __init__(self, invalid_site_url: Union[Set, List]) -> None:
+    def __init__(self, invalid_site_url: Union[set, list]) -> None:
         message = f'The following URLs are not permitted: {", ".join(invalid_site_url)}'
         super().__init__(message)
 

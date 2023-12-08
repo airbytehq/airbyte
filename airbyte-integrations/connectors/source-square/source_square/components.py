@@ -3,9 +3,10 @@
 #
 
 import logging
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
@@ -55,8 +56,8 @@ class SquareSubstreamIncrementalSync(DatetimeBasedCursor):
                 "date_time_filter": {
                     "updated_at": {
                         "start_at": stream_slice.get(self.cursor_field.eval(self.config), initial_start_time),
-                    }
-                }
+                    },
+                },
             },
             "sort": {"sort_field": "UPDATED_AT", "sort_order": "ASC"},
         }
@@ -69,7 +70,7 @@ class SquareSubstreamIncrementalSync(DatetimeBasedCursor):
         if not location_ids:
             self.logger.error(
                 "No locations found. Orders cannot be extracted without locations. "
-                "Check https://developer.squareup.com/explorer/square/locations-api/list-locations"
+                "Check https://developer.squareup.com/explorer/square/locations-api/list-locations",
             )
             yield from []
         separated_locations = [

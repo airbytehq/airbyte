@@ -3,10 +3,11 @@
 #
 
 import click
-import octavia_cli.generate.definitions as definitions
+
 from octavia_cli.apply import resources
 from octavia_cli.base_commands import OctaviaCommand
 from octavia_cli.check_context import requires_init
+from octavia_cli.generate import definitions
 
 from .renderers import ConnectionRenderer, ConnectorSpecificationRenderer
 
@@ -63,13 +64,13 @@ def connection(ctx: click.Context, connection_name: str, source_path: str, desti
     source = resources.factory(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], source_path)
     if not source.was_created:
         raise resources.NonExistingResourceError(
-            f"The source defined at {source_path} does not exists. Please run octavia apply before creating this connection."
+            f"The source defined at {source_path} does not exists. Please run octavia apply before creating this connection.",
         )
 
     destination = resources.factory(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], destination_path)
     if not destination.was_created:
         raise resources.NonExistingResourceError(
-            f"The destination defined at {destination_path} does not exists. Please run octavia apply before creating this connection."
+            f"The destination defined at {destination_path} does not exists. Please run octavia apply before creating this connection.",
         )
 
     connection_renderer = ConnectionRenderer(connection_name, source, destination)

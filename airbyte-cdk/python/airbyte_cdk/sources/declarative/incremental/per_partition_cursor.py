@@ -3,7 +3,8 @@
 #
 
 import json
-from typing import Any, Callable, Iterable, Mapping, Optional
+from collections.abc import Callable, Iterable, Mapping
+from typing import Any, Optional
 
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -11,8 +12,7 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamSta
 
 
 class PerPartitionKeySerializer:
-    """
-    We are concerned of the performance of looping through the `states` list and evaluating equality on the partition. To reduce this
+    """We are concerned of the performance of looping through the `states` list and evaluating equality on the partition. To reduce this
     concern, we wanted to use dictionaries to map `partition -> cursor`. However, partitions are dict and dict can't be used as dict keys
     since they are not hashable. By creating json string using the dict, we can have a use the dict as a key to the dict since strings are
     hashable.
@@ -95,8 +95,7 @@ class CursorFactory:
 
 
 class PerPartitionCursor(Cursor):
-    """
-    Given a stream has many partitions, it is important to provide a state per partition.
+    """Given a stream has many partitions, it is important to provide a state per partition.
 
     Record | Stream Slice | Last Record | DatetimeCursorBased cursor
     -- | -- | -- | --
@@ -150,12 +149,12 @@ class PerPartitionCursor(Cursor):
                 Record(most_recent_record.data, stream_slice.cursor_slice) if most_recent_record else most_recent_record
             )
             self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].close_slice(
-                stream_slice.cursor_slice, cursor_most_recent_record
+                stream_slice.cursor_slice, cursor_most_recent_record,
             )
         except KeyError as exception:
             raise ValueError(
-                f"Partition {str(exception)} could not be found in current state based on the record. This is unexpected because "
-                f"we should only update state for partition that where emitted during `stream_slices`"
+                f"Partition {exception!s} could not be found in current state based on the record. This is unexpected because "
+                f"we should only update state for partition that where emitted during `stream_slices`",
             )
 
     def get_stream_state(self) -> StreamState:
@@ -167,7 +166,7 @@ class PerPartitionCursor(Cursor):
                     {
                         "partition": self._to_dict(partition_tuple),
                         "cursor": cursor_state,
-                    }
+                    },
                 )
         return {"states": states}
 
@@ -210,9 +209,9 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._partition_router.get_request_params(
-            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token,
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_params(
-            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token,
         )
 
     def get_request_headers(
@@ -223,9 +222,9 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._partition_router.get_request_headers(
-            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token,
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_headers(
-            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token,
         )
 
     def get_request_body_data(
@@ -236,9 +235,9 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._partition_router.get_request_body_data(
-            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token,
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_body_data(
-            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token,
         )
 
     def get_request_body_json(
@@ -249,9 +248,9 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._partition_router.get_request_body_json(
-            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token,
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_body_json(
-            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token,
         )
 
     def should_be_synced(self, record: Record) -> bool:
@@ -260,11 +259,11 @@ class PerPartitionCursor(Cursor):
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
         if first.associated_slice.partition != second.associated_slice.partition:
             raise ValueError(
-                f"To compare records, partition should be the same but got {first.associated_slice.partition} and {second.associated_slice.partition}"
+                f"To compare records, partition should be the same but got {first.associated_slice.partition} and {second.associated_slice.partition}",
             )
 
         return self._get_cursor(first).is_greater_than_or_equal(
-            self._convert_record_to_cursor_record(first), self._convert_record_to_cursor_record(second)
+            self._convert_record_to_cursor_record(first), self._convert_record_to_cursor_record(second),
         )
 
     @staticmethod

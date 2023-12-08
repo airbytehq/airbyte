@@ -3,12 +3,14 @@
 #
 
 import json
-from typing import Any, List, Mapping, Optional, Tuple, Union
+from collections.abc import Mapping
+from typing import Any, Optional, Union
 from urllib.parse import urlparse
 
 import jsonschema
 import pendulum
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -108,7 +110,7 @@ class SourceGoogleSearchConsole(AbstractSource):
                         raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return config
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         try:
             config = self._validate_and_transform(config)
             stream_kwargs = self.get_stream_kwargs(config)
@@ -128,10 +130,10 @@ class SourceGoogleSearchConsole(AbstractSource):
         except (Exception, UnidentifiedError) as error:
             return (
                 False,
-                f"Unable to check connectivity to Google Search Console API - {repr(error)}",
+                f"Unable to check connectivity to Google Search Console API - {error!r}",
             )
 
-    def validate_site_urls(self, site_urls: List[str], auth: Union[ServiceAccountAuthenticator, Oauth2Authenticator]):
+    def validate_site_urls(self, site_urls: list[str], auth: Union[ServiceAccountAuthenticator, Oauth2Authenticator]):
         if isinstance(auth, ServiceAccountAuthenticator):
             request = auth(requests.Request(method="GET", url="https://www.googleapis.com/webmasters/v3/sites"))
             with requests.Session() as s:
@@ -163,9 +165,8 @@ class SourceGoogleSearchConsole(AbstractSource):
                 "error": e.response.json(),
             }
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
+        """:param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         config = self._validate_and_transform(config)
         stream_config = self.get_stream_kwargs(config)
@@ -191,7 +192,7 @@ class SourceGoogleSearchConsole(AbstractSource):
 
         return streams
 
-    def get_custom_reports(self, config: Mapping[str, Any], stream_config: Mapping[str, Any]) -> List[Optional[Stream]]:
+    def get_custom_reports(self, config: Mapping[str, Any], stream_config: Mapping[str, Any]) -> list[Optional[Stream]]:
         return [
             type(report["name"], (SearchAnalyticsByCustomDimensions,), {})(dimensions=report["dimensions"], **stream_config)
             for report in config.get("custom_reports_array", [])

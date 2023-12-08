@@ -3,13 +3,13 @@
 #
 import logging
 import time
+from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
-from typing import Any, Callable, List
+from typing import Any
 
 
 class ThreadPoolManager:
-    """
-    Wrapper to abstract away the threadpool and the logic to wait for pending tasks to be completed.
+    """Wrapper to abstract away the threadpool and the logic to wait for pending tasks to be completed.
     """
 
     DEFAULT_SLEEP_TIME = 0.1
@@ -22,8 +22,7 @@ class ThreadPoolManager:
         max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
         sleep_time: float = DEFAULT_SLEEP_TIME,
     ):
-        """
-        :param threadpool: The threadpool to use
+        """:param threadpool: The threadpool to use
         :param logger: The logger to use
         :param max_concurrent_tasks: The maximum number of tasks that can be pending at the same time
         :param sleep_time: How long to sleep if there are too many pending tasks
@@ -32,14 +31,14 @@ class ThreadPoolManager:
         self._logger = logger
         self._max_concurrent_tasks = max_concurrent_tasks
         self._sleep_time = sleep_time
-        self._futures: List[Future[Any]] = []
+        self._futures: list[Future[Any]] = []
 
     def submit(self, function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
         self._wait_while_too_many_pending_futures(self._futures)
         self._futures.append(self._threadpool.submit(function, *args))
 
-    def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]]) -> None:
+    def _wait_while_too_many_pending_futures(self, futures: list[Future[Any]]) -> None:
         # Wait until the number of pending tasks is < self._max_concurrent_tasks
         while True:
             self._prune_futures(futures)
@@ -48,9 +47,8 @@ class ThreadPoolManager:
             self._logger.info("Main thread is sleeping because the task queue is full...")
             time.sleep(self._sleep_time)
 
-    def _prune_futures(self, futures: List[Future[Any]]) -> None:
-        """
-        Take a list in input and remove the futures that are completed. If a future has an exception, it'll raise and kill the stream
+    def _prune_futures(self, futures: list[Future[Any]]) -> None:
+        """Take a list in input and remove the futures that are completed. If a future has an exception, it'll raise and kill the stream
         operation.
 
         Pruning this list safely relies on the assumptions that only the main thread can modify the list of futures.
@@ -75,8 +73,7 @@ class ThreadPoolManager:
         return all([f.done() for f in self._futures])
 
     def check_for_errors_and_shutdown(self) -> None:
-        """
-        Check if any of the futures have an exception, and raise it if so. If all futures are done, shutdown the threadpool.
+        """Check if any of the futures have an exception, and raise it if so. If all futures are done, shutdown the threadpool.
         If the futures are not done, raise an exception.
         :return:
         """

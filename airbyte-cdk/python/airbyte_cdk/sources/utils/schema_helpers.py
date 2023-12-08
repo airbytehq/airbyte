@@ -7,19 +7,20 @@ import importlib
 import json
 import os
 import pkgutil
-from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Mapping, MutableMapping
+from typing import Any, ClassVar, Optional
 
 import jsonref
-from airbyte_cdk.models import ConnectorSpecification, FailureType
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from jsonschema import RefResolver, validate
 from jsonschema.exceptions import ValidationError
 from pydantic import BaseModel, Field
 
+from airbyte_cdk.models import ConnectorSpecification, FailureType
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
 
 class JsonFileLoader:
-    """
-    Custom json file loader to resolve references to resources located in "shared" directory.
+    """Custom json file loader to resolve references to resources located in "shared" directory.
     We need this for compatability with existing schemas cause all of them have references
     pointing to shared_schema.json file instead of shared/shared_schema.json
     """
@@ -28,7 +29,7 @@ class JsonFileLoader:
         self.shared = shared
         self.uri_base = uri_base
 
-    def __call__(self, uri: str) -> Dict[str, Any]:
+    def __call__(self, uri: str) -> dict[str, Any]:
         uri = uri.replace(self.uri_base, f"{self.uri_base}/{self.shared}/")
         with open(uri) as f:
             data = json.load(f)
@@ -39,8 +40,7 @@ class JsonFileLoader:
 
 
 def resolve_ref_links(obj: Any) -> Any:
-    """
-    Scan resolved schema and convert jsonref.JsonRef object to JSON serializable dict.
+    """Scan resolved schema and convert jsonref.JsonRef object to JSON serializable dict.
 
     :param obj - jsonschema object with ref field resolved.
     :return JSON serializable object with references without external dependencies.
@@ -79,7 +79,7 @@ def _expand_refs(schema: Any, ref_resolver: Optional[RefResolver] = None) -> Non
         else:
             for key, value in schema.items():
                 _expand_refs(value, ref_resolver=ref_resolver)
-    elif isinstance(schema, List):
+    elif isinstance(schema, list):
         for value in schema:
             _expand_refs(value, ref_resolver=ref_resolver)
 
@@ -116,9 +116,7 @@ class ResourceSchemaLoader:
         self.package_name = package_name
 
     def get_schema(self, name: str) -> dict[str, Any]:
-        """
-        This method retrieves a JSON schema from the schemas/ folder.
-
+        """This method retrieves a JSON schema from the schemas/ folder.
 
         The expected file structure is to have all top-level schemas (corresponding to streams) in the "schemas/" folder, with any shared $refs
         living inside the "schemas/shared/" folder. For example:
@@ -127,11 +125,10 @@ class ResourceSchemaLoader:
         schemas/<name>.json # contains a $ref to shared_definition
         schemas/<name2>.json # contains a $ref to shared_definition
         """
-
         schema_filename = f"schemas/{name}.json"
         raw_file = pkgutil.get_data(self.package_name, schema_filename)
         if not raw_file:
-            raise IOError(f"Cannot find file {schema_filename}")
+            raise OSError(f"Cannot find file {schema_filename}")
         try:
             raw_schema = json.loads(raw_file)
         except ValueError as err:
@@ -140,13 +137,11 @@ class ResourceSchemaLoader:
         return self._resolve_schema_references(raw_schema)
 
     def _resolve_schema_references(self, raw_schema: dict[str, Any]) -> dict[str, Any]:
-        """
-        Resolve links to external references and move it to local "definitions" map.
+        """Resolve links to external references and move it to local "definitions" map.
 
         :param raw_schema jsonschema to lookup for external links.
         :return JSON serializable object with references without external dependencies.
         """
-
         package = importlib.import_module(self.package_name)
         if package.__file__:
             base = os.path.dirname(package.__file__) + "/"
@@ -161,8 +156,7 @@ class ResourceSchemaLoader:
 
 
 def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: ConnectorSpecification) -> None:
-    """
-    Check config object against spec. In case of spec is invalid, throws
+    """Check config object against spec. In case of spec is invalid, throws
     an exception with validation error description.
 
     :param config - config loaded from file specified over command line
@@ -190,8 +184,7 @@ class InternalConfig(BaseModel):
         return super().dict(*args, **kwargs)
 
     def is_limit_reached(self, records_counter: int) -> bool:
-        """
-        Check if record count reached limit set by internal config.
+        """Check if record count reached limit set by internal config.
         :param records_counter - number of records already red
         :return True if limit reached, False otherwise
         """
@@ -201,9 +194,8 @@ class InternalConfig(BaseModel):
         return False
 
 
-def split_config(config: Mapping[str, Any]) -> Tuple[dict[str, Any], InternalConfig]:
-    """
-    Break config map object into 2 instances: first is a dict with user defined
+def split_config(config: Mapping[str, Any]) -> tuple[dict[str, Any], InternalConfig]:
+    """Break config map object into 2 instances: first is a dict with user defined
     configuration and second is internal config that contains private keys for
     acceptance test configuration.
 

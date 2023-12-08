@@ -3,7 +3,10 @@
 #
 
 
-from typing import Any, Iterable, List, Mapping
+from collections.abc import Iterable, Mapping
+from typing import Any
+
+from langchain.document_loaders.base import Document
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
@@ -22,7 +25,6 @@ from destination_langchain.batcher import Batcher
 from destination_langchain.config import ConfigModel
 from destination_langchain.document_processor import DocumentProcessor
 from destination_langchain.indexer import ChromaLocalIndexer, DocArrayHnswSearchIndexer, Indexer, PineconeIndexer
-from langchain.document_loaders.base import Document
 
 BATCH_SIZE = 128
 
@@ -40,8 +42,8 @@ class DestinationLangchain(Destination):
         self.embedder = embedder_map[config.embedding.mode](config.embedding)
         self.indexer = indexer_map[config.indexing.mode](config.indexing, self.embedder)
 
-    def _process_batch(self, batch: List[AirbyteRecordMessage]):
-        documents: List[Document] = []
+    def _process_batch(self, batch: list[AirbyteRecordMessage]):
+        documents: list[Document] = []
         ids_to_delete = []
         for record in batch:
             record_documents, record_id_to_delete = self.processor.process(record)
@@ -51,7 +53,7 @@ class DestinationLangchain(Destination):
         self.indexer.index(documents, ids_to_delete)
 
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)

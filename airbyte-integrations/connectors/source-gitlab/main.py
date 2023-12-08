@@ -5,9 +5,10 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_gitlab import SourceGitlab
 from source_gitlab.config_migrations import MigrateGroups, MigrateProjects
+
+from airbyte_cdk.entrypoint import launch
 
 if __name__ == "__main__":
     source = SourceGitlab()

@@ -9,14 +9,16 @@ import json
 import logging
 import os
 import sys
+from collections.abc import Mapping, MutableMapping
 from glob import glob
 from logging import Logger
 from pathlib import Path
 from subprocess import STDOUT, check_output, run
-from typing import Any, List, Mapping, MutableMapping, Optional, Set
+from typing import Any, Optional
 
 import dagger
 import pytest
+
 from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig, IgnoredFieldsConfiguration
@@ -64,7 +66,7 @@ def deployment_mode_fixture(inputs) -> Optional[str]:
 @pytest.fixture(name="connector_config_path")
 def connector_config_path_fixture(inputs, base_path) -> Path:
     """Fixture with connector's config path. The path to the latest updated configurations will be returned if any."""
-    original_configuration_path = Path(base_path) / getattr(inputs, "config_path")
+    original_configuration_path = Path(base_path) / inputs.config_path
     updated_configurations_glob = f"{original_configuration_path.parent}/updated_configurations/{original_configuration_path.stem}|**{original_configuration_path.suffix}"
     existing_configurations_path_creation_time = [
         (config_file_path, os.path.getctime(config_file_path)) for config_file_path in glob(updated_configurations_glob)
@@ -81,20 +83,20 @@ def connector_config_path_fixture(inputs, base_path) -> Path:
 @pytest.fixture(name="invalid_connector_config_path")
 def invalid_connector_config_path_fixture(inputs, base_path) -> Path:
     """Fixture with connector's config path"""
-    return Path(base_path) / getattr(inputs, "invalid_config_path")
+    return Path(base_path) / inputs.invalid_config_path
 
 
 @pytest.fixture(name="connector_spec_path")
 def connector_spec_path_fixture(inputs, base_path) -> Path:
     """Fixture with connector's specification path"""
-    return Path(base_path) / getattr(inputs, "spec_path")
+    return Path(base_path) / inputs.spec_path
 
 
 @pytest.fixture(name="configured_catalog_path")
 def configured_catalog_path_fixture(inputs, base_path) -> Optional[str]:
     """Fixture with connector's configured_catalog path"""
-    if getattr(inputs, "configured_catalog_path"):
-        return Path(base_path) / getattr(inputs, "configured_catalog_path")
+    if inputs.configured_catalog_path:
+        return Path(base_path) / inputs.configured_catalog_path
     return None
 
 
@@ -119,7 +121,7 @@ def image_tag_fixture(acceptance_test_config) -> str:
 
 @pytest.fixture(name="connector_config")
 def connector_config_fixture(base_path, connector_config_path) -> SecretDict:
-    with open(str(connector_config_path), "r") as file:
+    with open(str(connector_config_path)) as file:
         contents = file.read()
     return SecretDict(json.loads(contents))
 
@@ -127,7 +129,7 @@ def connector_config_fixture(base_path, connector_config_path) -> SecretDict:
 @pytest.fixture(name="invalid_connector_config")
 def invalid_connector_config_fixture(base_path, invalid_connector_config_path) -> MutableMapping[str, Any]:
     """TODO: implement default value - generate from valid config"""
-    with open(str(invalid_connector_config_path), "r") as file:
+    with open(str(invalid_connector_config_path)) as file:
         contents = file.read()
     return json.loads(contents)
 
@@ -176,7 +178,7 @@ async def connector_container(dagger_client, image_tag):
 
 @pytest.fixture(name="docker_runner", autouse=True)
 def docker_runner_fixture(
-    connector_container, connector_config_path, custom_environment_variables, deployment_mode
+    connector_container, connector_config_path, custom_environment_variables, deployment_mode,
 ) -> connector_runner.ConnectorRunner:
     return connector_runner.ConnectorRunner(
         connector_container,
@@ -205,7 +207,7 @@ async def previous_version_connector_container(
 
 @pytest.fixture(name="previous_connector_docker_runner")
 async def previous_connector_docker_runner_fixture(
-    previous_version_connector_container, deployment_mode
+    previous_version_connector_container, deployment_mode,
 ) -> connector_runner.ConnectorRunner:
     """Fixture to create a connector runner with the previous connector docker image.
     Returns None if the latest image was not found, to skip downstream tests if the current connector is not yet published to the docker registry.
@@ -215,7 +217,7 @@ async def previous_connector_docker_runner_fixture(
 
 
 @pytest.fixture(name="empty_streams")
-def empty_streams_fixture(inputs, test_strictness_level) -> Set[EmptyStreamConfiguration]:
+def empty_streams_fixture(inputs, test_strictness_level) -> set[EmptyStreamConfiguration]:
     empty_streams = getattr(inputs, "empty_streams", set())
     if test_strictness_level is Config.TestStrictnessLevel.high and empty_streams:
         all_empty_streams_have_bypass_reasons = all([bool(empty_stream.bypass_reason) for empty_stream in inputs.empty_streams])
@@ -225,11 +227,11 @@ def empty_streams_fixture(inputs, test_strictness_level) -> Set[EmptyStreamConfi
 
 
 @pytest.fixture(name="ignored_fields")
-def ignored_fields_fixture(inputs, test_strictness_level) -> Optional[Mapping[str, List[IgnoredFieldsConfiguration]]]:
+def ignored_fields_fixture(inputs, test_strictness_level) -> Optional[Mapping[str, list[IgnoredFieldsConfiguration]]]:
     ignored_fields = getattr(inputs, "ignored_fields", {}) or {}
     if test_strictness_level is Config.TestStrictnessLevel.high and ignored_fields:
         all_ignored_fields_have_bypass_reasons = all(
-            [bool(ignored_field.bypass_reason) for ignored_field in itertools.chain.from_iterable(inputs.ignored_fields.values())]
+            [bool(ignored_field.bypass_reason) for ignored_field in itertools.chain.from_iterable(inputs.ignored_fields.values())],
         )
         if not all_ignored_fields_have_bypass_reasons:
             pytest.fail("A bypass_reason must be filled in for all ignored fields when test_strictness_level is set to high.")
@@ -245,10 +247,10 @@ def expect_records_config_fixture(inputs):
 def expected_records_by_stream_fixture(
     test_strictness_level: Config.TestStrictnessLevel,
     configured_catalog: ConfiguredAirbyteCatalog,
-    empty_streams: Set[EmptyStreamConfiguration],
+    empty_streams: set[EmptyStreamConfiguration],
     expect_records_config: ExpectedRecordsConfig,
     base_path,
-) -> MutableMapping[str, List[MutableMapping]]:
+) -> MutableMapping[str, list[MutableMapping]]:
     def enforce_high_strictness_level_rules(expect_records_config, configured_catalog, empty_streams, records_by_stream) -> Optional[str]:
         error_prefix = "High strictness level error: "
         if expect_records_config is None:
@@ -258,7 +260,7 @@ def expected_records_by_stream_fixture(
             if not_seeded_streams:
                 pytest.fail(
                     error_prefix
-                    + f"{', '.join(not_seeded_streams)} streams are declared in the catalog but do not have expected records. Please add expected records to {expect_records_config.path} or declare these streams in empty_streams."
+                    + f"{', '.join(not_seeded_streams)} streams are declared in the catalog but do not have expected records. Please add expected records to {expect_records_config.path} or declare these streams in empty_streams.",
                 )
         else:
             if not getattr(expect_records_config, "bypass_reason", None):
@@ -268,7 +270,7 @@ def expected_records_by_stream_fixture(
     if expect_records_config:
         if expect_records_config.path:
             expected_records_file_path = str(base_path / expect_records_config.path)
-            with open(expected_records_file_path, "r") as f:
+            with open(expected_records_file_path) as f:
                 all_records = [AirbyteRecordMessage.parse_raw(line) for line in f]
                 expected_records_by_stream = TestBasicRead.group_by_stream(all_records)
 
@@ -279,9 +281,9 @@ def expected_records_by_stream_fixture(
 
 def find_not_seeded_streams(
     configured_catalog: ConfiguredAirbyteCatalog,
-    empty_streams: Set[EmptyStreamConfiguration],
-    records_by_stream: MutableMapping[str, List[MutableMapping]],
-) -> Set[str]:
+    empty_streams: set[EmptyStreamConfiguration],
+    records_by_stream: MutableMapping[str, list[MutableMapping]],
+) -> set[str]:
     stream_names_in_catalog = set([configured_stream.stream.name for configured_stream in configured_catalog.streams])
     empty_streams_names = set([stream.name for stream in empty_streams])
     expected_record_stream_names = set(records_by_stream.keys())
@@ -296,7 +298,6 @@ async def discovered_catalog_fixture(
     docker_runner: connector_runner.ConnectorRunner,
 ) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
-
     output = await docker_runner.call_discover(config=connector_config)
     catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
     return {stream.name: stream for stream in catalogs[-1].streams}
@@ -311,24 +312,23 @@ async def previous_discovered_catalog_fixture(
     """JSON schemas for each stream"""
     if previous_connector_docker_runner is None:
         logging.warning(
-            f"\n We could not retrieve the previous discovered catalog as a connector runner for the previous connector version ({previous_connector_image_name}) could not be instantiated."
+            f"\n We could not retrieve the previous discovered catalog as a connector runner for the previous connector version ({previous_connector_image_name}) could not be instantiated.",
         )
         return None
     try:
         output = await previous_connector_docker_runner.call_discover(config=connector_config)
     except dagger.DaggerError:
         logging.warning(
-            "\n DISCOVER on the previous connector version failed. This could be because the current connector config is not compatible with the previous connector version."
+            "\n DISCOVER on the previous connector version failed. This could be because the current connector config is not compatible with the previous connector version.",
         )
         return None
     catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
     return {stream.name: stream for stream in catalogs[-1].streams}
 
 
-@pytest.fixture
+@pytest.fixture()
 def detailed_logger() -> Logger:
-    """
-    Create logger object for recording detailed test information into a file
+    """Create logger object for recording detailed test information into a file
     """
     LOG_DIR = "acceptance_tests_logs"
     if os.environ.get("ACCEPTANCE_TEST_DOCKER_CONTAINER"):
@@ -356,11 +356,11 @@ async def actual_connector_spec_fixture(docker_runner: connector_runner.Connecto
 
 @pytest.fixture(name="previous_connector_spec")
 async def previous_connector_spec_fixture(
-    request: BaseTest, previous_connector_docker_runner: connector_runner.ConnectorRunner
+    request: BaseTest, previous_connector_docker_runner: connector_runner.ConnectorRunner,
 ) -> Optional[ConnectorSpecification]:
     if previous_connector_docker_runner is None:
         logging.warning(
-            "\n We could not retrieve the previous connector spec as a connector runner for the previous connector version could not be instantiated."
+            "\n We could not retrieve the previous connector spec as a connector runner for the previous connector version could not be instantiated.",
         )
         return None
     output = await previous_connector_docker_runner.call_spec()
@@ -385,11 +385,10 @@ def pytest_sessionfinish(session, exitstatus):
             f"{session.startdir} - Connector Acceptance Test run - "
             # using subprocess.check_output to run cmd to get git hash
             f"{check_output('git rev-parse HEAD', stderr=STDOUT, shell=True).decode('ascii').strip()}"
-            f" - {result}"
+            f" - {result}",
         )
     except Exception as e:
         logger.info(e)  # debug
-        pass
 
 
 @pytest.fixture(name="connector_metadata")

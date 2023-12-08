@@ -9,7 +9,7 @@ from airbyte_cdk.models import AirbyteEstimateTraceMessage, AirbyteTraceMessage,
 
 
 def read_json(filepath):
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         return json.loads(f.read())
 
 
@@ -28,6 +28,6 @@ def now_millis():
 def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
     emitted_at = int(datetime.datetime.now().timestamp() * 1000)
     estimate_message = AirbyteEstimateTraceMessage(
-        type=EstimateType.STREAM, name=stream_name, row_estimate=round(total), byte_estimate=round(total * bytes_per_row)
+        type=EstimateType.STREAM, name=stream_name, row_estimate=round(total), byte_estimate=round(total * bytes_per_row),
     )
     return AirbyteTraceMessage(type=TraceType.ESTIMATE, emitted_at=emitted_at, estimate=estimate_message)

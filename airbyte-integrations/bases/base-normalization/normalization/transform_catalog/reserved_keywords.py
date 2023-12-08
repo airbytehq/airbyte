@@ -3,7 +3,6 @@
 #
 
 
-from typing import Set
 
 from normalization import DestinationType
 
@@ -2541,7 +2540,7 @@ MSSQL = {
 
 # In ClickHouse, keywords are not reserved.
 # Ref: https://clickhouse.com/docs/en/sql-reference/syntax/#syntax-keywords
-CLICKHOUSE: Set[str] = set()
+CLICKHOUSE: set[str] = set()
 
 # https://docs.pingcap.com/tidb/stable/keywords#keywords
 TIDB = {
@@ -2793,7 +2792,7 @@ TIDB = {
     "INT4",
     "INT8",
     "INTEGER",
-    "INTERVAL" "INTO",
+    "INTERVALINTO",
     "INVISIBLE",
     "INVOKER",
     "IO",

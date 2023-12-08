@@ -7,7 +7,7 @@ import json
 # Check https://developers.google.com/webmaster-tools/search-console-api-original/v3/ for all available scopes
 OAUTH_SCOPE = "https://www.googleapis.com/auth/webmasters.readonly"
 
-with open("credentials.json", "r") as f:
+with open("credentials.json") as f:
     credentials = json.load(f)
 
 CLIENT_ID = credentials.get("client_id")

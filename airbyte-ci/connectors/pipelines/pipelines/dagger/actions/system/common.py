@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List
 
 from dagger import Container
 
 
-def with_debian_packages(base_container: Container, packages_to_install: List[str]) -> Container:
+def with_debian_packages(base_container: Container, packages_to_install: list[str]) -> Container:
     """Installs packages using apt-get.
+
     Args:
         context (Container): A alpine based container.
 

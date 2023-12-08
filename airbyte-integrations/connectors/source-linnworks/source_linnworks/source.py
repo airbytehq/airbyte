@@ -3,10 +3,12 @@
 #
 
 
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from collections.abc import Mapping, MutableMapping
+from typing import Any
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
@@ -70,13 +72,13 @@ class LinnworksAuthenticator(Oauth2Authenticator):
 
         return payload
 
-    def refresh_access_token(self) -> Tuple[str, int]:
+    def refresh_access_token(self) -> tuple[str, int]:
         try:
             response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
             response.raise_for_status()
             response_json = response.json()
             return response_json[self.access_token_name], response_json[self.expires_in_name], response_json[self.server_name]
-        except Exception as e:
+        except Exception:
             try:
                 e = Exception(response.json()["Message"])
             except Exception:
@@ -95,14 +97,14 @@ class SourceLinnworks(AbstractSource):
             token=config["token"],
         )
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             self._auth(config).get_auth_header()
         except Exception as error:
             return False, f"Unable to connect to Linnworks API with the provided credentials: {error}"
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         auth = self._auth(config)
         return [
             StockLocations(authenticator=auth),

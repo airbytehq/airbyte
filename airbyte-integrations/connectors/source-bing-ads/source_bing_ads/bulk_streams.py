@@ -3,15 +3,17 @@
 #
 import os
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import timezone
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Optional
 
 import pandas as pd
 import pendulum
+from numpy import nan
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from numpy import nan
 from source_bing_ads.base_streams import Accounts, BingAdsBaseStream
 from source_bing_ads.utils import transform_bulk_datetime_format_to_rfc_3339
 
@@ -32,16 +34,14 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
 
     @property
     @abstractmethod
-    def data_scope(self) -> List[str]:
-        """
-        Defines scopes or types of data to download. Docs: https://learn.microsoft.com/en-us/advertising/bulk-service/datascope?view=bingads-13
+    def data_scope(self) -> list[str]:
+        """Defines scopes or types of data to download. Docs: https://learn.microsoft.com/en-us/advertising/bulk-service/datascope?view=bingads-13
         """
 
     @property
     @abstractmethod
-    def download_entities(self) -> List[str]:
-        """
-        Defines the entities that should be downloaded. Docs: https://learn.microsoft.com/en-us/advertising/bulk-service/downloadentity?view=bingads-13
+    def download_entities(self) -> list[str]:
+        """Defines the entities that should be downloaded. Docs: https://learn.microsoft.com/en-us/advertising/bulk-service/downloadentity?view=bingads-13
         """
 
     def stream_slices(
@@ -64,8 +64,7 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
             self._state.update({str(value["Account Id"]): {self.cursor_field: new_state_value}})
 
     def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None) -> Optional[pendulum.DateTime]:
-        """
-        The start_date in the query can only be specified if it is within a period of up to 30 days from today.
+        """The start_date in the query can only be specified if it is within a period of up to 30 days from today.
         """
         min_available_date = pendulum.now().subtract(days=30).astimezone(tz=timezone.utc)
         start_date = self.client.reports_start_date
@@ -96,9 +95,9 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
             yield record
             self.state = record
 
-    def read_with_chunks(self, path: str, chunk_size: int = 1024) -> Iterable[Tuple[int, Mapping[str, Any]]]:
+    def read_with_chunks(self, path: str, chunk_size: int = 1024) -> Iterable[tuple[int, Mapping[str, Any]]]:
         try:
-            with open(path, "r") as data:
+            with open(path) as data:
                 chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix", dtype=object)
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
@@ -107,7 +106,7 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
                             yield row
         except pd.errors.EmptyDataError as e:
             self.logger.info(f"Empty data received. {e}")
-        except IOError as ioe:
+        except OSError as ioe:
             self.logger.fatal(
                 f"The IO/Error occurred while reading tmp data. Called: {path}. Stream: {self.name}",
             )
@@ -117,8 +116,7 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
             os.remove(path)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        """
-        Bing Ads Bulk API returns all available properties for all entities.
+        """Bing Ads Bulk API returns all available properties for all entities.
         This method filter out only available properties.
         """
         actual_record = {key: value for key, value in record.items() if key in self.get_json_schema()["properties"].keys()}
@@ -127,8 +125,7 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
 
 
 class AppInstallAds(BingAdsBulkStream):
-    """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13
     """
 
     data_scope = ["EntityData"]
@@ -136,8 +133,7 @@ class AppInstallAds(BingAdsBulkStream):
 
 
 class AppInstallAdLabels(BingAdsBulkStream):
-    """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13
     """
 
     data_scope = ["EntityData"]
@@ -145,8 +141,7 @@ class AppInstallAdLabels(BingAdsBulkStream):
 
 
 class Labels(BingAdsBulkStream):
-    """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
     """
 
     data_scope = ["EntityData"]
@@ -154,8 +149,7 @@ class Labels(BingAdsBulkStream):
 
 
 class KeywordLabels(BingAdsBulkStream):
-    """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13
     """
 
     data_scope = ["EntityData"]
@@ -163,8 +157,7 @@ class KeywordLabels(BingAdsBulkStream):
 
 
 class Keywords(BingAdsBulkStream):
-    """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/keyword?view=bingads-13
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/keyword?view=bingads-13
     """
 
     data_scope = ["EntityData"]
@@ -172,8 +165,7 @@ class Keywords(BingAdsBulkStream):
 
 
 class CampaignLabels(BingAdsBulkStream):
-    """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/campaign-label?view=bingads-13
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/campaign-label?view=bingads-13
     """
 
     data_scope = ["EntityData"]
@@ -181,8 +173,7 @@ class CampaignLabels(BingAdsBulkStream):
 
 
 class AdGroupLabels(BingAdsBulkStream):
-    """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13
+    """https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13
     """
 
     data_scope = ["EntityData"]

@@ -7,8 +7,7 @@ from typing import Any, Optional
 
 
 def hash(value: Any, hash_type: str = "md5", salt: Optional[str] = None) -> str:
-    """
-      Implementation of a custom Jinja2 hash filter
+    """Implementation of a custom Jinja2 hash filter
       Hash type defaults to 'md5' if one is not specified.
 
       If you are using this has function for GDPR compliance, then
@@ -47,14 +46,13 @@ def hash(value: Any, hash_type: str = "md5", salt: Optional[str] = None) -> str:
             hash_obj.update(str(salt).encode("utf-8"))
         computed_hash: str = hash_obj.hexdigest()
     else:
-        raise AttributeError("No hashing function named {hname}".format(hname=hash_type))
+        raise AttributeError(f"No hashing function named {hash_type}")
 
     return computed_hash
 
 
 def base64encode(value: str) -> str:
-    """
-    Implementation of a custom Jinja2 base64encode filter
+    """Implementation of a custom Jinja2 base64encode filter
 
     For example:
 
@@ -67,13 +65,11 @@ def base64encode(value: str) -> str:
     :param value: value to be encoded in base64
     :return: base64 encoded string
     """
-
     return base64.b64encode(value.encode("utf-8")).decode()
 
 
 def base64decode(value: str) -> str:
-    """
-    Implementation of a custom Jinja2 base64decode filter
+    """Implementation of a custom Jinja2 base64decode filter
 
     For example:
 
@@ -86,7 +82,6 @@ def base64decode(value: str) -> str:
     :param value: value to be decoded from base64
     :return: base64 decoded string
     """
-
     return base64.b64decode(value.encode("utf-8")).decode()
 
 

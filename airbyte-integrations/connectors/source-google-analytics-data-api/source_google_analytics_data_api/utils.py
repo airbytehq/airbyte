@@ -8,16 +8,16 @@ import calendar
 import datetime
 import json
 import sys
-from typing import Dict
 
 import jsonschema
 import pandas as pd
+
 from airbyte_cdk.sources.streams.http import auth
 from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
 
 DATE_FORMAT = "%Y-%m-%d"
 
-metrics_data_native_types_map: Dict = {
+metrics_data_native_types_map: dict = {
     "METRIC_TYPE_UNSPECIFIED": str,
     "TYPE_INTEGER": int,
     "TYPE_FLOAT": float,
@@ -33,7 +33,7 @@ metrics_data_native_types_map: Dict = {
     "TYPE_KILOMETERS": float,
 }
 
-metrics_data_types_map: Dict = {
+metrics_data_types_map: dict = {
     "METRIC_TYPE_UNSPECIFIED": "string",
     "TYPE_INTEGER": "integer",
     "TYPE_FLOAT": "number",
@@ -49,7 +49,7 @@ metrics_data_types_map: Dict = {
     "TYPE_KILOMETERS": "number",
 }
 
-authenticator_class_map: Dict = {
+authenticator_class_map: dict = {
     "Service": (GoogleServiceKeyAuthenticator, lambda credentials: {"credentials": credentials["credentials_json"]}),
     "Client": (
         auth.Oauth2Authenticator,
@@ -121,13 +121,12 @@ def check_invalid_property_error(exc: jsonschema.ValidationError) -> str:
 
 
 def get_source_defined_primary_key(stream):
-    """
-    https://github.com/airbytehq/airbyte/pull/26283
+    """https://github.com/airbytehq/airbyte/pull/26283
     It's not a very elegant way to get source_defined_primary_key inside the stream.
     It's used only for a smooth transition to the new primary key.
     As soon as the transition will complete we can remove this function.
     """
-    if len(sys.argv) > 1 and "read" == sys.argv[1]:
+    if len(sys.argv) > 1 and sys.argv[1] == "read":
         parser = argparse.ArgumentParser()
         subparsers = parser.add_subparsers()
         read_subparser = subparsers.add_parser("read")
@@ -179,7 +178,7 @@ def transform_between_filter(filter):
         "betweenFilter": {
             "fromValue": {from_value_type: from_value.get("value")},
             "toValue": {to_value_type: to_value.get("value")},
-        }
+        },
     }
 
 
@@ -221,8 +220,7 @@ def transform_json(original_json):
 
 
 def serialize_to_date_string(date: str, date_format: str, date_type: str) -> str:
-    """
-    Serialize a date string to a different date format based on the date_type.
+    """Serialize a date string to a different date format based on the date_type.
 
     Parameters:
     - date (str): The input date string.

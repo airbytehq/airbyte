@@ -3,7 +3,6 @@
 #
 
 import hashlib
-from typing import List, Optional
 
 import pandas as pd
 from dagster import MetadataValue, Output
@@ -13,10 +12,8 @@ CURSOR_SEPARATOR = ":"
 
 
 def output_dataframe(result_df: pd.DataFrame) -> Output[pd.DataFrame]:
+    """Returns a Dagster Output object with a dataframe as the result and a markdown preview.
     """
-    Returns a Dagster Output object with a dataframe as the result and a markdown preview.
-    """
-
     # Truncate to 100 rows to avoid dagster throwing a "too large" error
     MAX_PREVIEW_ROWS = 100
     is_truncated = len(result_df) > MAX_PREVIEW_ROWS
@@ -28,7 +25,7 @@ def output_dataframe(result_df: pd.DataFrame) -> Output[pd.DataFrame]:
     )
 
 
-def string_array_to_hash(strings: List[str]) -> str:
+def string_array_to_hash(strings: list[str]) -> str:
     """Hash a list of strings into a cursor string.
 
     Args:

@@ -4,9 +4,10 @@
 
 
 import enum
+from collections.abc import Mapping
 from functools import wraps
 from time import sleep
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Optional
 
 import requests
 
@@ -95,7 +96,7 @@ class ShopifyAccessScopesError(Exception):
 
     def __init__(self, response):
         super().__init__(
-            f"Reason: Scopes are not available, make sure you're using the correct `Shopify Store` name. Actual response: {response}. More info about: {self.help_url}"
+            f"Reason: Scopes are not available, make sure you're using the correct `Shopify Store` name. Actual response: {response}. More info about: {self.help_url}",
         )
 
 
@@ -118,7 +119,7 @@ class ShopifyWrongShopNameError(Exception):
 
     def __init__(self, url):
         super().__init__(
-            f"Reason: The `Shopify Store` name is invalid or missing for `input configuration`, make sure it's valid. Details: {url}"
+            f"Reason: The `Shopify Store` name is invalid or missing for `input configuration`, make sure it's valid. Details: {url}",
         )
 
 
@@ -131,13 +132,12 @@ class ApiTypeEnum(enum.Enum):
     graphql = "graphql"
 
     @classmethod
-    def api_types(cls) -> List:
+    def api_types(cls) -> list:
         return [api_type.value for api_type in ApiTypeEnum]
 
 
 class ShopifyRateLimiter:
-    """
-    Define timings for RateLimits. Adjust timings if needed.
+    """Define timings for RateLimits. Adjust timings if needed.
 
     :: on_unknown_load = 1.0 sec - Shopify recommended time to hold between each API call.
     :: on_low_load = 0.2 sec (200 miliseconds) - ideal ratio between hold time and api call, also the standard hold time between each API call.
@@ -152,8 +152,7 @@ class ShopifyRateLimiter:
 
     @staticmethod
     def _convert_load_to_time(load: Optional[float], threshold: float) -> float:
-        """
-        Define wait_time based on load conditions.
+        """Define wait_time based on load conditions.
 
         :: load - represents how close we are to being throttled
                 - 0.5 is half way through our allowance
@@ -176,8 +175,7 @@ class ShopifyRateLimiter:
 
     @staticmethod
     def get_rest_api_wait_time(*args, threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit"):
-        """
-        To avoid reaching Shopify REST API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
+        """To avoid reaching Shopify REST API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
         to determine the current rate limits and load and handle wait_time based on load %.
         Recomended wait_time between each request is 1 sec, we would handle this dynamicaly.
 
@@ -207,8 +205,7 @@ class ShopifyRateLimiter:
 
     @staticmethod
     def get_graphql_api_wait_time(*args, threshold: float = 0.9):
-        """
-        To avoid reaching Shopify Graphql API Rate Limits, use the extensions dict in the response.
+        """To avoid reaching Shopify Graphql API Rate Limits, use the extensions dict in the response.
 
         :: threshold - is the % cutoff for the % load, if this cutoff is crossed,
                         the connector waits `sleep_on_high_load` amount of time
@@ -263,8 +260,7 @@ class ShopifyRateLimiter:
         rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit",
         api_type: ApiTypeEnum = ApiTypeEnum.rest.value,
     ):
-        """
-        The decorator function.
+        """The decorator function.
         Adjust `threshold`, `rate_limit_header` and `api_type` if needed.
         """
 
@@ -273,7 +269,7 @@ class ShopifyRateLimiter:
             def wrapper_balance_rate_limit(*args, **kwargs):
                 if api_type == ApiTypeEnum.rest.value:
                     ShopifyRateLimiter.wait_time(
-                        ShopifyRateLimiter.get_rest_api_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header)
+                        ShopifyRateLimiter.get_rest_api_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header),
                     )
                 elif api_type == ApiTypeEnum.graphql.value:
                     ShopifyRateLimiter.wait_time(ShopifyRateLimiter.get_graphql_api_wait_time(*args, threshold=threshold))
@@ -287,18 +283,16 @@ class ShopifyRateLimiter:
 
 
 class EagerlyCachedStreamState:
-    """
-    This is the placeholder for the tmp stream state for each incremental stream,
+    """This is the placeholder for the tmp stream state for each incremental stream,
     It's empty, once the sync has started and is being updated while sync operation takes place,
     It holds the `temporary stream state values` before they are updated to have the opportunity to reuse this state.
     """
 
-    cached_state: Dict = {}
+    cached_state: dict = {}
 
     @staticmethod
-    def stream_state_to_tmp(*args, state_object: Dict = cached_state, **kwargs) -> Dict:
-        """
-        Method to save the current stream state for future re-use within slicing.
+    def stream_state_to_tmp(*args, state_object: dict = cached_state, **kwargs) -> dict:
+        """Method to save the current stream state for future re-use within slicing.
         The method requires having the temporary `state_object` as placeholder.
         Because of the specific of Shopify's entities relations, we have the opportunity to fetch the updates,
         for particular stream using the `Incremental Refresh`, inside slicing.
@@ -310,7 +304,7 @@ class EagerlyCachedStreamState:
         # Map the input *args, the sequece should be always keeped up to the input function
         # change the mapping if needed
         stream: object = args[0]  # the self instance of the stream
-        current_stream_state: Dict = kwargs["stream_state"] or {}
+        current_stream_state: dict = kwargs["stream_state"] or {}
         # get the current tmp_state_value
         tmp_stream_state_value = state_object.get(stream.name, {}).get(stream.cursor_field, "")
         # Save the curent stream value for current sync, if present.
@@ -319,7 +313,7 @@ class EagerlyCachedStreamState:
             # Check if we have the saved state and keep the minimun value
             if tmp_stream_state_value:
                 state_object[stream.name] = {
-                    stream.cursor_field: min(current_stream_state.get(stream.cursor_field, ""), tmp_stream_state_value)
+                    stream.cursor_field: min(current_stream_state.get(stream.cursor_field, ""), tmp_stream_state_value),
                 }
 
         return state_object

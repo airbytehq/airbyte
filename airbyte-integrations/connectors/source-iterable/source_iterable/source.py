@@ -2,9 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 import requests.exceptions
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -61,14 +63,13 @@ from .streams import (
 
 
 class SourceIterable(AbstractSource):
-    """
-    Note: there are some redundant endpoints
+    """Note: there are some redundant endpoints
     (e.g. [`export/userEvents`](https://api.iterable.com/api/docs#export_exportUserEvents)
     and [`events/{email}`](https://api.iterable.com/api/docs#events_User_events)).
     In this case it's better to use the one which takes params as a query param rather than as part of the url param.
     """
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             authenticator = TokenAuthenticator(token=config["api_key"], auth_header="Api-Key", auth_method="")
             list_gen = Lists(authenticator=authenticator).read_records(sync_mode=SyncMode.full_refresh)
@@ -77,7 +78,7 @@ class SourceIterable(AbstractSource):
         except Exception as e:
             return False, f"Unable to connect to Iterable API with the provided credentials - {e}"
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         def all_streams_accessible():
             access_check_stream = AccessCheck(authenticator=authenticator)
             try:
@@ -148,6 +149,6 @@ class SourceIterable(AbstractSource):
                     CustomEvent(authenticator=authenticator, **date_range),
                     HostedUnsubscribeClick(authenticator=authenticator, **date_range),
                     Events(authenticator=authenticator),
-                ]
+                ],
             )
         return streams

@@ -4,10 +4,12 @@
 
 import datetime
 import logging
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 from urllib import parse
 
 import pendulum
+
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .authenticator import OktaOauth2Authenticator

@@ -3,7 +3,8 @@
 #
 
 import logging
-from typing import Any, List, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
@@ -14,8 +15,7 @@ logger = logging.getLogger("airbyte_logger")
 
 
 class MigrateProjectId:
-    """
-    This class stands for migrating the config at runtime.
+    """This class stands for migrating the config at runtime.
     Specifically, starting from `0.1.41`, "credentials" block is required and username and secret or api_secret should be inside it;
     the property `project_id` should be inside credentials block as it is only used for Service Account.
     """
@@ -24,8 +24,8 @@ class MigrateProjectId:
 
     @classmethod
     def should_migrate(cls, config: Mapping[str, Any]) -> bool:
-        """
-        This method determines if the config should be migrated.
+        """This method determines if the config should be migrated.
+
         Returns:
             > True, if the transformation is necessary
             > False, otherwise.
@@ -69,9 +69,8 @@ class MigrateProjectId:
             print(message.json(exclude_unset=True))
 
     @classmethod
-    def migrate(cls, args: List[str], source: Source) -> None:
-        """
-        This method checks the input args, should the config be migrated,
+    def migrate(cls, args: list[str], source: Source) -> None:
+        """This method checks the input args, should the config be migrated,
         transform if neccessary and emit the CONTROL message.
         """
         # get config path

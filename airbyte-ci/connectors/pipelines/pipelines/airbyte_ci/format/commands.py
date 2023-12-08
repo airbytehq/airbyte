@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""
-Module exposing the format commands.
+"""Module exposing the format commands.
 """
 from __future__ import annotations
 
@@ -11,6 +10,7 @@ import logging
 import sys
 
 import asyncclick as click
+
 from pipelines.airbyte_ci.format.configuration import FORMATTERS_CONFIGURATIONS, Formatter
 from pipelines.airbyte_ci.format.format_command import FormatCommand
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
@@ -68,10 +68,8 @@ for formatter, fix_command in FORMATTERS_FIX_COMMANDS.items():
 @check.command(name="all", help="Run all format checks and fail if any checks fail.")
 @click.pass_context
 async def all_checks(ctx: click.Context):
+    """Run all format checks and fail if any checks fail.
     """
-    Run all format checks and fail if any checks fail.
-    """
-
     # We disable logging and exit on failure because its this the current command that takes care of reporting.
     all_commands = [command.set_enable_logging(False).set_exit_on_failure(False) for command in FORMATTERS_CHECK_COMMANDS.values()]
     command_results = await invoke_commands_concurrently(ctx, all_commands)

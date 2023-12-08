@@ -5,11 +5,12 @@
 import logging
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 
-from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
 from pydantic import BaseModel, Field, PositiveInt
+
+from airbyte_cdk.sources.config import BaseConfig
 
 logger = logging.getLogger("airbyte")
 
@@ -34,19 +35,19 @@ class InsightConfig(BaseModel):
 
     level: str = Field(title="Level", description="Chosen level for API", default="ad", enum=["ad", "adset", "campaign", "account"])
 
-    fields: Optional[List[ValidFields]] = Field(
+    fields: Optional[list[ValidFields]] = Field(
         title="Fields",
         description="A list of chosen fields for fields parameter",
         default=[],
     )
 
-    breakdowns: Optional[List[ValidBreakdowns]] = Field(
+    breakdowns: Optional[list[ValidBreakdowns]] = Field(
         title="Breakdowns",
         description="A list of chosen breakdowns for breakdowns",
         default=[],
     )
 
-    action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
+    action_breakdowns: Optional[list[ValidActionBreakdowns]] = Field(
         title="Action Breakdowns",
         description="A list of chosen action_breakdowns for action_breakdowns",
         default=[],
@@ -169,7 +170,7 @@ class ConnectorConfig(BaseConfig):
         description="Set to active if you want to fetch the thumbnail_url and store the result in thumbnail_data_url for each Ad Creative.",
     )
 
-    custom_insights: Optional[List[InsightConfig]] = Field(
+    custom_insights: Optional[list[InsightConfig]] = Field(
         title="Custom Insights",
         order=6,
         description=(

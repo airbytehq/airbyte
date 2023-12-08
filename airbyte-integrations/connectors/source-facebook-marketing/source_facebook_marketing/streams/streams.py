@@ -4,16 +4,18 @@
 
 import base64
 import logging
-from typing import Any, Iterable, List, Mapping, Optional, Set
+from collections.abc import Iterable, Mapping
+from typing import Any, Optional
 
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 from facebook_business.exceptions import FacebookRequestError
+
+from airbyte_cdk.models import SyncMode
 
 from .base_insight_streams import AdsInsights
 from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncrementalStream, FBMarketingStream
@@ -30,9 +32,9 @@ def fetch_thumbnail_data_url(url: str) -> Optional[str]:
             data = base64.b64encode(response.content)
             return f"data:{_type};base64,{data.decode('ascii')}"
         else:
-            logger.warning(f"Got {repr(response)} while requesting thumbnail image.")
+            logger.warning(f"Got {response!r} while requesting thumbnail image.")
     except Exception as exc:
-        logger.warning(f"Got {str(exc)} while requesting thumbnail image: {url}.")
+        logger.warning(f"Got {exc!s} while requesting thumbnail image: {url}.")
     return None
 
 
@@ -49,14 +51,14 @@ class AdCreatives(FBMarketingStream):
         self._fetch_thumbnail_images = fetch_thumbnail_images
 
     @cached_property
-    def fields(self) -> List[str]:
+    def fields(self) -> list[str]:
         """Remove "thumbnail_data_url" field because it is computed field and it's not a field that we can request from Facebook"""
         return [f for f in super().fields if f != "thumbnail_data_url"]
 
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: list[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
@@ -171,7 +173,7 @@ class AdAccount(FBMarketingStream):
     use_batch = False
     enable_deleted = False
 
-    def get_task_permissions(self) -> Set[str]:
+    def get_task_permissions(self) -> set[str]:
         """https://developers.facebook.com/docs/marketing-api/reference/ad-account/assigned_users/"""
         res = set()
         me = User(fbid="me", api=self._api.api)
@@ -183,7 +185,7 @@ class AdAccount(FBMarketingStream):
         return res
 
     @cached_property
-    def fields(self) -> List[str]:
+    def fields(self) -> list[str]:
         properties = super().fields
         # https://developers.facebook.com/docs/marketing-apis/guides/javascript-ads-dialog-for-payments/
         # To access "funding_source_details", the user making the API call must have a MANAGE task permission for
@@ -196,7 +198,7 @@ class AdAccount(FBMarketingStream):
         return properties
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        """noop in case of AdAccount"""
+        """Noop in case of AdAccount"""
         fields = self.fields
         try:
             return [FBAdAccount(self._api.account.get_id()).api_get(fields=fields)]

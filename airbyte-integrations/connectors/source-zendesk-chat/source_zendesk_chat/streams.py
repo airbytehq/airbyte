@@ -4,11 +4,13 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional, Union
 from urllib.parse import parse_qs, urlparse
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -50,7 +52,7 @@ class Stream(HttpStream, ABC):
             return {"cursor": cursor}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
         if next_page_token:
@@ -64,7 +66,7 @@ class Stream(HttpStream, ABC):
 
         yield from stream_data
 
-    def get_stream_data(self, response_data: Any) -> List[dict]:
+    def get_stream_data(self, response_data: Any) -> list[dict]:
         if self.data_field:
             response_data = response_data.get(self.data_field, [])
 
@@ -83,15 +85,13 @@ class BaseIncrementalStream(Stream, ABC):
     @property
     @abstractmethod
     def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        """Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
         and define a cursor field.
         """
 
     @abstractmethod
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
 
@@ -126,7 +126,7 @@ class TimeIncrementalStream(BaseIncrementalStream, ABC):
         return {self.cursor_field: latest_benchmark.strftime("%Y-%m-%dT%H:%M:%SZ")}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token)
         if next_page_token:
@@ -165,7 +165,7 @@ class IdIncrementalStream(BaseIncrementalStream):
             return {"since_id": last_object_id}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token)
 
@@ -178,14 +178,12 @@ class IdIncrementalStream(BaseIncrementalStream):
 
 
 class Agents(IdIncrementalStream):
-    """
-    Agents Stream: https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents
+    """Agents Stream: https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents
     """
 
 
 class AgentTimelines(TimeIncrementalStream):
-    """
-    Agent Timelines Stream: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export
+    """Agent Timelines Stream: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export
     """
 
     primary_key = None
@@ -216,8 +214,7 @@ class AgentTimelines(TimeIncrementalStream):
 
 
 class Accounts(Stream):
-    """
-    Accounts Stream: https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account
+    """Accounts Stream: https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account
     """
 
     primary_key = "account_key"
@@ -227,8 +224,7 @@ class Accounts(Stream):
 
 
 class Chats(TimeIncrementalStream):
-    """
-    Chats Stream: https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-chat-export
+    """Chats Stream: https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-chat-export
     """
 
     cursor_field = "update_timestamp"
@@ -248,55 +244,47 @@ class Chats(TimeIncrementalStream):
 
 
 class Shortcuts(Stream):
-    """
-    Shortcuts Stream: https://developer.zendesk.com/rest_api/docs/chat/shortcuts#list-shortcuts
+    """Shortcuts Stream: https://developer.zendesk.com/rest_api/docs/chat/shortcuts#list-shortcuts
     """
 
 
 class Triggers(Stream):
-    """
-    Triggers Stream: https://developer.zendesk.com/rest_api/docs/chat/triggers#list-triggers
+    """Triggers Stream: https://developer.zendesk.com/rest_api/docs/chat/triggers#list-triggers
     """
 
 
 class Bans(IdIncrementalStream):
-    """
-    Bans Stream: https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans
+    """Bans Stream: https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans
     """
 
-    def get_stream_data(self, response_data) -> List[dict]:
+    def get_stream_data(self, response_data) -> list[dict]:
         bans = response_data["ip_address"] + response_data["visitor"]
         bans = sorted(bans, key=lambda x: pendulum.parse(x["created_at"]) if x["created_at"] else pendulum.datetime(1970, 1, 1))
         return bans
 
 
 class Departments(Stream):
-    """
-    Departments Stream: https://developer.zendesk.com/rest_api/docs/chat/departments#list-departments
+    """Departments Stream: https://developer.zendesk.com/rest_api/docs/chat/departments#list-departments
     """
 
 
 class Goals(Stream):
-    """
-    Goals Stream: https://developer.zendesk.com/rest_api/docs/chat/goals#list-goals
+    """Goals Stream: https://developer.zendesk.com/rest_api/docs/chat/goals#list-goals
     """
 
 
 class Skills(Stream):
-    """
-    Skills Stream: https://developer.zendesk.com/rest_api/docs/chat/skills#list-skills
+    """Skills Stream: https://developer.zendesk.com/rest_api/docs/chat/skills#list-skills
     """
 
 
 class Roles(Stream):
-    """
-    Roles Stream: https://developer.zendesk.com/rest_api/docs/chat/roles#list-roles
+    """Roles Stream: https://developer.zendesk.com/rest_api/docs/chat/roles#list-roles
     """
 
 
 class RoutingSettings(Stream):
-    """
-    Routing Settings Stream: https://developer.zendesk.com/rest_api/docs/chat/routing_settings#show-account-routing-settings
+    """Routing Settings Stream: https://developer.zendesk.com/rest_api/docs/chat/routing_settings#show-account-routing-settings
     """
 
     primary_key = ""

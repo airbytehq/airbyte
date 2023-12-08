@@ -2,12 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Mapping
 from itertools import groupby
 from operator import itemgetter
-from typing import Any, List, Mapping, Tuple
+from typing import Any
 
 import pendulum
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -20,7 +22,7 @@ class SourceSurveymonkey(AbstractSource):
     SCOPES = {"responses_read_detail", "surveys_read", "users_read"}
 
     @classmethod
-    def _check_credentials(cls, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def _check_credentials(cls, config: Mapping[str, Any]) -> tuple[bool, Any]:
         # check if the credentials are provided correctly, because for now these value are not required in spec
         if not config.get("access_token"):
             credentials = config.get("credentials", {})
@@ -35,7 +37,7 @@ class SourceSurveymonkey(AbstractSource):
 
         return True, None
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         is_valid_credentials, msg = self._check_credentials(config)
         if not is_valid_credentials:
             return is_valid_credentials, msg
@@ -46,7 +48,7 @@ class SourceSurveymonkey(AbstractSource):
             errors = []
             for survey_id in config["survey_ids"]:
                 response = requests.head(
-                    url=f"https://api.surveymonkey.com/v3/surveys/{survey_id}/details", headers=authenticator.get_auth_header()
+                    url=f"https://api.surveymonkey.com/v3/surveys/{survey_id}/details", headers=authenticator.get_auth_header(),
                 )
                 try:
                     response.raise_for_status()
@@ -59,7 +61,7 @@ class SourceSurveymonkey(AbstractSource):
                     [
                         f"{error_type}: {', '.join(list(map(itemgetter(survey_id_index), survey_ids)))}"
                         for error_type, survey_ids in groupby(errors, lambda x: x[error_message_index])
-                    ]
+                    ],
                 )
                 return False, msg
         try:
@@ -69,7 +71,7 @@ class SourceSurveymonkey(AbstractSource):
         except Exception as e:
             return False, repr(e)
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         authenticator = self.get_authenticator(config)
         start_date = pendulum.parse(config["start_date"])
         survey_ids = config.get("survey_ids", [])

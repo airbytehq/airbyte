@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Iterable
 from decimal import Decimal
-from typing import Any, Dict, Iterable, Type
+from typing import Any
 
 from pydantic import BaseModel, create_model
 
@@ -13,7 +14,7 @@ class CatalogModel(BaseModel):
         arbitrary_types_allowed = True
 
         @classmethod
-        def schema_extra(cls, schema: Dict[str, Any], model: Type["BaseModel"]) -> None:
+        def schema_extra(cls, schema: dict[str, Any], model: type["BaseModel"]) -> None:
             # Modify pydantic generated jsonschema.
             # Remove "title" and "description" fields to reduce size.
             schema.pop("title", None)

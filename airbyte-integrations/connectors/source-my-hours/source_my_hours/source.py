@@ -2,11 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Mapping, MutableMapping
+from typing import Any, Optional
 from urllib.parse import parse_qs, urlparse
 
 import pendulum
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -21,7 +23,7 @@ class Clients(MyHoursStream):
     primary_key = "id"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "Clients"
 
@@ -30,7 +32,7 @@ class Projects(MyHoursStream):
     primary_key = "id"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "Projects/getAll"
 
@@ -39,7 +41,7 @@ class Tags(MyHoursStream):
     primary_key = "id"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "Tags"
 
@@ -60,10 +62,10 @@ class TimeLogs(MyHoursStream):
         self.batch_size = batch_size
 
         if self.start_date > pendulum.now():
-            self.logger.warn(f'Stream {self.name}: start_date "{start_date.isoformat()}" should be before today.')
+            self.logger.warning(f'Stream {self.name}: start_date "{start_date.isoformat()}" should be before today.')
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "Reports/activity"
 
@@ -97,14 +99,14 @@ class Users(MyHoursStream):
     primary_key = "id"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return "Users/getAll"
 
 
 # Source
 class SourceMyHours(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config) -> tuple[bool, any]:
         url = f"{URL_BASE}/Clients"
 
         try:
@@ -118,7 +120,7 @@ class SourceMyHours(AbstractSource):
         except Exception as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         auth = self._make_authenticator(config)
         return [
             Clients(authenticator=auth),

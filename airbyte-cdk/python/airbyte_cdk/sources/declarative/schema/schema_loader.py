@@ -3,8 +3,9 @@
 #
 
 from abc import abstractmethod
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any
 
 
 @dataclass
@@ -14,4 +15,3 @@ class SchemaLoader:
     @abstractmethod
     def get_json_schema(self) -> Mapping[str, Any]:
         """Returns a mapping describing the stream's schema"""
-        pass

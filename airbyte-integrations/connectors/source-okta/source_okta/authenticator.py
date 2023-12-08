@@ -2,9 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping, Tuple
+from collections.abc import Mapping
+from typing import Any
 
 import requests
+
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 
@@ -15,7 +17,7 @@ class OktaOauth2Authenticator(Oauth2Authenticator):
             "refresh_token": self.refresh_token,
         }
 
-    def refresh_access_token(self) -> Tuple[str, int]:
+    def refresh_access_token(self) -> tuple[str, int]:
         try:
             response = requests.request(
                 method="POST",

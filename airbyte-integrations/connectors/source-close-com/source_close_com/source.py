@@ -5,10 +5,12 @@
 
 from abc import ABC
 from base64 import b64encode
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any, Optional
 from urllib.parse import parse_qsl, urlparse
 
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -29,8 +31,7 @@ class CloseComStream(HttpStream, ABC):
         self.start_date: str = kwargs["start_date"]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        In one case, Close.com uses two params for pagination: _skip and _limit.
+        """In one case, Close.com uses two params for pagination: _skip and _limit.
         _skip - number of records from stream data we need skip.
         _limit - number of records in stream, that we received from API.
         For next_page_token need use sum of _skip and _limit values.
@@ -77,8 +78,8 @@ class CloseComStream(HttpStream, ABC):
         we return that value. If the response is anything other than a 429 (e.g: 5XX)
         fall back on default retry behavior.
         Rate-reset is the same as retry-after.
-        Rate Limits Docs: https://developer.close.com/#ratelimits"""
-
+        Rate Limits Docs: https://developer.close.com/#ratelimits
+        """
         backoff_time = None
         error = response.json().get("error", backoff_time)
         if error:
@@ -94,8 +95,7 @@ class IncrementalCloseComStream(CloseComStream):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        """
-        Update the state value, default CDK method.
+        """Update the state value, default CDK method.
         For example, cursor_field can be "date_updated" or "date_created".
         """
         if not current_stream_state:
@@ -104,8 +104,7 @@ class IncrementalCloseComStream(CloseComStream):
 
 
 class CloseComActivitiesStream(IncrementalCloseComStream):
-    """
-    General class for activities. Define request params based on cursor_field value.
+    """General class for activities. Define request params based on cursor_field value.
     """
 
     cursor_field = "date_created"
@@ -123,8 +122,7 @@ class CloseComActivitiesStream(IncrementalCloseComStream):
 
 
 class CreatedActivities(CloseComActivitiesStream):
-    """
-    Get created activities on a specific date
+    """Get created activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-created-activities
     """
 
@@ -132,8 +130,7 @@ class CreatedActivities(CloseComActivitiesStream):
 
 
 class NoteActivities(CloseComActivitiesStream):
-    """
-    Get note activities on a specific date
+    """Get note activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-note-activities
     """
 
@@ -141,8 +138,7 @@ class NoteActivities(CloseComActivitiesStream):
 
 
 class EmailThreadActivities(CloseComActivitiesStream):
-    """
-    Get email thread activities on a specific date
+    """Get email thread activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-emailthread-activities
     """
 
@@ -150,8 +146,7 @@ class EmailThreadActivities(CloseComActivitiesStream):
 
 
 class EmailActivities(CloseComActivitiesStream):
-    """
-    Get email activities on a specific date
+    """Get email activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-email-activities
     """
 
@@ -159,8 +154,7 @@ class EmailActivities(CloseComActivitiesStream):
 
 
 class SmsActivities(CloseComActivitiesStream):
-    """
-    Get SMS activities on a specific date
+    """Get SMS activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-sms-activities
     """
 
@@ -168,8 +162,7 @@ class SmsActivities(CloseComActivitiesStream):
 
 
 class CallActivities(CloseComActivitiesStream):
-    """
-    Get call activities on a specific date
+    """Get call activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-call-activities
     """
 
@@ -177,8 +170,7 @@ class CallActivities(CloseComActivitiesStream):
 
 
 class MeetingActivities(CloseComActivitiesStream):
-    """
-    Get meeting activities on a specific date
+    """Get meeting activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-meeting-activities
     """
 
@@ -186,8 +178,7 @@ class MeetingActivities(CloseComActivitiesStream):
 
 
 class LeadStatusChangeActivities(CloseComActivitiesStream):
-    """
-    Get lead status change activities on a specific date
+    """Get lead status change activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-leadstatuschange-activities
     """
 
@@ -195,8 +186,7 @@ class LeadStatusChangeActivities(CloseComActivitiesStream):
 
 
 class OpportunityStatusChangeActivities(CloseComActivitiesStream):
-    """
-    Get opportunity status change activities on a specific date
+    """Get opportunity status change activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-opportunitystatuschange-activities
     """
 
@@ -204,8 +194,7 @@ class OpportunityStatusChangeActivities(CloseComActivitiesStream):
 
 
 class TaskCompletedActivities(CloseComActivitiesStream):
-    """
-    Get task completed activities on a specific date
+    """Get task completed activities on a specific date
     API Docs: https://developer.close.com/#activities-list-or-filter-all-taskcompleted-activities
     """
 
@@ -213,8 +202,7 @@ class TaskCompletedActivities(CloseComActivitiesStream):
 
 
 class Events(IncrementalCloseComStream):
-    """
-    Get events on a specific date
+    """Get events on a specific date
     API Docs: https://developer.close.com/#event-log-retrieve-a-list-of-events
     """
 
@@ -232,8 +220,7 @@ class Events(IncrementalCloseComStream):
 
 
 class Leads(IncrementalCloseComStream):
-    """
-    Get leads on a specific date
+    """Get leads on a specific date
     API Docs: https://developer.close.com/#leads
     """
 
@@ -251,8 +238,7 @@ class Leads(IncrementalCloseComStream):
 
 
 class CloseComTasksStream(IncrementalCloseComStream):
-    """
-    General class for tasks. Define request params based on _type value.
+    """General class for tasks. Define request params based on _type value.
     """
 
     cursor_field = "date_created"
@@ -272,8 +258,7 @@ class CloseComTasksStream(IncrementalCloseComStream):
 
 
 class LeadTasks(CloseComTasksStream):
-    """
-    Get lead tasks on a specific date
+    """Get lead tasks on a specific date
     API Docs: https://developer.close.com/#task
     """
 
@@ -281,8 +266,7 @@ class LeadTasks(CloseComTasksStream):
 
 
 class IncomingEmailTasks(CloseComTasksStream):
-    """
-    Get incoming email tasks on a specific date
+    """Get incoming email tasks on a specific date
     API Docs: https://developer.close.com/#tasks
     """
 
@@ -290,8 +274,7 @@ class IncomingEmailTasks(CloseComTasksStream):
 
 
 class EmailFollowupTasks(CloseComTasksStream):
-    """
-    Get email followup tasks on a specific date
+    """Get email followup tasks on a specific date
     API Docs: https://developer.close.com/#tasks
     """
 
@@ -299,8 +282,7 @@ class EmailFollowupTasks(CloseComTasksStream):
 
 
 class MissedCallTasks(CloseComTasksStream):
-    """
-    Get missed call tasks on a specific date
+    """Get missed call tasks on a specific date
     API Docs: https://developer.close.com/#task
     """
 
@@ -308,8 +290,7 @@ class MissedCallTasks(CloseComTasksStream):
 
 
 class AnsweredDetachedCallTasks(CloseComTasksStream):
-    """
-    Get answered detached call tasks on a specific date
+    """Get answered detached call tasks on a specific date
     API Docs: https://developer.close.com/#task
     """
 
@@ -317,8 +298,7 @@ class AnsweredDetachedCallTasks(CloseComTasksStream):
 
 
 class VoicemailTasks(CloseComTasksStream):
-    """
-    Get voicemail tasks on a specific date
+    """Get voicemail tasks on a specific date
     API Docs: https://developer.close.com/#task
     """
 
@@ -326,8 +306,7 @@ class VoicemailTasks(CloseComTasksStream):
 
 
 class OpportunityDueTasks(CloseComTasksStream):
-    """
-    Get opportunity due tasks on a specific date
+    """Get opportunity due tasks on a specific date
     API Docs: https://developer.close.com/#task
     """
 
@@ -335,8 +314,7 @@ class OpportunityDueTasks(CloseComTasksStream):
 
 
 class IncomingSmsTasks(CloseComTasksStream):
-    """
-    Get incoming SMS tasks on a specific date
+    """Get incoming SMS tasks on a specific date
     API Docs: https://developer.close.com/#task
     """
 
@@ -344,8 +322,7 @@ class IncomingSmsTasks(CloseComTasksStream):
 
 
 class CloseComCustomFieldsStream(CloseComStream):
-    """
-    General class for custom fields. Define path based on _type value.
+    """General class for custom fields. Define path based on _type value.
     """
 
     number_of_items_per_page = 1000
@@ -355,8 +332,7 @@ class CloseComCustomFieldsStream(CloseComStream):
 
 
 class LeadCustomFields(CloseComCustomFieldsStream):
-    """
-    Get lead custom fields for Close.com account organization
+    """Get lead custom fields for Close.com account organization
     API Docs: https://developer.close.com/#custom-fields-list-all-the-lead-custom-fields-for-your-organization
     """
 
@@ -364,8 +340,7 @@ class LeadCustomFields(CloseComCustomFieldsStream):
 
 
 class ContactCustomFields(CloseComCustomFieldsStream):
-    """
-    Get contact custom fields for Close.com account organization
+    """Get contact custom fields for Close.com account organization
     API Docs: https://developer.close.com/#custom-fields-list-all-the-contact-custom-fields-for-your-organization
     """
 
@@ -373,8 +348,7 @@ class ContactCustomFields(CloseComCustomFieldsStream):
 
 
 class OpportunityCustomFields(CloseComCustomFieldsStream):
-    """
-    Get opportunity custom fields for Close.com account organization
+    """Get opportunity custom fields for Close.com account organization
     API Docs: https://developer.close.com/#custom-fields-list-all-the-opportunity-custom-fields-for-your-organization
     """
 
@@ -382,8 +356,7 @@ class OpportunityCustomFields(CloseComCustomFieldsStream):
 
 
 class ActivityCustomFields(CloseComCustomFieldsStream):
-    """
-    Get activity custom fields for Close.com account organization
+    """Get activity custom fields for Close.com account organization
     API Docs: https://developer.close.com/#custom-fields-list-all-the-activity-custom-fields-for-your-organization
     """
 
@@ -391,8 +364,7 @@ class ActivityCustomFields(CloseComCustomFieldsStream):
 
 
 class Users(CloseComStream):
-    """
-    Get users for Close.com account organization
+    """Get users for Close.com account organization
     API Docs: https://developer.close.com/#users
     """
 
@@ -403,8 +375,7 @@ class Users(CloseComStream):
 
 
 class Contacts(CloseComStream):
-    """
-    Get contacts for Close.com account organization
+    """Get contacts for Close.com account organization
     API Docs: https://developer.close.com/#contacts
     """
 
@@ -415,8 +386,7 @@ class Contacts(CloseComStream):
 
 
 class Opportunities(IncrementalCloseComStream):
-    """
-    Get opportunities on a specific date
+    """Get opportunities on a specific date
     API Docs: https://developer.close.com/#opportunities
     """
 
@@ -436,8 +406,7 @@ class Opportunities(IncrementalCloseComStream):
 
 
 class Roles(CloseComStream):
-    """
-    Get roles for Close.com account organization
+    """Get roles for Close.com account organization
     API Docs: https://developer.close.com/#roles
     """
 
@@ -446,8 +415,7 @@ class Roles(CloseComStream):
 
 
 class LeadStatuses(CloseComStream):
-    """
-    Get lead statuses for Close.com account organization
+    """Get lead statuses for Close.com account organization
     API Docs: https://developer.close.com/#lead-statuses
     """
 
@@ -458,8 +426,7 @@ class LeadStatuses(CloseComStream):
 
 
 class OpportunityStatuses(CloseComStream):
-    """
-    Get opportunity statuses for Close.com account organization
+    """Get opportunity statuses for Close.com account organization
     API Docs: https://developer.close.com/#opportunity-statuses
     """
 
@@ -470,8 +437,7 @@ class OpportunityStatuses(CloseComStream):
 
 
 class Pipelines(CloseComStream):
-    """
-    Get pipelines for Close.com account organization
+    """Get pipelines for Close.com account organization
     API Docs: https://developer.close.com/#pipelines
     """
 
@@ -480,8 +446,7 @@ class Pipelines(CloseComStream):
 
 
 class EmailTemplates(CloseComStream):
-    """
-    Get email templates for Close.com account organization
+    """Get email templates for Close.com account organization
     API Docs: https://developer.close.com/#email-templates
     """
 
@@ -492,8 +457,7 @@ class EmailTemplates(CloseComStream):
 
 
 class CloseComConnectedAccountsStream(CloseComStream):
-    """
-    General class for connected accounts. Define request params based on _type value.
+    """General class for connected accounts. Define request params based on _type value.
     """
 
     number_of_items_per_page = 100
@@ -509,8 +473,7 @@ class CloseComConnectedAccountsStream(CloseComStream):
 
 
 class GoogleConnectedAccounts(CloseComConnectedAccountsStream):
-    """
-    Get google connected accounts for Close.com account
+    """Get google connected accounts for Close.com account
     API Docs: https://developer.close.com/#connected-accounts
     """
 
@@ -518,8 +481,7 @@ class GoogleConnectedAccounts(CloseComConnectedAccountsStream):
 
 
 class CustomEmailConnectedAccounts(CloseComConnectedAccountsStream):
-    """
-    Get custom email connected accounts for Close.com account
+    """Get custom email connected accounts for Close.com account
     API Docs: https://developer.close.com/#connected-accounts
     """
 
@@ -527,8 +489,7 @@ class CustomEmailConnectedAccounts(CloseComConnectedAccountsStream):
 
 
 class ZoomConnectedAccounts(CloseComConnectedAccountsStream):
-    """
-    Get zoom connected accounts for Close.com account
+    """Get zoom connected accounts for Close.com account
     API Docs: https://developer.close.com/#connected-accounts
     """
 
@@ -536,8 +497,7 @@ class ZoomConnectedAccounts(CloseComConnectedAccountsStream):
 
 
 class SendAs(CloseComStream):
-    """
-    Get Send As Associations by allowing or allowed user for Close.com
+    """Get Send As Associations by allowing or allowed user for Close.com
     API Docs: https://developer.close.com/#send-as
     """
 
@@ -546,8 +506,7 @@ class SendAs(CloseComStream):
 
 
 class EmailSequences(CloseComStream):
-    """
-    Get Email Sequences - series of emails to be sent, one by one, in specified time gaps to specific subscribers until
+    """Get Email Sequences - series of emails to be sent, one by one, in specified time gaps to specific subscribers until
     they reply.
     API Docs: https://developer.close.com/#email-sequences
     """
@@ -559,8 +518,7 @@ class EmailSequences(CloseComStream):
 
 
 class Dialer(CloseComStream):
-    """
-    Get dialer sessions for Close.com account organization
+    """Get dialer sessions for Close.com account organization
     API Docs: https://developer.close.com/#dialer
     """
 
@@ -569,8 +527,7 @@ class Dialer(CloseComStream):
 
 
 class SmartViews(CloseComStream):
-    """
-    Get smart view. Smart Views are "saved search queries" in Close and show up in the sidebar in the UI.
+    """Get smart view. Smart Views are "saved search queries" in Close and show up in the sidebar in the UI.
     They can be private for a user or shared with an entire Organization.
     API Docs: https://developer.close.com/#dialer
     """
@@ -582,8 +539,7 @@ class SmartViews(CloseComStream):
 
 
 class CloseComBulkActionsStream(CloseComStream):
-    """
-    General class for Bulk Actions. Define path based on _type value.
+    """General class for Bulk Actions. Define path based on _type value.
     Bulk actions are used to perform an "action" (send an email, update a lead status, etc.) on a number of leads
     all at once based on a Lead search query.
     API Docs: https://developer.close.com/#bulk-actions
@@ -596,8 +552,7 @@ class CloseComBulkActionsStream(CloseComStream):
 
 
 class EmailBulkActions(CloseComBulkActionsStream):
-    """
-    Get all email bulk actions of Close.com organization.
+    """Get all email bulk actions of Close.com organization.
     API Docs: https://developer.close.com/#bulk-actions-list-bulk-emails
     """
 
@@ -605,8 +560,7 @@ class EmailBulkActions(CloseComBulkActionsStream):
 
 
 class SequenceSubscriptionBulkActions(CloseComBulkActionsStream):
-    """
-    Get all sequence subscription bulk actions of Close.com organization.
+    """Get all sequence subscription bulk actions of Close.com organization.
     API Docs: https://developer.close.com/#bulk-actions-list-bulk-sequence-subscriptions
     """
 
@@ -614,8 +568,7 @@ class SequenceSubscriptionBulkActions(CloseComBulkActionsStream):
 
 
 class DeleteBulkActions(CloseComBulkActionsStream):
-    """
-    Get all bulk deletes actions of Close.com organization.
+    """Get all bulk deletes actions of Close.com organization.
     API Docs: https://developer.close.com/#bulk-actions-list-bulk-deletes
     """
 
@@ -623,8 +576,7 @@ class DeleteBulkActions(CloseComBulkActionsStream):
 
 
 class EditBulkActions(CloseComBulkActionsStream):
-    """
-    Get all bulk edits actions of Close.com organization.
+    """Get all bulk edits actions of Close.com organization.
     API Docs: https://developer.close.com/#bulk-actions-list-bulk-edits
     """
 
@@ -632,8 +584,7 @@ class EditBulkActions(CloseComBulkActionsStream):
 
 
 class IntegrationLinks(CloseComStream):
-    """
-    Get all integration links of Close.com organization.
+    """Get all integration links of Close.com organization.
     API Docs: https://developer.close.com/#integration-links
     """
 
@@ -644,8 +595,7 @@ class IntegrationLinks(CloseComStream):
 
 
 class CustomActivities(CloseComStream):
-    """
-    Get all Custom Activities of Close.com organization.
+    """Get all Custom Activities of Close.com organization.
     API Docs: https://developer.close.com/#custom-activities
     """
 
@@ -654,19 +604,18 @@ class CustomActivities(CloseComStream):
 
 
 class Base64HttpAuthenticator(TokenAuthenticator):
-    """
-    :auth - tuple with (api_key as username, password string). Password should be empty.
+    """:auth - tuple with (api_key as username, password string). Password should be empty.
     https://developer.close.com/#authentication
     """
 
-    def __init__(self, auth: Tuple[str, str], auth_method: str = "Basic"):
+    def __init__(self, auth: tuple[str, str], auth_method: str = "Basic"):
         auth_string = f"{auth[0]}:{auth[1]}".encode("latin1")
         b64_encoded = b64encode(auth_string).decode("ascii")
         super().__init__(token=b64_encoded, auth_method=auth_method)
 
 
 class SourceCloseCom(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Any]:
         try:
             authenticator = Base64HttpAuthenticator(auth=(config["api_key"], "")).get_auth_header()
             url = "https://api.close.com/api/v1/me"
@@ -676,7 +625,7 @@ class SourceCloseCom(AbstractSource):
         except Exception as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         authenticator = Base64HttpAuthenticator(auth=(config["api_key"], ""))
         args = {"authenticator": authenticator, "start_date": config["start_date"]}
         return [

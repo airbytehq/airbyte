@@ -3,8 +3,8 @@
 #
 import concurrent
 import logging
+from collections.abc import Iterable, Iterator
 from queue import Queue
-from typing import Iterable, Iterator, List
 
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
@@ -21,8 +21,7 @@ from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 
 
 class ConcurrentSource:
-    """
-    A Source that reads data from multiple AbstractStreams concurrently.
+    """A Source that reads data from multiple AbstractStreams concurrently.
     It does so by submitting partition generation, and partition read tasks to a thread pool.
     The tasks asynchronously add their output to a shared queue.
     The read is done when all partitions for all streams were generated and read.
@@ -44,7 +43,7 @@ class ConcurrentSource:
             logger,
         )
         return ConcurrentSource(
-            threadpool, logger, slice_logger, message_repository, initial_number_of_partitions_to_generate, timeout_seconds
+            threadpool, logger, slice_logger, message_repository, initial_number_of_partitions_to_generate, timeout_seconds,
         )
 
     def __init__(
@@ -56,8 +55,7 @@ class ConcurrentSource:
         initial_number_partitions_to_generate: int = 1,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     ) -> None:
-        """
-        :param threadpool: The threadpool to submit tasks to
+        """:param threadpool: The threadpool to submit tasks to
         :param logger: The logger to log to
         :param slice_logger: The slice logger used to create messages on new slices
         :param message_repository: The repository to emit messages to
@@ -73,7 +71,7 @@ class ConcurrentSource:
 
     def read(
         self,
-        streams: List[AbstractStream],
+        streams: list[AbstractStream],
     ) -> Iterator[AirbyteMessage]:
         self._logger.info("Starting syncing")
         stream_instances_to_read_from = self._get_streams_to_read_from(streams)
@@ -145,9 +143,8 @@ class ConcurrentSource:
         else:
             raise ValueError(f"Unknown queue item type: {type(queue_item)}")
 
-    def _get_streams_to_read_from(self, streams: List[AbstractStream]) -> List[AbstractStream]:
-        """
-        Iterate over the configured streams and return a list of streams to read from.
+    def _get_streams_to_read_from(self, streams: list[AbstractStream]) -> list[AbstractStream]:
+        """Iterate over the configured streams and return a list of streams to read from.
         If a stream is not configured, it will be skipped.
         If a stream is configured but does not exist in the source and self.raise_exception_on_missing_stream is True, an exception will be raised
         If a stream is not available, it will be skipped

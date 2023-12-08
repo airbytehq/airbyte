@@ -3,9 +3,11 @@
 #
 
 
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from collections.abc import Mapping, MutableMapping
+from typing import Any, Optional
 
 import pendulum
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -22,8 +24,7 @@ class SourceTrustpilot(AbstractSource):
         self.__configured_business_units_stream: Optional[ConfiguredBusinessUnits] = None
 
     def _public_auth_params(self, config: MutableMapping[str, Any]):
-        """
-        Creates the authorization parameters for the Trustpilot Public API.
+        """Creates the authorization parameters for the Trustpilot Public API.
 
         The Public API only requires the API key (stored on the credentials/client_id).
         It does not require OAuth2 authentication.
@@ -38,7 +39,7 @@ class SourceTrustpilot(AbstractSource):
     def _oauth2_auth_params(self, config: MutableMapping[str, Any]):
         if not self.__oauth2_auth_params:
             auth = TrustpilotOauth2Authenticator(
-                config, token_refresh_endpoint="https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/refresh"
+                config, token_refresh_endpoint="https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/refresh",
             )
             self.__oauth2_auth_params = {"authenticator": auth, "api_key": config["credentials"]["client_id"]}
         return self.__oauth2_auth_params
@@ -47,11 +48,11 @@ class SourceTrustpilot(AbstractSource):
         if not self.__configured_business_units_stream:
             public_auth_params = self._public_auth_params(config)
             self.__configured_business_units_stream = ConfiguredBusinessUnits(
-                business_unit_names=config["business_units"], **public_auth_params
+                business_unit_names=config["business_units"], **public_auth_params,
             )
         return self.__configured_business_units_stream
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         try:
             # NOTE: When `config['credentials']['auth_type'] == 'oauth2.0'` is true, we
             # could here use a stream which requires OAuth 2.0 access.
@@ -63,9 +64,9 @@ class SourceTrustpilot(AbstractSource):
                 next(business_units.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
                 return True, None
         except Exception as error:
-            return False, f"Unable to connect to Trustpilot API with the provided credentials - {repr(error)}"
+            return False, f"Unable to connect to Trustpilot API with the provided credentials - {error!r}"
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         public_auth_params = self._public_auth_params(config)
 
         configured_business_units_stream = self._configured_business_units_stream(config)

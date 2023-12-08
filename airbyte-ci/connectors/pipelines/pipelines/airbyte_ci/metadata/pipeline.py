@@ -6,6 +6,7 @@ import uuid
 from typing import Optional
 
 import dagger
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.airbyte_ci.steps.poetry import PoetryRunStep
@@ -124,13 +125,13 @@ class DeployOrchestrator(Step):
         python_base = with_python_base(self.context, "3.9")
         python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.2.6", "pydantic==1.10.6", "poetry2setup==1.1.0"])
         dagster_cloud_api_token_secret: dagger.Secret = get_secret_host_variable(
-            self.context.dagger_client, "DAGSTER_CLOUD_METADATA_API_TOKEN"
+            self.context.dagger_client, "DAGSTER_CLOUD_METADATA_API_TOKEN",
         )
 
         container_to_run = (
             python_with_dependencies.with_mounted_directory("/src", parent_dir)
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
-            .with_workdir(f"/src/orchestrator")
+            .with_workdir("/src/orchestrator")
             .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"])
             .with_exec(self.deploy_dagster_command)
         )
@@ -180,6 +181,6 @@ async def run_metadata_orchestrator_deploy_pipeline(
             steps = [TestOrchestrator(context=metadata_pipeline_context), DeployOrchestrator(context=metadata_pipeline_context)]
             steps_results = await run_steps(steps)
             metadata_pipeline_context.report = Report(
-                pipeline_context=metadata_pipeline_context, steps_results=steps_results, name="METADATA ORCHESTRATOR DEPLOY RESULTS"
+                pipeline_context=metadata_pipeline_context, steps_results=steps_results, name="METADATA ORCHESTRATOR DEPLOY RESULTS",
             )
     return metadata_pipeline_context.report.success

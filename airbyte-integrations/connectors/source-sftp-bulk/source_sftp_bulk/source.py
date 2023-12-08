@@ -4,8 +4,9 @@
 
 import json
 import logging
+from collections.abc import Mapping
 from datetime import datetime
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteStream, Status, SyncMode
@@ -26,7 +27,7 @@ class SourceFtp(AbstractSource):
             "properties": {},
         }
 
-    def _generate_json_schema(self, dtypes: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_json_schema(self, dtypes: dict[str, Any]) -> dict[str, Any]:
         json_schema = self._default_json_schema
 
         for key, val in dtypes.items():
@@ -45,7 +46,7 @@ class SourceFtp(AbstractSource):
 
         return json_schema
 
-    def _infer_json_schema(self, config: Mapping[str, Any], connection: SFTPClient) -> Dict[str, Any]:
+    def _infer_json_schema(self, config: Mapping[str, Any], connection: SFTPClient) -> dict[str, Any]:
         file_pattern = config.get("file_pattern")
         files = connection.get_files(config["folder_path"], file_pattern)
 
@@ -77,7 +78,7 @@ class SourceFtp(AbstractSource):
             port=config["port"],
         )
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, AirbyteConnectionStatus]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, AirbyteConnectionStatus]:
         try:
             conn = self._get_connection(config)
             conn._connect()
@@ -87,7 +88,7 @@ class SourceFtp(AbstractSource):
             logger.error(
                 f"Failed to connect to FTP server: {ex}",
             )
-            return (False, AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(ex)}"))
+            return (False, AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {ex!s}"))
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         _, status = self.check_connection(logger, config)
@@ -114,13 +115,13 @@ class SourceFtp(AbstractSource):
                 supported_sync_modes=sync_modes,
                 source_defined_cursor=True,
                 default_cursor_field=[] if file_most_recent else ["last_modified"],
-            )
+            ),
         )
 
         conn.close()
         return AirbyteCatalog(streams=streams)
 
-    def streams(self, config: json) -> List[AirbyteStream]:
+    def streams(self, config: json) -> list[AirbyteStream]:
         conn = SFTPClient(
             host=config["host"],
             username=config["username"],

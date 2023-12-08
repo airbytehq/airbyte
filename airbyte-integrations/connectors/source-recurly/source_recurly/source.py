@@ -2,12 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Optional, Tuple
+from collections.abc import Mapping
+from typing import Any, Optional
+
+from recurly import ApiError, Client
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from recurly import ApiError, Client
 
 from .streams import (
     AccountCouponRedemptions,
@@ -31,8 +33,7 @@ from .streams import (
 
 
 class SourceRecurly(AbstractSource):
-    """
-    Recurly API Reference: https://developers.recurly.com/api/v2021-02-25/
+    """Recurly API Reference: https://developers.recurly.com/api/v2021-02-25/
     """
 
     def __init__(self):
@@ -40,7 +41,7 @@ class SourceRecurly(AbstractSource):
 
         self.__client = None
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> tuple[bool, Optional[Any]]:
         try:
             # Checking the API key by trying a test API call to get the first account
             self._client(config["api_key"]).list_accounts().first()
@@ -48,7 +49,7 @@ class SourceRecurly(AbstractSource):
         except ApiError as err:
             return False, err.args[0]
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         client = self._client(api_key=config["api_key"])
 
         args = {"client": client, "begin_time": config.get("begin_time"), "end_time": config.get("end_time")}

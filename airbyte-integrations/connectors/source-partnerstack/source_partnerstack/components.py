@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Iterable, Mapping, MutableMapping
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
@@ -25,7 +26,7 @@ class PartnerstackSlicer(StreamSlicer):
     def _max_dt_str(self, *args: str) -> Optional[str]:
         new_state_candidates = list(map(lambda x: int(x), filter(None, args)))
         if not new_state_candidates:
-            return
+            return None
         max_dt = max(new_state_candidates)
         return max_dt
 

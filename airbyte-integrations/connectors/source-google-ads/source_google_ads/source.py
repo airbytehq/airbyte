@@ -4,13 +4,15 @@
 
 
 import logging
-from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import Any
+
+from pendulum import parse, today
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from pendulum import parse, today
 
 from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
@@ -86,7 +88,7 @@ class SourceGoogleAds(AbstractSource):
         return credentials
 
     @staticmethod
-    def get_incremental_stream_config(google_api: GoogleAds, config: Mapping[str, Any], customers: List[CustomerModel]):
+    def get_incremental_stream_config(google_api: GoogleAds, config: Mapping[str, Any], customers: list[CustomerModel]):
         # date range is mandatory parameter for incremental streams, so default start day is used
         start_date = config.get("start_date", today().subtract(years=2).to_date_string())
 
@@ -117,7 +119,7 @@ class SourceGoogleAds(AbstractSource):
                 return True
         return False
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, any]:
         config = self._validate_and_transform(config)
 
         logger.info("Checking the config")
@@ -132,7 +134,7 @@ class SourceGoogleAds(AbstractSource):
                 if customer.is_manager_account and self.is_metrics_in_custom_query(query):
                     logger.warning(
                         f"Metrics are not available for manager account {customer.id}. "
-                        f"Please remove metrics fields in your custom query: {query}."
+                        f"Please remove metrics fields in your custom query: {query}.",
                     )
                 if query.resource_name not in FULL_REFRESH_CUSTOM_TABLE:
                     if IncrementalCustomQuery.cursor_field in query.fields:
@@ -146,7 +148,7 @@ class SourceGoogleAds(AbstractSource):
                     pass
         return True, None
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> list[Stream]:
         config = self._validate_and_transform(config)
         google_api = GoogleAds(credentials=self.get_credentials(config))
         accounts = self.get_account_info(google_api, config)
@@ -188,7 +190,7 @@ class SourceGoogleAds(AbstractSource):
                     AdGroupAdLegacy(**non_manager_incremental_config),
                     GeographicView(**non_manager_incremental_config),
                     KeywordView(**non_manager_incremental_config),
-                ]
+                ],
             )
         for single_query_config in config.get("custom_queries", []):
             query = single_query_config["query"]

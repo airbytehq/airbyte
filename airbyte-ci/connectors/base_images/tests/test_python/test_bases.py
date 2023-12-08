@@ -13,7 +13,7 @@ pytestmark = [
 
 
 class TestAirbytePythonConnectorBaseImage:
-    @pytest.fixture
+    @pytest.fixture()
     def dummy_version(self):
         return semver.VersionInfo.parse("0.0.0-rc.1")
 

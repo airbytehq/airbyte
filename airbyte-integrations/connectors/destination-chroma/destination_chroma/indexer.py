@@ -6,12 +6,13 @@ import json
 import uuid
 
 import chromadb
+from chromadb.config import Settings
+
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier, format_exception
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-from chromadb.config import Settings
 from destination_chroma.config import ChromaIndexingConfigModel
 from destination_chroma.utils import is_valid_collection_name
 
@@ -39,7 +40,7 @@ class ChromaIndexer(Indexer):
             count = collection.count()
             if count != 0 and not count:
                 return f"unable to get or create collection with name {self.collection_name}"
-            return
+            return None
         except Exception as e:
             return format_exception(e)
         finally:
@@ -59,7 +60,7 @@ class ChromaIndexer(Indexer):
                     "embedding": chunk.embedding,
                     "metadata": self._normalize(chunk.metadata),
                     "document": chunk.page_content if chunk.page_content is not None else "",
-                }
+                },
             )
         self._write_data(entities)
 
@@ -96,7 +97,7 @@ class ChromaIndexer(Indexer):
             else:
                 client = chromadb.HttpClient(host=host, port=port, ssl=ssl)
             return client
-        return
+        return None
 
     def _delete_by_filter(self, field_name, field_values):
         collection = self.client.get_collection(name=self.collection_name)

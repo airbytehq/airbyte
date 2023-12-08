@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
@@ -24,8 +24,7 @@ class OrderIdsPartitionRouter(SubstreamPartitionRouter):
             yield {"id": board_id}
 
     def read_all_boards(self, stream_boards: Stream, stream_organizations: Stream):
-        """
-        Method to get id of each board in the boards stream,
+        """Method to get id of each board in the boards stream,
         get ids of boards associated with each organization in the organizations stream
         and yield each unique board id
         """

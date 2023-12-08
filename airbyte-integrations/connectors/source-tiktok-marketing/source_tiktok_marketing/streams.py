@@ -5,15 +5,17 @@
 
 import json
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Mapping, MutableMapping
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from functools import total_ordering
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, TypeVar, Union
+from typing import Any, Optional, TypeVar, Union
 
 import pendulum
 import pydantic
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -217,8 +219,7 @@ class TiktokStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        """
-        Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890920013825
+        """Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890920013825
         """
         if self.is_sandbox:
             return "https://sandbox-ads.tiktok.com/open_api/v1.3/"
@@ -229,8 +230,7 @@ class TiktokStream(HttpStream, ABC):
         return None
 
     def should_retry(self, response: requests.Response) -> bool:
-        """
-        Once the rate limit is met, the server returns "code": 40100
+        """Once the rate limit is met, the server returns "code": 40100
         Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890997610497
         Retry 50002 as well - it's a server error.
         Retry when 504 error: response doesn't consist json, so we need to handle response status code to retry.
@@ -248,8 +248,7 @@ class TiktokStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        The system uses a second call limit for each developer app. The set limit varies according to the app's call limit level.
+        """The system uses a second call limit for each developer app. The set limit varies according to the app's call limit level.
         """
         # Basic: 	10/sec
         # Advanced: 	20/sec
@@ -283,12 +282,12 @@ class AdvertiserIds(TiktokStream):
 
 class FullRefreshTiktokStream(TiktokStream, ABC):
     primary_key = "id"
-    fields: List[str] = None
+    fields: list[str] = None
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
 
     @transformer.registerCustomTransform
-    def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
+    def transform_function(original_value: Any, field_schema: dict[str, Any]) -> Any:
         """Custom transformation"""
         if original_value == "-":
             return None
@@ -309,10 +308,10 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         self._advertiser_ids = []
 
     @staticmethod
-    def convert_array_param(arr: List[Union[str, int]]) -> str:
+    def convert_array_param(arr: list[Union[str, int]]) -> str:
         return json.dumps(arr)
 
-    def get_advertiser_ids(self) -> List[int]:
+    def get_advertiser_ids(self) -> list[int]:
         if self._advertiser_id:
             # for sandbox: just return advertiser_id provided in spec
             # for production: it will filter only the advertiser id provied in spec
@@ -353,7 +352,6 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
            }
         }
         """
-
         page_info = response.json().get("data", {}).get("page_info", {})
         if not page_info:
             return None
@@ -396,8 +394,7 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
         return result
 
     def unnest_cursor_and_pk(self, record: Mapping[str, Any]):
-        """
-        unnest nested cursor_field and primary_key from nested `dimensions` object to root-level for *_reports streams
+        """Unnest nested cursor_field and primary_key from nested `dimensions` object to root-level for *_reports streams
         """
 
         def to_list(s):
@@ -413,7 +410,7 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
         return record
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
+        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs,
     ) -> Iterable[Mapping]:
         """Additional data filtering"""
         state_cursor_value = self.select_cursor_field_value(stream_state) or self._start_time
@@ -568,7 +565,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
     }
 
     @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+    def primary_key(self) -> Optional[Union[str, list[str], list[list[str]]]]:
         return self._get_reporting_dimensions()
 
     def __init__(self, **kwargs):
@@ -584,7 +581,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
             self.report_granularity = report_granularity
 
     @property
-    def filters(self) -> List[MutableMapping[str, Any]]:
+    def filters(self) -> list[MutableMapping[str, Any]]:
         if self.include_deleted:
             return [
                 {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
@@ -596,8 +593,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
     @property
     @abstractmethod
     def report_level(self) -> ReportLevel:
-        """
-        Returns a necessary level value
+        """Returns a necessary level value
         """
 
     @property
@@ -619,7 +615,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
         ending_date: Union[datetime, str],
         granularity: ReportGranularity,
         attr_window: int = 0,
-    ) -> Iterable[Tuple[datetime, datetime]]:
+    ) -> Iterable[tuple[datetime, datetime]]:
         """Due to time range restrictions based on the level of granularity of reports, we have to chunk API calls in order
         to get the desired time range.
         Docs: https://ads.tiktok.com/marketing_api/docs?id=1714590313280513
@@ -715,7 +711,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
                     "mobile_app_id",
                     "promotion_type",
                     "dpa_target_audience_type",
-                ]
+                ],
             )
 
             result.extend(
@@ -735,7 +731,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
                     "secondary_goal_result",
                     "cost_per_secondary_goal_result",
                     "secondary_goal_result_rate",
-                ]
+                ],
             )
 
         if self.report_level == ReportLevel.AD:
@@ -755,7 +751,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
                     "complete_payment",
                     "value_per_complete_payment",
                     "total_complete_payment_rate",
-                ]
+                ],
             )
 
         return result
@@ -772,7 +768,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
                     "end_date": end_date.strftime("%Y-%m-%d"),
                 }
                 self.logger.debug(
-                    f'name: {self.name}, advertiser_id: {slice["advertiser_id"]}, slice: {slice["start_date"]} - {slice["end_date"]}'
+                    f'name: {self.name}, advertiser_id: {slice["advertiser_id"]}, slice: {slice["start_date"]} - {slice["end_date"]}',
                 )
                 yield slice
 
@@ -780,7 +776,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
         return "report/integrated/get/"
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
 
@@ -841,7 +837,7 @@ class AdGroupsReports(BasicReports):
 class AudienceReport(BasicReports, ABC):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1738864928947201"""
 
-    audience_dimensions: List = ["gender", "age"]
+    audience_dimensions: list = ["gender", "age"]
     schema_name = "audience_reports"
 
     def _get_metrics(self):
@@ -855,7 +851,7 @@ class AudienceReport(BasicReports, ABC):
         return result
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
         params["report_type"] = "AUDIENCE"

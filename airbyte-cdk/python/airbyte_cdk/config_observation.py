@@ -7,7 +7,8 @@ from __future__ import (  # Used to evaluate type hints at runtime, a NameError:
 )
 
 import time
-from typing import Any, List, MutableMapping
+from collections.abc import MutableMapping
+from typing import Any
 
 from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteControlMessage, AirbyteMessage, OrchestratorType, Type
 
@@ -23,7 +24,7 @@ class ObservedDict(dict):
                 non_observed_mapping[item] = ObservedDict(value, observer)
 
             # Observe nested list of dicts
-            if isinstance(value, List):
+            if isinstance(value, list):
                 for i, sub_value in enumerate(value):
                     if isinstance(sub_value, MutableMapping):
                         value[i] = ObservedDict(sub_value, observer)
@@ -37,7 +38,7 @@ class ObservedDict(dict):
         previous_value = self.get(item)
         if isinstance(value, MutableMapping):
             value = ObservedDict(value, self.observer)
-        if isinstance(value, List):
+        if isinstance(value, list):
             for i, sub_value in enumerate(value):
                 if isinstance(sub_value, MutableMapping):
                     value[i] = ObservedDict(sub_value, self.observer)
@@ -68,8 +69,7 @@ def observe_connector_config(non_observed_connector_config: MutableMapping[str, 
 
 
 def emit_configuration_as_airbyte_control_message(config: MutableMapping):
-    """
-    WARNING: deprecated - emit_configuration_as_airbyte_control_message is being deprecated in favor of the MessageRepository mechanism.
+    """WARNING: deprecated - emit_configuration_as_airbyte_control_message is being deprecated in favor of the MessageRepository mechanism.
     See the airbyte_cdk.sources.message package
     """
     airbyte_message = create_connector_config_control_message(config)

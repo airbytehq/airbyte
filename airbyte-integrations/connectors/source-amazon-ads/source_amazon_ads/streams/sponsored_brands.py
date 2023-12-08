@@ -7,8 +7,7 @@ from source_amazon_ads.streams.common import SubProfilesStream
 
 
 class SponsoredBrandsCampaigns(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Brands Campaigns
+    """This stream corresponds to Amazon Advertising API - Sponsored Brands Campaigns
     https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Campaigns
     """
 
@@ -31,8 +30,7 @@ class SponsoredBrandsCampaigns(SubProfilesStream):
 
 
 class SponsoredBrandsAdGroups(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Brands Ad groups
+    """This stream corresponds to Amazon Advertising API - Sponsored Brands Ad groups
     https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Ad%20groups
     """
 
@@ -44,8 +42,7 @@ class SponsoredBrandsAdGroups(SubProfilesStream):
 
 
 class SponsoredBrandsKeywords(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Brands Keywords
+    """This stream corresponds to Amazon Advertising API - Sponsored Brands Keywords
     https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Keywords
     """
 

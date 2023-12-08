@@ -31,7 +31,7 @@ class Source(Macro):
         self.table_name = table_name
 
     def __str__(self):
-        return "source('{}', '{}')".format(self.source_name, self.table_name)
+        return f"source('{self.source_name}', '{self.table_name}')"
 
 
 class Ref(Macro):
@@ -41,4 +41,4 @@ class Ref(Macro):
         self.model_name = model_name
 
     def __str__(self) -> str:
-        return "ref('{}')".format(self.model_name)
+        return f"ref('{self.model_name}')"

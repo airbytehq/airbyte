@@ -17,10 +17,10 @@ def get_container_dockerfile(container) -> str:
     """Returns the Dockerfile of the base image container.
     Disclaimer: THIS IS HIGHLY EXPERIMENTAL, HACKY AND BRITTLE.
     TODO: CONFIRM WITH THE DAGGER TEAM WHAT CAN GO WRONG HERE.
+
     Returns:
         str: The Dockerfile of the base image container.
     """
-
     lineage = [
         field for field in list(container._ctx.selections) if isinstance(field, dagger.api.base.Field) and field.type_name == "Container"
     ]
@@ -32,6 +32,6 @@ def get_container_dockerfile(container) -> str:
                 dockerfile.append(DAGGER_FIELD_NAME_TO_DOCKERFILE_INSTRUCTION[field.name](field))
             except KeyError:
                 raise KeyError(
-                    f"Unknown field name: {field.name}, please add it to the DAGGER_FIELD_NAME_TO_DOCKERFILE_INSTRUCTION mapping."
+                    f"Unknown field name: {field.name}, please add it to the DAGGER_FIELD_NAME_TO_DOCKERFILE_INSTRUCTION mapping.",
                 )
     return "\n".join(dockerfile)

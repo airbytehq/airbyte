@@ -4,8 +4,9 @@
 
 import functools
 import inspect
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Type
+from typing import Any
 
 import asyncclick as click
 
@@ -39,8 +40,7 @@ def click_ignore_unused_kwargs(f: Callable) -> Callable:
 
 
 def click_merge_args_into_context_obj(f: Callable) -> Callable:
-    """
-    Decorator to pass click context and args to children commands.
+    """Decorator to pass click context and args to children commands.
     """
 
     def wrapper(*args, **kwargs):
@@ -62,8 +62,7 @@ def click_merge_args_into_context_obj(f: Callable) -> Callable:
 
 
 def click_append_to_context_object(key: str, value: Callable | Any) -> Callable:
-    """
-    Decorator to append a value to the click context object.
+    """Decorator to append a value to the click context object.
     """
 
     def decorator(f):
@@ -86,21 +85,18 @@ def click_append_to_context_object(key: str, value: Callable | Any) -> Callable:
 
 
 class LazyPassDecorator:
-    """
-    Used to create a decorator that will pass an instance of the given class to the decorated function.
+    """Used to create a decorator that will pass an instance of the given class to the decorated function.
     """
 
-    def __init__(self, cls: Type[Any], *args: Any, **kwargs: Any) -> None:
-        """
-        Initialize the decorator with the given source class
+    def __init__(self, cls: type[Any], *args: Any, **kwargs: Any) -> None:
+        """Initialize the decorator with the given source class
         """
         self.cls = cls
         self.args = args
         self.kwargs = kwargs
 
     def __call__(self, f: Callable[..., Any]) -> Callable[..., Any]:
-        """
-        Create a decorator that will pass an instance of the given class to the decorated function.
+        """Create a decorator that will pass an instance of the given class to the decorated function.
         """
 
         @wraps(f)

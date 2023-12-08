@@ -9,8 +9,7 @@ import sys
 
 
 def check_command_exists(command, not_found_message):
-    """
-    Check if a command exists in the system path.
+    """Check if a command exists in the system path.
     """
     try:
         subprocess.check_call(["which", command], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

@@ -2,7 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Literal, Union
+from typing import Literal, Union
+
+from pydantic import BaseModel, Field
 
 from airbyte_cdk.destinations.vector_db_based.config import (
     AzureOpenAIEmbeddingConfigModel,
@@ -14,7 +16,6 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     VectorDBConfigModel,
 )
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
-from pydantic import BaseModel, Field
 
 
 class UsernamePasswordAuth(BaseModel):
@@ -61,7 +62,7 @@ class WeaviateIndexingConfigModel(BaseModel):
         examples=["https://my-cluster.weaviate.network"],
     )
     auth: Union[TokenAuth, UsernamePasswordAuth, NoAuth] = Field(
-        ..., title="Authentication", description="Authentication method", discriminator="mode", type="object", order=2
+        ..., title="Authentication", description="Authentication method", discriminator="mode", type="object", order=2,
     )
     batch_size: int = Field(title="Batch Size", description="The number of records to send to Weaviate in each batch", default=128)
     text_field: str = Field(title="Text Field", description="The field in the object that contains the embedded text", default="text")
@@ -80,7 +81,7 @@ class WeaviateIndexingConfigModel(BaseModel):
             "text2vec-gpt4all",
         ],
     )
-    additional_headers: List[Header] = Field(
+    additional_headers: list[Header] = Field(
         title="Additional headers",
         description="Additional HTTP headers to send with every request.",
         default=[],

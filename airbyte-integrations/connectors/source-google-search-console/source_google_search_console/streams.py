@@ -3,12 +3,14 @@
 #
 
 from abc import ABC
+from collections.abc import Iterable, Mapping, MutableMapping
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 from urllib.parse import quote_plus, unquote_plus
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
@@ -43,14 +45,14 @@ class GoogleSearchConsole(HttpStream, ABC):
         self._data_state = data_state
 
     @staticmethod
-    def sanitize_urls_list(site_urls: list) -> List[str]:
+    def sanitize_urls_list(site_urls: list) -> list[str]:
         return list(map(quote_plus, site_urls))
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for site_url in self._site_urls:
             yield {"site_url": site_url}
@@ -71,19 +73,18 @@ class GoogleSearchConsole(HttpStream, ABC):
             # handle the `HTTP-403` - insufficient permissions
             if error.get("code", 0) == 403:
                 self.logger.error(f"Stream {self.name}. {error.get('message')}. Skipping.")
-                setattr(self, "raise_on_http_errors", False)
+                self.raise_on_http_errors = False
                 return False
             # handle the `HTTP-400` - Bad query params with `aggregationType`
             if error.get("code", 0) == 400:
                 self.logger.error(f"Stream `{self.name}`. {error.get('message')}. Trying with `aggregationType = auto` instead.")
                 self.aggregation_type = QueryAggregationType.auto
-                setattr(self, "raise_on_http_errors", False)
+                self.raise_on_http_errors = False
         return super().should_retry(response)
 
 
 class Sites(GoogleSearchConsole):
-    """
-    API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites
+    """API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites
     """
 
     primary_key = None
@@ -98,8 +99,7 @@ class Sites(GoogleSearchConsole):
 
 
 class Sitemaps(GoogleSearchConsole):
-    """
-    API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps
+    """API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps
     """
 
     primary_key = None
@@ -115,8 +115,7 @@ class Sitemaps(GoogleSearchConsole):
 
 
 class SearchAnalytics(GoogleSearchConsole, ABC):
-    """
-    API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics
+    """API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics
     """
 
     data_field = "rows"
@@ -135,7 +134,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         return f"sites/{stream_slice.get('site_url')}/searchAnalytics/query"
 
     @property
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Union[str, list[str]]:
         return "date"
 
     @property
@@ -143,15 +142,13 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         return "POST"
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: list[str] = None, stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        The `stream_slices` implements iterator functionality for `site_urls` and `searchType`. The user can pass many `site_url`,
+        """The `stream_slices` implements iterator functionality for `site_urls` and `searchType`. The user can pass many `site_url`,
         and we have to process all of them, we can also pass the` searchType` parameter in the `request body` to get data using some`
         searchType` value from [` web`, `news `,` image`, `video`,  `discover`, `googleNews`].
         It's just a double nested loop with a yield statement.
         """
-
         for site_url in self._site_urls:
             for search_type in self.search_types:
                 start_date = self._get_start_date(stream_state, site_url, search_type)
@@ -175,13 +172,11 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
                     next_start = next_end + pendulum.Duration(days=1)
 
     def next_page_token(self, response: requests.Response) -> Optional[bool]:
-        """
-        The `next_page_token` implements pagination functionality. This method gets the response
+        """The `next_page_token` implements pagination functionality. This method gets the response
         and compares the number of records with the constant `ROW_LIMITS` (maximum value 25000),
         and if they are equal, this means that we get the end of the` Page`, and we need to go further,
         for this we simply increase the `startRow` parameter in request body by `ROW_LIMIT` value.
         """
-
         if len(response.json().get(self.data_field, [])) == ROW_LIMIT:
             self.start_row += ROW_LIMIT
             return True
@@ -196,9 +191,8 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Union[Dict[str, Any], str]]:
-        """
-        Here is a description of the parameters and implementations of the request body:
+    ) -> Optional[Union[dict[str, Any], str]]:
+        """Here is a description of the parameters and implementations of the request body:
         1. The `startDate` is retrieved from the `_get_start_date`,
         if` SyncMode = full_refresh` just use `start_date` from configuration, otherwise use `get_update_state`.
         2. The `endDate` is retrieved from the `config.json`.
@@ -208,7 +202,6 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
          Filter results to the following type ["web", "news", "image", "video", "discover", "googleNews"]
         5. For the `startRow` and `rowLimit` check next_page_token method.
         """
-
         data = {
             "startDate": stream_slice["start_date"],
             "endDate": stream_slice["end_date"],
@@ -267,8 +260,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        """
-        With the existing nested loop implementation, we have to store a `cursor_field` for each `site_url`
+        """With the existing nested loop implementation, we have to store a `cursor_field` for each `site_url`
         and `searchType`. This functionality is placed in `get_update_state`.
 
         {
@@ -289,7 +281,6 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
           }
         }
         """
-
         latest_benchmark = latest_record[self.cursor_field]
 
         site_url = latest_record.get("site_url")
@@ -342,8 +333,7 @@ class SearchAnalyticsAllFields(SearchAnalytics):
 
 
 class SearchAppearance(SearchAnalytics):
-    """
-    Dimension searchAppearance can't be used with other dimension.
+    """Dimension searchAppearance can't be used with other dimension.
     search appearance data (AMP, blue link, rich result, and so on) must be queried using a two-step process.
     https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data#search-appearance-data
     """
@@ -353,8 +343,7 @@ class SearchAppearance(SearchAnalytics):
 
 
 class SearchByKeyword(SearchAnalytics):
-    """
-    Adds searchAppearance value to dimensionFilterGroups in json body
+    """Adds searchAppearance value to dimensionFilterGroups in json body
     https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data#search-appearance-data
     """
 
@@ -363,7 +352,7 @@ class SearchByKeyword(SearchAnalytics):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Union[Dict[str, Any], str]]:
+    ) -> Optional[Union[dict[str, Any], str]]:
         data = super().request_body_json(stream_state, stream_slice, next_page_token)
 
         stream = SearchAppearance(self.authenticator, self._site_urls, self._start_date, self._end_date)
@@ -427,7 +416,7 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
 
     primary_key = None
 
-    def __init__(self, dimensions: List[str], *args, **kwargs):
+    def __init__(self, dimensions: list[str], *args, **kwargs):
         super(SearchAnalyticsByCustomDimensions, self).__init__(*args, **kwargs)
         self.dimensions = dimensions + [dimension for dimension in self.DEFAULT_DIMENSIONS if dimension not in dimensions]
         # Assign the dimensions as PK for the custom report stream.

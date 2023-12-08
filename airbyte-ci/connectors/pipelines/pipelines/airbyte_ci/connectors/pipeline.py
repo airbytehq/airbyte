@@ -5,13 +5,15 @@
 """This module groups the functions to run full pipelines for connector testing."""
 
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import Optional
 
 import anyio
 import dagger
-from connector_ops.utils import ConnectorLanguage
 from dagger import Config
+
+from connector_ops.utils import ConnectorLanguage
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.no_op import NoOpStep
 from pipelines.consts import DOCKER_CLI_IMAGE, DOCKER_HOST_NAME, DOCKER_HOST_PORT, ContextState
@@ -45,12 +47,11 @@ async def context_to_step_result(context: ConnectorContext) -> StepResult:
 
 # HACK: This is to avoid wrapping the whole pipeline in a dagger pipeline to avoid instability just prior to launch
 # TODO (ben): Refactor run_connectors_pipelines to wrap the whole pipeline in a dagger pipeline once Steps are refactored
-async def run_report_complete_pipeline(dagger_client: dagger.Client, contexts: List[ConnectorContext]) -> List[ConnectorContext]:
+async def run_report_complete_pipeline(dagger_client: dagger.Client, contexts: list[ConnectorContext]) -> list[ConnectorContext]:
     """Create and Save a report representing the run of the encompassing pipeline.
 
     This is to denote when the pipeline is complete, useful for long running pipelines like nightlies.
     """
-
     if not contexts:
         return []
 
@@ -74,16 +75,15 @@ async def run_report_complete_pipeline(dagger_client: dagger.Client, contexts: L
 
 
 async def run_connectors_pipelines(
-    contexts: List[ConnectorContext],
+    contexts: list[ConnectorContext],
     connector_pipeline: Callable,
     pipeline_name: str,
     concurrency: int,
     dagger_logs_path: Optional[Path],
     execute_timeout: Optional[int],
     *args,
-) -> List[ConnectorContext]:
+) -> list[ConnectorContext]:
     """Run a connector pipeline for all the connector contexts."""
-
     default_connectors_semaphore = anyio.Semaphore(concurrency)
     dagger_logs_output = sys.stderr if not dagger_logs_path else create_and_open_file(dagger_logs_path)
     async with dagger.Connection(Config(log_output=dagger_logs_output, execute_timeout=execute_timeout)) as dagger_client:

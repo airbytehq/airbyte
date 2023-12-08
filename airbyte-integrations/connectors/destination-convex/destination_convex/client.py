@@ -2,9 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 import requests
+
 from destination_convex.config import ConvexConfig
 
 
@@ -14,29 +16,25 @@ class ConvexClient:
         self.access_key = config["access_key"]
         self.table_metadata = table_metadata
 
-    def batch_write(self, records: List[Mapping[str, Any]]) -> requests.Response:
-        """
-        See Convex docs: https://docs.convex.dev/http-api/#post-apistreaming_importimport_airbyte_records
+    def batch_write(self, records: list[Mapping[str, Any]]) -> requests.Response:
+        """See Convex docs: https://docs.convex.dev/http-api/#post-apistreaming_importimport_airbyte_records
         """
         request_body = {"tables": self.table_metadata, "messages": records}
         return self._request("POST", endpoint="import_airbyte_records", json=request_body)
 
-    def delete(self, keys: List[str]) -> requests.Response:
-        """
-        See Convex docs: https://docs.convex.dev/http-api/#put-apistreaming_importclear_tables
+    def delete(self, keys: list[str]) -> requests.Response:
+        """See Convex docs: https://docs.convex.dev/http-api/#put-apistreaming_importclear_tables
         """
         request_body = {"tableNames": keys}
         return self._request("PUT", endpoint="clear_tables", json=request_body)
 
-    def add_primary_key_indexes(self, indexes: Mapping[str, List[List[str]]]) -> requests.Response:
-        """
-        See Convex docs: https://docs.convex.dev/http-api/#put-apistreaming_importadd_primary_key_indexes
+    def add_primary_key_indexes(self, indexes: Mapping[str, list[list[str]]]) -> requests.Response:
+        """See Convex docs: https://docs.convex.dev/http-api/#put-apistreaming_importadd_primary_key_indexes
         """
         return self._request("PUT", "add_primary_key_indexes", json={"indexes": indexes})
 
-    def primary_key_indexes_ready(self, tables: List[str]) -> requests.Response:
-        """
-        See Convex docs: https://docs.convex.dev/http-api/#get-apistreaming_importprimary_key_indexes_ready
+    def primary_key_indexes_ready(self, tables: list[str]) -> requests.Response:
+        """See Convex docs: https://docs.convex.dev/http-api/#get-apistreaming_importprimary_key_indexes_ready
         """
         return self._request("GET", "primary_key_indexes_ready", json={"tables": tables})
 

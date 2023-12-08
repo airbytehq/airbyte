@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Callable, List
+from collections.abc import Callable
+from typing import Any
 
 
 class Batcher:
-    def __init__(self, batch_size: int, flush_handler: Callable[[List[Any]], None]):
+    def __init__(self, batch_size: int, flush_handler: Callable[[list[Any]], None]):
         self.batch_size = batch_size
         self.buffer = []
         self.flush_handler = flush_handler
