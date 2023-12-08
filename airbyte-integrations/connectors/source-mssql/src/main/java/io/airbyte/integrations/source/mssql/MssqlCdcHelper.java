@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.debezium.internals.mssql.MSSQLConverter;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -158,7 +157,7 @@ public class MssqlCdcHelper {
     props.setProperty("provide.transaction.metadata", "false");
 
     props.setProperty("converters", "mssql_converter");
-    props.setProperty("mssql_converter.type", MSSQLConverter.class.getName());
+    props.setProperty("mssql_converter.type", MssqlDebeziumConverter.class.getName());
 
     props.setProperty("snapshot.mode", getDataToSyncConfig(config).getDebeziumSnapshotMode());
     props.setProperty("snapshot.isolation.mode", getSnapshotIsolationConfig(config).getDebeziumIsolationMode());
