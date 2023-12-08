@@ -33,6 +33,9 @@ FORMATTERS_CONFIGURATIONS = {
     Formatter.PYTHON: {
         "get_format_container_fn": format_python_container,
         "file_filter": ["**/*.py"],
-        "format_commands": ["poetry run ruff format --config pyproject.toml ."],
+        "format_commands": [
+            "poetry run ruff check --fix --config pyproject.toml ."
+            "poetry run ruff format --config pyproject.toml ."
+        ],
     },
 }
