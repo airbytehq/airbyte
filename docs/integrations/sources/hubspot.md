@@ -122,6 +122,21 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 
 </FieldAnchor>
 
+### Custom CRM Objects
+
+Custom CRM Objects and Custom Web Analytics will appear as streams available for sync, alongside the standard objects listed above.
+
+If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
+
+First you need to give the connector some additional permissions:
+
+<!-- env:cloud -->
+- **If you are using OAuth on Airbyte Cloud** go to the Hubspot source settings page in the Airbyte UI and re-authenticate via OAuth to allow Airbyte the permissions to access custom objects.
+<!-- /env:cloud -->
+- **If you are using OAuth on OSS or Private App auth** go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+
+Then, go to the replication settings of your connection and click **refresh source schema** to pull in those new streams for syncing.
+
 <HideInUI>
 
 ## Supported sync modes
@@ -183,21 +198,6 @@ The HubSpot source connector supports the following streams:
 - [GoalsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-
-### Custom CRM Objects
-
-Custom CRM Objects and Custom Web Analytics will appear as streams available for sync, alongside the standard objects listed above.
-
-If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
-
-First you need to give the connector some additional permissions:
-
-<!-- env:cloud -->
-- **If you are using OAuth on Airbyte Cloud** go to the Hubspot source settings page in the Airbyte UI and re-authenticate via OAuth to allow Airbyte the permissions to access custom objects.
-<!-- /env:cloud -->
-- **If you are using OAuth on OSS or Private App auth** go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
-
-Then, go to the replication settings of your connection and click **refresh source schema** to pull in those new streams for syncing.
 
 ### Notes on the `engagements` stream
 
