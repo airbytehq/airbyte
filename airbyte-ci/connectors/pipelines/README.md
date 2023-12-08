@@ -502,6 +502,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2.10.10 | [#33251](https://github.com/airbytehq/airbyte/pull/33251)  | Format python using ruff instead of isort and black.                                                      |
 | 2.10.9  | [#33370](https://github.com/airbytehq/airbyte/pull/33370)  | Fix bug that broke airbyte-ci test
 | 2.10.8  | [#33249](https://github.com/airbytehq/airbyte/pull/33249)  | Exclude git ignored files from formatting.                                                                |
 | 2.10.7  | [#33248](https://github.com/airbytehq/airbyte/pull/33248)  | Fix bug which broke airbyte-ci connectors tests when optional DockerHub credentials env vars are not set. |
