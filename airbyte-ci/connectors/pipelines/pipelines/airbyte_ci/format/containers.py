@@ -7,7 +7,8 @@ from typing import Any, Dict, List, Optional
 import dagger
 from pipelines.airbyte_ci.format.consts import CACHE_MOUNT_PATH, DEFAULT_FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS, Formatter
 from pipelines.consts import GO_IMAGE, MAVEN_IMAGE, NODE_IMAGE, PYTHON_3_10_IMAGE
-from pipelines.helpers.utils import sh_dash_c, slugify
+from pipelines.helpers import cache_keys
+from pipelines.helpers.utils import sh_dash_c
 
 
 def build_container(
@@ -104,7 +105,7 @@ def format_js_container(dagger_client: dagger.Client, js_code: dagger.Directory,
         base_image=NODE_IMAGE,
         dir_to_format=js_code,
         install_commands=[f"npm install -g npm@10.1.0 prettier@{prettier_version}"],
-        cache_volume=dagger_client.cache_volume(slugify(f"prettier-{prettier_version}")),
+        cache_volume=dagger_client.cache_volume(cache_keys.get_prettier_cache_key(prettier_version)),
     )
 
 
@@ -143,5 +144,5 @@ def format_python_container(
         # Namespacing the cache volume by black version is likely overkill:
         # Black already manages cache directories by version internally.
         # https://github.com/psf/black/blob/e4ae213f06050e7f76ebcf01578c002e412dafdc/src/black/cache.py#L42
-        cache_volume=dagger_client.cache_volume(f"black-{slugify(black_version)}"),
+        cache_volume=dagger_client.cache_volume(cache_keys.get_black_cache_key(black_version)),
     )
