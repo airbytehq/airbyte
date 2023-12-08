@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-import os
 import traceback
 from io import BytesIO, IOBase
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
@@ -79,6 +78,14 @@ class UnstructuredParser(FileTypeParser):
         Do not check any files for parsability because it might be an expensive operation and doesn't give much confidence whether the sync will succeed.
         """
         return 0
+
+    def get_parser_defined_primary_key(self, config: FileBasedStreamConfig) -> Optional[str]:
+        """
+        Return the document_key field as the primary key.
+
+        his will pre-select the document key column as the primary key when setting up a connection, making it easier for the user to configure normalization in the destination.
+        """
+        return "document_key"
 
     async def infer_schema(
         self,

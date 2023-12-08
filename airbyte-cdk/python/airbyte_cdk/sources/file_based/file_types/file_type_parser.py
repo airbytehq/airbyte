@@ -34,6 +34,19 @@ class FileTypeParser(ABC):
         """
         return None
 
+    def get_parser_defined_primary_key(self, config: FileBasedStreamConfig) -> Optional[str]:
+        """
+        The parser can define a primary key. If no user-defined primary key is provided, this will be used.
+        """
+        return None
+
+    @abstractmethod
+    def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
+        """
+        Check whether the config is valid for this file type. If it is, return True and None. If it's not, return False and an error message explaining why it's invalid.
+        """
+        return True, None
+
     @abstractmethod
     def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
         """
