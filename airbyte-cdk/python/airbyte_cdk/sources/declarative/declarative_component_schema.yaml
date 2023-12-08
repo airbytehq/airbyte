@@ -1246,7 +1246,7 @@ definitions:
           - sort_by[asc]: updated_at
       use_cache:
         title: Use Cache
-        description: Enables stream requests caching
+        description: Enables stream requests caching. This field is automatically set by the CDK.
         type: boolean
         default: false
       $parameters:
