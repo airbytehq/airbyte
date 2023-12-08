@@ -70,10 +70,10 @@
       "type": ["null", "string"]
     },
     "properties_hs_screen_height": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "properties_hs_screen_width": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "properties_hs_touchpoint_source": {
       "type": ["null", "string"]
