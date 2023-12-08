@@ -26,7 +26,7 @@ async def get_modified_files_in_branch_remote(
     async with Connection(DAGGER_CONFIG) as dagger_client:
         container = await checked_out_git_container(dagger_client, current_git_branch, current_git_revision, diffed_branch)
         modified_files = await container.with_exec(
-            ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_revision}"]
+            ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_branch}"]
         ).stdout()
     return set(modified_files.split("\n"))
 
