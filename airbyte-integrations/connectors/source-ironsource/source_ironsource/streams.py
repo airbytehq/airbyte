@@ -37,12 +37,13 @@ class IronsourceStream(HttpStream, ABC):
     def fields(self):
         return ",".join(self.get_json_schema().get("properties", {})),
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        if response.status_code in [401]:
+            return 1.0
+        return None
+
     def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code in [401, 500]:
-            self._session.auth.renew()
-            return True
-        # We don't retry on 500 due to a bug on API side
-        return response.status_code == 429 or 500 <= response.status_code < 600
+        return self._check_token_expiration(response) or response.status_code == 429 or 500 <= response.status_code < 600
 
     def request_params(self, stream_state: Optional[Mapping[str, Any]],
                        stream_slice: Optional[Mapping[str, Any]] = None,
@@ -85,6 +86,18 @@ class IronsourceStream(HttpStream, ABC):
         if self.entity not in response.json():
             return []
         yield from response.json()[self.entity]
+
+    def _check_token_expiration(self, response: requests.Response):
+        # HTTP 401 errors likely mean that the bearer token is expired, so we ask for a new one and retry
+        if response.status_code in [401]:
+            self._session.auth.renew()
+            return True
+        return False
+
+    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+        # We need to force update the Authorization header as it might have changed since the request was generated (HTTP 401)
+        request.headers.update(self._session.auth.get_auth_header())
+        return super()._send(request, request_kwargs)
 
 
 class IronsourceSubStream(IronsourceStream, ABC):
@@ -210,6 +223,7 @@ class CampaignTargetings(IronsourceSubStream):
             return []
         if response.json() is None or self.entity not in response.json():
             return []
+        response.raise_for_status()
         yield from [self.add_parent_id(response.json()[self.entity], "campaignId", stream_slice['parent']['id'])]
 
 
@@ -232,7 +246,7 @@ class CountryGroups(IronsourceSubStream):
 
     def should_retry(self, response: requests.Response) -> bool:
         # We don't retry on 500 due to a bug on API side
-        return super().should_retry(response) or response.status_code == 429 or 501 <= response.status_code < 600
+        return self._check_token_expiration(response) or response.status_code == 429 or 501 <= response.status_code < 600
 
     def parse_response(self, response: requests.Response,
                        stream_state: Optional[Mapping[str, Any]],
