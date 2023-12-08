@@ -98,7 +98,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                 },
                                 "primary_key": {
                                     "title": "Primary Key",
-                                    "description": "The column or columns (for a composite key) that serves as the unique identifier of a record.",
+                                    "description": "The column or columns (for a composite key) that serves as the unique identifier of a record. If empty, the primary key will default to the parser's default primary key.",
                                     "type": "string",
                                     "airbyte_hidden": True,
                                 },
