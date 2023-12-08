@@ -8,6 +8,7 @@ OS := $(shell uname)
 
 tools.airbyte-ci.install: ## Install airbyte-ci
 	@python airbyte-ci/connectors/pipelines/pipelines/external_scripts/airbyte_ci_install.py ${AIRBYTE_CI_VERSION}
+	@make tools.airbyte-ci.check
 
 tools.airbyte-ci-dev.install: ## Install the development version of airbyte-ci
 	@python airbyte-ci/connectors/pipelines/pipelines/external_scripts/airbyte_ci_dev_install.py
@@ -28,12 +29,12 @@ tools.git-hooks.clean: ## Clean git hooks
 	@echo "Git hooks removed."
 
 tools.pre-commit.install.Linux:
-	@echo "Installing pre-commit with pip..."	
+	@echo "Installing pre-commit with pip..."
 	@pip install --user pre-commit
 	@echo "Pre-commit installation complete."
 
 tools.pre-commit.install.Darwin:
-	@echo "Installing pre-commit with brew..."	
+	@echo "Installing pre-commit with brew..."
 	@brew install pre-commit
 	@echo "Pre-commit installation complete"
 
@@ -42,7 +43,6 @@ tools.pre-commit.setup: tools.airbyte-ci.install tools.pre-commit.install.$(OS) 
 	@pre-commit install --hook-type pre-push
 	@echo "Pre-push hooks installed."
 
-	
-tools.install: tools.airbyte-ci.install tools.airbyte-ci.check tools.pre-commit.setup
+tools.install: tools.airbyte-ci.install tools.pre-commit.setup
 
 .PHONY: tools.install tools.pre-commit.setup tools.airbyte-ci.install tools.airbyte-ci-dev.install tools.airbyte-ci.check tools.airbyte-ci.clean
