@@ -29,13 +29,10 @@ FORMATTERS_CONFIGURATIONS = {
         "file_filter": ["**/*.java", "**/*.py"],
         "format_commands": [f"addlicense -c 'Airbyte, Inc.' -l apache -v -f {LICENSE_FILE_NAME} ."],
     },
-    # Run isort and black on all python files.
+    # Run ruff on all python files.
     Formatter.PYTHON: {
         "get_format_container_fn": format_python_container,
         "file_filter": ["**/*.py"],
-        "format_commands": [
-            "poetry run isort --settings-file pyproject.toml .",
-            "poetry run black --config pyproject.toml .",
-        ],
+        "format_commands": ["poetry run ruff format --config pyproject.toml ."],
     },
 }
