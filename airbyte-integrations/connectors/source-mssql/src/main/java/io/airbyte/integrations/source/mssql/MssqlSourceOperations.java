@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.cdk.db.DataTypeUtils.OFFSETDATETIME_FORMATTER;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
@@ -19,10 +20,17 @@ import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.charset.Charset;
 import java.sql.JDBCType;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import microsoft.sql.DateTimeOffset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +84,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
       case TIME -> putTime(json, columnName, resultSet, colIndex);
       case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet,
-          colIndex);
+                                                               colIndex);
       case ARRAY -> putArray(json, columnName, resultSet, colIndex);
       default -> putDefault(json, columnName, resultSet, colIndex);
     }
@@ -107,10 +115,10 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
       return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
     } catch (final IllegalArgumentException ex) {
       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
-          field.get(INTERNAL_COLUMN_NAME),
-          field.get(INTERNAL_SCHEMA_NAME),
-          field.get(INTERNAL_TABLE_NAME),
-          field.get(INTERNAL_COLUMN_TYPE)));
+                                field.get(INTERNAL_COLUMN_NAME),
+                                field.get(INTERNAL_SCHEMA_NAME),
+                                field.get(INTERNAL_TABLE_NAME),
+                                field.get(INTERNAL_COLUMN_TYPE)));
       return JDBCType.VARCHAR;
     }
   }
@@ -162,6 +170,55 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
       case DATE -> JsonSchemaType.STRING_DATE;
       default -> JsonSchemaType.STRING;
     };
+  }
+
+  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+      throws SQLException {
+    final OffsetDateTime timestamptz = getObject(resultSet, index, OffsetDateTime.class);
+    final LocalDate localDate = timestamptz.toLocalDate();
+    node.put(columnName, resolveEra(localDate, timestamptz.format(OFFSETDATETIME_FORMATTER)));
+  }
+
+  protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
+    try {
+      final OffsetDateTime offsetDateTime = OffsetDateTime.parse(value, OFFSETDATETIME_FORMATTER);
+      final Timestamp timestamp = Timestamp.valueOf(offsetDateTime.atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
+      // Create DateTimeOffset from Timestamp and Offset
+      final DateTimeOffset datetimeoffset = DateTimeOffset.valueOf(timestamp, offsetDateTime.getOffset().getTotalSeconds() / 60);
+      preparedStatement.setObject(parameterIndex, datetimeoffset);
+    } catch (final DateTimeParseException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void setCursorField(final PreparedStatement preparedStatement,
+                             final int parameterIndex,
+                             final JDBCType cursorFieldType,
+                             final String value)
+      throws SQLException {
+    switch (cursorFieldType) {
+
+      case TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
+      case TIMESTAMP_WITH_TIMEZONE -> setTimestampWithTimezone(preparedStatement, parameterIndex, value);
+      case TIME -> setTime(preparedStatement, parameterIndex, value);
+      case TIME_WITH_TIMEZONE -> setTimeWithTimezone(preparedStatement, parameterIndex, value);
+      case DATE -> setDate(preparedStatement, parameterIndex, value);
+      case BIT -> setBit(preparedStatement, parameterIndex, value);
+      case BOOLEAN -> setBoolean(preparedStatement, parameterIndex, value);
+      case TINYINT, SMALLINT -> setShortInt(preparedStatement, parameterIndex, value);
+      case INTEGER -> setInteger(preparedStatement, parameterIndex, value);
+      case BIGINT -> setBigInteger(preparedStatement, parameterIndex, value);
+      case FLOAT, DOUBLE -> setDouble(preparedStatement, parameterIndex, value);
+      case REAL -> setReal(preparedStatement, parameterIndex, value);
+      case NUMERIC, DECIMAL -> setDecimal(preparedStatement, parameterIndex, value);
+      case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> setString(preparedStatement, parameterIndex, value);
+      case BINARY, BLOB -> setBinary(preparedStatement, parameterIndex, value);
+      // since cursor are expected to be comparable, handle cursor typing strictly and error on
+      // unrecognized types
+      default -> throw new IllegalArgumentException(String.format("%s cannot be used as a cursor.", cursorFieldType));
+    }
   }
 
 }
