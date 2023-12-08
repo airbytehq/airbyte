@@ -191,7 +191,7 @@ First you need to give the connector some additional permissions:
 
 Then, go to the replication settings of your connection and click **refresh source schema** to pull in those new streams for syncing.
 
-<FieldAnchor field="enable_experimental_streams" />
+<FieldAnchor field="enable_experimental_streams">
 
 ### Experimental streams
 
