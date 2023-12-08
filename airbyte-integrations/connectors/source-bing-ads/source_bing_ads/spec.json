@@ -61,10 +61,7 @@
               "title": "Operator",
               "description": "An Operator that will be used to filter accounts. The Contains predicate has features for matching words, matching inflectional forms of words, searching using wildcard characters, and searching using proximity. The Equals is used to return all rows where account name is equal(=) to the string that you provided",
               "type": "string",
-              "enum": [
-                "Contains",
-                "Equals"
-              ]
+              "enum": ["Contains", "Equals"]
             },
             "name": {
               "title": "Account Name",
@@ -72,10 +69,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "operator",
-            "name"
-          ]
+          "required": ["operator", "name"]
         }
       },
       "reports_start_date": {
