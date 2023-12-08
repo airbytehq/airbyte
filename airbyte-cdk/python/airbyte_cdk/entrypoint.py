@@ -87,6 +87,7 @@ class AirbyteEntrypoint(object):
 
         if hasattr(parsed_args, "debug") and parsed_args.debug:
             self.logger.setLevel(logging.DEBUG)
+            logger.setLevel(logging.DEBUG)
             self.logger.debug("Debug logs enabled")
         else:
             self.logger.setLevel(logging.INFO)
@@ -105,6 +106,9 @@ class AirbyteEntrypoint(object):
                     raw_config = self.source.read_config(parsed_args.config)
                     config = self.source.configure(raw_config, temp_dir)
 
+                    yield from [
+                        self.airbyte_message_to_string(queued_message) for queued_message in self._emit_queued_messages(self.source)
+                    ]
                     if cmd == "check":
                         yield from map(AirbyteEntrypoint.airbyte_message_to_string, self.check(source_spec, config))
                     elif cmd == "discover":

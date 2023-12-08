@@ -49,12 +49,12 @@ class SourceKlaviyo(AbstractSource):
         api_key = config["api_key"]
         start_date = config.get("start_date")
         return [
-            Campaigns(api_key=api_key),
+            Campaigns(api_key=api_key, start_date=start_date),
             Events(api_key=api_key, start_date=start_date),
             GlobalExclusions(api_key=api_key, start_date=start_date),
-            Lists(api_key=api_key),
-            Metrics(api_key=api_key),
+            Lists(api_key=api_key, start_date=start_date),
+            Metrics(api_key=api_key, start_date=start_date),
             Flows(api_key=api_key, start_date=start_date),
-            EmailTemplates(api_key=api_key),
+            EmailTemplates(api_key=api_key, start_date=start_date),
             Profiles(api_key=api_key, start_date=start_date),
         ]

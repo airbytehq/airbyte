@@ -8,6 +8,8 @@ const path = require("node:path");
 const lightCodeTheme = require("prism-react-renderer/themes/github");
 const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 
+const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
+
 const redirects = yaml.load(
   fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
 );
@@ -28,7 +30,7 @@ const config = {
   projectName: "airbyte", // Usually your repo name.
 
   // Adds one off script tags to the head of each page
-  // .e.g <script async data-api-key="..." id="unifytag" src="..."></script>
+  // e.g. <script async data-api-key="..." id="unifytag" src="..."></script>
   scripts: [
     {
       src: "https://cdn.unifygtm.com/tag/v1/unify-tag-script.js",
@@ -36,7 +38,7 @@ const config = {
       type: "module",
       id: "unifytag",
       "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
-    }
+    },
   ],
 
   plugins: [
@@ -78,6 +80,7 @@ const config = {
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs",
           exclude: ["**/*.inapp.md"],
+          remarkPlugins: [docsHeaderDecoration],
         },
         blog: false,
         theme: {

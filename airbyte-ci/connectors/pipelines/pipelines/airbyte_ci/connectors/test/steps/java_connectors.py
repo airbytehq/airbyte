@@ -71,7 +71,7 @@ def _create_integration_step_args_factory(context: ConnectorContext) -> Callable
     async def _create_integration_step_args(results: RESULTS_DICT):
 
         connector_container = results["build"].output_artifact[LOCAL_BUILD_PLATFORM]
-        connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
+        connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container, LOCAL_BUILD_PLATFORM)
 
         if context.connector.supports_normalization:
             tar_file_name = f"{context.connector.normalization_repository}_{context.git_revision}.tar"
@@ -79,7 +79,7 @@ def _create_integration_step_args_factory(context: ConnectorContext) -> Callable
 
             normalization_container = build_normalization_results.output_artifact
             normalization_tar_file, _ = await export_container_to_tarball(
-                context, normalization_container, tar_file_name=tar_file_name
+                context, normalization_container, LOCAL_BUILD_PLATFORM, tar_file_name=tar_file_name
             )
         else:
             normalization_tar_file = None
@@ -137,7 +137,7 @@ def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
         [
             StepToRun(
                 id="build",
-                step=BuildConnectorImages(context, LOCAL_BUILD_PLATFORM),
+                step=BuildConnectorImages(context),
                 args=lambda results: {"dist_dir": results["build_tar"].output_artifact.directory(dist_tar_directory_path(context))},
                 depends_on=["build_tar"],
             ),

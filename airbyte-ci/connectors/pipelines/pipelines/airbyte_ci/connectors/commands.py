@@ -9,8 +9,12 @@ from typing import List, Optional, Set, Tuple
 import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
 from pipelines import main_logger
+from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
+from pipelines.consts import CIContext
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles, get_connector_modified_files, get_modified_connectors
+from pipelines.helpers.git import get_modified_files_in_branch, get_modified_files_in_commit
+from pipelines.helpers.utils import transform_strs_to_paths
 
 ALL_CONNECTORS = get_all_connectors_in_repo()
 
@@ -144,7 +148,7 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
     lazy_subcommands={
         "build": "pipelines.airbyte_ci.connectors.build_image.commands.build",
         "test": "pipelines.airbyte_ci.connectors.test.commands.test",
-        "list": "pipelines.airbyte_ci.connectors.list.commands.list",
+        "list": "pipelines.airbyte_ci.connectors.list.commands.list_connectors",
         "publish": "pipelines.airbyte_ci.connectors.publish.commands.publish",
         "bump_version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
         "migrate_to_base_image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
@@ -225,43 +229,51 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
     required=False,
     envvar="DOCKER_HUB_PASSWORD",
 )
+@click_merge_args_into_context_obj
+@click_append_to_context_object("use_remote_secrets", lambda ctx: should_use_remote_secrets(ctx.obj["use_remote_secrets"]))
 @click.pass_context
+@click_ignore_unused_kwargs
 async def connectors(
     ctx: click.Context,
-    use_remote_secrets: Optional[bool],
-    names: Tuple[str],
-    languages: Tuple[ConnectorLanguage],
-    support_levels: Tuple[str],
-    modified: bool,
-    metadata_changes_only: bool,
-    metadata_query: str,
-    concurrency: int,
-    execute_timeout: int,
-    enable_dependency_scanning: bool,
-    use_local_cdk: bool,
-    enable_report_auto_open: bool,
-    docker_hub_username: str,
-    docker_hub_password: str,
 ):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"])
 
-    ctx.ensure_object(dict)
-    ctx.obj["use_remote_secrets"] = should_use_remote_secrets(use_remote_secrets)
-    ctx.obj["concurrency"] = concurrency
-    ctx.obj["execute_timeout"] = execute_timeout
-    ctx.obj["use_local_cdk"] = use_local_cdk
-    ctx.obj["open_report_in_browser"] = enable_report_auto_open
-    ctx.obj["docker_hub_username"] = docker_hub_username
-    ctx.obj["docker_hub_password"] = docker_hub_password
+    modified_files = []
+    if ctx.obj["modified"] or ctx.obj["metadata_changes_only"]:
+        modified_files = transform_strs_to_paths(
+            await get_modified_files(
+                ctx.obj["git_branch"],
+                ctx.obj["git_revision"],
+                ctx.obj["diffed_branch"],
+                ctx.obj["is_local"],
+                ctx.obj["ci_context"],
+            )
+        )
+
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
-        names,
-        support_levels,
-        languages,
-        modified,
-        metadata_changes_only,
-        metadata_query,
-        ctx.obj["modified_files"],
-        enable_dependency_scanning,
+        ctx.obj["names"],
+        ctx.obj["support_levels"],
+        ctx.obj["languages"],
+        ctx.obj["modified"],
+        ctx.obj["metadata_changes_only"],
+        ctx.obj["metadata_query"],
+        set(modified_files),
+        ctx.obj["enable_dependency_scanning"],
     )
     log_selected_connectors(ctx.obj["selected_connectors_with_modified_files"])
+
+
+async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext) -> Set[str]:
+    """Get the list of modified files in the current git branch.
+    If the current branch is master, it will return the list of modified files in the head commit.
+    The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.
+    Pipelines like "publish on merge" are triggered on each new commit on master.
+
+    If the CI context is a pull request, it will return the list of modified files in the pull request, without using git diff.
+    If the current branch is not master, it will return the list of modified files in the current branch.
+    This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
+    """
+    if ci_context is CIContext.MASTER or (ci_context is CIContext.MANUAL and git_branch == "master"):
+        return await get_modified_files_in_commit(git_branch, git_revision, is_local)
+    return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)

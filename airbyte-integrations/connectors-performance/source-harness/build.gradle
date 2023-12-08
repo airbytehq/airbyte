@@ -17,3 +17,10 @@ dependencies {
     implementation 'io.airbyte.airbyte-config:config-models:0.42.0'
     implementation 'com.datadoghq:datadog-api-client:2.16.0'
 }
+
+//This is only needed because we're using some very old libraries from airbyte-commons that were not packaged correctly
+java {
+    compileJava {
+       options.compilerArgs.remove("-Werror")
+   }
+}

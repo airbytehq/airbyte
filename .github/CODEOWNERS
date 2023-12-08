@@ -38,6 +38,9 @@
 /airbyte-integrations/connectors/source-tidb/ @airbytehq/dbsources
 
 # Java-based destination connectors
+airbyte-cdk/java/airbyte-cdk/db-destinations/ @airbytehq/destinations
+airbyte-cdk/java/airbyte-cdk/s3-destinations/ @airbytehq/destinations
+airbyte-cdk/java/airbyte-cdk/typing-deduping/ @airbytehq/destinations
 /airbyte-integrations/bases/standard-destination-test/ @airbytehq/destinations
 /airbyte-integrations/bases/base-java-s3/ @airbytehq/destinations
 /airbyte-integrations/bases/bases-destination-jdbc/ @airbytehq/destinations

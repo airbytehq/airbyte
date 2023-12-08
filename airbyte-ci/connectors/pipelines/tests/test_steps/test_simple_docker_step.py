@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.helpers.utils import get_exec_result
-from pipelines.models.contexts import PipelineContext
+from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import MountPath
 
 pytestmark = [

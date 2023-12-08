@@ -22,6 +22,7 @@ public class MoreIterators {
    * @param <T> type
    * @return iterator with all elements
    */
+  @SafeVarargs
   public static <T> Iterator<T> of(final T... elements) {
     return Arrays.asList(elements).iterator();
   }

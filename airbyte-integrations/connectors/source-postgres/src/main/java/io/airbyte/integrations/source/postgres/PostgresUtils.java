@@ -43,8 +43,10 @@ public class PostgresUtils {
   private static final String PGOUTPUT_PLUGIN = "pgoutput";
 
   public static final Duration MIN_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(2);
-  public static final Duration MAX_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(20);
-  public static final Duration DEFAULT_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(5);
+  public static final Duration MAX_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(40);
+  public static final Duration DEFAULT_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(20);
+  public static final Duration DEFAULT_SUBSEQUENT_RECORD_WAIT_TIME = Duration.ofMinutes(1);
+
   private static final int MIN_QUEUE_SIZE = 1000;
   private static final int MAX_QUEUE_SIZE = 10000;
 
@@ -89,7 +91,7 @@ public class PostgresUtils {
   public static int getQueueSize(final JsonNode config) {
     final OptionalInt sizeFromConfig = extractQueueSizeFromConfig(config);
     if (sizeFromConfig.isPresent()) {
-      int size = sizeFromConfig.getAsInt();
+      final int size = sizeFromConfig.getAsInt();
       if (size < MIN_QUEUE_SIZE) {
         LOGGER.warn("Queue size is overridden to {} , which is the min allowed for safety.",
             MIN_QUEUE_SIZE);
@@ -155,6 +157,18 @@ public class PostgresUtils {
 
     LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
     return firstRecordWaitTime;
+  }
+
+  public static Duration getSubsequentRecordWaitTime(final JsonNode config) {
+    Duration subsequentRecordWaitTime = DEFAULT_SUBSEQUENT_RECORD_WAIT_TIME;
+    final boolean isTest = config.has("is_test") && config.get("is_test").asBoolean();
+    final Optional<Integer> firstRecordWaitSeconds = getFirstRecordWaitSeconds(config);
+    if (isTest && firstRecordWaitSeconds.isPresent()) {
+      // In tests, reuse the initial_waiting_seconds property to speed things up.
+      subsequentRecordWaitTime = Duration.ofSeconds(firstRecordWaitSeconds.get());
+    }
+    LOGGER.info("Subsequent record waiting time: {} seconds", subsequentRecordWaitTime.getSeconds());
+    return subsequentRecordWaitTime;
   }
 
   public static boolean isXmin(final JsonNode config) {

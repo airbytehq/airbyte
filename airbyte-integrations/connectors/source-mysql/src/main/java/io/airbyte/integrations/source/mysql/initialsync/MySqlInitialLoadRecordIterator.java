@@ -39,12 +39,13 @@ import org.slf4j.LoggerFactory;
  * from table where pk > pk_max_4 order by pk limit 1,800,000. Final query, since there are zero
  * records processed here.
  */
+@SuppressWarnings("try")
 public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
     implements AutoCloseableIterator<JsonNode> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialLoadRecordIterator.class);
 
-  private final JdbcCompatibleSourceOperations sourceOperations;
+  private final JdbcCompatibleSourceOperations<MysqlType> sourceOperations;
 
   private final String quoteString;
   private final MySqlInitialLoadStateManager initialLoadStateManager;

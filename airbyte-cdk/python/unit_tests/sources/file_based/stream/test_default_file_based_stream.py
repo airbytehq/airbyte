@@ -17,6 +17,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.default_file_based_stream import DefaultFileBasedStream
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class MockFormat:
@@ -118,6 +119,24 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
 
         assert messages[0].log.level == Level.ERROR
         assert messages[1].record.data["data"] == self._A_RECORD
+
+    def test_given_traced_exception_when_read_records_from_slice_then_fail(self) -> None:
+        """
+        When a traced exception is raised, the stream shouldn't try to handle but pass it on to the caller.
+        """
+        self._parser.parse_records.side_effect = [AirbyteTracedException("An error")]
+
+        with pytest.raises(AirbyteTracedException):
+            list(
+                self._stream.read_records_from_slice(
+                    {
+                        "files": [
+                            RemoteFile(uri="invalid_file", last_modified=self._NOW),
+                            RemoteFile(uri="valid_file", last_modified=self._NOW),
+                        ]
+                    }
+                )
+            )
 
     def test_given_exception_after_skipping_records_when_read_records_from_slice_then_send_warning(self) -> None:
         self._stream_config.schemaless = False

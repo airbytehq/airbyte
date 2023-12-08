@@ -22,6 +22,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   public static final String CONCURRENT_SOURCE_STREAM_READ = "CONCURRENT_SOURCE_STREAM_READ";
   public static final String STRICT_COMPARISON_NORMALIZATION_WORKSPACES = "STRICT_COMPARISON_NORMALIZATION_WORKSPACES";
   public static final String STRICT_COMPARISON_NORMALIZATION_TAG = "STRICT_COMPARISON_NORMALIZATION_TAG";
+  public static final String DEPLOYMENT_MODE = "DEPLOYMENT_MODE";
 
   @Override
   public boolean useStreamCapableState() {
@@ -61,6 +62,11 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   @Override
   public String strictComparisonNormalizationTag() {
     return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_TAG, "strict_comparison2", (arg) -> arg);
+  }
+
+  @Override
+  public String deploymentMode() {
+    return getEnvOrDefault(DEPLOYMENT_MODE, "", (arg) -> arg);
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java

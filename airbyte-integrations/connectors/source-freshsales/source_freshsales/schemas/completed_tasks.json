@@ -12,14 +12,14 @@
     "targetable_type": { "type": ["null", "string"] },
     "Possible": { "type": ["null", "string"] },
     "owner_id": { "type": ["null", "integer"] },
-    "status": { "type": ["null", "string"] },
+    "status": { "type": ["null", "integer"] },
     "creater_id": { "type": ["null", "integer"] },
     "created_at": { "type": ["null", "string"] },
     "updated_at": { "type": ["null", "string"] },
     "outcome_id": { "type": ["null", "integer"] },
     "task_type_id": { "type": ["null", "integer"] },
     "updater_id": { "type": ["null", "integer"] },
-    "targetables": { "type": ["null", "string"] },
+    "targetables": { "type": ["null", "array"] },
     "completed_date": { "type": ["null", "string"] }
   }
 }

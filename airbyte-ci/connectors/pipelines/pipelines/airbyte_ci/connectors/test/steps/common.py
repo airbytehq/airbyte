@@ -20,7 +20,7 @@ from pipelines.consts import CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.containers import internal_tools
 from pipelines.helpers.utils import METADATA_FILE_NAME
-from pipelines.models.contexts import PipelineContext
+from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 
@@ -71,7 +71,7 @@ class VersionCheck(Step, ABC):
     async def _run(self) -> StepResult:
         if not self.should_run:
             return StepResult(self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
-        if self.context.ci_context in [CIContext.MASTER, CIContext.NIGHTLY_BUILDS]:
+        if self.context.ci_context == CIContext.MASTER:
             return StepResult(self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
         try:
             return self.validate()

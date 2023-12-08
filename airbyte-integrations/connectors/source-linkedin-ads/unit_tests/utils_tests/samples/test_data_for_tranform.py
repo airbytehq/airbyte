@@ -23,6 +23,8 @@ input_test_data = [
                     },
                     {"or": {"urn:li:adTargetingFacet:locations": ["urn:li:geo:103644278"]}},
                     {"or": {"urn:li:adTargetingFacet:interfaceLocales": ["urn:li:locale:en_US"]}},
+                    {"or": {"empty_dict_with_empty_list_of_dicts": [{"empty_dict_value": "the value"}]}},
+                    {"or": {"empty_dict_with_empty_dict": {"empty_dict_value": "the value"}}},
                     {"or": {"empty_dict_with_empty_list": []}},  # dict is present, but list is empty
                     {"or": {}},  # empty dict
                 ]
@@ -91,6 +93,14 @@ output_test_data = [
                     {
                         "type": "urn:li:adTargetingFacet:interfaceLocales",
                         "values": ["urn:li:locale:en_US"],
+                    },
+                    {
+                        "type": "empty_dict_with_empty_list_of_dicts",
+                        "values": [{"empty_dict_value": "the value"}],
+                    },
+                    {
+                        "type": "empty_dict_with_empty_dict",
+                        "values": [{"empty_dict_value": "the value"}],
                     },
                     {
                         "type": "empty_dict_with_empty_list",

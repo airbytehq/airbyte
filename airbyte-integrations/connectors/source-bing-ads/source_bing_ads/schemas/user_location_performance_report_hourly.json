@@ -1,0 +1,215 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AccountName": {
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "type": ["null", "string"]
+    },
+    "AccountId": {
+      "type": ["null", "integer"]
+    },
+    "TimePeriod": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "CampaignName": {
+      "type": ["null", "string"]
+    },
+    "CampaignId": {
+      "type": ["null", "integer"]
+    },
+    "AdGroupName": {
+      "type": ["null", "string"]
+    },
+    "AdGroupId": {
+      "type": ["null", "integer"]
+    },
+    "Country": {
+      "type": ["null", "string"]
+    },
+    "State": {
+      "type": ["null", "string"]
+    },
+    "MetroArea": {
+      "type": ["null", "string"]
+    },
+    "CurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "AdDistribution": {
+      "type": ["null", "string"]
+    },
+    "Impressions": {
+      "type": ["null", "integer"]
+    },
+    "Clicks": {
+      "type": ["null", "integer"]
+    },
+    "Ctr": {
+      "type": ["null", "number"]
+    },
+    "AverageCpc": {
+      "type": ["null", "number"]
+    },
+    "Spend": {
+      "type": ["null", "number"]
+    },
+    "AveragePosition": {
+      "type": ["null", "number"]
+    },
+    "ProximityTargetLocation": {
+      "type": ["null", "string"]
+    },
+    "Radius": {
+      "type": ["null", "integer"]
+    },
+    "Language": {
+      "type": ["null", "string"]
+    },
+    "City": {
+      "type": ["null", "string"]
+    },
+    "QueryIntentCountry": {
+      "type": ["null", "string"]
+    },
+    "QueryIntentState": {
+      "type": ["null", "string"]
+    },
+    "QueryIntentCity": {
+      "type": ["null", "string"]
+    },
+    "QueryIntentDMA": {
+      "type": ["null", "string"]
+    },
+    "BidMatchType": {
+      "type": ["null", "string"]
+    },
+    "DeliveredMatchType": {
+      "type": ["null", "string"]
+    },
+    "Network": {
+      "type": ["null", "string"]
+    },
+    "TopVsOther": {
+      "type": ["null", "string"]
+    },
+    "DeviceType": {
+      "type": ["null", "string"]
+    },
+    "DeviceOS": {
+      "type": ["null", "string"]
+    },
+    "Assists": {
+      "type": ["null", "integer"]
+    },
+    "Conversions": {
+      "type": ["null", "integer"]
+    },
+    "ConversionRate": {
+      "type": ["null", "number"]
+    },
+    "Revenue": {
+      "type": ["null", "number"]
+    },
+    "ReturnOnAdSpend": {
+      "type": ["null", "number"]
+    },
+    "CostPerConversion": {
+      "type": ["null", "number"]
+    },
+    "CostPerAssist": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerConversion": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerAssist": {
+      "type": ["null", "number"]
+    },
+    "County": {
+      "type": ["null", "string"]
+    },
+    "PostalCode": {
+      "type": ["null", "string"]
+    },
+    "QueryIntentCounty": {
+      "type": ["null", "string"]
+    },
+    "QueryIntentPostalCode": {
+      "type": ["null", "string"]
+    },
+    "LocationId": {
+      "type": ["null", "integer"]
+    },
+    "QueryIntentLocationId": {
+      "type": ["null", "integer"]
+    },
+    "AllConversions": {
+      "type": ["null", "integer"]
+    },
+    "AllRevenue": {
+      "type": ["null", "number"]
+    },
+    "AllConversionRate": {
+      "type": ["null", "number"]
+    },
+    "AllCostPerConversion": {
+      "type": ["null", "number"]
+    },
+    "AllReturnOnAdSpend": {
+      "type": ["null", "number"]
+    },
+    "AllRevenuePerConversion": {
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversions": {
+      "type": ["null", "integer"]
+    },
+    "Goal": {
+      "type": ["null", "string"]
+    },
+    "GoalType": {
+      "type": ["null", "string"]
+    },
+    "AbsoluteTopImpressionRatePercent": {
+      "type": ["null", "number"]
+    },
+    "TopImpressionRatePercent": {
+      "type": ["null", "number"]
+    },
+    "AverageCpm": {
+      "type": ["null", "number"]
+    },
+    "ConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "AllConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "Neighborhood": {
+      "type": ["null", "string"]
+    },
+    "QueryIntentNeighborhood": {
+      "type": ["null", "string"]
+    },
+    "ViewThroughRevenue": {
+      "type": ["null", "number"]
+    },
+    "CampaignType": {
+      "type": ["null", "string"]
+    },
+    "AssetGroupId": {
+      "type": ["null", "integer"]
+    },
+    "AssetGroupName": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -2,6 +2,12 @@ plugins {
     id "java-library"
 }
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try"
+    }
+}
+
 dependencies {
     annotationProcessor platform(libs.micronaut.bom)
     annotationProcessor libs.bundles.micronaut.annotation.processor
@@ -19,6 +25,7 @@ dependencies {
     implementation 'org.apache.ant:ant:1.10.10'
     implementation 'org.apache.commons:commons-text:1.10.0'
     implementation libs.bundles.datadog
+    implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2'
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')

@@ -5,6 +5,12 @@ plugins {
     id "java-library"
 }
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-deprecation"
+    }
+}
+
 def specFile = "$projectDir/src/main/openapi/config.yaml"
 
 def generate = tasks.register('generate')

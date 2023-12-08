@@ -23,6 +23,10 @@
     },
     "purchasedPct": {
       "type": ["null", "number"]
+    },
+    "dataEndTime": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

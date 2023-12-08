@@ -1,54 +1,64 @@
 {
   "type": "object",
+  "additionalProperties": true,
   "properties": {
-    "object": { "type": "string" },
+    "type": { "type": "string" },
     "id": { "type": "string" },
-    "uuid": { "type": "string" },
-    "event_name": { "type": "string" },
-    "timestamp": { "type": "integer" },
     "datetime": { "type": "string", "format": "date-time" },
-    "statistic_id": { "type": "string" },
-    "event_properties": {
-      "type": "object",
+    "attributes": {
+      "type": ["null", "object"],
       "properties": {
-        "$value": { "type": "number" },
-        "items": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "object": { "type": "string" },
-              "name": { "type": "string" },
-              "sku": { "type": "string" },
-              "price": { "type": "number" },
-              "quantity": { "type": "number" }
+        "timestamp": { "type": "integer" },
+        "event_properties": {
+          "type": ["null", "object"],
+          "additionalProperties": true
+        },
+        "datetime": { "type": "string", "format": "date-time" },
+        "uuid": { "type": "string" }
+      }
+    },
+    "links": {
+      "type": ["null", "object"],
+      "properties": {
+        "self": { "type": "string" }
+      }
+    },
+    "relationships": {
+      "type": ["null", "object"],
+      "properties": {
+        "profile": {
+          "type": ["null", "object"],
+          "properties": {
+            "data": {
+              "type": ["null", "object"],
+              "properties": {
+                "type": { "type": "string" },
+                "id": { "type": "string" }
+              }
+            },
+            "links": {
+              "type": ["null", "object"],
+              "additionalProperties": true
+            }
+          }
+        },
+        "metric": {
+          "type": ["null", "object"],
+          "properties": {
+            "data": {
+              "type": ["null", "object"],
+              "properties": {
+                "type": { "type": "string" },
+                "id": { "type": "string" }
+              }
+            },
+            "links": {
+              "type": ["null", "object"],
+              "additionalProperties": true
             }
           }
         }
-      },
-      "$event_id": { "type": ["null", "string"] },
-      "$flow ": { "type": ["null", "string"] },
-      "$message": { "type": ["null", "string"] },
-      "Campaign Name": { "type": ["null", "string"] },
-      "Client Canonical": { "type": ["null", "string"] },
-      "Client Name": { "type": ["null", "string"] },
-      "Client OS": { "type": ["null", "string"] },
-      "Client OS Family": { "type": ["null", "string"] },
-      "Client Type": { "type": ["null", "string"] },
-      "Email Domain": { "type": ["null", "string"] },
-      "Subject": { "type": ["null", "string"] },
-      "URL": { "type": ["null", "string"] }
-    },
-    "person": {
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "object": { "type": "string" },
-        "$email": { "type": "string" }
       }
-    },
-    "flow_id": { "type": ["null", "string"] },
-    "campaign_id": { "type": ["null", "string"] },
-    "flow_message_id": { "type": ["null", "string"] }
+    }
   }
 }

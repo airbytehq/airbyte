@@ -20,7 +20,7 @@ The Oracle source does not alter the schema present in your database. Depending 
 
 On Airbyte Cloud, only TLS connections to your Oracle instance are supported. Other than that, you can proceed with the open-source instructions below.
 
-## Getting Started \(Airbyte Open-Source\)
+## Getting Started \(Airbyte Open Source\)
 
 #### Requirements
 

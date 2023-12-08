@@ -1,7 +1,6 @@
 # Low-code connector development
 
 Airbyte’s low-code framework enables you to build source connectors for REST APIs via a [connector builder UI](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or by modifying boilerplate YAML files via terminal or text editor.
-This page provides an overview of the low-code framework and how to use it to build connectors. You can find the full definition of the schema in the [CDK repository](../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)
 
 :::info
 Developer updates will be announced via our #help-connector-development Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.
@@ -156,3 +155,6 @@ For examples of production-ready config-based connectors, refer to:
 - [Greenhouse](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse/source_greenhouse/manifest.yaml)
 - [Sendgrid](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sendgrid/source_sendgrid/manifest.yaml)
 - [Sentry](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sentry/source_sentry/manifest.yaml)
+
+## Reference
+The full schema definition for the YAML file can be found [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).

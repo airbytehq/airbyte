@@ -5,6 +5,12 @@ plugins {
     id "com.github.eirnym.js2p" version "1.0"
 }
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-unchecked"
+    }
+}
+
 dependencies {
     annotationProcessor libs.bundles.micronaut.annotation.processor
     api libs.bundles.micronaut.annotation
@@ -30,31 +36,4 @@ jsonSchema2Pojo {
 }
 tasks.register('generate').configure {
     dependsOn tasks.named('generateJsonSchema2Pojo')
-}
-
-test {
-    useJUnitPlatform {
-        excludeTags 'log4j2-config', 'logger-client'
-    }
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
-}
-
-tasks.register('log4j2IntegrationTest', Test) {
-    useJUnitPlatform {
-        includeTags 'log4j2-config'
-    }
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
-}
-
-tasks.register('logClientsIntegrationTest', Test) {
-    useJUnitPlatform {
-        includeTags 'logger-client'
-    }
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
 }
