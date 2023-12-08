@@ -278,14 +278,10 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         now = pendulum.now("utc")
-        start_date = max(pendulum.parse(self._replication_start_date), now.subtract(days=90))
+        start_date = pendulum.parse(self._replication_start_date)
         end_date = now
         if self._replication_end_date:
-            # if replication_start_date is older than 90 days (from current date), we are overriding the value above.
-            # when replication_end_date is present, we should use the user provided replication_start_date.
-            # user may provide a date range which is older than 90 days.
             end_date = min(end_date, pendulum.parse(self._replication_end_date))
-            start_date = pendulum.parse(self._replication_start_date)
 
         if stream_state:
             state = stream_state.get(self.cursor_field)
@@ -391,6 +387,7 @@ class FlatFileOrdersReports(IncrementalReportsAmazonSPStream):
     """
 
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
+    primary_key = "amazon-order-id"
 
 
 class FbaStorageFeesReports(IncrementalReportsAmazonSPStream):
@@ -537,6 +534,7 @@ class XmlAllOrdersDataByOrderDataGeneral(IncrementalReportsAmazonSPStream):
         return result
 
     name = "GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
+    primary_key = "AmazonOrderID"
     cursor_field = "LastUpdatedDate"
 
 
@@ -869,7 +867,9 @@ class FlatFileOrdersReportsByLastUpdate(IncrementalReportsAmazonSPStream):
     """
 
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL"
+    primary_key = "amazon-order-id"
     cursor_field = "last-updated-date"
+    replication_start_date_limit_in_days = 30
 
 
 class Orders(IncrementalAmazonSPStream):
