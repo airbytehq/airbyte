@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.56.1
+no-op to verify pypi publish flow
+
 ## 0.56.0
 Allow for connectors to continue syncing when a stream fails
 
