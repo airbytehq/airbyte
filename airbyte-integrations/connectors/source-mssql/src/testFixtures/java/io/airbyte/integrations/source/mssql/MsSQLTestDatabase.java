@@ -24,8 +24,36 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   static public final int MAX_RETRIES = 60;
 
-  static public MsSQLTestDatabase in(String imageName, String... methods) {
-    final var container = new MsSQLContainerFactory().shared(imageName, methods);
+  public static enum BaseImage {
+
+    MSSQL_2022("mcr.microsoft.com/mssql/server:2022-latest"),
+    MSSQL_2017("mcr.microsoft.com/mssql/server:2017-latest"),
+    ;
+
+    private final String reference;
+
+    private BaseImage(String reference) {
+      this.reference = reference;
+    }
+
+  }
+
+  public static enum ContainerModifier {
+
+    NETWORK("withNetwork"),
+    AGENT("withAgent");
+
+    private final String methodName;
+
+    private ContainerModifier(String methodName) {
+      this.methodName = methodName;
+    }
+
+  }
+
+  static public MsSQLTestDatabase in(BaseImage imageName, ContainerModifier... methods) {
+    String[] methodNames = Stream.of(methods).map(im -> im.methodName).toList().toArray(new String[0]);
+    final var container = new MsSQLContainerFactory().shared(imageName.reference, methodNames);
     final var testdb = new MsSQLTestDatabase(container);
     return testdb
         .withConnectionProperty("encrypt", "false")
