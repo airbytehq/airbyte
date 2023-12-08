@@ -197,10 +197,6 @@ class UnstructuredParser(FileTypeParser):
         supported_file_types = ", ".join([str(type) for type in self._supported_file_types()])
         return f"File type {file_type} is not supported. Supported file types are {supported_file_types}"
 
-    def _get_file_type_error_message(self, file_type: FileType) -> str:
-        supported_file_types = ", ".join([str(type) for type in self._supported_file_types()])
-        return f"File type {file_type} is not supported. Supported file types are {supported_file_types}"
-
     def _render_markdown(self, elements: List[Any]) -> str:
         return "\n\n".join((self._convert_to_markdown(el) for el in elements))
 
