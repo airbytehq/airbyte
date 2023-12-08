@@ -3,7 +3,7 @@
 #
 
 import sys
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, TextIO
 
 import anyio
 import dagger
@@ -76,14 +76,14 @@ class ClickPipelineContext(BaseModel, Singleton):
 
     _dagger_client_lock: anyio.Lock = PrivateAttr(default_factory=anyio.Lock)
 
-    async def get_dagger_client(self, pipeline_name: Optional[str] = None) -> Client:
+    async def get_dagger_client(self, pipeline_name: Optional[str] = None, log_output: Optional[TextIO] = sys.stdout) -> Client:
         """
         Get (or initialize) the Dagger Client instance.
         """
         if not self._dagger_client:
             async with self._dagger_client_lock:
                 if not self._dagger_client:
-                    connection = dagger.Connection(dagger.Config(log_output=sys.stdout))
+                    connection = dagger.Connection(dagger.Config(log_output=log_output))
 
                     """
                     Sets up the '_dagger_client' attribute, intended for single-threaded use within connectors.

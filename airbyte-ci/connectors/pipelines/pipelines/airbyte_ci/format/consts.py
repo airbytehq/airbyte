@@ -48,6 +48,7 @@ DEFAULT_FORMAT_IGNORE_LIST = [
     "**/tools/schema_generator/schema_generator/infer_schemas.py",
     "**/.git",
     "airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code",  # This is a test directory with badly formatted code
+    "airbyte-ci/connectors/pipelines/pipeline_reports",  # This is a directory with generated reports that should not be formatted
 ]
 
 
