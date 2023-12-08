@@ -23,7 +23,6 @@ public class PostgresTestDatabase extends
 
     POSTGRES_16_BULLSEYE("postgres:16-bullseye"),
     POSTGRES_12_BULLSEYE("postgres:12-bullseye"),
-    POSTGRES_16_ALPINE("postgres:16-alpine"),
     POSTGRES_9_ALPINE("postgres:9-alpine"),
     POSTGRES_SSL_DEV("marcosmarxm/postgres-ssl:dev");
 
