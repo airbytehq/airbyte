@@ -26,7 +26,7 @@ public class CloudDeploymentMySqlSslCaCertificateSourceAcceptanceTest extends My
   }
 
   @Override
-  protected ContainerModifier[] getImageModifiers() {
+  protected ContainerModifier[] getContainerModifiers() {
     return ArrayUtils.toArray(ContainerModifier.ROOT_AND_SERVER_CERTIFICATES);
   }
 

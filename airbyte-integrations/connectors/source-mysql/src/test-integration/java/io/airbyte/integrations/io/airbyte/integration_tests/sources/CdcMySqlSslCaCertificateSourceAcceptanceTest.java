@@ -24,7 +24,7 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends CdcMySqlSource
   }
 
   @Override
-  protected ContainerModifier[] getImageModifiers() {
+  protected ContainerModifier[] getContainerModifiers() {
     return ArrayUtils.toArray(ContainerModifier.ROOT_AND_SERVER_CERTIFICATES);
   }
 
