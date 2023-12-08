@@ -52,7 +52,7 @@ const UserTable: React.FC<IProps> = React.memo(({ users, roles, onDelete, onChan
             control={
               <Box sx={{ display: "flex" }} pt={1}>
                 <FormattedMessage id="user.heading.role" />
-                <Box pl={1}>
+                <Box paddingLeft="2px">
                   <QuestionIcon />
                 </Box>
               </Box>

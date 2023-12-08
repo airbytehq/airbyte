@@ -59,9 +59,14 @@ function DropDownInner<T = unknown>(
   const styles: StylesConfig = {
     ...(props.styles ?? {}),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     menuPortal: (base: CSSObjectWithLabel, menuPortalProps: any) => ({
       ...(props.styles?.menuPortal?.(base, menuPortalProps) ?? { ...base }),
       zIndex: 10004,
+    }),
+    singleValue: (styles) => ({
+      ...styles,
+      color: "#6B7280",
     }),
   };
   const placement = props.menuPlacement || "bottom";
