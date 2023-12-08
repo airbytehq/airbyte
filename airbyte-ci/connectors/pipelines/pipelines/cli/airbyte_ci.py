@@ -16,8 +16,9 @@ import docker
 import git
 from github import PullRequest
 from pipelines import main_logger
-from pipelines.cli.auto_update import __installed_version__, check_for_upgrade
+from pipelines.cli.auto_update import __installed_version__, check_for_upgrade, pre_confirm_auto_update_flag
 from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.confirm_prompt import pre_confirm_all_flag
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
 from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, CIContext
@@ -167,6 +168,8 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
     },
 )
 @click.version_option(__installed_version__)
+@pre_confirm_all_flag
+@pre_confirm_auto_update_flag
 @click.option("--enable-dagger-run/--disable-dagger-run", default=is_dagger_run_enabled_by_default)
 @click.option("--enable-update-check/--disable-update-check", default=True)
 @click.option("--enable-auto-update/--disable-auto-update", default=True)
