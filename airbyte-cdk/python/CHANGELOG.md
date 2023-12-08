@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.57.0
+low-code: cache requests sent for parent streams
+
 ## 0.56.1
 no-op to verify pypi publish flow
 
