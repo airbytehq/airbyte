@@ -2071,18 +2071,22 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
         raw_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": ["null", "object"],
-            "$ref": "default_event_properties.json"
+            "$ref": "default_event_properties.json",
         }
         return ResourceSchemaLoader("source_hubspot")._resolve_schema_references(raw_schema=raw_schema)
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> MutableMapping[str, Any]:
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> MutableMapping[str, Any]:
         """
         Returns current state. At the moment when this method is called by sources we already have updated state stored in self._state,
         because it is calculated each time we produce new record
         """
         return self.state
 
-    def get_latest_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> MutableMapping[str, Any]:
+    def get_latest_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+    ) -> MutableMapping[str, Any]:
         """
         State is a composite object that keeps latest datetime of an event for each parent object:
         {
@@ -2101,14 +2105,11 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
             )
         else:
             latest_datetime = latest_record[self.cursor_field]
-        return {
-            **self.state,
-            latest_record["objectId"]: {self.cursor_field: latest_datetime}
-        }
+        return {**self.state, latest_record["objectId"]: {self.cursor_field: latest_datetime}}
 
     def records_transformer(self, records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
         for record in records:
-            # We don't need `properties` as all the fields are unnested to the root 
+            # We don't need `properties` as all the fields are unnested to the root
             if "properties" in record:
                 record.pop("properties")
             yield record
@@ -2128,7 +2129,8 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
                     self._start_date,
                     self._field_to_datetime(self.state[object_id][self.cursor_field]) + timedelta(milliseconds=1),
                 )
-                if object_id in self.state else self._start_date
+                if object_id in self.state
+                else self._start_date
             )
 
             # Making slices of given slice period
@@ -2166,7 +2168,9 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
     def url(self) -> str:
         return "/events/v3/events"
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         """
         Preparing the request params dictionary for the following query string:
         <url>?objectType=<parent-type>
@@ -2177,7 +2181,13 @@ class WebAnalyticsStream(IncrementalMixin, HttpSubStream, Stream):
         params = super().request_params(stream_state, stream_slice, next_page_token)
         return params | stream_slice
 
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
         record_generator = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
         record_generator = self.records_transformer(record_generator)
