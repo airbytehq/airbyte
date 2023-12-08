@@ -40,9 +40,9 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .with("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
   }
 
-    protected ContainerModifier[] getContainerModifiers() {
-        return ArrayUtils.toArray();
-    }
+  protected ContainerModifier[] getContainerModifiers() {
+    return ArrayUtils.toArray();
+  }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
