@@ -35,7 +35,7 @@ class PostgresSourceOperationsTest {
 
   @BeforeEach
   public void init() {
-    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16_BULLSEYE, ContainerModifier.CONF);
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.CONF);
   }
 
   @AfterEach

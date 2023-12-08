@@ -24,7 +24,7 @@ public class CDCPostgresSourceFullCertificateSslAcceptanceTest extends AbstractC
 
   @Override
   protected BaseImage getServerImage() {
-    return BaseImage.POSTGRES_16_BULLSEYE;
+    return BaseImage.POSTGRES_16;
   }
 
 }
