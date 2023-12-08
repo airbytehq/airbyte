@@ -416,6 +416,7 @@ corrupted_file_scenario = (
                     "json_schema": json_schema,
                     "name": "stream1",
                     "source_defined_cursor": True,
+                    'source_defined_primary_key': [['document_key']],
                     "supported_sync_modes": ["full_refresh", "incremental"],
                 }
             ]
