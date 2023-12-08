@@ -114,6 +114,14 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
 6. Click **Set up source** and wait for the tests to complete.
 
+<FieldAnchor field="enable_experimental_streams">
+
+### Experimental streams
+
+[Web Analytics](https://developers.hubspot.com/docs/api/events/web-analytics) streams may be enabled as an experimental feature but please note that they are based on API which is currently in beta and may change at some point of time or be unstable.
+
+</FieldAnchor>
+
 <HideInUI>
 
 ## Supported sync modes
@@ -190,14 +198,6 @@ First you need to give the connector some additional permissions:
 - **If you are using OAuth on OSS or Private App auth** go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
 
 Then, go to the replication settings of your connection and click **refresh source schema** to pull in those new streams for syncing.
-
-<FieldAnchor field="enable_experimental_streams">
-
-### Experimental streams
-
-[Web Analytics](https://developers.hubspot.com/docs/api/events/web-analytics) streams may be enabled as an experimental feature but please note that they are based on API which is currently in beta and may change at some point of time or be unstable.
-
-</FieldAnchor>
 
 ### Notes on the `engagements` stream
 
