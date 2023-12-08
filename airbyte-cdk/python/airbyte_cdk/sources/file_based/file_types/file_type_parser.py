@@ -48,13 +48,6 @@ class FileTypeParser(ABC):
         return True, None
 
     @abstractmethod
-    def check_config(self, config: FileBasedStreamConfig) -> Tuple[bool, Optional[str]]:
-        """
-        Check whether the config is valid for this file type. If it is, return True and None. If it's not, return False and an error message explaining why it's invalid.
-        """
-        return True, None
-
-    @abstractmethod
     async def infer_schema(
         self,
         config: FileBasedStreamConfig,
