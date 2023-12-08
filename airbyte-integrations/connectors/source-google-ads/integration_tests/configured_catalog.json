@@ -1088,6 +1088,300 @@
           "bidding_strategy.id"
         ]
       ]
+    },
+    {
+      "stream": {
+        "name": "ad_group_performance_report",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "customer.id"
+          ],
+          [
+            "campaign.ad.id"
+          ],
+          [
+            "ad_group.date"
+          ],
+          [
+            "segments.date"
+          ]
+        ],
+        "default_cursor_field": [
+          "segments.date"
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [
+        [
+          "customer.id"
+        ],
+        [
+          "campaign.ad.id"
+        ],
+        [
+          "ad_group.date"
+        ],
+        [
+          "segments.date"
+        ]
+      ],
+      "cursor_field": [
+        "segments.date"
+      ]
+    },
+    {
+      "stream": {
+        "name": "ad_group_ad_performance_report",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "customer.id"
+          ],
+          [
+            "campaign.ad.id"
+          ],
+          [
+            "ad_group.date"
+          ],
+          [
+            "segments.keyword.ad_group_criterion"
+          ],
+          [
+            "segments.date"
+          ]
+        ],
+        "default_cursor_field": [
+          "segments.date"
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [
+        [
+          "customer.id"
+        ],
+        [
+          "campaign.ad.id"
+        ],
+        [
+          "ad_group.date"
+        ],
+        [
+          "segments.keyword.ad_group_criterion"
+        ],
+        [
+          "segments.date"
+        ]
+      ],
+      "cursor_field": [
+        "segments.date"
+      ]
+    },
+    {
+      "stream": {
+        "name": "campaign_performance_report",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "customer.id"
+          ],
+          [
+            "campaign.id"
+          ],
+          [
+            "segments.date"
+          ]
+        ],
+        "default_cursor_field": [
+          "segments.date"
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [
+        [
+          "customer.id"
+        ],
+        [
+          "campaign.id"
+        ],
+        [
+          "segments.date"
+        ]
+      ],
+      "cursor_field": [
+        "segments.date"
+      ]
+    },
+    {
+      "stream": {
+        "name": "geographic_performance_report",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "customer.id"
+          ],
+          [
+            "campaign.id"
+          ],
+          [
+            "ad_group.id"
+          ],
+          [
+            "segments.date"
+          ]
+        ],
+        "default_cursor_field": [
+          "segments.date"
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [
+        [
+          "customer.id"
+        ],
+        [
+          "campaign.id"
+        ],
+        [
+          "ad_group.id"
+        ],
+        [
+          "segments.date"
+        ]
+      ],
+      "cursor_field": [
+        "segments.date"
+      ]
+    },
+    {
+      "stream": {
+        "name": "keywords_performance_report",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "customer.id"
+          ],
+          [
+            "campaign.id"
+          ],
+          [
+            "ad_group.id"
+          ],
+          [
+            "ad_group_criterion.criterion_id"
+          ],
+          [
+            "segments.date"
+          ]
+        ],
+        "default_cursor_field": [
+          "segments.date"
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [
+        [
+          "customer.id"
+        ],
+        [
+          "campaign.id"
+        ],
+        [
+          "ad_group.id"
+        ],
+        [
+          "ad_group_criterion.criterion_id"
+        ],
+        [
+          "segments.date"
+        ]
+      ],
+      "cursor_field": [
+        "segments.date"
+      ]
+    },
+    {
+      "stream": {
+        "name": "ad_group_audience_performance_report",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "source_defined_primary_key": [
+          [
+            "customer.id"
+          ],
+          [
+            "campaign.id"
+          ],
+          [
+            "ad_group.id"
+          ],
+          [
+            "ad_group_criterion.criterion_id"
+          ],
+          [
+            "segments.date"
+          ]
+        ],
+        "default_cursor_field": [
+          "segments.date"
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [
+        [
+          "customer.id"
+        ],
+        [
+          "campaign.id"
+        ],
+        [
+          "ad_group.id"
+        ],
+        [
+          "ad_group_criterion.criterion_id"
+        ],
+        [
+          "segments.date"
+        ]
+      ],
+      "cursor_field": [
+        "segments.date"
+      ]
     }
   ]
 }

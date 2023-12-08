@@ -865,3 +865,51 @@ class BiddingStrategy(GoogleAdsStream):
     """
 
     primary_key = ["customer.id", "bidding_strategy.id"]
+
+
+class AdGroupPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    Ad Group Performance Report stream: https://developers.google.com/google-ads/api/fields/v15/ad_group
+    """
+
+    primary_key = ["customer.id", "campaign.id", "ad_group.id", "segments.date"]
+
+
+class AdGroupAdPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    Ad Group Performance Report stream: https://developers.google.com/google-ads/api/fields/v15/ad_group_ad
+    """
+
+    primary_key = ["customer.id", "campaign.id", "ad_group.id", "segments.keyword.ad_group_criterion", "segments.date"]
+
+
+class CampaignPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    Campaign Performance Report stream: https://developers.google.com/google-ads/api/fields/v15/campaign
+    """
+
+    primary_key = ["customer.id", "campaign.id", "segments.date"]
+
+
+class GeographicPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    Geographic Performance Report stream: https://developers.google.com/google-ads/api/fields/v15/geographic_view
+    """
+
+    primary_key = ["customer.id", "campaign.id", "ad_group.id", "segments.date"]
+
+
+class KeywordsPerformanceReport(IncrementalGoogleAdsStream):
+    """
+    Keywords Performance Report stream: https://developers.google.com/google-ads/api/fields/v15/keyword_view
+    """
+
+    primary_key = ["customer.id", "campaign.id", "ad_group.id", "ad_group_criterion.criterion_id", "segments.date"]
+
+
+class AdGroupAudiencePerformanceReport(IncrementalGoogleAdsStream):
+    """
+    Ad Group Audience Performance Report stream: https://developers.google.com/google-ads/api/fields/v15/ad_group_audience_view
+    """
+
+    primary_key = ["customer.id", "campaign.id", "ad_group.id", "ad_group_criterion.criterion_id", "segments.date"]

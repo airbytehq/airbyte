@@ -1,0 +1,234 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "customer.id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "customer.descriptive_name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "customer.currency_code": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "customer.time_zone": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "campaign.id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "campaign.name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "campaign.status": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "ad_group.id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "ad_group.status": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "ad_group.name": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "geographic_view.country_criterion_id": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "geographic_view.location_type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "metrics.interaction_event_types": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.clicks": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.video_views": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.view_through_conversions": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.conversions_from_interactions_rate": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.conversions_value": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.conversions": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.cost_micros": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.ctr": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.all_conversions_from_interactions_rate": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.all_conversions_value": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.all_conversions": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.average_cost": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.average_cpc": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.average_cpm": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.impressions": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.interaction_rate": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.interactions": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.value_per_all_conversions": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.cost_per_all_conversions": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.value_per_conversion": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.cost_per_conversion": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.video_view_rate": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.average_cpv": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "metrics.cross_device_conversions": {
+            "type": [
+                "null",
+                "number"
+            ]
+        },
+        "segments.date": {
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    }
+}
