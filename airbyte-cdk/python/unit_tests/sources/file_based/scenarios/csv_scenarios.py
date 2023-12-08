@@ -303,11 +303,11 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                     "const": "unstructured",
                                                     "type": "string",
                                                 },
-                                                "skip_unprocessable_file_types": {
+                                                "skip_unprocessable_files": {
                                                     "type": "boolean",
                                                     "default": True,
-                                                    "title": "Skip Unprocessable File Types",
-                                                    "description": "If true, skip files that cannot be parsed because of their file type and log a warning. If false, fail the sync. Corrupted files with valid file types will still result in a failed sync.",
+                                                    "title": "Skip Unprocessable Files",
+                                                    "description": "If true, skip files that cannot be parsed and pass the error message along as the _ab_source_file_parse_error field. If false, fail the sync.",
                                                     "always_show": True,
                                                 },
                                             },
