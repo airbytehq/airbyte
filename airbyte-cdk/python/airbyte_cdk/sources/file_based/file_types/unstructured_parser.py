@@ -139,11 +139,7 @@ class UnstructuredParser(FileTypeParser):
 
     def _read_file(self, file_handle: IOBase, remote_file: RemoteFile, format: UnstructuredFormat, logger: logging.Logger) -> str:
         _import_unstructured()
-        if (
-            (not unstructured_partition_pdf)
-            or (not unstructured_partition_docx)
-            or (not unstructured_partition_pptx)
-        ):
+        if (not unstructured_partition_pdf) or (not unstructured_partition_docx) or (not unstructured_partition_pptx):
             # check whether unstructured library is actually available for better error message and to ensure proper typing (can't be None after this point)
             raise Exception("unstructured library is not available")
 
@@ -221,9 +217,7 @@ class UnstructuredParser(FileTypeParser):
         """
         return self._read_file_remotely(file_handle, format, filetype, strategy)
 
-    def _read_file_remotely(
-        self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str
-    ) -> str:
+    def _read_file_remotely(self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str) -> str:
         headers = {"accept": "application/json", "unstructured-api-key": format.api_key}
 
         data = self._params_to_dict(format.parameters, strategy)
