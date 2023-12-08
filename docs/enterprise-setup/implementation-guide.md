@@ -49,7 +49,6 @@ Follow these instructions to add the Airbyte helm repository:
 
 ### Clone & Configure Airbyte
 
-
 1. `git clone` the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
 
 2. Create a new `airbyte.yml` file in the `configs` directory of the `airbyte-platform` folder. You may also copy `airbyte.sample.yml` to use as a template:
@@ -206,21 +205,21 @@ apiVersion: networking.k8s.io/v1
  kind: Ingress
  spec:
    rules:
-   - host: enterprise-demo.airbyte.com
+   - host: ## example: enterprise-demo.airbyte.com
      http:
        paths:
        - backend:
            service:
              name: airbyte-pro-airbyte-webapp-svc
              port:
-               number: 30080
+               number: ## example: 30080
          path: /
          pathType: Prefix
        - backend:
            service:
              name: airbyte-pro-airbyte-keycloak-svc
              port:
-               number: 30081
+               number: ## example: 30081
          path: /auth
          pathType: Prefix
 ```
