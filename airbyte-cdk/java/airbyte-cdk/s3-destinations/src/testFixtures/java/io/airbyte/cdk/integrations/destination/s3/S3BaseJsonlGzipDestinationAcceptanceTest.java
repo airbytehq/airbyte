@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.s3;
 import com.amazonaws.services.s3.model.S3Object;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening;
+import io.airbyte.cdk.integrations.destination.s3.util.Stringify;
 import io.airbyte.commons.json.Jsons;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,7 +23,8 @@ public abstract class S3BaseJsonlGzipDestinationAcceptanceTest extends S3BaseJso
     // config without compression defaults to GZIP
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
-        "flattening", Flattening.NO.getValue()));
+        "flattening", Flattening.NO.getValue(),
+        "stringify", Stringify.NO.getValue()));
   }
 
   protected BufferedReader getReader(final S3Object s3Object) throws IOException {
