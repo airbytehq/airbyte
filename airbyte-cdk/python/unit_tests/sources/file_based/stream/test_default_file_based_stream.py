@@ -17,7 +17,6 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.default_file_based_stream import DefaultFileBasedStream
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class MockFormat:

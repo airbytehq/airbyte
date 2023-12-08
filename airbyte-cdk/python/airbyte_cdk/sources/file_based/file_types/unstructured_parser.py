@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-import os
 import traceback
 from io import BytesIO, IOBase
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
@@ -10,7 +9,6 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 import backoff
 import dpath.util
 import requests
-from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.unstructured_format import (
     APIParameterConfigModel,
@@ -24,7 +22,6 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
 from airbyte_cdk.utils import is_cloud_environment
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unstructured.file_utils.filetype import FILETYPE_TO_MIMETYPE, STR_TO_FILETYPE, FileType, detect_filetype
 
 unstructured_partition_pdf = None
