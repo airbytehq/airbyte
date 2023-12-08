@@ -58,7 +58,7 @@ class UnstructuredParser(FileTypeParser):
         """
         Return the document_key field as the primary key.
 
-        his will pre-select the document key column as the primary key when setting up a connection, making it easier for the user to configure normalization in the destiantion.
+        his will pre-select the document key column as the primary key when setting up a connection, making it easier for the user to configure normalization in the destination.
         """
         return "document_key"
 
