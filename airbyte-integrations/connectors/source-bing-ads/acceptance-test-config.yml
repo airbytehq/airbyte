@@ -91,6 +91,12 @@ acceptance_tests:
           - name: campaign_labels
             bypass_reason: "This stream is tested without start date"
         ignored_fields:
+          age_gender_audience_report_daily:
+            - name: Impressions
+              bypass_reason: "dynamic field"
+          age_gender_audience_report_weekly:
+            - name: Impressions
+              bypass_reason: "dynamic field"
           keyword_performance_report_weekly:
             - name: Mainline1Bid
               bypass_reason: "dynamic field"
