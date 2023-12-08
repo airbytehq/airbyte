@@ -65,12 +65,19 @@ class UnstructuredParser(FileTypeParser):
         with stream_reader.open_file(file, self.file_read_mode, None, logger) as file_handle:
             filetype = self._get_filetype(file_handle, file)
 
-            if filetype not in self._supported_file_types():
-                self._handle_unprocessable_file(file, format, logger)
+            if filetype not in self._supported_file_types() and not format.skip_unprocessable_files:
+                raise self._create_parse_error(file, self._get_file_type_error_message(filetype))
 
             return {
-                "content": {"type": "string"},
-                "document_key": {"type": "string"},
+                "content": {
+                    "type": "string",
+                    "description": "Content of the file as markdown. Might be null if the file could not be parsed",
+                },
+                "document_key": {"type": "string", "description": "Unique identifier of the document, e.g. the file path"},
+                "_ab_source_file_parse_error": {
+                    "type": "string",
+                    "description": "Error message if the file could not be parsed even though the file is supported",
+                },
             }
 
     def parse_records(
@@ -83,14 +90,30 @@ class UnstructuredParser(FileTypeParser):
     ) -> Iterable[Dict[str, Any]]:
         format = _extract_format(config)
         with stream_reader.open_file(file, self.file_read_mode, None, logger) as file_handle:
-            markdown = self._read_file(file_handle, file, format, logger)
-            if markdown is not None:
+            try:
+                markdown = self._read_file(file_handle, file, format, logger)
                 yield {
                     "content": markdown,
                     "document_key": file.uri,
+                    "_ab_source_file_parse_error": None,
                 }
+            except RecordParseError as e:
+                # RecordParseError is raised when the file can't be parsed because of a problem with the file content (either the file is not supported or the file is corrupted)
+                # if the skip_unprocessable_files flag is set, we log a warning and pass the error as part of the document
+                # otherwise, we raise the error to fail the sync
+                if format.skip_unprocessable_files:
+                    exception_str = str(e)
+                    logger.warn(f"File {file.uri} caused an error during parsing: {exception_str}.")
+                    yield {
+                        "content": None,
+                        "document_key": file.uri,
+                        "_ab_source_file_parse_error": exception_str,
+                    }
+                    logger.warn(f"File {file.uri} cannot be parsed. Skipping it.")
+                else:
+                    raise e
 
-    def _read_file(self, file_handle: IOBase, remote_file: RemoteFile, format: UnstructuredFormat, logger: logging.Logger) -> Optional[str]:
+    def _read_file(self, file_handle: IOBase, remote_file: RemoteFile, format: UnstructuredFormat, logger: logging.Logger) -> str:
         _import_unstructured()
         if (
             (not unstructured_partition_pdf)
@@ -108,28 +131,32 @@ class UnstructuredParser(FileTypeParser):
             decoded_content: str = unstructured_optional_decode(file_content)
             return decoded_content
         if filetype not in self._supported_file_types():
-            self._handle_unprocessable_file(remote_file, format, logger)
-            return None
+            raise self._create_parse_error(remote_file, self._get_file_type_error_message(filetype))
 
         file: Any = file_handle
-        if filetype == FileType.PDF:
-            # for PDF, read the file into a BytesIO object because some code paths in pdf parsing are doing an instance check on the file object and don't work with file-like objects
-            file_handle.seek(0)
-            with BytesIO(file_handle.read()) as file:
-                file_handle.seek(0)
-                elements = unstructured_partition_pdf(file=file)
-        elif filetype == FileType.DOCX:
-            elements = unstructured_partition_docx(file=file)
-        elif filetype == FileType.PPTX:
-            elements = unstructured_partition_pptx(file=file)
+
+        # before the parsing logic is entered, the file is read completely to make sure it is in local memory
+        file_handle.seek(0)
+        file_handle.read()
+        file_handle.seek(0)
+
+        try:
+            if filetype == FileType.PDF:
+                # for PDF, read the file into a BytesIO object because some code paths in pdf parsing are doing an instance check on the file object and don't work with file-like objects
+                with BytesIO(file_handle.read()) as file:
+                    file_handle.seek(0)
+                    elements = unstructured_partition_pdf(file=file)
+            elif filetype == FileType.DOCX:
+                elements = unstructured_partition_docx(file=file)
+            elif filetype == FileType.PPTX:
+                elements = unstructured_partition_pptx(file=file)
+        except Exception as e:
+            raise self._create_parse_error(remote_file, str(e))
 
         return self._render_markdown(elements)
 
-    def _handle_unprocessable_file(self, remote_file: RemoteFile, format: UnstructuredFormat, logger: logging.Logger) -> None:
-        if format.skip_unprocessable_file_types:
-            logger.warn(f"File {remote_file.uri} cannot be parsed. Skipping it.")
-        else:
-            raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=remote_file.uri)
+    def _create_parse_error(self, remote_file: RemoteFile, message: str) -> RecordParseError:
+        return RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=remote_file.uri, message=message)
 
     def _get_filetype(self, file: IOBase, remote_file: RemoteFile) -> Optional[FileType]:
         """
@@ -165,6 +192,10 @@ class UnstructuredParser(FileTypeParser):
 
     def _supported_file_types(self) -> List[Any]:
         return [FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX]
+
+    def _get_file_type_error_message(self, file_type: FileType) -> str:
+        supported_file_types = ", ".join([str(type) for type in self._supported_file_types()])
+        return f"File type {file_type} is not supported. Supported file types are {supported_file_types}"
 
     def _render_markdown(self, elements: List[Any]) -> str:
         return "\n\n".join((self._convert_to_markdown(el) for el in elements))
