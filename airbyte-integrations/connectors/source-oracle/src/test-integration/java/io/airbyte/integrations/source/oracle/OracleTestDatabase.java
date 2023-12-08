@@ -10,9 +10,7 @@ import io.airbyte.cdk.testutils.TestDatabase;
 import java.util.List;
 import java.util.stream.Stream;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.Disabled;
 
-@Disabled
 public class OracleTestDatabase extends
     TestDatabase<AirbyteOracleTestContainer, OracleTestDatabase, OracleTestDatabase.OracleDbConfigBuilder> {
 

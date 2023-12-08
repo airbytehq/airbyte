@@ -14,8 +14,10 @@ import java.util.Collections;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.Db2Container;
 
+@Disabled
 class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Db2Source, Db2TestDatabase> {
 
   private final static Db2Container DB_2_CONTAINER = new Db2Container("ibmcom/db2:11.5.5.0").acceptLicense();

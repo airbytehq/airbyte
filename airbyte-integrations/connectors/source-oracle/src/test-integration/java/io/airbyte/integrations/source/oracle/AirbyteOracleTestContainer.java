@@ -13,12 +13,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
-@Disabled
 public class AirbyteOracleTestContainer extends JdbcDatabaseContainer<AirbyteOracleTestContainer> {
 
   public static final String NAME = "oracle";

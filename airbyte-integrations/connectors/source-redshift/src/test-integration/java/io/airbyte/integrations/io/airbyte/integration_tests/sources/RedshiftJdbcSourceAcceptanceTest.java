@@ -31,6 +31,17 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Redshift
   }
 
   @Override
+  protected void customSetup() {
+    try {
+      try (final RedshiftTestDatabase testDatabase = createTestDatabase()) {
+        for (final String schemaName : TEST_SCHEMAS) {
+          testDatabase.with(DROP_SCHEMA_QUERY, schemaName);
+        }
+      }
+    } catch (final Exception ignore) {}
+  }
+
+  @Override
   public boolean supportsSchemas() {
     return true;
   }
