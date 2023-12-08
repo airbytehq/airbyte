@@ -66,6 +66,15 @@ data:
       - display_keyword_performance_report
       - shopping_performance_report
       - display_topics_performance_report
+      - accessible_bidding_strategy
+      - bidding_strategy
+      - lead_form_submission_data
+      - ad_group_ad_performance_report
+      - ad_group_audience_performance_report
+      - ad_group_performance_report
+      - campaign_performance_report
+      - geographic_performance_report
+      - keywords_performance_report
   supportLevel: certified
   tags:
     - language:python

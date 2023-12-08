@@ -165,6 +165,18 @@ A particular interest-based vertical to be targeted.
 
 A click view with metrics aggregated at each click level, including both valid and invalid clicks.
 
+- [accessible_bidding_strategy](https://developers.google.com/google-ads/api/fields/v15/accessible_bidding_strategy)
+
+Represents a view of BiddingStrategies owned by and shared with the customer.
+
+- [bidding_strategy](https://developers.google.com/google-ads/api/fields/v15/bidding_strategy)
+
+Represents the bidding strategy
+
+- [lead_form_submission_data](https://developers.google.com/google-ads/api/fields/v15/lead_form_submission_data)
+
+Data from lead form submissions
+
 Note that `ad_group`, `ad_group_ad`, and `campaign` contain a `labels` field, which should be joined against their respective `*_label` streams if you want to view the actual labels. For example, the `ad_group` stream contains an `ad_group.labels` field, which you would join against the `ad_group_label` stream's `label.resource_name` field.
 
 ### Report Tables
@@ -173,6 +185,29 @@ Note that `ad_group`, `ad_group_ad`, and `campaign` contain a `labels` field, wh
 
 Provides in-depth metrics related to ads interactions, including viewability, click-through rates, and conversions. Segments data by various factors, offering a granular look into how ads perform across different contexts.
 - [campaign](https://developers.google.com/google-ads/api/fields/v15/campaign)
+
+- [ad_group_ad_performance_report](https://developers.google.com/google-ads/api/fields/v15/ad_group_ad)
+
+Provides in-depth metrics related to ads
+- [ad_group_audience_performance_report](https://developers.google.com/google-ads/api/fields/v15/ad_group_audience_view)
+  
+Provides in-depth metrics related to ad group audience
+- [ad_group_performance_report](https://developers.google.com/google-ads/api/fields/v15/ad_group)
+  
+Provides in-depth metrics related to ad_group
+- [campaign_performance_report](https://developers.google.com/google-ads/api/fields/v15/campaign)
+  
+Provides in-depth metrics related to campaign
+
+- [geographic_performance_report](https://developers.google.com/google-ads/api/fields/v15/geographic_view)
+  
+Provides in-depth metrics related to geographic view
+
+- [keywords_performance_report](https://developers.google.com/google-ads/api/fields/v15/keyword_view)
+  
+Provides in-depth metrics related to keyword view
+
+  
 
 Represents a campaign in Google Ads.
 - [campaign_budget](https://developers.google.com/google-ads/api/fields/v15/campaign_budget)
