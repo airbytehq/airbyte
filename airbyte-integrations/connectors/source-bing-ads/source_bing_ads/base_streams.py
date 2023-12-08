@@ -165,6 +165,7 @@ class Accounts(BingAdsStream):
     def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
         super().__init__(client, config)
         self._account_names = config.get("account_names", [])
+        self._unique_account_ids = set()
 
     def next_page_token(self, response: sudsobject.Object, current_page_token: Optional[int]) -> Optional[Mapping[str, Any]]:
         current_page_token = current_page_token or 0
@@ -204,6 +205,14 @@ class Accounts(BingAdsStream):
             "Predicates": stream_slice["predicates"],
             "ReturnAdditionalFields": self.additional_fields,
         }
+
+    def parse_response(self, response: sudsobject.Object, **kwargs) -> Iterable[Mapping]:
+        if response is not None and hasattr(response, self.data_field):
+            records = self.client.asdict(response)[self.data_field]
+            for record in records:
+                if record["Id"] not in self._unique_account_ids:
+                    self._unique_account_ids.add(record["Id"])
+                    yield record
 
 
 class Campaigns(BingAdsCampaignManagementStream):
