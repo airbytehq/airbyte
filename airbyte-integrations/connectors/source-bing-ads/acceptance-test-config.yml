@@ -91,6 +91,13 @@ acceptance_tests:
           - name: campaign_labels
             bypass_reason: "This stream is tested without start date"
         ignored_fields:
+          campaign_impression_performance_report_weekly:
+            - name: Impressions
+              bypass_reason: "dynamic field"
+            - name: LowQualityImpressions
+              bypass_reason: "dynamic field"
+            - name: LowQualityImpressionsPercent
+              bypass_reason: "dynamic field"
           campaign_performance_report_weekly:
             - name: Impressions
               bypass_reason: "dynamic field"
