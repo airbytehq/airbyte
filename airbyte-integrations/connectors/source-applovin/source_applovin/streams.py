@@ -109,7 +109,7 @@ class CampaignsSubStream(HttpSubStream, ApplovinStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         campaigns = Campaigns(authenticator=self._session.auth, config=self.config)
         campaigns_records = list(campaigns.read_records(sync_mode=SyncMode.full_refresh))
-        tracking_method_filter = self.config["filter_campaigns_tracking_methods"]
+        tracking_method_filter = self.config.get("filter_campaigns_tracking_methods")
         for campaign in campaigns_records:
             if (not tracking_method_filter or
                     (tracking_method_filter and campaign["tracking_method"] in tracking_method_filter)):
