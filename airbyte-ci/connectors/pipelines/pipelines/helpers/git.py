@@ -3,13 +3,15 @@
 #
 
 import functools
-from typing import Set
+from typing import Set, List
 
 import git
 from dagger import Connection
 from pipelines.dagger.containers.git import checked_out_git_container
 from pipelines.helpers.utils import DAGGER_CONFIG, DIFF_FILTER
-
+import os
+from pathlib import Path
+from pipelines import main_logger
 
 def get_current_git_revision() -> str:  # noqa D103
     return git.Repo(search_parent_directories=True).head.object.hexsha
@@ -83,3 +85,17 @@ def get_git_repo() -> git.Repo:
 def get_git_repo_path() -> str:
     """Retrieve the git repo path."""
     return get_git_repo().working_tree_dir
+
+@functools.cache
+def find_all_git_ignore_rules() -> List[str]:
+    """Retrieve all the git ignore rules declared in the directory."""
+    status_output = get_git_repo().git.status(["--short", "--ignored"])
+    main_logger.info("Running git status --short --ignored to find all git ignore rules")
+    rules = []
+    for output in status_output.split("\n"):
+        if output.startswith("!! "):
+            rule = output.replace("!! ", "")
+            if rule.endswith("/"):
+                rule = rule[:-1]
+            rules.append(rule)
+    return rules

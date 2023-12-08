@@ -5,7 +5,7 @@
 from typing import Any, Dict, List, Optional
 
 import dagger
-from pipelines.airbyte_ci.format.consts import CACHE_MOUNT_PATH, DEFAULT_FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS, Formatter
+from pipelines.airbyte_ci.format.consts import CACHE_MOUNT_PATH, FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS, Formatter
 from pipelines.consts import GO_IMAGE, MAVEN_IMAGE, NODE_IMAGE, PYTHON_3_10_IMAGE
 from pipelines.helpers import cache_keys
 from pipelines.helpers.utils import sh_dash_c
@@ -77,7 +77,7 @@ def format_java_container(dagger_client: dagger.Client, java_code: dagger.Direct
     warmup_dir = dagger_client.host().directory(
         ".",
         include=WARM_UP_INCLUSIONS[Formatter.JAVA],
-        exclude=DEFAULT_FORMAT_IGNORE_LIST,
+        exclude=FORMAT_IGNORE_LIST,
     )
     return build_container(
         dagger_client,
@@ -111,7 +111,7 @@ def format_js_container(dagger_client: dagger.Client, js_code: dagger.Directory,
 
 def format_license_container(dagger_client: dagger.Client, license_code: dagger.Directory) -> dagger.Container:
     """Create a Go container with addlicense installed with mounted code to format."""
-    warmup_dir = dagger_client.host().directory(".", include=WARM_UP_INCLUSIONS[Formatter.LICENSE], exclude=DEFAULT_FORMAT_IGNORE_LIST)
+    warmup_dir = dagger_client.host().directory(".", include=WARM_UP_INCLUSIONS[Formatter.LICENSE], exclude=FORMAT_IGNORE_LIST)
     return build_container(
         dagger_client,
         base_image=GO_IMAGE,
@@ -128,7 +128,7 @@ def format_python_container(
     We warm up the container with the pyproject.toml and poetry.lock files to not repeat the pyproject.toml installation.
     """
 
-    warmup_dir = dagger_client.host().directory(".", include=WARM_UP_INCLUSIONS[Formatter.PYTHON], exclude=DEFAULT_FORMAT_IGNORE_LIST)
+    warmup_dir = dagger_client.host().directory(".", include=WARM_UP_INCLUSIONS[Formatter.PYTHON], exclude=FORMAT_IGNORE_LIST)
     return build_container(
         dagger_client,
         base_image=PYTHON_3_10_IMAGE,

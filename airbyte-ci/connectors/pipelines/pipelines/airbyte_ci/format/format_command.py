@@ -14,7 +14,7 @@ import dagger
 from pipelines import main_logger
 from pipelines.airbyte_ci.format.actions import list_files_in_directory
 from pipelines.airbyte_ci.format.configuration import Formatter
-from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS
+from pipelines.airbyte_ci.format.consts import FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.cli import LogOptions, log_command_results
 from pipelines.helpers.utils import sh_dash_c
@@ -84,7 +84,7 @@ class FormatCommand(click.Command):
         Returns:
             dagger.Directory: The directory to format
         """
-        return dagger_client.host().directory(self.LOCAL_REPO_PATH, include=self.file_filter, exclude=DEFAULT_FORMAT_IGNORE_LIST)
+        return dagger_client.host().directory(self.LOCAL_REPO_PATH, include=self.file_filter, exclude=FORMAT_IGNORE_LIST)
 
     @pass_pipeline_context
     @sentry_utils.with_command_context
@@ -159,7 +159,7 @@ class FormatCommand(click.Command):
         format_container = container.with_exec(sh_dash_c(format_commands), skip_entrypoint=True)
         formatted_directory = format_container.directory(REPO_MOUNT_PATH)
         if warmup_inclusion := WARM_UP_INCLUSIONS.get(self.formatter):
-            warmup_dir = dagger_client.host().directory(".", include=warmup_inclusion, exclude=DEFAULT_FORMAT_IGNORE_LIST)
+            warmup_dir = dagger_client.host().directory(".", include=warmup_inclusion, exclude=FORMAT_IGNORE_LIST)
             not_formatted_code = not_formatted_code.with_directory(".", warmup_dir)
             formatted_directory = formatted_directory.with_directory(".", warmup_dir)
         return (
