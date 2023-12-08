@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import csv
 import gzip
 import json as json_lib
@@ -96,14 +97,16 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
         if next_page_token:
             return dict(next_page_token)
 
-        params = {self.replication_start_date_field: self._replication_start_date, self.page_size_field: self.page_size}
+        start_date = self._replication_start_date
+        params = {self.replication_start_date_field: start_date, self.page_size_field: self.page_size}
 
-        if self._replication_start_date and self.cursor_field:
+        if self.cursor_field:
             start_date = max(stream_state.get(self.cursor_field, self._replication_start_date), self._replication_start_date)
-            params.update({self.replication_start_date_field: start_date})
+            start_date = min(start_date, pendulum.now("utc").to_date_string())
+            params[self.replication_start_date_field] = start_date
 
         if self._replication_end_date:
-            params[self.replication_end_date_field] = self._replication_end_date
+            params[self.replication_end_date_field] = max(self._replication_end_date, start_date)
 
         return params
 
@@ -386,6 +389,7 @@ class FlatFileOrdersReports(IncrementalReportsAmazonSPStream):
 
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
     primary_key = "amazon-order-id"
+    cursor_field = "last-updated-date"
 
 
 class FbaStorageFeesReports(IncrementalReportsAmazonSPStream):
@@ -893,7 +897,7 @@ class Orders(IncrementalAmazonSPStream):
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        params.update({"MarketplaceIds": self.marketplace_id})
+        params["MarketplaceIds"] = self.marketplace_id
         return params
 
     def parse_response(
@@ -909,7 +913,7 @@ class Orders(IncrementalAmazonSPStream):
             return self.default_backoff_time
 
 
-class OrderItems(AmazonSPStream, ABC):
+class OrderItems(IncrementalAmazonSPStream):
     """
     API docs: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems
     API model: https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#orderitemslist
@@ -921,6 +925,8 @@ class OrderItems(AmazonSPStream, ABC):
     parent_cursor_field = "LastUpdateDate"
     next_page_token_field = "NextToken"
     stream_slice_cursor_field = "AmazonOrderId"
+    replication_start_date_field = "LastUpdatedAfter"
+    replication_end_date_field = "LastUpdatedBefore"
     page_size_field = None
     default_backoff_time = 10
     default_stream_slice_delay_time = 1
@@ -951,12 +957,6 @@ class OrderItems(AmazonSPStream, ABC):
                 self.parent_cursor_field: order_record[self.parent_cursor_field],
             }
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_benchmark = self.cached_state[self.parent_cursor_field]
-        if current_stream_state.get(self.parent_cursor_field):
-            return {self.parent_cursor_field: max(latest_benchmark, current_stream_state[self.parent_cursor_field])}
-        return {self.parent_cursor_field: latest_benchmark}
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         stream_data = response.json()
         next_page_token = stream_data.get("payload").get(self.next_page_token_field)
@@ -974,7 +974,6 @@ class OrderItems(AmazonSPStream, ABC):
         self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         order_items_list = response.json().get(self.data_field, {})
-        self.logger.info(f"order_items_list efim {order_items_list}")
         if order_items_list.get(self.next_page_token_field) is None:
             self.cached_state[self.parent_cursor_field] = stream_slice[self.parent_cursor_field]
         for order_item in order_items_list.get(self.name, []):
@@ -996,7 +995,8 @@ class LedgerDetailedViewReports(IncrementalReportsAmazonSPStream):
         super().__init__(*args, **kwargs)
         self.transformer.registerCustomTransform(self.get_transform_function())
 
-    def get_transform_function(self):
+    @staticmethod
+    def get_transform_function():
         def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
             if original_value and field_schema.get("format") == "date":
                 transformed_value = pendulum.from_format(original_value, "MM/DD/YYYY").to_date_string()
