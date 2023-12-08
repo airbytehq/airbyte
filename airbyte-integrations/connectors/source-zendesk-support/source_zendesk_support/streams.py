@@ -55,6 +55,10 @@ class BaseZendeskSupportStream(HttpStream, ABC):
         self._subdomain = subdomain
         self._ignore_pagination = ignore_pagination
 
+    @property
+    def max_retries(self) -> Union[int, None]:
+        return 10
+
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
         The rate limit is 700 requests per minute
