@@ -121,6 +121,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     ),
                 )
 
+            except AirbyteTracedException as exc:
+                # Re-raise the exception to stop the whole sync immediately as this is a fatal error
+                raise exc
+
             except Exception:
                 yield AirbyteMessage(
                     type=MessageType.LOG,

@@ -156,7 +156,12 @@ class UnstructuredParser(FileTypeParser):
         if format.processing.mode == "local":
             return self._read_file_locally(file_handle, filetype, format.strategy, remote_file)
         elif format.processing.mode == "api":
-            result: str = self._read_file_remotely_with_retries(file_handle, format.processing, filetype, format.strategy)
+            try:
+                result: str = self._read_file_remotely_with_retries(file_handle, format.processing, filetype, format.strategy)
+            except Exception as e:
+                # Re-throw as config error so the sync is stopped as problems with the external API need to be resolved by the user and are not considered part of the SLA.
+                # Once this parser leaves experimental stage, we should consider making this a system error instead for issues that might be transient.
+                raise AirbyteTracedException.from_exception(e, failure_type=FailureType.config_error)
 
             return result
 
