@@ -321,7 +321,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
             None,
             "test",
             [{"type": "Text", "text": "test"}],
-            [call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"file": ("filename", mock.ANY, "application/pdf")})],
+            [call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")})],
             False,
             [
                 {
@@ -338,7 +338,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
             None,
             "test",
             [{"type": "Text", "text": "test"}],
-            [call("http://localhost:8000/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "hi_res", "include_page_breaks": "true", "ocr_languages": ["eng", "kor"]}, files={"file": ("filename", mock.ANY, "application/pdf")})],
+            [call("http://localhost:8000/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "hi_res", "include_page_breaks": "true", "ocr_languages": ["eng", "kor"]}, files={"files": ("filename", mock.ANY, "application/pdf")})],
             False,
             [
                 {
@@ -379,15 +379,15 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
             "test",
             None,
             [
-                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"file": ("filename", mock.ANY, "application/pdf")}),
+                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")}),
                 call().raise_for_status(),
-                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"file": ("filename", mock.ANY, "application/pdf")}),
+                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")}),
                 call().raise_for_status(),
-                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"file": ("filename", mock.ANY, "application/pdf")}),
+                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")}),
                 call().raise_for_status(),
-                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"file": ("filename", mock.ANY, "application/pdf")}),
+                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")}),
                 call().raise_for_status(),
-                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"file": ("filename", mock.ANY, "application/pdf")}),
+                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")}),
                 call().raise_for_status(),
             ],
             True,
@@ -405,11 +405,11 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
             "test",
             [{"type": "Text", "text": "test"}],
             [
-                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"file": ("filename", mock.ANY, "application/pdf")}),
+                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")}),
                 call().raise_for_status(),
-                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"file": ("filename", mock.ANY, "application/pdf")}),
+                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")}),
                 call().raise_for_status(),
-                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"file": ("filename", mock.ANY, "application/pdf")}),
+                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")}),
                 call().raise_for_status(),
             ],
             False,
@@ -431,7 +431,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
             "test",
             [{"type": "Text", "text": "test"}],
             [
-                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"file": ("filename", mock.ANY, "application/pdf")}),
+                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")}),
                 call().raise_for_status(),
             ],
             True,
@@ -447,7 +447,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
             "test",
             [{"type": "Text", "text": "test"}],
             [
-                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"file": ("filename", mock.ANY, "application/pdf")}),
+                call("https://api.unstructured.io/general/v0/general", headers={"accept": "application/json", "unstructured-api-key": "test"}, data={"strategy": "auto"}, files={"files": ("filename", mock.ANY, "application/pdf")}),
                 call().raise_for_status(),
             ],
             True,

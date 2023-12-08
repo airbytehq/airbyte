@@ -222,7 +222,7 @@ class UnstructuredParser(FileTypeParser):
 
         data = self._params_to_dict(format.parameters, strategy)
 
-        file_data = {"file": ("filename", file_handle, FILETYPE_TO_MIMETYPE[filetype])}
+        file_data = {"files": ("filename", file_handle, FILETYPE_TO_MIMETYPE[filetype])}
 
         response = requests.post(f"{format.api_url}/general/v0/general", headers=headers, data=data, files=file_data)
         response.raise_for_status()
