@@ -18,10 +18,46 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: emails
+            bypass_reason: "no data for this stream in our sandbox account"
+          - name: events
+            bypass_reason: "no data for this stream in our sandbox account"
+          - name: milestones
+            bypass_reason: "no data for this stream in our sandbox account"
+          - name: notes
+            bypass_reason: "no data for this stream in our sandbox account"
+          - name: opportunity_categories
+            bypass_reason: "no data for this stream in our sandbox account"
+          - name: project_categories
+            bypass_reason: "no data for this stream in our sandbox account"
+          - name: knowledge_article_categories
+            bypass_reason: "current sandbox account does not have permissions to access this stream (403 error)"
+          - name: knowledge_article_folders
+            bypass_reason: "current sandbox account does not have permissions to access this stream (403 error)"
+          - name: knowledge_articles
+            bypass_reason: "current sandbox account does not have permissions to access this stream (403 error)"
+          - name: lead_sources
+            bypass_reason: "current sandbox account does not have permissions to access this stream (403 error)"
+          - name: lead_statuses
+            bypass_reason: "current sandbox account does not have permissions to access this stream (403 error)"
+          - name: prospects
+            bypass_reason: "current sandbox account does not have permissions to access this stream (403 error)"
+
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          contacts:
+            - name: "IMAGE_URL"
+              bypass_reason: "image url is a dynamic s3 url with a changing expiration date in the query parameter"
+          organisations:
+            - name: "IMAGE_URL"
+              bypass_reason: "image url is a dynamic s3 url with a changing expiration date in the query parameter"
+          users:
+            - name: "USER_CURRENCY"
+              bypass_reason: "this can change between sequential reads"
   incremental:
     tests:
       - config_path: "secrets/config.json"

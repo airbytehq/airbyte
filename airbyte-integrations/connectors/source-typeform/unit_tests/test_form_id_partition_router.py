@@ -7,7 +7,7 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from source_typeform.components import FormIdPartitionRouter
+from source_typeform.components import FormIdPartitionRouter, TypeformAuthenticator
 
 # test cases as a list of tuples (form_ids, parent_stream_configs, expected_slices)
 test_cases = [
@@ -45,3 +45,20 @@ def test_stream_slices(form_ids, parent_stream_configs, expected_slices):
     slices = list(router.stream_slices())
 
     assert slices == expected_slices
+
+@pytest.mark.parametrize("token_auth, oauth2, config, expected", [
+    (
+        "token_auth",
+        None,
+        {"credentials": { "auth_type": True, "access_token": True }},
+        "token_auth"
+    ),
+    (
+        None,
+        "oauth2",
+        {"credentials": { "auth_type": False, "access_token": False}},
+        "oauth2"
+    )
+])
+def test_new_typeformauthenticator(token_auth, oauth2, config, expected):
+    assert TypeformAuthenticator(token_auth, oauth2, config) == expected

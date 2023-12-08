@@ -10,7 +10,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 
 logger = logging.getLogger("airbyte")
 
@@ -260,6 +260,53 @@ class EmailActivity(IncrementalMailChimpStream):
                 yield {**item, **activity_item}
 
 
+class InterestCategories(MailChimpStream, HttpSubStream):
+    """
+    Get information about interest categories for a specific list.
+    Docs link: https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/
+    """
+
+    data_field = "categories"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        """
+        Get the list_id from the parent stream slice and use it to construct the path.
+        """
+        list_id = stream_slice.get("parent").get("id")
+        return f"lists/{list_id}/interest-categories"
+
+    def request_params(self, **kwargs):
+
+        # Exclude the _links field, as it is not user-relevant data
+        params = super().request_params(**kwargs)
+        params["exclude_fields"] = "categories._links"
+        return params
+
+
+class Interests(MailChimpStream, HttpSubStream):
+    """
+    Get a list of interests for a specific interest category.
+    Docs link: https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/
+    """
+
+    data_field = "interests"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        """
+        Get the list_id from the parent stream slice and use it to construct the path.
+        """
+        list_id = stream_slice.get("parent").get("list_id")
+        category_id = stream_slice.get("parent").get("id")
+        return f"lists/{list_id}/interest-categories/{category_id}/interests"
+
+    def request_params(self, **kwargs):
+
+        # Exclude the _links field, as it is not user-relevant data
+        params = super().request_params(**kwargs)
+        params["exclude_fields"] = "interests._links"
+        return params
+
+
 class ListMembers(MailChimpListSubStream):
     """
     Get information about members in a specific Mailchimp list.
@@ -274,8 +321,102 @@ class Reports(IncrementalMailChimpStream):
     cursor_field = "send_time"
     data_field = "reports"
 
+    @staticmethod
+    def remove_empty_datetime_fields(record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        In some cases, the 'clicks.last_click' and 'opens.last_open' fields are returned as an empty string,
+        which causes validation errors on the `date-time` format.
+        To avoid this, we remove the fields if they are empty.
+        """
+        clicks = record.get("clicks", {})
+        opens = record.get("opens", {})
+        if not clicks.get("last_click"):
+            clicks.pop("last_click", None)
+        if not opens.get("last_open"):
+            opens.pop("last_open", None)
+        return record
+
     def path(self, **kwargs) -> str:
         return "reports"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response = super().parse_response(response, **kwargs)
+        for record in response:
+            yield self.remove_empty_datetime_fields(record)
+
+
+class SegmentMembers(MailChimpListSubStream):
+    """
+    Get information about members in a specific segment.
+    Docs link: https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/
+    """
+
+    cursor_field = "last_changed"
+    data_field = "members"
+
+    def nullify_empty_string_fields(self, element: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        SegmentMember records may contain multiple fields that are returned as empty strings, which causes validation issues for fields with declared "datetime" formats.
+        Since all fields are nullable, replacing any string value of "" with None is a safe way to handle these edge cases.
+
+        :param element: A SegmentMember record, dictionary or list
+        """
+
+        if isinstance(element, dict):
+            # If the element is a dictionary, apply the method recursively to each value,
+            # replacing the empty string value with None.
+            element = {k: self.nullify_empty_string_fields(v) if v != "" else None for k, v in element.items()}
+        elif isinstance(element, list):
+            # If the element is a list, apply the method recursively to each item in the list.
+            element = [self.nullify_empty_string_fields(v) for v in element]
+
+        return element
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Each slice consists of a list_id and segment_id pair
+        """
+        segments_slices = Segments(authenticator=self.authenticator).stream_slices(sync_mode=SyncMode.full_refresh)
+
+        for slice in segments_slices:
+            segment_records = Segments(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)
+
+            for segment in segment_records:
+                yield {"list_id": segment["list_id"], "segment_id": segment["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        list_id = stream_slice.get("list_id")
+        segment_id = stream_slice.get("segment_id")
+        return f"lists/{list_id}/segments/{segment_id}/members"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice, **kwargs) -> Iterable[Mapping]:
+        """
+        SegmentMembers endpoint does not support sorting, so we need to filter out records that are older than the current state
+        """
+        response = super().parse_response(response, **kwargs)
+
+        for record in response:
+            # Add the segment_id foreign_key to each record
+            record["segment_id"] = stream_slice.get("segment_id")
+
+            current_cursor_value = stream_state.get(str(record.get("segment_id")), {}).get(self.cursor_field)
+            record_cursor_value = record.get(self.cursor_field)
+            if current_cursor_value is None or record_cursor_value >= current_cursor_value:
+                yield self.nullify_empty_string_fields(record)
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = current_stream_state or {}
+        segment_id = str(latest_record.get("segment_id"))
+        latest_cursor_value = latest_record.get(self.cursor_field)
+
+        # Get the current state value for this list, if it exists
+        segment_state = current_stream_state.get(segment_id, {})
+        current_cursor_value = segment_state.get(self.cursor_field, latest_cursor_value)
+
+        # Update the cursor value and set it in state
+        updated_cursor_value = max(current_cursor_value, latest_cursor_value)
+        current_stream_state[segment_id] = {self.cursor_field: updated_cursor_value}
+        return current_stream_state
 
 
 class Segments(MailChimpListSubStream):
@@ -286,6 +427,29 @@ class Segments(MailChimpListSubStream):
 
     cursor_field = "updated_at"
     data_field = "segments"
+
+
+class Tags(MailChimpStream, HttpSubStream):
+    """
+    Get information about tags for a specific list.
+    Docs link: https://mailchimp.com/developer/marketing/api/list-tags/list-tags-for-list/
+    """
+
+    data_field = "tags"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        list_id = stream_slice.get("parent").get("id")
+        return f"lists/{list_id}/tag-search"
+
+    def parse_response(self, response: requests.Response, stream_slice, **kwargs) -> Iterable[Mapping]:
+        """
+        Tags do not reference parent_ids, so we need to add the list_id to each record.
+        """
+        response = super().parse_response(response, **kwargs)
+
+        for record in response:
+            record["list_id"] = stream_slice.get("parent").get("id")
+            yield record
 
 
 class Unsubscribes(IncrementalMailChimpStream):

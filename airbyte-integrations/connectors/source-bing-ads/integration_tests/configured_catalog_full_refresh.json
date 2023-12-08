@@ -68,117 +68,7 @@
     },
     {
       "stream": {
-        "name": "account_performance_report_monthly",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["TimePeriod"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "ad_group_performance_report_monthly",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["TimePeriod"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "ad_performance_report_monthly",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["TimePeriod"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "geographic_performance_report_monthly",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["TimePeriod"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "budget_summary_report",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["TimePeriod"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "campaign_performance_report_monthly",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["TimePeriod"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "campaign_impression_performance_report_monthly",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["TimePeriod"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "keyword_performance_report_monthly",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["TimePeriod"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "age_gender_audience_report_monthly",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["TimePeriod"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "search_query_performance_report_monthly",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["TimePeriod"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "user_location_performance_report_monthly",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["TimePeriod"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "account_impression_performance_report_monthly",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"]
       },
@@ -249,16 +139,6 @@
     {
       "stream": {
         "name": "keywords",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["TimePeriod"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "ad_group_impression_performance_report_monthly",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"]
       },

@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.50", "pandas"]
+MAIN_REQUIREMENTS = ["airbyte-cdk==0.54.0", "pandas"]  # Pinning airbyte-cdk until we update source-salesforce to use the ConcurrentSource
 
 TEST_REQUIREMENTS = ["freezegun", "pytest~=6.1", "pytest-mock~=3.6", "requests-mock~=1.9.3", "pytest-timeout"]
 

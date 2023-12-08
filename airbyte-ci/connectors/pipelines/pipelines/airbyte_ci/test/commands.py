@@ -18,7 +18,7 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 @pass_pipeline_context
 @click_ignore_unused_kwargs
 async def test(pipeline_context: ClickPipelineContext):
-    """Runs the tests for the given airbyte-ci package.
+    """Runs the tests for the given airbyte-ci package
 
     Args:
         pipeline_context (ClickPipelineContext): The context object.
@@ -63,6 +63,7 @@ async def test(pipeline_context: ClickPipelineContext):
         .with_workdir(f"/airbyte/{poetry_package_path}")
         .with_exec(["poetry", "install"])
         .with_unix_socket("/var/run/docker.sock", dagger_client.host().unix_socket("/var/run/docker.sock"))
+        .with_env_variable("CI", str(pipeline_context.params["is_ci"]))
         .with_exec(["poetry", "run", "pytest", test_directory])
     )
 

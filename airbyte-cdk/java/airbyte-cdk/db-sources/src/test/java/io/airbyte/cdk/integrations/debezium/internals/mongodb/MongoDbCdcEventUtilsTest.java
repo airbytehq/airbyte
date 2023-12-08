@@ -22,6 +22,7 @@ import io.airbyte.commons.json.Jsons;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import org.apache.commons.codec.binary.Base64;
 import org.bson.BsonBinary;
 import org.bson.BsonBoolean;
@@ -40,6 +41,7 @@ import org.bson.BsonString;
 import org.bson.BsonSymbol;
 import org.bson.BsonTimestamp;
 import org.bson.Document;
+import org.bson.UuidRepresentation;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
@@ -83,6 +85,8 @@ class MongoDbCdcEventUtilsTest {
   void testTransformDataTypes() {
     final BsonTimestamp bsonTimestamp = new BsonTimestamp(394, 1926745562);
     final String expectedTimestamp = DataTypeUtils.toISO8601StringWithMilliseconds(bsonTimestamp.getValue());
+    final UUID standardUuid = UUID.randomUUID();
+    final UUID legacyUuid = UUID.randomUUID();
 
     final Document document = new Document("field1", new BsonBoolean(true))
         .append("field2", new BsonInt32(1))
@@ -99,7 +103,9 @@ class MongoDbCdcEventUtilsTest {
         .append("field13", new BsonJavaScriptWithScope("code2", new BsonDocument("scope", new BsonString("scope"))))
         .append("field14", new BsonRegularExpression("pattern"))
         .append("field15", new BsonNull())
-        .append("field16", new Document("key", "value"));
+        .append("field16", new Document("key", "value"))
+        .append("field17", new BsonBinary(standardUuid, UuidRepresentation.STANDARD))
+        .append("field18", new BsonBinary(legacyUuid, UuidRepresentation.JAVA_LEGACY));
 
     final String documentAsJson = document.toJson();
     final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, document.keySet());
@@ -123,6 +129,12 @@ class MongoDbCdcEventUtilsTest {
     assertEquals("pattern", transformed.get("field14").asText());
     assertFalse(transformed.has("field15"));
     assertEquals("value", transformed.get("field16").get("key").asText());
+    // Assert that UUIDs can be serialized. Currently, they will be represented as base 64 encoded
+    // strings. Since the original mongo source
+    // may have these UUIDs written by a variety of sources, each with different encodings - we cannot
+    // decode these back to the original UUID.
+    assertTrue(transformed.has("field17"));
+    assertTrue(transformed.has("field18"));
   }
 
   @Test
