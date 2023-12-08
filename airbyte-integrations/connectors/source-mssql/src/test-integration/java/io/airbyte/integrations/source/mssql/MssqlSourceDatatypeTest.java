@@ -12,7 +12,7 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
   @Override
   protected Database setupDatabase() {
-    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022_UBUNTU_20_04);
+    testdb = MsSQLTestDatabase.in(BaseImage.MSSQL_2022);
     return testdb.getDatabase();
   }
 
