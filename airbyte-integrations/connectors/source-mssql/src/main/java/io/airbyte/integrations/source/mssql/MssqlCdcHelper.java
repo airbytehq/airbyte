@@ -209,10 +209,6 @@ public class MssqlCdcHelper {
     return props;
   }
 
-  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog) {
-    return getDebeziumProperties(database, catalog, false);
-  }
-
   private static String getSchema(final ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams().stream()
         .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
