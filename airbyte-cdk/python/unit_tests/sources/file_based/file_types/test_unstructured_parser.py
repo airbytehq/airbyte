@@ -492,6 +492,7 @@ def test_parse_records_remotely(
     if raises:
         with pytest.raises(AirbyteTracedException) as exc:
             list(UnstructuredParser().parse_records(config, fake_file, stream_reader, logger, MagicMock()))
+
         # Failures from the API are treated as config errors
         assert exc.value.failure_type == FailureType.config_error
     else:
