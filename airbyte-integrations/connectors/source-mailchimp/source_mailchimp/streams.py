@@ -144,7 +144,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         stream_state = stream_state or {}
         stream_slice = stream_slice or {}
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        default_params = {"exclude_fields": f"{self.data_field}._links", "sort_field": self.sort_field, "sort_dir": "ASC", **stream_slice}
+        default_params = {"sort_field": self.sort_field, "sort_dir": "ASC", **stream_slice}
         params.update(default_params)
         return params
 
@@ -167,6 +167,13 @@ class MailChimpListSubStream(IncrementalMailChimpStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         list_id = stream_slice.get("list_id")
         return f"lists/{list_id}/{self.data_field}"
+    
+    def request_params(self, stream_state=None, stream_slice=None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+
+        # Exclude the _links field, as it is not user-relevant data
+        params["exclude_fields"] = f"{self.data_field}._links"
+        return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
@@ -406,7 +413,7 @@ class SegmentMembers(MailChimpListSubStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice, **kwargs) -> Iterable[Mapping]:
         """
-        The SegmentMembers endpoint does not support request_params sorting or filtering, 
+        The SegmentMembers endpoint does not support sorting or filtering, 
         so we need to apply our own filtering logic before reading.
         """
         response = super().parse_response(response, **kwargs)
@@ -511,7 +518,7 @@ class Unsubscribes(IncrementalMailChimpStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice, **kwargs) -> Iterable[Mapping]:
         """
-        The Unsubscribes endpoint does not support request_params sorting or filtering,
+        The Unsubscribes endpoint does not support sorting or filtering,
         so we need to apply our own filtering logic before reading.
         """
 

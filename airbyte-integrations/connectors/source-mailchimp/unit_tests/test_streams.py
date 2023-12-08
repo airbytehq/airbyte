@@ -170,7 +170,7 @@ def test_stream_parse_json_error(auth, caplog):
         # Test case 2: state and next_page_token
         (
             ListMembers,
-            {"list_id": "123"},
+            {"list_id": "123", "since_last_changed": "2023-10-15T00:00:00Z"},
             {"123": {"last_changed": "2023-10-15T00:00:00Z"}},
             {"offset": 1000},
             {
@@ -391,7 +391,8 @@ def test_parse_response(stream_state, expected_records, unsubscribes_stream):
             {"campaign_id": "campaign_1", "email_id": "email_4", "timestamp": "2022-01-03T00:00:00Z"},
         ]
     }
-    records = list(unsubscribes_stream.parse_response(response=mock_response, stream_state=stream_state))
+    stream_slice = {"campaign_id": "campaign_1"}
+    records = list(unsubscribes_stream.parse_response(response=mock_response, stream_slice=stream_slice, stream_state=stream_state))
     assert records == expected_records
 
 
@@ -630,28 +631,40 @@ def test_reports_remove_empty_datetime_fields(auth, record, expected_return):
     stream = Reports(authenticator=auth)
     assert stream.remove_empty_datetime_fields(record) == expected_return, f"Expected: {expected_return}, Actual: {stream.remove_empty_datetime_fields(record)}"
 
-
-@pytest.mark.parametrize("start_date, expected_ids", [
-        (None, [1, 2, 3]),
-        ("2022-01-01T00:00:00.000Z", [1, 3]),
-        ("2100-01-01T00:00:00.000Z", [])
-    ],
-    ids=[
-        "No start_date: all records read", 
-        "start_date provided: only records >= start_date read",
-        "Start date > records: no records read"
+@pytest.mark.parametrize(
+    "start_date, state_date, expected_return_value",
+    [
+        (
+            "2021-01-01T00:00:00.000Z",
+            "2020-01-01T00:00:00+00:00",
+            "2021-01-01T00:00:00Z"
+        ),
+        (
+            "2021-01-01T00:00:00.000Z",
+            "2023-10-05T00:00:00+00:00",
+            "2023-10-05T00:00:00+00:00"
+        ),
+        (
+            None,
+            "2022-01-01T00:00:00+00:00",
+            "2022-01-01T00:00:00+00:00"
+        ),
+        (
+            "2020-01-01T00:00:00.000Z",
+            None,
+            "2020-01-01T00:00:00Z"
+        ),
+        (
+            None,
+            None,
+            None
+        )
     ]
 )
-def test_incremental_start_date(auth, start_date, expected_ids, requests_mock):
-    mock_data = [
-        {"id": 1, "create_time": "2022-01-05T00:00:00.000Z"},
-        {"id": 2, "create_time": "2021-12-25T00:00:00.000Z"},
-        {"id": 3, "create_time": "2022-01-01T00:00:00.000Z"},
-    ]
+def test_get_filter_date(auth, start_date, state_date, expected_return_value):
+    """
+    Tests that the get_filter_date method returns the correct date string
+    """
     stream = Campaigns(authenticator=auth, start_date=start_date)
-
-    response = MagicMock()
-    response.json.return_value = {"campaigns": mock_data}
-    records = list(stream.parse_response(response))
-
-    assert [record["id"] for record in records] == expected_ids
+    result = stream.get_filter_date(start_date, state_date)
+    assert result == expected_return_value, f"Expected: {expected_return_value}, Actual: {result}"
