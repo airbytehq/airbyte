@@ -330,6 +330,10 @@ acceptance_tests:
               bypass_reason: "dynamic field"
             - name: AllConversionRate
               bypass_reason: "dynamic field"
+            - name: Mainline1Bid
+              bypass_reason: "dynamic field"
+            - name: MainlineBid
+              bypass_reason: "dynamic field"
         timeout_seconds: 9000
       - config_path: secrets/config_no_date.json
         expect_records:
