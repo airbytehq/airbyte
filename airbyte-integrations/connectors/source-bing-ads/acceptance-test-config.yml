@@ -357,7 +357,7 @@ acceptance_tests:
         timeout_seconds: 9000
       - config_path: secrets/config_no_date.json
         expect_records:
-          path: "integration_tests/expected_records.jsonl"
+          path: "integration_tests/expected_records_no_start_date.jsonl"
           extra_records: yes
         empty_streams:
           - name: app_install_ads
