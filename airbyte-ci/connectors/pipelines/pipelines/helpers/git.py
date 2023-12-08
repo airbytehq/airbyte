@@ -3,15 +3,16 @@
 #
 
 import functools
-from typing import Set, List
+import os
+from pathlib import Path
+from typing import List, Set
 
 import git
 from dagger import Connection
+from pipelines import main_logger
 from pipelines.dagger.containers.git import checked_out_git_container
 from pipelines.helpers.utils import DAGGER_CONFIG, DIFF_FILTER
-import os
-from pathlib import Path
-from pipelines import main_logger
+
 
 def get_current_git_revision() -> str:  # noqa D103
     return git.Repo(search_parent_directories=True).head.object.hexsha
@@ -85,6 +86,7 @@ def get_git_repo() -> git.Repo:
 def get_git_repo_path() -> str:
     """Retrieve the git repo path."""
     return get_git_repo().working_tree_dir
+
 
 @functools.cache
 def find_all_git_ignore_rules() -> List[str]:
