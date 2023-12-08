@@ -9,7 +9,7 @@ A sync will automatically start after a completed reset, which commonly backfill
 ## Performing a Reset
 To perform a full reset that resets all your streams, select `Reset your data` in the UI on a connection's status or job history tabs by selecting the three grey dots next to "Sync now". 
 
-To reset a single stream, navigate to a Connection's status page and click the three grey dots next to any stream. This will perform a reset of only that stream. 
+To reset a single stream, navigate to a Connection's status page, click the three grey dots next to any stream, and select "Reset this stream". This will perform a reset of only that stream. You will then need to sync the connection again in order to reload data for that stream. 
 
 :::note
 A single stream reset will sync all enabled streams on the next sync. 
