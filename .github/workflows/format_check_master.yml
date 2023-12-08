@@ -42,7 +42,7 @@ jobs:
           GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Format Failure on Master Slack Channel
-        if: steps.airbyte_ci_format_check_all.outcome == 'failure' 
+        if: steps.airbyte_ci_format_check_all.outcome == 'failure'
         uses: abinoda/slack-action@master
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
