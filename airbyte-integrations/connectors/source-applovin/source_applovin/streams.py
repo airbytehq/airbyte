@@ -69,21 +69,28 @@ class ApplovinStream(HttpStream):
 
 class Campaigns(ApplovinStream):
     primary_key = "campaign_id"
+    use_cache = True
+
+    def __init__(self, authenticator: TokenAuthenticator, config, **kwargs):
+        self.config = config
+        super().__init__(
+            authenticator=authenticator,
+        )
 
     def path(self, **kwargs) -> str:
         return "campaigns"
 
 
-class Creatives(HttpSubStream, ApplovinStream):
-    primary_key = "id"
+class CampaignsSubStream(HttpSubStream, ApplovinStream):
     backoff = 120
     raise_on_http_errors = False
-    use_cache = True
+    use_cache = False
 
-    def __init__(self, authenticator: TokenAuthenticator, **kwargs):
+    def __init__(self, authenticator: TokenAuthenticator, config, **kwargs):
+        self.config = config
         super().__init__(
             authenticator=authenticator,
-            parent=Campaigns(authenticator=authenticator),
+            parent=Campaigns(authenticator=authenticator, config=config),
         )
 
     # as of now Applovin's rate limit is around 2000 request per *hour*
@@ -99,55 +106,33 @@ class Creatives(HttpSubStream, ApplovinStream):
     def max_time(self) -> float:
         return 14400
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        campaign_id = stream_slice["campaign_id"]
-        return f"creative_sets/{campaign_id}"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        campaigns = Campaigns(authenticator=self._session.auth)
+        campaigns = Campaigns(authenticator=self._session.auth, config=self.config)
         campaigns_records = list(campaigns.read_records(sync_mode=SyncMode.full_refresh))
-        print(f"Length creatives {len(campaigns_records)}")
+        tracking_method_filter = self.config["filter_campaigns_tracking_methods"]
         for campaign in campaigns_records:
-            if campaign["tracking_method"] == "adjust":
+            if (not tracking_method_filter or
+                    (tracking_method_filter and campaign["tracking_method"] in tracking_method_filter)):
                 yield {"campaign_id": campaign["campaign_id"]}
                 continue
 
 
-class Targets(HttpSubStream, ApplovinStream):
-    primary_key = "campaign_id"
-    backoff = 120
-    count = 0
-    raise_on_http_errors = False
-    use_cache = True
-
-    def __init__(self, authenticator: TokenAuthenticator, **kwargs):
-        super().__init__(
-            authenticator=authenticator,
-            parent=Campaigns(authenticator=authenticator),
-        )
+class Creatives(CampaignsSubStream):
+    primary_key = "id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         campaign_id = stream_slice["campaign_id"]
-        logging.info("COUNT: " + str(self.count))
-        self.count += 1
-        return f"campaign_targets/{campaign_id}"
+        return f"creative_sets/{campaign_id}"
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
+
+class Targets(CampaignsSubStream):
+    primary_key = "campaign_id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        campaign_id = stream_slice["campaign_id"]
+        return f"campaign_targets/{campaign_id}"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         record = response.json()
         record["campaign_id"] = stream_slice["campaign_id"]
         yield record
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        campaigns = Campaigns(authenticator=self._session.auth)
-        campaigns_records = list(campaigns.read_records(sync_mode=SyncMode.full_refresh))
-        print(f"Length targets {len(campaigns_records)}")
-        for campaign in campaigns_records:
-            if campaign["tracking_method"] == "adjust":
-                yield {"campaign_id": campaign["campaign_id"]}
-                continue

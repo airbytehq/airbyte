@@ -70,7 +70,8 @@ class SourceApplovin(AbstractSource):
         auth = TokenAuthenticator(token=access_token[0])
 
         args = {
-            "authenticator": auth
+            "authenticator": auth,
+            "config": config
         }
         return [Campaigns(**args), Creatives(**args), Targets(**args)]
 
