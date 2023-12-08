@@ -69,7 +69,7 @@ class UnstructuredFormat(BaseModel):
         const=True,
     )
 
-    skip_unprocessable_file_types: bool = Field(
+    skip_unprocessable_files: bool = Field(
         default=True,
         title="Skip Unprocessable Files",
         description="If true, skip files that cannot be parsed and pass the error message along as the _ab_source_file_parse_error field. If false, fail the sync.",

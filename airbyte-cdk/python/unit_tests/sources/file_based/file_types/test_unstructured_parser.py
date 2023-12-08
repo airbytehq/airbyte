@@ -327,6 +327,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
                 {
                     "content": "test",
                     "document_key": FILE_URI,
+                    "_ab_source_file_parse_error": None
                 }
             ],
             id="basic_request",
@@ -343,6 +344,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
                 {
                     "content": "test",
                     "document_key": FILE_URI,
+                    "_ab_source_file_parse_error": None
                 }
             ],
             id="request_with_params",
@@ -359,6 +361,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
                 {
                     "content": "# Mymarkdown",
                     "document_key": FILE_URI,
+                    "_ab_source_file_parse_error": None
                 }
             ],
             id="handle_markdown_locally",
@@ -414,6 +417,7 @@ def test_check_config(requests_mock, format_config, raises_for_status, json_resp
                 {
                     "content": "test",
                     "document_key": FILE_URI,
+                    "_ab_source_file_parse_error": None
                 }
             ],
             id="retry_and_recover",

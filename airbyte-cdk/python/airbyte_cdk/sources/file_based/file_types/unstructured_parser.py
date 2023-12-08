@@ -154,13 +154,12 @@ class UnstructuredParser(FileTypeParser):
             decoded_content: str = optional_decode(file_content)
             return decoded_content
         if filetype not in self._supported_file_types():
-            self._handle_unprocessable_file(remote_file, format.skip_unprocessable_file_types, logger)
-            return None
+            raise self._create_parse_error(remote_file, self._get_file_type_error_message(filetype))
         if format.processing.mode == "local":
-            return self._read_file_locally(file_handle, filetype, format.strategy)
+            return self._read_file_locally(file_handle, filetype, format.strategy, remote_file)
         elif format.processing.mode == "api":
             try:
-                result: Optional[str] = self._read_file_remotely_with_retries(file_handle, format.processing, filetype, format.strategy)
+                result: str = self._read_file_remotely_with_retries(file_handle, format.processing, filetype, format.strategy)
             except Exception as e:
                 # Re-throw as config error so the sync is stopped as problems with the external API need to be resolved by the user and are not considered part of the SLA.
                 # Once this parser leaves experimental stage, we should consider making this a system error instead for issues that might be transient.
@@ -216,7 +215,7 @@ class UnstructuredParser(FileTypeParser):
     @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=5, giveup=user_error)
     def _read_file_remotely_with_retries(
         self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str
-    ) -> Optional[str]:
+    ) -> str:
         """
         Read a file remotely, retrying up to 5 times if the error is not caused by user error. This is useful for transient network errors or the API server being overloaded temporarily.
         """
@@ -224,7 +223,7 @@ class UnstructuredParser(FileTypeParser):
 
     def _read_file_remotely(
         self, file_handle: IOBase, format: APIProcessingConfigModel, filetype: FileType, strategy: str
-    ) -> Optional[str]:
+    ) -> str:
         headers = {"accept": "application/json", "unstructured-api-key": format.api_key}
 
         data = self._params_to_dict(format.parameters, strategy)
@@ -238,7 +237,7 @@ class UnstructuredParser(FileTypeParser):
 
         return self._render_markdown(json_response)
 
-    def _read_file_locally(self, file_handle: IOBase, filetype: FileType, strategy: str) -> Optional[str]:
+    def _read_file_locally(self, file_handle: IOBase, filetype: FileType, strategy: str, remote_file: RemoteFile) -> str:
         _import_unstructured()
         if (not unstructured_partition_pdf) or (not unstructured_partition_docx) or (not unstructured_partition_pptx):
             # check whether unstructured library is actually available for better error message and to ensure proper typing (can't be None after this point)
