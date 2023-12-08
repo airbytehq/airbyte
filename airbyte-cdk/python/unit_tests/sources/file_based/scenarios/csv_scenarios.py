@@ -310,6 +310,116 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                     "description": "If true, skip files that cannot be parsed and pass the error message along as the _ab_source_file_parse_error field. If false, fail the sync.",
                                                     "always_show": True,
                                                 },
+                                                "strategy": {
+                                                    "type": "string",
+                                                    "always_show": True,
+                                                    "order": 0,
+                                                    "default": "auto",
+                                                    "title": "Parsing Strategy",
+                                                    "enum": ["auto", "fast", "ocr_only", "hi_res"],
+                                                    "description": "The strategy used to parse documents. `fast` extracts text directly from the document which doesn't work for all files. `ocr_only` is more reliable, but slower. `hi_res` is the most reliable, but requires an API key and a hosted instance of unstructured and can't be used with local mode. See the unstructured.io documentation for more details: https://unstructured-io.github.io/unstructured/core/partition.html#partition-pdf",
+                                                },
+                                                "processing": {
+                                                    "title": "Processing",
+                                                    "description": "Processing configuration",
+                                                    "default": {
+                                                        "mode": "local"
+                                                    },
+                                                    "type": "object",
+                                                    "oneOf": [
+                                                        {
+                                                            "title": "Local",
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "mode": {
+                                                                    "title": "Mode",
+                                                                    "default": "local",
+                                                                    "const": "local",
+                                                                    "enum": [
+                                                                        "local"
+                                                                    ],
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "description": "Process files locally, supporting `fast` and `ocr` modes. This is the default option.",
+                                                            "required": [
+                                                                "mode"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "title": "via API",
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "mode": {
+                                                                    "title": "Mode",
+                                                                    "default": "api",
+                                                                    "const": "api",
+                                                                    "enum": [
+                                                                        "api"
+                                                                    ],
+                                                                    "type": "string"
+                                                                },
+                                                                "api_key": {
+                                                                    "title": "API Key",
+                                                                    "description": "The API key to use matching the environment",
+                                                                    "default": "",
+                                                                    "always_show": True,
+                                                                    "airbyte_secret": True,
+                                                                    "type": "string"
+                                                                },
+                                                                "api_url": {
+                                                                    "title": "API URL",
+                                                                    "description": "The URL of the unstructured API to use",
+                                                                    "default": "https://api.unstructured.io",
+                                                                    "always_show": True,
+                                                                    "examples": [
+                                                                        "https://api.unstructured.com"
+                                                                    ],
+                                                                    "type": "string"
+                                                                },
+                                                                "parameters": {
+                                                                    "title": "Additional URL Parameters",
+                                                                    "description": "List of parameters send to the API",
+                                                                    "default": [],
+                                                                    "always_show": True,
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "title": "APIParameterConfigModel",
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "name": {
+                                                                                "title": "Parameter name",
+                                                                                "description": "The name of the unstructured API parameter to use",
+                                                                                "examples": [
+                                                                                    "combine_under_n_chars",
+                                                                                    "languages"
+                                                                                ],
+                                                                                "type": "string"
+                                                                            },
+                                                                            "value": {
+                                                                                "title": "Value",
+                                                                                "description": "The value of the parameter",
+                                                                                "examples": [
+                                                                                    "true",
+                                                                                    "hi_res"
+                                                                                ],
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": [
+                                                                            "name",
+                                                                            "value"
+                                                                        ]
+                                                                    }
+                                                                }
+                                                            },
+                                                            "description": "Process files via an API, using the `hi_res` mode. This option is useful for increased performance and accuracy, but requires an API key and a hosted instance of unstructured.",
+                                                            "required": [
+                                                                "mode"
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
                                             },
                                             "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
                                             "required": ["filetype"],
