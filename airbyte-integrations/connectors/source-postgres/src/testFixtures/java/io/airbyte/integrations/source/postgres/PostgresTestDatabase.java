@@ -21,9 +21,9 @@ public class PostgresTestDatabase extends
 
   public static enum BaseImage {
 
-    POSTGRES_16_BULLSEYE("postgres:16-bullseye"),
-    POSTGRES_12_BULLSEYE("postgres:12-bullseye"),
-    POSTGRES_9_ALPINE("postgres:9-alpine"),
+    POSTGRES_16("postgres:16-bullseye"),
+    POSTGRES_12("postgres:12-bullseye"),
+    POSTGRES_9("postgres:9-alpine"),
     POSTGRES_SSL_DEV("marcosmarxm/postgres-ssl:dev");
 
     private final String reference;

@@ -27,7 +27,7 @@ public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest 
 
   @Override
   protected BaseImage getDatabaseImage() {
-    return BaseImage.POSTGRES_9_ALPINE;
+    return BaseImage.POSTGRES_9;
   }
 
   @Test
