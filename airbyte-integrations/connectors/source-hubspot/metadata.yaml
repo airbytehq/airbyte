@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 1.9.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   githubIssueLabel: source-hubspot
@@ -23,6 +23,13 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: >-
+          This version changes PropertyHistory stream to 3 different streams as we now support not only Contacts but also Companies and Deals to fetch their property history.
+          It will affect only users who use PropertyHistory stream, so they need to fix schema conflicts (reset data as an option) and sync ContactsPropertyHistory stream instead of PropertyHistory.
+        upgradeDeadline: "21.12.2023"
   suggestedStreams:
     streams:
       - contacts
