@@ -6,9 +6,9 @@ package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.Database;
-import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
+import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.BaseImage;
 
 public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
