@@ -107,7 +107,11 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   }
 
   @Override
-  protected void insertRecordsInternalV2(final JdbcDatabase database, final List<PartialAirbyteMessage> records, final String schemaName, final String tableName) throws Exception {
+  protected void insertRecordsInternalV2(final JdbcDatabase database,
+                                         final List<PartialAirbyteMessage> records,
+                                         final String schemaName,
+                                         final String tableName)
+      throws Exception {
     throw new UnsupportedOperationException("snowflake does not yet support the native JDBC DV2 interface.");
   }
 

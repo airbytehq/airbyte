@@ -15,7 +15,6 @@ import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLType;
-import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.UUID;
