@@ -8,7 +8,7 @@ from typing import Dict, Iterable, List, Tuple
 
 from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk, DocumentProcessor
-from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, Document
+from airbyte_cdk.destinations.vector_db_based.embedder import Document, Embedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 
@@ -40,7 +40,7 @@ class Writer:
         self.chunks: Dict[Tuple[str, str], List[Chunk]] = defaultdict(list)
         self.ids_to_delete: Dict[Tuple[str, str], List[str]] = defaultdict(list)
         self.number_of_chunks = 0
-    
+
     def _convert_to_document(self, chunk: Chunk) -> Document:
         """
         Convert a chunk to a document for the embedder.

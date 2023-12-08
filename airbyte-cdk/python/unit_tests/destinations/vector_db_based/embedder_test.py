@@ -14,11 +14,11 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     OpenAIEmbeddingConfigModel,
 )
 from airbyte_cdk.destinations.vector_db_based.embedder import (
-    Document,
     COHERE_VECTOR_SIZE,
     OPEN_AI_VECTOR_SIZE,
     AzureOpenAIEmbedder,
     CohereEmbedder,
+    Document,
     FakeEmbedder,
     FromFieldEmbedder,
     OpenAICompatibleEmbedder,
