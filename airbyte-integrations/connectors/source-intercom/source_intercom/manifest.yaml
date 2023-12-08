@@ -237,6 +237,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         error_handler:
+          type: DefaultErrorHandler
+          description: "404 - conversation is not found while requesting, ignore"
           response_filters:
             - http_codes: [404]
               action: IGNORE
