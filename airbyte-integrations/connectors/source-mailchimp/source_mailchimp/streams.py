@@ -124,7 +124,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     @staticmethod
     def get_filter_date(start_date: str, state_date: str) -> str:
         """
-        Calculate the filter date to pass in the request parameters by comparing the start_date 
+        Calculate the filter date to pass in the request parameters by comparing the start_date
         with the value of state obtained from the stream_slice.
         If only one value exists, use it by default. Otherwise, return None.
         If no filter_date is provided, the API will fetch all available records.
@@ -136,7 +136,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         if start_date_parsed and state_date_parsed:
             return max(start_date_parsed, state_date_parsed)
         elif state_date_parsed or start_date_parsed:
-            return (state_date_parsed or start_date_parsed)
+            return state_date_parsed or start_date_parsed
         else:
             return None
 
@@ -158,7 +158,7 @@ class MailChimpListSubStream(IncrementalMailChimpStream):
         stream_state = stream_state or {}
         parent = Lists(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
         for slice in parent:
-            slice_ = { "list_id": slice["id"] }
+            slice_ = {"list_id": slice["id"]}
             cursor_value = self.get_filter_date(self.start_date, stream_state.get(slice["id"], {}).get(self.cursor_field))
             if cursor_value:
                 slice_[self.filter_field] = cursor_value
@@ -167,7 +167,7 @@ class MailChimpListSubStream(IncrementalMailChimpStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         list_id = stream_slice.get("list_id")
         return f"lists/{list_id}/{self.data_field}"
-    
+
     def request_params(self, stream_state=None, stream_slice=None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
 
@@ -413,7 +413,7 @@ class SegmentMembers(MailChimpListSubStream):
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice, **kwargs) -> Iterable[Mapping]:
         """
-        The SegmentMembers endpoint does not support sorting or filtering, 
+        The SegmentMembers endpoint does not support sorting or filtering,
         so we need to apply our own filtering logic before reading.
         """
         response = super().parse_response(response, **kwargs)
