@@ -3,7 +3,7 @@
 ##@ Define the default airbyte-ci version
 AIRBYTE_CI_VERSION ?= latest
 
-# Detect the operating system
+## Detect the operating system
 OS := $(shell uname)
 
 tools.airbyte-ci.install: ## Install airbyte-ci
@@ -13,7 +13,7 @@ tools.airbyte-ci.install: ## Install airbyte-ci
 tools.airbyte-ci-dev.install: ## Install the development version of airbyte-ci
 	@python airbyte-ci/connectors/pipelines/pipelines/external_scripts/airbyte_ci_dev_install.py
 
-tools.airbyte-ci.check: # Check if airbyte-ci is installed correctly
+tools.airbyte-ci.check: ## Check if airbyte-ci is installed correctly
 	@./airbyte-ci/connectors/pipelines/pipelines/external_scripts/airbyte_ci_check.sh
 
 tools.airbyte-ci.clean: ## Clean airbyte-ci installations
