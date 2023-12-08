@@ -106,6 +106,11 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQuery, recordQuery, database, records);
   }
 
+  @Override
+  protected void insertRecordsInternalV2(final JdbcDatabase database, final List<PartialAirbyteMessage> records, final String schemaName, final String tableName) throws Exception {
+    throw new UnsupportedOperationException("snowflake does not yet support the native JDBC DV2 interface.");
+  }
+
   protected String generateFilesList(final List<String> files) {
     if (0 < files.size() && files.size() < MAX_FILES_IN_LOADING_QUERY_LIMIT) {
       // see https://docs.snowflake.com/en/user-guide/data-load-considerations-load.html#lists-of-files

@@ -59,8 +59,8 @@ public class JdbcDestinationHandler implements DestinationHandler<TableDefinitio
   }
 
   @Override
-  public Optional<Instant> getMinTimestampForSync(final StreamId id) throws Exception {
-    return Optional.empty();
+  public InitialRawTableState getInitialRawTableState(final StreamId id) throws Exception {
+    return new InitialRawTableState(true, Optional.empty());
   }
 
   @Override
