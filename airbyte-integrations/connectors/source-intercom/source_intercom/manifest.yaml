@@ -234,6 +234,14 @@ definitions:
         $ref: "#/definitions/substream_semi_incremental/retriever/record_selector"
         extractor:
           field_path: ["conversation_parts", "conversation_parts"]
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: DefaultErrorHandler
+          description: "404 - conversation is not found while requesting, ignore"
+          response_filters:
+            - http_codes: [404]
+              action: IGNORE
   company_segments:
     $ref: "#/definitions/substream_semi_incremental"
     $parameters:
