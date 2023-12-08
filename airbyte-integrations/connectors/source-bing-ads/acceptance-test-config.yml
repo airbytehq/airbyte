@@ -15,6 +15,8 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         status: succeed
+      - config_path: secrets/config_no_date.json
+        status: succeed
       - config_path: integration_tests/invalid_config.json
         status: failed
   basic_read:
@@ -89,6 +91,19 @@ acceptance_tests:
           - name: campaign_labels
             bypass_reason: "This stream is tested without start date"
         ignored_fields:
+          ad_group_impression_performance_report_weekly:
+            - name: Impressions
+              bypass_reason: "dynamic field"
+            - name: DeviceType
+              bypass_reason: "dynamic field"
+            - name: HistoricalQualityScore
+              bypass_reason: "dynamic field"
+            - name: HistoricalExpectedCtr
+              bypass_reason: "dynamic field"
+            - name: HistoricalAdRelevance
+              bypass_reason: "dynamic field"
+            - name: HistoricalLandingPageExperience
+              bypass_reason: "dynamic field"
           ad_group_performance_report_weekly:
             - name: Impressions
               bypass_reason: "dynamic field"
