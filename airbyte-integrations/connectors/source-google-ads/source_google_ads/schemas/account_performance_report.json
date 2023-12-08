@@ -336,6 +336,18 @@
         "integer"
       ]
     },
+    "metrics.invalid_clicks": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "metrics.invalid_click_rate": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
     "segments.week": {
       "type": [
         "null",
