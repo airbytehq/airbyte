@@ -203,23 +203,23 @@ def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
         [StepToRun(
             id=CONNECTOR_TEST_STEP_ID.UNIT,
             step=UnitTests(context),
-            args=lambda results: {"connector_under_test": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
-            depends_on=["build"],
+            args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+            depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         )],
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
                 step=IntegrationTests(context),
-                args=lambda results: {"connector_under_test": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
-                depends_on=["build"],
+                args=lambda results: {"connector_under_test": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
                 step=AcceptanceTests(context, context.concurrent_cat),
-                args=lambda results: {"connector_under_test_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
-                depends_on=["build"],
+                args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
-            StepToRun(id=CONNECTOR_TEST_STEP_ID.CHECK_BASE_IMAGE, step=CheckBaseImageIsUsed(context), depends_on=["build"]),
+            StepToRun(id=CONNECTOR_TEST_STEP_ID.CHECK_BASE_IMAGE, step=CheckBaseImageIsUsed(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD]),
         ],
     ]
 

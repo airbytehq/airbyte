@@ -1,7 +1,7 @@
 import anyio
 import pytest
 import time
-from pipelines.models.contexts import PipelineContext
+from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult, StepStatus
 from pipelines.helpers.run_steps import RunStepOptions, StepToRun, run_steps
 
@@ -18,8 +18,9 @@ class TestStep(Step):
         return StepResult(self, result_status)
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("steps, expected_results, options", [
+@pytest.mark.parametrize("desc, steps, expected_results, options", [
     (
+        "All consecutive steps succeed",
         [
             [StepToRun(id="step1", step=TestStep(test_context))],
             [StepToRun(id="step2", step=TestStep(test_context))],
@@ -35,6 +36,7 @@ class TestStep(Step):
         RunStepOptions(fail_fast=True)
     ),
     (
+        "Steps all succeed with parallel steps",
         [
             [StepToRun(id="step1", step=TestStep(test_context))],
             [
@@ -52,6 +54,7 @@ class TestStep(Step):
         RunStepOptions(fail_fast=True)
     ),
     (
+        "Steps after a failed step are skipped, when fail_fast is True",
         [
             [StepToRun(id="step1", step=TestStep(test_context))],
             [StepToRun(id="step2", step=TestStep(test_context), args={"result_status": StepStatus.FAILURE})],
@@ -67,6 +70,7 @@ class TestStep(Step):
         RunStepOptions(fail_fast=True)
     ),
     (
+        "Steps after a failed step are not skipped, when fail_fast is False",
         [
             [StepToRun(id="step1", step=TestStep(test_context))],
             [StepToRun(id="step2", step=TestStep(test_context), args={"result_status": StepStatus.FAILURE})],
@@ -82,6 +86,7 @@ class TestStep(Step):
         RunStepOptions(fail_fast=False)
     ),
     (
+        "fail fast has no effect on parallel steps",
         [
             [StepToRun(id="step1", step=TestStep(test_context))],
             [
@@ -96,9 +101,10 @@ class TestStep(Step):
             "step3": StepStatus.SUCCESS,
             "step4": StepStatus.SUCCESS
         },
-        RunStepOptions(fail_fast=True)
+        RunStepOptions(fail_fast=False)
     ),
     (
+        "Nested parallel steps execute properly",
         [
             [StepToRun(id="step1", step=TestStep(test_context))],
             [
@@ -122,6 +128,7 @@ class TestStep(Step):
         RunStepOptions(fail_fast=True)
     ),
     (
+        "When fail_fast is True, nested parallel steps skip at the first failure",
         [
             [StepToRun(id="step1", step=TestStep(test_context))],
             [
@@ -145,6 +152,7 @@ class TestStep(Step):
         RunStepOptions(fail_fast=True)
     ),
     (
+        "When fail_fast is False, nested parallel steps do not skip at the first failure",
         [
             [StepToRun(id="step1", step=TestStep(test_context))],
             [
@@ -168,6 +176,7 @@ class TestStep(Step):
         RunStepOptions(fail_fast=False)
     ),
     (
+        "When fail_fast is False, consecutive steps still operate as expected",
         [
             StepToRun(id="step1", step=TestStep(test_context)),
             StepToRun(id="step2", step=TestStep(test_context)),
@@ -180,14 +189,14 @@ class TestStep(Step):
             "step3": StepStatus.SUCCESS,
             "step4": StepStatus.SUCCESS
         },
-        RunStepOptions(fail_fast=True)
+        RunStepOptions(fail_fast=False)
     ),
 ])
-async def test_run_steps_output(steps, expected_results, options):
+async def test_run_steps_output(desc, steps, expected_results, options):
     results = await run_steps(steps, options=options)
 
     for step_id, expected_status in expected_results.items():
-        assert results[step_id].status == expected_status
+        assert results[step_id].status == expected_status, desc
 
 @pytest.mark.anyio
 async def test_run_steps_concurrent():
@@ -236,3 +245,51 @@ async def test_run_steps_sequential():
     assert ran_at["step1"] < ran_at["step2"]
     assert ran_at["step2"] < ran_at["step3"]
     assert ran_at["step3"] < ran_at["step4"]
+
+@pytest.mark.anyio
+async def test_run_steps_passes_results():
+    """
+    Example pattern
+        StepToRun(
+            id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
+            step=IntegrationTests(context),
+            args=_create_integration_step_args_factory(context),
+            depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+        ),
+        StepToRun(
+            id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
+            step=AcceptanceTests(context, True),
+            args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+            depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+        ),
+
+    """
+    class Simple(Step):
+        title = "Test Step"
+        async def _run(self, arg1, arg2) -> StepResult:
+            output_artifact = f"{arg1}:{arg2}"
+            return StepResult(self, StepStatus.SUCCESS, output_artifact=output_artifact)
+
+    async def async_args(results):
+        return {"arg1": results["step2"].output_artifact, "arg2": "4"}
+
+    steps = [
+        [StepToRun(id="step1", step=Simple(test_context), args={"arg1": "1", "arg2": "2"})],
+        [StepToRun(id="step2", step=Simple(test_context), args= lambda results: {"arg1": results["step1"].output_artifact, "arg2": "3"})],
+        [StepToRun(id="step3", step=Simple(test_context), args=async_args)],
+    ]
+
+    results = await run_steps(steps)
+
+    assert results["step1"].output_artifact == "1:2"
+    assert results["step2"].output_artifact == "1:2:3"
+    assert results["step3"].output_artifact == "1:2:3:4"
+
+@pytest.mark.anyio
+async def test_run_steps_throws_on_invalid_args():
+    steps = [
+        [StepToRun(id="step1", step=TestStep(test_context), args=1)],
+    ]
+
+    with pytest.raises(TypeError):
+        await run_steps(steps)

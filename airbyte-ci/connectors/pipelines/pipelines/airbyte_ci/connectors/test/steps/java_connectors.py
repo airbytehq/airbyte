@@ -115,13 +115,13 @@ def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
             id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
             step=IntegrationTests(context),
             args=_create_integration_step_args_factory(context),
-            depends_on=["build"],
+            depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         ),
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
             step=AcceptanceTests(context, True),
-            args=lambda results: {"connector_under_test_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
-            depends_on=["build"],
+            args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+            depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         ),
     ]
 
@@ -133,13 +133,13 @@ def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
 
     steps = [
         [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD_TAR, step=BuildConnectorDistributionTar(context))],
-        [StepToRun(id=CONNECTOR_TEST_STEP_ID.UNIT, step=UnitTests(context), depends_on=["build_tar"])],
+        [StepToRun(id=CONNECTOR_TEST_STEP_ID.UNIT, step=UnitTests(context), depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR])],
         [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.BUILD,
                 step=BuildConnectorImages(context),
-                args=lambda results: {"dist_dir": results["build_tar"].output_artifact.directory(dist_tar_directory_path(context))},
-                depends_on=["build_tar"],
+                args=lambda results: {"dist_dir": results[CONNECTOR_TEST_STEP_ID.BUILD_TAR].output_artifact.directory(dist_tar_directory_path(context))},
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR],
             ),
         ],
     ]

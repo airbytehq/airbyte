@@ -9,13 +9,13 @@ from dataclasses import dataclass, field
 import inspect
 from pipelines import main_logger
 
-from typing import TYPE_CHECKING, Callable, Dict, List, Tuple, Union
+from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Tuple, Union
 
 import asyncer
 from pipelines.models.steps import StepStatus, StepResult
 
 RESULTS_DICT = Dict[str, StepResult]
-ARGS_TYPE = Union[Dict, Callable[[RESULTS_DICT], Dict]]
+ARGS_TYPE = Union[Dict, Callable[[RESULTS_DICT], Dict], Awaitable[Dict]]
 
 if TYPE_CHECKING:
     from pipelines.models.steps import Step, StepResult
@@ -52,8 +52,10 @@ async def evaluate_run_args(args: ARGS_TYPE, results: RESULTS_DICT) -> Dict:
         return await args(results)
     elif callable(args):
         return args(results)
+    elif isinstance(args, dict):
+        return args
 
-    return args
+    raise TypeError(f"Unexpected args type: {type(args)}")
 
 def _skip_remaining_steps(remaining_steps: STEP_TREE) -> bool:
     """
@@ -191,7 +193,8 @@ async def run_steps(
     # Log the step tree
     if options.log_step_tree:
         main_logger.info(f"STEP TREE: {runnables}")
-        _log_step_tree(runnables, options)
+        # TODO ben reenable
+        # _log_step_tree(runnables, options)
         options.log_step_tree = False
 
     # If any of the previous steps failed, skip the remaining steps
