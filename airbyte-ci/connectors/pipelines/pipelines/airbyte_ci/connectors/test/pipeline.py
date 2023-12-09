@@ -6,12 +6,13 @@
 from typing import List
 
 import anyio
-from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
+from connector_ops.utils import ConnectorLanguage
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.connectors.test.steps import java_connectors, python_connectors
 from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
 from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation
+from pipelines.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.helpers.run_steps import StepToRun, run_steps
 
 LANGUAGE_MAPPING = {
@@ -49,10 +50,10 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
     if not context.code_tests_only:
         steps_to_run += [
             [
-                StepToRun(id="metadata_validation", step=MetadataValidation(context)),
-                StepToRun(id="version_follow_check", step=VersionFollowsSemverCheck(context)),
-                StepToRun(id="version_inc_check", step=VersionIncrementCheck(context)),
-                StepToRun(id="qa_checks", step=QaChecks(context)),
+                StepToRun(id=CONNECTOR_TEST_STEP_ID.METADATA_VALIDATION, step=MetadataValidation(context)),
+                StepToRun(id=CONNECTOR_TEST_STEP_ID.VERSION_FOLLOW_CHECK, step=VersionFollowsSemverCheck(context)),
+                StepToRun(id=CONNECTOR_TEST_STEP_ID.VERSION_INC_CHECK, step=VersionIncrementCheck(context)),
+                StepToRun(id=CONNECTOR_TEST_STEP_ID.QA_CHECKS, step=QaChecks(context)),
             ]
         ]
 
@@ -63,7 +64,7 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
                 options=context.run_step_options,
             )
 
-            results = list(result_dict.values())
+            results = result_dict.values()
             context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
 
         return context.report

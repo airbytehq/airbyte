@@ -15,7 +15,7 @@ from dagger import Container, File
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed
-from pipelines.consts import LOCAL_BUILD_PLATFORM
+from pipelines.consts import CONNECTOR_TEST_STEP_ID, LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.run_steps import StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus
@@ -199,27 +199,27 @@ def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
     Get all the tests steps for a Python connector.
     """
     return [
-        [StepToRun(id="build", step=BuildConnectorImages(context))],
+        [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context))],
         [StepToRun(
-            id="unit",
+            id=CONNECTOR_TEST_STEP_ID.UNIT,
             step=UnitTests(context),
             args=lambda results: {"connector_under_test": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
             depends_on=["build"],
         )],
         [
             StepToRun(
-                id="integration",
+                id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
                 step=IntegrationTests(context),
                 args=lambda results: {"connector_under_test": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
                 depends_on=["build"],
             ),
             StepToRun(
-                id="acceptance",
+                id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
                 step=AcceptanceTests(context, context.concurrent_cat),
                 args=lambda results: {"connector_under_test_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
                 depends_on=["build"],
             ),
-            StepToRun(id="check_base_image", step=CheckBaseImageIsUsed(context), depends_on=["build"]),
+            StepToRun(id=CONNECTOR_TEST_STEP_ID.CHECK_BASE_IMAGE, step=CheckBaseImageIsUsed(context), depends_on=["build"]),
         ],
     ]
 

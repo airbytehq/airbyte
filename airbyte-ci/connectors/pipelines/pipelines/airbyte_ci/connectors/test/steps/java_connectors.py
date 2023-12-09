@@ -17,7 +17,7 @@ from pipelines.airbyte_ci.connectors.build_image.steps.normalization import Buil
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
 from pipelines.airbyte_ci.steps.gradle import GradleTask
-from pipelines.consts import LOCAL_BUILD_PLATFORM
+from pipelines.consts import CONNECTOR_TEST_STEP_ID, LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.run_steps import RESULTS_DICT, StepToRun
@@ -97,7 +97,7 @@ def _get_normalization_steps(context: ConnectorContext) -> List[StepToRun]:
     context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
     normalization_steps = [
         StepToRun(
-            id="build_normalization",
+            id=CONNECTOR_TEST_STEP_ID.BUILD_NORMALIZATION,
             step=BuildOrPullNormalization(context, normalization_image, LOCAL_BUILD_PLATFORM),
             depends_on=["build"],
         )
@@ -112,13 +112,13 @@ def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
     # Run tests in parallel
     return [
         StepToRun(
-            id="integration",
+            id=CONNECTOR_TEST_STEP_ID.INTEGRATION,
             step=IntegrationTests(context),
             args=_create_integration_step_args_factory(context),
             depends_on=["build"],
         ),
         StepToRun(
-            id="acceptance",
+            id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
             step=AcceptanceTests(context, True),
             args=lambda results: {"connector_under_test_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
             depends_on=["build"],
@@ -132,11 +132,11 @@ def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
     """
 
     steps = [
-        [StepToRun(id="build_tar", step=BuildConnectorDistributionTar(context))],
-        [StepToRun(id="unit", step=UnitTests(context), depends_on=["build_tar"])],
+        [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD_TAR, step=BuildConnectorDistributionTar(context))],
+        [StepToRun(id=CONNECTOR_TEST_STEP_ID.UNIT, step=UnitTests(context), depends_on=["build_tar"])],
         [
             StepToRun(
-                id="build",
+                id=CONNECTOR_TEST_STEP_ID.BUILD,
                 step=BuildConnectorImages(context),
                 args=lambda results: {"dist_dir": results["build_tar"].output_artifact.directory(dist_tar_directory_path(context))},
                 depends_on=["build_tar"],
