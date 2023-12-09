@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
@@ -232,8 +233,8 @@ public class DefaultTyperDeduperTest {
     clearInvocations(destinationHandler);
 
     typerDeduper.typeAndDedupe(Map.of(
-        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new AtomicLong(0),
-        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(1)));
+        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new StreamSyncSummary(Optional.of(0L)),
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new StreamSyncSummary(Optional.of(1L))));
 
     // Only append_stream should be T+D-ed. overwrite_stream has explicitly 0 records, and dedup_stream
     // is missing from the map, so implicitly has 0 records.
@@ -253,8 +254,8 @@ public class DefaultTyperDeduperTest {
     clearInvocations(destinationHandler);
 
     typerDeduper.typeAndDedupe(Map.of(
-        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new AtomicLong(0),
-        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new AtomicLong(1)));
+        new StreamDescriptor().withName("overwrite_stream").withNamespace("overwrite_ns"), new StreamSyncSummary(Optional.of(0L)),
+        new StreamDescriptor().withName("append_stream").withNamespace("append_ns"), new StreamSyncSummary(Optional.of(1L))));
 
     verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");
     verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-23T12:34:56Z");

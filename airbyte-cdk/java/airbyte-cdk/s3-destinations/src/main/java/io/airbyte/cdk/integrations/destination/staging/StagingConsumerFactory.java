@@ -108,10 +108,15 @@ public class StagingConsumerFactory extends SerialStagingConsumerFactory {
         outputRecordCollector,
         GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
         // todo (cgardens) - wrapping the old close function to avoid more code churn.
-        (hasFailed, recordCounts) -> {
+        (hasFailed, streamSyncSummaries) -> {
           try {
-            GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false,
-                recordCounts);
+            GeneralStagingFunctions.onCloseFunction(
+                database,
+                stagingOperations,
+                writeConfigs,
+                purgeStagingData,
+                typerDeduper
+            ).accept(false, streamSyncSummaries);
           } catch (final Exception e) {
             throw new RuntimeException(e);
           }

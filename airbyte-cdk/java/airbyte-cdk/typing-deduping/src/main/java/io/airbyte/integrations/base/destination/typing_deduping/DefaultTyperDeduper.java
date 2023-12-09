@@ -9,6 +9,7 @@ import static io.airbyte.integrations.base.destination.typing_deduping.FutureUti
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 import static java.util.Collections.singleton;
 
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.HashSet;
@@ -243,20 +244,30 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   }
 
   @Override
-  public void typeAndDedupe(final Map<StreamDescriptor, AtomicLong> recordCounts) throws Exception {
+  public void typeAndDedupe(final Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries) throws Exception {
     LOGGER.info("Typing and deduping all tables");
     final Set<CompletableFuture<Optional<Exception>>> typeAndDedupeTasks = new HashSet<>();
     parsedCatalog.streams().stream()
         .filter(streamConfig -> {
-          // If recordCounts is null, assume that we have nonzero records
-          final boolean nonzeroRecords = recordCounts == null
-              // If we don't have an entry in the map, then assume that the stream had 0 records
-              || recordCounts.getOrDefault(streamConfig.id().asStreamDescriptor(), new AtomicLong()).get() > 0;
+          final StreamSyncSummary streamSyncSummary = streamSyncSummaries.getOrDefault(
+              streamConfig.id().asStreamDescriptor(),
+              StreamSyncSummary.DEFAULT);
+          final boolean nonzeroRecords = streamSyncSummary.recordsWritten()
+              .map(r -> r > 0)
+              // If we didn't track record counts during the sync, assume we had nonzero records for this stream
+              .orElse(true);
           final boolean unprocessedRecordsPreexist = initialRawTableStateByStream.get(streamConfig.id()).hasUnprocessedRecords();
           // If this sync emitted records, or the previous sync left behind some unprocessed records,
           // then the raw table has some unprocessed records right now.
           // Run T+D if either of those conditions are true.
-          return nonzeroRecords || unprocessedRecordsPreexist;
+          final boolean shouldRunTypingDeduping = nonzeroRecords || unprocessedRecordsPreexist;
+          if (!shouldRunTypingDeduping) {
+            LOGGER.info(
+                "Skipping typing and deduping for stream {}.{} because it had no records during this sync and no unprocessed records from a previous sync.",
+                streamConfig.id().originalNamespace(),
+                streamConfig.id().originalName());
+          }
+          return shouldRunTypingDeduping;
         }).forEach(streamConfig -> typeAndDedupeTasks.add(typeAndDedupeTask(streamConfig, true)));
     CompletableFuture.allOf(typeAndDedupeTasks.toArray(CompletableFuture[]::new)).join();
     reduceExceptions(typeAndDedupeTasks, "The Following Exceptions were thrown while typing and deduping tables:\n");

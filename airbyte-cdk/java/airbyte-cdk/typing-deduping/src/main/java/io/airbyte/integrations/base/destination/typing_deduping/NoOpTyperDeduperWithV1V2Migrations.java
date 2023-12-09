@@ -8,6 +8,7 @@ import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.countOfTypingDedupingThreads;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,7 +18,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import lombok.extern.slf4j.Slf4j;
@@ -121,7 +121,7 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
   }
 
   @Override
-  public void typeAndDedupe(final Map<StreamDescriptor, AtomicLong> recordCounts) {
+  public void typeAndDedupe(final Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries) {
     log.info("Skipping TypeAndDedupe final");
   }
 

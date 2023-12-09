@@ -123,7 +123,7 @@ public class CopyConsumerFactory {
                                                  final SqlOperations sqlOperations,
                                                  final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount,
                                                  final DataSource dataSource) {
-    return (hasFailed, recordCounts) -> {
+    return (hasFailed, streamSyncSummaries) -> {
       pairToIgnoredRecordCount
           .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
       closeAsOneTransaction(pairToCopier, hasFailed, database, sqlOperations, dataSource);

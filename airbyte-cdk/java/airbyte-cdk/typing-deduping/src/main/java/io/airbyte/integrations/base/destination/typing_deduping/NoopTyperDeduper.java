@@ -4,10 +4,10 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
@@ -69,7 +69,7 @@ public class NoopTyperDeduper implements TyperDeduper {
   }
 
   @Override
-  public void typeAndDedupe(final Map<StreamDescriptor, AtomicLong> recordCounts) {
+  public void typeAndDedupe(final Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries) {
 
   }
 
