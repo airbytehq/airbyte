@@ -43,13 +43,14 @@ Whenever possible, we've taken this opportunity to use the best data type for st
 
 ## Quick Start to Upgrading
 
+**The quickest path to upgrading is to click upgrade on any out-of-date connection in the UI**.  The advanced options later in this document will allow you to test out the upgrade in more detail if you choose.  
+
 :::caution
 
 **[Airbyte Open Source Only]** You should upgrade to 0.50.24+ of the Airbyte Platform _before_ updating to Destinations V2. Failure to do so may cause upgraded connections to fail.
 
 :::
 
-The quickest path to upgrading is to click upgrade on any out-of-date connection in the UI:
 
 ![Upgrade Path](./assets/airbyte_destinations_v2_upgrade_prompt.png)
 
