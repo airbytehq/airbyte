@@ -18,6 +18,7 @@ static_checker_reports/
 acceptance_tests_logs/
 
 # Secrets
+*.secrets
 secrets
 !airbyte-integrations/connector-templates/**/secrets
 
