@@ -64,7 +64,10 @@ class DaggerPipelineCommand(click.Command):
                     main_logger.info(f"Dagger logs saved to {ctx.obj['dagger_logs_path']}")
                 if ctx.obj["is_ci"]:
                     gcs_uri, public_url = upload_to_gcs(
-                        ctx.obj["dagger_logs_path"], ctx.obj["ci_report_bucket_name"], dagger_logs_gcs_key, ctx.obj["ci_gcs_credentials"],
+                        ctx.obj["dagger_logs_path"],
+                        ctx.obj["ci_report_bucket_name"],
+                        dagger_logs_gcs_key,
+                        ctx.obj["ci_gcs_credentials"],
                     )
                     main_logger.info(f"Dagger logs saved to {gcs_uri}. Public URL: {public_url}")
 

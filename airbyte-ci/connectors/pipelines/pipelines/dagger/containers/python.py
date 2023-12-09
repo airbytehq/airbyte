@@ -62,7 +62,8 @@ def with_testing_dependencies(context: PipelineContext) -> Container:
     pyproject_toml_file = context.get_repo_dir(".", include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
 
     return python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS).with_file(
-        f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file,
+        f"/{PYPROJECT_TOML_FILE_PATH}",
+        pyproject_toml_file,
     )
 
 

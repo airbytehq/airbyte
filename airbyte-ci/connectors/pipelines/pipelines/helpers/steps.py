@@ -17,7 +17,8 @@ if TYPE_CHECKING:
 
 
 async def run_steps(
-    steps_and_run_args: list[Union[Step, tuple[Step, tuple]] | list[Union[Step, tuple[Step, tuple]]]], results: list[StepResult] = [],
+    steps_and_run_args: list[Union[Step, tuple[Step, tuple]] | list[Union[Step, tuple[Step, tuple]]]],
+    results: list[StepResult] = [],
 ) -> list[StepResult]:
     """Run multiple steps sequentially, or in parallel if steps are wrapped into a sublist.
 

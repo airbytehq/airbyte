@@ -52,7 +52,10 @@ class TestBuildConnectorImage:
 
     @pytest.fixture()
     def test_context_with_real_connector_using_base_image(
-        self, connector_with_base_image_no_build_customization, dagger_client, current_platform,
+        self,
+        connector_with_base_image_no_build_customization,
+        dagger_client,
+        current_platform,
     ):
         context = ConnectorContext(
             pipeline_name="test build",
@@ -69,7 +72,10 @@ class TestBuildConnectorImage:
 
     @pytest.fixture()
     def test_context_with_real_connector_using_base_image_with_build_customization(
-        self, connector_with_base_image_with_build_customization, dagger_client, current_platform,
+        self,
+        connector_with_base_image_with_build_customization,
+        dagger_client,
+        current_platform,
     ):
         context = ConnectorContext(
             pipeline_name="test build",
@@ -109,7 +115,9 @@ class TestBuildConnectorImage:
     async def test__run_using_base_image_with_mocks(self, mocker, test_context_with_connector_with_base_image, all_platforms):
         container_built_from_base = mocker.AsyncMock()
         mocker.patch.object(
-            python_connectors.BuildConnectorImages, "_build_from_base_image", mocker.AsyncMock(return_value=container_built_from_base),
+            python_connectors.BuildConnectorImages,
+            "_build_from_base_image",
+            mocker.AsyncMock(return_value=container_built_from_base),
         )
         mocker.patch.object(python_connectors.BuildConnectorImages, "get_step_result", mocker.AsyncMock())
         step = python_connectors.BuildConnectorImages(test_context_with_connector_with_base_image)
@@ -142,7 +150,9 @@ class TestBuildConnectorImage:
 
     @pytest.mark.slow()
     async def test_building_from_base_image_with_customization_for_real(
-        self, test_context_with_real_connector_using_base_image_with_build_customization, current_platform,
+        self,
+        test_context_with_real_connector_using_base_image_with_build_customization,
+        current_platform,
     ):
         step = python_connectors.BuildConnectorImages(test_context_with_real_connector_using_base_image_with_build_customization)
         step_result = await step._run()
@@ -154,7 +164,9 @@ class TestBuildConnectorImage:
     async def test__run_using_base_dockerfile_with_mocks(self, mocker, test_context_with_connector_without_base_image, all_platforms):
         container_built_from_dockerfile = mocker.AsyncMock()
         mocker.patch.object(
-            python_connectors.BuildConnectorImages, "_build_from_dockerfile", mocker.AsyncMock(return_value=container_built_from_dockerfile),
+            python_connectors.BuildConnectorImages,
+            "_build_from_dockerfile",
+            mocker.AsyncMock(return_value=container_built_from_dockerfile),
         )
         step = python_connectors.BuildConnectorImages(test_context_with_connector_without_base_image)
         step_result = await step._run()

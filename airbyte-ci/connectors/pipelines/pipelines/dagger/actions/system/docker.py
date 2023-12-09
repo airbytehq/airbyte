@@ -140,7 +140,8 @@ def with_global_dockerd_service(
         # Ping the registry mirror host to make sure it's reachable through VPN
         # We set a cache buster here to guarantee the curl command is always executed.
         dockerd_container = dockerd_container.with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(
-            ["curl", "-vvv", f"http://{DOCKER_REGISTRY_MIRROR_URL}/v2/"], skip_entrypoint=True,
+            ["curl", "-vvv", f"http://{DOCKER_REGISTRY_MIRROR_URL}/v2/"],
+            skip_entrypoint=True,
         )
         daemon_config_json = get_daemon_config_json(DOCKER_REGISTRY_MIRROR_URL)
     else:
@@ -150,7 +151,8 @@ def with_global_dockerd_service(
     # Docker login happens late because there's a cache buster in the docker login command.
     dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
     return dockerd_container.with_exec(
-        ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True,
+        ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"],
+        insecure_root_capabilities=True,
     )
 
 
@@ -234,7 +236,8 @@ def with_crane(
             # We use sh -c to be able to use environment variables in the command
             # This is a workaround as the default crane entrypoint doesn't support environment variables
             .with_exec(
-                sh_dash_c(["crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]), skip_entrypoint=True,
+                sh_dash_c(["crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]),
+                skip_entrypoint=True,
             )
         )
 

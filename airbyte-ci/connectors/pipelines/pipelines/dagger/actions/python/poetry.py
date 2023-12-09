@@ -48,7 +48,10 @@ async def find_local_dependencies_in_pyproject_toml(
             # Ensure we parse the child dependencies
             # TODO handle more than pyproject.toml
             child_local_dependencies = await find_local_dependencies_in_pyproject_toml(
-                context, base_container, local_dependency_path, exclude=exclude,
+                context,
+                base_container,
+                local_dependency_path,
+                exclude=exclude,
             )
             local_dependency_paths += child_local_dependencies
 

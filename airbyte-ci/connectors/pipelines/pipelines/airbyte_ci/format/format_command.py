@@ -101,14 +101,17 @@ class FormatCommand(click.Command):
             Any: The result of running the command
         """
         dagger_logs_file_descriptor, dagger_logs_temp_file_path = tempfile.mkstemp(
-            dir="/tmp", prefix=f"format_{self.formatter.value}_dagger_logs_", suffix=".log",
+            dir="/tmp",
+            prefix=f"format_{self.formatter.value}_dagger_logs_",
+            suffix=".log",
         )
         # Create a FileIO object from the file descriptor
         dagger_logs = io.FileIO(dagger_logs_file_descriptor, "w+")
         self.logger.info(f"Running {self.formatter.value} formatter. Logging dagger output to {dagger_logs_temp_file_path}")
 
         dagger_client = await click_pipeline_context.get_dagger_client(
-            pipeline_name=f"Format {self.formatter.value}", log_output=dagger_logs,
+            pipeline_name=f"Format {self.formatter.value}",
+            log_output=dagger_logs,
         )
         dir_to_format = self.get_dir_to_format(dagger_client)
         container = self.get_format_container_fn(dagger_client, dir_to_format)
@@ -149,7 +152,11 @@ class FormatCommand(click.Command):
         return self
 
     async def run_format(
-        self, dagger_client: dagger.Client, container: dagger.Container, format_commands: list[str], not_formatted_code: dagger.Directory,
+        self,
+        dagger_client: dagger.Client,
+        container: dagger.Container,
+        format_commands: list[str],
+        not_formatted_code: dagger.Directory,
     ) -> tuple[dagger.Directory, str, str]:
         """Run the format commands in the container. Return the directory with the modified files, stdout and stderr.
 
@@ -189,7 +196,10 @@ class FormatCommand(click.Command):
         """
         try:
             dir_with_modified_files, stdout, stderr = await self.run_format(
-                dagger_client, container, self.format_commands, not_formatted_code,
+                dagger_client,
+                container,
+                self.format_commands,
+                not_formatted_code,
             )
             if await dir_with_modified_files.entries():
                 modified_files = await list_files_in_directory(dagger_client, dir_with_modified_files)

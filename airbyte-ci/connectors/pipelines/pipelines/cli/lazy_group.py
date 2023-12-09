@@ -9,8 +9,7 @@ import asyncclick as click
 
 
 class LazyGroup(click.Group):
-    """A click Group that can lazily load subcommands.
-    """
+    """A click Group that can lazily load subcommands."""
 
     def __init__(self, *args, lazy_subcommands: Optional[dict[str, str]] = None, **kwargs):
         super().__init__(*args, **kwargs)

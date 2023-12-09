@@ -274,7 +274,11 @@ def click_context_obj():
 )
 @pytest.mark.anyio()
 async def test_commands_do_not_override_connector_selection(
-    mocker, runner: CliRunner, click_context_obj: dict, command: Callable, command_args: list,
+    mocker,
+    runner: CliRunner,
+    click_context_obj: dict,
+    command: Callable,
+    command_args: list,
 ):
     """This test is here to make sure that the commands do not override the connector selection
     This is important because we want to control the connector selection in a single place.
@@ -305,7 +309,11 @@ async def test_commands_do_not_override_connector_selection(
     ],
 )
 def test_should_use_remote_secrets(
-    mocker, use_remote_secrets_user_input, gsm_env_var_set, expected_use_remote_secrets, expect_click_usage_error,
+    mocker,
+    use_remote_secrets_user_input,
+    gsm_env_var_set,
+    expected_use_remote_secrets,
+    expect_click_usage_error,
 ):
     mocker.patch.object(connectors_commands.os, "getenv", return_value="test" if gsm_env_var_set else None)
     if expect_click_usage_error:

@@ -92,7 +92,8 @@ class TestReport:
         assert not report.success
 
         report = reports.Report(
-            test_context, [steps.StepResult(None, steps.StepStatus.FAILURE), steps.StepResult(None, steps.StepStatus.SUCCESS)],
+            test_context,
+            [steps.StepResult(None, steps.StepStatus.FAILURE), steps.StepResult(None, steps.StepStatus.SUCCESS)],
         )
         assert not report.success
 
@@ -100,7 +101,8 @@ class TestReport:
         assert report.success
 
         report = reports.Report(
-            test_context, [steps.StepResult(None, steps.StepStatus.SUCCESS), steps.StepResult(None, steps.StepStatus.SKIPPED)],
+            test_context,
+            [steps.StepResult(None, steps.StepStatus.SUCCESS), steps.StepResult(None, steps.StepStatus.SKIPPED)],
         )
         assert report.success
 

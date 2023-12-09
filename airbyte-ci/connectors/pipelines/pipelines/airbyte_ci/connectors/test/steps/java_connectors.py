@@ -117,7 +117,8 @@ async def run_all_tests(context: ConnectorContext) -> list[StepResult]:
 
         async with asyncer.create_task_group() as docker_build_dependent_group:
             soon_integration_tests_results = docker_build_dependent_group.soonify(IntegrationTests(context).run)(
-                connector_tar_file=connector_image_tar_file, normalization_tar_file=normalization_tar_file,
+                connector_tar_file=connector_image_tar_file,
+                normalization_tar_file=normalization_tar_file,
             )
             soon_cat_results = docker_build_dependent_group.soonify(AcceptanceTests(context, True).run)(connector_container)
 

@@ -57,7 +57,12 @@ def directory_with_expected_formatted_code(dagger_client):
 @pytest.mark.slow()
 @pytest.mark.parametrize("subcommand", ["check", "fix"])
 async def test_check_and_fix_all_on_non_formatted_code(
-    mocker, subcommand, dagger_client, tmp_dir_with_non_formatted_code, now_formatted_directory, directory_with_expected_formatted_code,
+    mocker,
+    subcommand,
+    dagger_client,
+    tmp_dir_with_non_formatted_code,
+    now_formatted_directory,
+    directory_with_expected_formatted_code,
 ):
     """Test that when given non formatted files the 'check' and 'fix' all command exit with status 1.
     We also check that 'fix' correctly exports back the formatted code and that it matches what we expect.
@@ -74,7 +79,12 @@ async def test_check_and_fix_all_on_non_formatted_code(
 @pytest.mark.slow()
 @pytest.mark.parametrize("subcommand", ["check", "fix"])
 async def test_check_and_fix_all_on_formatted_code(
-    mocker, subcommand, dagger_client, tmp_dir_with_formatted_code, already_formatted_directory, directory_with_expected_formatted_code,
+    mocker,
+    subcommand,
+    dagger_client,
+    tmp_dir_with_formatted_code,
+    already_formatted_directory,
+    directory_with_expected_formatted_code,
 ):
     """Test that when given formatted files the 'check' and 'fix' all command exit with status 0.
     We also check that 'fix' does not exports back any file change to the host.

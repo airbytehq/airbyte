@@ -145,8 +145,7 @@ def check_dagger_wrap():
 
 
 def is_current_process_wrapped_by_dagger_run() -> bool:
-    """Check if the current process is wrapped by dagger run.
-    """
+    """Check if the current process is wrapped by dagger run."""
     called_with_dagger_run = check_dagger_wrap()
     main_logger.info(f"Called with dagger run: {called_with_dagger_run}")
     return called_with_dagger_run

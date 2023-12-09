@@ -125,11 +125,13 @@ class GradleTask(Step, ABC):
         # Augment the base container with S3 build cache secrets when available.
         if self.context.s3_build_cache_access_key_id:
             gradle_container_base = gradle_container_base.with_secret_variable(
-                "S3_BUILD_CACHE_ACCESS_KEY_ID", self.context.s3_build_cache_access_key_id_secret,
+                "S3_BUILD_CACHE_ACCESS_KEY_ID",
+                self.context.s3_build_cache_access_key_id_secret,
             )
             if self.context.s3_build_cache_secret_key:
                 gradle_container_base = gradle_container_base.with_secret_variable(
-                    "S3_BUILD_CACHE_SECRET_KEY", self.context.s3_build_cache_secret_key_secret,
+                    "S3_BUILD_CACHE_SECRET_KEY",
+                    self.context.s3_build_cache_secret_key_secret,
                 )
 
         # Running a gradle task like "help" with these arguments will trigger updating all dependencies.

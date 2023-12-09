@@ -20,7 +20,9 @@ def get_current_git_branch() -> str:  # noqa D103
 
 
 async def get_modified_files_in_branch_remote(
-    current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master",
+    current_git_branch: str,
+    current_git_revision: str,
+    diffed_branch: str = "origin/master",
 ) -> set[str]:
     """Use git diff to spot the modified files on the remote branch."""
     async with Connection(DAGGER_CONFIG) as dagger_client:
@@ -44,7 +46,10 @@ def get_modified_files_local(current_git_revision: str, diffed: str = "master") 
 
 
 async def get_modified_files_in_branch(
-    current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True,
+    current_git_branch: str,
+    current_git_revision: str,
+    diffed_branch: str,
+    is_local: bool = True,
 ) -> set[str]:
     """Retrieve the list of modified files on the branch."""
     if is_local:

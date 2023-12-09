@@ -125,7 +125,8 @@ class DeployOrchestrator(Step):
         python_base = with_python_base(self.context, "3.9")
         python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.2.6", "pydantic==1.10.6", "poetry2setup==1.1.0"])
         dagster_cloud_api_token_secret: dagger.Secret = get_secret_host_variable(
-            self.context.dagger_client, "DAGSTER_CLOUD_METADATA_API_TOKEN",
+            self.context.dagger_client,
+            "DAGSTER_CLOUD_METADATA_API_TOKEN",
         )
 
         container_to_run = (
@@ -181,6 +182,8 @@ async def run_metadata_orchestrator_deploy_pipeline(
             steps = [TestOrchestrator(context=metadata_pipeline_context), DeployOrchestrator(context=metadata_pipeline_context)]
             steps_results = await run_steps(steps)
             metadata_pipeline_context.report = Report(
-                pipeline_context=metadata_pipeline_context, steps_results=steps_results, name="METADATA ORCHESTRATOR DEPLOY RESULTS",
+                pipeline_context=metadata_pipeline_context,
+                steps_results=steps_results,
+                name="METADATA ORCHESTRATOR DEPLOY RESULTS",
             )
     return metadata_pipeline_context.report.success

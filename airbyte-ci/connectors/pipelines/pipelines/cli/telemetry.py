@@ -36,8 +36,7 @@ def _get_anonymous_system_id():
 
 
 def click_track_command(f):
-    """Decorator to track CLI commands with segment.io
-    """
+    """Decorator to track CLI commands with segment.io"""
 
     def wrapper(*args, **kwargs):
         ctx = get_current_context()

@@ -291,9 +291,11 @@ class AcceptanceTests(Step):
         if "_EXPERIMENTAL_DAGGER_RUNNER_HOST" in os.environ:
             self.context.logger.info("Using experimental dagger runner host to run CAT with dagger-in-dagger")
             cat_container = cat_container.with_env_variable(
-                "_EXPERIMENTAL_DAGGER_RUNNER_HOST", "unix:///var/run/buildkit/buildkitd.sock",
+                "_EXPERIMENTAL_DAGGER_RUNNER_HOST",
+                "unix:///var/run/buildkit/buildkitd.sock",
             ).with_unix_socket(
-                "/var/run/buildkit/buildkitd.sock", self.context.dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock"),
+                "/var/run/buildkit/buildkitd.sock",
+                self.context.dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock"),
             )
 
         return cat_container.with_unix_socket("/var/run/docker.sock", self.context.dagger_client.host().unix_socket("/var/run/docker.sock"))

@@ -23,7 +23,9 @@ def get_connector_modified_files(connector: Connector, all_modified_files: set[P
 
 
 def _find_modified_connectors(
-    file_path: Union[str, Path], all_connectors: set[Connector], dependency_scanning: bool = True,
+    file_path: Union[str, Path],
+    all_connectors: set[Connector],
+    dependency_scanning: bool = True,
 ) -> set[Connector]:
     """Find all connectors impacted by the file change."""
     modified_connectors = set()

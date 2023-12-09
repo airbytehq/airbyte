@@ -268,7 +268,10 @@ async def execute_concurrently(steps: list[Callable], concurrency=5):
 
 
 async def export_container_to_tarball(
-    context: ConnectorContext, container: Container, platform: Platform, tar_file_name: Optional[str] = None,
+    context: ConnectorContext,
+    container: Container,
+    platform: Platform,
+    tar_file_name: Optional[str] = None,
 ) -> tuple[Optional[File], Optional[Path]]:
     """Save the container image to the host filesystem as a tar archive.
 

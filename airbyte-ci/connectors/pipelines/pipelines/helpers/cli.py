@@ -52,8 +52,7 @@ class LogOptions:
 
 
 def log_command_results(ctx: click.Context, command_results: list[CommandResult], logger: Logger, options: LogOptions = LogOptions()):
-    """Log the output of the subcommands run by `run_all_subcommands`.
-    """
+    """Log the output of the subcommands run by `run_all_subcommands`."""
     if not options.quiet:
         details_template = Template(DETAILS_TEMPLATE_STR)
         details_message = details_template.render(command_results=command_results)
@@ -68,8 +67,7 @@ def log_command_results(ctx: click.Context, command_results: list[CommandResult]
 
 
 async def invoke_commands_concurrently(ctx: click.Context, commands: list[click.Command]) -> list[Any]:
-    """Run click commands concurrently and return a list of their return values.
-    """
+    """Run click commands concurrently and return a list of their return values."""
     soon_command_executions_results = []
     async with asyncer.create_task_group() as command_task_group:
         for command in commands:
@@ -79,8 +77,7 @@ async def invoke_commands_concurrently(ctx: click.Context, commands: list[click.
 
 
 async def invoke_commands_sequentially(ctx: click.Context, commands: list[click.Command]) -> list[Any]:
-    """Run click commands sequentially and return a list of their return values.
-    """
+    """Run click commands sequentially and return a list of their return values."""
     command_executions_results = []
     for command in commands:
         command_executions_results.append(await command.invoke(ctx))
@@ -88,6 +85,5 @@ async def invoke_commands_sequentially(ctx: click.Context, commands: list[click.
 
 
 def get_all_sibling_commands(ctx: click.Context) -> list[click.Command]:
-    """Get all sibling commands of the current command.
-    """
+    """Get all sibling commands of the current command."""
     return [c for c in ctx.parent.command.commands.values() if c.name != ctx.command.name]

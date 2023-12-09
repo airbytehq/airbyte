@@ -6,8 +6,7 @@ import dagger
 
 
 async def list_files_in_directory(dagger_client: dagger.Client, directory: dagger.Directory) -> list[str]:
-    """List all files in a directory.
-    """
+    """List all files in a directory."""
     return (
         await dagger_client.container()
         .from_("bash:latest")

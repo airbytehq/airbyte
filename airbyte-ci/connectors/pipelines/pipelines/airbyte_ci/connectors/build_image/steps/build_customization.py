@@ -26,7 +26,8 @@ def get_build_customization_module(connector: Connector) -> Optional[ModuleType]
     if not build_customization_spec_path.exists():
         return None
     build_customization_spec = importlib.util.spec_from_file_location(
-        f"{connector.code_directory.name}_{BUILD_CUSTOMIZATION_MODULE_NAME}", build_customization_spec_path,
+        f"{connector.code_directory.name}_{BUILD_CUSTOMIZATION_MODULE_NAME}",
+        build_customization_spec_path,
     )
     build_customization_module = importlib.util.module_from_spec(build_customization_spec)
     build_customization_spec.loader.exec_module(build_customization_module)
