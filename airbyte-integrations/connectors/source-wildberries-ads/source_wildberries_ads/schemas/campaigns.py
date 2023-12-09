@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -19,6 +22,7 @@ class AdsCampaign(BaseModel):
     status: int = Field(
         description=(
             "Статус кампании: "
+            "-1 - кампания в процессе удаления"
             "4 - готова к запуску, "
             "7 - кампания завершена, "
             "8 - отказался, "
@@ -28,6 +32,7 @@ class AdsCampaign(BaseModel):
     )
     dailyBudget: float = Field(description="Сумма дневного бюджета")
     createTime: datetime = Field(description="Время создания кампании")
-    changeTime: str = Field(description="Время последнего изменения кампании")
-    startTime: str = Field(description="Время последнего запуска кампании")
-    endTime: str = Field(description="Время завершения кампании (state 7)")
+    changeTime: Optional[str] = Field(description="Время последнего изменения кампании")
+    startTime: Optional[str] = Field(description="Дата запуска кампании")
+    endTime: Optional[str] = Field(description="Дата завершения кампании")
+    name: Optional[str] = Field(description="Название кампании")

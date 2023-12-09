@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from abc import ABC
 from datetime import date
-from typing import Type, Mapping, Any, Dict, List, Iterable, Optional
+from typing import Type, Mapping, Any, Dict, List, Iterable, Optional, Iterator
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -17,13 +17,14 @@ from source_wildberries_ads.schemas.fullstat import AdsFullStat
 from source_wildberries_ads.schemas.seacatstat import AdsSeaCatStat
 from source_wildberries_ads.schemas.words import AdsWordsStat
 from source_wildberries_ads.types import WildberriesCredentials, IsSuccess, Message, SchemaT
+from source_wildberries_ads.utils import chunks
 
 
 def check_ads_stream_connection(credentials: WildberriesCredentials, campaign_id: int | None) -> tuple[IsSuccess, Optional[Message]]:
     if campaign_id:
         url = f"https://advert-api.wb.ru/adv/v1/stat/words?id={campaign_id}"
     else:
-        url = "https://advert-api.wb.ru/adv/v0/adverts"
+        url = "https://advert-api.wb.ru/adv/v1/promotion/count"
     headers = {"Authorization": credentials["api_key"]}
     try:
         response = requests.get(url, headers=headers)
@@ -41,6 +42,37 @@ def check_ads_stream_connection(credentials: WildberriesCredentials, campaign_id
         return False, str(e)
 
 
+def get_campaign_ids(headers: dict, only_campaign_type: int = None) -> Iterator[int]:
+    attempts_count = 0
+    while attempts_count < 3:
+        try:
+            response = requests.get("https://advert-api.wb.ru/adv/v1/promotion/count", headers=headers)
+        except ChunkedEncodingError:
+            time.sleep(20)
+            continue
+        if response.status_code == 200:
+            if records := response.json().get("adverts"):
+                for campaign_group in records:
+                    if only_campaign_type and only_campaign_type != campaign_group.get("type"):
+                        continue
+                    for campaign in campaign_group.get("advert_list", []):
+                        yield campaign["advertId"]
+            return
+        elif response.status_code == 204:
+            return
+        elif response.status_code > 500:
+            time.sleep(20)
+            continue
+        elif response.status_code in (408, 429):
+            attempts_count += 1
+            if attempts_count < 3:
+                time.sleep(20)  # Wait for Wildberries rate limits
+            else:
+                raise Exception(f"Failed to get campaigns from Wildberries API after 3 attempts due to rate limits")
+        else:
+            raise Exception(f"Status code: {response.status_code}. Body: {response.text}")
+
+
 class AdsStream(Stream, ABC):
     SCHEMA: Type[SchemaT] = NotImplemented
     URL: str = NotImplemented
@@ -49,7 +81,7 @@ class AdsStream(Stream, ABC):
     def __init__(self, credentials: WildberriesCredentials, campaign_id: int | None):
         self.credentials = credentials
         self.campaign_id = campaign_id
-        self.campaigns: list[AdsCampaign] = []
+        self.campaigns_ids: list[int] = []
 
     @property
     def primary_key(self) -> None:
@@ -82,38 +114,15 @@ class AdsStream(Stream, ABC):
             return
 
         self._get_campaigns()
-        for campaign in self.campaigns:
-            print(f"Running {self.__class__.__name__} for campaign #{campaign.advertId}")
-            self.campaign_id = campaign.advertId
+        for campaign_id in self.campaigns_ids:
+            print(f"Running {self.__class__.__name__} for campaign #{campaign_id}")
+            self.campaign_id = campaign_id
             time.sleep(self.timeout)
             yield from self._get_campaign_data()
 
     def _get_campaigns(self) -> None:
-        attempts_count = 0
-        while attempts_count < 3:
-            try:
-                response = requests.get("https://advert-api.wb.ru/adv/v0/adverts", headers=self.headers)
-            except ChunkedEncodingError:
-                time.sleep(20)
-                continue
-            if response.status_code == 200:
-                if records := response.json():
-                    for record in records:
-                        self.campaigns.append(AdsCampaign(**record))
-                return
-            elif response.status_code == 204:
-                return
-            elif response.status_code > 500:
-                time.sleep(20)
-                continue
-            elif response.status_code in (408, 429):
-                attempts_count += 1
-                if attempts_count < 3:
-                    time.sleep(20)  # Wait for Wildberries rate limits
-                else:
-                    raise Exception(f"Failed to get campaigns from Wildberries API after 3 attempts due to rate limits")
-            else:
-                raise Exception(f"Status code: {response.status_code}. Body: {response.text}")
+        for campaign_id in get_campaign_ids(headers=self.headers):
+            self.campaigns_ids.append(campaign_id)
 
     def _get_campaign_data(self) -> Iterable[Mapping[str, Any]]:
         attempts_count = 0
@@ -177,33 +186,8 @@ class AutoStatStream(AdsStream):
     RATE_LIMIT: int = 120
 
     def _get_campaigns(self) -> None:
-        attempts_count = 0
-        while attempts_count < 3:
-            try:
-                response = requests.get("https://advert-api.wb.ru/adv/v0/adverts", headers=self.headers)
-            except ChunkedEncodingError:
-                time.sleep(20)
-                continue
-            if response.status_code == 200:
-                if records := response.json():
-                    for record in records:
-                        campaign = AdsCampaign(**record)
-                        if campaign.type == 8:  # Автоматическая кампания
-                            self.campaigns.append(campaign)
-                return
-            elif response.status_code == 204:
-                return
-            elif response.status_code > 500:
-                time.sleep(20)
-                continue
-            elif response.status_code in (408, 429):
-                attempts_count += 1
-                if attempts_count < 3:
-                    time.sleep(20)  # Wait for Wildberries rate limits
-                else:
-                    raise Exception(f"Failed to get auto campaigns from Wildberries API after 3 attempts due to rate limits")
-            else:
-                raise Exception(f"Status code: {response.status_code}. Body: {response.text}")
+        for campaign_id in get_campaign_ids(headers=self.headers, only_campaign_type=8):  # Автоматическая кампания
+            self.campaigns_ids.append(campaign_id)
 
 
 class SeaCatStatStream(AdsStream):
@@ -214,10 +198,11 @@ class SeaCatStatStream(AdsStream):
 
 class AdsCampaignStream(Stream):
     SCHEMA: Type[AdsCampaign] = AdsCampaign
-    URL: str = "https://advert-api.wb.ru/adv/v0/adverts"
+    URL: str = "https://advert-api.wb.ru/adv/v1/promotion/adverts"
 
     def __init__(self, credentials: WildberriesCredentials):
         self.credentials = credentials
+        self.campaigns_ids: list[int] = []
 
     @property
     def primary_key(self) -> None:
@@ -230,6 +215,10 @@ class AdsCampaignStream(Stream):
     def headers(self) -> Dict:
         return {"Authorization": self.credentials["api_key"]}
 
+    def _get_campaigns(self) -> None:
+        for campaign_id in get_campaign_ids(headers=self.headers):
+            self.campaigns_ids.append(campaign_id)
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -237,31 +226,33 @@ class AdsCampaignStream(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        attempts_count = 0
-        while attempts_count < 3:
-            try:
-                response = requests.get(self.URL, headers=self.headers)
-            except ChunkedEncodingError:
-                time.sleep(20)
-                continue
-            if response.status_code == 200:
-                if records := response.json():
-                    for record in records:
-                        yield self.SCHEMA(**record).dict()
-                return
-            elif response.status_code == 204:
-                return
-            elif response.status_code > 500:
-                time.sleep(20)
-                continue
-            elif response.status_code in (408, 429):
-                attempts_count += 1
-                if attempts_count < 3:
-                    time.sleep(20)  # Wait for Wildberries rate limits
+        self._get_campaigns()
+        for chunk in chunks(self.campaigns_ids, 50):
+            attempts_count = 0
+            while attempts_count < 3:
+                try:
+                    response = requests.post(self.URL, json=chunk, headers=self.headers)
+                except ChunkedEncodingError:
+                    time.sleep(20)
+                    continue
+                if response.status_code == 200:
+                    if records := response.json():
+                        for record in records:
+                            yield self.SCHEMA(**record).dict()
+                    break
+                elif response.status_code == 204:
+                    break
+                elif response.status_code > 500:
+                    time.sleep(20)
+                    continue
+                elif response.status_code in (408, 429):
+                    attempts_count += 1
+                    if attempts_count < 3:
+                        time.sleep(20)  # Wait for Wildberries rate limits
+                    else:
+                        raise Exception(f"Failed to load data from Wildberries API after 3 attempts due to rate limits")
                 else:
-                    raise Exception(f"Failed to load data from Wildberries API after 3 attempts due to rate limits")
-            else:
-                raise Exception(f"Status code: {response.status_code}. Body: {response.text}")
+                    raise Exception(f"Status code: {response.status_code}. Body: {response.text}")
 
 
 class AdsCostHistoryStream(Stream):
