@@ -6,9 +6,9 @@ package io.airbyte.integrations.source.mysql.initialsync;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.integrations.source.mysql.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.MySqlCdcConnectorMetadataInjector;
+import io.airbyte.integrations.source.mysql.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
 import io.airbyte.integrations.source.mysql.MySqlSourceOperations;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;

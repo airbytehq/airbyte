@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.source.mysql.initialsync;
 
-import static io.airbyte.integrations.source.mysql.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.prettyPrintConfiguredAirbyteStreamList;
+import static io.airbyte.integrations.source.mysql.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadGlobalStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
 
@@ -18,10 +18,6 @@ import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
-import io.airbyte.integrations.source.mysql.MySqlCdcPosition;
-import io.airbyte.integrations.source.mysql.MySqlCdcTargetPosition;
-import io.airbyte.integrations.source.mysql.MySqlDebeziumStateUtil;
-import io.airbyte.integrations.source.mysql.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
 import io.airbyte.cdk.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
@@ -31,9 +27,13 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mysql.MySqlCdcConnectorMetadataInjector;
+import io.airbyte.integrations.source.mysql.MySqlCdcPosition;
 import io.airbyte.integrations.source.mysql.MySqlCdcProperties;
 import io.airbyte.integrations.source.mysql.MySqlCdcSavedInfoFetcher;
 import io.airbyte.integrations.source.mysql.MySqlCdcStateHandler;
+import io.airbyte.integrations.source.mysql.MySqlCdcTargetPosition;
+import io.airbyte.integrations.source.mysql.MySqlDebeziumStateUtil;
+import io.airbyte.integrations.source.mysql.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
 import io.airbyte.integrations.source.mysql.MySqlQueryUtils;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadSourceOperations.CdcMetadataInjector;
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
