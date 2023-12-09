@@ -7,9 +7,9 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.6.4'
+    cdkVersionRequired = '0.7.1'
     features = ['db-sources']
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 configurations.all {
@@ -30,6 +30,9 @@ dependencies {
 
     implementation 'mysql:mysql-connector-java:8.0.30'
     implementation 'org.apache.commons:commons-lang3:3.11'
+
+    implementation libs.debezium.mysql
+    implementation libs.debezium.embedded
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'

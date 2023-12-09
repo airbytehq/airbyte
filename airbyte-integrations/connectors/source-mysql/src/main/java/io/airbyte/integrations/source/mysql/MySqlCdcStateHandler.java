@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.serialize;
-import static io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants.COMPRESSION_ENABLED;
+import static io.airbyte.integrations.source.mysql.MySqlDebeziumStateUtil.serialize;
+import static io.airbyte.integrations.source.mysql.MysqlCdcStateConstants.COMPRESSION_ENABLED;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.debezium.CdcStateHandler;

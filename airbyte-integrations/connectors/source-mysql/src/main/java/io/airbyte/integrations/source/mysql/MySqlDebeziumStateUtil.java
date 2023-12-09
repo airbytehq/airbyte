@@ -2,9 +2,9 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.integrations.debezium.internals.mysql;
+package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.cdk.integrations.debezium.internals.mysql.MysqlCdcStateConstants.COMPRESSION_ENABLED;
+import static io.airbyte.integrations.source.mysql.MysqlCdcStateConstants.COMPRESSION_ENABLED;
 import static io.debezium.relational.RelationalDatabaseConnectorConfig.DATABASE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -231,6 +231,7 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
 
   }
 
+  @SuppressWarnings("try")
   public JsonNode constructInitialDebeziumState(final Properties properties,
                                                 final ConfiguredAirbyteCatalog catalog,
                                                 final JdbcDatabase database) {
@@ -264,14 +265,12 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
           }
           if (Duration.between(engineStartTime, Instant.now()).compareTo(initialWaitingDuration) > 0) {
             LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", initialWaitingDuration.getSeconds());
-            publisher.close();
             throw new RuntimeException(
                 "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
           }
           continue;
         }
         LOGGER.info("A record is returned, closing the engine since the state is constructed");
-        publisher.close();
         break;
       }
     } catch (final Exception e) {
@@ -279,7 +278,7 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     }
 
     final Map<String, String> offset = offsetManager.read();
-    final SchemaHistory schemaHistory = schemaHistoryStorage.read();
+    final SchemaHistory<String> schemaHistory = schemaHistoryStorage.read();
 
     assert !offset.isEmpty();
     assert Objects.nonNull(schemaHistory);
@@ -294,7 +293,7 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     return asJson;
   }
 
-  public static JsonNode serialize(final Map<String, String> offset, final SchemaHistory dbHistory) {
+  public static JsonNode serialize(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MysqlCdcStateConstants.MYSQL_CDC_OFFSET, offset);
     state.put(MysqlCdcStateConstants.MYSQL_DB_HISTORY, dbHistory.schema());

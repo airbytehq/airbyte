@@ -65,7 +65,10 @@ dependencies {
 
     // testImplementation libs.junit.jupiter.api
     implementation libs.hikaricp
-    implementation libs.bundles.debezium.bundle
+    implementation libs.debezium.api
+    implementation libs.debezium.embedded
+    implementation libs.debezium.postgres
+    implementation libs.debezium.mongodb
 
     api libs.bundles.datadog
     implementation 'org.apache.sshd:sshd-mina:2.8.0'
