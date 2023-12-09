@@ -140,6 +140,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.20  | 2023-12-08 | [\#33263](https://github.com/airbytehq/airbyte/pull/33263) | Adopt java CDK version 0.7.0                                                                                                                                    |
 | 2.3.19  | 2023-12-07 | [\#32326](https://github.com/airbytehq/airbyte/pull/32326) | Update common T&D interfaces                                                                                                                                    |
 | 2.3.18  | 2023-12-04 | [\#33084](https://github.com/airbytehq/airbyte/pull/33084) | T&D SQL statements moved to debug log level                                                                                                                     |
 | 2.3.17  | 2023-12-04 | [\#33078](https://github.com/airbytehq/airbyte/pull/33078) | Further increase gcs COPY timeout                                                                                                                               |
