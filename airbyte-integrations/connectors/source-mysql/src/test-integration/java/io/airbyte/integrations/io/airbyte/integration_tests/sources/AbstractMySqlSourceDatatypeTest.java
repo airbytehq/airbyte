@@ -4,11 +4,11 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.mysql.cj.MysqlType;
-import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.File;
 import java.io.IOException;
@@ -21,31 +21,26 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.MySQLContainer;
 
 public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractMySqlSourceDatatypeTest.class);
 
-  protected MySQLContainer<?> container;
-  protected JsonNode config;
+  protected MySQLTestDatabase testdb;
 
   @Override
-  protected JsonNode getConfig() {
-    return config;
+  protected String getNameSpace() {
+    return testdb.getDatabaseName();
+  }
+
+  @Override
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    testdb.close();
   }
 
   @Override
   protected String getImageName() {
     return "airbyte/source-mysql:dev";
-  }
-
-  @Override
-  protected abstract Database setupDatabase() throws Exception;
-
-  @Override
-  protected String getNameSpace() {
-    return container.getDatabaseName();
   }
 
   @Override

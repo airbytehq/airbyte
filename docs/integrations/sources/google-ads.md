@@ -137,7 +137,7 @@ Represents the bidding strategy at the campaign level.
 Represents labels that can be attached to different entities such as campaigns or ads.
 - [ad_group_ad](https://developers.google.com/google-ads/api/fields/v14/ad_group_ad)
 
-Different attributtes of ads from ag groups segmented by date.
+Different attributes of ads from ad groups segmented by date.
 - [ad_group_ad_label](https://developers.google.com/google-ads/api/fields/v14/ad_group_ad_label)
 - [ad_group](https://developers.google.com/google-ads/api/fields/v14/ad_group)
 
@@ -203,7 +203,7 @@ Due to Google Ads API constraints, the `click_view` stream retrieves data one da
 :::
 
 :::warning
-Google Ads doesn't support `PERFORMACE_MAX` campaigns on `ad_group` or `ad` stream level, only on `campaign` level. 
+Google Ads doesn't support `PERFORMANCE_MAX` campaigns on `ad_group` or `ad` stream level, only on `campaign` level. 
 If you have this type of campaign Google will remove them from the results for the `ads` reports.
 More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discussions](https://groups.google.com/g/adwords-api/c/_mxbgNckaLQ).
 :::

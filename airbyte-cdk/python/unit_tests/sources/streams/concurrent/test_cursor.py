@@ -33,7 +33,7 @@ def _partition(_slice: Optional[Mapping[str, Any]]) -> Partition:
 
 
 def _record(cursor_value: Comparable) -> Record:
-    return Record(data={_A_CURSOR_FIELD_KEY: cursor_value})
+    return Record(data={_A_CURSOR_FIELD_KEY: cursor_value}, stream_name=_A_STREAM_NAME)
 
 
 class ConcurrentCursorTest(TestCase):

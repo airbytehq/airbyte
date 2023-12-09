@@ -4,87 +4,27 @@
 
 """This module is the CLI entrypoint to the airbyte-ci commands."""
 
-import importlib
 import logging
 import multiprocessing
 import os
+import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import asyncclick as click
 import docker
 import git
 from github import PullRequest
 from pipelines import main_logger
+from pipelines.cli.auto_update import __installed_version__, check_for_upgrade, pre_confirm_auto_update_flag
 from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.confirm_prompt import pre_confirm_all_flag
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
-from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH, CIContext
+from pipelines.consts import DAGGER_WRAP_ENV_VAR_NAME, CIContext
 from pipelines.helpers import github
-from pipelines.helpers.git import (
-    get_current_git_branch,
-    get_current_git_revision,
-    get_modified_files_in_branch,
-    get_modified_files_in_commit,
-    get_modified_files_in_pull_request,
-)
-from pipelines.helpers.utils import get_current_epoch_time, transform_strs_to_paths
-
-# HELPERS
-
-__installed_version__ = importlib.metadata.version("pipelines")
-
-
-def display_welcome_message() -> None:
-    print(
-        """
-        ╔─────────────────────────────────────────────────────────────────────────────────────────────────╗
-        │                                                                                                 │
-        │                                                                                                 │
-        │    /$$$$$$  /$$$$$$ /$$$$$$$  /$$$$$$$  /$$     /$$ /$$$$$$$$ /$$$$$$$$       /$$$$$$  /$$$$$$  │
-        │   /$$__  $$|_  $$_/| $$__  $$| $$__  $$|  $$   /$$/|__  $$__/| $$_____/      /$$__  $$|_  $$_/  │
-        │  | $$  \ $$  | $$  | $$  \ $$| $$  \ $$ \  $$ /$$/    | $$   | $$           | $$  \__/  | $$    │
-        │  | $$$$$$$$  | $$  | $$$$$$$/| $$$$$$$   \  $$$$/     | $$   | $$$$$ /$$$$$$| $$        | $$    │
-        │  | $$__  $$  | $$  | $$__  $$| $$__  $$   \  $$/      | $$   | $$__/|______/| $$        | $$    │
-        │  | $$  | $$  | $$  | $$  \ $$| $$  \ $$    | $$       | $$   | $$           | $$    $$  | $$    │
-        │  | $$  | $$ /$$$$$$| $$  | $$| $$$$$$$/    | $$       | $$   | $$$$$$$$     |  $$$$$$/ /$$$$$$  │
-        │  |__/  |__/|______/|__/  |__/|_______/     |__/       |__/   |________/      \______/ |______/  │
-        │                                                                                                 │
-        │                                                                                                 │
-        ╚─────────────────────────────────────────────────────────────────────────────────────────────────╝
-        """
-    )
-
-
-def check_up_to_date() -> bool:
-    """Check if the installed version of pipelines is up to date."""
-    latest_version = get_latest_version()
-    if latest_version != __installed_version__:
-        upgrade_error_message = f"""
-        🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
-
-        airbyte-ci is not up to date. Installed version: {__installed_version__}. Latest version: {latest_version}
-        Please run `pipx reinstall pipelines` to upgrade to the latest version.
-
-        🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
-        """
-        raise Exception(upgrade_error_message)
-
-    main_logger.info(f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
-    return True
-
-
-def get_latest_version() -> str:
-    """
-    Get the version of the latest release, which is just in the pyproject.toml file of the pipelines package
-    as this is an internal tool, we don't need to check for the latest version on PyPI
-    """
-    path_to_pyproject_toml = LOCAL_PIPELINE_PACKAGE_PATH + "pyproject.toml"
-    with open(path_to_pyproject_toml, "r") as f:
-        for line in f.readlines():
-            if "version" in line:
-                return line.split("=")[1].strip().replace('"', "")
-    raise Exception("Could not find version in pyproject.toml. Please ensure you are running from the root of the airbyte repo.")
+from pipelines.helpers.git import get_current_git_branch, get_current_git_revision
+from pipelines.helpers.utils import get_current_epoch_time
 
 
 def _validate_airbyte_repo(repo: git.Repo) -> bool:
@@ -136,30 +76,6 @@ def set_working_directory_to_root() -> None:
     os.chdir(working_dir)
 
 
-async def get_modified_files(
-    git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext, pull_request: PullRequest
-) -> List[str]:
-    """Get the list of modified files in the current git branch.
-    If the current branch is master, it will return the list of modified files in the head commit.
-    The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.
-    Pipelines like "publish on merge" are triggered on each new commit on master.
-
-    If the CI context is a pull request, it will return the list of modified files in the pull request, without using git diff.
-    If the current branch is not master, it will return the list of modified files in the current branch.
-    This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
-    """
-    if ci_context is CIContext.MASTER or ci_context is CIContext.NIGHTLY_BUILDS:
-        return await get_modified_files_in_commit(git_branch, git_revision, is_local)
-    if ci_context is CIContext.PULL_REQUEST and pull_request is not None:
-        return get_modified_files_in_pull_request(pull_request)
-    if ci_context is CIContext.MANUAL:
-        if git_branch == "master":
-            return await get_modified_files_in_commit(git_branch, git_revision, is_local)
-        else:
-            return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
-    return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
-
-
 def log_git_info(ctx: click.Context):
     main_logger.info("Running airbyte-ci in CI mode.")
     main_logger.info(f"CI Context: {ctx.obj['ci_context']}")
@@ -170,7 +86,6 @@ def log_git_info(ctx: click.Context):
     main_logger.info(f"GitHub Workflow Run URL: {ctx.obj['gha_workflow_run_url']}")
     main_logger.info(f"Pull Request Number: {ctx.obj['pull_request_number']}")
     main_logger.info(f"Pipeline Start Timestamp: {ctx.obj['pipeline_start_timestamp']}")
-    main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
 
 
 def _get_gha_workflow_run_url(ctx: click.Context) -> Optional[str]:
@@ -206,16 +121,36 @@ def check_local_docker_configuration():
         )
 
 
-async def get_modified_files_str(ctx: click.Context):
-    modified_files = await get_modified_files(
-        ctx.obj["git_branch"],
-        ctx.obj["git_revision"],
-        ctx.obj["diffed_branch"],
-        ctx.obj["is_local"],
-        ctx.obj["ci_context"],
-        ctx.obj["pull_request"],
-    )
-    return transform_strs_to_paths(modified_files)
+def is_dagger_run_enabled_by_default() -> bool:
+    dagger_run_by_default = [
+        ["connectors", "test"],
+        ["connectors", "build"],
+        ["test"],
+        ["metadata_service"],
+    ]
+
+    for command_tokens in dagger_run_by_default:
+        if all(token in sys.argv for token in command_tokens):
+            return True
+
+    return False
+
+
+def check_dagger_wrap():
+    """
+    Check if the command is already wrapped by dagger run.
+    This is useful to avoid infinite recursion when calling dagger run from dagger run.
+    """
+    return os.getenv(DAGGER_WRAP_ENV_VAR_NAME) == "true"
+
+
+def is_current_process_wrapped_by_dagger_run() -> bool:
+    """
+    Check if the current process is wrapped by dagger run.
+    """
+    called_with_dagger_run = check_dagger_wrap()
+    main_logger.info(f"Called with dagger run: {called_with_dagger_run}")
+    return called_with_dagger_run
 
 
 # COMMANDS
@@ -226,11 +161,18 @@ async def get_modified_files_str(ctx: click.Context):
     help="Airbyte CI top-level command group.",
     lazy_subcommands={
         "connectors": "pipelines.airbyte_ci.connectors.commands.connectors",
+        "format": "pipelines.airbyte_ci.format.commands.format_code",
         "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
         "test": "pipelines.airbyte_ci.test.commands.test",
+        "update": "pipelines.airbyte_ci.update.commands.update",
     },
 )
 @click.version_option(__installed_version__)
+@pre_confirm_all_flag
+@pre_confirm_auto_update_flag
+@click.option("--enable-dagger-run/--disable-dagger-run", default=is_dagger_run_enabled_by_default)
+@click.option("--enable-update-check/--disable-update-check", default=True)
+@click.option("--enable-auto-update/--disable-auto-update", default=True)
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
@@ -247,6 +189,7 @@ async def get_modified_files_str(ctx: click.Context):
 @click.option("--ci-git-user", default="octavia-squidington-iii", envvar="CI_GIT_USER", type=str)
 @click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
 @click.option("--ci-report-bucket-name", envvar="CI_REPORT_BUCKET_NAME", type=str)
+@click.option("--ci-artifact-bucket-name", envvar="CI_ARTIFACT_BUCKET_NAME", type=str)
 @click.option(
     "--ci-gcs-credentials",
     help="The service account to use during CI.",
@@ -263,17 +206,28 @@ async def get_modified_files_str(ctx: click.Context):
 @click_append_to_context_object("is_ci", lambda ctx: not ctx.obj["is_local"])
 @click_append_to_context_object("gha_workflow_run_url", _get_gha_workflow_run_url)
 @click_append_to_context_object("pull_request", _get_pull_request)
-@click_append_to_context_object("modified_files", get_modified_files_str)
 @click.pass_context
 @click_ignore_unused_kwargs
 async def airbyte_ci(ctx: click.Context):  # noqa D103
-    display_welcome_message()
+    # Check that the command being run is not upgrade
+    is_update_command = ctx.invoked_subcommand == "update"
+    if ctx.obj["enable_update_check"] and ctx.obj["is_local"] and not is_update_command:
+        check_for_upgrade(
+            require_update=ctx.obj["is_local"],
+            enable_auto_update=ctx.obj["is_local"] and ctx.obj["enable_auto_update"],
+        )
+
+    if ctx.obj["enable_dagger_run"] and not is_current_process_wrapped_by_dagger_run():
+        main_logger.debug("Re-Running airbyte-ci with dagger run.")
+        from pipelines.cli.dagger_run import call_current_command_with_dagger_run
+
+        call_current_command_with_dagger_run()
+        return
+
     if ctx.obj["is_local"]:
         # This check is meaningful only when running locally
         # In our CI the docker host used by the Dagger Engine is different from the one used by the runner.
         check_local_docker_configuration()
-
-    check_up_to_date()
 
     if not ctx.obj["is_local"]:
         log_git_info(ctx)

@@ -28,12 +28,6 @@ The Mailchimp source connector supports the following [sync modes](https://docs.
  - Full Refresh
  - Incremental
 
-Airbyte doesn't support Incremental Deletes for the `Campaigns`, `Lists`, and `Email Activity` streams because Mailchimp doesn't provide any information about deleted data in these streams.
-
-## Performance considerations
-
-[Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous connections to its API, which means that Airbyte is unable to run more than 10 concurrent syncs from Mailchimp using API keys generated from the same account.
-
 ## Supported streams
 
 The Mailchimp source connector supports the following streams:
@@ -41,10 +35,14 @@ The Mailchimp source connector supports the following streams:
 [Automations](https://mailchimp.com/developer/marketing/api/automation/list-automations/)
 [Campaigns](https://mailchimp.com/developer/marketing/api/campaigns/get-campaign-info/)
 [Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/)
+[Interests](https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/)
+[Interest Categories](https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/)
 [Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info)
-[ListMembers](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/)
+[List Members](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/)
 [Reports](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/)
 [Segments](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/)
+[Segment Members](https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/)
+[Tags](https://mailchimp.com/developer/marketing/api/lists-tags-search/search-for-tags-on-a-list-by-name/)
 [Unsubscribes](https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/)
 
 ### A note on primary keys
@@ -66,6 +64,10 @@ All other streams contain an `id` primary key.
 | `object`                   | `object`     | properties within objects are mapped based on the mappings in this table            |
 | `string`                   | `string`     |                                                                                     |
 
+## Performance considerations
+
+[Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous connections to its API, which means that Airbyte is unable to run more than 10 concurrent syncs from Mailchimp using API keys generated from the same account.
+
 ## Tutorials
 
 Now that you have set up the Mailchimp source connector, check out the following Mailchimp tutorial:
@@ -76,7 +78,12 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
-| 0.8.0   | 2023-11-01 | [32032](https://github.com/airbytehq/airbyte/pull/32032) | Add ListMembers stream
+| 0.10.0  | 2023-11-23 | [32782](https://github.com/airbytehq/airbyte/pull/32782) | Add SegmentMembers stream                                                  |
+| 0.9.0   | 2023-11-17 | [32218](https://github.com/airbytehq/airbyte/pull/32218) | Add Interests, InterestCategories, Tags streams                            |
+| 0.8.3   | 2023-11-15 | [32543](https://github.com/airbytehq/airbyte/pull/32543) | Handle empty datetime fields in Reports stream                             |
+| 0.8.2   | 2023-11-13 | [32466](https://github.com/airbytehq/airbyte/pull/32466) | Improve error handling during connection check                             |
+| 0.8.1   | 2023-11-06 | [32226](https://github.com/airbytehq/airbyte/pull/32226) | Unmute expected records test after data anonymisation                      |
+| 0.8.0   | 2023-11-01 | [32032](https://github.com/airbytehq/airbyte/pull/32032) | Add ListMembers stream                                                     |
 | 0.7.0   | 2023-10-27 | [31940](https://github.com/airbytehq/airbyte/pull/31940) | Implement availability strategy                                            |
 | 0.6.0   | 2023-10-27 | [31922](https://github.com/airbytehq/airbyte/pull/31922) | Add Segments stream                                                        |
 | 0.5.0   | 2023-10-20 | [31675](https://github.com/airbytehq/airbyte/pull/31675) | Add Unsubscribes stream                                                    |

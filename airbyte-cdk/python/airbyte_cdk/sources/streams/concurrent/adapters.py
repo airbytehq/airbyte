@@ -22,11 +22,11 @@ from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
     StreamUnavailable,
 )
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
@@ -52,7 +52,6 @@ class StreamFacade(Stream):
         stream: Stream,
         source: AbstractSource,
         logger: logging.Logger,
-        max_workers: int,
         state: Optional[MutableMapping[str, Any]],
         cursor: Cursor,
     ) -> Stream:
@@ -73,28 +72,27 @@ class StreamFacade(Stream):
 
         message_repository = source.message_repository
         return StreamFacade(
-            ThreadBasedConcurrentStream(
+            DefaultStream(
                 partition_generator=StreamPartitionGenerator(
                     stream,
                     message_repository,
                     SyncMode.full_refresh if isinstance(cursor, NoopCursor) else SyncMode.incremental,
                     [cursor_field] if cursor_field is not None else None,
                     state,
+                    cursor,
                 ),
-                max_workers=max_workers,
                 name=stream.name,
                 namespace=stream.namespace,
                 json_schema=stream.get_json_schema(),
                 availability_strategy=StreamAvailabilityStrategy(stream, source),
                 primary_key=pk,
                 cursor_field=cursor_field,
-                slice_logger=source._slice_logger,
-                message_repository=message_repository,
                 logger=logger,
-                cursor=cursor,
             ),
             stream,
             cursor,
+            slice_logger=source._slice_logger,
+            logger=logger,
         )
 
     @property
@@ -132,13 +130,15 @@ class StreamFacade(Stream):
         else:
             return stream.cursor_field
 
-    def __init__(self, stream: AbstractStream, legacy_stream: Stream, cursor: Cursor):
+    def __init__(self, stream: AbstractStream, legacy_stream: Stream, cursor: Cursor, slice_logger: SliceLogger, logger: logging.Logger):
         """
         :param stream: The underlying AbstractStream
         """
         self._abstract_stream = stream
         self._legacy_stream = legacy_stream
         self._cursor = cursor
+        self._slice_logger = slice_logger
+        self._logger = logger
 
     def read_full_refresh(
         self,
@@ -177,8 +177,11 @@ class StreamFacade(Stream):
         yield from self._read_records()
 
     def _read_records(self) -> Iterable[StreamData]:
-        for record in self._abstract_stream.read():
-            yield record.data
+        for partition in self._abstract_stream.generate_partitions():
+            if self._slice_logger.should_log_slice_message(self._logger):
+                yield self._slice_logger.create_slice_log_message(partition.to_slice())
+            for record in partition.read():
+                yield record.data
 
     @property
     def name(self) -> str:
@@ -259,6 +262,7 @@ class StreamPartition(Partition):
         sync_mode: SyncMode,
         cursor_field: Optional[List[str]],
         state: Optional[MutableMapping[str, Any]],
+        cursor: Cursor,
     ):
         """
         :param stream: The stream to delegate to
@@ -271,6 +275,8 @@ class StreamPartition(Partition):
         self._sync_mode = sync_mode
         self._cursor_field = cursor_field
         self._state = state
+        self._cursor = cursor
+        self._is_closed = False
 
     def read(self) -> Iterable[Record]:
         """
@@ -294,7 +300,9 @@ class StreamPartition(Partition):
                 if isinstance(record_data, Mapping):
                     data_to_return = dict(record_data)
                     self._stream.transformer.transform(data_to_return, self._stream.get_json_schema())
-                    yield Record(data_to_return)
+                    record = Record(data_to_return, self._stream.name)
+                    self._cursor.observe(record)
+                    yield Record(data_to_return, self._stream.name)
                 else:
                     self._message_repository.emit_message(record_data)
         except Exception as e:
@@ -315,6 +323,16 @@ class StreamPartition(Partition):
         else:
             return hash(self._stream.name)
 
+    def stream_name(self) -> str:
+        return self._stream.name
+
+    def close(self) -> None:
+        self._cursor.close_partition(self)
+        self._is_closed = True
+
+    def is_closed(self) -> bool:
+        return self._is_closed
+
     def __repr__(self) -> str:
         return f"StreamPartition({self._stream.name}, {self._slice})"
 
@@ -334,6 +352,7 @@ class StreamPartitionGenerator(PartitionGenerator):
         sync_mode: SyncMode,
         cursor_field: Optional[List[str]],
         state: Optional[MutableMapping[str, Any]],
+        cursor: Cursor,
     ):
         """
         :param stream: The stream to delegate to
@@ -344,10 +363,13 @@ class StreamPartitionGenerator(PartitionGenerator):
         self._sync_mode = sync_mode
         self._cursor_field = cursor_field
         self._state = state
+        self._cursor = cursor
 
     def generate(self) -> Iterable[Partition]:
         for s in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
-            yield StreamPartition(self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state)
+            yield StreamPartition(
+                self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor
+            )
 
 
 @deprecated("This class is experimental. Use at your own risk.")
