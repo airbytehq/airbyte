@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import anyio
+
 from connector_ops.utils import ConnectorLanguage
 from pipelines.airbyte_ci.connectors.build_image.steps import java_connectors, python_connectors
 from pipelines.airbyte_ci.connectors.build_image.steps.common import LoadContainerToLocalDockerHost, StepStatus
@@ -39,6 +40,7 @@ async def run_connector_build_pipeline(context: ConnectorContext, semaphore: any
         context (ConnectorContext): The initialized connector context.
         semaphore (anyio.Semaphore): The semaphore to use to limit the number of concurrent builds.
         image_tag (str): The tag to use for the built image.
+
     Returns:
         ConnectorReport: The reports holding builds results.
     """

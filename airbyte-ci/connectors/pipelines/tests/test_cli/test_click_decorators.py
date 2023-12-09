@@ -5,10 +5,11 @@
 import asyncclick as click
 import pytest
 from asyncclick.testing import CliRunner
+
 from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 
 
-@pytest.mark.anyio
+@pytest.mark.anyio()
 async def test_click_append_to_context_object():
     runner = CliRunner()
 
@@ -53,7 +54,7 @@ async def test_click_append_to_context_object():
     assert result_async.exit_code == 0
 
 
-@pytest.mark.anyio
+@pytest.mark.anyio()
 async def test_click_ignore_unused_kwargs():
     @click_ignore_unused_kwargs
     def decorated_function(a, b):
@@ -66,7 +67,7 @@ async def test_click_ignore_unused_kwargs():
     assert decorated_function(a=1, b=2, c=3) == 3
 
 
-@pytest.mark.anyio
+@pytest.mark.anyio()
 async def test_click_merge_args_into_context_obj():
     runner = CliRunner()
 

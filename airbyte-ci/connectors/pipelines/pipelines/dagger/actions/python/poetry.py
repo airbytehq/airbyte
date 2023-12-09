@@ -4,10 +4,11 @@
 
 import uuid
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import toml
 from dagger import Container, Directory
+
 from pipelines.airbyte_ci.connectors.context import PipelineContext
 from pipelines.dagger.actions.python.common import with_pip_packages, with_python_package
 from pipelines.dagger.actions.system.common import with_debian_packages
@@ -19,7 +20,7 @@ async def find_local_dependencies_in_pyproject_toml(
     context: PipelineContext,
     base_container: Container,
     pyproject_file_path: str,
-    exclude: Optional[List] = None,
+    exclude: Optional[list] = None,
 ) -> list:
     """Find local dependencies of a python package in a pyproject.toml file.
 
@@ -47,7 +48,7 @@ async def find_local_dependencies_in_pyproject_toml(
             # Ensure we parse the child dependencies
             # TODO handle more than pyproject.toml
             child_local_dependencies = await find_local_dependencies_in_pyproject_toml(
-                context, base_container, local_dependency_path, exclude=exclude
+                context, base_container, local_dependency_path, exclude=exclude,
             )
             local_dependency_paths += child_local_dependencies
 
@@ -59,6 +60,7 @@ def with_poetry(context: PipelineContext) -> Container:
 
     Args:
         context (PipelineContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+
     Returns:
         Container: A python environment with poetry installed.
     """
@@ -77,6 +79,7 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
 
     Args:
         context (PipelineContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+
     Returns:
         Container: A python environment with dependencies installed using poetry.
     """

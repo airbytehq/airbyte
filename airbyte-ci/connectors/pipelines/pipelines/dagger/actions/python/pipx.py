@@ -2,9 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional
+from typing import Optional
 
 from dagger import Container
+
 from pipelines.airbyte_ci.connectors.context import PipelineContext
 from pipelines.dagger.actions.python.common import with_pip_packages, with_python_package
 from pipelines.dagger.actions.python.poetry import find_local_dependencies_in_pyproject_toml
@@ -28,7 +29,7 @@ async def with_installed_pipx_package(
     context: PipelineContext,
     python_environment: Container,
     package_source_code_path: str,
-    exclude: Optional[List] = None,
+    exclude: Optional[list] = None,
 ) -> Container:
     """Install a python package in a python environment container using pipx.
 

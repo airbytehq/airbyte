@@ -4,15 +4,16 @@
 
 import json
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 from google.cloud import storage
 from google.oauth2 import service_account
+
 from pipelines import main_logger
 from pipelines.consts import GCS_PUBLIC_DOMAIN
 
 
-def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentials: str) -> Tuple[str, str]:
+def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentials: str) -> tuple[str, str]:
     """Upload a file to a GCS bucket.
 
     Args:

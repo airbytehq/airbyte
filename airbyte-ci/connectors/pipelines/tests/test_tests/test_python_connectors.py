@@ -3,6 +3,7 @@
 #
 
 import pytest
+
 from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -15,11 +16,11 @@ pytestmark = [
 
 
 class TestUnitTests:
-    @pytest.fixture
+    @pytest.fixture()
     def connector_with_poetry(self):
         return Connector("destination-duckdb")
 
-    @pytest.fixture
+    @pytest.fixture()
     def certified_connector_with_setup(self, all_connectors):
         for connector in all_connectors:
             if connector.support_level == "certified" and connector.language in [ConnectorLanguage.LOW_CODE, ConnectorLanguage.PYTHON]:
@@ -27,7 +28,7 @@ class TestUnitTests:
                     return connector
         pytest.skip("No certified connector with setup.py found.")
 
-    @pytest.fixture
+    @pytest.fixture()
     def context_for_certified_connector_with_setup(self, certified_connector_with_setup, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test unit tests",
@@ -43,12 +44,12 @@ class TestUnitTests:
         context.connector_secrets = {}
         return context
 
-    @pytest.fixture
+    @pytest.fixture()
     async def certified_container_with_setup(self, context_for_certified_connector_with_setup, current_platform):
         result = await BuildConnectorImages(context_for_certified_connector_with_setup).run()
         return result.output_artifact[current_platform]
 
-    @pytest.fixture
+    @pytest.fixture()
     def context_for_connector_with_poetry(self, connector_with_poetry, dagger_client, current_platform):
         context = ConnectorContext(
             pipeline_name="test unit tests",
@@ -64,7 +65,7 @@ class TestUnitTests:
         context.connector_secrets = {}
         return context
 
-    @pytest.fixture
+    @pytest.fixture()
     async def container_with_poetry(self, context_for_connector_with_poetry, current_platform):
         result = await BuildConnectorImages(context_for_connector_with_poetry).run()
         return result.output_artifact[current_platform]

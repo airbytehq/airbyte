@@ -4,11 +4,12 @@
 
 """This module groups steps made to run tests for a specific Java connector given a test context."""
 
-from typing import List, Optional
+from typing import Optional
 
 import anyio
 import asyncer
 from dagger import Directory, File, QueryError
+
 from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
     BuildConnectorDistributionTar,
     BuildConnectorImages,
@@ -65,7 +66,7 @@ class UnitTests(GradleTask):
     bind_to_docker_host = True
 
 
-async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
+async def run_all_tests(context: ConnectorContext) -> list[StepResult]:
     """Run all tests for a Java connectors.
 
     - Build the normalization image if the connector supports it.
@@ -89,7 +90,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
 
     dist_tar_dir = build_distribution_tar_result.output_artifact.directory(dist_tar_directory_path(context))
 
-    async def run_docker_build_dependent_steps(dist_tar_dir: Directory) -> List[StepResult]:
+    async def run_docker_build_dependent_steps(dist_tar_dir: Directory) -> list[StepResult]:
         step_results = []
         build_connector_image_results = await BuildConnectorImages(context).run(dist_tar_dir)
         step_results.append(build_connector_image_results)
@@ -116,7 +117,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
 
         async with asyncer.create_task_group() as docker_build_dependent_group:
             soon_integration_tests_results = docker_build_dependent_group.soonify(IntegrationTests(context).run)(
-                connector_tar_file=connector_image_tar_file, normalization_tar_file=normalization_tar_file
+                connector_tar_file=connector_image_tar_file, normalization_tar_file=normalization_tar_file,
             )
             soon_cat_results = docker_build_dependent_group.soonify(AcceptanceTests(context, True).run)(connector_container)
 

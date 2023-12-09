@@ -3,6 +3,7 @@
 #
 
 from dagger import Client, Container, Directory, Secret
+
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.steps import Step, StepResult
@@ -20,8 +21,8 @@ def with_git(dagger_client, ci_git_user: str = "octavia") -> Container:
                     f"git config --global user.email {ci_git_user}@users.noreply.github.com",
                     f"git config --global user.name {ci_git_user}",
                     "git config --global --add --bool push.autoSetupRemote true",
-                ]
-            )
+                ],
+            ),
         )
         .with_workdir("/ghcli")
         .with_exec(
@@ -31,15 +32,14 @@ def with_git(dagger_client, ci_git_user: str = "octavia") -> Container:
                     "tar --strip-components=1 -xf ghcli.tar.gz",
                     "rm ghcli.tar.gz",
                     "cp bin/gh /usr/local/bin/gh",
-                ]
-            )
+                ],
+            ),
         )
     )
 
 
 class GitPushChanges(Step):
-    """
-    A step to push changes to the remote repository.
+    """A step to push changes to the remote repository.
     """
 
     title = "Push changes to the remote repository"
@@ -76,7 +76,7 @@ class GitPushChanges(Step):
         return f"{commit_message} [skip ci]" if skip_ci else commit_message
 
     async def _run(
-        self, changed_directory: Directory, changed_directory_path: str, commit_message: str, skip_ci: bool = True
+        self, changed_directory: Directory, changed_directory_path: str, commit_message: str, skip_ci: bool = True,
     ) -> StepResult:
         diff = (
             with_git(self.dagger_client, self.context.ci_github_access_token_secret, self.ci_git_user)
@@ -102,8 +102,7 @@ class GitPushChanges(Step):
 
 
 class GitPushEmptyCommit(GitPushChanges):
-    """
-    A step to push an empty commit to the remote repository.
+    """A step to push an empty commit to the remote repository.
     """
 
     title = "Push empty commit to the remote repository"

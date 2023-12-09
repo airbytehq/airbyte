@@ -2,9 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional
+from typing import Optional
 
 import dagger
+
 from pipelines.dagger.actions.python.pipx import with_installed_pipx_package
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.models.contexts.pipeline_context import PipelineContext
@@ -16,12 +17,12 @@ class SimpleDockerStep(Step):
         self,
         title: str,
         context: PipelineContext,
-        paths_to_mount: List[MountPath] = [],
-        internal_tools: List[MountPath] = [],
+        paths_to_mount: list[MountPath] = [],
+        internal_tools: list[MountPath] = [],
         secrets: dict[str, dagger.Secret] = {},
         env_variables: dict[str, str] = {},
         working_directory: str = "/",
-        command: Optional[List[str]] = None,
+        command: Optional[list[str]] = None,
     ):
         """A simple step that runs a given command in a container.
 

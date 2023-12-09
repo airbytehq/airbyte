@@ -33,7 +33,7 @@ def safe_log(logger: Optional[Logger], message: str, level: str = "info") -> Non
 
 
 def update_commit_status_check(
-    sha: str, state: str, target_url: str, description: str, context: str, is_optional=False, should_send=True, logger: Logger = None
+    sha: str, state: str, target_url: str, description: str, context: str, is_optional=False, should_send=True, logger: Logger = None,
 ):
     """Call the GitHub API to create commit status check.
 
@@ -83,6 +83,7 @@ def get_pull_request(pull_request_number: int, github_access_token: str) -> Pull
     Args:
         pull_request_number (str): The number of the pull request to get.
         github_access_token (str): The GitHub access token to use to authenticate.
+
     Returns:
         PullRequest: The pull request object.
     """

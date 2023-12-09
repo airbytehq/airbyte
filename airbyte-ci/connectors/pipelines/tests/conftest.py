@@ -6,12 +6,12 @@ import os
 import platform
 import sys
 from pathlib import Path
-from typing import List
 
 import dagger
 import git
 import pytest
 import requests
+
 from connector_ops.utils import Connector
 from pipelines.helpers import utils
 from tests.utils import ALL_CONNECTORS
@@ -45,7 +45,7 @@ def airbyte_repo_path() -> Path:
     return Path(git.Repo(search_parent_directories=True).working_tree_dir)
 
 
-@pytest.fixture
+@pytest.fixture()
 def new_connector(airbyte_repo_path: Path, mocker) -> Connector:
     new_connector_code_directory = airbyte_repo_path / "airbyte-integrations/connectors/source-new-connector"
     Path(new_connector_code_directory).mkdir()
@@ -63,8 +63,7 @@ def new_connector(airbyte_repo_path: Path, mocker) -> Connector:
 
 @pytest.fixture(autouse=True, scope="session")
 def from_airbyte_root(airbyte_repo_path):
-    """
-    Change the working directory to the root of the Airbyte repo.
+    """Change the working directory to the root of the Airbyte repo.
     This will make all the tests current working directory to be the root of the Airbyte repo as we've set autouse=True.
     """
     original_dir = Path.cwd()
@@ -74,7 +73,7 @@ def from_airbyte_root(airbyte_repo_path):
 
 
 @pytest.fixture(scope="session")
-def all_connectors() -> List[Connector]:
+def all_connectors() -> list[Connector]:
     return sorted(ALL_CONNECTORS, key=lambda connector: connector.technical_name)
 
 

@@ -9,11 +9,12 @@ import os
 from datetime import datetime
 from glob import glob
 from types import TracebackType
-from typing import List, Optional
+from typing import Optional
 
 from asyncer import asyncify
 from dagger import Client, Directory, File, Secret
 from github import PullRequest
+
 from pipelines.consts import CIContext, ContextState
 from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.github import update_commit_status_check
@@ -187,7 +188,7 @@ class PipelineContext:
         """
         return self.dagger_client.host().file(file_path)
 
-    def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
+    def get_repo_dir(self, subdir: str = ".", exclude: Optional[list[str]] = None, include: Optional[list[str]] = None) -> Directory:
         """Get a directory from the current repository.
 
         The directory is extracted from the host file system.
@@ -213,7 +214,7 @@ class PipelineContext:
         return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
 
     def create_slack_message(self) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def __aenter__(self):
         """Perform setup operation for the PipelineContext.
@@ -242,6 +243,7 @@ class PipelineContext:
         Args:
             report (Optional[Report]): The pipeline report if any.
             exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
+
         Returns:
             ContextState: The final state of the context.
         """
@@ -252,11 +254,11 @@ class PipelineContext:
         if report is not None and report.success:
             return ContextState.SUCCESSFUL
         raise Exception(
-            f"The final state of the context could not be determined for the report and exception value provided. Report: {report}, Exception: {exception_value}"
+            f"The final state of the context could not be determined for the report and exception value provided. Report: {report}, Exception: {exception_value}",
         )
 
     async def __aexit__(
-        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
+        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType],
     ) -> bool:
         """Perform teardown operation for the PipelineContext.
 
@@ -271,6 +273,7 @@ class PipelineContext:
             exception_type (Optional[type[BaseException]]): The exception type if an exception was raised in the context execution, None otherwise.
             exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
             traceback (Optional[TracebackType]): The traceback if an exception was raised in the context execution, None otherwise.
+
         Returns:
             bool: Whether the teardown operation ran successfully.
         """

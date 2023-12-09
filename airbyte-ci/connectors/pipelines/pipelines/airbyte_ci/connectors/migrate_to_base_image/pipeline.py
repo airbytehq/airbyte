@@ -7,9 +7,10 @@ from copy import deepcopy
 from typing import Optional
 
 from base_images import version_registry
-from connector_ops.utils import ConnectorLanguage
 from dagger import Directory
 from jinja2 import Template
+
+from connector_ops.utils import ConnectorLanguage
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
@@ -34,7 +35,7 @@ class UpgradeBaseImageMetadata(Step):
     async def get_latest_base_image_address(self) -> Optional[str]:
         try:
             version_registry_for_language = await version_registry.get_registry_for_language(
-                self.dagger_client, self.context.connector.language, (self.context.docker_hub_username, self.context.docker_hub_password)
+                self.dagger_client, self.context.connector.language, (self.context.docker_hub_username, self.context.docker_hub_password),
             )
             return version_registry_for_language.latest_not_pre_released_published_entry.published_docker_image.address
         except NotImplementedError:
@@ -222,15 +223,15 @@ class AddBuildInstructionsToReadme(Step):
             # Running the spec command against your patched connector
             docker run {{ connector_image }}:dev spec
             ```
-            """
-            )
+            """,
+            ),
         )
 
         build_instructions = build_instructions_template.render(
             {
                 "connector_image": self.context.connector.metadata["dockerRepository"],
                 "connector_technical_name": self.context.connector.technical_name,
-            }
+            },
         )
 
         og_lines = og_doc_content.splitlines()

@@ -5,6 +5,7 @@
 import logging
 
 import asyncclick as click
+
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.consts import DOCKER_VERSION
 from pipelines.helpers.utils import sh_dash_c
@@ -59,8 +60,8 @@ async def test(pipeline_context: ClickPipelineContext):
                     "pip install pipx",
                     "pipx ensurepath",
                     "pipx install poetry",
-                ]
-            )
+                ],
+            ),
         )
         .with_env_variable("VERSION", DOCKER_VERSION)
         .with_exec(sh_dash_c(["curl -fsSL https://get.docker.com | sh"]))

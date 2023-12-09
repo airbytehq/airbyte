@@ -4,6 +4,7 @@
 
 
 from dagger import Container, Platform
+
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -12,8 +13,7 @@ from pipelines.models.steps import StepResult
 
 
 class BuildConnectorImages(BuildConnectorImagesBase):
-    """
-    A step to build a Python connector image.
+    """A step to build a Python connector image.
     A spec command is run on the container to validate it was built successfully.
     """
 
@@ -93,8 +93,8 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         Returns:
             Container: The connector container built from its Dockerfile.
         """
-        self.logger.warn(
-            "This connector is built from its Dockerfile. This is now deprecated. Please set connectorBuildOptions.baseImage metadata field to use our new build process."
+        self.logger.warning(
+            "This connector is built from its Dockerfile. This is now deprecated. Please set connectorBuildOptions.baseImage metadata field to use our new build process.",
         )
         container = self.dagger_client.container(platform=platform).build(await self.context.get_connector_dir())
         container = await apply_python_development_overrides(self.context, container)

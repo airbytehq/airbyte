@@ -6,18 +6,19 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, List
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from pipelines import consts
 
 if TYPE_CHECKING:
     from dagger import Container
+
     from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
 async def cache_latest_cdk(context: ConnectorContext) -> None:
-    """
-    Download the latest CDK version to update the pip cache.
+    """Download the latest CDK version to update the pip cache.
 
     Underlying issue:
         Most Python connectors, or normalization, are not pinning the CDK version they use.
@@ -47,9 +48,8 @@ async def cache_latest_cdk(context: ConnectorContext) -> None:
     )
 
 
-def never_fail_exec(command: List[str]) -> Callable:
-    """
-    Wrap a command execution with some bash sugar to always exit with a 0 exit code but write the actual exit code to a file.
+def never_fail_exec(command: list[str]) -> Callable:
+    """Wrap a command execution with some bash sugar to always exit with a 0 exit code but write the actual exit code to a file.
 
     Underlying issue:
         When a classic dagger with_exec is returning a >0 exit code an ExecError is raised.

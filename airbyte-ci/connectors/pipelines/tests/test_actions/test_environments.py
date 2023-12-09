@@ -3,6 +3,7 @@
 #
 
 import pytest
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python import common
 
@@ -11,7 +12,7 @@ pytestmark = [
 ]
 
 
-@pytest.fixture
+@pytest.fixture()
 def connector_context(dagger_client):
     context = ConnectorContext(
         pipeline_name="test",

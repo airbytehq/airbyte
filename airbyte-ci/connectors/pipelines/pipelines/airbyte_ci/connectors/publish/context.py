@@ -8,6 +8,7 @@ from typing import Optional
 
 from dagger import Secret
 from github import PullRequest
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import ContextState
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles

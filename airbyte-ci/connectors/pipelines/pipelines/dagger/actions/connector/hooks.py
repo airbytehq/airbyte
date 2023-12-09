@@ -6,6 +6,7 @@ import importlib.util
 
 from dagger import Container
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
@@ -29,7 +30,7 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
         context.logger.info(f"{context.connector.technical_name} has a finalize_build.py script, running it to finalize build...")
         module_path = context.connector.code_directory / "finalize_build.py"
         connector_finalize_module_spec = importlib.util.spec_from_file_location(
-            f"{context.connector.code_directory.name}_finalize", module_path
+            f"{context.connector.code_directory.name}_finalize", module_path,
         )
         connector_finalize_module = importlib.util.module_from_spec(connector_finalize_module_spec)
         connector_finalize_module_spec.loader.exec_module(connector_finalize_module)

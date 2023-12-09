@@ -5,10 +5,11 @@ from unittest.mock import patch
 import asyncclick as click
 import dagger
 import pytest
+
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext
 
 
-@pytest.mark.anyio
+@pytest.mark.anyio()
 async def test_get_dagger_client_singleton(dagger_connection):
     @click.command()
     def cli():
@@ -30,7 +31,7 @@ async def test_get_dagger_client_singleton(dagger_connection):
             assert client1 != client3
 
 
-@pytest.mark.anyio
+@pytest.mark.anyio()
 async def test_get_dagger_client_click_params(dagger_connection):
     @click.command()
     def cli():
@@ -49,7 +50,7 @@ async def test_get_dagger_client_click_params(dagger_connection):
             assert pipeline_context_params == {**given_click_obj, **given_click_params}
 
 
-@pytest.mark.anyio
+@pytest.mark.anyio()
 async def test_get_dagger_client_click_params_duplicate(dagger_connection):
     @click.command()
     def cli():

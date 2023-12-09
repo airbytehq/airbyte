@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Callable
+from collections.abc import Callable
 
 import asyncclick as click
 import pytest
 from asyncclick.testing import CliRunner
+
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
 from pipelines.airbyte_ci.connectors import commands as connectors_commands
 from pipelines.airbyte_ci.connectors.build_image import commands as connectors_build_command
@@ -271,15 +272,13 @@ def click_context_obj():
         (connectors_build_command.build, []),
     ],
 )
-@pytest.mark.anyio
+@pytest.mark.anyio()
 async def test_commands_do_not_override_connector_selection(
-    mocker, runner: CliRunner, click_context_obj: dict, command: Callable, command_args: list
+    mocker, runner: CliRunner, click_context_obj: dict, command: Callable, command_args: list,
 ):
-    """
-    This test is here to make sure that the commands do not override the connector selection
+    """This test is here to make sure that the commands do not override the connector selection
     This is important because we want to control the connector selection in a single place.
     """
-
     selected_connector = mocker.MagicMock()
     click_context_obj["selected_connectors_with_modified_files"] = [selected_connector]
 
@@ -306,7 +305,7 @@ async def test_commands_do_not_override_connector_selection(
     ],
 )
 def test_should_use_remote_secrets(
-    mocker, use_remote_secrets_user_input, gsm_env_var_set, expected_use_remote_secrets, expect_click_usage_error
+    mocker, use_remote_secrets_user_input, gsm_env_var_set, expected_use_remote_secrets, expect_click_usage_error,
 ):
     mocker.patch.object(connectors_commands.os, "getenv", return_value="test" if gsm_env_var_set else None)
     if expect_click_usage_error:

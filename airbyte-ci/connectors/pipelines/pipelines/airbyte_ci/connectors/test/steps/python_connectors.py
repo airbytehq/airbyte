@@ -5,12 +5,13 @@
 """This module groups steps made to run tests for a specific Python connector given a test context."""
 
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable, List, Tuple
+from collections.abc import Callable, Iterable
 
 import asyncer
+from dagger import Container, File
+
 import pipelines.dagger.actions.python.common
 import pipelines.dagger.actions.system.docker
-from dagger import Container, File
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed
@@ -24,7 +25,7 @@ class PytestStep(Step, ABC):
 
     PYTEST_INI_FILE_NAME = "pytest.ini"
     PYPROJECT_FILE_NAME = "pyproject.toml"
-    common_test_dependencies: List[str] = []
+    common_test_dependencies: list[str] = []
 
     skipped_exit_code = 5
     bind_to_docker_host = False
@@ -41,7 +42,7 @@ class PytestStep(Step, ABC):
         return ("dev", "tests")
 
     @property
-    def additional_pytest_options(self) -> List[str]:
+    def additional_pytest_options(self) -> list[str]:
         """Theses options are added to the pytest command.
 
         Returns:
@@ -63,7 +64,7 @@ class PytestStep(Step, ABC):
 
         test_config_file_name, test_config_file = await self.get_config_file_name_and_file()
         test_environment = await self.install_testing_environment(
-            connector_under_test, test_config_file_name, test_config_file, self.extra_dependencies_names
+            connector_under_test, test_config_file_name, test_config_file, self.extra_dependencies_names,
         )
         pytest_command = self.get_pytest_command(test_config_file_name)
 
@@ -74,7 +75,7 @@ class PytestStep(Step, ABC):
 
         return await self.get_step_result(test_execution)
 
-    def get_pytest_command(self, test_config_file_name: str) -> List[str]:
+    def get_pytest_command(self, test_config_file_name: str) -> list[str]:
         """Get the pytest command to run.
 
         Returns:
@@ -95,7 +96,7 @@ class PytestStep(Step, ABC):
         connector_dir_entries = await connector_dir.entries()
         return test_directory_name in connector_dir_entries
 
-    async def get_config_file_name_and_file(self) -> Tuple[str, File]:
+    async def get_config_file_name_and_file(self) -> tuple[str, File]:
         """Get the config file name and file to use for pytest.
 
         The order of priority is:
@@ -151,7 +152,7 @@ class PytestStep(Step, ABC):
         )
         if self.common_test_dependencies:
             container_with_test_deps = container_with_test_deps.with_exec(
-                ["pip", "install", f'{" ".join(self.common_test_dependencies)}'], skip_entrypoint=True
+                ["pip", "install", f'{" ".join(self.common_test_dependencies)}'], skip_entrypoint=True,
             )
         return (
             container_with_test_deps
@@ -172,7 +173,7 @@ class UnitTests(PytestStep):
     MINIMUM_COVERAGE_FOR_CERTIFIED_CONNECTORS = 90
 
     @property
-    def additional_pytest_options(self) -> List[str]:
+    def additional_pytest_options(self) -> list[str]:
         """Make sure the coverage computation is run for the unit tests.
         Fail if the coverage is under 90% for certified connectors.
 
@@ -194,7 +195,7 @@ class IntegrationTests(PytestStep):
     bind_to_docker_host = True
 
 
-async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
+async def run_all_tests(context: ConnectorContext) -> list[StepResult]:
     """Run all tests for a Python connector.
 
     Args:

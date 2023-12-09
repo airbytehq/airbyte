@@ -4,9 +4,11 @@
 
 import json
 import uuid
-from typing import Callable, Optional
+from collections.abc import Callable
+from typing import Optional
 
 from dagger import Client, Container, File, Secret
+
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import (
@@ -29,6 +31,7 @@ def get_base_dockerd_container(dagger_client: Client) -> Container:
 
     Args:
         dagger_client (Client): The dagger client used to create the container.
+
     Returns:
         Container: The container to run dockerd as a service
     """
@@ -51,8 +54,8 @@ def get_base_dockerd_container(dagger_client: Client) -> Container:
                     "apk update",
                     f"apk add {' '.join(apk_packages_to_install)}",
                     "mkdir /etc/docker",
-                ]
-            )
+                ],
+            ),
         )
         # Expose the docker host port.
         .with_exposed_port(DOCKER_HOST_PORT)
@@ -95,6 +98,7 @@ def docker_login(
         docker_registry_username_secret (Optional[Secret]): The docker registry username secret.
         docker_registry_password_secret (Optional[Secret]): The docker registry password secret.
         docker_registry_address (Optional[str]): The docker registry address to login to. Defaults to "docker.io" (DockerHub).
+
     Returns:
         Container: The container with the docker login command executed if the username and password secrets are provided. Noop otherwise.
     """
@@ -122,20 +126,21 @@ def with_global_dockerd_service(
     """Create a container with a docker daemon running.
     We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
     It is optionally bound to a tailscale VPN if the TAILSCALE_AUTH_KEY env var is set.
+
     Args:
         dagger_client (Client): The dagger client used to create the container.
         docker_hub_username_secret (Optional[Secret]): The DockerHub username secret.
         docker_hub_password_secret (Optional[Secret]): The DockerHub password secret.
+
     Returns:
         Container: The container running dockerd as a service
     """
-
     dockerd_container = get_base_dockerd_container(dagger_client)
     if TAILSCALE_AUTH_KEY is not None:
         # Ping the registry mirror host to make sure it's reachable through VPN
         # We set a cache buster here to guarantee the curl command is always executed.
         dockerd_container = dockerd_container.with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(
-            ["curl", "-vvv", f"http://{DOCKER_REGISTRY_MIRROR_URL}/v2/"], skip_entrypoint=True
+            ["curl", "-vvv", f"http://{DOCKER_REGISTRY_MIRROR_URL}/v2/"], skip_entrypoint=True,
         )
         daemon_config_json = get_daemon_config_json(DOCKER_REGISTRY_MIRROR_URL)
     else:
@@ -145,7 +150,7 @@ def with_global_dockerd_service(
     # Docker login happens late because there's a cache buster in the docker login command.
     dockerd_container = docker_login(dockerd_container, docker_hub_username_secret, docker_hub_password_secret)
     return dockerd_container.with_exec(
-        ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
+        ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True,
     )
 
 
@@ -158,6 +163,7 @@ def with_bound_docker_host(
     Args:
         context (ConnectorContext): The current connector context.
         container (Container): The container to bind to the docker host.
+
     Returns:
         Container: The container bound to the docker host.
     """
@@ -197,7 +203,7 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
         image_tag (str): The tag to create on the image if it has no tag.
     """
     # Hacky way to make sure the image is always loaded
-    tar_name = f"{str(uuid.uuid4())}.tar"
+    tar_name = f"{uuid.uuid4()!s}.tar"
     docker_cli = with_docker_cli(context).with_mounted_file(tar_name, tar_file)
 
     image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
@@ -216,7 +222,6 @@ def with_crane(
     We can use it to extract the image manifest and the list of layers or list the existing tags on an image repository.
     https://github.com/google/go-containerregistry/tree/main/cmd/crane
     """
-
     # We use the debug image as it contains a shell which we need to properly use environment variables
     # https://github.com/google/go-containerregistry/tree/main/cmd/crane#images
     base_container = context.dagger_client.container().from_("gcr.io/go-containerregistry/crane/debug:v0.15.1")
@@ -229,7 +234,7 @@ def with_crane(
             # We use sh -c to be able to use environment variables in the command
             # This is a workaround as the default crane entrypoint doesn't support environment variables
             .with_exec(
-                sh_dash_c(["crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]), skip_entrypoint=True
+                sh_dash_c(["crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]), skip_entrypoint=True,
             )
         )
 

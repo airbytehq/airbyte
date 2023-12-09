@@ -1,14 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from typing import List
 
 import dagger
 
 
-async def list_files_in_directory(dagger_client: dagger.Client, directory: dagger.Directory) -> List[str]:
-    """
-    List all files in a directory.
+async def list_files_in_directory(dagger_client: dagger.Client, directory: dagger.Directory) -> list[str]:
+    """List all files in a directory.
     """
     return (
         await dagger_client.container()

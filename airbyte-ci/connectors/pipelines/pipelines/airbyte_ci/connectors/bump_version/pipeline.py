@@ -7,6 +7,7 @@ from copy import deepcopy
 
 import semver
 from dagger import Container
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.helpers import git
@@ -121,7 +122,7 @@ class BumpDockerImageTagInMetadata(Step):
             )
         updated_metadata = self.get_metadata_with_bumped_version(current_version, self.new_version, current_metadata)
         repo_dir_with_updated_metadata = metadata_change_helpers.get_repo_dir_with_updated_metadata(
-            self.repo_dir, metadata_path, updated_metadata
+            self.repo_dir, metadata_path, updated_metadata,
         )
 
         return StepResult(

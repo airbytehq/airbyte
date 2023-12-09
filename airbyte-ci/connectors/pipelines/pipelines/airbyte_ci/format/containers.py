@@ -2,9 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import dagger
+
 from pipelines.airbyte_ci.format.consts import CACHE_MOUNT_PATH, DEFAULT_FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS, Formatter
 from pipelines.consts import GO_IMAGE, MAVEN_IMAGE, NODE_IMAGE, PYTHON_3_10_IMAGE
 from pipelines.helpers import cache_keys
@@ -16,11 +17,12 @@ def build_container(
     base_image: str,
     dir_to_format: dagger.Directory,
     warmup_dir: Optional[dagger.Directory] = None,
-    install_commands: Optional[List[str]] = None,
-    env_vars: Optional[Dict[str, Any]] = {},
+    install_commands: Optional[list[str]] = None,
+    env_vars: Optional[dict[str, Any]] = {},
     cache_volume: Optional[dagger.CacheVolume] = None,
 ) -> dagger.Container:
     """Build a container for formatting code.
+
     Args:
         ctx (ClickPipelineContext): The context of the pipeline
         base_image (str): The base image to use for the container
@@ -70,8 +72,7 @@ def build_container(
 
 
 def format_java_container(dagger_client: dagger.Client, java_code: dagger.Directory) -> dagger.Container:
-    """
-    Create a Maven container with spotless installed with mounted code to format and a cache volume.
+    """Create a Maven container with spotless installed with mounted code to format and a cache volume.
     We warm up the container cache with the spotless configuration and dependencies.
     """
     warmup_dir = dagger_client.host().directory(
@@ -92,7 +93,7 @@ def format_java_container(dagger_client: dagger.Client, java_code: dagger.Direct
             " org.apache.maven.plugins:maven-dependency-plugin:3.6.1:go-offline"
             " spotless:apply"
             " spotless:check"
-            " clean"
+            " clean",
         ],
         dir_to_format=java_code,
     )
@@ -125,7 +126,6 @@ def format_python_container(dagger_client: dagger.Client, python_code: dagger.Di
     """Create a Python container with pipx and the global pyproject.toml installed with mounted code to format and a cache volume.
     We warm up the container with the pyproject.toml and poetry.lock files to not repeat the pyproject.toml installation.
     """
-
     warmup_dir = dagger_client.host().directory(".", include=WARM_UP_INCLUSIONS[Formatter.PYTHON], exclude=DEFAULT_FORMAT_IGNORE_LIST)
     return build_container(
         dagger_client,

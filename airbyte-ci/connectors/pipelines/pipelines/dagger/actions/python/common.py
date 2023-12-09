@@ -4,9 +4,10 @@
 
 import re
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from dagger import Container, Directory
+
 from pipelines import hacks
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.dagger.containers.python import with_pip_cache, with_poetry_cache, with_python_base, with_testing_dependencies
@@ -17,8 +18,8 @@ def with_python_package(
     context: PipelineContext,
     python_environment: Container,
     package_source_code_path: str,
-    exclude: Optional[List] = None,
-    include: Optional[List] = None,
+    exclude: Optional[list] = None,
+    include: Optional[list] = None,
 ) -> Container:
     """Load a python package source code to a python environment container.
 
@@ -38,7 +39,7 @@ def with_python_package(
     return container
 
 
-async def find_local_dependencies_in_setup_py(python_package: Container) -> List[str]:
+async def find_local_dependencies_in_setup_py(python_package: Container) -> list[str]:
     """Find local dependencies of a python package in its setup.py file.
 
     Args:
@@ -70,7 +71,7 @@ async def find_local_dependencies_in_setup_py(python_package: Container) -> List
     return local_setup_dependency_paths
 
 
-async def find_local_dependencies_in_requirements_txt(python_package: Container, package_source_code_path: str) -> List[str]:
+async def find_local_dependencies_in_requirements_txt(python_package: Container, package_source_code_path: str) -> list[str]:
     """Find local dependencies of a python package in a requirements.txt file.
 
     Args:
@@ -101,7 +102,7 @@ async def find_local_python_dependencies(
     package_source_code_path: str,
     search_dependencies_in_setup_py: bool = True,
     search_dependencies_in_requirements_txt: bool = True,
-) -> List[str]:
+) -> list[str]:
     """Find local python dependencies of a python package. The dependencies are found in the setup.py and requirements.txt files.
 
     Args:
@@ -135,7 +136,7 @@ async def find_local_python_dependencies(
 
 def _install_python_dependencies_from_setup_py(
     container: Container,
-    additional_dependency_groups: Optional[List] = None,
+    additional_dependency_groups: Optional[list] = None,
 ) -> Container:
     install_connector_package_cmd = ["pip", "install", "."]
     container = container.with_exec(install_connector_package_cmd)
@@ -157,7 +158,7 @@ def _install_python_dependencies_from_requirements_txt(container: Container) -> 
 
 def _install_python_dependencies_from_poetry(
     container: Container,
-    additional_dependency_groups: Optional[List] = None,
+    additional_dependency_groups: Optional[list] = None,
 ) -> Container:
     pip_install_poetry_cmd = ["pip", "install", "poetry"]
     poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
@@ -173,9 +174,9 @@ async def with_installed_python_package(
     context: PipelineContext,
     python_environment: Container,
     package_source_code_path: str,
-    additional_dependency_groups: Optional[List] = None,
-    exclude: Optional[List] = None,
-    include: Optional[List] = None,
+    additional_dependency_groups: Optional[list] = None,
+    exclude: Optional[list] = None,
+    include: Optional[list] = None,
 ) -> Container:
     """Install a python package in a python environment container.
 
@@ -217,6 +218,7 @@ def with_python_connector_source(context: ConnectorContext) -> Container:
 
     Args:
         context (ConnectorContext): The current test context, providing the repository directory from which the connector sources will be pulled.
+
     Returns:
         Container: A python environment container (with the connector source code).
     """
@@ -239,7 +241,7 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         # Install the airbyte-cdk package from the local directory
         # We use --no-deps to avoid conflicts with the airbyte-cdk version required by the connector
         connector_container = connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount).with_exec(
-            ["pip", "install", "--no-deps", f"/{path_to_cdk}"], skip_entrypoint=True
+            ["pip", "install", "--no-deps", f"/{path_to_cdk}"], skip_entrypoint=True,
         )
 
     return connector_container
@@ -249,12 +251,11 @@ async def with_python_connector_installed(
     context: ConnectorContext,
     python_container: Container,
     connector_source_path: str,
-    additional_dependency_groups: Optional[List] = None,
-    exclude: Optional[List] = None,
-    include: Optional[List] = None,
+    additional_dependency_groups: Optional[list] = None,
+    exclude: Optional[list] = None,
+    include: Optional[list] = None,
 ) -> Container:
     """Install an airbyte python connectors  dependencies."""
-
     # Download the latest CDK version to update the pip cache.
     # This is a hack to ensure we always get the latest CDK version installed in connectors not pinning the CDK version.
     await hacks.cache_latest_cdk(context)
@@ -272,7 +273,7 @@ async def with_python_connector_installed(
     return container
 
 
-def with_pip_packages(base_container: Container, packages_to_install: List[str]) -> Container:
+def with_pip_packages(base_container: Container, packages_to_install: list[str]) -> Container:
     """Installs packages using pip
     Args:
         context (Container): A container with python installed

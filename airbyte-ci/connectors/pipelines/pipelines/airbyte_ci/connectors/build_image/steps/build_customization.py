@@ -5,10 +5,11 @@
 import importlib
 from logging import Logger
 from types import ModuleType
-from typing import List, Optional
+from typing import Optional
+
+from dagger import Container
 
 from connector_ops.utils import Connector
-from dagger import Container
 
 BUILD_CUSTOMIZATION_MODULE_NAME = "build_customization"
 BUILD_CUSTOMIZATION_SPEC_NAME = f"{BUILD_CUSTOMIZATION_MODULE_NAME}.py"
@@ -17,6 +18,7 @@ DEFAULT_MAIN_FILE_NAME = "main.py"
 
 def get_build_customization_module(connector: Connector) -> Optional[ModuleType]:
     """Import the build_customization.py file from the connector directory if it exists.
+
     Returns:
         Optional[ModuleType]: The build_customization.py module if it exists, None otherwise.
     """
@@ -24,7 +26,7 @@ def get_build_customization_module(connector: Connector) -> Optional[ModuleType]
     if not build_customization_spec_path.exists():
         return None
     build_customization_spec = importlib.util.spec_from_file_location(
-        f"{connector.code_directory.name}_{BUILD_CUSTOMIZATION_MODULE_NAME}", build_customization_spec_path
+        f"{connector.code_directory.name}_{BUILD_CUSTOMIZATION_MODULE_NAME}", build_customization_spec_path,
     )
     build_customization_module = importlib.util.module_from_spec(build_customization_spec)
     build_customization_spec.loader.exec_module(build_customization_module)
@@ -46,7 +48,7 @@ def get_main_file_name(connector: Connector) -> str:
     return DEFAULT_MAIN_FILE_NAME
 
 
-def get_entrypoint(connector: Connector) -> List[str]:
+def get_entrypoint(connector: Connector) -> list[str]:
     main_file_name = get_main_file_name(connector)
     return ["python", f"/airbyte/integration_code/{main_file_name}"]
 
