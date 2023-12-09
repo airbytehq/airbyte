@@ -3,6 +3,7 @@
 #
 
 import sys
+from typing import List
 
 import asyncclick as click
 from pipelines import main_logger
@@ -14,7 +15,7 @@ from pipelines.consts import CONNECTOR_TEST_STEP_ID, LOCAL_BUILD_PLATFORM, Conte
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
 from pipelines.helpers.run_steps import RunStepOptions
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
-from typing import List
+
 
 @click.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
 @click.option(
@@ -39,8 +40,8 @@ from typing import List
     is_flag=True,
 )
 @click.option(
-    '--skip-step',
-    '-x',
+    "--skip-step",
+    "-x",
     multiple=True,
     type=click.Choice(CONNECTOR_TEST_STEP_ID),
     help="Skip a step by name. Can be used multiple times to skip multiple steps.",

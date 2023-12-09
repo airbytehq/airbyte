@@ -4,13 +4,12 @@
 
 """Module declaring context related classes."""
 
+import functools
 from datetime import datetime
 from types import TracebackType
-from typing import Iterable, Optional, List
+from typing import Iterable, List, Optional
 
 import yaml
-import functools
-
 from anyio import Path
 from asyncer import asyncify
 from dagger import Directory, Platform, Secret
@@ -20,8 +19,8 @@ from pipelines.consts import BUILD_PLATFORMS
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.github import update_commit_status_check
-from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.run_steps import RunStepOptions
+from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.utils import METADATA_FILE_NAME
 from pipelines.models.contexts.pipeline_context import PipelineContext
 

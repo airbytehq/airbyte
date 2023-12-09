@@ -5,14 +5,14 @@
 """The actions package is made to declare reusable pipeline components."""
 
 from __future__ import annotations
-from dataclasses import dataclass, field
-import inspect
-from pipelines import main_logger
 
+import inspect
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Tuple, Union
 
 import asyncer
-from pipelines.models.steps import StepStatus, StepResult
+from pipelines import main_logger
+from pipelines.models.steps import StepResult, StepStatus
 
 RESULTS_DICT = Dict[str, StepResult]
 ARGS_TYPE = Union[Dict, Callable[[RESULTS_DICT], Dict], Awaitable[Dict]]
@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 @dataclass
 class RunStepOptions:
     """Options for the run_step function."""
+
     fail_fast: bool = True
     skip_steps: List[str] = field(default_factory=list)
     log_step_tree: bool = True
@@ -36,10 +37,12 @@ class StepToRun:
 
     Used to coordinate the execution of multiple steps inside a pipeline.
     """
+
     id: str
     step: Step
     args: ARGS_TYPE = field(default_factory=dict)
     depends_on: List[str] = field(default_factory=list)
+
 
 STEP_TREE = List[StepToRun | List[StepToRun]]
 
@@ -57,6 +60,7 @@ async def evaluate_run_args(args: ARGS_TYPE, results: RESULTS_DICT) -> Dict:
 
     raise TypeError(f"Unexpected args type: {type(args)}")
 
+
 def _skip_remaining_steps(remaining_steps: STEP_TREE) -> bool:
     """
     Skip all remaining steps.
@@ -73,12 +77,14 @@ def _skip_remaining_steps(remaining_steps: STEP_TREE) -> bool:
 
     return skipped_results
 
+
 def _step_dependencies_succeeded(depends_on: List[str], results: RESULTS_DICT) -> bool:
     """
     Check if all dependencies of a step have succeeded.
     """
     main_logger.info(f"Checking if dependencies {depends_on} have succeeded")
     return all(results.get(step_id) and results.get(step_id).status is StepStatus.SUCCESS for step_id in depends_on)
+
 
 def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], results: RESULTS_DICT) -> Tuple[STEP_TREE, RESULTS_DICT]:
     """
@@ -101,13 +107,16 @@ def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], r
 
         # skip step if a dependency failed
         elif not _step_dependencies_succeeded(step_to_eval.depends_on, results):
-            main_logger.info(f"Skipping step {step_to_eval.id} because one of the dependencies have not been met: {step_to_eval.depends_on}")
+            main_logger.info(
+                f"Skipping step {step_to_eval.id} because one of the dependencies have not been met: {step_to_eval.depends_on}"
+            )
             results[step_to_eval.id] = step_to_eval.step.skip("Skipped because a dependency was not met")
 
         else:
             steps_to_run.append(step_to_eval)
 
     return steps_to_run, results
+
 
 def _get_next_step_group(steps: STEP_TREE) -> Tuple[STEP_TREE, STEP_TREE]:
     """
@@ -121,6 +130,7 @@ def _get_next_step_group(steps: STEP_TREE) -> Tuple[STEP_TREE, STEP_TREE]:
     else:
         # Termination case: if the next step is not a list that means we have reached the max depth
         return steps, []
+
 
 def _log_step_tree(step_tree: STEP_TREE, options: RunStepOptions, depth: int = 0):
     """

@@ -95,6 +95,7 @@ class CONNECTOR_TEST_STEP_ID(Enum):
     """
     An enum for the different step ids of the connector test pipeline.
     """
+
     ACCEPTANCE = "acceptance"
     BUILD_NORMALIZATION = "build_normalization"
     BUILD_TAR = "build_tar"

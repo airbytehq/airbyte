@@ -64,10 +64,12 @@ class UnitTests(GradleTask):
     gradle_task_name = "test"
     bind_to_docker_host = True
 
+
 def _create_integration_step_args_factory(context: ConnectorContext) -> Callable[[RESULTS_DICT], dict]:
     """
     Create a function that can process the args for the integration step.
     """
+
     async def _create_integration_step_args(results: RESULTS_DICT):
 
         connector_container = results["build"].output_artifact[LOCAL_BUILD_PLATFORM]
@@ -84,13 +86,10 @@ def _create_integration_step_args_factory(context: ConnectorContext) -> Callable
         else:
             normalization_tar_file = None
 
-
-        return {
-            "connector_tar_file": connector_image_tar_file,
-            "normalization_tar_file": normalization_tar_file
-        }
+        return {"connector_tar_file": connector_image_tar_file, "normalization_tar_file": normalization_tar_file}
 
     return _create_integration_step_args
+
 
 def _get_normalization_steps(context: ConnectorContext) -> List[StepToRun]:
     normalization_image = f"{context.connector.normalization_repository}:dev"
@@ -104,6 +103,7 @@ def _get_normalization_steps(context: ConnectorContext) -> List[StepToRun]:
     ]
 
     return normalization_steps
+
 
 def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
     """
@@ -120,7 +120,9 @@ def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.ACCEPTANCE,
             step=AcceptanceTests(context, True),
-            args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]},
+            args=lambda results: {
+                "connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output_artifact[LOCAL_BUILD_PLATFORM]
+            },
             depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         ),
     ]
@@ -138,7 +140,9 @@ def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.BUILD,
                 step=BuildConnectorImages(context),
-                args=lambda results: {"dist_dir": results[CONNECTOR_TEST_STEP_ID.BUILD_TAR].output_artifact.directory(dist_tar_directory_path(context))},
+                args=lambda results: {
+                    "dist_dir": results[CONNECTOR_TEST_STEP_ID.BUILD_TAR].output_artifact.directory(dist_tar_directory_path(context))
+                },
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD_TAR],
             ),
         ],
@@ -151,4 +155,4 @@ def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
     acceptance_test_steps = _get_acceptance_test_steps(context)
     steps.append(acceptance_test_steps)
 
-    return steps;
+    return steps
