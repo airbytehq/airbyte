@@ -51,7 +51,7 @@ QUERY_RESTRICTED_SALESFORCE_OBJECTS = [
     "AppTabMember",
     "CollaborationGroupRecord",
     "ColorDefinition",
-    "ContentDocumentLink",
+    # "ContentDocumentLink",
     "ContentFolderItem",
     "ContentFolderMember",
     "DataStatistics",
@@ -129,6 +129,10 @@ QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS = [
     "UserRecordAccess",
 ]
 
+WHERE_QUERY_SALESFORCE_OBJECTS = {
+    "ContentDocumentLink": {"parent_stream_name": "ContentDocument", "query": 'WHERE ContentDocumentId in {content_Document_ids}'}
+}
+
 # The following objects are not supported by the Bulk API. Listed objects are version specific.
 UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "AcceptedEventRelation",
@@ -137,6 +141,7 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "AttachedContentNote",
     "CaseStatus",
     "ContractStatus",
+    "ContentDocumentLink",
     "DeclinedEventRelation",
     "EventWhoRelation",
     "FieldSecurityClassification",
@@ -184,6 +189,7 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
 UNSUPPORTED_FILTERING_STREAMS = [
     "ApiEvent",
     "BulkApiResultEventStore",
+    "ContentDocumentLink",
     "EmbeddedServiceDetail",
     "EmbeddedServiceLabel",
     "FormulaFunction",
@@ -276,6 +282,13 @@ class Salesforce:
             }
 
         stream_names = list(stream_objects.keys())
+
+        print("||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+        print("||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+        print(stream_names)
+        print("||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+        print("||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+
         if config.get("streams_criteria"):
             filtered_stream_list = []
             for stream_criteria in config["streams_criteria"]:
@@ -285,6 +298,13 @@ class Salesforce:
             stream_names = list(set(filtered_stream_list))
 
         validated_streams = [stream_name for stream_name in stream_names if self.filter_streams(stream_name)]
+
+        print("|||||||||||||validated_streams|||||||||||||||||||||||||||||||||||||||||")
+        print("|||||||||||||validated_streams |||||||||||||||||||||||||||||||||||||||||")
+        print(validated_streams)
+        print("||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+        print("||||||||||||||||||||||||||||||||||||||||||||||||||||||")
+
         return {stream_name: sobject_options for stream_name, sobject_options in stream_objects.items() if stream_name in validated_streams}
 
     @default_backoff_handler(max_tries=5, factor=5)
@@ -332,6 +352,13 @@ class Salesforce:
         if resp.status_code == 404 and sobject:
             self.logger.error(f"not found a description for the sobject '{sobject}'. Sobject options: {sobject_options}")
         resp_json: Mapping[str, Any] = resp.json()
+        print('========================================================')
+        print('========================================================')
+        print('========================================================')
+        print(resp_json)
+        print('========================================================')
+        print('========================================================')
+        print('========================================================')
         return resp_json
 
     def generate_schema(self, stream_name: str = None, stream_options: Mapping[str, Any] = None) -> Mapping[str, Any]:

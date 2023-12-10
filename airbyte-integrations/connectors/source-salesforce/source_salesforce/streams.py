@@ -18,7 +18,7 @@ import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from numpy import nan
@@ -26,7 +26,7 @@ from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
 from requests.models import PreparedRequest
 
-from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
+from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce, WHERE_QUERY_SALESFORCE_OBJECTS
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import default_backoff_handler
@@ -148,8 +148,19 @@ class RestSalesforceStream(SalesforceStream):
         property_chunk = property_chunk or {}
         query = f"SELECT {','.join(property_chunk.keys())} FROM {self.name} "
 
+        if self.name in WHERE_QUERY_SALESFORCE_OBJECTS:
+            content_document_id = stream_slice['parent']['Id']
+            query += f" WHERE ContentDocumentId = '{content_document_id}'"
+
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key} ASC"
+
+        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+        print(query)
+        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+
 
         return {"q": query}
 
@@ -279,6 +290,10 @@ class RestSalesforceStream(SalesforceStream):
         request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         response = self._send_request(request, request_kwargs)
         return request, response
+
+
+class RestSalesforceSubStream(HttpSubStream, RestSalesforceStream):
+    pass
 
 
 class BulkSalesforceStream(SalesforceStream):
@@ -680,7 +695,14 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
             where_conditions.append(f"{self.cursor_field} < {end_date}")
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
+
         query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
+
+        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+        print(query)
+        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
 
         return {"q": query}
 
@@ -718,6 +740,15 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
+
+
+        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+        print(query)
+        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+        print(f"++++++{self.name} query +++++++++++++++++++++++++++++++++++++")
+
+
         return {"q": query}
 
 
