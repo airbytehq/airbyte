@@ -462,6 +462,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2.10.7  | [#33248](https://github.com/airbytehq/airbyte/pull/33248)  | Fix bug which broke airbyte-ci connectors tests when optional DockerHub credentials env vars are not set. |
 | 2.10.6  | [#33170](https://github.com/airbytehq/airbyte/pull/33170)  | Remove Dagger logs from console output of `format`.                                                       |
 | 2.10.5  | [#33097](https://github.com/airbytehq/airbyte/pull/33097)  | Improve `format` performances, exit with 1 status code when `fix` changes files.                          |
 | 2.10.4  | [#33206](https://github.com/airbytehq/airbyte/pull/33206)  | Add "-y/--yes" Flag to allow preconfirmation of prompts                                                    |
