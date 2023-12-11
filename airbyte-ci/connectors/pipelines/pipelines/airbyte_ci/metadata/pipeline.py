@@ -9,7 +9,7 @@ import dagger
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.airbyte_ci.steps.poetry import PoetryRunStep
-from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
+from pipelines.consts import CONNECTOR_TEST_STEP_ID, DOCS_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.common import with_pip_packages
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.helpers.run_steps import StepToRun, run_steps
@@ -179,13 +179,13 @@ async def run_metadata_orchestrator_deploy_pipeline(
         async with metadata_pipeline_context:
             steps = [
                 StepToRun(
-                    id="test_orchestrator",
+                    id=CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR,
                     step=TestOrchestrator(context=metadata_pipeline_context),
                 ),
                 StepToRun(
-                    id="deploy_orchestrator",
+                    id=CONNECTOR_TEST_STEP_ID.DEPLOY_ORCHESTRATOR,
                     step=DeployOrchestrator(context=metadata_pipeline_context),
-                    depends_on=["test_orchestrator"],
+                    depends_on=[CONNECTOR_TEST_STEP_ID.TEST_ORCHESTRATOR],
                 ),
             ]
             steps_results = await run_steps(steps)

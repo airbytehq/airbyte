@@ -91,7 +91,7 @@ class INTERNAL_TOOL_PATHS(str, Enum):
 DAGGER_WRAP_ENV_VAR_NAME = "_DAGGER_WRAP_APPLIED"
 
 
-class CONNECTOR_TEST_STEP_ID(Enum):
+class CONNECTOR_TEST_STEP_ID(str, Enum):
     """
     An enum for the different step ids of the connector test pipeline.
     """
@@ -107,6 +107,8 @@ class CONNECTOR_TEST_STEP_ID(Enum):
     UNIT = "unit"
     VERSION_FOLLOW_CHECK = "version_follow_check"
     VERSION_INC_CHECK = "version_inc_check"
+    TEST_ORCHESTRATOR = "test_orchestrator"
+    DEPLOY_ORCHESTRATOR = "deploy_orchestrator"
 
     def __str__(self) -> str:
         return self.value

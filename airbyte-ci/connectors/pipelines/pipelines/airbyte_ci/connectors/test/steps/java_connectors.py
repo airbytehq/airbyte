@@ -98,7 +98,7 @@ def _get_normalization_steps(context: ConnectorContext) -> List[StepToRun]:
         StepToRun(
             id=CONNECTOR_TEST_STEP_ID.BUILD_NORMALIZATION,
             step=BuildOrPullNormalization(context, normalization_image, LOCAL_BUILD_PLATFORM),
-            depends_on=["build"],
+            depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
         )
     ]
 
