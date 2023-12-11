@@ -75,7 +75,7 @@ MESSAGE_FROM_REPOSITORY = AirbyteMessage(
 @pytest.fixture
 def entrypoint(mocker) -> AirbyteEntrypoint:
     message_repository = MagicMock()
-    message_repository.consume_queue.side_effect = [[message for message in [MESSAGE_FROM_REPOSITORY]], []]
+    message_repository.consume_queue.side_effect = [[message for message in [MESSAGE_FROM_REPOSITORY]], [], []]
     mocker.patch.object(MockSource, "message_repository", new_callable=mocker.PropertyMock, return_value=message_repository)
     return AirbyteEntrypoint(MockSource())
 
@@ -242,8 +242,18 @@ def test_run_read(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock)
 
     messages = list(entrypoint.run(parsed_args))
 
-    assert [_wrap_message(expected), MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)] == messages
+    assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True), _wrap_message(expected)] == messages
     assert spec_mock.called
+
+
+def test_given_message_emitted_during_config_when_read_then_emit_message_before_next_steps(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+    parsed_args = Namespace(command="read", config="config_path", state="statepath", catalog="catalogpath")
+    mocker.patch.object(MockSource, "read_catalog", side_effect=ValueError)
+
+    messages = entrypoint.run(parsed_args)
+    assert next(messages) == MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)
+    with pytest.raises(ValueError):
+        next(messages)
 
 
 def test_run_read_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):

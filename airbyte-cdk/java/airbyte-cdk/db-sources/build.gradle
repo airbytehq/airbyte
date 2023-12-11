@@ -1,5 +1,5 @@
 import org.jsonschema2pojo.SourceType
-import org.jsoup.Jsoup;
+import org.jsoup.Jsoup
 
 buildscript {
     dependencies {
@@ -92,7 +92,12 @@ dependencies {
     // TODO: Change these to 'compileOnly' or 'testCompileOnly'
 
     implementation libs.hikaricp
-    implementation libs.bundles.debezium.bundle
+    implementation libs.debezium.api
+    implementation libs.debezium.embedded
+    implementation libs.debezium.sqlserver
+    implementation libs.debezium.mysql
+    implementation libs.debezium.postgres
+    implementation libs.debezium.mongodb
 
     implementation libs.bundles.datadog
     // implementation 'com.datadoghq:dd-trace-api'
@@ -113,7 +118,7 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
     testFixturesImplementation 'org.projectlombok:lombok:1.18.20'
-    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20' 
+    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
 
     testImplementation libs.junit.jupiter.system.stubs
 

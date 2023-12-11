@@ -124,48 +124,6 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
     }
   }
 
-  public boolean maybeReplicationStreamIntervalHasRecords(final JsonNode jdbcConfig,
-                                                          final String slotName,
-                                                          final String publicationName,
-                                                          final String plugin,
-                                                          final long startOffset,
-                                                          final long endOffset) {
-    try (final BaseConnection pgConnection = (BaseConnection) PostgresReplicationConnection.createConnection(jdbcConfig)) {
-      ChainedLogicalStreamBuilder streamBuilder = pgConnection
-          .getReplicationAPI()
-          .replicationStream()
-          .logical()
-          .withSlotName("\"" + slotName + "\"")
-          .withStartPosition(LogSequenceNumber.valueOf(startOffset));
-      streamBuilder = addSlotOption(publicationName, plugin, pgConnection, streamBuilder);
-
-      try (final PGReplicationStream stream = streamBuilder.start()) {
-        LogSequenceNumber current = stream.getLastReceiveLSN();
-        final LogSequenceNumber end = LogSequenceNumber.valueOf(endOffset);
-        // Attempt to read from the stream.
-        // This will advance the stream past any bookkeeping entries, until:
-        // - either the end of the stream is reached,
-        // - or a meaningful entry is read.
-        // In the first case, we can update the current position and conclude that the stream contains
-        // nothing of
-        // interest to us between the starting position and the current position.
-        final var msg = stream.readPending();
-        if (msg == null) {
-          current = stream.getLastReceiveLSN();
-        }
-        if (current.compareTo(end) >= 0) {
-          // If we've reached or gone past the end of the interval which interests us,
-          // then there's nothing in it that we could possibly care about.
-          return false;
-        }
-      }
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-    // In all other cases, we can't draw any conclusions as to the contents of the stream interval.
-    return true;
-  }
-
   private ChainedLogicalStreamBuilder addSlotOption(final String publicationName,
                                                     final String plugin,
                                                     final BaseConnection pgConnection,

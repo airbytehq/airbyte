@@ -73,7 +73,7 @@ public abstract class BaseTypingDedupingTest {
       throw new RuntimeException(e);
     }
   }
-  private RecordDiffer DIFFER;
+  protected RecordDiffer DIFFER;
 
   private String randomSuffix;
   private JsonNode config;
@@ -738,7 +738,8 @@ public abstract class BaseTypingDedupingTest {
     return readMessages(filename, streamNamespace, streamName);
   }
 
-  private static List<AirbyteMessage> readMessages(final String filename, final String streamNamespace, final String streamName) throws IOException {
+  protected static List<AirbyteMessage> readMessages(final String filename, final String streamNamespace, final String streamName)
+      throws IOException {
     return readRecords(filename).stream()
         .map(record -> Jsons.convertValue(record, AirbyteMessage.class))
         .peek(message -> {
@@ -827,7 +828,7 @@ public abstract class BaseTypingDedupingTest {
     return destination;
   }
 
-  private static void pushMessages(final List<AirbyteMessage> messages, final AirbyteDestination destination) {
+  protected static void pushMessages(final List<AirbyteMessage> messages, final AirbyteDestination destination) {
     messages.forEach(
         message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
   }
@@ -835,7 +836,7 @@ public abstract class BaseTypingDedupingTest {
   // TODO Eventually we'll want to somehow extract the state messages while a sync is running, to
   // verify checkpointing.
   // That's going to require some nontrivial changes to how attemptRead() works.
-  private static void endSync(final AirbyteDestination destination) throws Exception {
+  protected static void endSync(final AirbyteDestination destination) throws Exception {
     destination.notifyEndOfInput();
     while (!destination.isFinished()) {
       destination.attemptRead();
