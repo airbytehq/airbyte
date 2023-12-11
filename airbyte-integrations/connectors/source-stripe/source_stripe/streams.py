@@ -202,7 +202,7 @@ class StripeStream(HttpStream, ABC):
         """
         Override for testing purposes
         """
-        return 0.001 if IS_TESTING else super().retry_factor()
+        return 0 if IS_TESTING else super().retry_factor()
 
 
 class IStreamSelector(ABC):
