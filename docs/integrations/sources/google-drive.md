@@ -183,8 +183,8 @@ Or any other reason! The schema must be provided as valid JSON as a map of `{"co
 
 For example:
 
-- {"id": "integer", "location": "string", "longitude": "number", "latitude": "number"}
-- {"username": "string", "friends": "array", "information": "object"}
+- `{"id": "integer", "location": "string", "longitude": "number", "latitude": "number"}`
+- `{"username": "string", "friends": "array", "information": "object"}`
 
 ## File Format Settings
 
