@@ -27,8 +27,8 @@ data:
     breakingChanges:
       2.0.0:
         message: >-
-          This version changes PropertyHistory stream to 3 different streams as we now support not only Contacts but also Companies and Deals to fetch their property history.
-          It will affect only users who use PropertyHistory stream, so they need to fix schema conflicts (reset data as an option) and sync ContactsPropertyHistory stream instead of PropertyHistory.
+          This version eliminates the Property History stream in favor of creating 3 different streams, Contacts, Companies, and Deals, which can now all fetch their property history.
+          It will affect only users who use Property History stream, who will need to fix schema conflicts and sync Contacts Property History stream instead of Property History.
         upgradeDeadline: "21.12.2023"
   suggestedStreams:
     streams:
