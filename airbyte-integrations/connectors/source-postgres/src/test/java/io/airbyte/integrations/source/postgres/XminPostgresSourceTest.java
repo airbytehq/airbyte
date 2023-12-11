@@ -22,6 +22,7 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -90,13 +91,13 @@ class XminPostgresSourceTest {
 
   protected PostgresTestDatabase testdb;
 
-  protected String getDatabaseImageName() {
-    return "postgres:12-bullseye";
+  protected BaseImage getDatabaseImage() {
+    return BaseImage.POSTGRES_12;
   }
 
   @BeforeEach
   protected void setup() {
-    testdb = PostgresTestDatabase.in(getDatabaseImageName())
+    testdb = PostgresTestDatabase.in(getDatabaseImage())
         .with("CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));")
         .with("CREATE INDEX i1 ON id_and_name (id);")
         .with("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'), (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');")
