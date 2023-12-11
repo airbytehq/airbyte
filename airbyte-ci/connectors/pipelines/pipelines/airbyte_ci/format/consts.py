@@ -28,6 +28,7 @@ DEFAULT_FORMAT_IGNORE_LIST = [
     "**/airbyte-ci/connectors/metadata_service/lib/tests/fixtures/**/invalid",  # These are deliberately invalid and unformattable.
     "**/tools/git_hooks/tests/test_spec_linter.py",
     "airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code",  # This is a test directory with badly formatted code
+    "**/__init__.py",  # These files has never been formatted and we don't want to start now (for now) see https://github.com/airbytehq/airbyte/issues/33296
 ]
 
 FORMAT_IGNORE_LIST = list(set(find_all_git_ignore_rules() + DEFAULT_FORMAT_IGNORE_LIST))
