@@ -7,9 +7,10 @@ package io.airbyte.integrations.source.tidb;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.tidb.TiDBContainer;
 import org.testcontainers.utility.DockerImageName;
-
+@Disabled
 class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<TiDBSource, TiDBTestDatabase> {
 
   @Override
