@@ -116,7 +116,6 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
         new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager(), workerPool);
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
     this.recordCounts = new ConcurrentHashMap<>();
-    streamNames.forEach(streamDescriptor -> recordCounts.put(streamDescriptor, new AtomicLong(0)));
   }
 
   @VisibleForTesting
@@ -214,7 +213,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     final Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries = streamNames.stream().collect(toMap(
         streamDescriptor -> streamDescriptor,
         streamDescriptor -> new StreamSyncSummary(
-            Optional.of(recordCounts.get(streamDescriptor)).map(AtomicLong::get)
+            Optional.of(recordCounts.getOrDefault(streamDescriptor, new AtomicLong()).get())
         )
     ));
     onClose.accept(hasFailed, streamSyncSummaries);
