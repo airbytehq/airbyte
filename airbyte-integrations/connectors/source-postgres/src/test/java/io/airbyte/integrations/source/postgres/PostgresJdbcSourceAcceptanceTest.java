@@ -25,6 +25,7 @@ import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.Field;
@@ -89,7 +90,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<Postgres
 
   @Override
   protected PostgresTestDatabase createTestDatabase() {
-    return PostgresTestDatabase.in("postgres:16-bullseye");
+    return PostgresTestDatabase.in(BaseImage.POSTGRES_16);
   }
 
   @Override

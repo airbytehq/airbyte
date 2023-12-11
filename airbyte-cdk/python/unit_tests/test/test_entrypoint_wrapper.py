@@ -3,7 +3,7 @@
 import json
 import logging
 import os
-from typing import Iterator, List, Any
+from typing import Any, Iterator, List
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -25,7 +25,6 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
-
 
 def _a_state_message(state: Any) -> AirbyteMessage:
     return AirbyteMessage(

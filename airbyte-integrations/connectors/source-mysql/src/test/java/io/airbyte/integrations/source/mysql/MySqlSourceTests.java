@@ -21,6 +21,8 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -46,7 +48,7 @@ public class MySqlSourceTests {
 
   @Test
   public void testSettingTimezones() throws Exception {
-    try (final var testdb = MySQLTestDatabase.in("mysql:8.0", "withMoscowTimezone")) {
+    try (final var testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8, ContainerModifier.MOSCOW_TIMEZONE)) {
       final var config = testdb.testConfigBuilder()
           .with(JdbcUtils.JDBC_URL_PARAMS_KEY, "serverTimezone=Europe/Moscow")
           .withoutSsl()
@@ -76,7 +78,7 @@ public class MySqlSourceTests {
   @Test
   @Disabled("See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
   public void testNullCursorValueShouldThrowException() {
-    try (final var testdb = MySQLTestDatabase.in("mysql:8.0")
+    try (final var testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8)
         .with("CREATE TABLE null_cursor_table(id INTEGER NULL);")
         .with("INSERT INTO null_cursor_table(id) VALUES (1), (2), (NULL);")
         .with("CREATE VIEW null_cursor_view(id) AS SELECT null_cursor_table.id FROM null_cursor_table;")) {
@@ -126,7 +128,7 @@ public class MySqlSourceTests {
 
   @Test
   public void testJDBCSessionVariable() throws Exception {
-    try (final var testdb = MySQLTestDatabase.in("mysql:8.0")) {
+    try (final var testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8)) {
       final var config = testdb.testConfigBuilder()
           .with(JdbcUtils.JDBC_URL_PARAMS_KEY, "sessionVariables=MAX_EXECUTION_TIME=28800000")
           .withoutSsl()
