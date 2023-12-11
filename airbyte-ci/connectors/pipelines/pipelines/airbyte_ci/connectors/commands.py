@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from typing import List, Optional, Set, Tuple
 
+import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
@@ -14,7 +15,6 @@ from pipelines.consts import CIContext
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles, get_connector_modified_files, get_modified_connectors
 from pipelines.helpers.git import get_modified_files_in_branch, get_modified_files_in_commit
 from pipelines.helpers.utils import transform_strs_to_paths
-import asyncclick as click
 
 ALL_CONNECTORS = get_all_connectors_in_repo()
 
