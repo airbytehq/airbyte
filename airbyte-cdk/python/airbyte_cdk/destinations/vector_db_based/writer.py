@@ -23,13 +23,17 @@ class Writer:
 
     The destination connector is responsible to create a writer instance and pass the input messages iterable to the write method.
     The batch size can be configured by the destination connector to give the freedom of either letting the user configure it or hardcoding it to a sensible value depending on the destination.
+    The omit_raw_text parameter can be used to omit the raw text from the documents. This can be useful if the raw text is very large and not needed for the destination.
     """
 
-    def __init__(self, processing_config: ProcessingConfigModel, indexer: Indexer, embedder: Embedder, batch_size: int) -> None:
+    def __init__(
+        self, processing_config: ProcessingConfigModel, indexer: Indexer, embedder: Embedder, batch_size: int, omit_raw_text: bool
+    ) -> None:
         self.processing_config = processing_config
         self.indexer = indexer
         self.embedder = embedder
         self.batch_size = batch_size
+        self.omit_raw_text = omit_raw_text
         self._init_batch()
 
     def _init_batch(self) -> None:
@@ -45,6 +49,8 @@ class Writer:
             embeddings = self.embedder.embed_chunks(documents)
             for i, document in enumerate(documents):
                 document.embedding = embeddings[i]
+                if self.omit_raw_text:
+                    document.page_content = None
             self.indexer.index(documents, namespace, stream)
 
         self._init_batch()

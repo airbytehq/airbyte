@@ -1,3 +1,6 @@
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 # Updating Documentation
 
 We welcome contributions to the Airbyte documentation! 
@@ -93,6 +96,62 @@ Please familiarize yourself with all the tools available to you when writing doc
 As a general rule, features that introduce new behavior or prevent certain content from rendering will affect how the Airbyte UI displays markdown content, but have no impact on https://docs.airbyte.com. If you want to test out these in-app features in [a local Airbyte build](https://docs.airbyte.com/contributing-to-airbyte/resources/developing-locally/#develop-on-airbyte-webapp), ensure that you have the `airbyte` git repository checked out to the same parent directory as the airbyte platform repository: if so, development builds will by default fetch connector documentation from your local filesystem, allowing you to freely edit their content and view the rendered output.
 :::
 
+#### Select between mutually-exclusive content options with `<Tabs>`
+Tabs are a built-in feature of Docusaurus, the tool we use to build `https://docs.airbyte.com`; please refer to [their documentation](https://docusaurus.io/docs/markdown-features/tabs) for their options and behavior in this context. For better site-agnostic documentation, and because we like the feature, we maintain a separate `Tabs` implementation with limited, one-way API compatibility: all usage options we document should behave the same in-app and on `https://docs.airbyte.com`. If you find a discrepancy or breakage, we would appreciate if you [report it as a bug](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2Carea%2Fdocumentation+needs-triage&projects=&template=8-documentation.yaml)! The reverse is not necessarily true, however: Docusaurus supports many use cases besides ours, so supporting its every usage pattern is a deliberate non-goal.
+
+:::info
+Because Docusaurus uses an mdx component, you must include the following import lines in any markdown file which uses tabs:
+
+```js
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+```
+
+This is not optional: if these lines are missing, the documentation site will have errors. They won't show up in the rendered document, however.
+:::
+
+Here's an example set of tabs; note that you can put any number of `<TabItem value="..." label="...">...</TabItem>` tags inside a `<Tabs>`.
+
+```md
+<Tabs>
+<TabItem value="http-basic" label="Basic HTTP authentication">
+
+When configuring this hypothetical connector using basic HTTP auth, you should mind some tricky security considerations! This just a hypothetical, though, so I never bothered to come up with any.
+
+As the first tab, this would be shown by default if no `TabItem` were marked as `default`.
+
+</TabItem>
+<TabItem value="oauth" label="OAuth authentication" default>
+
+When configuring this hypothetical connector using OAuth authentication, you should do a dance. Good for you! Since it's not the first `TabItem` in its set, we had to explicitly mark this tab as `default` for it to get top billing.
+
+</TabItem>
+</Tabs>
+```
+
+That renders as the following:
+
+<Tabs>
+<TabItem value="http-basic" label="Basic HTTP authentication">
+
+When configuring this hypothetical connector using basic HTTP auth, you should mind some tricky security considerations! This just a hypothetical, though, so I never bothered to come up with any.
+
+As the first tab, this would be shown by default if no `TabItem` were marked as `default`.
+
+</TabItem>
+<TabItem value="oauth" label="OAuth authentication" default>
+
+When configuring this hypothetical connector using OAuth authentication, you should do a dance. Good for you! Since it's not the first `TabItem` in its set, we had to explicitly mark this tab as `default` for it to get top billing.
+
+</TabItem>
+</Tabs>
+
+- You don't need to mark any tab as `default`
+- If you don't, the first tab (here, Basic HTTP) will be the initial selection instead
+- You can use ordinary markdown syntax inside a `TabItem`
+- **however**, due to bugs in our in-app markdown rendering library, you should be dilligent about using empty lines to separate different formatting-related things (surrounding tags and their contents, paragraphs vs lists, etc)
+- You should also avoid indenting `TabItem` tags and their content according to html conventions, since text indented by four spaces (common for html nested inside two levels of tags) can be interpreted as a code block; different markdown rendering tools can handle this inconsistently.
+
 #### Jump to the relevant documentation section when specific connector setup inputs are focused with `<FieldAnchor>`
 In the documentation, the relevant section needs to be wrapped in a `<FieldAnchor field="path.to.field" />` component. When a user focuses the field identified by the `field` attribute in the connector setup UI, the documentation pane will automatically scroll to the associated section of the documentation, highlighting all content contained inside the `<FieldAnchor></FieldAnchor>` tag. These are rendered as regular divs in the documentation site, so they have no effect in places other than the in-app documentation panel—however, note that there must be blank lines between a custom tag like `FieldAnchor` the content it wraps for the documentation site to render markdown syntax inside the custom tag to html.
 
@@ -134,6 +193,10 @@ The `field` attribute must be a valid json path to one of the properties nested 
 ```
 
 The selection keys are `CDC` and `STANDARD`, so you can wrap a specific replication method's documentation section with a `<FieldAnchor field="replication_method[CDC]">...</FieldAnchor>` tag, and it will be highlighted if the user selects CDC replication in the UI.
+
+:::tip
+Because of their close connection with the connector setup form fields, `<FieldAnchor>` tags are only enabled for the source and destination setup pages.
+:::
 
 #### Prevent specific content from rendering in the UI with `<HideInUI>`
 Certain content is important to document, but unhelpful in the context of the Airbyte UI's inline documentation views: 

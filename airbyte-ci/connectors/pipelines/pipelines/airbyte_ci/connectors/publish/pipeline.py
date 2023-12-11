@@ -205,7 +205,7 @@ class UploadSpecToCache(Step):
         return StepResult(self, status=StepStatus.SUCCESS, stdout="Uploaded connector spec to spec cache bucket.")
 
 
-## Pipeline
+# Pipeline
 
 
 async def run_connector_publish_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:

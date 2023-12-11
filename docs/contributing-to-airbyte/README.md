@@ -26,6 +26,12 @@ We are prioritizing the following contributions:
 * Bug fixes to the following destinations: BigQuery, Snowflake, Redshift, S3, and Postgres
 * Helm Charts features, bug fixes, and other platform bug fixes
 
+:::warning
+Airbyte is undergoing a major revamp of the shared core Java destinations codebase, with plans to release a new CDK in 2024.
+We are actively working on improving usability, speed (through asynchronous loading), and implementing [Typing and Deduplication](/using-airbyte/core-concepts/typing-deduping) (Destinations V2).
+For this reason, Airbyte is not reviewing/accepting new Java connectors for now.
+:::
+
 
 :::warning
 Contributions outside of these will be evaluated on a case-by-case basis by our engineering team.

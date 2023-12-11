@@ -11,6 +11,7 @@
     "Product name": { "type": ["null", "string"] },
     "Condition": { "type": ["null", "string"] },
     "Status Change Date": { "type": ["null", "string"] },
-    "Issue Description": { "type": ["null", "string"] }
+    "Issue Description": { "type": ["null", "string"] },
+    "dataEndTime": { "type": ["null", "string"], "format": "date" }
   }
 }

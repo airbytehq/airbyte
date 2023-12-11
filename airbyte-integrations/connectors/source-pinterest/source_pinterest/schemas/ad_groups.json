@@ -84,6 +84,9 @@
     "placement_group": {
       "type": ["null", "string"]
     },
+    "placement_traffic_type": {
+      "type": ["null", "string"]
+    },
     "pacing_delivery_type": {
       "type": ["null", "string"]
     },

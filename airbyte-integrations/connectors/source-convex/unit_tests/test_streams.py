@@ -18,21 +18,21 @@ def patch_base_class(mocker):
 
 
 def test_request_params(patch_base_class):
-    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {"tableName": "messages", "format": "convex_json"}
+    expected_params = {"tableName": "messages", "format": "json"}
     assert stream.request_params(**inputs) == expected_params
     stream._snapshot_cursor_value = 1234
-    expected_params = {"tableName": "messages", "format": "convex_json", "cursor": 1234}
+    expected_params = {"tableName": "messages", "format": "json", "cursor": 1234}
     assert stream.request_params(**inputs) == expected_params
     stream._snapshot_has_more = False
     stream._delta_cursor_value = 2345
-    expected_params = {"tableName": "messages", "format": "convex_json", "cursor": 2345}
+    expected_params = {"tableName": "messages", "format": "json", "cursor": 2345}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
-    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     resp = MagicMock()
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 123}], "cursor": 1234, "snapshot": 5000, "hasMore": True}
     resp.status_code = 200
@@ -63,7 +63,7 @@ def test_next_page_token(patch_base_class):
 
 
 def test_parse_response(patch_base_class):
-    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     resp = MagicMock()
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1234}], "cursor": 1234, "snapshot": 2000, "hasMore": True}
     resp.status_code = 200
@@ -73,13 +73,13 @@ def test_parse_response(patch_base_class):
 
 
 def test_request_headers(patch_base_class):
-    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    assert stream.request_headers(**inputs) == {"Convex-Client": "airbyte-export-0.2.0"}
+    assert stream.request_headers(**inputs) == {"Convex-Client": "airbyte-export-0.3.0"}
 
 
 def test_http_method(patch_base_class):
-    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     expected_method = "GET"
     assert stream.http_method == expected_method
 
@@ -96,12 +96,12 @@ def test_http_method(patch_base_class):
 def test_should_retry(patch_base_class, http_status, should_retry):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     assert stream.should_retry(response_mock) == should_retry
 
 
 def test_backoff_time(patch_base_class):
     response_mock = MagicMock()
-    stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
+    stream = ConvexStream("murky-swan-635", "accesskey", "json", "messages", None)
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time

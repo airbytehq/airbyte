@@ -10,7 +10,6 @@ import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.
 import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER;
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters;
-import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.logStreamSyncStatus;
@@ -33,6 +32,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
@@ -60,12 +60,15 @@ import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.Ini
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -86,6 +89,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
+
+  public static final String TUNNEL_METHOD = "tunnel_method";
+  public static final String NO_TUNNEL = "NO_TUNNEL";
+  public static final String SSL_MODE = "ssl_mode";
+  private static final String MODE = "mode";
+  public static final String SSL_MODE_PREFERRED = "preferred";
+  public static final String SSL_MODE_REQUIRED = "required";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
@@ -116,6 +126,46 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   public static Source sshWrappedSource(MySqlSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  }
+
+  private ConnectorSpecification getCloudDeploymentSpec(final ConnectorSpecification originalSpec) {
+    final ConnectorSpecification spec = Jsons.clone(originalSpec);
+    // Remove the SSL options
+    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+    // Set SSL_MODE to required by default
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get(SSL_MODE)).put("default", SSL_MODE_REQUIRED);
+    return spec;
+  }
+
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    if (cloudDeploymentMode()) {
+      return getCloudDeploymentSpec(super.spec());
+    }
+    return super.spec();
+  }
+
+  @Override
+  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
+    // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
+    // and not over SSH tunnel
+    if (cloudDeploymentMode()) {
+      if (config.has(TUNNEL_METHOD)
+          && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
+          && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
+        // If no SSH tunnel
+        if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
+          if (Set.of(SSL_MODE_PREFERRED).contains(config.get(SSL_MODE).get(MODE).asText())) {
+            // Fail in case SSL mode is preferred
+            return new AirbyteConnectionStatus()
+                .withStatus(Status.FAILED)
+                .withMessage(
+                    "Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: required, verify-ca, verify-identity");
+          }
+        }
+      }
+    }
+    return super.check(config);
   }
 
   public MySqlSource() {
@@ -454,6 +504,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   private String toSslJdbcParam(final SslMode sslMode) {
     return toSslJdbcParamInternal(sslMode);
+  }
+
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(featureFlags.deploymentMode());
   }
 
   @Override
