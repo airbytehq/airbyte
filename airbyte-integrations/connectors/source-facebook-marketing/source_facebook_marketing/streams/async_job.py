@@ -201,6 +201,8 @@ class InsightAsyncJob(AsyncJob):
         """
         super().__init__(**kwargs)
         self._params = dict(params)
+        logger.info("Interval Start : {}".format(self._interval.start.to_date_string()))
+        logger.info("Interval End : {}".format(self._interval.end.to_date_string()))
         self._params["time_range"] = {
             "since": self._interval.start.to_date_string(),
             "until": self._interval.end.to_date_string(),
