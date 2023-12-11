@@ -8,4 +8,3 @@ repos:
         name: Run airbyte-ci format fix on git push (~30s)
         pass_filenames: false
         stages: [push]
-        verbose: true
