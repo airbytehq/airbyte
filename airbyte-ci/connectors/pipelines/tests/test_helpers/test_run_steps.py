@@ -221,6 +221,32 @@ async def test_run_steps_concurrent():
     assert ran_at["step4"] < ran_at["step2"]
     assert ran_at["step4"] < ran_at["step3"]
 
+@pytest.mark.anyio
+async def test_run_steps_concurrency_of_1():
+    ran_at = {}
+
+    class SleepStep(Step):
+        title = "Sleep Step"
+
+        async def _run(self, name, sleep) -> StepResult:
+            ran_at[name] = time.time()
+            await anyio.sleep(sleep)
+            return StepResult(self, StepStatus.SUCCESS)
+
+    steps = [
+        StepToRun(id="step1", step=SleepStep(test_context), args={"name": "step1", "sleep": 1}),
+        StepToRun(id="step2", step=SleepStep(test_context), args={"name": "step2", "sleep": 1}),
+        StepToRun(id="step3", step=SleepStep(test_context), args={"name": "step3", "sleep": 1}),
+        StepToRun(id="step4", step=SleepStep(test_context), args={"name": "step4", "sleep": 1}),
+    ]
+
+    await run_steps(steps, options=RunStepOptions(concurrency=1))
+
+    # assert that step4 is the first step to finish
+    assert ran_at["step1"] < ran_at["step2"]
+    assert ran_at["step2"] < ran_at["step3"]
+    assert ran_at["step3"] < ran_at["step4"]
+
 
 @pytest.mark.anyio
 async def test_run_steps_sequential():

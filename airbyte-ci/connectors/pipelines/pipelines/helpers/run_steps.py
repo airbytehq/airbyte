@@ -9,6 +9,7 @@ from __future__ import annotations
 import inspect
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Awaitable, Callable, Dict, List, Tuple, Union
+import anyio
 
 import asyncer
 from pipelines import main_logger
@@ -28,6 +29,7 @@ class RunStepOptions:
     fail_fast: bool = True
     skip_steps: List[str] = field(default_factory=list)
     log_step_tree: bool = True
+    concurrency: int = 10
 
 
 @dataclass(frozen=True)
@@ -217,16 +219,18 @@ async def run_steps(
     steps_to_run, results = _filter_skipped_steps(steps_to_evaluate, options.skip_steps, results)
 
     # Run all steps in list concurrently
-    async with asyncer.create_task_group() as task_group:
-        tasks = []
-        for step_to_run in steps_to_run:
-            # if the step to run is a list, run it in parallel
-            if isinstance(step_to_run, list):
-                tasks.append(task_group.soonify(run_steps)(step_to_run, results, options))
-            else:
-                step_args = await evaluate_run_args(step_to_run.args, results)
-                main_logger.info(f"QUEUING STEP {step_to_run.id}")
-                tasks.append(task_group.soonify(step_to_run.step.run)(**step_args))
+    semaphore = anyio.Semaphore(options.concurrency)
+    async with semaphore:
+        async with asyncer.create_task_group() as task_group:
+            tasks = []
+            for step_to_run in steps_to_run:
+                # if the step to run is a list, run it in parallel
+                if isinstance(step_to_run, list):
+                    tasks.append(task_group.soonify(run_steps)(step_to_run, results, options))
+                else:
+                    step_args = await evaluate_run_args(step_to_run.args, results)
+                    main_logger.info(f"QUEUING STEP {step_to_run.id}")
+                    tasks.append(task_group.soonify(step_to_run.step.run)(**step_args))
 
     # Apply new results
     new_results = {}
