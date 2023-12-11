@@ -19,7 +19,7 @@ public class NoopTyperDeduper implements TyperDeduper {
   }
 
   @Override
-  public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun) {
+  public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun, final StreamSyncSummary streamSyncSummary) {
 
   }
 

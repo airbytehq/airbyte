@@ -21,7 +21,11 @@ public interface DestinationHandler<DialectTableDefinition> {
    */
   InitialRawTableState getInitialRawTableState(StreamId id) throws Exception;
 
-  record InitialRawTableState(boolean hasUnprocessedRecords, Optional<Instant> maxProcessedTimestamp) {}
+  record InitialRawTableState(boolean hasUnprocessedRecords, Optional<Instant> maxProcessedTimestamp) {
+    public InitialRawTableState withHasUnprocessedRecords(final boolean hasUnprocessedRecords) {
+      return new InitialRawTableState(hasUnprocessedRecords, maxProcessedTimestamp);
+    }
+  }
 
   void execute(final String sql) throws Exception;
 

@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * In a typical sync, destinations should call the methods:
  * <ol>
  * <li>{@link #prepareTables()} once at the start of the sync</li>
- * <li>{@link #typeAndDedupe(String, String, boolean)} as needed throughout the sync</li>
+ * <li>{@link #typeAndDedupe(String, String, boolean, StreamSyncSummary)} as needed throughout the sync</li>
  * <li>{@link #commitFinalTables()} once at the end of the sync</li>
  * </ol>
  * Note that #prepareTables() initializes some internal state. The other methods will throw an
@@ -71,6 +71,9 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   // These locks are used to prevent multiple simultaneous attempts to T+D the same stream.
   // We use tryLock with these so that we don't queue up multiple T+D runs for the same stream.
   private final Map<StreamId, Lock> internalTdLocks;
+  // Track the number of records on which we've already run T+D per stream.
+  // This allows us to skip T+D if no new records have been written since the last T+D execution.
+  private final Map<StreamDescriptor, Long> numRecordsTypedAndDeduped;
 
   private final ExecutorService executorService;
 
@@ -89,6 +92,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this.streamsWithSuccessfulSetup = ConcurrentHashMap.newKeySet(parsedCatalog.streams().size());
     this.tdLocks = new ConcurrentHashMap<>();
     this.internalTdLocks = new ConcurrentHashMap<>();
+    this.numRecordsTypedAndDeduped = new ConcurrentHashMap<>();
     this.executorService = Executors.newFixedThreadPool(countOfTypingDedupingThreads(defaultThreadCount),
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
@@ -174,7 +178,9 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     }, this.executorService);
   }
 
-  public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun) throws Exception {
+  @Override
+  public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun, final StreamSyncSummary streamSyncSummary) throws Exception {
+    // TODO
     final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
     final CompletableFuture<Optional<Exception>> task = typeAndDedupeTask(streamConfig, mustRun);
     reduceExceptions(
@@ -249,18 +255,31 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     final Set<CompletableFuture<Optional<Exception>>> typeAndDedupeTasks = new HashSet<>();
     parsedCatalog.streams().stream()
         .filter(streamConfig -> {
+          final StreamDescriptor streamDescriptor = streamConfig.id().asStreamDescriptor();
           final StreamSyncSummary streamSyncSummary = streamSyncSummaries.getOrDefault(
-              streamConfig.id().asStreamDescriptor(),
+              streamDescriptor,
               StreamSyncSummary.DEFAULT);
-          final boolean nonzeroRecords = streamSyncSummary.recordsWritten()
-              .map(r -> r > 0)
-              // If we didn't track record counts during the sync, assume we had nonzero records for this stream
+          DestinationHandler.InitialRawTableState initialRawTableState = initialRawTableStateByStream.get(streamConfig.id());
+          final boolean newRecords = streamSyncSummary.recordsWritten()
+              .map(newCount -> {
+                final Long previousCount = numRecordsTypedAndDeduped.get(streamDescriptor);
+
+                // TODO do these updates after T+D terminates successfully
+                numRecordsTypedAndDeduped.put(streamDescriptor, newCount);
+                // After running T+D, there are no unprocessed records.
+                initialRawTableStateByStream.put(
+                    streamConfig.id(),
+                    initialRawTableState.withHasUnprocessedRecords(false)
+                );
+                return newCount > previousCount;
+              })
+              // If we didn't track record counts during the sync, assume we had nonzero new records for this stream
               .orElse(true);
-          final boolean unprocessedRecordsPreexist = initialRawTableStateByStream.get(streamConfig.id()).hasUnprocessedRecords();
+          final boolean unprocessedRecordsPreexist = initialRawTableState.hasUnprocessedRecords();
           // If this sync emitted records, or the previous sync left behind some unprocessed records,
           // then the raw table has some unprocessed records right now.
           // Run T+D if either of those conditions are true.
-          final boolean shouldRunTypingDeduping = nonzeroRecords || unprocessedRecordsPreexist;
+          final boolean shouldRunTypingDeduping = newRecords || unprocessedRecordsPreexist;
           if (!shouldRunTypingDeduping) {
             LOGGER.info(
                 "Skipping typing and deduping for stream {}.{} because it had no records during this sync and no unprocessed records from a previous sync.",

@@ -37,7 +37,7 @@ public interface TyperDeduper {
    * @param originalNamespace The stream's namespace, as declared in the configured catalog
    * @param originalName The stream's name, as declared in the configured catalog
    */
-  void typeAndDedupe(String originalNamespace, String originalName, boolean mustRun) throws Exception;
+  void typeAndDedupe(String originalNamespace, String originalName, boolean mustRun, StreamSyncSummary streamSyncSummary) throws Exception;
 
   /**
    * Get the lock that should be used to synchronize inserts to the raw table for a given stream. This

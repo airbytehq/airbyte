@@ -21,6 +21,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -211,17 +213,24 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
 
     bufferManager.close();
 
-    final Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries = streamNames.stream().collect(toMap(
-        streamDescriptor -> streamDescriptor,
-        streamDescriptor -> new StreamSyncSummary(
-            Optional.of(recordCounts.get(streamDescriptor)).map(AtomicLong::get)
-        )
-    ));
+    final Map<StreamDescriptor, StreamSyncSummary> streamSyncSummaries = getSyncSummaries(streamNames, recordCounts);
     onClose.accept(hasFailed, streamSyncSummaries);
 
     // as this throws an exception, we need to be after all other close functions.
     propagateFlushWorkerExceptionIfPresent();
     LOGGER.info("{} closed", AsyncStreamConsumer.class);
+  }
+
+  @NotNull
+  public static Map<StreamDescriptor, StreamSyncSummary> getSyncSummaries(
+      final Collection<StreamDescriptor> streamNames,
+      final ConcurrentMap<StreamDescriptor, AtomicLong> recordCounts) {
+    return streamNames.stream().collect(toMap(
+        streamDescriptor -> streamDescriptor,
+        streamDescriptor -> new StreamSyncSummary(
+            Optional.of(recordCounts.getOrDefault(streamDescriptor, new AtomicLong()).get())
+        )
+    ));
   }
 
   private void propagateFlushWorkerExceptionIfPresent() throws Exception {

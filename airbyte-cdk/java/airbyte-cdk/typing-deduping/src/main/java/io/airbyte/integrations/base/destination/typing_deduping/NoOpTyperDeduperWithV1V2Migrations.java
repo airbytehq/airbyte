@@ -76,7 +76,7 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
   }
 
   @Override
-  public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun) {
+  public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun, final StreamSyncSummary streamSyncSummary) {
     log.info("Skipping TypeAndDedupe");
   }
 

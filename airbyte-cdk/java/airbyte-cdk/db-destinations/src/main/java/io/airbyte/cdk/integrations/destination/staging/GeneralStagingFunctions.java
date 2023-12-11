@@ -5,15 +5,19 @@
 package io.airbyte.cdk.integrations.destination.staging;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.locks.Lock;
+import java.util.function.BiFunction;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -66,6 +70,9 @@ public class GeneralStagingFunctions {
   /**
    * Handles copying data from staging area to destination table and clean up of staged files if
    * upload was unsuccessful
+   *
+   * @param recordCount The total number of records written to this stream across the entire sync,
+   *                    including this batch.
    */
   public static void copyIntoTableFromStage(final JdbcDatabase database,
                                             final String stageName,
@@ -77,7 +84,8 @@ public class GeneralStagingFunctions {
                                             final String streamNamespace,
                                             final String streamName,
                                             final TypeAndDedupeOperationValve typerDeduperValve,
-                                            final TyperDeduper typerDeduper)
+                                            final TyperDeduper typerDeduper,
+                                            final long recordCount)
       throws Exception {
     try {
       final Lock rawTableInsertLock = typerDeduper.getRawTableInsertLock(streamNamespace, streamName);
@@ -92,7 +100,7 @@ public class GeneralStagingFunctions {
       final AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamName, streamNamespace);
       typerDeduperValve.addStreamIfAbsent(streamId);
       if (typerDeduperValve.readyToTypeAndDedupe(streamId)) {
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName(), false);
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName(), false, new StreamSyncSummary(Optional.of(recordCount)));
         typerDeduperValve.updateTimeAndIncreaseInterval(streamId);
       }
     } catch (final Exception e) {

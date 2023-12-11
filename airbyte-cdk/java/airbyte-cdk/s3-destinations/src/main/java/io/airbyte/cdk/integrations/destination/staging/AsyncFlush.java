@@ -18,6 +18,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -36,6 +37,7 @@ class AsyncFlush implements DestinationFlushFunction {
   private final TyperDeduper typerDeduper;
   private final long optimalBatchSizeBytes;
   private final boolean useDestinationsV2Columns;
+  private final BiFunction<String, String, Long> getRecordCountFunction;
 
   public AsyncFlush(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
                     final StagingOperations stagingOperations,
@@ -43,8 +45,9 @@ class AsyncFlush implements DestinationFlushFunction {
                     final ConfiguredAirbyteCatalog catalog,
                     final TypeAndDedupeOperationValve typerDeduperValve,
                     final TyperDeduper typerDeduper,
-                    final boolean useDestinationsV2Columns) {
-    this(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, 50 * 1024 * 1024, useDestinationsV2Columns);
+                    final boolean useDestinationsV2Columns,
+                    final BiFunction<String, String, Long> getRecordCountFunction) {
+    this(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, 50 * 1024 * 1024, useDestinationsV2Columns, getRecordCountFunction);
   }
 
   public AsyncFlush(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
@@ -59,7 +62,8 @@ class AsyncFlush implements DestinationFlushFunction {
                     // the batch size, the AsyncFlusher will flush in smaller batches which allows for memory to be
                     // freed earlier similar to a sliding window effect
                     final long optimalBatchSizeBytes,
-                    final boolean useDestinationsV2Columns) {
+                    final boolean useDestinationsV2Columns,
+                    final BiFunction<String, String, Long> getRecordCountFunction) {
     this.streamDescToWriteConfig = streamDescToWriteConfig;
     this.stagingOperations = stagingOperations;
     this.database = database;
@@ -68,6 +72,7 @@ class AsyncFlush implements DestinationFlushFunction {
     this.typerDeduper = typerDeduper;
     this.optimalBatchSizeBytes = optimalBatchSizeBytes;
     this.useDestinationsV2Columns = useDestinationsV2Columns;
+    this.getRecordCountFunction = getRecordCountFunction;
   }
 
   @Override
@@ -104,6 +109,8 @@ class AsyncFlush implements DestinationFlushFunction {
     final WriteConfig writeConfig = streamDescToWriteConfig.get(decs);
     final String schemaName = writeConfig.getOutputSchemaName();
     final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getOutputTableName());
+    final String streamName = writeConfig.getStreamName();
+    final String streamNamespace = writeConfig.getNamespace();
     final String stagingPath =
         stagingOperations.getStagingPath(
             StagingConsumerFactory.RANDOM_CONNECTION_ID,
@@ -112,6 +119,7 @@ class AsyncFlush implements DestinationFlushFunction {
             writeConfig.getOutputTableName(),
             writeConfig.getWriteDatetime());
     try {
+      final long recordCount = getRecordCountFunction.apply(streamName, streamNamespace);
       final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
       GeneralStagingFunctions.copyIntoTableFromStage(
           database,
@@ -124,7 +132,8 @@ class AsyncFlush implements DestinationFlushFunction {
           writeConfig.getNamespace(),
           writeConfig.getStreamName(),
           typerDeduperValve,
-          typerDeduper);
+          typerDeduper,
+          recordCount);
     } catch (final Exception e) {
       log.error("Failed to flush and commit buffer data into destination's raw table", e);
       throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);

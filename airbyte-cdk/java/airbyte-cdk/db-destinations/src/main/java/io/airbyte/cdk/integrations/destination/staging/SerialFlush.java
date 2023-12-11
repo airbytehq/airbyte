@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -51,7 +52,8 @@ public class SerialFlush {
                                              final List<WriteConfig> writeConfigs,
                                              final ConfiguredAirbyteCatalog catalog,
                                              final TypeAndDedupeOperationValve typerDeduperValve,
-                                             final TyperDeduper typerDeduper) {
+                                             final TyperDeduper typerDeduper,
+                                             final BiFunction<String, String, Long> getRecordCountFunction) {
     // TODO: (ryankfu) move this block of code that executes before the lambda to #onStartFunction
     final Set<WriteConfig> conflictingStreams = new HashSet<>();
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = new HashMap<>();
@@ -82,20 +84,24 @@ public class SerialFlush {
       final WriteConfig writeConfig = pairToWriteConfig.get(pair);
       final String schemaName = writeConfig.getOutputSchemaName();
       final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getOutputTableName());
+      final String streamName = writeConfig.getStreamName();
+      final String streamNamespace = writeConfig.getNamespace();
       final String stagingPath =
           stagingOperations.getStagingPath(
-              SerialStagingConsumerFactory.RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(),
+              SerialStagingConsumerFactory.RANDOM_CONNECTION_ID, schemaName, streamName,
               writeConfig.getOutputTableName(), writeConfig.getWriteDatetime());
       try (writer) {
         writer.flush();
         final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
+        final long recordCount = getRecordCountFunction.apply(streamName, streamNamespace);
         GeneralStagingFunctions.copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(),
             schemaName,
             stagingOperations,
-            writeConfig.getNamespace(),
-            writeConfig.getStreamName(),
+            streamNamespace,
+            streamName,
             typerDeduperValve,
-            typerDeduper);
+            typerDeduper,
+            recordCount);
       } catch (final Exception e) {
         log.error("Failed to flush and commit buffer data into destination's raw table", e);
         throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
