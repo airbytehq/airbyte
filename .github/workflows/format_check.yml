@@ -1,5 +1,5 @@
 name: Check for formatting errors
-
+run-name: Check for formatting errors on ${{ github.ref }}
 on:
   workflow_dispatch:
   push:
