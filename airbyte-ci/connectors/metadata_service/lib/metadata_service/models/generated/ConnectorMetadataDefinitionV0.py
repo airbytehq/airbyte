@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, constr
@@ -102,31 +102,21 @@ class StreamBreakingChangeScope(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    impactedStreams: List[str] = Field(
+    scopeType: Any = Field("stream", const=True)
+    impactedScopes: List[str] = Field(
         ...,
         description="List of streams that are impacted by the breaking change.",
         min_items=1,
     )
 
 
-class ImpactedStreamField(BaseModel):
+class StreamField(BaseModel):
     class Config:
         extra = Extra.forbid
 
     stream: str = Field(..., description="The stream that the field belongs to.")
     field: str = Field(
         ..., description="The field that is impacted by the breaking change."
-    )
-
-
-class StreamFieldBreakingChangeScope(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    impactedStreamFields: List[ImpactedStreamField] = Field(
-        ...,
-        description="List of specific stream fields that are impacted by the breaking change.",
-        min_items=1,
     )
 
 
@@ -146,10 +136,15 @@ class JobTypeResourceLimit(BaseModel):
     resourceRequirements: ResourceRequirements
 
 
-class BreakingChangeScope(BaseModel):
-    __root__: Union[StreamBreakingChangeScope, StreamFieldBreakingChangeScope] = Field(
+class StreamFieldBreakingChangeScope(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    scopeType: Any = Field("streamField", const=True)
+    impactedScopes: List[StreamField] = Field(
         ...,
-        description="A scope that can be used to limit the impact of a breaking change.",
+        description="List of specific stream fields that are impacted by the breaking change.",
+        min_items=1,
     )
 
 
@@ -162,6 +157,32 @@ class ActorDefinitionResourceRequirements(BaseModel):
         description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
     )
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
+
+
+class BreakingChangeScope(BaseModel):
+    __root__: Union[StreamBreakingChangeScope, StreamFieldBreakingChangeScope] = Field(
+        ...,
+        description="A scope that can be used to limit the impact of a breaking change.",
+    )
+
+
+class RegistryOverrides(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    enabled: bool
+    name: Optional[str] = None
+    dockerRepository: Optional[str] = None
+    dockerImageTag: Optional[str] = None
+    supportsDbt: Optional[bool] = None
+    supportsNormalization: Optional[bool] = None
+    license: Optional[str] = None
+    documentationUrl: Optional[AnyUrl] = None
+    connectorSubtype: Optional[str] = None
+    allowedHosts: Optional[AllowedHosts] = None
+    normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
+    suggestedStreams: Optional[SuggestedStreams] = None
+    resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
 
 
 class VersionBreakingChange(BaseModel):
@@ -186,23 +207,12 @@ class VersionBreakingChange(BaseModel):
     )
 
 
-class RegistryOverrides(BaseModel):
+class Registry(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    enabled: bool
-    name: Optional[str] = None
-    dockerRepository: Optional[str] = None
-    dockerImageTag: Optional[str] = None
-    supportsDbt: Optional[bool] = None
-    supportsNormalization: Optional[bool] = None
-    license: Optional[str] = None
-    documentationUrl: Optional[AnyUrl] = None
-    connectorSubtype: Optional[str] = None
-    allowedHosts: Optional[AllowedHosts] = None
-    normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
-    suggestedStreams: Optional[SuggestedStreams] = None
-    resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
+    oss: Optional[RegistryOverrides] = None
+    cloud: Optional[RegistryOverrides] = None
 
 
 class ConnectorBreakingChanges(BaseModel):
@@ -213,14 +223,6 @@ class ConnectorBreakingChanges(BaseModel):
         ...,
         description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
     )
-
-
-class Registry(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    oss: Optional[RegistryOverrides] = None
-    cloud: Optional[RegistryOverrides] = None
 
 
 class ConnectorReleases(BaseModel):

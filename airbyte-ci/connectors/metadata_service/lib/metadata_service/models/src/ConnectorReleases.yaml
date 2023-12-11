@@ -58,9 +58,13 @@ definitions:
     type: object
     additionalProperties: false
     required:
-      - impactedStreams
+      - scopeType
+      - impactedScopes
     properties:
-      impactedStreams:
+      scopeType:
+        type: const
+        const: stream
+      impactedScopes:
         description: List of streams that are impacted by the breaking change.
         type: array
         minItems: 1
@@ -71,22 +75,29 @@ definitions:
     type: object
     additionalProperties: false
     required:
-      - impactedStreamFields
+      - scopeType
+      - impactedScopes
     properties:
-      impactedStreamFields:
+      scopeType:
+        type: const
+        const: streamField
+      impactedScopes:
         description: List of specific stream fields that are impacted by the breaking change.
         type: array
         minItems: 1
         items:
-          type: dict
-          additionalProperties: false
-          required:
-            - stream
-            - field
-          properties:
-            stream:
-              description: The stream that the field belongs to.
-              type: string
-            field:
-              description: The field that is impacted by the breaking change.
-              type: string
+          $ref: "#/definitions/StreamField"
+  StreamField:
+    description: A stream field.
+    type: object
+    additionalProperties: false
+    required:
+      - stream
+      - field
+    properties:
+      stream:
+        description: The stream that the field belongs to.
+        type: string
+      field:
+        description: The field that is impacted by the breaking change.
+        type: string

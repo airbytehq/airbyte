@@ -77,31 +77,21 @@ class StreamBreakingChangeScope(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    impactedStreams: List[str] = Field(
+    scopeType: Any = Field("stream", const=True)
+    impactedScopes: List[str] = Field(
         ...,
         description="List of streams that are impacted by the breaking change.",
         min_items=1,
     )
 
 
-class ImpactedStreamField(BaseModel):
+class StreamField(BaseModel):
     class Config:
         extra = Extra.forbid
 
     stream: str = Field(..., description="The stream that the field belongs to.")
     field: str = Field(
         ..., description="The field that is impacted by the breaking change."
-    )
-
-
-class StreamFieldBreakingChangeScope(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    impactedStreamFields: List[ImpactedStreamField] = Field(
-        ...,
-        description="List of specific stream fields that are impacted by the breaking change.",
-        min_items=1,
     )
 
 
@@ -121,10 +111,15 @@ class JobTypeResourceLimit(BaseModel):
     resourceRequirements: ResourceRequirements
 
 
-class BreakingChangeScope(BaseModel):
-    __root__: Union[StreamBreakingChangeScope, StreamFieldBreakingChangeScope] = Field(
+class StreamFieldBreakingChangeScope(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    scopeType: Any = Field("streamField", const=True)
+    impactedScopes: List[StreamField] = Field(
         ...,
-        description="A scope that can be used to limit the impact of a breaking change.",
+        description="List of specific stream fields that are impacted by the breaking change.",
+        min_items=1,
     )
 
 
@@ -137,6 +132,13 @@ class ActorDefinitionResourceRequirements(BaseModel):
         description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
     )
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
+
+
+class BreakingChangeScope(BaseModel):
+    __root__: Union[StreamBreakingChangeScope, StreamFieldBreakingChangeScope] = Field(
+        ...,
+        description="A scope that can be used to limit the impact of a breaking change.",
+    )
 
 
 class VersionBreakingChange(BaseModel):

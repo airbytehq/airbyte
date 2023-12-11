@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, constr
 
@@ -13,14 +13,15 @@ class StreamBreakingChangeScope(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    impactedStreams: List[str] = Field(
+    scopeType: Any = Field("stream", const=True)
+    impactedScopes: List[str] = Field(
         ...,
         description="List of streams that are impacted by the breaking change.",
         min_items=1,
     )
 
 
-class ImpactedStreamField(BaseModel):
+class StreamField(BaseModel):
     class Config:
         extra = Extra.forbid
 
@@ -34,7 +35,8 @@ class StreamFieldBreakingChangeScope(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    impactedStreamFields: List[ImpactedStreamField] = Field(
+    scopeType: Any = Field("streamField", const=True)
+    impactedScopes: List[StreamField] = Field(
         ...,
         description="List of specific stream fields that are impacted by the breaking change.",
         min_items=1,
