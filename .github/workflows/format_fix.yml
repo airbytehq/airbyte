@@ -1,4 +1,4 @@
-name: Fix formatting on a branch
+name: Fix formatting on a ${{ github.ref }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -10,6 +10,7 @@ on:
 jobs:
   format-check:
     runs-on: "ci-runner-connector-format-medium-dagger-0-6-4"
+    # IMPORTANT: This name must match the require check name on the branch protection settings
     name: "Check for formatting errors"
     steps:
       - name: Checkout Airbyte
